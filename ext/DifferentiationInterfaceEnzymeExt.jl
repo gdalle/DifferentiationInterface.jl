@@ -1,0 +1,6 @@
+module DifferentiationInterfaceEnzymeExt
+
+using Enzyme
+using DifferentiationInterface
+
+end

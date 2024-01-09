@@ -1,0 +1,6 @@
+module DifferentiationInterfaceChainRulesCoreExt
+
+using ChainRulesCore
+using DifferentiationInterface
+
+end
