@@ -2,5 +2,6 @@ module DifferentiationInterfaceChainRulesCoreExt
 
 using ChainRulesCore
 using DifferentiationInterface
+using LinearAlgebra
 
 end

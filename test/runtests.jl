@@ -19,4 +19,7 @@ using Zygote: Zygote
     @testset "JET" begin
         JET.test_package(DifferentiationInterface; target_defined_modules=true)
     end
+    @testset "ForwardDiff" begin
+        include("forwarddiff.jl")
+    end
 end
