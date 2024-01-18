@@ -6,9 +6,21 @@ CurrentModule = DifferentiationInterface
 
 Documentation for [DifferentiationInterface](https://github.com/gdalle/DifferentiationInterface.jl).
 
-```@index
-```
+## Public
 
 ```@autodocs
 Modules = [DifferentiationInterface]
+Private = false
+```
+
+## Internals
+
+```@autodocs
+Modules = [DifferentiationInterface]
+Public = false
+```
+
+## Index
+
+```@index
 ```

@@ -30,32 +30,32 @@ struct EnzymeBackend <: AbstractBackend end
 struct ForwardDiffBackend <: AbstractBackend end
 
 """
-    jvp!(dys, backend, f, x, dx)
+    jvp!(dy, backend, f, x, dx)
 
-Compute a Jacobian-vector product and return `dys`.
+Compute a Jacobian-vector product and return `dy`.
 
 # Arguments
 
-- `dys::Tuple`: function argument cotangents, might be overwritten
-- `backend::AbstractBackend`: autodiff backend to use
-- `f`: function to differentiate
-- `x::Tuple`: function arguments
-- `dx::Tuple`: function argument tangents
+- `dy`: cotangent, might be overwritten
+- `backend::AbstractBackend`: autodiff backend
+- `f`: function `x -> y` to differentiate
+- `x`: argument
+- `dx`: tangent
 """
 function jvp! end
 
 """
-    jvp!(dxs, backend, f, x, dy)
+    jvp!(dx, backend, f, x, dy)
 
-Compute a Jacobian-vector product and return `dxs`.
+Compute a Jacobian-vector product and return `dx`.
 
 # Arguments
 
-- `dxs::Tuple`: function argument tangents, might be overwritten
-- `backend::AbstractBackend`: autodiff backend to use
-- `f`: function to differentiate
-- `x::Tuple`: function arguments
-- `dy::Tuple`: function argument cotangents
+- `dx`: tangent, might be overwritten
+- `backend::AbstractBackend`: autodiff backend
+- `f`: function `x -> y` to differentiate
+- `x`: argument
+- `dy`: cotangent
 """
 function vjp! end
 

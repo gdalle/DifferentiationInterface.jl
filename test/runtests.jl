@@ -19,7 +19,7 @@ using Zygote: Zygote
     @testset "JET" begin
         JET.test_package(DifferentiationInterface; target_defined_modules=true)
     end
-    @testset "ForwardDiff" begin
-        include("forwarddiff.jl")
+    @testset "Scalar - array" begin
+        include("scalar_array.jl")
     end
 end
