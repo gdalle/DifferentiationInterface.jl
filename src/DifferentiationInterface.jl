@@ -30,6 +30,8 @@ struct ChainRulesBackend{RC} <: AbstractBackend
     ruleconfig::RC
 end
 
+Base.string(backend::ChainRulesBackend) = "ChainRulesBackend($(backend.ruleconfig))"
+
 """
     FiniteDiffBackend
 
