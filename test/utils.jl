@@ -112,13 +112,21 @@ function test_pullback(
             X, Y = get_input_type(scenario), get_output_type(scenario)
             @testset "$X -> $Y" begin
                 (; f, x, dy, dx_true) = scenario
-                @test pullback!(zero(dx_true), backend, f, x, dy) ≈ dx_true rtol = 1e-3
+
+                dx_in = zero(dx_true)
+                dx_out = pullback!(dx_in, backend, f, x, dy)
+
+                # Test output
+                @test dx_out ≈ dx_true rtol = 1e-3
+                # Test in-place mutation
+                if ismutable(dx_in)
+                    @test dx_in ≈ dx_true rtol = 1e-3
+                end
                 if allocs
-                    dx = zero(dx_true)
-                    @test (@allocated pullback!(dx, backend, f, x, dy)) == 0
+                    @test (@allocated pullback!(dx_in, backend, f, x, dy)) == 0
                 end
                 if type_stability
-                    @test_opt pullback!(zero(dx_true), backend, f, x, dy)
+                    @test_opt pullback!(dx_in, backend, f, x, dy)
                 end
             end
         end
