@@ -5,12 +5,8 @@ using DocStringExtensions
 using ReverseDiff
 using LinearAlgebra
 
-## VJP
-
 """
 $(TYPEDSIGNATURES)
-
-VJP for a vector -> scalar function: gradient vector multiplied componentwise by the cotangent.
 """
 function DifferentiationInterface.pullback!(
     dx::X, ::ReverseDiffBackend, f, x::X, dy::Y
@@ -22,13 +18,11 @@ end
 
 """
 $(TYPEDSIGNATURES)
-
-VJP for a vector -> vector function: transposed Jacobian matrix multiplied by the cotangent vector.
 """
 function DifferentiationInterface.pullback!(
     dx::X, ::ReverseDiffBackend, f, x::X, dy::Y
 ) where {X<:AbstractArray,Y<:AbstractArray}
-    J = ReverseDiff.jacobian(f, x)  # TODO: allocates
+    J = ReverseDiff.jacobian(f, x)
     mul!(dx, transpose(J), dy)
     return dx
 end

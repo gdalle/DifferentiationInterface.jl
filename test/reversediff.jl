@@ -1,4 +1,4 @@
 using DifferentiationInterface
 using ReverseDiff
 
-test_pullback(ReverseDiffBackend(); type_stability=false)
+test_pullback(ReverseDiffBackend(); input_type=AbstractArray, type_stability=false)

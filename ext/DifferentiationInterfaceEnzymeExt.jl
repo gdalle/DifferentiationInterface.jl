@@ -18,10 +18,19 @@ $(TYPEDSIGNATURES)
 """
 function DifferentiationInterface.pullback!(
     dx::X, ::EnzymeBackend, f, x::X, dy::Y
-) where {X,Y<:Union{Real,Nothing}}
+) where {X<:Number,Y<:Union{Real,Nothing}}
+    return only(first(autodiff(Reverse, f, Active, Active(x)))) * dy
+end
+
+"""
+$(TYPEDSIGNATURES)
+"""
+function DifferentiationInterface.pullback!(
+    dx::X, ::EnzymeBackend, f, x::X, dy::Y
+) where {X<:AbstractArray,Y<:Union{Real,Nothing}}
     dx .= zero(eltype(dx))
     autodiff(Reverse, f, Active, Duplicated(x, dx))
-    dx .*= dy  # TODO: doesn't work with arbitrary dx
+    dx .*= dy
     return dx
 end
 

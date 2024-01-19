@@ -17,13 +17,25 @@ abstract type AbstractBackend end
 """
     ChainRulesBackend{RC}
 
-Performs autodiff with any package based on [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl).
+Performs autodiff with any package based on [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl), like [Zygote.jl](https://github.com/FluxML/Zygote.jl) or [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl).
 
-This muse be constructed with an appropriate [`RuleConfig`](https://juliadiff.org/ChainRulesCore.jl/stable/rule_author/superpowers/ruleconfig.html) instance.
+This must be constructed with an appropriate [`RuleConfig`](https://juliadiff.org/ChainRulesCore.jl/stable/rule_author/superpowers/ruleconfig.html) instance:
+
+```julia
+using Zygote, DifferentiationInterface
+backend = ChainRulesBackend(Zygote.ZygoteRuleConfig())
+```
 """
 struct ChainRulesBackend{RC} <: AbstractBackend
     ruleconfig::RC
 end
+
+"""
+    FiniteDiffBackend
+
+Performs autodiff with [FiniteDiff.jl](https://github.com/JuliaDiff/FiniteDiff.jl).
+"""
+struct FiniteDiffBackend <: AbstractBackend end
 
 """
     EnzymeBackend
@@ -78,7 +90,8 @@ Compute a vector-Jacobian product inside `dx` and return it.
 """
 function pullback! end
 
-export ChainRulesBackend, EnzymeBackend, ForwardDiffBackend, ReverseDiffBackend
+export ChainRulesBackend,
+    EnzymeBackend, FiniteDiffBackend, ForwardDiffBackend, ReverseDiffBackend
 export pushforward!, pullback!
 
 end
