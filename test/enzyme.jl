@@ -1,5 +1,5 @@
 using DifferentiationInterface
 using Enzyme
 
-test_pushforward(EnzymeBackend(); type_stability=true)
-test_pullback(EnzymeBackend(); output_type=Number, type_stability=true)
+test_pushforward(EnzymeForwardBackend(); type_stability=true)
+test_pullback(EnzymeReverseBackend(); output_type=Number, type_stability=true)

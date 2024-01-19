@@ -4,10 +4,11 @@ using ChainRulesCore
 using DifferentiationInterface
 using LinearAlgebra
 
-ruleconfig(backend::ChainRulesBackend) = backend.ruleconfig
+ruleconfig(backend::ChainRulesForwardBackend) = backend.ruleconfig
+ruleconfig(backend::ChainRulesReverseBackend) = backend.ruleconfig
 
 function DifferentiationInterface.pushforward!(
-    dy::Y, backend::ChainRulesBackend{<:RuleConfig{>:HasForwardsMode}}, f, x::X, dx::X
+    _dy::Y, backend::ChainRulesForwardBackend, f, x::X, dx::X
 ) where {X,Y<:Number}
     rc = ruleconfig(backend)
     _, new_dy = frule_via_ad(rc, (NoTangent(), dx), f, x)
@@ -15,7 +16,7 @@ function DifferentiationInterface.pushforward!(
 end
 
 function DifferentiationInterface.pushforward!(
-    dy::Y, backend::ChainRulesBackend{<:RuleConfig{>:HasForwardsMode}}, f, x::X, dx::X
+    dy::Y, backend::ChainRulesForwardBackend, f, x::X, dx::X
 ) where {X,Y<:AbstractArray}
     rc = ruleconfig(backend)
     _, new_dy = frule_via_ad(rc, (NoTangent(), dx), f, x)
@@ -24,7 +25,7 @@ function DifferentiationInterface.pushforward!(
 end
 
 function DifferentiationInterface.pullback!(
-    dx::X, backend::ChainRulesBackend{<:RuleConfig{>:HasReverseMode}}, f, x::X, dy::Y
+    _dx::X, backend::ChainRulesReverseBackend, f, x::X, dy::Y
 ) where {X<:Number,Y}
     rc = ruleconfig(backend)
     _, pullback = rrule_via_ad(rc, f, x)
@@ -33,7 +34,7 @@ function DifferentiationInterface.pullback!(
 end
 
 function DifferentiationInterface.pullback!(
-    dx::X, backend::ChainRulesBackend{<:RuleConfig{>:HasReverseMode}}, f, x::X, dy::Y
+    dx::X, backend::ChainRulesReverseBackend, f, x::X, dy::Y
 ) where {X<:AbstractArray,Y}
     rc = ruleconfig(backend)
     _, pullback = rrule_via_ad(rc, f, x)

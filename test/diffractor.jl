@@ -1,4 +1,6 @@
 using Diffractor
 using DifferentiationInterface
 
-test_pushforward(ChainRulesBackend(Diffractor.DiffractorRuleConfig()); type_stability=false)
+test_pushforward(
+    ChainRulesForwardBackend(Diffractor.DiffractorRuleConfig()); type_stability=false
+)

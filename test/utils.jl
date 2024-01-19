@@ -1,4 +1,5 @@
 using DifferentiationInterface
+using DifferentiationInterface: AbstractReverseBackend, AbstractForwardBackend
 using JET
 using Test
 
@@ -68,7 +69,7 @@ scenarios = [scenario1, scenario2, scenario3, scenario4]
 ## Test utilities
 
 function test_pushforward(
-    backend;
+    backend::AbstractForwardBackend;
     scenarios::Vector{<:Scenario}=scenarios,
     input_type::Type=Any,
     output_type::Type=Any,
@@ -97,7 +98,7 @@ function test_pushforward(
 end
 
 function test_pullback(
-    backend;
+    backend::AbstractReverseBackend;
     scenarios=scenarios,
     input_type::Type=Any,
     output_type::Type=Any,
