@@ -4,14 +4,28 @@ using DifferentiationInterface
 using DocStringExtensions
 using Enzyme
 
+## Forward-mode
+
 """
 $(TYPEDSIGNATURES)
 """
 function DifferentiationInterface.pushforward!(
     _dy::Y, ::EnzymeForwardBackend, f, x::X, dx::X
-) where {X,Y}
+) where {X,Y<:Real}
     return only(autodiff(Forward, f, DuplicatedNoNeed, Duplicated(x, dx)))
 end
+
+"""
+$(TYPEDSIGNATURES)
+"""
+function DifferentiationInterface.pushforward!(
+    dy::Y, ::EnzymeForwardBackend, f, x::X, dx::X
+) where {X,Y<:AbstractArray}
+    dy .= only(autodiff(Forward, f, DuplicatedNoNeed, Duplicated(x, dx)))
+    return dy
+end
+
+## Reverse-mode
 
 """
 $(TYPEDSIGNATURES)
@@ -34,4 +48,4 @@ function DifferentiationInterface.pullback!(
     return dx
 end
 
-end
+end # module
