@@ -33,6 +33,10 @@ struct ChainRulesReverseBackend{RC} <: AbstractReverseBackend
     ruleconfig::RC
 end
 
+function Base.string(backend::ChainRulesReverseBackend)
+    return "ChainRulesReverseBackend($(backend.ruleconfig))"
+end
+
 """
     ChainRulesForwardBackend{RC}
 
@@ -49,7 +53,9 @@ struct ChainRulesForwardBackend{RC} <: AbstractForwardBackend
     ruleconfig::RC
 end
 
-Base.string(backend::ChainRulesBackend) = "ChainRulesBackend($(backend.ruleconfig))"
+function Base.string(backend::ChainRulesForwardBackend)
+    return "ChainRulesForwardBackend($(backend.ruleconfig))"
+end
 
 """
     FiniteDiffBackend
