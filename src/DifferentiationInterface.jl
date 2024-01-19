@@ -15,11 +15,27 @@ using DocStringExtensions
 abstract type AbstractBackend end
 
 """
-    ChainRulesBackend
+    ChainRulesBackend{RC}
 
-Performs autodiff with any package based on [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl).
+Performs autodiff with any package based on [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl), like [Zygote.jl](https://github.com/FluxML/Zygote.jl) or [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl).
+
+This must be constructed with an appropriate [`RuleConfig`](https://juliadiff.org/ChainRulesCore.jl/stable/rule_author/superpowers/ruleconfig.html) instance:
+
+```julia
+using Zygote, DifferentiationInterface
+backend = ChainRulesBackend(Zygote.ZygoteRuleConfig())
+```
 """
-struct ChainRulesBackend <: AbstractBackend end
+struct ChainRulesBackend{RC} <: AbstractBackend
+    ruleconfig::RC
+end
+
+"""
+    FiniteDiffBackend
+
+Performs autodiff with [FiniteDiff.jl](https://github.com/JuliaDiff/FiniteDiff.jl).
+"""
+struct FiniteDiffBackend <: AbstractBackend end
 
 """
     EnzymeBackend
@@ -36,36 +52,46 @@ Performs autodiff with [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff
 struct ForwardDiffBackend <: AbstractBackend end
 
 """
-    jvp!(dy, backend, f, x, dx)
+    ReverseDiffBackend
 
-Compute a Jacobian-vector product and return `dy`.
+Performs autodiff with [ReverseDiff.jl](https://github.com/JuliaDiff/ReverseDiff.jl).
+"""
+struct ReverseDiffBackend <: AbstractBackend end
+
+"""
+    pushforward!(dy, backend, f, x, dx[, stuff])
+
+Compute a Jacobian-vector product inside `dy` and return it.
 
 # Arguments
 
-- `dy`: cotangent, might be overwritten
+- `dy`: cotangent, might be modified
 - `backend`: autodiff backend
 - `f`: function `x -> y` to differentiate
 - `x`: argument
 - `dx`: tangent
+- `stuff`: optional backend-specific storage (cache, config), might be modified
 """
-function jvp! end
+function pushforward! end
 
 """
-    vjp!(dx, backend, f, x, dy)
+    pullback!(dx, backend, f, x, dy[, stuff])
 
-Compute a vector-Jacobian product and return `dx`.
+Compute a vector-Jacobian product inside `dx` and return it.
 
 # Arguments
 
-- `dx`: tangent, might be overwritten
+- `dx`: tangent, might be modified
 - `backend`: autodiff backend
 - `f`: function `x -> y` to differentiate
 - `x`: argument
 - `dy`: cotangent
+- `stuff`: optional backend-specific storage (cache, config), might be modified
 """
-function vjp! end
+function pullback! end
 
-export jvp!, vjp!
-export ChainRulesBackend, EnzymeBackend, ForwardDiffBackend
+export ChainRulesBackend,
+    EnzymeBackend, FiniteDiffBackend, ForwardDiffBackend, ReverseDiffBackend
+export pushforward!, pullback!
 
 end

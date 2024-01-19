@@ -1,11 +1,23 @@
+## Imports
+
 using Aqua: Aqua
 using DifferentiationInterface
-using Enzyme: Enzyme
-using ForwardDiff: ForwardDiff
 using JET: JET
 using JuliaFormatter: JuliaFormatter
 using Test
+
+using Diffractor: Diffractor
+using Enzyme: Enzyme
+using FiniteDiff: FiniteDiff
+using ForwardDiff: ForwardDiff
+using ReverseDiff: ReverseDiff
 using Zygote: Zygote
+
+## Utils
+
+include("utils.jl")
+
+## Main tests
 
 @testset verbose = true "DifferentiationInterface.jl" begin
     @testset "Aqua" begin
@@ -19,7 +31,23 @@ using Zygote: Zygote
     @testset "JET" begin
         JET.test_package(DifferentiationInterface; target_defined_modules=true)
     end
-    @testset "Scalar - array" begin
-        include("scalar_array.jl")
+
+    @testset "Diffractor" begin
+        include("diffractor.jl")
+    end
+    @testset "Enzyme" begin
+        include("enzyme.jl")
+    end
+    @testset "FiniteDiff" begin
+        include("finitediff.jl")
+    end
+    @testset "ForwardDiff" begin
+        include("forwarddiff.jl")
+    end
+    @testset "ReverseDiff" begin
+        include("reversediff.jl")
+    end
+    @testset "Zygote" begin
+        include("zygote.jl")
     end
 end
