@@ -13,20 +13,35 @@ module DifferentiationInterface
 using DocStringExtensions
 
 abstract type AbstractBackend end
+abstract type AbstractForwardBackend <: AbstractBackend end
+abstract type AbstractReverseBackend <: AbstractBackend end
 
 """
-    ChainRulesBackend{RC}
+    ChainRulesReverseBackend{RC}
 
-Performs autodiff with any package based on [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl), like [Zygote.jl](https://github.com/FluxML/Zygote.jl) or [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl).
+Performs autodiff with reverse-mode AD packages based on [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl), like [Zygote.jl](https://github.com/FluxML/Zygote.jl) or [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl).
 
 This must be constructed with an appropriate [`RuleConfig`](https://juliadiff.org/ChainRulesCore.jl/stable/rule_author/superpowers/ruleconfig.html) instance:
 
 ```julia
 using Zygote, DifferentiationInterface
-backend = ChainRulesBackend(Zygote.ZygoteRuleConfig())
+backend = ChainRulesReverseBackend(Zygote.ZygoteRuleConfig())
 ```
 """
-struct ChainRulesBackend{RC} <: AbstractBackend
+struct ChainRulesReverseBackend{RC} <: AbstractReverseBackend
+    # TODO: check RC<:RuleConfig{>:HasReverseMode}
+    ruleconfig::RC
+end
+
+"""
+    ChainRulesForwardBackend{RC}
+
+Performs autodiff with forward-mode AD packages based on [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl).
+
+This must be constructed with an appropriate [`RuleConfig`](https://juliadiff.org/ChainRulesCore.jl/stable/rule_author/superpowers/ruleconfig.html) instance.
+"""
+struct ChainRulesForwardBackend{RC} <: AbstractForwardBackend
+    # TODO: check RC<:RuleConfig{>:HasForwardsMode}
     ruleconfig::RC
 end
 
@@ -35,28 +50,35 @@ end
 
 Performs autodiff with [FiniteDiff.jl](https://github.com/JuliaDiff/FiniteDiff.jl).
 """
-struct FiniteDiffBackend <: AbstractBackend end
+struct FiniteDiffBackend <: AbstractForwardBackend end
 
 """
-    EnzymeBackend
+    EnzymeReverseBackend
 
-Performs autodiff with [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl).
+Performs reverse-mode autodiff with [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl).
 """
-struct EnzymeBackend <: AbstractBackend end
+struct EnzymeReverseBackend <: AbstractReverseBackend end
+
+"""
+    EnzymeForwardBackend
+
+Performs forward-mode autodiff with [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl).
+"""
+struct EnzymeForwardBackend <: AbstractForwardBackend end
 
 """
     ForwardDiffBackend
 
 Performs autodiff with [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl).
 """
-struct ForwardDiffBackend <: AbstractBackend end
+struct ForwardDiffBackend <: AbstractForwardBackend end
 
 """
     ReverseDiffBackend
 
 Performs autodiff with [ReverseDiff.jl](https://github.com/JuliaDiff/ReverseDiff.jl).
 """
-struct ReverseDiffBackend <: AbstractBackend end
+struct ReverseDiffBackend <: AbstractReverseBackend end
 
 """
     pushforward!(dy, backend, f, x, dx[, stuff])
@@ -66,7 +88,7 @@ Compute a Jacobian-vector product inside `dy` and return it.
 # Arguments
 
 - `dy`: cotangent, might be modified
-- `backend`: autodiff backend
+- `backend`: forward-mode autodiff backend
 - `f`: function `x -> y` to differentiate
 - `x`: argument
 - `dx`: tangent
@@ -82,7 +104,7 @@ Compute a vector-Jacobian product inside `dx` and return it.
 # Arguments
 
 - `dx`: tangent, might be modified
-- `backend`: autodiff backend
+- `backend`: reverse-mode autodiff backend
 - `f`: function `x -> y` to differentiate
 - `x`: argument
 - `dy`: cotangent
@@ -90,8 +112,13 @@ Compute a vector-Jacobian product inside `dx` and return it.
 """
 function pullback! end
 
-export ChainRulesBackend,
-    EnzymeBackend, FiniteDiffBackend, ForwardDiffBackend, ReverseDiffBackend
+export ChainRulesReverseBackend,
+    ChainRulesForwardBackend,
+    EnzymeReverseBackend,
+    EnzymeForwardBackend,
+    FiniteDiffBackend,
+    ForwardDiffBackend,
+    ReverseDiffBackend
 export pushforward!, pullback!
 
 end
