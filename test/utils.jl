@@ -83,13 +83,18 @@ function test_pushforward(
             X, Y = get_input_type(scenario), get_output_type(scenario)
             @testset "$X -> $Y" begin
                 (; f, x, dx, dy_true) = scenario
-                @test pushforward!(zero(dy_true), backend, f, x, dx) ≈ dy_true rtol = 1e-3
+                dy_in = zero(dy_true)
+                dy_out = pushforward!(dy_in, backend, f, x, dx)
+
+                @test dy_out ≈ dy_true rtol = 1e-3
+                if ismutable(dy_in)
+                    @test dy_in ≈ dy_true rtol = 1e-3
+                end
                 if allocs
-                    dy = zero(dy_true)
-                    @test (@allocated pushforward!(dy, backend, f, x, dx)) == 0
+                    @test (@allocated pushforward!(dy_in, backend, f, x, dx)) == 0
                 end
                 if type_stability
-                    @test_opt pushforward!(zero(dy_true), backend, f, x, dx)
+                    @test_opt pushforward!(dy_in, backend, f, x, dx)
                 end
             end
         end
@@ -112,13 +117,10 @@ function test_pullback(
             X, Y = get_input_type(scenario), get_output_type(scenario)
             @testset "$X -> $Y" begin
                 (; f, x, dy, dx_true) = scenario
-
                 dx_in = zero(dx_true)
                 dx_out = pullback!(dx_in, backend, f, x, dy)
 
-                # Test output
                 @test dx_out ≈ dx_true rtol = 1e-3
-                # Test in-place mutation
                 if ismutable(dx_in)
                     @test dx_in ≈ dx_true rtol = 1e-3
                 end
