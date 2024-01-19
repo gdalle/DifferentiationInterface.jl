@@ -6,6 +6,8 @@ CurrentModule = DifferentiationInterface
 
 Documentation for [DifferentiationInterface](https://github.com/gdalle/DifferentiationInterface.jl).
 
+This is an interface to various autodiff backends for differentiating functions of the form `f(x) = y`, where `x` and `y` are either numbers or arrays.
+
 ## Public
 
 ```@autodocs
