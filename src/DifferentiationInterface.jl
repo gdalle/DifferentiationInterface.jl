@@ -19,7 +19,7 @@ abstract type AbstractReverseBackend <: AbstractBackend end
 """
     ChainRulesReverseBackend{RC}
 
-Performs autodiff with reverse-mode AD packages based on [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl), like [Zygote.jl](https://github.com/FluxML/Zygote.jl) or [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl).
+Performs autodiff with reverse-mode AD packages based on [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl), like [Zygote.jl](https://github.com/FluxML/Zygote.jl).
 
 This must be constructed with an appropriate [`RuleConfig`](https://juliadiff.org/ChainRulesCore.jl/stable/rule_author/superpowers/ruleconfig.html) instance:
 
@@ -36,9 +36,13 @@ end
 """
     ChainRulesForwardBackend{RC}
 
-Performs autodiff with forward-mode AD packages based on [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl).
+Performs autodiff with forward-mode AD packages based on [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl), like [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl).
 
 This must be constructed with an appropriate [`RuleConfig`](https://juliadiff.org/ChainRulesCore.jl/stable/rule_author/superpowers/ruleconfig.html) instance.
+```julia
+using Diffractor, DifferentiationInterface
+backend = ChainRulesForwardBackend(Diffractor.DiffractorRuleConfig())
+```
 """
 struct ChainRulesForwardBackend{RC} <: AbstractForwardBackend
     # TODO: check RC<:RuleConfig{>:HasForwardsMode}
