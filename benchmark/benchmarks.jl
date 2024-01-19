@@ -23,7 +23,6 @@ forward_backends = [EnzymeForwardBackend(), FiniteDiffBackend(), ForwardDiffBack
 reverse_backends = [
     ChainRulesReverseBackend(Zygote.ZygoteRuleConfig()),
     EnzymeReverseBackend(),
-    FiniteDiffBackend(),
     ReverseDiffBackend(),
 ]
 
