@@ -11,9 +11,11 @@ $(TYPEDSIGNATURES)
 function DifferentiationInterface.pullback!(
     dx::X, ::ReverseDiffBackend, f, x::X, dy::Y
 ) where {X<:AbstractArray,Y<:Real}
-    ReverseDiff.gradient!(dx, f, x)
-    dx .*= dy
-    return dx
+    res = DiffResults.GradientResult(x)
+    ReverseDiff.gradient!(res, f, x)
+    y = DiffResults.value(res)
+    dx .= dy * DiffResults.gradient(res)
+    return y, dx
 end
 
 """
@@ -22,9 +24,12 @@ $(TYPEDSIGNATURES)
 function DifferentiationInterface.pullback!(
     dx::X, ::ReverseDiffBackend, f, x::X, dy::Y
 ) where {X<:AbstractArray,Y<:AbstractArray}
-    J = ReverseDiff.jacobian(f, x)
+    res = DiffResults.JacobianResult(x)
+    ReverseDiff.jacobian!(res, f, x)
+    y = DiffResults.value(res)
+    J = DiffResults.jacobian(res)
     mul!(dx, transpose(J), dy)
-    return dx
+    return y, dx
 end
 
-end
+end # module

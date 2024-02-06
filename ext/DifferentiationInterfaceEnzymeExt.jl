@@ -12,7 +12,8 @@ $(TYPEDSIGNATURES)
 function DifferentiationInterface.pushforward!(
     _dy::Y, ::EnzymeForwardBackend, f, x::X, dx::X
 ) where {X,Y<:Real}
-    return only(autodiff(Forward, f, DuplicatedNoNeed, Duplicated(x, dx)))
+    y, new_dy = autodiff(Forward, f, Duplicated, Duplicated(x, dx))
+    return y, new_dy
 end
 
 """
@@ -21,8 +22,9 @@ $(TYPEDSIGNATURES)
 function DifferentiationInterface.pushforward!(
     dy::Y, ::EnzymeForwardBackend, f, x::X, dx::X
 ) where {X,Y<:AbstractArray}
-    dy .= only(autodiff(Forward, f, DuplicatedNoNeed, Duplicated(x, dx)))
-    return dy
+    y, new_dy = autodiff(Forward, f, Duplicated, Duplicated(x, dx))
+    dy .= new_dy
+    return y, dy
 end
 
 ## Reverse-mode
@@ -33,7 +35,9 @@ $(TYPEDSIGNATURES)
 function DifferentiationInterface.pullback!(
     _dx::X, ::EnzymeReverseBackend, f, x::X, dy::Y
 ) where {X<:Number,Y<:Union{Real,Nothing}}
-    return only(first(autodiff(Reverse, f, Active, Active(x)))) * dy
+    dydx, y = autodiff(ReverseWithPrimal, f, Active, Active(x))
+    new_dx = dy * only(dydx)
+    return y, new_dx
 end
 
 """
@@ -43,9 +47,9 @@ function DifferentiationInterface.pullback!(
     dx::X, ::EnzymeReverseBackend, f, x::X, dy::Y
 ) where {X<:AbstractArray,Y<:Union{Real,Nothing}}
     dx .= zero(eltype(dx))
-    autodiff(Reverse, f, Active, Duplicated(x, dx))
+    _, y = autodiff(ReverseWithPrimal, f, Active, Duplicated(x, dx))
     dx .*= dy
-    return dx
+    return y, dx
 end
 
 end # module
