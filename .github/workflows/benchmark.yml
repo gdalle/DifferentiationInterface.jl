@@ -9,8 +9,6 @@ jobs:
   Benchmark:
     runs-on: ubuntu-latest
     if: contains(github.event.pull_request.labels.*.name, 'run benchmark')
-    permissions:
-      pull-requests: write # allow comments on PRs
     steps:
       - uses: actions/checkout@v4
       - uses: julia-actions/setup-julia@latest
