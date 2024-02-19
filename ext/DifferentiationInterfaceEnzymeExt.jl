@@ -9,7 +9,7 @@ using Enzyme
 """
 $(TYPEDSIGNATURES)
 """
-function DifferentiationInterface.pushforward!(
+function DifferentiationInterface.value_and_pushforward!(
     _dy::Y, ::EnzymeForwardBackend, f, x::X, dx::X
 ) where {X,Y<:Real}
     y, new_dy = autodiff(Forward, f, Duplicated, Duplicated(x, dx))
@@ -19,7 +19,7 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function DifferentiationInterface.pushforward!(
+function DifferentiationInterface.value_and_pushforward!(
     dy::Y, ::EnzymeForwardBackend, f, x::X, dx::X
 ) where {X,Y<:AbstractArray}
     y, new_dy = autodiff(Forward, f, Duplicated, Duplicated(x, dx))
@@ -32,7 +32,7 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function DifferentiationInterface.pullback!(
+function DifferentiationInterface.value_and_pullback!(
     _dx::X, ::EnzymeReverseBackend, f, x::X, dy::Y
 ) where {X<:Number,Y<:Union{Real,Nothing}}
     dydx, y = autodiff(ReverseWithPrimal, f, Active, Active(x))
@@ -43,7 +43,7 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function DifferentiationInterface.pullback!(
+function DifferentiationInterface.value_and_pullback!(
     dx::X, ::EnzymeReverseBackend, f, x::X, dy::Y
 ) where {X<:AbstractArray,Y<:Union{Real,Nothing}}
     dx .= zero(eltype(dx))

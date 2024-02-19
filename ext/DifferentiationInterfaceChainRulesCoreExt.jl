@@ -7,7 +7,7 @@ using LinearAlgebra
 ruleconfig(backend::ChainRulesForwardBackend) = backend.ruleconfig
 ruleconfig(backend::ChainRulesReverseBackend) = backend.ruleconfig
 
-function DifferentiationInterface.pushforward!(
+function DifferentiationInterface.value_and_pushforward!(
     _dy::Y, backend::ChainRulesForwardBackend, f, x::X, dx::X
 ) where {X,Y<:Number}
     rc = ruleconfig(backend)
@@ -15,7 +15,7 @@ function DifferentiationInterface.pushforward!(
     return y, new_dy
 end
 
-function DifferentiationInterface.pushforward!(
+function DifferentiationInterface.value_and_pushforward!(
     dy::Y, backend::ChainRulesForwardBackend, f, x::X, dx::X
 ) where {X,Y<:AbstractArray}
     rc = ruleconfig(backend)
@@ -24,7 +24,7 @@ function DifferentiationInterface.pushforward!(
     return y, dy
 end
 
-function DifferentiationInterface.pullback!(
+function DifferentiationInterface.value_and_pullback!(
     _dx::X, backend::ChainRulesReverseBackend, f, x::X, dy::Y
 ) where {X<:Number,Y}
     rc = ruleconfig(backend)
@@ -33,7 +33,7 @@ function DifferentiationInterface.pullback!(
     return y, new_dx
 end
 
-function DifferentiationInterface.pullback!(
+function DifferentiationInterface.value_and_pullback!(
     dx::X, backend::ChainRulesReverseBackend, f, x::X, dy::Y
 ) where {X<:AbstractArray,Y}
     rc = ruleconfig(backend)

@@ -13,7 +13,7 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function DifferentiationInterface.pushforward!(
+function DifferentiationInterface.value_and_pushforward!(
     _dy::Y, ::ForwardDiffBackend, f, x::X, dx::X
 ) where {X<:Real,Y<:Real}
     T = typeof(Tag(f, X))
@@ -27,7 +27,7 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function DifferentiationInterface.pushforward!(
+function DifferentiationInterface.value_and_pushforward!(
     dy::Y, ::ForwardDiffBackend, f, x::X, dx::X
 ) where {X<:Real,Y<:AbstractArray}
     T = typeof(Tag(f, X))
@@ -41,7 +41,7 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function DifferentiationInterface.pushforward!(
+function DifferentiationInterface.value_and_pushforward!(
     _dy::Y, ::ForwardDiffBackend, f, x::X, dx::X
 ) where {X<:AbstractArray,Y<:Real}
     res = DiffResults.GradientResult(x)
@@ -54,7 +54,7 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function DifferentiationInterface.pushforward!(
+function DifferentiationInterface.value_and_pushforward!(
     dy::Y, ::ForwardDiffBackend, f, x::X, dx::X
 ) where {X<:AbstractArray,Y<:AbstractArray}
     res = DiffResults.JacobianResult(x)

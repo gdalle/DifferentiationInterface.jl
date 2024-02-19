@@ -96,7 +96,7 @@ function test_pushforward(
             @testset "$X -> $Y" begin
                 (; f, x, y, dx, dy_true) = scenario
                 dy_in = zero(dy_true)
-                y_out, dy_out = pushforward!(dy_in, backend, f, x, dx)
+                y_out, dy_out = value_and_pushforward!(dy_in, backend, f, x, dx)
 
                 @testset "Primal output" begin
                     @testset "Correctness" begin
@@ -114,12 +114,14 @@ function test_pushforward(
                     end
                     if allocs
                         @testset "Allocations" begin
-                            @test (@allocated pushforward!(dy_in, backend, f, x, dx)) == 0
+                            @test (@allocated value_and_pushforward!(
+                                dy_in, backend, f, x, dx
+                            )) == 0
                         end
                     end
                     if type_stability
                         @testset "Type stability" begin
-                            @test_opt pushforward!(dy_in, backend, f, x, dx)
+                            @test_opt value_and_pushforward!(dy_in, backend, f, x, dx)
                         end
                     end
                 end
@@ -145,7 +147,7 @@ function test_pullback(
             @testset "$X -> $Y" begin
                 (; f, x, y, dy, dx_true) = scenario
                 dx_in = zero(dx_true)
-                y_out, dx_out = pullback!(dx_in, backend, f, x, dy)
+                y_out, dx_out = value_and_pullback!(dx_in, backend, f, x, dy)
 
                 @testset "Primal output" begin
                     @testset "Correctness" begin
@@ -163,12 +165,14 @@ function test_pullback(
                     end
                     if allocs
                         @testset "Allocations" begin
-                            @test (@allocated pullback!(dx_in, backend, f, x, dy)) == 0
+                            @test (@allocated value_and_pullback!(
+                                dx_in, backend, f, x, dy
+                            )) == 0
                         end
                     end
                     if type_stability
                         @testset "Type stability" begin
-                            @test_opt pullback!(dx_in, backend, f, x, dy)
+                            @test_opt value_and_pullback!(dx_in, backend, f, x, dy)
                         end
                     end
                 end

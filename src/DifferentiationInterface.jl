@@ -131,6 +131,7 @@ export ChainRulesReverseBackend,
     FiniteDiffBackend,
     ForwardDiffBackend,
     ReverseDiffBackend
-export pushforward!, pullback!
+export pushforward!, value_and_pushforward!
+export pullback!, value_and_pullback!
 
-end
+end # module

@@ -10,7 +10,7 @@ const DEFAULT_FDTYPE = Val{:central}
 """
 $(TYPEDSIGNATURES)
 """
-function DifferentiationInterface.pushforward!(
+function DifferentiationInterface.value_and_pushforward!(
     dy::Y, ::FiniteDiffBackend, f, x::X, dx::X
 ) where {X<:Number,Y<:Number}
     y = f(x)
@@ -28,7 +28,7 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function DifferentiationInterface.pushforward!(
+function DifferentiationInterface.value_and_pushforward!(
     dy::Y, ::FiniteDiffBackend, f, x::X, dx::X
 ) where {X<:Number,Y<:AbstractArray}
     y = f(x)
@@ -48,7 +48,7 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function DifferentiationInterface.pushforward!(
+function DifferentiationInterface.value_and_pushforward!(
     dy::Y, ::FiniteDiffBackend, f, x::X, dx::X
 ) where {X<:AbstractArray,Y<:Number}
     y = f(x)
@@ -67,7 +67,7 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function DifferentiationInterface.pushforward!(
+function DifferentiationInterface.value_and_pushforward!(
     dy::Y, ::FiniteDiffBackend, f, x::X, dx::X
 ) where {X<:AbstractArray,Y<:AbstractArray}
     y = f(x)

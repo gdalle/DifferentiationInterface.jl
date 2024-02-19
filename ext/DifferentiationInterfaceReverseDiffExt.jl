@@ -8,7 +8,7 @@ using LinearAlgebra
 """
 $(TYPEDSIGNATURES)
 """
-function DifferentiationInterface.pullback!(
+function DifferentiationInterface.value_and_pullback!(
     dx::X, ::ReverseDiffBackend, f, x::X, dy::Y
 ) where {X<:AbstractArray,Y<:Real}
     res = DiffResults.GradientResult(x)
@@ -21,7 +21,7 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function DifferentiationInterface.pullback!(
+function DifferentiationInterface.value_and_pullback!(
     dx::X, ::ReverseDiffBackend, f, x::X, dy::Y
 ) where {X<:AbstractArray,Y<:AbstractArray}
     res = DiffResults.JacobianResult(x)
