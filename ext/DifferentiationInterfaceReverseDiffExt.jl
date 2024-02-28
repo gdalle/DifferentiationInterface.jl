@@ -1,6 +1,7 @@
 module DifferentiationInterfaceReverseDiffExt
 
 using DifferentiationInterface
+using DiffResults
 using DocStringExtensions
 using ReverseDiff
 using LinearAlgebra
@@ -14,7 +15,7 @@ function DifferentiationInterface.value_and_pullback!(
     res = DiffResults.GradientResult(x)
     ReverseDiff.gradient!(res, f, x)
     y = DiffResults.value(res)
-    dx .= dy * DiffResults.gradient(res)
+    dx .= dy .* DiffResults.gradient(res)
     return y, dx
 end
 

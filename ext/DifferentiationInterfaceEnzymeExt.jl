@@ -35,8 +35,8 @@ $(TYPEDSIGNATURES)
 function DifferentiationInterface.value_and_pullback!(
     _dx::X, ::EnzymeReverseBackend, f, x::X, dy::Y
 ) where {X<:Number,Y<:Union{Real,Nothing}}
-    dydx, y = autodiff(ReverseWithPrimal, f, Active, Active(x))
-    new_dx = dy * only(dydx)
+    der, y = autodiff(ReverseWithPrimal, f, Active, Active(x))
+    new_dx = dy * only(der)
     return y, new_dx
 end
 

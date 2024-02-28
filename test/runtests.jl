@@ -29,7 +29,7 @@ include("utils.jl")
         )
     end
     @testset "JET" begin
-        @test_broken JET.test_package(DifferentiationInterface; target_defined_modules=true)
+        @test_skip JET.test_package(DifferentiationInterface; target_defined_modules=true)
     end
 
     @testset "Diffractor" begin

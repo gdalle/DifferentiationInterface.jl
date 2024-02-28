@@ -1,6 +1,7 @@
 module DifferentiationInterfaceForwardDiffExt
 
 using DifferentiationInterface
+using DiffResults
 using DocStringExtensions
 using ForwardDiff
 using ForwardDiff: Dual, Tag, value, extract_derivative, extract_derivative!

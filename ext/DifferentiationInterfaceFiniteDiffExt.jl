@@ -17,7 +17,7 @@ function DifferentiationInterface.value_and_pushforward!(
     der = FiniteDiff.finite_difference_derivative(
         f,
         x,
-        Val{:central},  # fdtype
+        DEFAULT_FDTYPE,  # fdtype
         eltype(dy),  # returntype
         y,  # fx
     )
