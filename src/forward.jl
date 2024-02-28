@@ -20,14 +20,7 @@ function value_and_pushforward! end
 
 Compute a Jacobian-vector product inside `dy` and return it.
 
-# Arguments
-
-- `dy`: cotangent, might be modified
-- `backend`: forward-mode autodiff backend
-- `f`: function `x -> y` to differentiate
-- `x`: argument
-- `dx`: tangent
-- `stuff`: optional backend-specific storage (cache, config), might be modified
+See [`value_and_pushforward!`](@ref).
 """
 function pushforward!(dy, backend, f, x, dx, stuff)
     _, dy = value_and_pushforward!(dy, backend, f, x, dx, stuff)
