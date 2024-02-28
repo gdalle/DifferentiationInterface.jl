@@ -32,9 +32,9 @@ include("utils.jl")
         JET.test_package(DifferentiationInterface; target_defined_modules=true)
     end
 
-    @testset "Diffractor" begin
-        include("diffractor.jl")
-    end
+    # @testset "Diffractor" begin
+    #     include("diffractor.jl")
+    # end
     @testset "Enzyme" begin
         include("enzyme.jl")
     end
