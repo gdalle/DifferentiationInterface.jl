@@ -1,14 +1,10 @@
 module DifferentiationInterfaceEnzymeExt
 
 using DifferentiationInterface
-using DocStringExtensions
-using Enzyme
+using Enzyme: Forward, ReverseWithPrimal, Active, Duplicated, autodiff
 
-## Forward-mode
+## Forward mode
 
-"""
-$(TYPEDSIGNATURES)
-"""
 function DifferentiationInterface.value_and_pushforward!(
     _dy::Y, ::EnzymeForwardBackend, f, x::X, dx::X
 ) where {X,Y<:Real}
@@ -16,9 +12,6 @@ function DifferentiationInterface.value_and_pushforward!(
     return y, new_dy
 end
 
-"""
-$(TYPEDSIGNATURES)
-"""
 function DifferentiationInterface.value_and_pushforward!(
     dy::Y, ::EnzymeForwardBackend, f, x::X, dx::X
 ) where {X,Y<:AbstractArray}
@@ -27,11 +20,8 @@ function DifferentiationInterface.value_and_pushforward!(
     return y, dy
 end
 
-## Reverse-mode
+## Reverse mode
 
-"""
-$(TYPEDSIGNATURES)
-"""
 function DifferentiationInterface.value_and_pullback!(
     _dx::X, ::EnzymeReverseBackend, f, x::X, dy::Y
 ) where {X<:Number,Y<:Union{Real,Nothing}}
@@ -40,9 +30,6 @@ function DifferentiationInterface.value_and_pullback!(
     return y, new_dx
 end
 
-"""
-$(TYPEDSIGNATURES)
-"""
 function DifferentiationInterface.value_and_pullback!(
     dx::X, ::EnzymeReverseBackend, f, x::X, dy::Y
 ) where {X<:AbstractArray,Y<:Union{Real,Nothing}}

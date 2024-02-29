@@ -1,32 +1,25 @@
 module DifferentiationInterfaceReverseDiffExt
 
 using DifferentiationInterface
-using DiffResults
-using DocStringExtensions
-using ReverseDiff
-using LinearAlgebra
+using DiffResults: DiffResults
+using ReverseDiff: gradient!, jacobian!
+using LinearAlgebra: mul!
 
-"""
-$(TYPEDSIGNATURES)
-"""
 function DifferentiationInterface.value_and_pullback!(
     dx::X, ::ReverseDiffBackend, f, x::X, dy::Y
 ) where {X<:AbstractArray,Y<:Real}
-    res = DiffResults.GradientResult(x)
-    ReverseDiff.gradient!(res, f, x)
+    res = DiffResults.DiffResult(zero(Y), dx)
+    res = gradient!(res, f, x)
     y = DiffResults.value(res)
     dx .= dy .* DiffResults.gradient(res)
     return y, dx
 end
 
-"""
-$(TYPEDSIGNATURES)
-"""
 function DifferentiationInterface.value_and_pullback!(
     dx::X, ::ReverseDiffBackend, f, x::X, dy::Y
 ) where {X<:AbstractArray,Y<:AbstractArray}
-    res = DiffResults.JacobianResult(x)
-    ReverseDiff.jacobian!(res, f, x)
+    res = DiffResults.DiffResult(similar(dy), similar(dy, length(dy), length(x)))
+    res = jacobian!(res, f, x)
     y = DiffResults.value(res)
     J = DiffResults.jacobian(res)
     mul!(dx, transpose(J), dy)
