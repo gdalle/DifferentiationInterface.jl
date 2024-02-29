@@ -1,11 +1,15 @@
 using DifferentiationInterface
 using DifferentiationInterface: AbstractReverseBackend, AbstractForwardBackend
+using ForwardDiff: ForwardDiff
+using LinearAlgebra
 using JET
+using Random: AbstractRNG, randn!
+using StableRNGs
 using Test
 
 ## Test scenarios
 
-@kwdef struct Scenario{F,X,Y}
+struct Scenario{F,X,Y}
     "function"
     f::F
     "argument"
@@ -14,63 +18,90 @@ using Test
     y::Y
     "pushforward seed"
     dx::X
-    "pushforward result"
-    dy_true::Y
     "pullback seed"
     dy::Y
     "pullback result"
     dx_true::X
+    "pushforward result"
+    dy_true::Y
 end
+
+## Constructors
+
+function Scenario(rng::AbstractRNG, f, x)
+    y = f(x)
+    return Scenario(rng, f, x, y)
+end
+
+function Scenario(rng::AbstractRNG, f::F, x::X, y::Y) where {F,X<:Number,Y<:Number}
+    dx = randn(rng, X)
+    dy = randn(rng, Y)
+    der = ForwardDiff.derivative(f, x)
+    dx_true = der * dy
+    dy_true = der * dx
+    return Scenario(f, x, y, dx, dy, dx_true, dy_true)
+end
+
+function Scenario(rng::AbstractRNG, f::F, x::X, y::Y) where {F,X<:Number,Y<:AbstractArray}
+    dx = randn(rng, X)
+    dy = similar(y)
+    randn!(rng, dy)
+    der_array = ForwardDiff.derivative(f, x)
+    dx_true = dot(der_array, dy)
+    dy_true = der_array .* dx
+    return Scenario(f, x, y, dx, dy, dx_true, dy_true)
+end
+
+function Scenario(rng::AbstractRNG, f::F, x::X, y::Y) where {F,X<:AbstractArray,Y<:Number}
+    dx = similar(x)
+    randn!(rng, dx)
+    dy = randn(rng, Y)
+    grad = ForwardDiff.gradient(f, x)
+    dx_true = grad .* dy
+    dy_true = dot(grad, dx)
+    return Scenario(f, x, y, dx, dy, dx_true, dy_true)
+end
+
+function Scenario(
+    rng::AbstractRNG, f::F, x::X, y::Y
+) where {F,X<:AbstractArray,Y<:AbstractArray}
+    dx = similar(x)
+    randn!(rng, dx)
+    dy = similar(y)
+    randn!(rng, dy)
+    jac = ForwardDiff.jacobian(f, x)
+    dx_true = transpose(jac) * dy
+    dy_true = jac * dx
+    return Scenario(f, x, y, dx, dy, dx_true, dy_true)
+end
+
+## Access
 
 get_input_type(::Scenario{F,X}) where {F,X} = X
 get_output_type(::Scenario{F,X,Y}) where {F,X,Y} = Y
 
+## Seed
+
+rng = StableRNG(63)
+
 ## Scalar input, scalar output
 
-scenario1 = Scenario(;
-    f=(x::Real -> exp(2x)),
-    x=1.0,
-    y=exp(2),
-    dx=5.0,
-    dy_true=2exp(2) * 5,
-    dy=5.0,
-    dx_true=2exp(2) * 5,
-)
+scenario1 = Scenario(rng, (x::Real -> sin(2x)), 1.0)
 
 ## Scalar input, vector output
 
-scenario2 = Scenario(;
-    f=(x::Real -> [exp(2x), exp(3x)]),
-    x=1.0,
-    y=[exp(2), exp(3)],
-    dx=5.0,
-    dy_true=[2exp(2), 3exp(3)] .* 5,
-    dy=[0.0, 5.0],
-    dx_true=3exp(3) * 5,
-)
+scenario2 = Scenario(rng, (x::Real -> [sin(2x), cos(3x)]), 1.0)
 
 ## Vector input, scalar output
 
-scenario3 = Scenario(;
-    f=(x::AbstractVector -> exp(2x[1]) + exp(3x[2])),
-    x=[1.0, 2.0],
-    y=exp(2) + exp(6),
-    dx=[0.0, 5.0],
-    dy_true=3exp(6) * 5,
-    dy=5.0,
-    dx_true=[2exp(2), 3exp(6)] .* 5,
-)
+scenario3 = Scenario(rng, (x::AbstractVector -> sin(2x[1]) + cos(3x[2])), [1.0, 2.0])
 
 ## Vector input, vector output
 
-scenario4 = Scenario(;
-    f=(x::AbstractVector -> [exp(2x[1]), exp(3x[2])]),
-    x=[1.0, 2.0],
-    y=[exp(2), exp(6)],
-    dx=[0.0, 5.0],
-    dy_true=[0.0, 3exp(6)] .* 5,
-    dy=[0.0, 5.0],
-    dx_true=[0.0, 3exp(6)] .* 5,
+scenario4 = Scenario(
+    rng,
+    (x::AbstractVector -> [sin(2x[1]), cos(3x[2]), tan(2x[1]) + tan(3x[2])]),
+    [1.0, 2.0],
 )
 
 ## All
