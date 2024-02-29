@@ -13,7 +13,9 @@ Compute a Jacobian-vector product inside `dy` and return it and the primal outpu
 - `dx`: tangent
 - `stuff`: optional backend-specific storage (cache, config), might be modified
 """
-function value_and_pushforward! end
+function value_and_pushforward!(dy, backend, f, x, dx)
+    return error("No package extension loaded for backend $backend.")
+end
 
 """
     pushforward!(dy, backend, f, x, dx[, stuff])

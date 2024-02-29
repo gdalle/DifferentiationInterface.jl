@@ -13,7 +13,9 @@ Compute a vector-Jacobian product inside `dx` and return it and the primal outpu
 - `dy`: cotangent
 - `stuff`: optional backend-specific storage (cache, config), might be modified
 """
-function value_and_pullback! end
+function value_and_pullback!(dx, backend, f, x, dy)
+    return error("No package extension loaded for backend $backend.")
+end
 
 """
     pullback!(dx, backend, f, x, dy[, stuff])
