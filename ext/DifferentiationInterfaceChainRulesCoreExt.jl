@@ -6,8 +6,8 @@ using DifferentiationInterface
 ruleconfig(backend::ChainRulesForwardBackend) = backend.ruleconfig
 ruleconfig(backend::ChainRulesReverseBackend) = backend.ruleconfig
 
-update!(_old::T, new::T) where {T<:Number} = new
-update!(old::T, new::T) where {T} = old .= new
+update!(_old::Number, new::Number) = new
+update!(old, new) = old .= new
 
 function DifferentiationInterface.value_and_pushforward!(
     dy::Y, backend::ChainRulesForwardBackend, f, x::X, dx::X
