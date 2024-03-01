@@ -9,7 +9,7 @@ using Test
 
 ## Test scenarios
 
-struct Scenario{F,X,Y}
+struct Scenario{F,X,Y,J}
     "function"
     f::F
     "argument"
@@ -24,6 +24,8 @@ struct Scenario{F,X,Y}
     dx_true::X
     "pushforward result"
     dy_true::Y
+    "Jacobian result"
+    jac_true::J
 end
 
 ## Constructors
@@ -39,7 +41,8 @@ function Scenario(rng::AbstractRNG, f::F, x::X, y::Y) where {F,X<:Number,Y<:Numb
     der = ForwardDiff.derivative(f, x)
     dx_true = der * dy
     dy_true = der * dx
-    return Scenario(f, x, y, dx, dy, dx_true, dy_true)
+    jac_true = [der;;]
+    return Scenario(f, x, y, dx, dy, dx_true, dy_true, jac_true)
 end
 
 function Scenario(rng::AbstractRNG, f::F, x::X, y::Y) where {F,X<:Number,Y<:AbstractArray}
@@ -49,7 +52,8 @@ function Scenario(rng::AbstractRNG, f::F, x::X, y::Y) where {F,X<:Number,Y<:Abst
     der_array = ForwardDiff.derivative(f, x)
     dx_true = dot(der_array, dy)
     dy_true = der_array .* dx
-    return Scenario(f, x, y, dx, dy, dx_true, dy_true)
+    jac_true = reshape(der_array, :, 1)
+    return Scenario(f, x, y, dx, dy, dx_true, dy_true, jac_true)
 end
 
 function Scenario(rng::AbstractRNG, f::F, x::X, y::Y) where {F,X<:AbstractArray,Y<:Number}
@@ -59,7 +63,8 @@ function Scenario(rng::AbstractRNG, f::F, x::X, y::Y) where {F,X<:AbstractArray,
     grad = ForwardDiff.gradient(f, x)
     dx_true = grad .* dy
     dy_true = dot(grad, dx)
-    return Scenario(f, x, y, dx, dy, dx_true, dy_true)
+    jac_true = reshape(grad, 1, :)
+    return Scenario(f, x, y, dx, dy, dx_true, dy_true, jac_true)
 end
 
 function Scenario(
@@ -72,7 +77,7 @@ function Scenario(
     jac = ForwardDiff.jacobian(f, x)
     dx_true = transpose(jac) * dy
     dy_true = jac * dx
-    return Scenario(f, x, y, dx, dy, dx_true, dy_true)
+    return Scenario(f, x, y, dx, dy, dx_true, dy_true, jac)
 end
 
 ## Access
