@@ -60,7 +60,7 @@ end
 
 function allocate_jacobian_buffer(x, y)
     # The type of a derivative is the type julia promotes dy/dx to
-    T = typeof(one(eltype(X)) / one(eltype(Y)))
+    T = typeof(one(eltype(y)) / one(eltype(x)))
     # For a function f: ℝⁿ → ℝᵐ , a matrix of size (m, n) is returned
     return Matrix{T}(undef, length(y), length(x))
 end
