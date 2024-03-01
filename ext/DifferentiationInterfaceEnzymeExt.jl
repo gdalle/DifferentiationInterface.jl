@@ -23,7 +23,7 @@ end
 ## Reverse mode
 
 function DifferentiationInterface.value_and_pullback!(
-    _dx::X, ::EnzymeReverseBackend, f, x::X, dy::Y
+    _dx, ::EnzymeReverseBackend, f, x::X, dy::Y
 ) where {X<:Number,Y<:Union{Real,Nothing}}
     der, y = autodiff(ReverseWithPrimal, f, Active, Active(x))
     new_dx = dy * only(der)
@@ -31,7 +31,7 @@ function DifferentiationInterface.value_and_pullback!(
 end
 
 function DifferentiationInterface.value_and_pullback!(
-    dx::X, ::EnzymeReverseBackend, f, x::X, dy::Y
+    dx, ::EnzymeReverseBackend, f, x::X, dy::Y
 ) where {X<:AbstractArray,Y<:Union{Real,Nothing}}
     dx .= zero(eltype(dx))
     _, y = autodiff(ReverseWithPrimal, f, Active, Duplicated(x, dx))

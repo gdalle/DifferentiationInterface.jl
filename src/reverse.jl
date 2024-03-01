@@ -13,7 +13,7 @@ Compute a vector-Jacobian product inside `dx` and return it and the primal outpu
 - `dy`: cotangent
 - `stuff`: optional backend-specific storage (cache, config), might be modified
 """
-function value_and_pullback!(dx::X, backend::AbstractBackend, f, x::X, dy::Y) where {X,Y}
+function value_and_pullback!(dx, backend::AbstractBackend, f, x::X, dy::Y) where {X,Y}
     return error("No package extension loaded for backend $backend.")
 end
 

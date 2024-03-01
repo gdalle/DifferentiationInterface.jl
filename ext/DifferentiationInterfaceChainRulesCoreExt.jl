@@ -18,7 +18,7 @@ function DifferentiationInterface.value_and_pushforward!(
 end
 
 function DifferentiationInterface.value_and_pullback!(
-    dx::X, backend::ChainRulesReverseBackend, f, x::X, dy::Y
+    dx, backend::ChainRulesReverseBackend, f, x::X, dy::Y
 ) where {X,Y}
     rc = ruleconfig(backend)
     y, pullback = rrule_via_ad(rc, f, x)
