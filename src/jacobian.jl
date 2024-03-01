@@ -13,8 +13,9 @@ See [`value_and_jacobian`](@ref), [`jacobian!`](@ref) and [`jacobian`](@ref).
 """
 function value_and_jacobian!(J::AbstractMatrix, backend::AbstractForwardBackend, f, x)
     y = f(x)
-    for (i, dy) in Iterators.enumerate(eachcol(J))
+    for (i, Jcol) in Iterators.enumerate(eachcol(J))
         dx = unitvector(backend, x, i)
+        dy = reshapeview(Jcol, y)
         pushforward!(dy, backend, f, x, dx) # mutate J in-place
     end
     return y, J
@@ -22,12 +23,15 @@ end
 
 function value_and_jacobian!(J::AbstractMatrix, backend::AbstractReverseBackend, f, x)
     y = f(x)
-    for (i, dx) in Iterators.enumerate(eachrow(J))
+    for (i, Jrow) in Iterators.enumerate(eachrow(J))
         dy = unitvector(backend, y, i)
+        dx = reshapeview(Jrow, x)
         pullback!(dx, backend, f, x, dy) # mutate J in-place
     end
     return y, J
 end
+
+reshapeview(A, B) = reshape(view(A, :), size(B)...)
 
 """
     jacobian!(J, backend, f, x[, stuff])
