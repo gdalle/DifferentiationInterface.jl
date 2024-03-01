@@ -1,8 +1,6 @@
 module DifferentiationInterfaceReverseDiffExt
 
 using DifferentiationInterface
-import DifferentiationInterface: value_and_pullback!
-
 using DiffResults: DiffResults
 using ReverseDiff: gradient!, jacobian!
 using LinearAlgebra: mul!

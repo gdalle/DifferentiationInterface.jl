@@ -13,7 +13,7 @@ Compute a Jacobian-vector product inside `dy` and return it and the primal outpu
 - `dx`: tangent
 - `stuff`: optional backend-specific storage (cache, config), might be modified
 """
-function value_and_pushforward!(dy, backend, f, x, dx)
+function value_and_pushforward!(dy::Y, backend::AbstractBackend, f, x::X, dx::X) where {X,Y}
     return error("No package extension loaded for backend $backend.")
 end
 

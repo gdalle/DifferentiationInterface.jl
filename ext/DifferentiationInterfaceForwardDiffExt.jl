@@ -1,8 +1,6 @@
 module DifferentiationInterfaceForwardDiffExt
 
 using DifferentiationInterface
-import DifferentiationInterface: value_and_pushforward!
-
 using DiffResults: DiffResults
 using ForwardDiff: Dual, Tag, value, extract_derivative, extract_derivative!
 using LinearAlgebra: mul!

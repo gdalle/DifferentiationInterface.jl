@@ -2,7 +2,6 @@ module DifferentiationInterfaceChainRulesCoreExt
 
 using ChainRulesCore: NoTangent, frule_via_ad, rrule_via_ad
 using DifferentiationInterface
-import DifferentiationInterface: value_and_pushforward!
 
 ruleconfig(backend::ChainRulesForwardBackend) = backend.ruleconfig
 ruleconfig(backend::ChainRulesReverseBackend) = backend.ruleconfig

@@ -1,7 +1,6 @@
 module DifferentiationInterfaceEnzymeExt
 
 using DifferentiationInterface
-import DifferentiationInterface: value_and_pushforward!, value_and_pullback!
 using Enzyme: Forward, ReverseWithPrimal, Active, Duplicated, autodiff
 
 ## Forward mode
