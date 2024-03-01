@@ -1,6 +1,8 @@
 module DifferentiationInterfaceFiniteDiffExt
 
 using DifferentiationInterface
+import DifferentiationInterface: value_and_pushforward!
+
 using FiniteDiff:
     finite_difference_derivative,
     finite_difference_gradient,
