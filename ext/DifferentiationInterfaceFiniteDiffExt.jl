@@ -11,7 +11,7 @@ using LinearAlgebra: dot, mul!
 const DEFAULT_FDTYPE = Val{:central}
 
 function DifferentiationInterface.value_and_pushforward!(
-    dy::Y, ::FiniteDiffBackend, f, x::X, dx::X
+    dy::Y, ::FiniteDiffBackend, f, x::X, dx
 ) where {X<:Number,Y<:Number}
     y = f(x)
     der = finite_difference_derivative(
@@ -26,7 +26,7 @@ function DifferentiationInterface.value_and_pushforward!(
 end
 
 function DifferentiationInterface.value_and_pushforward!(
-    dy::Y, ::FiniteDiffBackend, f, x::X, dx::X
+    dy::Y, ::FiniteDiffBackend, f, x::X, dx
 ) where {X<:Number,Y<:AbstractArray}
     y = f(x)
     finite_difference_gradient!(
@@ -43,7 +43,7 @@ function DifferentiationInterface.value_and_pushforward!(
 end
 
 function DifferentiationInterface.value_and_pushforward!(
-    dy::Y, ::FiniteDiffBackend, f, x::X, dx::X
+    dy::Y, ::FiniteDiffBackend, f, x::X, dx
 ) where {X<:AbstractArray,Y<:Number}
     y = f(x)
     g = finite_difference_gradient(
@@ -59,7 +59,7 @@ function DifferentiationInterface.value_and_pushforward!(
 end
 
 function DifferentiationInterface.value_and_pushforward!(
-    dy::Y, ::FiniteDiffBackend, f, x::X, dx::X
+    dy::Y, ::FiniteDiffBackend, f, x::X, dx
 ) where {X<:AbstractArray,Y<:AbstractArray}
     y = f(x)
     J = finite_difference_jacobian(

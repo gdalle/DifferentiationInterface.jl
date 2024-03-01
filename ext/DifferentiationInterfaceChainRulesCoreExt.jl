@@ -10,7 +10,7 @@ update!(_old::Number, new::Number) = new
 update!(old, new) = old .= new
 
 function DifferentiationInterface.value_and_pushforward!(
-    dy::Y, backend::ChainRulesForwardBackend, f, x::X, dx::X
+    dy::Y, backend::ChainRulesForwardBackend, f, x::X, dx
 ) where {X,Y}
     rc = ruleconfig(backend)
     y, new_dy = frule_via_ad(rc, (NoTangent(), dx), f, x)

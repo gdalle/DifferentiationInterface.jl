@@ -6,14 +6,14 @@ using Enzyme: Forward, ReverseWithPrimal, Active, Duplicated, autodiff
 ## Forward mode
 
 function DifferentiationInterface.value_and_pushforward!(
-    _dy::Y, ::EnzymeForwardBackend, f, x::X, dx::X
+    _dy::Y, ::EnzymeForwardBackend, f, x::X, dx
 ) where {X,Y<:Real}
     y, new_dy = autodiff(Forward, f, Duplicated, Duplicated(x, dx))
     return y, new_dy
 end
 
 function DifferentiationInterface.value_and_pushforward!(
-    dy::Y, ::EnzymeForwardBackend, f, x::X, dx::X
+    dy::Y, ::EnzymeForwardBackend, f, x::X, dx
 ) where {X,Y<:AbstractArray}
     y, new_dy = autodiff(Forward, f, Duplicated, Duplicated(x, dx))
     dy .= new_dy

@@ -6,7 +6,7 @@ using ForwardDiff: Dual, Tag, value, extract_derivative, extract_derivative!
 using LinearAlgebra: mul!
 
 function DifferentiationInterface.value_and_pushforward!(
-    _dy::Y, ::ForwardDiffBackend, f, x::X, dx::X
+    _dy::Y, ::ForwardDiffBackend, f, x::X, dx
 ) where {X<:Real,Y<:Real}
     T = typeof(Tag(f, X))
     xdual = Dual{T}(x, dx)
@@ -17,7 +17,7 @@ function DifferentiationInterface.value_and_pushforward!(
 end
 
 function DifferentiationInterface.value_and_pushforward!(
-    dy::Y, ::ForwardDiffBackend, f, x::X, dx::X
+    dy::Y, ::ForwardDiffBackend, f, x::X, dx
 ) where {X<:Real,Y<:AbstractArray}
     T = typeof(Tag(f, X))
     xdual = Dual{T}(x, dx)
@@ -28,7 +28,7 @@ function DifferentiationInterface.value_and_pushforward!(
 end
 
 function DifferentiationInterface.value_and_pushforward!(
-    _dy::Y, ::ForwardDiffBackend, f, x::X, dx::X
+    _dy::Y, ::ForwardDiffBackend, f, x::X, dx
 ) where {X<:AbstractArray,Y<:Real}
     T = typeof(Tag(f, X))  # TODO: unsure
     xdual = Dual{T}.(x, dx)  # TODO: allocation
@@ -39,7 +39,7 @@ function DifferentiationInterface.value_and_pushforward!(
 end
 
 function DifferentiationInterface.value_and_pushforward!(
-    dy::Y, ::ForwardDiffBackend, f, x::X, dx::X
+    dy::Y, ::ForwardDiffBackend, f, x::X, dx
 ) where {X<:AbstractArray,Y<:AbstractArray}
     T = typeof(Tag(f, X))  # TODO: unsure
     xdual = Dual{T}.(x, dx)  # TODO: allocation
