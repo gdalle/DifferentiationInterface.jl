@@ -20,11 +20,12 @@ end
 """
     pushforward!(dy, backend, f, x, dx[, stuff])
 
-Compute a Jacobian-vector product inside `dy` and return it.
+Compute a Jacobian-vector product inside `dy`.
+Returns the primal output of `f(x)` and the JVP `dy`.
 
 See [`value_and_pushforward!`](@ref).
 """
-function pushforward!(dy, backend, f, x, dx, stuff)
-    _, dy = value_and_pushforward!(dy, backend, f, x, dx, stuff)
+function pushforward!(dy, backend, f, x, dx)
+    _, dy = value_and_pushforward!(dy, backend, f, x, dx)
     return dy
 end
