@@ -11,27 +11,54 @@ Returns the primal output of the computation `f(x)` and the corresponding Jacobi
 
 See [`value_and_jacobian`](@ref), [`jacobian!`](@ref) and [`jacobian`](@ref).
 """
-function value_and_jacobian!(J::AbstractMatrix, backend::AbstractForwardBackend, f, x)
+function value_and_jacobian!(J::AbstractMatrix, backend, f, x)
     y = f(x)
-    for (i, Jcol) in Iterators.enumerate(eachcol(J))
-        dx = unitvector(backend, x, i)
-        dy = reshapeview(Jcol, y)
-        pushforward!(dy, backend, f, x, dx) # mutate J in-place
-    end
-    return y, J
+    nx, ny = length(x), length(y)
+    size(J) != (ny, nx) && throw(
+        DimensionMismatch("Size of Jacobian buffer doesn't match expected size ($ny, $nx)"),
+    )
+    return y, J = _value_and_jacobian!(J, backend, f, x, y)
 end
 
-function value_and_jacobian!(J::AbstractMatrix, backend::AbstractReverseBackend, f, x)
-    y = f(x)
-    for (i, Jrow) in Iterators.enumerate(eachrow(J))
+function _value_and_jacobian!(J, backend::AbstractReverseBackend, f, x, y)
+    for i in axes(J, 1)
         dy = unitvector(backend, y, i)
-        dx = reshapeview(Jrow, x)
-        pullback!(dx, backend, f, x, dy) # mutate J in-place
+        Jrow = reshapeview(J, (i, :), x) # view onto i-th row of J, reshaped to match x
+        pullback!(Jrow, backend, f, x, dy)
     end
     return y, J
 end
 
-reshapeview(A, B) = reshape(view(A, :), size(B)...)
+function _value_and_jacobian!(J, backend::AbstractForwardBackend, f, x, y)
+    for i in axes(J, 2)
+        dx = unitvector(backend, x, i)
+        Jcol = reshapeview(J, (:, i), y) # view onto i-th column of J, reshaped to match y
+        pushforward!(Jcol, backend, f, x, dx)
+    end
+    return y, J
+end
+
+# Special case for scalar x since pullback! assumes it can't mutate dx.
+function _value_and_jacobian!(J, backend::AbstractReverseBackend, f, x::Real, y)
+    dx = one(x) # place-holder for dispatch as it won't be mutated
+    for i in axes(J, 1)
+        dy = unitvector(backend, y, i)
+        J[i] = pullback!(dx, backend, f, x, dy) # J is of shape (length(x), 1)
+    end
+    return y, J
+end
+
+# Special case for scalar y since pushforward! assumes it can't mutate dy.
+function _value_and_jacobian!(J, backend::AbstractForwardBackend, f, x, y::Real)
+    dy = one(y) # place-holder for dispatch as it won't be mutated
+    for i in axes(J, 2)
+        dx = unitvector(backend, x, i)
+        J[i] = pushforward!(dy, backend, f, x, dx) # J is of shape (1, length(x))
+    end
+    return y, J
+end
+
+reshapeview(A, inds, B) = reshape(view(A, inds...), size(B)...)
 
 """
     jacobian!(J, backend, f, x[, stuff])
