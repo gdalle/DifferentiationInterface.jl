@@ -216,3 +216,57 @@ function test_pullback(
         end
     end
 end
+
+function test_jacobian(
+    backend;
+    scenarios::Vector{<:Scenario}=scenarios,
+    input_type::Type=Any,
+    output_type::Type=Any,
+    allocs::Bool=false,
+    type_stability::Bool=true,
+)
+    scenarios = filter(scenarios) do s
+        (get_input_type(s) <: input_type) && (get_output_type(s) <: output_type)
+    end
+    @testset "Jacobian" begin
+        for scenario in scenarios
+            X, Y = get_input_type(scenario), get_output_type(scenario)
+            @testset "$X -> $Y" begin
+                (; f, x, y, jac_true) = scenario
+                y_out, jac_out = value_and_jacobian(backend, f, x)
+
+                @testset "Allocation of Jacobian" begin
+                    @testset "Primal output" begin
+                        @test y_out == y
+                    end
+                    @testset "Jacobian output" begin
+                        @test jac_out ≈ jac_true
+                    end
+                end
+                @testset "In-place mutation" begin
+                    fill!(jac_out, 42)
+                    y_out, jac_out = value_and_jacobian!(jac_out, backend, f, x)
+                    @testset "Primal output" begin
+                        @test y_out == y
+                    end
+                    @testset "Jacobian output" begin
+                        @test jac_out ≈ jac_true
+                    end
+
+                    if allocs
+                        @testset "Allocations" begin
+                            @test (@allocated value_and_jacobian!(
+                                jac_out, backend, f, x
+                            )) == 0
+                        end
+                    end
+                    if type_stability
+                        @testset "Type stability" begin
+                            @test_opt value_and_jacobian!(jac_out, backend, f, x)
+                        end
+                    end
+                end
+            end # scenario testset
+        end # scenario loop
+    end # Jacobian testset
+end
