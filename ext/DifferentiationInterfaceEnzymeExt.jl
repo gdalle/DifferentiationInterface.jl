@@ -3,6 +3,19 @@ module DifferentiationInterfaceEnzymeExt
 using DifferentiationInterface
 using Enzyme: Forward, ReverseWithPrimal, Active, Duplicated, autodiff
 
+const EnzymeBackends = Union{EnzymeForwardBackend,EnzymeReverseBackend}
+
+## Unit vector
+
+# Enzyme's `Duplicated(x, dx)` expects both arguments to be of the same type
+function DifferentiationInterface.unitvector(
+    ::EnzymeBackends, v::AbstractVector{T}, i
+) where {T}
+    uv = zero(v)
+    uv[i] = one(T)
+    return uv
+end
+
 ## Forward mode
 
 function DifferentiationInterface.value_and_pushforward!(
