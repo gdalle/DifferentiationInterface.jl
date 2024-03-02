@@ -44,11 +44,24 @@ function DifferentiationInterface.value_and_pullback!(
 end
 
 function DifferentiationInterface.value_and_pullback!(
-    dx, ::EnzymeReverseBackend, f, x::X, dy::Y
+    dx::X, ::EnzymeReverseBackend, f, x::X, dy::Y
 ) where {X<:AbstractArray,Y<:Union{Real,Nothing}}
     dx .= zero(eltype(dx))
     _, y = autodiff(ReverseWithPrimal, f, Active, Duplicated(x, dx))
     dx .*= dy
+    return y, dx
+end
+
+# Enzyme's Duplicated assumes x and dx to be of the same type.
+# When writing into pre-allocated arrays, e.g. Jacobians,
+# dx often is a view or SubArray.
+# This requires a specialized method that allocates a new dx.
+function DifferentiationInterface.value_and_pullback!(
+    dx, ::EnzymeReverseBackend, f, x::X, dy::Y
+) where {X<:AbstractArray,Y<:Union{Real,Nothing}}
+    _dx = zero(x)
+    _, y = autodiff(ReverseWithPrimal, f, Active, Duplicated(x, _dx))
+    @. dx = _dx * dy
     return y, dx
 end
 
