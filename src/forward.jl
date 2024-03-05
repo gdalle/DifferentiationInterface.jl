@@ -1,7 +1,7 @@
 """
     value_and_pushforward!(dy, backend, f, x, dx[, stuff]) -> (y, dy)
 
-Compute a Jacobian-vector product inside `dy` and return it and the primal output.
+Compute a Jacobian-vector product inside `dy` and return it with the primal output.
 
 # Arguments
 
@@ -13,19 +13,36 @@ Compute a Jacobian-vector product inside `dy` and return it and the primal outpu
 - `dx`: tangent
 - `stuff`: optional backend-specific storage (cache, config), might be modified
 """
-function value_and_pushforward!(dy::Y, backend::AbstractBackend, f, x::X, dx) where {X,Y}
+function value_and_pushforward!(dy, backend::AbstractBackend, f, x, dx)
     return error("No package extension loaded for backend $backend.")
 end
 
 """
-    pushforward!(dy, backend, f, x, dx[, stuff])
+    value_and_pushforward(backend, f, x, dx[, stuff]) -> (y, dy)
 
-Compute a Jacobian-vector product inside `dy`.
-Returns the primal output of `f(x)` and the JVP `dy`.
+Call [`value_and_pushforward!`](@ref) after allocating space for the Jacobian-vector product.
+"""
+function value_and_pushforward(backend::AbstractBackend, f, x, dx)
+    dy = f(x)
+    return value_and_pushforward!(dy, backend, f, x, dx)
+end
 
-See [`value_and_pushforward!`](@ref).
+"""
+    pushforward!(dy, backend, f, x, dx[, stuff]) -> dy
+
+Call [`value_and_pushforward!`](@ref) without returning the primal output.
 """
 function pushforward!(dy, backend, f, x, dx)
     _, dy = value_and_pushforward!(dy, backend, f, x, dx)
+    return dy
+end
+
+"""
+    pushforward(backend, f, x, dx[, stuff]) -> dy
+
+Call [`value_and_pushforward`](@ref) without returning the primal output.
+"""
+function pushforward(backend::AbstractBackend, f, x, dx)
+    _, dy = value_and_pushforward(backend, f, x, dx)
     return dy
 end

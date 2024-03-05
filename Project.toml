@@ -15,6 +15,7 @@ Enzyme = "7da242da-08ed-463a-9acd-ee780be4f1d9"
 FiniteDiff = "6a86dc24-6348-571c-b903-95158fe2bd41"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 ReverseDiff = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
+Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [extensions]
 DifferentiationInterfaceChainRulesCoreExt = "ChainRulesCore"
@@ -22,6 +23,7 @@ DifferentiationInterfaceEnzymeExt = "Enzyme"
 DifferentiationInterfaceFiniteDiffExt = "FiniteDiff"
 DifferentiationInterfaceForwardDiffExt = ["ForwardDiff", "DiffResults"]
 DifferentiationInterfaceReverseDiffExt = ["ReverseDiff", "DiffResults"]
+DifferentiationInterfaceZygoteExt = ["Zygote"]
 
 [compat]
 ChainRulesCore = "1.19"
@@ -34,9 +36,3 @@ ForwardDiff = "0.10"
 LinearAlgebra = "1"
 ReverseDiff = "1.15"
 julia = "1.10"
-
-[extras]
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-
-[targets]
-test = ["Test"]

@@ -8,7 +8,7 @@ const EnzymeBackends = Union{EnzymeForwardBackend,EnzymeReverseBackend}
 ## Unit vector
 
 # Enzyme's `Duplicated(x, dx)` expects both arguments to be of the same type
-function DifferentiationInterface.unitvector(
+function DifferentiationInterface.basisvector(
     ::EnzymeBackends, v::AbstractVector{T}, i
 ) where {T}
     uv = zero(v)

@@ -13,14 +13,13 @@ module DifferentiationInterface
 using DocStringExtensions
 using FillArrays: OneElement
 
-abstract type AbstractBackend end
-abstract type AbstractForwardBackend <: AbstractBackend end
-abstract type AbstractReverseBackend <: AbstractBackend end
-
 include("backends.jl")
+include("basis.jl")
 include("forward.jl")
 include("reverse.jl")
-include("unitvector.jl")
+include("derivative.jl")
+include("multiderivative.jl")
+include("gradient.jl")
 include("jacobian.jl")
 
 export ChainRulesReverseBackend,
@@ -30,9 +29,15 @@ export ChainRulesReverseBackend,
     FiniteDiffBackend,
     ForwardDiffBackend,
     ReverseDiffBackend
-export pushforward!, value_and_pushforward!
-export pullback!, value_and_pullback!
-export jacobian!, value_and_jacobian!
-export jacobian, value_and_jacobian
+
+export value_and_pushforward!, value_and_pushforward
+export pushforward!, pushforward
+export value_and_pullback!, value_and_pullback
+export pullback!, pullback
+
+export value_and_derivative
+export value_and_multiderivative!, value_and_multiderivative
+export value_and_gradient!, value_and_gradient
+export value_and_jacobian!, value_and_jacobian
 
 end # module

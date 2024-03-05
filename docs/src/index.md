@@ -1,5 +1,6 @@
 ```@meta
 CurrentModule = DifferentiationInterface
+CollapsedDocStrings = true
 ```
 
 # DifferentiationInterface

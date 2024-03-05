@@ -1,0 +1,6 @@
+module DifferentiationInterfaceZygoteExt
+
+using Zygote
+using DifferentiationInterface
+
+end
