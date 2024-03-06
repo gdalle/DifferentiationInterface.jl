@@ -23,29 +23,9 @@ end
 """
     value_and_pullback(backend, f, x, dy[, stuff]) -> (y, dx)
 
-Call [`value_and_pullback!`](@ref) after allocating space for the vector-Jacobian product.
+Call [`value_and_pullback!`](@ref) after allocating memory for the vector-Jacobian product.
 """
 function value_and_pullback(backend::AbstractBackend, f, x, dy)
-    dx = similar(x)
+    dx = mysimilar(x)
     return value_and_pullback!(dx, backend, f, x, dy)
-end
-
-"""
-    pullback!(dx, backend, f, x, dy[, stuff]) -> dx
-
-Call [`value_and_pullback!`](@ref) without returning the primal output.
-"""
-function pullback!(dx, backend, f, x, dy)
-    _, dx = value_and_pullback!(dx, backend, f, x, dy)
-    return dx
-end
-
-"""
-    pullback(backend, f, x, dy[, stuff]) -> dx
-
-Call [`value_and_pullback`](@ref) without returning the primal output.
-"""
-function pullback(backend, f, x, dy)
-    _, dx = value_and_pullback(backend, f, x, dy)
-    return dx
 end

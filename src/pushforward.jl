@@ -23,29 +23,9 @@ end
 """
     value_and_pushforward(backend, f, x, dx[, stuff]) -> (y, dy)
 
-Call [`value_and_pushforward!`](@ref) after allocating space for the Jacobian-vector product.
+Call [`value_and_pushforward!`](@ref) after allocating memory for the Jacobian-vector product.
 """
 function value_and_pushforward(backend::AbstractBackend, f, x, dx)
-    dy = f(x)
+    dy = mysimilar(f(x))
     return value_and_pushforward!(dy, backend, f, x, dx)
-end
-
-"""
-    pushforward!(dy, backend, f, x, dx[, stuff]) -> dy
-
-Call [`value_and_pushforward!`](@ref) without returning the primal output.
-"""
-function pushforward!(dy, backend, f, x, dx)
-    _, dy = value_and_pushforward!(dy, backend, f, x, dx)
-    return dy
-end
-
-"""
-    pushforward(backend, f, x, dx[, stuff]) -> dy
-
-Call [`value_and_pushforward`](@ref) without returning the primal output.
-"""
-function pushforward(backend::AbstractBackend, f, x, dx)
-    _, dy = value_and_pushforward(backend, f, x, dx)
-    return dy
 end

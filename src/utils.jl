@@ -13,8 +13,11 @@ function basisarray(::AbstractBackend, a::AbstractVector{T}, i::Integer) where {
     return OneElement(one(T), i, length(v))
 end
 """
-basisarray(::AbstractBackend, a::AbstractArray, i::Integer) = basisarray(a, i)
+basisarray(::AbstractBackend, a::AbstractArray, i) = basisarray(a, i)
 
-function basisarray(a::AbstractArray{T}, i::Vararg{<:Integer,N}) where {T,N}
-    return OneElement(one(T), i, axes(a))
+function basisarray(a::AbstractArray{T,N}, i::CartesianIndex{N}) where {T,N}
+    return OneElement(one(T), Tuple(i), axes(a))
 end
+
+mysimilar(x::Number) = zero(x)
+mysimilar(x::AbstractArray) = similar(x)

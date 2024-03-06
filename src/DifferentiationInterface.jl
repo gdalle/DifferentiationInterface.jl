@@ -14,7 +14,7 @@ using DocStringExtensions
 using FillArrays: OneElement
 
 include("backends.jl")
-include("basis.jl")
+include("utils.jl")
 include("pushforward.jl")
 include("pullback.jl")
 include("scalar_scalar.jl")
@@ -31,13 +31,11 @@ export ChainRulesReverseBackend,
     ReverseDiffBackend
 
 export value_and_pushforward!, value_and_pushforward
-export pushforward!, pushforward
 export value_and_pullback!, value_and_pullback
-export pullback!, pullback
 
 export value_and_derivative
-export value_and_multiderivative!
-export value_and_gradient!
-export value_and_jacobian!
+export value_and_multiderivative!, value_and_multiderivative
+export value_and_gradient!, value_and_gradient
+export value_and_jacobian!, value_and_jacobian
 
 end # module

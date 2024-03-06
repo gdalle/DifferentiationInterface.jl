@@ -15,9 +15,19 @@ function value_and_multiderivative!(
     multider::AbstractArray, backend::AbstractReverseBackend, f, x::Number
 )
     y = f(x)
-    for i in eachindex(IndexCartesian(), dy)
-        dy_i = basisarray(backend, dy, i)
-        multider[i] = pullback!(multider[i], backend, f, dy_i)
+    for i in eachindex(IndexCartesian(), y)
+        dy_i = basisarray(backend, y, i)
+        _, multider[i] = value_and_pullback!(multider[i], backend, f, x, dy_i)
     end
     return y, multider
+end
+
+"""
+    value_and_multiderivative(backend, f, x) -> (y, multider)
+
+Call [`value_and_multiderivative!`](@ref) after allocating memory for the multiderivative.
+"""
+function value_and_multiderivative(backend::AbstractBackend, f, x::Number)
+    multider = similar(f(x))
+    return value_and_multiderivative!(multider, backend, f, x)
 end

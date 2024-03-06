@@ -10,7 +10,7 @@ const EnzymeBackends = Union{EnzymeForwardBackend,EnzymeReverseBackend}
 
 # Enzyme's `Duplicated(x, dx)` expects both arguments to be of the same type
 function DifferentiationInterface.basisarray(
-    ::EnzymeBackends, a::AbstractArray{T}, i::Integer
+    ::EnzymeBackends, a::AbstractArray{T}, i
 ) where {T}
     b = zero(a)
     b[i] = one(T)
