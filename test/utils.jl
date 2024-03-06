@@ -41,7 +41,7 @@ function Scenario(rng::AbstractRNG, f::F, x::X, y::Y) where {F,X<:Number,Y<:Numb
     der = ForwardDiff.derivative(f, x)
     dx_true = der * dy
     dy_true = der * dx
-    jac_true = [der;;]
+    jac_true = der
     return Scenario(f, x, y, dx, dy, dx_true, dy_true, jac_true)
 end
 
@@ -52,7 +52,7 @@ function Scenario(rng::AbstractRNG, f::F, x::X, y::Y) where {F,X<:Number,Y<:Abst
     der_array = ForwardDiff.derivative(f, x)
     dx_true = dot(der_array, dy)
     dy_true = der_array .* dx
-    jac_true = reshape(der_array, :, 1)
+    jac_true = der_array
     return Scenario(f, x, y, dx, dy, dx_true, dy_true, jac_true)
 end
 
@@ -63,7 +63,7 @@ function Scenario(rng::AbstractRNG, f::F, x::X, y::Y) where {F,X<:AbstractArray,
     grad = ForwardDiff.gradient(f, x)
     dx_true = grad .* dy
     dy_true = dot(grad, dx)
-    jac_true = reshape(grad, 1, :)
+    jac_true = grad
     return Scenario(f, x, y, dx, dy, dx_true, dy_true, jac_true)
 end
 
@@ -89,29 +89,87 @@ get_output_type(::Scenario{F,X,Y}) where {F,X,Y} = Y
 
 rng = StableRNG(63)
 
-## Scalar input, scalar output
+scenario_scalar_scalar = Scenario(rng, (x::Number -> sin(x)::Number), 1.0)
 
-scenario1 = Scenario(rng, (x::Real -> sin(2x)), 1.0)
+scenario_scalar_vector = Scenario(
+    rng, (x::Number -> [sin(x), sin(2x)]::AbstractVector), 1.0
+)
 
-## Scalar input, vector output
+scenario_scalar_matrix = Scenario(
+    rng, (x::Number -> [sin(x) cos(x); sin(2x) cos(2x)]::AbstractMatrix), 1.0
+)
 
-scenario2 = Scenario(rng, (x::Real -> [sin(2x), cos(3x)]), 1.0)
+scenario_vector_scalar = Scenario(
+    rng, (x::AbstractVector -> sum(sin(i * x[i]) for i in eachindex(x))::Number), [1.0, 2.0]
+)
 
-## Vector input, scalar output
-
-scenario3 = Scenario(rng, (x::AbstractVector -> sin(2x[1]) + cos(3x[2])), [1.0, 2.0])
-
-## Vector input, vector output
-
-scenario4 = Scenario(
+scenario_matrix_scalar = Scenario(
     rng,
-    (x::AbstractVector -> [sin(2x[1]), cos(3x[2]), tan(2x[1]) + tan(3x[2])]),
+    (
+        x::AbstractMatrix -> sum(
+            sin(i * x[i, j]) + cos(j * x[i, j]) for i in axes(x, 1) for j in axes(x, 2)
+        )::Number
+    ),
+    [1.0 2.0; 3.0 4.0],
+)
+
+scenario_vector_vector = Scenario(
+    rng,
+    (
+        x::AbstractVector -> vcat(
+            [sin(i * x[i]) for i in eachindex(x)], #
+            [cos(i * x[i]) for i in eachindex(x)],
+        )::AbstractVector
+    ),
     [1.0, 2.0],
+)
+
+scenario_vector_matrix = Scenario(
+    rng,
+    (
+        x::AbstractVector -> hcat(
+            [sin(i * x[i]) for i in eachindex(x)], #
+            [cos(i * x[i]) for i in eachindex(x)],
+        )::AbstractMatrix
+    ),
+    [1.0, 2.0],
+)
+
+scenario_matrix_vector = Scenario(
+    rng,
+    (
+        x::AbstractVector -> vcat(
+            [sin(i * x[i, j]) for i in axes(x, 1) for j in axes(x, 2)],
+            [cos(j * x[i, j]) for i in axes(x, 1) for j in axes(x, 2)],
+        )::AbstractVector
+    ),
+    [1.0 2.0; 3.0 4.0],
+)
+
+scenario_matrix_matrix = Scenario(
+    rng,
+    (
+        x::AbstractVector -> hcat(
+            [sin(i * x[i, j]) for i in axes(x, 1) for j in axes(x, 2)],
+            [cos(j * x[i, j]) for i in axes(x, 1) for j in axes(x, 2)],
+        )::AbstractMatrix
+    ),
+    [1.0 2.0; 3.0 4.0],
 )
 
 ## All
 
-scenarios = [scenario1, scenario2, scenario3, scenario4]
+scenarios = [
+    scenario_scalar_scalar,
+    scenario_scalar_vector,
+    scenario_scalar_matrix,
+    scenario_vector_scalar,
+    scenario_matrix_scalar,
+    scenario_vector_vector,
+    scenario_vector_matrix,
+    scenario_matrix_vector,
+    scenario_matrix_matrix,
+]
 
 ## Test utilities
 

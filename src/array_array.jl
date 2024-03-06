@@ -16,7 +16,7 @@ function value_and_jacobian!(
     size(jac) != (ny, nx) && throw(
         DimensionMismatch("Size of Jacobian buffer doesn't match expected size ($ny, $nx)"),
     )
-    return y, jac = _value_and_jacobian!(jac, backend, f, x, y)
+    return _value_and_jacobian!(jac, backend, f, x, y)
 end
 
 function _value_and_jacobian!(
@@ -26,9 +26,9 @@ function _value_and_jacobian!(
     x::AbstractArray,
     y::AbstractArray,
 )
-    for j in eachindex(IndexCartesian(), x)
+    for (k, j) in enumerate(eachindex(IndexCartesian(), x))
         dx_j = basisarray(backend, x, j)
-        jac_col_j = reshapeview(jac, (:, j), y) # view onto i-th column of J, reshaped to match y
+        jac_col_j = reshape(view(jac, (:, k)), size(y))
         pushforward!(jac_col_j, backend, f, x, dx_j)
     end
     return y, jac
@@ -41,13 +41,10 @@ function _value_and_jacobian!(
     x::AbstractArray,
     y::AbstractArray,
 )
-    y = f(x)
-    for i in eachindex(IndexCartesian(), y)
+    for (k, i) in enumerate(eachindex(IndexCartesian(), y))
         dy_i = basisarray(backend, y, i)
-        jac_row_i = reshapeview(jac, (i, :), x) # view onto i-th row of J, reshaped to match x
+        jac_row_i = reshape(view(jac, k, :), size(x))
         pullback!(jac_row_i, backend, f, x, dy_i)
     end
-    return y, J
+    return y, jac
 end
-
-reshapeview(A, inds, B) = reshape(view(A, inds...), size(B)...)
