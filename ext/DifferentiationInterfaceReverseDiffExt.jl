@@ -29,7 +29,7 @@ function DifferentiationInterface.value_and_pullback!(
     res = jacobian!(res, f, x)
     y = DiffResults.value(res)
     J = DiffResults.jacobian(res)
-    mul!(dx, transpose(J), dy)
+    mul!(vec(dx), transpose(J), vec(dy))
     return y, dx
 end
 

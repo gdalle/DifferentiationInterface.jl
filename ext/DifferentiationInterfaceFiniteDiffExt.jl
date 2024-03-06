@@ -81,7 +81,7 @@ function DifferentiationInterface.value_and_pushforward!(
         DEFAULT_FDTYPE,  # fdtype
         eltype(dy),  # returntype
     )
-    mul!(dy, J, dx)
+    mul!(vec(dy), J, vec(dx))
     return y, dy
 end
 

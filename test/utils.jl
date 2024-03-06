@@ -412,9 +412,14 @@ end
 function test_jacobian_and_friends(
     backend::AbstractBackend,
     scenarios::Vector{<:Scenario}=scenarios;
+    input_type::Type=Any,
+    output_type::Type=Any,
     allocs::Bool=false,
     type_stability::Bool=true,
 )
+    scenarios = filter(scenarios) do s
+        (get_input_type(s) <: input_type) && (get_output_type(s) <: output_type)
+    end
     test_derivative(backend, scenarios; allocs, type_stability)
     test_multiderivative(backend, scenarios; allocs, type_stability)
     test_gradient(backend, scenarios; allocs, type_stability)
