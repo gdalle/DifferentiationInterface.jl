@@ -1,12 +1,13 @@
 """
     value_and_jacobian!(jac, backend, f, x[, stuff]) -> (y, jac)
 
-Compute the Jacobian inside `jac` and return it with the primal output.
+Compute the Jacobian inside `jac`.
+Returns the primal output `f(x)` and the Jacobian.
 
 ## Notes
 
-For a function `f: ℝⁿ → ℝᵐ`, `jac` is an `m × n` matrix.
-If the input or output is a higher-order array, it is flattened in the usual way (with `vec`).
+For a function `f: ℝⁿ → ℝᵐ`, `jac` is expected to be a `m × n` matrix.
+If the input or output is a higher-order array, it is flattened with `vec`.
 """
 function value_and_jacobian!(
     jac::AbstractMatrix, backend::AbstractBackend, f, x::AbstractArray

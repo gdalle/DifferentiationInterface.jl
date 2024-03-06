@@ -1,7 +1,8 @@
 """
     value_and_gradient!(grad, backend, f, x) -> (y, grad)
 
-Compute the gradient of an array-to-scalar function inside `dx` and return it with the primal output.
+Compute the gradient of an array-to-scalar function inside `dx`.
+Returns the primal output `f(x)` and the gradient.
 """
 function value_and_gradient! end
 

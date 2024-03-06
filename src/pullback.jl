@@ -1,7 +1,8 @@
 """
     value_and_pullback!(dx, backend, f, x, dy[, stuff]) -> (y, dx)
 
-Compute the vector-Jacobian product inside `dx` and return it with the primal output.
+Compute the vector-Jacobian product of `dy` with the Jacobian of `f` at `x` inside `dx`.
+Returns the primal output `f(x)` and the VJP `dx`.
 
 !!! info "Interface requirement"
     This is the only required implementation for a reverse mode backend.

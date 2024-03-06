@@ -2,7 +2,7 @@
     basisarray(a::AbstractArray, i)
     basisarray(backend, a::AbstractArray, i)
 
-Construct the `i`-th stardard basis array in the vector space of `a` with element type `eltype(v)`.
+Construct the `i`-th stardard basis array in the vector space of `a` with element type `eltype(a)`.
 
 ## Note
 

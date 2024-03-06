@@ -1,7 +1,8 @@
 """
     value_and_multiderivative!(multider, backend, f, x) -> (y, multider)
 
-Compute the derivative of a scalar-to-array function inside `multider` and return it with the primal output. 
+Compute the derivative of a scalar-to-array function inside `multider`.
+Returns the primal output `f(x)` and the derivative.
 """
 function value_and_multiderivative! end
 
