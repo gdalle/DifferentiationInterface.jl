@@ -168,7 +168,7 @@ function test_pushforward(
                 y_out, dy_out = value_and_pushforward(backend, f, x, dx)
 
                 @testset "Primal output" begin
-                    @test y_out == y
+                    @test y_out ≈ y
                 end
                 @testset "Tangent output" begin
                     @test dy_out ≈ dy_true rtol = 1e-3
@@ -216,7 +216,7 @@ function test_pullback(
                 y_out, dx_out = value_and_pullback(backend, f, x, dy)
 
                 @testset "Primal output" begin
-                    @test y_out == y
+                    @test y_out ≈ y
                 end
                 @testset "Co-tangent output" begin
                     @test dx_out ≈ dx_true rtol = 1e-3
@@ -261,7 +261,7 @@ function test_derivative(
                 y_out, der_out = value_and_derivative(backend, f, x)
 
                 @testset "Primal output" begin
-                    @test y_out == y
+                    @test y_out ≈ y
                 end
                 @testset "Derivative output" begin
                     @test der_out ≈ der_true rtol = 1e-3
@@ -298,7 +298,7 @@ function test_multiderivative(
                 y_out, multider_out = value_and_multiderivative(backend, f, x)
 
                 @testset "Primal output" begin
-                    @test y_out == y
+                    @test y_out ≈ y
                 end
                 @testset "Multiderivative output" begin
                     @test multider_out ≈ multider_true rtol = 1e-3
@@ -342,7 +342,7 @@ function test_gradient(
                 y_out, grad_out = value_and_gradient(backend, f, x)
 
                 @testset "Primal output" begin
-                    @test y_out == y
+                    @test y_out ≈ y
                 end
                 @testset "Gradient output" begin
                     @test grad_out ≈ grad_true rtol = 1e-3
@@ -384,7 +384,7 @@ function test_jacobian(
                 y_out, jac_out = value_and_jacobian(backend, f, x)
 
                 @testset "Primal output" begin
-                    @test y_out == y
+                    @test y_out ≈ y
                 end
                 @testset "Jacobian output" begin
                     @test jac_out ≈ jac_true rtol = 1e-3

@@ -1,15 +1,18 @@
 module DifferentiationInterfaceReverseDiffExt
 
-using DifferentiationInterface
+using DifferentiationInterface: ReverseDiffBackend
+import DifferentiationInterface as DI
 using DiffResults: DiffResults
 using DocStringExtensions
 using LinearAlgebra: mul!
-using ReverseDiff: gradient!, jacobian!
+using ReverseDiff: gradient, gradient!, jacobian, jacobian!
+
+## Primitives
 
 """
 $(TYPEDSIGNATURES)
 """
-function DifferentiationInterface.value_and_pullback!(
+function DI.value_and_pullback!(
     dx, ::ReverseDiffBackend, f, x::X, dy::Y
 ) where {X<:AbstractArray,Y<:Real}
     res = DiffResults.DiffResult(zero(Y), dx)
@@ -22,7 +25,7 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function DifferentiationInterface.value_and_pullback!(
+function DI.value_and_pullback!(
     dx, ::ReverseDiffBackend, f, x::X, dy::Y
 ) where {X<:AbstractArray,Y<:AbstractArray}
     res = DiffResults.DiffResult(similar(dy), similar(dy, length(dy), length(x)))
@@ -31,6 +34,48 @@ function DifferentiationInterface.value_and_pullback!(
     J = DiffResults.jacobian(res)
     mul!(vec(dx), transpose(J), vec(dy))
     return y, dx
+end
+
+## Special cases (TODO: use DiffResults)
+
+"""
+$(TYPEDSIGNATURES)
+"""
+function DI.value_and_gradient(::ReverseDiffBackend, f, x::AbstractArray)
+    y = f(x)
+    grad = gradient(f, x)
+    return y, grad
+end
+
+"""
+$(TYPEDSIGNATURES)
+"""
+function DI.value_and_gradient!(
+    grad::AbstractArray, ::ReverseDiffBackend, f, x::AbstractArray
+)
+    y = f(x)
+    gradient!(grad, f, x)
+    return y, grad
+end
+
+"""
+$(TYPEDSIGNATURES)
+"""
+function DI.value_and_jacobian(::ReverseDiffBackend, f, x::AbstractArray)
+    y = f(x)
+    jac = jacobian(f, x)
+    return y, jac
+end
+
+"""
+$(TYPEDSIGNATURES)
+"""
+function DI.value_and_jacobian(
+    jac::AbstractMatrix, ::ReverseDiffBackend, f, x::AbstractArray
+)
+    y = f(x)
+    jacobian!(jac, f, x)
+    return y, jac
 end
 
 end # module
