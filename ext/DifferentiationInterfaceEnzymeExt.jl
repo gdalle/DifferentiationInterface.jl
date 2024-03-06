@@ -1,6 +1,7 @@
 module DifferentiationInterfaceEnzymeExt
 
 using DifferentiationInterface
+using DocStringExtensions
 using Enzyme: Forward, ReverseWithPrimal, Active, Duplicated, autodiff
 
 const EnzymeBackends = Union{EnzymeForwardBackend,EnzymeReverseBackend}
@@ -8,16 +9,19 @@ const EnzymeBackends = Union{EnzymeForwardBackend,EnzymeReverseBackend}
 ## Unit vector
 
 # Enzyme's `Duplicated(x, dx)` expects both arguments to be of the same type
-function DifferentiationInterface.basisvector(
-    ::EnzymeBackends, v::AbstractVector{T}, i
+function DifferentiationInterface.basisarray(
+    ::EnzymeBackends, a::AbstractArray{T}, i::Integer
 ) where {T}
-    uv = zero(v)
-    uv[i] = one(T)
-    return uv
+    b = zero(a)
+    b[i] = one(T)
+    return b
 end
 
 ## Forward mode
 
+"""
+$(TYPEDSIGNATURES)
+"""
 function DifferentiationInterface.value_and_pushforward!(
     _dy::Y, ::EnzymeForwardBackend, f, x::X, dx
 ) where {X,Y<:Real}
@@ -25,6 +29,9 @@ function DifferentiationInterface.value_and_pushforward!(
     return y, new_dy
 end
 
+"""
+$(TYPEDSIGNATURES)
+"""
 function DifferentiationInterface.value_and_pushforward!(
     dy::Y, ::EnzymeForwardBackend, f, x::X, dx
 ) where {X,Y<:AbstractArray}
@@ -56,6 +63,9 @@ end
 # When writing into pre-allocated arrays, e.g. Jacobians,
 # dx often is a view or SubArray.
 # This requires a specialized method that allocates a new dx.
+"""
+$(TYPEDSIGNATURES)
+"""
 function DifferentiationInterface.value_and_pullback!(
     dx, ::EnzymeReverseBackend, f, x::X, dy::Y
 ) where {X<:AbstractArray,Y<:Union{Real,Nothing}}

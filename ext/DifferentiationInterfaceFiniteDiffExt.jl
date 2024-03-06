@@ -1,6 +1,7 @@
 module DifferentiationInterfaceFiniteDiffExt
 
 using DifferentiationInterface
+using DocStringExtensions
 using FiniteDiff:
     finite_difference_derivative,
     finite_difference_gradient,
@@ -10,6 +11,9 @@ using LinearAlgebra: dot, mul!
 
 const DEFAULT_FDTYPE = Val{:central}
 
+"""
+$(TYPEDSIGNATURES)
+"""
 function DifferentiationInterface.value_and_pushforward!(
     dy::Y, ::FiniteDiffBackend, f, x::X, dx
 ) where {X<:Number,Y<:Number}
@@ -25,6 +29,9 @@ function DifferentiationInterface.value_and_pushforward!(
     return y, new_dy
 end
 
+"""
+$(TYPEDSIGNATURES)
+"""
 function DifferentiationInterface.value_and_pushforward!(
     dy::Y, ::FiniteDiffBackend, f, x::X, dx
 ) where {X<:Number,Y<:AbstractArray}
@@ -42,6 +49,9 @@ function DifferentiationInterface.value_and_pushforward!(
     return y, dy
 end
 
+"""
+$(TYPEDSIGNATURES)
+"""
 function DifferentiationInterface.value_and_pushforward!(
     dy::Y, ::FiniteDiffBackend, f, x::X, dx
 ) where {X<:AbstractArray,Y<:Number}
@@ -58,6 +68,9 @@ function DifferentiationInterface.value_and_pushforward!(
     return y, new_dy
 end
 
+"""
+$(TYPEDSIGNATURES)
+"""
 function DifferentiationInterface.value_and_pushforward!(
     dy::Y, ::FiniteDiffBackend, f, x::X, dx
 ) where {X<:AbstractArray,Y<:AbstractArray}

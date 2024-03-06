@@ -2,9 +2,13 @@ module DifferentiationInterfaceForwardDiffExt
 
 using DifferentiationInterface
 using DiffResults: DiffResults
+using DocStringExtensions
 using ForwardDiff: Dual, Tag, value, extract_derivative, extract_derivative!
 using LinearAlgebra: mul!
 
+"""
+$(TYPEDSIGNATURES)
+"""
 function DifferentiationInterface.value_and_pushforward!(
     _dy::Y, ::ForwardDiffBackend, f, x::X, dx
 ) where {X<:Real,Y<:Real}
@@ -16,6 +20,9 @@ function DifferentiationInterface.value_and_pushforward!(
     return y, new_dy
 end
 
+"""
+$(TYPEDSIGNATURES)
+"""
 function DifferentiationInterface.value_and_pushforward!(
     dy::Y, ::ForwardDiffBackend, f, x::X, dx
 ) where {X<:Real,Y<:AbstractArray}
@@ -27,6 +34,9 @@ function DifferentiationInterface.value_and_pushforward!(
     return y, dy
 end
 
+"""
+$(TYPEDSIGNATURES)
+"""
 function DifferentiationInterface.value_and_pushforward!(
     _dy::Y, ::ForwardDiffBackend, f, x::X, dx
 ) where {X<:AbstractArray,Y<:Real}
@@ -38,6 +48,9 @@ function DifferentiationInterface.value_and_pushforward!(
     return y, new_dy
 end
 
+"""
+$(TYPEDSIGNATURES)
+"""
 function DifferentiationInterface.value_and_pushforward!(
     dy::Y, ::ForwardDiffBackend, f, x::X, dx
 ) where {X<:AbstractArray,Y<:AbstractArray}

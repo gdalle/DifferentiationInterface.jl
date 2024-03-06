@@ -1,6 +1,7 @@
 module DifferentiationInterfaceZygoteExt
 
-using Zygote
 using DifferentiationInterface
+using DocStringExtensions
+using Zygote
 
 end

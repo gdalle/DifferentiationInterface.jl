@@ -1,7 +1,10 @@
 """
     value_and_pushforward!(dy, backend, f, x, dx[, stuff]) -> (y, dy)
 
-Compute a Jacobian-vector product inside `dy` and return it with the primal output.
+Compute the Jacobian-vector product inside `dy` and return it with the primal output.
+
+!!! info "Interface requirement"
+    This is the only required implementation for a forward mode backend.
 
 # Arguments
 

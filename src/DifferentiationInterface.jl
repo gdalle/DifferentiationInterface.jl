@@ -15,12 +15,12 @@ using FillArrays: OneElement
 
 include("backends.jl")
 include("basis.jl")
-include("forward.jl")
-include("reverse.jl")
-include("derivative.jl")
-include("multiderivative.jl")
-include("gradient.jl")
-include("jacobian.jl")
+include("pushforward.jl")
+include("pullback.jl")
+include("scalar_scalar.jl")
+include("scalar_array.jl")
+include("array_scalar.jl")
+include("array_array.jl")
 
 export ChainRulesReverseBackend,
     ChainRulesForwardBackend,
@@ -36,8 +36,8 @@ export value_and_pullback!, value_and_pullback
 export pullback!, pullback
 
 export value_and_derivative
-export value_and_multiderivative!, value_and_multiderivative
-export value_and_gradient!, value_and_gradient
-export value_and_jacobian!, value_and_jacobian
+export value_and_multiderivative!
+export value_and_gradient!
+export value_and_jacobian!
 
 end # module

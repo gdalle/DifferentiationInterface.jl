@@ -2,9 +2,13 @@ module DifferentiationInterfaceReverseDiffExt
 
 using DifferentiationInterface
 using DiffResults: DiffResults
-using ReverseDiff: gradient!, jacobian!
+using DocStringExtensions
 using LinearAlgebra: mul!
+using ReverseDiff: gradient!, jacobian!
 
+"""
+$(TYPEDSIGNATURES)
+"""
 function DifferentiationInterface.value_and_pullback!(
     dx, ::ReverseDiffBackend, f, x::X, dy::Y
 ) where {X<:AbstractArray,Y<:Real}
@@ -15,6 +19,9 @@ function DifferentiationInterface.value_and_pullback!(
     return y, dx
 end
 
+"""
+$(TYPEDSIGNATURES)
+"""
 function DifferentiationInterface.value_and_pullback!(
     dx, ::ReverseDiffBackend, f, x::X, dy::Y
 ) where {X<:AbstractArray,Y<:AbstractArray}

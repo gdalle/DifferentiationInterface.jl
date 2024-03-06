@@ -2,6 +2,7 @@ module DifferentiationInterfaceChainRulesCoreExt
 
 using ChainRulesCore: NoTangent, frule_via_ad, rrule_via_ad
 using DifferentiationInterface
+using DocStringExtensions
 
 ruleconfig(backend::ChainRulesForwardBackend) = backend.ruleconfig
 ruleconfig(backend::ChainRulesReverseBackend) = backend.ruleconfig
@@ -9,6 +10,9 @@ ruleconfig(backend::ChainRulesReverseBackend) = backend.ruleconfig
 update!(_old::Number, new::Number) = new
 update!(old, new) = old .= new
 
+"""
+$(TYPEDSIGNATURES)
+"""
 function DifferentiationInterface.value_and_pushforward!(
     dy::Y, backend::ChainRulesForwardBackend, f, x::X, dx
 ) where {X,Y}
@@ -17,6 +21,9 @@ function DifferentiationInterface.value_and_pushforward!(
     return y, update!(dy, new_dy)
 end
 
+"""
+$(TYPEDSIGNATURES)
+"""
 function DifferentiationInterface.value_and_pullback!(
     dx, backend::ChainRulesReverseBackend, f, x::X, dy::Y
 ) where {X,Y}
