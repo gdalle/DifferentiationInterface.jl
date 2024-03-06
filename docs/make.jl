@@ -42,7 +42,6 @@ makedocs(;
     pages=[
         "Home" => "index.md", "API reference" => "api.md", "Extensions" => "extensions.md"
     ],
-    warnonly=true,
 )
 
 deploydocs(; repo="github.com/gdalle/DifferentiationInterface.jl", devbranch="main")
