@@ -1,19 +1,39 @@
 module DifferentiationInterfaceEnzymeExt
 
 using DifferentiationInterface
+using DocStringExtensions
 using Enzyme: Forward, ReverseWithPrimal, Active, Duplicated, autodiff
+
+const EnzymeBackends = Union{EnzymeForwardBackend,EnzymeReverseBackend}
+
+## Unit vector
+
+# Enzyme's `Duplicated(x, dx)` expects both arguments to be of the same type
+function DifferentiationInterface.basisarray(
+    ::EnzymeBackends, a::AbstractArray{T}, i
+) where {T}
+    b = zero(a)
+    b[i] = one(T)
+    return b
+end
 
 ## Forward mode
 
+"""
+$(TYPEDSIGNATURES)
+"""
 function DifferentiationInterface.value_and_pushforward!(
-    _dy::Y, ::EnzymeForwardBackend, f, x::X, dx::X
+    _dy::Y, ::EnzymeForwardBackend, f, x::X, dx
 ) where {X,Y<:Real}
     y, new_dy = autodiff(Forward, f, Duplicated, Duplicated(x, dx))
     return y, new_dy
 end
 
+"""
+$(TYPEDSIGNATURES)
+"""
 function DifferentiationInterface.value_and_pushforward!(
-    dy::Y, ::EnzymeForwardBackend, f, x::X, dx::X
+    dy::Y, ::EnzymeForwardBackend, f, x::X, dx
 ) where {X,Y<:AbstractArray}
     y, new_dy = autodiff(Forward, f, Duplicated, Duplicated(x, dx))
     dy .= new_dy
@@ -23,7 +43,7 @@ end
 ## Reverse mode
 
 function DifferentiationInterface.value_and_pullback!(
-    _dx::X, ::EnzymeReverseBackend, f, x::X, dy::Y
+    _dx, ::EnzymeReverseBackend, f, x::X, dy::Y
 ) where {X<:Number,Y<:Union{Real,Nothing}}
     der, y = autodiff(ReverseWithPrimal, f, Active, Active(x))
     new_dx = dy * only(der)

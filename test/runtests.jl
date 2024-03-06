@@ -33,7 +33,7 @@ include("utils.jl")
     end
 
     @testset "Diffractor" begin
-        @test_skip include("diffractor.jl")
+        include("diffractor.jl")
     end
     @testset "Enzyme" begin
         include("enzyme.jl")

@@ -1,3 +1,7 @@
+abstract type AbstractBackend end
+abstract type AbstractForwardBackend <: AbstractBackend end
+abstract type AbstractReverseBackend <: AbstractBackend end
+
 """
     ChainRulesReverseBackend{RC}
 
