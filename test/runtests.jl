@@ -6,14 +6,6 @@ using JET: JET
 using JuliaFormatter: JuliaFormatter
 using Test
 
-using Diffractor: Diffractor
-using Enzyme: Enzyme
-using FiniteDiff: FiniteDiff
-using ForwardDiff: ForwardDiff
-using PolyesterForwardDiff: PolyesterForwardDiff
-using ReverseDiff: ReverseDiff
-using Zygote: Zygote
-
 ## Utils
 
 include("utils.jl")
