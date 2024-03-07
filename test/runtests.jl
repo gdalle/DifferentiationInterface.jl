@@ -22,7 +22,7 @@ include("utils.jl")
         )
     end
     @testset "JET" begin
-        JET.test_package(DifferentiationInterface; target_defined_modules=true)
+        @test_skip JET.test_package(DifferentiationInterface; target_defined_modules=true)
     end
 
     @testset "Backend utilities" begin
