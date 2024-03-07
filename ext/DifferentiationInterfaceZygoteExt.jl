@@ -1,47 +1,46 @@
 module DifferentiationInterfaceZygoteExt
 
-using DifferentiationInterface: ChainRulesReverseBackend
+using DifferentiationInterface: ChainRulesReverseBackend, ZygoteBackend
 import DifferentiationInterface as DI
 using DocStringExtensions
 using Zygote: ZygoteRuleConfig, gradient, jacobian, withgradient, withjacobian
 
-const ZygoteBackend = ChainRulesReverseBackend{<:ZygoteRuleConfig}
-
-## Special cases
+## Backend construction
 
 """
-$(TYPEDSIGNATURES)
+$(SIGNATURES)
 """
-function DI.value_and_gradient(::ZygoteBackend, f, x::AbstractArray)
+DI.ZygoteBackend(; custom::Bool=true) = ChainRulesReverseBackend(ZygoteRuleConfig(); custom)
+
+const ZygoteBackendType{custom} = ChainRulesReverseBackend{custom,<:ZygoteRuleConfig}
+
+function Base.show(io::IO, backend::ZygoteBackendType{custom}) where {custom}
+    return print(io, "ZygoteBackend{$custom}()")
+end
+
+## Utilities
+
+function DI.value_and_gradient(::ZygoteBackendType{true}, f, x::AbstractArray)
     res = withgradient(f, x)
     return res.val, only(res.grad)
 end
 
-"""
-$(TYPEDSIGNATURES)
-"""
 function DI.value_and_gradient!(
-    grad::AbstractArray, backend::ZygoteBackend, f, x::AbstractArray
+    grad::AbstractArray, backend::ZygoteBackendType{true}, f, x::AbstractArray
 )
     y, new_grad = DI.value_and_gradient(backend, f, x)
     grad .= new_grad
     return y, grad
 end
 
-"""
-$(TYPEDSIGNATURES)
-"""
-function DI.value_and_jacobian(::ZygoteBackend, f, x::AbstractArray)
+function DI.value_and_jacobian(::ZygoteBackendType{true}, f, x::AbstractArray)
     y = f(x)
     jac = jacobian(f, x)
     return y, only(jac)
 end
 
-"""
-$(TYPEDSIGNATURES)
-"""
 function DI.value_and_jacobian!(
-    jac::AbstractMatrix, backend::ZygoteBackend, f, x::AbstractArray
+    jac::AbstractMatrix, backend::ZygoteBackendType{true}, f, x::AbstractArray
 )
     y, new_jac = DI.value_and_jacobian(backend, f, x)
     jac .= new_jac

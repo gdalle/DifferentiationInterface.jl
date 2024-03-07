@@ -101,7 +101,7 @@ rng = StableRNG(63)
 
 f_scalar_scalar(x::Number)::Number = sin(x)
 f_scalar_vector(x::Number)::AbstractVector = [sin(x), sin(2x)]
-f_scalar_matrix(x::Number)::AbstractMatrix = [sin(x) cos(x); sin(2x) cos(2x)]
+f_scalar_matrix(x::Number)::AbstractMatrix = hcat([sin(x) cos(x)], [sin(2x) cos(2x)])
 
 function f_vector_scalar(x::AbstractVector)::Number
     a = eachindex(x)
@@ -245,15 +245,15 @@ function test_pullback(
 end
 
 function test_derivative(
-    backend::AbstractBackend,
+    backend::AbstractBackend{custom},
     scenarios::Vector{<:Scenario}=scenarios;
     allocs::Bool=false,
     type_stability::Bool=true,
-)
+) where {custom}
     scenarios = filter(scenarios) do s
         (get_input_type(s) <: Number) && (get_output_type(s) <: Number)
     end
-    @testset "Derivative" begin
+    @testset "Derivative ($(custom ? "custom" : "fallback"))" begin
         for scenario in scenarios
             X, Y = get_input_type(scenario), get_output_type(scenario)
             @testset "$X -> $Y" begin
@@ -282,15 +282,15 @@ function test_derivative(
 end
 
 function test_multiderivative(
-    backend::AbstractBackend,
+    backend::AbstractBackend{custom},
     scenarios::Vector{<:Scenario}=scenarios;
     allocs::Bool=false,
     type_stability::Bool=true,
-)
+) where {custom}
     scenarios = filter(scenarios) do s
         (get_input_type(s) <: Number) && (get_output_type(s) <: AbstractArray)
     end
-    @testset "Multiderivative" begin
+    @testset "Multiderivative ($(custom ? "custom" : "fallback"))" begin
         for scenario in scenarios
             X, Y = get_input_type(scenario), get_output_type(scenario)
             @testset "$X -> $Y" begin
@@ -326,15 +326,15 @@ function test_multiderivative(
 end
 
 function test_gradient(
-    backend::AbstractBackend,
+    backend::AbstractBackend{custom},
     scenarios::Vector{<:Scenario}=scenarios;
     allocs::Bool=false,
     type_stability::Bool=true,
-)
+) where {custom}
     scenarios = filter(scenarios) do s
         (get_input_type(s) <: AbstractArray) && (get_output_type(s) <: Number)
     end
-    @testset "Gradient" begin
+    @testset "Gradient ($(custom ? "custom" : "fallback"))" begin
         for scenario in scenarios
             X, Y = get_input_type(scenario), get_output_type(scenario)
             @testset "$X -> $Y" begin
@@ -368,15 +368,15 @@ function test_gradient(
 end
 
 function test_jacobian(
-    backend::AbstractBackend,
+    backend::AbstractBackend{custom},
     scenarios::Vector{<:Scenario}=scenarios;
     allocs::Bool=false,
     type_stability::Bool=true,
-)
+) where {custom}
     scenarios = filter(scenarios) do s
         (get_input_type(s) <: AbstractArray) && (get_output_type(s) <: AbstractArray)
     end
-    @testset "Jacobian" begin
+    @testset "Jacobian ($(custom ? "custom" : "fallback"))" begin
         for scenario in scenarios
             X, Y = get_input_type(scenario), get_output_type(scenario)
             @testset "$X -> $Y" begin
@@ -410,13 +410,13 @@ function test_jacobian(
 end
 
 function test_jacobian_and_friends(
-    backend::AbstractBackend,
+    backend::AbstractBackend{custom},
     scenarios::Vector{<:Scenario}=scenarios;
     input_type::Type=Any,
     output_type::Type=Any,
     allocs::Bool=false,
     type_stability::Bool=true,
-)
+) where {custom}
     scenarios = filter(scenarios) do s
         (get_input_type(s) <: input_type) && (get_output_type(s) <: output_type)
     end

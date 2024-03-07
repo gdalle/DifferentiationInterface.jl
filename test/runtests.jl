@@ -10,6 +10,7 @@ using Diffractor: Diffractor
 using Enzyme: Enzyme
 using FiniteDiff: FiniteDiff
 using ForwardDiff: ForwardDiff
+using PolyesterForwardDiff: PolyesterForwardDiff
 using ReverseDiff: ReverseDiff
 using Zygote: Zygote
 
@@ -35,14 +36,20 @@ include("utils.jl")
     @testset "Diffractor" begin
         include("diffractor.jl")
     end
-    @testset "Enzyme" begin
-        include("enzyme.jl")
+    @testset "Enzyme (forward)" begin
+        include("enzyme_forward.jl")
+    end
+    @testset "Enzyme (reverse)" begin
+        include("enzyme_reverse.jl")
     end
     @testset "FiniteDiff" begin
         include("finitediff.jl")
     end
     @testset "ForwardDiff" begin
         include("forwarddiff.jl")
+    end
+    @testset "PolyesterForwardDiff" begin
+        include("polyesterforwarddiff.jl")
     end
     @testset "ReverseDiff" begin
         include("reversediff.jl")

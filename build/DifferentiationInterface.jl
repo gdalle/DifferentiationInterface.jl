@@ -25,6 +25,7 @@ include("array_array.jl")
 
 export ChainRulesReverseBackend,
     ChainRulesForwardBackend,
+    DiffractorBackend,
     EnzymeReverseBackend,
     EnzymeForwardBackend,
     FiniteDiffBackend,

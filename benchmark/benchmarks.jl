@@ -1,63 +1,91 @@
 # Run benchmarks locally by calling:
 # julia -e 'using BenchmarkCI; BenchmarkCI.judge(baseline="origin/main"); BenchmarkCI.displayjudgement()'
 
-using Base: Fix2
 using BenchmarkTools
 using DifferentiationInterface
 using LinearAlgebra
 
-using Diffractor: Diffractor
 using Enzyme: Enzyme
 using FiniteDiff: FiniteDiff
 using ForwardDiff: ForwardDiff
+using PolyesterForwardDiff: PolyesterForwardDiff
 using ReverseDiff: ReverseDiff
 using Zygote: Zygote
 
+struct ScalarToVector
+    n::Int
+end
+
+(f::ScalarToVector)(x::Real) = collect((1:(f.n)) .* x)
+
 scalar_to_scalar(x::Real) = x
-scalar_to_vector(x::Real, n) = collect((1:n) .* x)
-vector_to_scalar(x::AbstractVector{<:Real}) = dot(1:length(x), x)
-vector_to_vector(x::AbstractVector{<:Real}) = (1:length(x)) .* x
+vector_to_scalar(x::AbstractVector{<:Real}) = dot(eachindex(x), x)
+vector_to_vector(x::AbstractVector{<:Real}) = eachindex(x) .* x
 
-forward_backends = [EnzymeForwardBackend(), FiniteDiffBackend(), ForwardDiffBackend()]
-
-reverse_backends = [
-    ChainRulesReverseBackend(Zygote.ZygoteRuleConfig()),
-    EnzymeReverseBackend(),
-    ReverseDiffBackend(),
+forward_backends = [
+    EnzymeForwardBackend(; custom=true),
+    EnzymeForwardBackend(; custom=false),
+    FiniteDiffBackend(; custom=true),
+    FiniteDiffBackend(; custom=false),
+    ForwardDiffBackend(; custom=true),
+    ForwardDiffBackend(; custom=false),
 ]
 
-n_values = [10]
+reverse_backends = [
+    ZygoteBackend(; custom=true),
+    ZygoteBackend(; custom=false),
+    EnzymeReverseBackend(; custom=true),
+    EnzymeReverseBackend(; custom=false),
+    ReverseDiffBackend(; custom=true),
+    ReverseDiffBackend(; custom=false),
+]
+
+backends = vcat(forward_backends, reverse_backends)
+
+input_dims = [10]
+output_dims = [10]
 
 SUITE = BenchmarkGroup()
 
-for n in n_values
-    for backend in forward_backends
-        SUITE["forward"]["scalar_to_scalar"][n][string(backend)] = @benchmarkable begin
-            value_and_pushforward!(dy, $backend, scalar_to_scalar, x, dx)
-        end setup = (x = 1.0; dx = 1.0; dy = 0.0) evals = 1
-        if backend != EnzymeForwardBackend()  # type instability?
-            SUITE["forward"]["scalar_to_vector"][n][string(backend)] = @benchmarkable begin
-                value_and_pushforward!(dy, $backend, Fix2(scalar_to_vector, $n), x, dx)
-            end setup = (x = 1.0; dx = 1.0; dy = zeros($n)) evals = 1
-        end
-        SUITE["forward"]["vector_to_vector"][n][string(backend)] = @benchmarkable begin
-            value_and_pushforward!(dy, $backend, vector_to_vector, x, dx)
-        end setup = (x = randn($n); dx = randn($n); dy = zeros($n)) evals = 1
+for backend in backends
+
+    ## Scalar to scalar
+    if !(backend isa ReverseDiffBackend)
+        SUITE["derivative"][(1, 1)][string(backend)] = @benchmarkable begin
+            value_and_derivative($backend, $scalar_to_scalar, x)
+        end setup = (x = 1.0) evals = 1 seconds = 1
     end
 
-    for backend in reverse_backends
-        if backend != ReverseDiffBackend()
-            SUITE["reverse"]["scalar_to_scalar"][n][string(backend)] = @benchmarkable begin
-                value_and_pullback!(dx, $backend, scalar_to_scalar, x, dy)
-            end setup = (x = 1.0; dy = 1.0; dx = 0.0) evals = 1
+    ## Scalar to vector
+    if !(
+        backend isa ReverseDiffBackend ||
+        backend isa EnzymeReverseBackend ||
+        backend isa EnzymeForwardBackend
+    )
+        for m in output_dims
+            scalar_to_vector = ScalarToVector(m)
+            SUITE["multiderivative"][(1, m)][string(backend)] = @benchmarkable begin
+                value_and_multiderivative($backend, $scalar_to_vector, x)
+            end setup = (x = 1.0) evals = 1 seconds = 1
         end
-        SUITE["reverse"]["vector_to_scalar"][n][string(backend)] = @benchmarkable begin
-            value_and_pullback!(dx, $backend, vector_to_scalar, x, dy)
-        end setup = (x = randn($n); dy = 1.0; dx = zeros($n)) evals = 1
-        if backend != EnzymeReverseBackend()
-            SUITE["reverse"]["vector_to_vector"][n][string(backend)] = @benchmarkable begin
-                value_and_pullback!(dx, $backend, vector_to_vector, x, dy)
-            end setup = (x = randn($n); dy = randn($n); dx = zeros($n)) evals = 1
+    end
+
+    ## Vector to scalar
+    for n in input_dims
+        SUITE["gradient"][(n, 1)][string(backend)] = @benchmarkable begin
+            value_and_gradient($backend, $vector_to_scalar, x)
+        end setup = (x = randn($n)) evals = 1 seconds = 1
+    end
+
+    ## Vector to vector
+    if !(backend isa EnzymeReverseBackend)
+        for n in input_dims, m in output_dims
+            backend isa EnzymeReverseBackend && continue
+            SUITE["jacobian"][(n, m)][string(backend)] = @benchmarkable begin
+                value_and_jacobian($backend, $vector_to_vector, x)
+            end setup = (x = randn($n)) evals = 1 seconds = 1
         end
     end
 end
+
+# results = BenchmarkTools.run(SUITE; verbose=true)
