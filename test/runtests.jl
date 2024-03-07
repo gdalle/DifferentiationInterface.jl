@@ -33,6 +33,10 @@ include("utils.jl")
         @test_skip JET.test_package(DifferentiationInterface; target_defined_modules=true)
     end
 
+    @testset "Backend utilities" begin
+        include("backends.jl")
+    end
+
     @testset "Diffractor" begin
         include("diffractor.jl")
     end

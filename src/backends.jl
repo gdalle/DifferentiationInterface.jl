@@ -19,7 +19,10 @@ struct ChainRulesForwardBackend{custom,RC} <: AbstractForwardBackend{custom}
 end
 
 function Base.show(io::IO, backend::ChainRulesForwardBackend{custom}) where {custom}
-    return print(io, "ChainRulesForwardBackend{$custom}($(backend.ruleconfig))")
+    return print(
+        io,
+        "ChainRulesForwardBackend{$(custom ? "custom" : "fallback")}($(backend.ruleconfig))",
+    )
 end
 
 """
@@ -44,7 +47,10 @@ struct ChainRulesReverseBackend{custom,RC} <: AbstractReverseBackend{custom}
 end
 
 function Base.show(io::IO, backend::ChainRulesReverseBackend{custom}) where {custom}
-    return print(io, "ChainRulesReverseBackend{$custom}($(backend.ruleconfig))")
+    return print(
+        io,
+        "ChainRulesReverseBackend{$(custom ? "custom" : "fallback")}($(backend.ruleconfig))",
+    )
 end
 
 """
@@ -56,6 +62,21 @@ The type parameter `fdtype` determines the type of finite differences used, it d
 """
 struct FiniteDiffBackend{custom,fdtype} <: AbstractForwardBackend{custom} end
 
+function Base.show(io::IO, ::FiniteDiffBackend{custom,fdtype}) where {custom,fdtype}
+    return print(io, "FiniteDiffBackend{$(custom ? "custom" : "fallback"),$fdtype}()")
+end
+
+"""
+$(TYPEDEF)
+
+Performs forward-mode autodiff with [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl).
+"""
+struct EnzymeForwardBackend{custom} <: AbstractForwardBackend{custom} end
+
+function Base.show(io::IO, ::EnzymeForwardBackend{custom}) where {custom}
+    return print(io, "EnzymeForwardBackend{$(custom ? "custom" : "fallback")}()")
+end
+
 """
 $(TYPEDEF)
 
@@ -66,12 +87,9 @@ Performs reverse-mode autodiff with [Enzyme.jl](https://github.com/EnzymeAD/Enzy
 """
 struct EnzymeReverseBackend{custom} <: AbstractReverseBackend{custom} end
 
-"""
-$(TYPEDEF)
-
-Performs forward-mode autodiff with [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl).
-"""
-struct EnzymeForwardBackend{custom} <: AbstractForwardBackend{custom} end
+function Base.show(io::IO, ::EnzymeReverseBackend{custom}) where {custom}
+    return print(io, "EnzymeReverseBackend{$(custom ? "custom" : "fallback")}()")
+end
 
 """
 $(TYPEDEF)
@@ -79,6 +97,10 @@ $(TYPEDEF)
 Performs autodiff with [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl).
 """
 struct ForwardDiffBackend{custom} <: AbstractForwardBackend{custom} end
+
+function Base.show(io::IO, ::ForwardDiffBackend{custom}) where {custom}
+    return print(io, "ForwardDiffBackend{$(custom ? "custom" : "fallback")}()")
+end
 
 """
 $(TYPEDEF)
@@ -92,6 +114,10 @@ The type parameter `C` is an integer configuring chunk size.
 """
 struct PolyesterForwardDiffBackend{custom,C} <: AbstractForwardBackend{custom} end
 
+function Base.show(io::IO, ::PolyesterForwardDiffBackend{custom,C}) where {custom,C}
+    return print(io, "PolyesterForwardDiffBackend{$(custom ? "custom" : "fallback"),$C}()")
+end
+
 """
 $(TYPEDEF)
 
@@ -101,6 +127,10 @@ Performs autodiff with [ReverseDiff.jl](https://github.com/JuliaDiff/ReverseDiff
     This backend only works for array input.
 """
 struct ReverseDiffBackend{custom} <: AbstractReverseBackend{custom} end
+
+function Base.show(io::IO, ::ReverseDiffBackend{custom}) where {custom}
+    return print(io, "ReverseDiffBackend{$(custom ? "custom" : "fallback")}()")
+end
 
 ## Pseudo backends
 
@@ -114,3 +144,8 @@ Performs autodiff with [Zygote.jl](https://github.com/FluxML/Zygote.jl).
 This is not a type but a function because it actually constructs a [`ChainRulesReverseBackend`](@ref) with `ZygoteRuleConfig()`.
 """
 function ZygoteBackend end
+
+## Limitations
+
+handles_input_type(::ReverseDiffBackend, ::Type{<:Number}) = false
+handles_output_type(::EnzymeReverseBackend, ::Type{<:AbstractArray}) = false

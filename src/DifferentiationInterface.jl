@@ -23,10 +23,14 @@ include("scalar_array.jl")
 include("array_scalar.jl")
 include("array_array.jl")
 
-export ChainRulesReverseBackend,
-    ChainRulesForwardBackend,
-    EnzymeReverseBackend,
+export AbstractBackend, AbstractForwardBackend, AbstractReverseBackend
+export ad_mode
+export handles_input_type, handles_output_type, handles_types
+
+export ChainRulesForwardBackend,
+    ChainRulesReverseBackend,
     EnzymeForwardBackend,
+    EnzymeReverseBackend,
     FiniteDiffBackend,
     ForwardDiffBackend,
     PolyesterForwardDiffBackend,

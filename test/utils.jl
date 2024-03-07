@@ -150,19 +150,21 @@ scenarios = [
 ## Test utilities
 
 function test_pushforward(
-    backend::AbstractForwardBackend,
+    backend::AbstractForwardBackend{custom},
     scenarios::Vector{<:Scenario}=scenarios;
     input_type::Type=Any,
     output_type::Type=Any,
     allocs::Bool=false,
     type_stability::Bool=true,
-)
+) where {custom}
     scenarios = filter(scenarios) do s
         get_input_type(s) <: input_type && get_output_type(s) <: output_type
     end
-    @testset "Pushforward" begin
+    @testset "Pushforward ($(custom ? "custom" : "fallback"))" begin
         for scenario in scenarios
             X, Y = get_input_type(scenario), get_output_type(scenario)
+            handles_types(backend, X, Y) || continue
+
             @testset "$X -> $Y" begin
                 (; f, x, y, dx, dy_true) = scenario
                 y_out, dy_out = value_and_pushforward(backend, f, x, dx)
@@ -198,19 +200,21 @@ function test_pushforward(
 end
 
 function test_pullback(
-    backend::AbstractReverseBackend,
+    backend::AbstractReverseBackend{custom},
     scenarios=scenarios;
     input_type::Type=Any,
     output_type::Type=Any,
     allocs::Bool=false,
     type_stability::Bool=true,
-)
+) where {custom}
     scenarios = filter(scenarios) do s
         (get_input_type(s) <: input_type) && (get_output_type(s) <: output_type)
     end
-    @testset "Pullback" begin
+    @testset "Pullback ($(custom ? "custom" : "fallback"))" begin
         for scenario in scenarios
             X, Y = get_input_type(scenario), get_output_type(scenario)
+            handles_types(backend, X, Y) || continue
+
             @testset "$X -> $Y" begin
                 (; f, x, y, dy, dx_true) = scenario
                 y_out, dx_out = value_and_pullback(backend, f, x, dy)
@@ -256,6 +260,8 @@ function test_derivative(
     @testset "Derivative ($(custom ? "custom" : "fallback"))" begin
         for scenario in scenarios
             X, Y = get_input_type(scenario), get_output_type(scenario)
+            handles_types(backend, X, Y) || continue
+
             @testset "$X -> $Y" begin
                 (; f, x, y, der_true) = scenario
                 y_out, der_out = value_and_derivative(backend, f, x)
@@ -293,6 +299,8 @@ function test_multiderivative(
     @testset "Multiderivative ($(custom ? "custom" : "fallback"))" begin
         for scenario in scenarios
             X, Y = get_input_type(scenario), get_output_type(scenario)
+            handles_types(backend, X, Y) || continue
+
             @testset "$X -> $Y" begin
                 (; f, x, y, multider_true) = scenario
                 y_out, multider_out = value_and_multiderivative(backend, f, x)
@@ -337,6 +345,8 @@ function test_gradient(
     @testset "Gradient ($(custom ? "custom" : "fallback"))" begin
         for scenario in scenarios
             X, Y = get_input_type(scenario), get_output_type(scenario)
+            handles_types(backend, X, Y) || continue
+
             @testset "$X -> $Y" begin
                 (; f, x, y, grad_true) = scenario
                 y_out, grad_out = value_and_gradient(backend, f, x)
@@ -379,6 +389,8 @@ function test_jacobian(
     @testset "Jacobian ($(custom ? "custom" : "fallback"))" begin
         for scenario in scenarios
             X, Y = get_input_type(scenario), get_output_type(scenario)
+            handles_types(backend, X, Y) || continue
+
             @testset "$X -> $Y" begin
                 (; f, x, y, jac_true) = scenario
                 y_out, jac_out = value_and_jacobian(backend, f, x)

@@ -15,7 +15,7 @@ DI.ZygoteBackend(; custom::Bool=true) = ChainRulesReverseBackend(ZygoteRuleConfi
 const ZygoteBackendType{custom} = ChainRulesReverseBackend{custom,<:ZygoteRuleConfig}
 
 function Base.show(io::IO, backend::ZygoteBackendType{custom}) where {custom}
-    return print(io, "ZygoteBackend{$custom}()")
+    return print(io, "ZygoteBackend{$(custom ? "custom" : "fallback")}()")
 end
 
 ## Utilities
