@@ -25,13 +25,6 @@ include("utils.jl")
         JET.test_package(DifferentiationInterface; target_defined_modules=true)
     end
 
-    @testset "Backend utilities" begin
-        include("backends.jl")
-    end
-
-    @testset "Diffractor" begin
-        include("diffractor.jl")
-    end
     @testset "Enzyme (forward)" begin
         include("enzyme_forward.jl")
     end

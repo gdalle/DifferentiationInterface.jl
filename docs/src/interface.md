@@ -55,11 +55,11 @@ Modules = [DifferentiationInterface]
 Pages = ["pullback.jl"]
 ```
 
-## Abstract backends
+## Backends
 
 ```@autodocs
 Modules = [DifferentiationInterface]
-Pages = ["backends_abstract.jl"]
+Pages = ["backends.jl"]
 ```
 
 ## Internals

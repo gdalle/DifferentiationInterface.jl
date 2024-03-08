@@ -1,6 +1,5 @@
+using ADTypes: AbstractADType
 using DifferentiationInterface
-using DifferentiationInterface:
-    AbstractBackend, AbstractReverseBackend, AbstractForwardBackend
 using ForwardDiff: ForwardDiff
 using LinearAlgebra
 using JET
@@ -150,17 +149,20 @@ scenarios = [
 ## Test utilities
 
 function test_pushforward(
-    backend::AbstractForwardBackend,
+    backend::AbstractADType,
     scenarios::Vector{<:Scenario};
     input_type::Type=Any,
     output_type::Type=Any,
     allocs::Bool=false,
     type_stability::Bool=true,
 )
+    if autodiff_mode(backend) != Val(:forward)
+        return nothing
+    end
     scenarios = filter(scenarios) do s
         get_input_type(s) <: input_type && get_output_type(s) <: output_type
     end
-    @testset "Pushforward ($(is_custom(backend) ? "custom" : "fallback"))" begin
+    @testset "Pushforward" begin
         for scenario in scenarios
             X, Y = get_input_type(scenario), get_output_type(scenario)
             handles_types(backend, X, Y) || continue
@@ -205,17 +207,20 @@ function test_pushforward(
 end
 
 function test_pullback(
-    backend::AbstractReverseBackend,
+    backend::AbstractADType,
     scenarios::Vector{<:Scenario};
     input_type::Type=Any,
     output_type::Type=Any,
     allocs::Bool=false,
     type_stability::Bool=true,
 )
+    if autodiff_mode(backend) != Val(:reverse)
+        return nothing
+    end
     scenarios = filter(scenarios) do s
         (get_input_type(s) <: input_type) && (get_output_type(s) <: output_type)
     end
-    @testset "Pullback ($(is_custom(backend) ? "custom" : "fallback"))" begin
+    @testset "Pullback" begin
         for scenario in scenarios
             X, Y = get_input_type(scenario), get_output_type(scenario)
             handles_types(backend, X, Y) || continue
@@ -261,15 +266,17 @@ function test_pullback(
 end
 
 function test_derivative(
-    backend::AbstractBackend,
-    scenarios::Vector{<:Scenario};
+    backend::AbstractADType,
+    scenarios::Vector{<:Scenario},
+    implems...;
     allocs::Bool=false,
     type_stability::Bool=true,
 )
     scenarios = filter(scenarios) do s
         (get_input_type(s) <: Number) && (get_output_type(s) <: Number)
     end
-    @testset "Derivative ($(is_custom(backend) ? "custom" : "fallback"))" begin
+    testset_name = isempty(implems) ? "" : "(fallback)"
+    @testset "Derivative $testset_name" begin
         for scenario in scenarios
             X, Y = get_input_type(scenario), get_output_type(scenario)
             handles_types(backend, X, Y) || continue
@@ -277,9 +284,9 @@ function test_derivative(
             @testset "$X -> $Y" begin
                 (; f, x, y, der_true) = scenario
 
-                y_out1, der_out1 = value_and_derivative(backend, f, x)
+                y_out1, der_out1 = value_and_derivative(implems..., backend, f, x)
 
-                der_out2 = derivative(backend, f, x)
+                der_out2 = derivative(implems..., backend, f, x)
 
                 @testset "Primal value" begin
                     @test y_out1 ≈ y
@@ -289,12 +296,12 @@ function test_derivative(
                     @test der_out2 ≈ der_true rtol = 1e-3
                 end
                 allocs && @testset "Allocations" begin
-                    @test iszero(@allocated value_and_derivative(backend, f, x))
-                    @test iszero(@allocated derivative(backend, f, x))
+                    @test iszero(@allocated value_and_derivative(implems..., backend, f, x))
+                    @test iszero(@allocated derivative(implems..., backend, f, x))
                 end
                 type_stability && @testset "Type stability" begin
-                    @test_opt value_and_derivative(backend, f, x)
-                    @test_opt derivative(backend, f, x)
+                    @test_opt value_and_derivative(implems..., backend, f, x)
+                    @test_opt derivative(implems..., backend, f, x)
                 end
             end
         end
@@ -302,15 +309,17 @@ function test_derivative(
 end
 
 function test_multiderivative(
-    backend::AbstractBackend,
-    scenarios::Vector{<:Scenario};
+    backend::AbstractADType,
+    scenarios::Vector{<:Scenario},
+    implems...;
     allocs::Bool=false,
     type_stability::Bool=true,
 )
     scenarios = filter(scenarios) do s
         (get_input_type(s) <: Number) && (get_output_type(s) <: AbstractArray)
     end
-    @testset "Multiderivative ($(is_custom(backend) ? "custom" : "fallback"))" begin
+    testset_name = isempty(implems) ? "" : "(fallback)"
+    @testset "Multiderivative $testset_name" begin
         for scenario in scenarios
             X, Y = get_input_type(scenario), get_output_type(scenario)
             handles_types(backend, X, Y) || continue
@@ -318,15 +327,15 @@ function test_multiderivative(
             @testset "$X -> $Y" begin
                 (; f, x, y, multider_true) = scenario
 
-                y_out1, multider_out1 = value_and_multiderivative(backend, f, x)
+                y_out1, multider_out1 = value_and_multiderivative(implems..., backend, f, x)
                 multider_in2 = zero(multider_out1)
                 y_out2, multider_out2 = value_and_multiderivative!(
-                    multider_in2, backend, f, x
+                    implems..., multider_in2, backend, f, x
                 )
 
-                multider_out3 = multiderivative(backend, f, x)
+                multider_out3 = multiderivative(implems..., backend, f, x)
                 multider_in4 = zero(multider_out3)
-                multider_out4 = multiderivative!(multider_in4, backend, f, x)
+                multider_out4 = multiderivative!(implems..., multider_in4, backend, f, x)
 
                 @testset "Primal value" begin
                     @test y_out1 ≈ y
@@ -344,13 +353,21 @@ function test_multiderivative(
                 end
                 allocs && @testset "Allocations" begin
                     @test iszero(
-                        @allocated value_and_multiderivative!(multider_in2, backend, f, x)
+                        @allocated value_and_multiderivative!(
+                            implems..., multider_in2, backend, f, x
+                        )
                     )
-                    @test iszero(@allocated multiderivative!(multider_in4, backend, f, x))
+                    @test iszero(
+                        @allocated multiderivative!(
+                            implems..., multider_in4, backend, f, x
+                        )
+                    )
                 end
                 type_stability && @testset "Type stability" begin
-                    @test_opt value_and_multiderivative!(multider_in2, backend, f, x)
-                    @test_opt multiderivative!(multider_in4, backend, f, x)
+                    @test_opt value_and_multiderivative!(
+                        implems..., multider_in2, backend, f, x
+                    )
+                    @test_opt multiderivative!(implems..., multider_in4, backend, f, x)
                 end
             end
         end
@@ -358,15 +375,17 @@ function test_multiderivative(
 end
 
 function test_gradient(
-    backend::AbstractBackend,
-    scenarios::Vector{<:Scenario};
+    backend::AbstractADType,
+    scenarios::Vector{<:Scenario},
+    implems...;
     allocs::Bool=false,
     type_stability::Bool=true,
 )
     scenarios = filter(scenarios) do s
         (get_input_type(s) <: AbstractArray) && (get_output_type(s) <: Number)
     end
-    @testset "Gradient ($(is_custom(backend) ? "custom" : "fallback"))" begin
+    testset_name = isempty(implems) ? "" : "(fallback)"
+    @testset "Gradient $testset_name" begin
         for scenario in scenarios
             X, Y = get_input_type(scenario), get_output_type(scenario)
             handles_types(backend, X, Y) || continue
@@ -374,13 +393,13 @@ function test_gradient(
             @testset "$X -> $Y" begin
                 (; f, x, y, grad_true) = scenario
 
-                y_out1, grad_out1 = value_and_gradient(backend, f, x)
+                y_out1, grad_out1 = value_and_gradient(implems..., backend, f, x)
                 grad_in2 = zero(grad_out1)
-                y_out2, grad_out2 = value_and_gradient!(grad_in2, backend, f, x)
+                y_out2, grad_out2 = value_and_gradient!(implems..., grad_in2, backend, f, x)
 
-                grad_out3 = gradient(backend, f, x)
+                grad_out3 = gradient(implems..., backend, f, x)
                 grad_in4 = zero(grad_out3)
-                grad_out4 = gradient!(grad_in4, backend, f, x)
+                grad_out4 = gradient!(implems..., grad_in4, backend, f, x)
 
                 @testset "Primal value" begin
                     @test y_out1 ≈ y
@@ -397,12 +416,14 @@ function test_gradient(
                     end
                 end
                 allocs && @testset "Allocations" begin
-                    @test iszero(@allocated value_and_gradient!(grad_in2, backend, f, x))
-                    @test iszero(@allocated gradient!(grad_in4, backend, f, x))
+                    @test iszero(
+                        @allocated value_and_gradient!(implems..., grad_in2, backend, f, x)
+                    )
+                    @test iszero(@allocated gradient!(implems..., grad_in4, backend, f, x))
                 end
                 type_stability && @testset "Type stability" begin
-                    @test_opt value_and_gradient!(grad_in2, backend, f, x)
-                    @test_opt gradient!(grad_in4, backend, f, x)
+                    @test_opt value_and_gradient!(implems..., grad_in2, backend, f, x)
+                    @test_opt gradient!(implems..., grad_in4, backend, f, x)
                 end
             end
         end
@@ -410,15 +431,17 @@ function test_gradient(
 end
 
 function test_jacobian(
-    backend::AbstractBackend,
-    scenarios::Vector{<:Scenario};
+    backend::AbstractADType,
+    scenarios::Vector{<:Scenario},
+    implems...;
     allocs::Bool=false,
     type_stability::Bool=true,
 )
     scenarios = filter(scenarios) do s
         (get_input_type(s) <: AbstractArray) && (get_output_type(s) <: AbstractArray)
     end
-    @testset "Jacobian ($(is_custom(backend) ? "custom" : "fallback"))" begin
+    testset_name = isempty(implems) ? "" : "(fallback)"
+    @testset "Jacobian $testset_name" begin
         for scenario in scenarios
             X, Y = get_input_type(scenario), get_output_type(scenario)
             handles_types(backend, X, Y) || continue
@@ -426,13 +449,13 @@ function test_jacobian(
             @testset "$X -> $Y" begin
                 (; f, x, y, jac_true) = scenario
 
-                y_out1, jac_out1 = value_and_jacobian(backend, f, x)
+                y_out1, jac_out1 = value_and_jacobian(implems..., backend, f, x)
                 jac_in2 = zero(jac_out1)
-                y_out2, jac_out2 = value_and_jacobian!(jac_in2, backend, f, x)
+                y_out2, jac_out2 = value_and_jacobian!(implems..., jac_in2, backend, f, x)
 
-                jac_out3 = jacobian(backend, f, x)
+                jac_out3 = jacobian(implems..., backend, f, x)
                 jac_in4 = zero(jac_out3)
-                jac_out4 = jacobian!(jac_in4, backend, f, x)
+                jac_out4 = jacobian!(implems..., jac_in4, backend, f, x)
 
                 @testset "Primal value" begin
                     @test y_out1 ≈ y
@@ -449,12 +472,14 @@ function test_jacobian(
                     end
                 end
                 allocs && @testset "Allocations" begin
-                    @test iszero(@allocated value_and_jacobian!(jac_in2, backend, f, x))
-                    @test iszero(@allocated jacobian!(jac_in4, backend, f, x))
+                    @test iszero(
+                        @allocated value_and_jacobian!(implems..., jac_in2, backend, f, x)
+                    )
+                    @test iszero(@allocated jacobian!(implems..., jac_in4, backend, f, x))
                 end
                 type_stability && @testset "Type stability" begin
-                    @test_opt value_and_jacobian!(jac_in2, backend, f, x)
-                    @test_opt jacobian!(jac_in4, backend, f, x)
+                    @test_opt value_and_jacobian!(implems..., jac_in2, backend, f, x)
+                    @test_opt jacobian!(implems..., jac_in4, backend, f, x)
                 end
             end
         end
@@ -462,8 +487,9 @@ function test_jacobian(
 end
 
 function test_jacobian_and_friends(
-    backend::AbstractBackend,
-    scenarios::Vector{<:Scenario};
+    backend::AbstractADType,
+    scenarios::Vector{<:Scenario},
+    implems...;
     input_type::Type=Any,
     output_type::Type=Any,
     allocs::Bool=false,
@@ -472,9 +498,9 @@ function test_jacobian_and_friends(
     scenarios = filter(scenarios) do s
         (get_input_type(s) <: input_type) && (get_output_type(s) <: output_type)
     end
-    test_derivative(backend, scenarios; allocs, type_stability)
-    test_multiderivative(backend, scenarios; allocs, type_stability)
-    test_gradient(backend, scenarios; allocs, type_stability)
-    test_jacobian(backend, scenarios; allocs, type_stability)
+    test_derivative(backend, scenarios, implems...; allocs, type_stability)
+    test_multiderivative(backend, scenarios, implems...; allocs, type_stability)
+    test_gradient(backend, scenarios, implems...; allocs, type_stability)
+    test_jacobian(backend, scenarios, implems...; allocs, type_stability)
     return nothing
 end

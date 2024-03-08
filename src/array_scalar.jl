@@ -3,10 +3,29 @@
 
 Compute the primal value `y = f(x)` and the gradient `grad = ∇f(x)` of an array-to-scalar function, overwriting `grad` if possible.
 """
-function value_and_gradient! end
+function value_and_gradient!(
+    grad::AbstractArray, backend::AbstractADType, f, x::AbstractArray
+)
+    return value_and_gradient!(Val{:fallback}(), grad, backend, f, x)
+end
 
 function value_and_gradient!(
-    grad::AbstractArray, backend::AbstractForwardBackend, f, x::AbstractArray
+    implem::Val{:fallback},
+    grad::AbstractArray,
+    backend::AbstractADType,
+    f,
+    x::AbstractArray,
+)
+    return value_and_gradient!(implem, autodiff_mode(backend), grad, backend, f, x)
+end
+
+function value_and_gradient!(
+    ::Val{:fallback},
+    ::Val{:forward},
+    grad::AbstractArray,
+    backend::AbstractADType,
+    f,
+    x::AbstractArray,
 )
     y = f(x)
     for j in eachindex(IndexCartesian(), x)
@@ -17,7 +36,12 @@ function value_and_gradient!(
 end
 
 function value_and_gradient!(
-    grad::AbstractArray, backend::AbstractReverseBackend, f, x::AbstractArray
+    ::Val{:fallback},
+    ::Val{:reverse},
+    grad::AbstractArray,
+    backend::AbstractADType,
+    f,
+    x::AbstractArray,
 )
     y = f(x)
     return y, pullback!(grad, backend, f, x, one(y))
@@ -28,9 +52,15 @@ end
 
 Compute the primal value `y = f(x)` and the gradient `grad = ∇f(x)` of an array-to-scalar function.
 """
-function value_and_gradient(backend::AbstractBackend, f, x::AbstractArray)
+function value_and_gradient(backend::AbstractADType, f, x::AbstractArray)
+    return value_and_gradient(Val{:fallback}(), backend, f, x)
+end
+
+function value_and_gradient(
+    implem::Val{:fallback}, backend::AbstractADType, f, x::AbstractArray
+)
     grad = similar(x)
-    return value_and_gradient!(grad, backend, f, x)
+    return value_and_gradient!(implem, grad, backend, f, x)
 end
 
 """
@@ -38,8 +68,18 @@ end
 
 Compute the gradient `grad = ∇f(x)` of an array-to-scalar function, overwriting `grad` if possible.
 """
-function gradient!(grad::AbstractArray, backend::AbstractBackend, f, x::AbstractArray)
-    return last(value_and_gradient!(grad, backend, f, x))
+function gradient!(grad::AbstractArray, backend::AbstractADType, f, x::AbstractArray)
+    return gradient!(Val{:fallback}(), grad, backend, f, x)
+end
+
+function gradient!(
+    implem::Val{:fallback},
+    grad::AbstractArray,
+    backend::AbstractADType,
+    f,
+    x::AbstractArray,
+)
+    return last(value_and_gradient!(implem, grad, backend, f, x))
 end
 
 """
@@ -47,6 +87,10 @@ end
 
 Compute the gradient `grad = ∇f(x)` of an array-to-scalar function.
 """
-function gradient(backend::AbstractBackend, f, x::AbstractArray)
-    return last(value_and_gradient(backend, f, x))
+function gradient(backend::AbstractADType, f, x::AbstractArray)
+    return gradient(Val{:fallback}(), backend, f, x)
+end
+
+function gradient(implem::Val{:fallback}, backend::AbstractADType, f, x::AbstractArray)
+    return last(value_and_gradient(implem, backend, f, x))
 end

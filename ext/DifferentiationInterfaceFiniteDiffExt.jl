@@ -1,6 +1,6 @@
 module DifferentiationInterfaceFiniteDiffExt
 
-using DifferentiationInterface: FiniteDiffBackend
+using ADTypes: AutoFiniteDiff
 import DifferentiationInterface as DI
 using DocStringExtensions
 using FiniteDiff:
@@ -14,24 +14,11 @@ using LinearAlgebra: dot, mul!
 const FUNCTION_INPLACE = Val{true}
 const FUNCTION_NOT_INPLACE = Val{false}
 
-## Backend construction
-
-"""
-    FiniteDiffBackend(::Type{fdtype}=Val{:central}; custom=true)
-
-Construct a [`FiniteDiffBackend`](@ref) with any finite difference type `fdtype` (`Val{:forward}` or `Val{:central}`).
-"""
-function DI.FiniteDiffBackend(
-    ::Type{fdtype}=Val{:central}; custom::Bool=true
-) where {fdtype}
-    return FiniteDiffBackend{custom,fdtype}()
-end
-
 ## Primitives
 
 function DI.value_and_pushforward!(
-    dy::Y, ::FiniteDiffBackend{custom,fdtype}, f, x, dx
-) where {Y<:Number,custom,fdtype}
+    dy::Y, ::AutoFiniteDiff{fdtype}, f, x, dx
+) where {Y<:Number,fdtype}
     y = f(x)
     step(t::Number)::Number = f(x .+ t .* dx)
     new_dy = finite_difference_derivative(step, zero(eltype(dx)), fdtype, eltype(y), y)
@@ -39,8 +26,8 @@ function DI.value_and_pushforward!(
 end
 
 function DI.value_and_pushforward!(
-    dy::Y, ::FiniteDiffBackend{custom,fdtype}, f, x, dx
-) where {Y<:AbstractArray,custom,fdtype}
+    dy::Y, ::AutoFiniteDiff{fdtype}, f, x, dx
+) where {Y<:AbstractArray,fdtype}
     y = f(x)
     step(t::Number)::AbstractArray = f(x .+ t .* dx)
     finite_difference_gradient!(
@@ -51,56 +38,48 @@ end
 
 ## Utilities
 
-function DI.value_and_derivative(
-    ::FiniteDiffBackend{true,fdtype}, f, x::Number
-) where {fdtype}
+function DI.value_and_derivative(::AutoFiniteDiff{fdtype}, f, x::Number) where {fdtype}
     y = f(x)
     der = finite_difference_derivative(f, x, fdtype, eltype(y), y)
     return y, der
 end
 
 function DI.value_and_multiderivative!(
-    multider::AbstractArray, ::FiniteDiffBackend{true,fdtype}, f, x::Number
+    multider::AbstractArray, ::AutoFiniteDiff{fdtype}, f, x::Number
 ) where {fdtype}
     y = f(x)
     finite_difference_gradient!(multider, f, x, fdtype, eltype(y), FUNCTION_NOT_INPLACE, y)
     return y, multider
 end
 
-function DI.value_and_multiderivative(
-    ::FiniteDiffBackend{true,fdtype}, f, x::Number
-) where {fdtype}
+function DI.value_and_multiderivative(::AutoFiniteDiff{fdtype}, f, x::Number) where {fdtype}
     y = f(x)
     multider = finite_difference_gradient(f, x, fdtype, eltype(y), FUNCTION_NOT_INPLACE, y)
     return y, multider
 end
 
 function DI.value_and_gradient!(
-    grad::AbstractArray, ::FiniteDiffBackend{true,fdtype}, f, x::AbstractArray
+    grad::AbstractArray, ::AutoFiniteDiff{fdtype}, f, x::AbstractArray
 ) where {fdtype}
     y = f(x)
     finite_difference_gradient!(grad, f, x, fdtype, eltype(y), FUNCTION_NOT_INPLACE, y)
     return y, grad
 end
 
-function DI.value_and_gradient(
-    ::FiniteDiffBackend{true,fdtype}, f, x::AbstractArray
-) where {fdtype}
+function DI.value_and_gradient(::AutoFiniteDiff{fdtype}, f, x::AbstractArray) where {fdtype}
     y = f(x)
     grad = finite_difference_gradient(f, x, fdtype, eltype(y), FUNCTION_NOT_INPLACE, y)
     return y, grad
 end
 
-function DI.value_and_jacobian(
-    ::FiniteDiffBackend{true,fdtype}, f, x::AbstractArray
-) where {fdtype}
+function DI.value_and_jacobian(::AutoFiniteDiff{fdtype}, f, x::AbstractArray) where {fdtype}
     y = f(x)
     jac = finite_difference_jacobian(f, x, fdtype, eltype(y))
     return y, jac
 end
 
 function DI.value_and_jacobian!(
-    jac::AbstractMatrix, backend::FiniteDiffBackend{true}, f, x::AbstractArray
+    jac::AbstractMatrix, backend::AutoFiniteDiff, f, x::AbstractArray
 )
     y, new_jac = DI.value_and_jacobian(backend, f, x)
     jac .= new_jac

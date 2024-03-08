@@ -1,10 +1,8 @@
-using DifferentiationInterface
+using ADTypes: AutoReverseDiff
 using ReverseDiff: ReverseDiff
 
-test_pullback(ReverseDiffBackend(), scenarios; type_stability=false);
+test_pullback(AutoReverseDiff(), scenarios; type_stability=false);
+test_jacobian_and_friends(AutoReverseDiff(), scenarios; type_stability=false);
 test_jacobian_and_friends(
-    ReverseDiffBackend(; custom=true), scenarios; type_stability=false
-);
-test_jacobian_and_friends(
-    ReverseDiffBackend(; custom=false), scenarios; type_stability=false
+    AutoReverseDiff(), scenarios, Val(:fallback); type_stability=false
 );

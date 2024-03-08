@@ -1,6 +1,6 @@
-using DifferentiationInterface
+using ADTypes: AutoZygote
 using Zygote: Zygote
 
-test_pullback(ZygoteBackend(), scenarios; type_stability=false);
-test_jacobian_and_friends(ZygoteBackend(; custom=true), scenarios; type_stability=false);
-test_jacobian_and_friends(ZygoteBackend(; custom=false), scenarios; type_stability=false);
+test_pullback(AutoZygote(), scenarios; type_stability=false);
+test_jacobian_and_friends(AutoZygote(), scenarios; type_stability=false);
+test_jacobian_and_friends(AutoZygote(), scenarios, Val(:fallback); type_stability=false);

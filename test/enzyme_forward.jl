@@ -1,10 +1,8 @@
-using DifferentiationInterface
+using ADTypes: AutoEnzyme
 using Enzyme: Enzyme
 
-test_pushforward(EnzymeForwardBackend(), scenarios; type_stability=true);
+test_pushforward(AutoEnzyme(Val(:forward)), scenarios; type_stability=true);
+test_jacobian_and_friends(AutoEnzyme(Val(:forward)), scenarios; type_stability=true);
 test_jacobian_and_friends(
-    EnzymeForwardBackend(; custom=true), scenarios; type_stability=true
-);
-test_jacobian_and_friends(
-    EnzymeForwardBackend(; custom=false), scenarios; type_stability=true
+    AutoEnzyme(Val(:forward)), scenarios, Val(:fallback); type_stability=true
 );

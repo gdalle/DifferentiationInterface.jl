@@ -9,10 +9,11 @@ $(EXPORTS)
 """
 module DifferentiationInterface
 
+using ADTypes:
+    AbstractADType, AbstractForwardMode, AbstractReverseMode, AbstractFiniteDifferencesMode
 using DocStringExtensions
 using FillArrays: OneElement
 
-include("backends_abstract.jl")
 include("backends.jl")
 include("utils.jl")
 include("pushforward.jl")
@@ -22,19 +23,10 @@ include("scalar_array.jl")
 include("array_scalar.jl")
 include("array_array.jl")
 
-export AbstractBackend, AbstractForwardBackend, AbstractReverseBackend
-export autodiff_mode, is_custom
-export handles_input_type, handles_output_type, handles_types
+export AutoChainRules
 
-export ChainRulesForwardBackend,
-    ChainRulesReverseBackend,
-    EnzymeForwardBackend,
-    EnzymeReverseBackend,
-    FiniteDiffBackend,
-    ForwardDiffBackend,
-    PolyesterForwardDiffBackend,
-    ReverseDiffBackend,
-    ZygoteBackend
+export autodiff_mode
+export handles_input_type, handles_output_type, handles_types
 
 export value_and_pushforward!, value_and_pushforward
 export pushforward!, pushforward

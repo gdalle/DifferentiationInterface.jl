@@ -17,18 +17,20 @@ This package provides a backend-agnostic syntax to differentiate functions `f(x)
 
 It started out as an experimental redesign for [AbstractDifferentiation.jl](https://github.com/JuliaDiff/AbstractDifferentiation.jl).
 
-## Example
+## Supported backends
 
-```jldoctest
-julia> using DifferentiationInterface, Enzyme
+We support some of the backends defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl):
 
-julia> backend = EnzymeReverseBackend();
+- [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl) with `AutoEnzyme(Val(:forward))`
+- [FiniteDiff.jl](https://github.com/JuliaDiff/FiniteDiff.jl) with `AutoFiniteDiff()`
+- [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl) with `AutoForwardDiff()`
+- [PolyesterForwardDiff.jl](https://github.com/JuliaDiff/PolyesterForwardDiff.jl) with `AutoPolyesterForwardDiff(; chunksize=C)`
+- [ReverseDiff.jl](https://github.com/JuliaDiff/ReverseDiff.jl) with `AutoReverseDiff()`
+- [Zygote.jl](https://github.com/FluxML/Zygote.jl) with `AutoZygote()`
 
-julia> f(x) = sum(abs2, x);
+We also support one more backend which is not yet part of ADTypes.jl (see [ADTypes.jl#21](https://github.com/SciML/ADTypes.jl/pull/21)):
 
-julia> value_and_gradient(backend, f, [1., 2., 3.])
-(14.0, [2.0, 4.0, 6.0])
-```
+- [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl) with `AutoChainRules(ruleconfig)`
 
 ## Design
 
@@ -44,22 +46,15 @@ From these primitives, several utilities are defined, depending on the type of t
 | scalar input | derivative    | multiderivative |
 | array input  | gradient      | jacobian        |
 
-## Supported backends
+## Example
 
-Forward mode:
+```jldoctest
+julia> import DifferentiationInterface, ADTypes, ForwardDiff
 
-- [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl)
-- [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl)
-- [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl)
-- [FiniteDiff.jl](https://github.com/JuliaDiff/FiniteDiff.jl)
+julia> backend = ADTypes.AutoForwardDiff();
 
-Reverse mode:
+julia> f(x) = sum(abs2, x);
 
-- [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl)
-- [Zygote.jl](https://github.com/FluxML/Zygote.jl)
-- [ReverseDiff.jl](https://github.com/JuliaDiff/ReverseDiff.jl)
-
-Experimental:
-
-- [PolyesterForwardDiff.jl](https://github.com/JuliaDiff/PolyesterForwardDiff.jl)
-- [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl) (currently broken due to [#277](https://github.com/JuliaDiff/Diffractor.jl/issues/277))
+julia> DifferentiationInterface.value_and_gradient(backend, f, [1., 2., 3.])
+(14.0, [2.0, 4.0, 6.0])
+```

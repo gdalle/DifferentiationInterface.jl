@@ -59,9 +59,7 @@ makedocs(;
         prettyurls=get(ENV, "CI", "false") == "true",
         canonical="https://gdalle.github.io/DifferentiationInterface.jl",
     ),
-    pages=[
-        "Home" => "index.md", "Interface" => "interface.md", "Backends" => "backends.md"
-    ],
+    pages=["Home" => "index.md", "Interface" => "interface.md"],
 )
 
 deploydocs(; repo="github.com/gdalle/DifferentiationInterface.jl", devbranch="main")
