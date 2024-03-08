@@ -33,7 +33,7 @@ end
 """
     ChainRulesReverseBackend(rc::RuleConfig; custom=true)
     
-Construct a [`ChainRulesReverseBackend`](@ref) from an appropriate [`RuleConfig`](https://juliadiff.org/ChainRulesCore.jl/stable/rule_author/superpowers/ruleconfig.html) object that `HasReverseMode`.
+Construct a [`ChainRulesReverseBackend`](@ref) from a [`RuleConfig`](https://juliadiff.org/ChainRulesCore.jl/stable/rule_author/superpowers/ruleconfig.html) object that `HasReverseMode`.
 
 ## Example
 
