@@ -1,5 +1,5 @@
 using DifferentiationInterface
-using PolyesterForwardDiff
+using PolyesterForwardDiff: PolyesterForwardDiff
 
 # see https://github.com/JuliaDiff/PolyesterForwardDiff.jl/issues/17
 

@@ -37,11 +37,21 @@ export ChainRulesForwardBackend,
     ZygoteBackend
 
 export value_and_pushforward!, value_and_pushforward
+export pushforward!, pushforward
+
 export value_and_pullback!, value_and_pullback
+export pullback!, pullback
 
 export value_and_derivative
+export derivative
+
 export value_and_multiderivative!, value_and_multiderivative
+export multiderivative!, multiderivative
+
 export value_and_gradient!, value_and_gradient
+export gradient!, gradient
+
 export value_and_jacobian!, value_and_jacobian
+export jacobian!, jacobian
 
 end # module

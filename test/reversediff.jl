@@ -1,5 +1,5 @@
 using DifferentiationInterface
-using ReverseDiff
+using ReverseDiff: ReverseDiff
 
 test_pullback(ReverseDiffBackend(), scenarios; type_stability=false);
 test_jacobian_and_friends(

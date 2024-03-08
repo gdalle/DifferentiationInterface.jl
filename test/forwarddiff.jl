@@ -1,5 +1,5 @@
 using DifferentiationInterface
-using ForwardDiff
+using ForwardDiff: ForwardDiff
 
 test_pushforward(ForwardDiffBackend(), scenarios; type_stability=true);
 test_jacobian_and_friends(

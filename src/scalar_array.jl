@@ -17,7 +17,7 @@ function value_and_multiderivative!(
     y = f(x)
     for i in eachindex(IndexCartesian(), y)
         dy_i = basisarray(backend, y, i)
-        _, multider[i] = value_and_pullback!(multider[i], backend, f, x, dy_i)
+        multider[i] = pullback!(multider[i], backend, f, x, dy_i)
     end
     return y, multider
 end
@@ -30,4 +30,22 @@ Compute the primal value `y = f(x)` and the (array-valued) derivative `multider 
 function value_and_multiderivative(backend::AbstractBackend, f, x::Number)
     multider = similar(f(x))
     return value_and_multiderivative!(multider, backend, f, x)
+end
+
+"""
+    multiderivative!(multider, backend, f, x) -> multider
+
+Compute the (array-valued) derivative `multider = f'(x)` of a scalar-to-array function, overwriting `multider` if possible.
+"""
+function multiderivative!(multider::AbstractArray, backend::AbstractBackend, f, x::Number)
+    return last(value_and_multiderivative!(multider, backend, f, x))
+end
+
+"""
+    multiderivative(backend, f, x) -> multider
+
+Compute the (array-valued) derivative `multider = f'(x)` of a scalar-to-array function.
+"""
+function multiderivative(backend::AbstractBackend, f, x::Number)
+    return last(value_and_multiderivative(backend, f, x))
 end
