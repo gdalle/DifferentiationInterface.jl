@@ -68,10 +68,6 @@ Modules = [ReverseDiffExt]
 
 ## Zygote
 
-```@docs
-ZygoteBackend
-```
-
 ```@autodocs
 Modules = [ZygoteExt]
 ```
