@@ -11,7 +11,9 @@ using PolyesterForwardDiff: threaded_gradient!, threaded_jacobian!
 ## Backend construction
 
 """
-$(SIGNATURES)
+    PolyesterForwardDiffBackend(C; custom=true)
+
+Construct a [`PolyesterForwardDiffBackend`](@ref) with chunk size `C`.
 """
 function DI.PolyesterForwardDiffBackend(C::Integer; custom::Bool=true)
     return PolyesterForwardDiffBackend{custom,C}()

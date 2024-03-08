@@ -17,7 +17,9 @@ const FUNCTION_NOT_INPLACE = Val{false}
 ## Backend construction
 
 """
-$(SIGNATURES)
+    FiniteDiffBackend(::Type{fdtype}=Val{:central}; custom=true)
+
+Construct a [`FiniteDiffBackend`](@ref) with any finite difference type `fdtype` (`Val{:forward}` or `Val{:central}`).
 """
 function DI.FiniteDiffBackend(
     ::Type{fdtype}=Val{:central}; custom::Bool=true

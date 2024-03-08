@@ -1,20 +1,9 @@
 """
-$(TYPEDEF)
+    ChainRulesForwardBackend <: AbstractForwardBackend
 
-Performs autodiff with forward mode AD packages based on [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl), like [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl).
-
-This must be constructed with an appropriate [`RuleConfig`](https://juliadiff.org/ChainRulesCore.jl/stable/rule_author/superpowers/ruleconfig.html) instance.
-```julia
-using Diffractor, DifferentiationInterface
-backend = ChainRulesForwardBackend(Diffractor.DiffractorRuleConfig())
-```
-
-# Fields
-
-$(TYPEDFIELDS)
+Enables the use of forward mode AD packages based on [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl).
 """
 struct ChainRulesForwardBackend{custom,RC} <: AbstractForwardBackend{custom}
-    # TODO: check RC<:RuleConfig{>:HasForwardsMode}
     ruleconfig::RC
 end
 
@@ -26,23 +15,11 @@ function Base.show(io::IO, backend::ChainRulesForwardBackend{custom}) where {cus
 end
 
 """
-$(TYPEDEF)
+    ChainRulesReverseBackend <: AbstractReverseBackend
 
-Performs autodiff with reverse mode AD packages based on [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl), like [Zygote.jl](https://github.com/FluxML/Zygote.jl).
-
-This must be constructed with an appropriate [`RuleConfig`](https://juliadiff.org/ChainRulesCore.jl/stable/rule_author/superpowers/ruleconfig.html) instance:
-
-```julia
-using Zygote, DifferentiationInterface
-backend = ChainRulesReverseBackend(Zygote.ZygoteRuleConfig())
-```
-
-# Fields
-
-$(TYPEDFIELDS)
+Enables the use of reverse mode AD packages based on [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl).
 """
 struct ChainRulesReverseBackend{custom,RC} <: AbstractReverseBackend{custom}
-    # TODO: check RC<:RuleConfig{>:HasReverseMode}
     ruleconfig::RC
 end
 
@@ -54,11 +31,9 @@ function Base.show(io::IO, backend::ChainRulesReverseBackend{custom}) where {cus
 end
 
 """
-$(TYPEDEF)
+    FiniteDiffBackend <: AbstractForwardBackend
 
-Performs autodiff with [FiniteDiff.jl](https://github.com/JuliaDiff/FiniteDiff.jl).
-
-The type parameter `fdtype` determines the type of finite differences used, it defaults to `Val{:central}`.
+Enables the use of [FiniteDiff.jl](https://github.com/JuliaDiff/FiniteDiff.jl).
 """
 struct FiniteDiffBackend{custom,fdtype} <: AbstractForwardBackend{custom} end
 
@@ -67,9 +42,9 @@ function Base.show(io::IO, ::FiniteDiffBackend{custom,fdtype}) where {custom,fdt
 end
 
 """
-$(TYPEDEF)
+    EnzymeForwardBackend <: AbstractForwardBackend
 
-Performs forward-mode autodiff with [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl).
+Enables the use of [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl) in forward mode.
 """
 struct EnzymeForwardBackend{custom} <: AbstractForwardBackend{custom} end
 
@@ -78,9 +53,9 @@ function Base.show(io::IO, ::EnzymeForwardBackend{custom}) where {custom}
 end
 
 """
-$(TYPEDEF)
+    EnzymeReverseBackend <: AbstractReverseBackend
 
-Performs reverse-mode autodiff with [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl).
+Enables the use of [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl) in reverse mode.
 
 !!! warning
     This backend only works for scalar output.
@@ -92,9 +67,9 @@ function Base.show(io::IO, ::EnzymeReverseBackend{custom}) where {custom}
 end
 
 """
-$(TYPEDEF)
+    ForwardDiffBackend <: AbstractForwardBackend
 
-Performs autodiff with [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl).
+Enables the use of [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl).
 """
 struct ForwardDiffBackend{custom} <: AbstractForwardBackend{custom} end
 
@@ -103,11 +78,9 @@ function Base.show(io::IO, ::ForwardDiffBackend{custom}) where {custom}
 end
 
 """
-$(TYPEDEF)
+    PolyesterForwardDiffBackend <: AbstractForwardBackend
 
-Performs autodiff with [PolyesterForwardDiff.jl](https://github.com/JuliaDiff/PolyesterForwardDiff.jl), falling back on [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl) if needed.
-
-The type parameter `C` is an integer configuring chunk size.
+Enables the use of [PolyesterForwardDiff.jl](https://github.com/JuliaDiff/PolyesterForwardDiff.jl), falling back on [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl) if needed.
 
 !!! warning
     This backend only works when the arrays are vectors.
@@ -119,7 +92,7 @@ function Base.show(io::IO, ::PolyesterForwardDiffBackend{custom,C}) where {custo
 end
 
 """
-$(TYPEDEF)
+    ReverseDiffBackend <: AbstractReverseBackend
 
 Performs autodiff with [ReverseDiff.jl](https://github.com/JuliaDiff/ReverseDiff.jl).
 
@@ -134,15 +107,6 @@ end
 
 ## Pseudo backends
 
-"""
-    ZygoteBackend
-
-Performs autodiff with [Zygote.jl](https://github.com/FluxML/Zygote.jl).
-
-## Note
-
-This is not a type but a function because it actually constructs a [`ChainRulesReverseBackend`](@ref) with `ZygoteRuleConfig()`.
-"""
 function ZygoteBackend end
 
 ## Limitations

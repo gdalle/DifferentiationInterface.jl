@@ -1,21 +1,23 @@
 
 """
-$(TYPEDEF)
+    AbstractBackend
 
-Abstract type for the choice of an AD package.
+Abstract type pointing to the AD package chosen by the user, which is called a "backend".
 
-The boolean `custom` parameter determines the implementation of special cases (derivative, multiderivative, gradient and jacobian):
-- `custom = false`: always use generic fallbacks defined from the pushforwards and pullbacks
-- `custom = true`: use backend-specific routines if they exist and generic fallbacks otherwise.
+## Custom
 
-Every backend type `T{custom}` has a convenience constructor that looks more or less like this:
+When we say that a backend is "custom", it describes how the utilities (derivative, multiderivative, gradient and jacobian) are implemented:
 
-```julia
-T(args...; custom::Bool=true) = T{custom}(args...)
-```
+- Custom backends use specific routines defined in their package whenever they exist
+- Non-custom backends use fallbacks defined in DifferentiationInterface.jl, which end up calling the pushforward or pullback
 """
 abstract type AbstractBackend{custom} end
 
+"""
+    is_custom(backend)
+
+Return a boolean `custom` that describes how utilities (derivative, multiderivative, gradient and jacobian) are implemented.
+"""
 is_custom(::AbstractBackend{custom}) where {custom} = custom
 
 """
@@ -44,23 +46,23 @@ function handles_types(backend::AbstractBackend, ::Type{X}, ::Type{Y}) where {X,
 end
 
 """
-$(TYPEDEF)
+    AbstractForwardBackend <: AbstractBackend
 
-Abstract subtype of [`AbstractBackend`](@ref) gathering forward mode AD packages.
+Abstract subtype of [`AbstractBackend`](@ref) for forward mode AD packages.
 """
 abstract type AbstractForwardBackend{custom} <: AbstractBackend{custom} end
 
 """
-$(TYPEDEF)
+    AbstractReverseBackend <: AbstractBackend
 
-Abstract subtype of [`AbstractBackend`](@ref) gathering reverse mode AD packages.
+Abstract subtype of [`AbstractBackend`](@ref) for reverse mode AD packages.
 """
 abstract type AbstractReverseBackend{custom} <: AbstractBackend{custom} end
 
 """
-    ad_mode(backend)
+    autodiff_mode(backend)
 
-Return either `:forward` or `:reverse` depending on the backend.
+Return either `:forward` or `:reverse` depending on the mode of `backend`.
 """
-ad_mode(::AbstractForwardBackend) = :forward
-ad_mode(::AbstractReverseBackend) = :reverse
+autodiff_mode(::AbstractForwardBackend) = :forward
+autodiff_mode(::AbstractReverseBackend) = :reverse

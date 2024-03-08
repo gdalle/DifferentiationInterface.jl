@@ -8,7 +8,9 @@ using Zygote: ZygoteRuleConfig, gradient, jacobian, withgradient, withjacobian
 ## Backend construction
 
 """
-$(SIGNATURES)
+    ZygoteBackend(; custom=true)
+
+Enables the use of [Zygote.jl](https://github.com/FluxML/Zygote.jl) by constructing a [`ChainRulesReverseBackend`](@ref) from `ZygoteRuleConfig()`.
 """
 DI.ZygoteBackend(; custom::Bool=true) = ChainRulesReverseBackend(ZygoteRuleConfig(); custom)
 

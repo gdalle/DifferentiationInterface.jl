@@ -2,7 +2,9 @@
 ## Backend construction
 
 """
-$(SIGNATURES)
+    EnzymeReverseBackend(; custom=true)
+
+Construct a [`EnzymeReverseBackend`](@ref).
 """
 DI.EnzymeReverseBackend(; custom::Bool=true) = EnzymeReverseBackend{custom}()
 

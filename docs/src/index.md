@@ -62,4 +62,4 @@ Reverse mode:
 Experimental:
 
 - [PolyesterForwardDiff.jl](https://github.com/JuliaDiff/PolyesterForwardDiff.jl)
-- [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl) (currently broken)
+- [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl) (currently broken due to [#277](https://github.com/JuliaDiff/Diffractor.jl/issues/277))

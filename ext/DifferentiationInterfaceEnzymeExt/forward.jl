@@ -2,7 +2,9 @@
 ## Backend construction
 
 """
-$(SIGNATURES)
+    EnzymeForwardBackend(; custom=true)
+
+Construct a [`EnzymeForwardBackend`](@ref).
 """
 DI.EnzymeForwardBackend(; custom::Bool=true) = EnzymeForwardBackend{custom}()
 
@@ -25,10 +27,9 @@ end
 
 ## Utilities
 
-# see https://github.com/EnzymeAD/Enzyme.jl/issues/1332
-
 function DI.value_and_jacobian(::EnzymeForwardBackend{true}, f, x::AbstractArray)
     y = f(x)
     jac = jacobian(Forward, f, x)
-    return y, jac
+    # see https://github.com/EnzymeAD/Enzyme.jl/issues/1332
+    return y, reshape(jac, length(y), length(x))
 end

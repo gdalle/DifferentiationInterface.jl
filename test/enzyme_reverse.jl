@@ -1,6 +1,10 @@
 using DifferentiationInterface
 using Enzyme
 
-test_pullback(EnzymeReverseBackend(); type_stability=true);
-test_jacobian_and_friends(EnzymeReverseBackend(; custom=true); type_stability=true)
-test_jacobian_and_friends(EnzymeReverseBackend(; custom=false); type_stability=true)
+test_pullback(EnzymeReverseBackend(), scenarios; type_stability=true);
+test_jacobian_and_friends(
+    EnzymeReverseBackend(; custom=true), scenarios; type_stability=true
+)
+test_jacobian_and_friends(
+    EnzymeReverseBackend(; custom=false), scenarios; type_stability=true
+)

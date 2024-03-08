@@ -15,14 +15,32 @@ update!(old, new) = old .= new
 ## Backend construction
 
 """
-$(SIGNATURES)
+    ChainRulesForwardBackend(rc::RuleConfig; custom=true)
+
+Construct a [`ChainRulesForwardBackend`](@ref) from a [`RuleConfig`](https://juliadiff.org/ChainRulesCore.jl/stable/rule_author/superpowers/ruleconfig.html) object that `HasForwardsMode`.
+
+## Example
+
+```julia
+using Diffractor, DifferentiationInterface
+backend = ChainRulesForwardBackend(Diffractor.DiffractorRuleConfig())
+```
 """
 function DI.ChainRulesForwardBackend(rc::RuleConfig{>:HasForwardsMode}; custom::Bool=true)
     return ChainRulesForwardBackend{custom,typeof(rc)}(rc)
 end
 
 """
-$(SIGNATURES)
+    ChainRulesReverseBackend(rc::RuleConfig; custom=true)
+    
+Construct a [`ChainRulesReverseBackend`](@ref) from an appropriate [`RuleConfig`](https://juliadiff.org/ChainRulesCore.jl/stable/rule_author/superpowers/ruleconfig.html) object that `HasReverseMode`.
+
+## Example
+
+```julia
+using Zygote, DifferentiationInterface
+backend = ChainRulesReverseBackend(Zygote.ZygoteRuleConfig())
+```
 """
 function DI.ChainRulesReverseBackend(rc::RuleConfig{>:HasReverseMode}; custom::Bool=true)
     return ChainRulesReverseBackend{custom,typeof(rc)}(rc)

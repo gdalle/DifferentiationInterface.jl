@@ -21,7 +21,9 @@ using LinearAlgebra: mul!
 ## Backend construction
 
 """
-$(SIGNATURES)
+    ForwardDiffBackend(; custom=true)
+
+Construct a [`ForwardDiffBackend`](@ref).
 """
 DI.ForwardDiffBackend(; custom::Bool=true) = ForwardDiffBackend{custom}()
 

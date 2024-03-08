@@ -10,7 +10,9 @@ using ReverseDiff: gradient, gradient!, jacobian, jacobian!
 ## Backend construction
 
 """
-$(SIGNATURES)
+    ReverseDiffBackend(; custom)
+
+Construct a [`ReverseDiffBackend`](@ref).
 """
 DI.ReverseDiffBackend(; custom::Bool=true) = ReverseDiffBackend{custom}()
 

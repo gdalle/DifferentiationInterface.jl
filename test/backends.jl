@@ -4,8 +4,8 @@ using Test
 
 backend = ChainRulesForwardBackend{false,Nothing}(nothing)
 @test !is_custom(backend)
-@test ad_mode(backend) == :forward
+@test autodiff_mode(backend) == :forward
 
 backend = ChainRulesReverseBackend{true,Nothing}(nothing)
 @test is_custom(backend)
-@test ad_mode(backend) == :reverse
+@test autodiff_mode(backend) == :reverse
