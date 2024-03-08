@@ -21,3 +21,21 @@ function value_and_pullback(backend::AbstractReverseBackend, f, x, dy)
     dx = mysimilar(x)
     return value_and_pullback!(dx, backend, f, x, dy)
 end
+
+"""
+    pullback!(dx, backend::AbstractReverseBackend, f, x, dy) -> dx
+
+Compute the vector-Jacobian product `dx = ∂f(x)' * dy`, overwriting `dx` if possible.
+"""
+function pullback!(dx, backend::AbstractReverseBackend, f, x, dy)
+    return last(value_and_pullback!(dx, backend, f, x, dy))
+end
+
+"""
+    pullback(backend::AbstractReverseBackend, f, x, dy) -> dx
+
+Compute the vector-Jacobian product `dx = ∂f(x)' * dy`.
+"""
+function pullback(backend::AbstractReverseBackend, f, x, dy)
+    return last(value_and_pullback(backend, f, x, dy))
+end

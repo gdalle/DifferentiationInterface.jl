@@ -11,7 +11,7 @@ function value_and_gradient!(
     y = f(x)
     for j in eachindex(IndexCartesian(), x)
         dx_j = basisarray(backend, x, j)
-        _, grad[j] = value_and_pushforward!(grad[j], backend, f, x, dx_j)
+        grad[j] = pushforward!(grad[j], backend, f, x, dx_j)
     end
     return y, grad
 end
@@ -20,7 +20,7 @@ function value_and_gradient!(
     grad::AbstractArray, backend::AbstractReverseBackend, f, x::AbstractArray
 )
     y = f(x)
-    return value_and_pullback!(grad, backend, f, x, one(y))
+    return y, pullback!(grad, backend, f, x, one(y))
 end
 
 """
@@ -31,4 +31,22 @@ Compute the primal value `y = f(x)` and the gradient `grad = ∇f(x)` of an arra
 function value_and_gradient(backend::AbstractBackend, f, x::AbstractArray)
     grad = similar(x)
     return value_and_gradient!(grad, backend, f, x)
+end
+
+"""
+    gradient!(grad, backend, f, x) -> grad
+
+Compute the gradient `grad = ∇f(x)` of an array-to-scalar function, overwriting `grad` if possible.
+"""
+function gradient!(grad::AbstractArray, backend::AbstractBackend, f, x::AbstractArray)
+    return last(value_and_gradient!(grad, backend, f, x))
+end
+
+"""
+    gradient(backend, f, x) -> grad
+
+Compute the gradient `grad = ∇f(x)` of an array-to-scalar function.
+"""
+function gradient(backend::AbstractBackend, f, x::AbstractArray)
+    return last(value_and_gradient(backend, f, x))
 end

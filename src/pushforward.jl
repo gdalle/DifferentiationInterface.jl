@@ -21,3 +21,21 @@ function value_and_pushforward(backend::AbstractForwardBackend, f, x, dx)
     dy = mysimilar(f(x))
     return value_and_pushforward!(dy, backend, f, x, dx)
 end
+
+"""
+    pushforward!(dy, backend::AbstractForwardBackend, f, x, dx) -> dy
+
+Compute the Jacobian-vector product `dy = ∂f(x) * dx`, overwriting `dy` if possible.
+"""
+function pushforward!(dy, backend::AbstractForwardBackend, f, x, dx)
+    return last(value_and_pushforward!(dy, backend, f, x, dx))
+end
+
+"""
+    pushforward(backend::AbstractForwardBackend, f, x, dx) -> dy
+
+Compute the Jacobian-vector product `dy = ∂f(x) * dx`.
+"""
+function pushforward(backend::AbstractForwardBackend, f, x, dx)
+    return last(value_and_pushforward(backend, f, x, dx))
+end

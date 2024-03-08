@@ -1,5 +1,5 @@
-using Diffractor
 using DifferentiationInterface
+using Diffractor: Diffractor
 
 # see https://github.com/JuliaDiff/Diffractor.jl/issues/277
 

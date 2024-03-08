@@ -1,5 +1,5 @@
 using DifferentiationInterface
-using Enzyme
+using Enzyme: Enzyme
 
 test_pushforward(EnzymeForwardBackend(), scenarios; type_stability=true);
 test_jacobian_and_friends(
