@@ -1,15 +1,35 @@
 module DifferentiationInterfaceForwardDiffExt
 
-using DifferentiationInterface
+using DifferentiationInterface: ForwardDiffBackend
+import DifferentiationInterface as DI
 using DiffResults: DiffResults
 using DocStringExtensions
-using ForwardDiff: Dual, Tag, value, extract_derivative, extract_derivative!
+using ForwardDiff:
+    Dual,
+    Tag,
+    derivative,
+    derivative!,
+    extract_derivative,
+    extract_derivative!,
+    gradient,
+    gradient!,
+    jacobian,
+    jacobian!,
+    value
 using LinearAlgebra: mul!
 
+## Backend construction
+
 """
-$(TYPEDSIGNATURES)
+    ForwardDiffBackend(; custom=true)
+
+Construct a [`ForwardDiffBackend`](@ref).
 """
-function DifferentiationInterface.value_and_pushforward!(
+DI.ForwardDiffBackend(; custom::Bool=true) = ForwardDiffBackend{custom}()
+
+## Primitives
+
+function DI.value_and_pushforward!(
     _dy::Y, ::ForwardDiffBackend, f, x::X, dx
 ) where {X<:Real,Y<:Real}
     T = typeof(Tag(f, X))
@@ -20,10 +40,7 @@ function DifferentiationInterface.value_and_pushforward!(
     return y, new_dy
 end
 
-"""
-$(TYPEDSIGNATURES)
-"""
-function DifferentiationInterface.value_and_pushforward!(
+function DI.value_and_pushforward!(
     dy::Y, ::ForwardDiffBackend, f, x::X, dx
 ) where {X<:Real,Y<:AbstractArray}
     T = typeof(Tag(f, X))
@@ -34,10 +51,7 @@ function DifferentiationInterface.value_and_pushforward!(
     return y, dy
 end
 
-"""
-$(TYPEDSIGNATURES)
-"""
-function DifferentiationInterface.value_and_pushforward!(
+function DI.value_and_pushforward!(
     _dy::Y, ::ForwardDiffBackend, f, x::X, dx
 ) where {X<:AbstractArray,Y<:Real}
     T = typeof(Tag(f, X))  # TODO: unsure
@@ -48,10 +62,7 @@ function DifferentiationInterface.value_and_pushforward!(
     return y, new_dy
 end
 
-"""
-$(TYPEDSIGNATURES)
-"""
-function DifferentiationInterface.value_and_pushforward!(
+function DI.value_and_pushforward!(
     dy::Y, ::ForwardDiffBackend, f, x::X, dx
 ) where {X<:AbstractArray,Y<:AbstractArray}
     T = typeof(Tag(f, X))  # TODO: unsure
@@ -60,6 +71,56 @@ function DifferentiationInterface.value_and_pushforward!(
     y = value.(T, ydual)
     dy = extract_derivative!(T, dy, ydual)
     return y, dy
+end
+
+## Utilities (TODO: use DiffResults)
+
+function DI.value_and_derivative(::ForwardDiffBackend{true}, f, x::Number)
+    y = f(x)
+    der = derivative(f, x)
+    return y, der
+end
+
+function DI.value_and_multiderivative(::ForwardDiffBackend{true}, f, x::Number)
+    y = f(x)
+    multider = derivative(f, x)
+    return y, multider
+end
+
+function DI.value_and_multiderivative!(
+    multider::AbstractArray, ::ForwardDiffBackend{true}, f, x::Number
+)
+    y = f(x)
+    derivative!(multider, f, x)
+    return y, multider
+end
+
+function DI.value_and_gradient(::ForwardDiffBackend{true}, f, x::AbstractArray)
+    y = f(x)
+    grad = gradient(f, x)
+    return y, grad
+end
+
+function DI.value_and_gradient!(
+    grad::AbstractArray, ::ForwardDiffBackend{true}, f, x::AbstractArray
+)
+    y = f(x)
+    gradient!(grad, f, x)
+    return y, grad
+end
+
+function DI.value_and_jacobian(::ForwardDiffBackend{true}, f, x::AbstractArray)
+    y = f(x)
+    jac = jacobian(f, x)
+    return y, jac
+end
+
+function DI.value_and_jacobian!(
+    jac::AbstractMatrix, ::ForwardDiffBackend{true}, f, x::AbstractArray
+)
+    y = f(x)
+    jacobian!(jac, f, x)
+    return y, jac
 end
 
 end # module

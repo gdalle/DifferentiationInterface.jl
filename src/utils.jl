@@ -1,11 +1,11 @@
 """
-    basisarray(backend, a::AbstractArray, i)
+    basisarray(backend, a::AbstractArray, i::CartesianIndex)
 
 Construct the `i`-th stardard basis array in the vector space of `a` with element type `eltype(a)`.
 
 ## Note
 
-If an AD backend benefits from a more specialized unit vector implementation,
+If an AD backend benefits from a more specialized basis array implementation,
 this function can be extended on the backend type.
 """
 basisarray(::AbstractBackend, a::AbstractArray, i) = basisarray(a, i)

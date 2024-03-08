@@ -3,36 +3,13 @@ CurrentModule = DifferentiationInterface
 CollapsedDocStrings = true
 ```
 
-# API reference
+# Interface
 
 ```@docs
 DifferentiationInterface
 ```
 
-## Backends
-
-```@autodocs
-Modules = [DifferentiationInterface]
-Pages = ["backends.jl"]
-```
-
-## Primitives
-
-### Pushforward
-
-```@autodocs
-Modules = [DifferentiationInterface]
-Pages = ["pushforward.jl"]
-```
-
-### Pullback
-
-```@autodocs
-Modules = [DifferentiationInterface]
-Pages = ["pullback.jl"]
-```
-
-## Special cases
+## Utilities
 
 ### Scalar to scalar
 
@@ -62,9 +39,32 @@ Modules = [DifferentiationInterface]
 Pages = ["array_array.jl"]
 ```
 
+## Primitives
+
+### Pushforward
+
+```@autodocs
+Modules = [DifferentiationInterface]
+Pages = ["pushforward.jl"]
+```
+
+### Pullback
+
+```@autodocs
+Modules = [DifferentiationInterface]
+Pages = ["pullback.jl"]
+```
+
+## Abstract backends
+
+```@autodocs
+Modules = [DifferentiationInterface]
+Pages = ["backends_abstract.jl"]
+```
+
 ## Internals
 
 ```@autodocs
 Modules = [DifferentiationInterface]
-Public = false
+Pages = ["utils.jl"]
 ```

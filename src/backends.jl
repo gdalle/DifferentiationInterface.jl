@@ -1,79 +1,115 @@
-abstract type AbstractBackend end
-abstract type AbstractForwardBackend <: AbstractBackend end
-abstract type AbstractReverseBackend <: AbstractBackend end
-
 """
-    ChainRulesReverseBackend{RC}
+    ChainRulesForwardBackend <: AbstractForwardBackend
 
-Performs autodiff with reverse-mode AD packages based on [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl), like [Zygote.jl](https://github.com/FluxML/Zygote.jl).
-
-This must be constructed with an appropriate [`RuleConfig`](https://juliadiff.org/ChainRulesCore.jl/stable/rule_author/superpowers/ruleconfig.html) instance:
-
-```julia
-using Zygote, DifferentiationInterface
-backend = ChainRulesReverseBackend(Zygote.ZygoteRuleConfig())
-```
+Enables the use of forward mode AD packages based on [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl).
 """
-struct ChainRulesReverseBackend{RC} <: AbstractReverseBackend
-    # TODO: check RC<:RuleConfig{>:HasReverseMode}
+struct ChainRulesForwardBackend{custom,RC} <: AbstractForwardBackend{custom}
     ruleconfig::RC
 end
 
-function Base.string(backend::ChainRulesReverseBackend)
-    return "ChainRulesReverseBackend($(backend.ruleconfig))"
+function Base.show(io::IO, backend::ChainRulesForwardBackend{custom}) where {custom}
+    return print(
+        io,
+        "ChainRulesForwardBackend{$(custom ? "custom" : "fallback")}($(backend.ruleconfig))",
+    )
 end
 
 """
-    ChainRulesForwardBackend{RC}
+    ChainRulesReverseBackend <: AbstractReverseBackend
 
-Performs autodiff with forward-mode AD packages based on [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl), like [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl).
-
-This must be constructed with an appropriate [`RuleConfig`](https://juliadiff.org/ChainRulesCore.jl/stable/rule_author/superpowers/ruleconfig.html) instance.
-```julia
-using Diffractor, DifferentiationInterface
-backend = ChainRulesForwardBackend(Diffractor.DiffractorRuleConfig())
-```
+Enables the use of reverse mode AD packages based on [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl).
 """
-struct ChainRulesForwardBackend{RC} <: AbstractForwardBackend
-    # TODO: check RC<:RuleConfig{>:HasForwardsMode}
+struct ChainRulesReverseBackend{custom,RC} <: AbstractReverseBackend{custom}
     ruleconfig::RC
 end
 
-function Base.string(backend::ChainRulesForwardBackend)
-    return "ChainRulesForwardBackend($(backend.ruleconfig))"
+function Base.show(io::IO, backend::ChainRulesReverseBackend{custom}) where {custom}
+    return print(
+        io,
+        "ChainRulesReverseBackend{$(custom ? "custom" : "fallback")}($(backend.ruleconfig))",
+    )
 end
 
 """
-    FiniteDiffBackend
+    FiniteDiffBackend <: AbstractForwardBackend
 
-Performs autodiff with [FiniteDiff.jl](https://github.com/JuliaDiff/FiniteDiff.jl).
+Enables the use of [FiniteDiff.jl](https://github.com/JuliaDiff/FiniteDiff.jl).
 """
-struct FiniteDiffBackend <: AbstractForwardBackend end
+struct FiniteDiffBackend{custom,fdtype} <: AbstractForwardBackend{custom} end
 
-"""
-    EnzymeReverseBackend
-
-Performs reverse-mode autodiff with [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl).
-"""
-struct EnzymeReverseBackend <: AbstractReverseBackend end
+function Base.show(io::IO, ::FiniteDiffBackend{custom,fdtype}) where {custom,fdtype}
+    return print(io, "FiniteDiffBackend{$(custom ? "custom" : "fallback"),$fdtype}()")
+end
 
 """
-    EnzymeForwardBackend
+    EnzymeForwardBackend <: AbstractForwardBackend
 
-Performs forward-mode autodiff with [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl).
+Enables the use of [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl) in forward mode.
 """
-struct EnzymeForwardBackend <: AbstractForwardBackend end
+struct EnzymeForwardBackend{custom} <: AbstractForwardBackend{custom} end
 
-"""
-    ForwardDiffBackend
-
-Performs autodiff with [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl).
-"""
-struct ForwardDiffBackend <: AbstractForwardBackend end
+function Base.show(io::IO, ::EnzymeForwardBackend{custom}) where {custom}
+    return print(io, "EnzymeForwardBackend{$(custom ? "custom" : "fallback")}()")
+end
 
 """
-    ReverseDiffBackend
+    EnzymeReverseBackend <: AbstractReverseBackend
+
+Enables the use of [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl) in reverse mode.
+
+!!! warning
+    This backend only works for scalar output.
+"""
+struct EnzymeReverseBackend{custom} <: AbstractReverseBackend{custom} end
+
+function Base.show(io::IO, ::EnzymeReverseBackend{custom}) where {custom}
+    return print(io, "EnzymeReverseBackend{$(custom ? "custom" : "fallback")}()")
+end
+
+"""
+    ForwardDiffBackend <: AbstractForwardBackend
+
+Enables the use of [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl).
+"""
+struct ForwardDiffBackend{custom} <: AbstractForwardBackend{custom} end
+
+function Base.show(io::IO, ::ForwardDiffBackend{custom}) where {custom}
+    return print(io, "ForwardDiffBackend{$(custom ? "custom" : "fallback")}()")
+end
+
+"""
+    PolyesterForwardDiffBackend <: AbstractForwardBackend
+
+Enables the use of [PolyesterForwardDiff.jl](https://github.com/JuliaDiff/PolyesterForwardDiff.jl), falling back on [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl) if needed.
+
+!!! warning
+    This backend only works when the arrays are vectors.
+"""
+struct PolyesterForwardDiffBackend{custom,C} <: AbstractForwardBackend{custom} end
+
+function Base.show(io::IO, ::PolyesterForwardDiffBackend{custom,C}) where {custom,C}
+    return print(io, "PolyesterForwardDiffBackend{$(custom ? "custom" : "fallback"),$C}()")
+end
+
+"""
+    ReverseDiffBackend <: AbstractReverseBackend
 
 Performs autodiff with [ReverseDiff.jl](https://github.com/JuliaDiff/ReverseDiff.jl).
+
+!!! warning
+    This backend only works for array input.
 """
-struct ReverseDiffBackend <: AbstractReverseBackend end
+struct ReverseDiffBackend{custom} <: AbstractReverseBackend{custom} end
+
+function Base.show(io::IO, ::ReverseDiffBackend{custom}) where {custom}
+    return print(io, "ReverseDiffBackend{$(custom ? "custom" : "fallback")}()")
+end
+
+## Pseudo backends
+
+function ZygoteBackend end
+
+## Limitations
+
+handles_input_type(::ReverseDiffBackend, ::Type{<:Number}) = false
+handles_output_type(::EnzymeReverseBackend, ::Type{<:AbstractArray}) = false

@@ -1,15 +1,24 @@
 module DifferentiationInterfaceReverseDiffExt
 
-using DifferentiationInterface
+using DifferentiationInterface: ReverseDiffBackend
+import DifferentiationInterface as DI
 using DiffResults: DiffResults
 using DocStringExtensions
 using LinearAlgebra: mul!
-using ReverseDiff: gradient!, jacobian!
+using ReverseDiff: gradient, gradient!, jacobian, jacobian!
+
+## Backend construction
 
 """
-$(TYPEDSIGNATURES)
+    ReverseDiffBackend(; custom)
+
+Construct a [`ReverseDiffBackend`](@ref).
 """
-function DifferentiationInterface.value_and_pullback!(
+DI.ReverseDiffBackend(; custom::Bool=true) = ReverseDiffBackend{custom}()
+
+## Primitives
+
+function DI.value_and_pullback!(
     dx, ::ReverseDiffBackend, f, x::X, dy::Y
 ) where {X<:AbstractArray,Y<:Real}
     res = DiffResults.DiffResult(zero(Y), dx)
@@ -19,10 +28,7 @@ function DifferentiationInterface.value_and_pullback!(
     return y, dx
 end
 
-"""
-$(TYPEDSIGNATURES)
-"""
-function DifferentiationInterface.value_and_pullback!(
+function DI.value_and_pullback!(
     dx, ::ReverseDiffBackend, f, x::X, dy::Y
 ) where {X<:AbstractArray,Y<:AbstractArray}
     res = DiffResults.DiffResult(similar(dy), similar(dy, length(dy), length(x)))
@@ -31,6 +37,36 @@ function DifferentiationInterface.value_and_pullback!(
     J = DiffResults.jacobian(res)
     mul!(vec(dx), transpose(J), vec(dy))
     return y, dx
+end
+
+## Utilities (TODO: use DiffResults)
+
+function DI.value_and_gradient(::ReverseDiffBackend{true}, f, x::AbstractArray)
+    y = f(x)
+    grad = gradient(f, x)
+    return y, grad
+end
+
+function DI.value_and_gradient!(
+    grad::AbstractArray, ::ReverseDiffBackend{true}, f, x::AbstractArray
+)
+    y = f(x)
+    gradient!(grad, f, x)
+    return y, grad
+end
+
+function DI.value_and_jacobian(::ReverseDiffBackend{true}, f, x::AbstractArray)
+    y = f(x)
+    jac = jacobian(f, x)
+    return y, jac
+end
+
+function DI.value_and_jacobian!(
+    jac::AbstractMatrix, ::ReverseDiffBackend{true}, f, x::AbstractArray
+)
+    y = f(x)
+    jacobian!(jac, f, x)
+    return y, jac
 end
 
 end # module

@@ -15,7 +15,7 @@ using Test
     f::F
     "argument"
     x::X
-    "primal output"
+    "primal value"
     y::Y
     "pushforward seed"
     dx::X
@@ -101,7 +101,7 @@ rng = StableRNG(63)
 
 f_scalar_scalar(x::Number)::Number = sin(x)
 f_scalar_vector(x::Number)::AbstractVector = [sin(x), sin(2x)]
-f_scalar_matrix(x::Number)::AbstractMatrix = [sin(x) cos(x); sin(2x) cos(2x)]
+f_scalar_matrix(x::Number)::AbstractMatrix = hcat([sin(x) cos(x)], [sin(2x) cos(2x)])
 
 function f_vector_scalar(x::AbstractVector)::Number
     a = eachindex(x)
@@ -151,7 +151,7 @@ scenarios = [
 
 function test_pushforward(
     backend::AbstractForwardBackend,
-    scenarios::Vector{<:Scenario}=scenarios;
+    scenarios::Vector{<:Scenario};
     input_type::Type=Any,
     output_type::Type=Any,
     allocs::Bool=false,
@@ -160,37 +160,35 @@ function test_pushforward(
     scenarios = filter(scenarios) do s
         get_input_type(s) <: input_type && get_output_type(s) <: output_type
     end
-    @testset "Pushforward" begin
+    @testset "Pushforward ($(is_custom(backend) ? "custom" : "fallback"))" begin
         for scenario in scenarios
             X, Y = get_input_type(scenario), get_output_type(scenario)
+            handles_types(backend, X, Y) || continue
+
             @testset "$X -> $Y" begin
                 (; f, x, y, dx, dy_true) = scenario
                 y_out, dy_out = value_and_pushforward(backend, f, x, dx)
+                dy_in = zero(dy_out)
+                y_out2, dy_out2 = value_and_pushforward!(dy_in, backend, f, x, dx)
 
-                @testset "Primal output" begin
-                    @test y_out == y
+                @testset "Primal value" begin
+                    @test y_out ≈ y
+                    @test y_out2 ≈ y
                 end
-                @testset "Tangent output" begin
+                @testset "Tangent value" begin
                     @test dy_out ≈ dy_true rtol = 1e-3
-                end
-                if ismutable(dy_out)
-                    @testset "Mutation" begin
-                        dy_in = similar(dy_out)
-                        value_and_pushforward!(dy_in, backend, f, x, dx)
-                        @test dy_in ≈ dy_true rtol = 1e-3
+                    @test dy_out2 ≈ dy_true rtol = 1e-3
+                    if ismutable(dy_in)
+                        @testset "Mutation" begin
+                            @test dy_in ≈ dy_true rtol = 1e-3
+                        end
                     end
                 end
-                if allocs
-                    @testset "Allocations" begin
-                        @test (@allocated value_and_pushforward!(
-                            dy_out, backend, f, x, dx
-                        )) == 0
-                    end
+                allocs && @testset "Allocations" begin
+                    @test (@allocated value_and_pushforward!(dy_in, backend, f, x, dx)) == 0
                 end
-                if type_stability
-                    @testset "Type stability" begin
-                        @test_opt value_and_pushforward!(dy_out, backend, f, x, dx)
-                    end
+                type_stability && @testset "Type stability" begin
+                    @test_opt value_and_pushforward!(dy_in, backend, f, x, dx)
                 end
             end
         end
@@ -199,7 +197,7 @@ end
 
 function test_pullback(
     backend::AbstractReverseBackend,
-    scenarios=scenarios;
+    scenarios::Vector{<:Scenario};
     input_type::Type=Any,
     output_type::Type=Any,
     allocs::Bool=false,
@@ -208,36 +206,35 @@ function test_pullback(
     scenarios = filter(scenarios) do s
         (get_input_type(s) <: input_type) && (get_output_type(s) <: output_type)
     end
-    @testset "Pullback" begin
+    @testset "Pullback ($(is_custom(backend) ? "custom" : "fallback"))" begin
         for scenario in scenarios
             X, Y = get_input_type(scenario), get_output_type(scenario)
+            handles_types(backend, X, Y) || continue
+
             @testset "$X -> $Y" begin
                 (; f, x, y, dy, dx_true) = scenario
                 y_out, dx_out = value_and_pullback(backend, f, x, dy)
+                dx_in = zero(dx_out)
+                y_out2, dx_out2 = value_and_pullback!(dx_in, backend, f, x, dy)
 
-                @testset "Primal output" begin
-                    @test y_out == y
+                @testset "Primal value" begin
+                    @test y_out ≈ y
+                    @test y_out2 ≈ y
                 end
-                @testset "Co-tangent output" begin
+                @testset "Cotangent value" begin
                     @test dx_out ≈ dx_true rtol = 1e-3
-                end
-                if ismutable(dx_out)
-                    @testset "Mutation" begin
-                        dx_in = similar(dx_out)
-                        value_and_pullback!(dx_in, backend, f, x, dy)
-                        @test dx_in ≈ dx_true rtol = 1e-3
+                    @test dx_out2 ≈ dx_true rtol = 1e-3
+                    if ismutable(dx_out)
+                        @testset "Mutation" begin
+                            @test dx_in ≈ dx_true rtol = 1e-3
+                        end
                     end
                 end
-                if allocs
-                    @testset "Allocations" begin
-                        @test (@allocated value_and_pullback!(dx_out, backend, f, x, dy)) ==
-                            0
-                    end
+                allocs && @testset "Allocations" begin
+                    @test (@allocated value_and_pullback!(dx_in, backend, f, x, dy)) == 0
                 end
-                if type_stability
-                    @testset "Type stability" begin
-                        @test_opt value_and_pullback!(dx_out, backend, f, x, dy)
-                    end
+                type_stability && @testset "Type stability" begin
+                    @test_opt value_and_pullback!(dx_in, backend, f, x, dy)
                 end
             end
         end
@@ -246,35 +243,33 @@ end
 
 function test_derivative(
     backend::AbstractBackend,
-    scenarios::Vector{<:Scenario}=scenarios;
+    scenarios::Vector{<:Scenario};
     allocs::Bool=false,
     type_stability::Bool=true,
 )
     scenarios = filter(scenarios) do s
         (get_input_type(s) <: Number) && (get_output_type(s) <: Number)
     end
-    @testset "Derivative" begin
+    @testset "Derivative ($(is_custom(backend) ? "custom" : "fallback"))" begin
         for scenario in scenarios
             X, Y = get_input_type(scenario), get_output_type(scenario)
+            handles_types(backend, X, Y) || continue
+
             @testset "$X -> $Y" begin
                 (; f, x, y, der_true) = scenario
                 y_out, der_out = value_and_derivative(backend, f, x)
 
-                @testset "Primal output" begin
-                    @test y_out == y
+                @testset "Primal value" begin
+                    @test y_out ≈ y
                 end
-                @testset "Derivative output" begin
+                @testset "Derivative value" begin
                     @test der_out ≈ der_true rtol = 1e-3
                 end
-                if allocs
-                    @testset "Allocations" begin
-                        @test (@allocated value_and_derivative(backend, f, x)) == 0
-                    end
+                allocs && @testset "Allocations" begin
+                    @test (@allocated value_and_derivative(backend, f, x)) == 0
                 end
-                if type_stability
-                    @testset "Type stability" begin
-                        @test_opt value_and_derivative(backend, f, x)
-                    end
+                type_stability && @testset "Type stability" begin
+                    @test_opt value_and_derivative(backend, f, x)
                 end
             end
         end
@@ -283,42 +278,42 @@ end
 
 function test_multiderivative(
     backend::AbstractBackend,
-    scenarios::Vector{<:Scenario}=scenarios;
+    scenarios::Vector{<:Scenario};
     allocs::Bool=false,
     type_stability::Bool=true,
 )
     scenarios = filter(scenarios) do s
         (get_input_type(s) <: Number) && (get_output_type(s) <: AbstractArray)
     end
-    @testset "Multiderivative" begin
+    @testset "Multiderivative ($(is_custom(backend) ? "custom" : "fallback"))" begin
         for scenario in scenarios
             X, Y = get_input_type(scenario), get_output_type(scenario)
+            handles_types(backend, X, Y) || continue
+
             @testset "$X -> $Y" begin
                 (; f, x, y, multider_true) = scenario
                 y_out, multider_out = value_and_multiderivative(backend, f, x)
+                multider_in = zero(multider_out)
+                y_out2, multider_out2 = value_and_multiderivative!(
+                    multider_in, backend, f, x
+                )
 
-                @testset "Primal output" begin
-                    @test y_out == y
+                @testset "Primal value" begin
+                    @test y_out ≈ y
+                    @test y_out2 ≈ y
                 end
-                @testset "Multiderivative output" begin
+                @testset "Multiderivative value" begin
                     @test multider_out ≈ multider_true rtol = 1e-3
-                end
-                @testset "Mutation" begin
-                    multider_in = similar(multider_out)
-                    value_and_multiderivative!(multider_in, backend, f, x)
-                    @test multider_in ≈ multider_true rtol = 1e-3
-                end
-                if allocs
-                    @testset "Allocations" begin
-                        @test (@allocated value_and_multiderivative!(
-                            multider_out, backend, f, x
-                        )) == 0
+                    @test multider_out2 ≈ multider_true rtol = 1e-3
+                    @testset "Mutation" begin
+                        @test multider_in ≈ multider_true rtol = 1e-3
                     end
                 end
-                if type_stability
-                    @testset "Type stability" begin
-                        @test_opt value_and_multiderivative!(multider_out, backend, f, x)
-                    end
+                allocs && @testset "Allocations" begin
+                    @test (@allocated value_and_multiderivative!(multider_in, backend, f, x)) == 0
+                end
+                type_stability && @testset "Type stability" begin
+                    @test_opt value_and_multiderivative!(multider_in, backend, f, x)
                 end
             end
         end
@@ -327,40 +322,40 @@ end
 
 function test_gradient(
     backend::AbstractBackend,
-    scenarios::Vector{<:Scenario}=scenarios;
+    scenarios::Vector{<:Scenario};
     allocs::Bool=false,
     type_stability::Bool=true,
 )
     scenarios = filter(scenarios) do s
         (get_input_type(s) <: AbstractArray) && (get_output_type(s) <: Number)
     end
-    @testset "Gradient" begin
+    @testset "Gradient ($(is_custom(backend) ? "custom" : "fallback"))" begin
         for scenario in scenarios
             X, Y = get_input_type(scenario), get_output_type(scenario)
+            handles_types(backend, X, Y) || continue
+
             @testset "$X -> $Y" begin
                 (; f, x, y, grad_true) = scenario
                 y_out, grad_out = value_and_gradient(backend, f, x)
+                grad_in = zero(grad_out)
+                y_out2, grad_out2 = value_and_gradient!(grad_in, backend, f, x)
 
-                @testset "Primal output" begin
-                    @test y_out == y
+                @testset "Primal value" begin
+                    @test y_out ≈ y
+                    @test y_out2 ≈ y
                 end
-                @testset "Gradient output" begin
+                @testset "Gradient value" begin
                     @test grad_out ≈ grad_true rtol = 1e-3
-                end
-                @testset "Mutation" begin
-                    grad_in = similar(grad_out)
-                    value_and_gradient!(grad_in, backend, f, x)
-                    @test grad_in ≈ grad_true rtol = 1e-3
-                end
-                if allocs
-                    @testset "Allocations" begin
-                        @test (@allocated value_and_gradient!(grad_out, backend, f, x)) == 0
+                    @test grad_out2 ≈ grad_true rtol = 1e-3
+                    @testset "Mutation" begin
+                        @test grad_in ≈ grad_true rtol = 1e-3
                     end
                 end
-                if type_stability
-                    @testset "Type stability" begin
-                        @test_opt value_and_gradient!(grad_out, backend, f, x)
-                    end
+                allocs && @testset "Allocations" begin
+                    @test (@allocated value_and_gradient!(grad_in, backend, f, x)) == 0
+                end
+                type_stability && @testset "Type stability" begin
+                    @test_opt value_and_gradient!(grad_in, backend, f, x)
                 end
             end
         end
@@ -369,40 +364,40 @@ end
 
 function test_jacobian(
     backend::AbstractBackend,
-    scenarios::Vector{<:Scenario}=scenarios;
+    scenarios::Vector{<:Scenario};
     allocs::Bool=false,
     type_stability::Bool=true,
 )
     scenarios = filter(scenarios) do s
         (get_input_type(s) <: AbstractArray) && (get_output_type(s) <: AbstractArray)
     end
-    @testset "Jacobian" begin
+    @testset "Jacobian ($(is_custom(backend) ? "custom" : "fallback"))" begin
         for scenario in scenarios
             X, Y = get_input_type(scenario), get_output_type(scenario)
+            handles_types(backend, X, Y) || continue
+
             @testset "$X -> $Y" begin
                 (; f, x, y, jac_true) = scenario
                 y_out, jac_out = value_and_jacobian(backend, f, x)
+                jac_in = zero(jac_out)
+                y_out2, jac_out2 = value_and_jacobian!(jac_in, backend, f, x)
 
-                @testset "Primal output" begin
-                    @test y_out == y
+                @testset "Primal value" begin
+                    @test y_out ≈ y
+                    @test y_out2 ≈ y
                 end
-                @testset "Jacobian output" begin
+                @testset "Jacobian value" begin
                     @test jac_out ≈ jac_true rtol = 1e-3
-                end
-                @testset "Mutation" begin
-                    jac_in = similar(jac_out)
-                    value_and_jacobian!(jac_in, backend, f, x)
-                    @test jac_in ≈ jac_true rtol = 1e-3
-                end
-                if allocs
-                    @testset "Allocations" begin
-                        @test (@allocated value_and_jacobian!(jac_out, backend, f, x)) == 0
+                    @test jac_out2 ≈ jac_true rtol = 1e-3
+                    @testset "Mutation" begin
+                        @test jac_in ≈ jac_true rtol = 1e-3
                     end
                 end
-                if type_stability
-                    @testset "Type stability" begin
-                        @test_opt value_and_jacobian!(jac_out, backend, f, x)
-                    end
+                allocs && @testset "Allocations" begin
+                    @test (@allocated value_and_jacobian!(jac_in, backend, f, x)) == 0
+                end
+                type_stability && @testset "Type stability" begin
+                    @test_opt value_and_jacobian!(jac_in, backend, f, x)
                 end
             end
         end
@@ -411,7 +406,7 @@ end
 
 function test_jacobian_and_friends(
     backend::AbstractBackend,
-    scenarios::Vector{<:Scenario}=scenarios;
+    scenarios::Vector{<:Scenario};
     input_type::Type=Any,
     output_type::Type=Any,
     allocs::Bool=false,

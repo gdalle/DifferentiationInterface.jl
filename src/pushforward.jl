@@ -1,32 +1,23 @@
 """
-    value_and_pushforward!(dy, backend, f, x, dx[, stuff]) -> (y, dy)
+    value_and_pushforward!(dy, backend::AbstractForwardBackend, f, x, dx) -> (y, dy)
 
-Compute the Jacobian-vector product of the Jacobian of `f` at `x` with `dx` inside `dy`.
-Returns the primal output `f(x)` and the JVP `dy`.
+Compute the primal value `y = f(x)` and the Jacobian-vector product `dy = ∂f(x) * dx`, overwriting `dy` if possible.
 
 !!! info "Interface requirement"
-    This is the only required implementation for a forward mode backend.
-
-# Arguments
-
-- `y`: primal output
-- `dy`: cotangent, might be modified
-- `backend`: forward-mode autodiff backend
-- `f`: function `x -> y` to differentiate
-- `x`: argument
-- `dx`: tangent
-- `stuff`: optional backend-specific storage (cache, config), might be modified
+    This is the only required implementation for an [`AbstractForwardBackend`](@ref).
 """
-function value_and_pushforward!(dy, backend::AbstractBackend, f, x, dx)
-    return error("No package extension loaded for backend $backend.")
+function value_and_pushforward!(dy, backend::AbstractForwardBackend, f, x, dx)
+    return error(
+        "Backend $backend is not loaded or does not support this type combination."
+    )
 end
 
 """
-    value_and_pushforward(backend, f, x, dx[, stuff]) -> (y, dy)
+    value_and_pushforward(backend::AbstractForwardBackend, f, x, dx) -> (y, dy)
 
-Call [`value_and_pushforward!`](@ref) after allocating memory for the Jacobian-vector product.
+Compute the primal value `y = f(x)` and the Jacobian-vector product `dy = ∂f(x) * dx`.
 """
-function value_and_pushforward(backend::AbstractBackend, f, x, dx)
+function value_and_pushforward(backend::AbstractForwardBackend, f, x, dx)
     dy = mysimilar(f(x))
     return value_and_pushforward!(dy, backend, f, x, dx)
 end

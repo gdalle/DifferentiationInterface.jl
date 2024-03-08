@@ -1,8 +1,7 @@
 """
     value_and_multiderivative!(multider, backend, f, x) -> (y, multider)
 
-Compute the derivative of a scalar-to-array function inside `multider`.
-Returns the primal output `f(x)` and the derivative.
+Compute the primal value `y = f(x)` and the (array-valued) derivative `multider = f'(x)` of a scalar-to-array function, overwriting `multider` if possible.
 """
 function value_and_multiderivative! end
 
@@ -26,7 +25,7 @@ end
 """
     value_and_multiderivative(backend, f, x) -> (y, multider)
 
-Call [`value_and_multiderivative!`](@ref) after allocating memory for the multiderivative.
+Compute the primal value `y = f(x)` and the (array-valued) derivative `multider = f'(x)` of a scalar-to-array function.
 """
 function value_and_multiderivative(backend::AbstractBackend, f, x::Number)
     multider = similar(f(x))

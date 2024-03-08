@@ -6,6 +6,7 @@
 /benchmark/*.json
 
 /docs/build/
+/docs/src/index.md
 
 /Manifest.toml
 /docs/Manifest.toml

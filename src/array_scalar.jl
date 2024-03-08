@@ -1,8 +1,7 @@
 """
     value_and_gradient!(grad, backend, f, x) -> (y, grad)
 
-Compute the gradient of an array-to-scalar function inside `dx`.
-Returns the primal output `f(x)` and the gradient.
+Compute the primal value `y = f(x)` and the gradient `grad = ∇f(x)` of an array-to-scalar function, overwriting `grad` if possible.
 """
 function value_and_gradient! end
 
@@ -27,7 +26,7 @@ end
 """
     value_and_gradient(backend, f, x) -> (y, grad)
 
-Call [`value_and_gradient!`](@ref) after allocating memory for the gradient.
+Compute the primal value `y = f(x)` and the gradient `grad = ∇f(x)` of an array-to-scalar function.
 """
 function value_and_gradient(backend::AbstractBackend, f, x::AbstractArray)
     grad = similar(x)

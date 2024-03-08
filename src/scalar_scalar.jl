@@ -1,8 +1,7 @@
 """
     value_and_derivative(backend, f, x) -> (y, der)
 
-Compute the derivative of a scalar-to-scalar function.
-Returns the primal output `f(x)` and the derivative.
+Compute the primal value `y = f(x)` and the derivative `der = f'(x)` of a scalar-to-scalar function.
 """
 function value_and_derivative end
 

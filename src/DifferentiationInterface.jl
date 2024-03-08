@@ -1,8 +1,7 @@
 """
     DifferentiationInterface
 
-An experimental redesign for [AbstractDifferentiation.jl]
-(https://github.com/JuliaDiff/AbstractDifferentiation.jl).
+An interface to various automatic differentiation backends in Julia.
 
 # Exports
 
@@ -13,6 +12,7 @@ module DifferentiationInterface
 using DocStringExtensions
 using FillArrays: OneElement
 
+include("backends_abstract.jl")
 include("backends.jl")
 include("utils.jl")
 include("pushforward.jl")
@@ -22,13 +22,19 @@ include("scalar_array.jl")
 include("array_scalar.jl")
 include("array_array.jl")
 
-export ChainRulesReverseBackend,
-    ChainRulesForwardBackend,
-    EnzymeReverseBackend,
+export AbstractBackend, AbstractForwardBackend, AbstractReverseBackend
+export autodiff_mode, is_custom
+export handles_input_type, handles_output_type, handles_types
+
+export ChainRulesForwardBackend,
+    ChainRulesReverseBackend,
     EnzymeForwardBackend,
+    EnzymeReverseBackend,
     FiniteDiffBackend,
     ForwardDiffBackend,
-    ReverseDiffBackend
+    PolyesterForwardDiffBackend,
+    ReverseDiffBackend,
+    ZygoteBackend
 
 export value_and_pushforward!, value_and_pushforward
 export value_and_pullback!, value_and_pullback

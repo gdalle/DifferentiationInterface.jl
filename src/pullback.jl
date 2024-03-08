@@ -1,32 +1,23 @@
 """
-    value_and_pullback!(dx, backend, f, x, dy[, stuff]) -> (y, dx)
+    value_and_pullback!(dx, backend::AbstractReverseBackend, f, x, dy) -> (y, dx)
 
-Compute the vector-Jacobian product of `dy` with the Jacobian of `f` at `x` inside `dx`.
-Returns the primal output `f(x)` and the VJP `dx`.
+Compute the primal value `y = f(x)` and the vector-Jacobian product `dx = ∂f(x)' * dy`, overwriting `dx` if possible.
 
 !!! info "Interface requirement"
-    This is the only required implementation for a reverse mode backend.
-
-# Arguments
-
-- `y`: primal output
-- `dx`: tangent, might be modified
-- `backend`: reverse-mode autodiff backend
-- `f`: function `x -> y` to differentiate
-- `x`: argument
-- `dy`: cotangent
-- `stuff`: optional backend-specific storage (cache, config), might be modified
+    This is the only required implementation for an [`AbstractReverseBackend`](@ref).
 """
-function value_and_pullback!(dx, backend::AbstractBackend, f, x, dy)
-    return error("No package extension loaded for backend $backend.")
+function value_and_pullback!(dx, backend::AbstractReverseBackend, f, x, dy)
+    return error(
+        "Backend $backend is not loaded or does not support this type combination."
+    )
 end
 
 """
-    value_and_pullback(backend, f, x, dy[, stuff]) -> (y, dx)
+    value_and_pullback(backend::AbstractReverseBackend, f, x, dy) -> (y, dx)
 
-Call [`value_and_pullback!`](@ref) after allocating memory for the vector-Jacobian product.
+Compute the primal value `y = f(x)` and the vector-Jacobian product `dx = ∂f(x)' * dy`.
 """
-function value_and_pullback(backend::AbstractBackend, f, x, dy)
+function value_and_pullback(backend::AbstractReverseBackend, f, x, dy)
     dx = mysimilar(x)
     return value_and_pullback!(dx, backend, f, x, dy)
 end

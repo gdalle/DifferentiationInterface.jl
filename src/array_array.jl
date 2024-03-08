@@ -1,13 +1,12 @@
 """
-    value_and_jacobian!(jac, backend, f, x[, stuff]) -> (y, jac)
+    value_and_jacobian!(jac, backend, f, x) -> (y, jac)
 
-Compute the Jacobian inside `jac`.
-Returns the primal output `f(x)` and the Jacobian.
+Compute the primal value `y = f(x)` and the Jacobian matrix `jac = ∂f(x)` of an array-to-array function, overwriting `jac` if possible.
 
 ## Notes
 
-For a function `f: ℝⁿ → ℝᵐ`, `jac` is expected to be a `m × n` matrix.
-If the input or output is a higher-order array, it is flattened with `vec`.
+Regardless of the shape of `x` and `y`, if `x` has length `n` and `y` has length `m`, then `jac` is expected to be a `m × n` matrix.
+This function acts as if the input and output had been flattened with `vec`. 
 """
 function value_and_jacobian!(
     jac::AbstractMatrix, backend::AbstractBackend, f, x::AbstractArray
@@ -53,7 +52,12 @@ end
 """
     value_and_jacobian(backend, f, x) -> (y, jac)
 
-Call [`value_and_jacobian!`](@ref) after allocating memory for the Jacobian matrix.
+Compute the primal value `y = f(x)` and the Jacobian matrix `jac = ∂f(x)` of an array-to-array function.
+
+## Notes
+
+Regardless of the shape of `x` and `y`, if `x` has length `n` and `y` has length `m`, then `jac` is expected to be a `m × n` matrix.
+This function acts as if the input and output had been flattened with `vec`. 
 """
 function value_and_jacobian(backend::AbstractBackend, f, x::AbstractArray)
     y = f(x)
