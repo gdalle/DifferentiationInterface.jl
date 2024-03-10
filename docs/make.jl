@@ -24,7 +24,7 @@ ZygoteExt = get_extension(DI, :DifferentiationInterfaceZygoteExt)
 DocMeta.setdocmeta!(
     DifferentiationInterface,
     :DocTestSetup,
-    :(using DifferentiationInterface);
+    :(using DifferentiationInterface, ADTypes);
     recursive=true,
 )
 

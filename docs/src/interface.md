@@ -59,23 +59,15 @@ Pages = ["pullback.jl"]
 
 ### ADTypes.jl
 
-```@meta
-CurrentModule = ADTypes
-```
-
 The following backends are defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl):
 
-```@autodocs
-Modules = [ADTypes]
+```@docs
+AbstractADType
 ```
 
 Only a subset is supported by DifferentiationInterface.jl at the moment.
 
 ### DifferentiationInterface.jl
-
-```@meta
-CurrentModule = DifferentiationInterface
-```
 
 The following backends are defined by DifferentiationInterface.jl:
 
