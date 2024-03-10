@@ -1,6 +1,6 @@
-## Additional backend
+## Additional backends
 
-# TODO: remove once https://github.com/SciML/ADTypes.jl/pull/21 is merged
+# TODO: remove once https://github.com/SciML/ADTypes.jl/pull/21 is merged and released
 
 """
     AutoChainRules{RC}
@@ -22,22 +22,29 @@ struct AutoChainRules{RC} <: AbstractADType
     ruleconfig::RC
 end
 
-ruleconfig(backend::AutoChainRules) = backend.ruleconfig
+# TODO: remove this once https://github.com/SciML/ADTypes.jl/issues/27 is solved
+
+"""
+    AutoDiffractor
+
+Enables the use of [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl).
+"""
+struct AutoDiffractor <: AbstractADType end
 
 ## Traits and access
 
 """
     autodiff_mode(backend)
 
-Return `Val(:forward)` or `Val(:reverse)` in a statically predictable way.
+Return `ForwardMode()` or `ReverseMode()` in a statically predictable way.
 
 This function must be overloaded for backends that do not inherit from `ADTypes.AbstractForwardMode` or `ADTypes.AbstractReverseMode` (e.g. because they support both forward and reverse).
 
 We classify `ADTypes.AbstractFiniteDifferencesMode` as forward mode.
 """
-autodiff_mode(::AbstractForwardMode) = Val{:forward}()
-autodiff_mode(::AbstractFiniteDifferencesMode) = Val{:forward}()
-autodiff_mode(::AbstractReverseMode) = Val{:reverse}()
+autodiff_mode(::AbstractForwardMode) = ForwardMode()
+autodiff_mode(::AbstractFiniteDifferencesMode) = ForwardMode()
+autodiff_mode(::AbstractReverseMode) = ReverseMode()
 
 """
     handles_input_type(backend, ::Type{X})

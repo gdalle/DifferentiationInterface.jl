@@ -1,4 +1,5 @@
 using ADTypes: AutoPolyesterForwardDiff
+using DifferentiationInterface: CustomImplem, FallbackImplem
 using PolyesterForwardDiff: PolyesterForwardDiff
 
 # see https://github.com/JuliaDiff/PolyesterForwardDiff.jl/issues/17
@@ -6,6 +7,7 @@ using PolyesterForwardDiff: PolyesterForwardDiff
 test_pushforward(AutoPolyesterForwardDiff(; chunksize=4), scenarios; type_stability=false);
 
 test_jacobian_and_friends(
+    CustomImplem(),
     AutoPolyesterForwardDiff(; chunksize=4),
     scenarios;
     input_type=Union{Number,AbstractVector},

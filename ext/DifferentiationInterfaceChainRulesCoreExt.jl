@@ -2,15 +2,17 @@ module DifferentiationInterfaceChainRulesCoreExt
 
 using ChainRulesCore:
     HasForwardsMode, HasReverseMode, NoTangent, RuleConfig, frule_via_ad, rrule_via_ad
-using DifferentiationInterface: AutoChainRules, ruleconfig
+using DifferentiationInterface: AutoChainRules, CustomImplem, update!
 import DifferentiationInterface as DI
 using DocStringExtensions
 
-update!(_old::Number, new::Number) = new
-update!(old, new) = old .= new
+ruleconfig(backend::AutoChainRules) = backend.ruleconfig
 
 const AutoForwardChainRules = AutoChainRules{<:RuleConfig{>:HasForwardsMode}}
 const AutoReverseChainRules = AutoChainRules{<:RuleConfig{>:HasReverseMode}}
+
+DI.autodiff_mode(::AutoForwardChainRules) = DI.ForwardMode()
+DI.autodiff_mode(::AutoReverseChainRules) = DI.ReverseMode()
 
 ## Primitives
 

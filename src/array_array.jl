@@ -13,13 +13,7 @@ Compute the primal value `y = f(x)` and the Jacobian matrix `jac = ∂f(x)` of a
 $JAC_NOTES
 """
 function value_and_jacobian!(
-    jac::AbstractMatrix, backend::AbstractADType, f, x::AbstractArray
-)
-    return value_and_jacobian!(Val{:fallback}(), jac, backend, f, x)
-end
-
-function value_and_jacobian!(
-    implem::Val{:fallback},
+    implem::AbstractImplem,
     jac::AbstractMatrix,
     backend::AbstractADType,
     f,
@@ -37,8 +31,8 @@ function check_jac(jac::AbstractMatrix, x::AbstractArray, y::AbstractArray)
 end
 
 function value_and_jacobian!(
-    ::Val{:fallback},
-    ::Val{:forward},
+    ::AbstractImplem,
+    ::ForwardMode,
     jac::AbstractMatrix,
     backend::AbstractADType,
     f,
@@ -55,8 +49,8 @@ function value_and_jacobian!(
 end
 
 function value_and_jacobian!(
-    ::Val{:fallback},
-    ::Val{:reverse},
+    ::AbstractImplem,
+    ::ReverseMode,
     jac::AbstractMatrix,
     backend::AbstractADType,
     f,
@@ -79,12 +73,8 @@ Compute the primal value `y = f(x)` and the Jacobian matrix `jac = ∂f(x)` of a
 
 $JAC_NOTES 
 """
-function value_and_jacobian(backend::AbstractADType, f, x::AbstractArray)
-    return value_and_jacobian(Val{:fallback}(), backend, f, x)
-end
-
 function value_and_jacobian(
-    implem::Val{:fallback}, backend::AbstractADType, f, x::AbstractArray
+    implem::AbstractImplem, backend::AbstractADType, f, x::AbstractArray
 )
     y = f(x)
     T = promote_type(eltype(x), eltype(y))
@@ -99,12 +89,8 @@ Compute the Jacobian matrix `jac = ∂f(x)` of an array-to-array function, overw
 
 $JAC_NOTES
 """
-function jacobian!(jac::AbstractMatrix, backend::AbstractADType, f, x::AbstractArray)
-    return jacobian!(Val{:fallback}(), jac, backend, f, x)
-end
-
 function jacobian!(
-    implem::Val{:fallback},
+    implem::AbstractImplem,
     jac::AbstractMatrix,
     backend::AbstractADType,
     f,
@@ -120,10 +106,6 @@ Compute the Jacobian matrix `jac = ∂f(x)` of an array-to-array function.
 
 $JAC_NOTES
 """
-function jacobian(backend::AbstractADType, f, x::AbstractArray)
-    return jacobian(Val{:fallback}(), backend, f, x)
-end
-
-function jacobian(implem::Val{:fallback}, backend::AbstractADType, f, x::AbstractArray)
+function jacobian(implem::AbstractImplem, backend::AbstractADType, f, x::AbstractArray)
     return last(value_and_jacobian(implem, backend, f, x))
 end

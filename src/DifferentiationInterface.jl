@@ -15,6 +15,8 @@ using DocStringExtensions
 using FillArrays: OneElement
 
 include("backends.jl")
+include("implem.jl")
+include("mode.jl")
 include("utils.jl")
 include("pushforward.jl")
 include("pullback.jl")
@@ -22,10 +24,10 @@ include("scalar_scalar.jl")
 include("scalar_array.jl")
 include("array_scalar.jl")
 include("array_array.jl")
+include("custom.jl")
 
-export AutoChainRules
+export AutoChainRules, AutoDiffractor
 
-export autodiff_mode
 export handles_input_type, handles_output_type, handles_types
 
 export value_and_pushforward!, value_and_pushforward

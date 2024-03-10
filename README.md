@@ -13,7 +13,7 @@ This package provides a backend-agnostic syntax to differentiate functions `f(x)
 
 It started out as an experimental redesign for [AbstractDifferentiation.jl](https://github.com/JuliaDiff/AbstractDifferentiation.jl).
 
-## Supported backends
+## Compatibility
 
 We support some of the backends defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl):
 
@@ -24,9 +24,10 @@ We support some of the backends defined by [ADTypes.jl](https://github.com/SciML
 - [ReverseDiff.jl](https://github.com/JuliaDiff/ReverseDiff.jl) with `AutoReverseDiff()`
 - [Zygote.jl](https://github.com/FluxML/Zygote.jl) with `AutoZygote()`
 
-We also support one more backend which is not yet part of ADTypes.jl (see [ADTypes.jl#21](https://github.com/SciML/ADTypes.jl/pull/21)):
+We also support two more backends which are not yet part of ADTypes.jl:
 
 - [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl) with `AutoChainRules(ruleconfig)`
+- [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl) with `AutoDiffractor()`
 
 ## Design
 

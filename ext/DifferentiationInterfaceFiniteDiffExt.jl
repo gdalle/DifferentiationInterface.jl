@@ -1,6 +1,7 @@
 module DifferentiationInterfaceFiniteDiffExt
 
 using ADTypes: AutoFiniteDiff
+using DifferentiationInterface: CustomImplem
 import DifferentiationInterface as DI
 using DocStringExtensions
 using FiniteDiff:
@@ -38,48 +39,56 @@ end
 
 ## Utilities
 
-function DI.value_and_derivative(::AutoFiniteDiff{fdtype}, f, x::Number) where {fdtype}
+function DI.value_and_derivative(
+    ::CustomImplem, ::AutoFiniteDiff{fdtype}, f, x::Number
+) where {fdtype}
     y = f(x)
     der = finite_difference_derivative(f, x, fdtype, eltype(y), y)
     return y, der
 end
 
 function DI.value_and_multiderivative!(
-    multider::AbstractArray, ::AutoFiniteDiff{fdtype}, f, x::Number
+    ::CustomImplem, multider::AbstractArray, ::AutoFiniteDiff{fdtype}, f, x::Number
 ) where {fdtype}
     y = f(x)
     finite_difference_gradient!(multider, f, x, fdtype, eltype(y), FUNCTION_NOT_INPLACE, y)
     return y, multider
 end
 
-function DI.value_and_multiderivative(::AutoFiniteDiff{fdtype}, f, x::Number) where {fdtype}
+function DI.value_and_multiderivative(
+    ::CustomImplem, ::AutoFiniteDiff{fdtype}, f, x::Number
+) where {fdtype}
     y = f(x)
     multider = finite_difference_gradient(f, x, fdtype, eltype(y), FUNCTION_NOT_INPLACE, y)
     return y, multider
 end
 
 function DI.value_and_gradient!(
-    grad::AbstractArray, ::AutoFiniteDiff{fdtype}, f, x::AbstractArray
+    ::CustomImplem, grad::AbstractArray, ::AutoFiniteDiff{fdtype}, f, x::AbstractArray
 ) where {fdtype}
     y = f(x)
     finite_difference_gradient!(grad, f, x, fdtype, eltype(y), FUNCTION_NOT_INPLACE, y)
     return y, grad
 end
 
-function DI.value_and_gradient(::AutoFiniteDiff{fdtype}, f, x::AbstractArray) where {fdtype}
+function DI.value_and_gradient(
+    ::CustomImplem, ::AutoFiniteDiff{fdtype}, f, x::AbstractArray
+) where {fdtype}
     y = f(x)
     grad = finite_difference_gradient(f, x, fdtype, eltype(y), FUNCTION_NOT_INPLACE, y)
     return y, grad
 end
 
-function DI.value_and_jacobian(::AutoFiniteDiff{fdtype}, f, x::AbstractArray) where {fdtype}
+function DI.value_and_jacobian(
+    ::CustomImplem, ::AutoFiniteDiff{fdtype}, f, x::AbstractArray
+) where {fdtype}
     y = f(x)
     jac = finite_difference_jacobian(f, x, fdtype, eltype(y))
     return y, jac
 end
 
 function DI.value_and_jacobian!(
-    jac::AbstractMatrix, backend::AutoFiniteDiff, f, x::AbstractArray
+    ::CustomImplem, jac::AbstractMatrix, backend::AutoFiniteDiff, f, x::AbstractArray
 )
     y, new_jac = DI.value_and_jacobian(backend, f, x)
     jac .= new_jac

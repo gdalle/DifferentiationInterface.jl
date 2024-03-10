@@ -1,5 +1,5 @@
 const AutoReverseEnzyme = AutoEnzyme{Val{:reverse}}
-DI.autodiff_mode(::AutoReverseEnzyme) = Val{:reverse}()
+DI.autodiff_mode(::AutoReverseEnzyme) = DI.ReverseMode()
 DI.handles_output_type(::AutoReverseEnzyme, ::Type{<:AbstractArray}) = false
 
 ## Primitives
@@ -23,14 +23,14 @@ end
 
 ## Utilities
 
-function DI.value_and_gradient(::AutoReverseEnzyme, f, x::AbstractArray)
+function DI.value_and_gradient(::CustomImplem, ::AutoReverseEnzyme, f, x::AbstractArray)
     y = f(x)
     grad = gradient(Reverse, f, x)
     return y, grad
 end
 
 function DI.value_and_gradient!(
-    grad::AbstractArray, ::AutoReverseEnzyme, f, x::AbstractArray
+    ::CustomImplem, grad::AbstractArray, ::AutoReverseEnzyme, f, x::AbstractArray
 )
     y = f(x)
     gradient!(Reverse, grad, f, x)

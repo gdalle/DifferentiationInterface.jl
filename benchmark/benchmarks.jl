@@ -8,7 +8,7 @@ using FiniteDiff: FiniteDiff
 using ForwardDiff: ForwardDiff
 using PolyesterForwardDiff: PolyesterForwardDiff
 using ReverseDiff: ReverseDiff
-using Zygote: Zygote
+using Zygote: Zygote, ZygoteRuleConfig
 
 ## Settings
 
@@ -43,6 +43,7 @@ end
 ## Backends
 
 all_backends = [
+    AutoChainRules(ZygoteRuleConfig()),
     AutoEnzyme(Val(:forward)),
     AutoEnzyme(Val(:reverse)),
     AutoFiniteDiff(),

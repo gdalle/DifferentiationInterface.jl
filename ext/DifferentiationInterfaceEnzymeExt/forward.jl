@@ -1,5 +1,5 @@
 const AutoForwardEnzyme = AutoEnzyme{Val{:forward}}
-DI.autodiff_mode(::AutoForwardEnzyme) = Val{:forward}()
+DI.autodiff_mode(::AutoForwardEnzyme) = DI.ForwardMode()
 
 ## Primitives
 
@@ -20,7 +20,7 @@ end
 
 ## Utilities
 
-function DI.value_and_jacobian(::AutoForwardEnzyme, f, x::AbstractArray)
+function DI.value_and_jacobian(::CustomImplem, ::AutoForwardEnzyme, f, x::AbstractArray)
     y = f(x)
     jac = jacobian(Forward, f, x)
     # see https://github.com/EnzymeAD/Enzyme.jl/issues/1332

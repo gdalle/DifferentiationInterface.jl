@@ -1,9 +1,10 @@
+using ADTypes
 using Base: get_extension
 using DifferentiationInterface
 import DifferentiationInterface as DI
 using Documenter
 
-using DiffResults: DiffResults
+using Diffractor: Diffractor
 using Enzyme: Enzyme
 using FiniteDiff: FiniteDiff
 using ForwardDiff: ForwardDiff
@@ -12,6 +13,7 @@ using ReverseDiff: ReverseDiff
 using Zygote: Zygote
 
 ChainRulesCoreExt = get_extension(DI, :DifferentiationInterfaceChainRulesCoreExt)
+DiffractorExt = get_extension(DI, :DifferentiationInterfaceDiffractorExt)
 EnzymeExt = get_extension(DI, :DifferentiationInterfaceEnzymeExt)
 FiniteDiffExt = get_extension(DI, :DifferentiationInterfaceFiniteDiffExt)
 ForwardDiffExt = get_extension(DI, :DifferentiationInterfaceForwardDiffExt)
@@ -45,7 +47,9 @@ end
 makedocs(;
     modules=[
         DifferentiationInterface,
+        ADTypes,
         ChainRulesCoreExt,
+        DiffractorExt,
         EnzymeExt,
         FiniteDiffExt,
         ForwardDiffExt,

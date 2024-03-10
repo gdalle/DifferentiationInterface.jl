@@ -1,6 +1,7 @@
 module DifferentiationInterfacePolyesterForwardDiffExt
 
 using ADTypes: AutoPolyesterForwardDiff, AutoForwardDiff
+using DifferentiationInterface: CustomImplem
 import DifferentiationInterface as DI
 using DiffResults: DiffResults
 using DocStringExtensions
@@ -17,7 +18,7 @@ end
 ## Utilities
 
 function DI.value_and_gradient!(
-    grad::AbstractArray, ::AutoPolyesterForwardDiff{C}, f, x::AbstractArray
+    ::CustomImplem, grad::AbstractArray, ::AutoPolyesterForwardDiff{C}, f, x::AbstractArray
 ) where {C}
     y = f(x)
     threaded_gradient!(f, grad, x, Chunk{C}())
@@ -25,7 +26,7 @@ function DI.value_and_gradient!(
 end
 
 function DI.value_and_jacobian!(
-    jac::AbstractMatrix, ::AutoPolyesterForwardDiff{C}, f, x::AbstractArray
+    ::CustomImplem, jac::AbstractMatrix, ::AutoPolyesterForwardDiff{C}, f, x::AbstractArray
 ) where {C}
     y = f(x)
     threaded_jacobian!(f, jac, x, Chunk{C}())

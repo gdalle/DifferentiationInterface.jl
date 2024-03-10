@@ -2,9 +2,11 @@ using ADTypes
 using ADTypes: AbstractADType
 using BenchmarkTools
 using DifferentiationInterface
+using DifferentiationInterface: CustomImplem, FallbackImplem, ForwardMode, ReverseMode
 
 ## Pretty printing
 
+pretty(::AutoChainRules{<:ZygoteRuleConfig}) = "ChainRules (Zygote)"
 pretty(::AutoEnzyme{Val{:forward}}) = "Enzyme (forward)"
 pretty(::AutoEnzyme{Val{:reverse}}) = "Enzyme (reverse)"
 pretty(::AutoFiniteDiff) = "FiniteDiff"
@@ -12,6 +14,9 @@ pretty(::AutoForwardDiff) = "ForwardDiff"
 pretty(::AutoPolyesterForwardDiff) = "PolyesterForwardDiff"
 pretty(::AutoReverseDiff) = "ReverseDiff"
 pretty(::AutoZygote) = "Zygote"
+
+pretty(::CustomImplem) = "custom"
+pretty(::FallbackImplem) = "fallback"
 
 ## Benchmark suite
 
@@ -22,7 +27,7 @@ function add_pushforward_benchmarks!(
     dx = n == 1 ? randn() : randn(n)
     dy = m == 1 ? 0.0 : zeros(m)
 
-    if !isa(autodiff_mode(backend), Val{:forward}) ||
+    if !isa(autodiff_mode(backend), ForwardMode) ||
         !handles_types(backend, typeof(x), typeof(dy))
         return nothing
     end
@@ -51,7 +56,7 @@ function add_pullback_benchmarks!(
     dx = n == 1 ? 0.0 : zeros(n)
     dy = m == 1 ? randn() : randn(m)
 
-    if !isa(autodiff_mode(backend), Val{:reverse}) ||
+    if !isa(autodiff_mode(backend), ReverseMode) ||
         !handles_types(backend, typeof(x), typeof(dy))
         return nothing
     end
@@ -83,20 +88,16 @@ function add_derivative_benchmarks!(
 
     x = randn()
 
-    suite["value_and_derivative"][(1, 1)]["$(pretty(backend))"] = @benchmarkable begin
-        value_and_derivative($backend, $f, $x)
-    end
+    for implem in (CustomImplem(), FallbackImplem())
+        backend_implem = "$(pretty(backend)) - $(pretty(implem))"
 
-    suite["value_and_derivative"][(1, 1)]["$(pretty(backend)) - fallback"] = @benchmarkable begin
-        value_and_derivative(Val(:fallback), $backend, $f, $x)
-    end
+        suite["value_and_derivative"][(1, 1)][backend_implem] = @benchmarkable begin
+            value_and_derivative($implem, $backend, $f, $x)
+        end
 
-    suite["derivative"][(1, 1)]["$(pretty(backend))"] = @benchmarkable begin
-        derivative($backend, $f, $x)
-    end
-
-    suite["derivative"][(1, 1)]["$(pretty(backend)) - fallback"] = @benchmarkable begin
-        derivative(Val(:fallback), $backend, $f, $x)
+        suite["derivative"][(1, 1)][backend_implem] = @benchmarkable begin
+            derivative($implem, $backend, $f, $x)
+        end
     end
 
     return nothing
@@ -113,32 +114,22 @@ function add_multiderivative_benchmarks!(
     x = randn()
     multider = zeros(m)
 
-    suite["value_and_multiderivative"][(1, m)]["$(pretty(backend))"] = @benchmarkable begin
-        value_and_multiderivative($backend, $f, $x)
-    end
-    suite["value_and_multiderivative!"][(1, m)]["$(pretty(backend))"] = @benchmarkable begin
-        value_and_multiderivative!($multider, $backend, $f, $x)
-    end
+    for implem in (CustomImplem(), FallbackImplem())
+        backend_implem = "$(pretty(backend)) - $(pretty(implem))"
 
-    suite["value_and_multiderivative"][(1, m)]["$(pretty(backend)) - fallback"] = @benchmarkable begin
-        value_and_multiderivative(Val(:fallback), $backend, $f, $x)
-    end
-    suite["value_and_multiderivative!"][(1, m)]["$(pretty(backend)) - fallback"] = @benchmarkable begin
-        value_and_multiderivative!(Val(:fallback), $multider, $backend, $f, $x)
-    end
+        suite["value_and_multiderivative"][(1, m)][backend_implem] = @benchmarkable begin
+            value_and_multiderivative($implem, $backend, $f, $x)
+        end
+        suite["value_and_multiderivative!"][(1, m)][backend_implem] = @benchmarkable begin
+            value_and_multiderivative!($implem, $multider, $backend, $f, $x)
+        end
 
-    suite["multiderivative"][(1, m)]["$(pretty(backend))"] = @benchmarkable begin
-        multiderivative($backend, $f, $x)
-    end
-    suite["multiderivative!"][(1, m)]["$(pretty(backend))"] = @benchmarkable begin
-        multiderivative!($multider, $backend, $f, $x)
-    end
-
-    suite["multiderivative"][(1, m)]["$(pretty(backend)) - fallback"] = @benchmarkable begin
-        multiderivative(Val(:fallback), $backend, $f, $x)
-    end
-    suite["multiderivative!"][(1, m)]["$(pretty(backend)) - fallback"] = @benchmarkable begin
-        multiderivative!(Val(:fallback), $multider, $backend, $f, $x)
+        suite["multiderivative"][(1, m)][backend_implem] = @benchmarkable begin
+            multiderivative($implem, $backend, $f, $x)
+        end
+        suite["multiderivative!"][(1, m)][backend_implem] = @benchmarkable begin
+            multiderivative!($implem, $multider, $backend, $f, $x)
+        end
     end
 
     return nothing
@@ -155,32 +146,22 @@ function add_gradient_benchmarks!(
     x = randn(n)
     grad = zeros(n)
 
-    suite["value_and_gradient"][(n, 1)]["$(pretty(backend))"] = @benchmarkable begin
-        value_and_gradient($backend, $f, $x)
-    end
-    suite["value_and_gradient!"][(n, 1)]["$(pretty(backend))"] = @benchmarkable begin
-        value_and_gradient!($grad, $backend, $f, $x)
-    end
+    for implem in (CustomImplem(), FallbackImplem())
+        backend_implem = "$(pretty(backend)) - $(pretty(implem))"
 
-    suite["value_and_gradient"][(n, 1)]["$(pretty(backend)) - fallback"] = @benchmarkable begin
-        value_and_gradient(Val(:fallback), $backend, $f, $x)
-    end
-    suite["value_and_gradient!"][(n, 1)]["$(pretty(backend)) - fallback"] = @benchmarkable begin
-        value_and_gradient!(Val(:fallback), $grad, $backend, $f, $x)
-    end
+        suite["value_and_gradient"][(n, 1)][backend_implem] = @benchmarkable begin
+            value_and_gradient($implem, $backend, $f, $x)
+        end
+        suite["value_and_gradient!"][(n, 1)][backend_implem] = @benchmarkable begin
+            value_and_gradient!($implem, $grad, $backend, $f, $x)
+        end
 
-    suite["gradient"][(n, 1)]["$(pretty(backend))"] = @benchmarkable begin
-        gradient($backend, $f, $x)
-    end
-    suite["gradient!"][(n, 1)]["$(pretty(backend))"] = @benchmarkable begin
-        gradient!($grad, $backend, $f, $x)
-    end
-
-    suite["gradient"][(n, 1)]["$(pretty(backend)) - fallback"] = @benchmarkable begin
-        gradient(Val(:fallback), $backend, $f, $x)
-    end
-    suite["gradient!"][(n, 1)]["$(pretty(backend)) - fallback"] = @benchmarkable begin
-        gradient!(Val(:fallback), $grad, $backend, $f, $x)
+        suite["gradient"][(n, 1)][backend_implem] = @benchmarkable begin
+            gradient($implem, $backend, $f, $x)
+        end
+        suite["gradient!"][(n, 1)][backend_implem] = @benchmarkable begin
+            gradient!($implem, $grad, $backend, $f, $x)
+        end
     end
 
     return nothing
@@ -196,32 +177,22 @@ function add_jacobian_benchmarks!(
     x = randn(n)
     jac = zeros(m, n)
 
-    suite["value_and_jacobian"][(n, m)]["$(pretty(backend))"] = @benchmarkable begin
-        value_and_jacobian($backend, $f, $x)
-    end
-    suite["value_and_jacobian!"][(n, m)]["$(pretty(backend))"] = @benchmarkable begin
-        value_and_jacobian!($jac, $backend, $f, $x)
-    end
+    for implem in (CustomImplem(), FallbackImplem())
+        backend_implem = "$(pretty(backend)) - $(pretty(implem))"
 
-    suite["value_and_jacobian"][(n, m)]["$(pretty(backend)) (:fallback)"] = @benchmarkable begin
-        value_and_jacobian(Val(:fallback), $backend, $f, $x)
-    end
-    suite["value_and_jacobian!"][(n, m)]["$(pretty(backend)) (:fallback)"] = @benchmarkable begin
-        value_and_jacobian!(Val(:fallback), $jac, $backend, $f, $x)
-    end
+        suite["value_and_jacobian"][(n, m)][backend_implem] = @benchmarkable begin
+            value_and_jacobian($implem, $backend, $f, $x)
+        end
+        suite["value_and_jacobian!"][(n, m)][backend_implem] = @benchmarkable begin
+            value_and_jacobian!($implem, $jac, $backend, $f, $x)
+        end
 
-    suite["jacobian"][(n, m)]["$(pretty(backend))"] = @benchmarkable begin
-        jacobian($backend, $f, $x)
-    end
-    suite["jacobian!"][(n, m)]["$(pretty(backend))"] = @benchmarkable begin
-        jacobian!($jac, $backend, $f, $x)
-    end
-
-    suite["jacobian"][(n, m)]["$(pretty(backend)) - fallback"] = @benchmarkable begin
-        jacobian(Val(:fallback), $backend, $f, $x)
-    end
-    suite["jacobian!"][(n, m)]["$(pretty(backend)) - fallback"] = @benchmarkable begin
-        jacobian!(Val(:fallback), $jac, $backend, $f, $x)
+        suite["jacobian"][(n, m)][backend_implem] = @benchmarkable begin
+            jacobian($implem, $backend, $f, $x)
+        end
+        suite["jacobian!"][(n, m)][backend_implem] = @benchmarkable begin
+            jacobian!($implem, $jac, $backend, $f, $x)
+        end
     end
 
     return nothing

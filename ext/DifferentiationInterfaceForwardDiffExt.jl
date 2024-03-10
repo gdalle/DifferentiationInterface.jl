@@ -1,6 +1,7 @@
 module DifferentiationInterfaceForwardDiffExt
 
 using ADTypes: AutoForwardDiff
+using DifferentiationInterface: CustomImplem
 import DifferentiationInterface as DI
 using DiffResults: DiffResults
 using DocStringExtensions
@@ -66,45 +67,49 @@ end
 
 ## Utilities (TODO: use DiffResults)
 
-function DI.value_and_derivative(::AutoForwardDiff, f, x::Number)
+function DI.value_and_derivative(::CustomImplem, ::AutoForwardDiff, f, x::Number)
     y = f(x)
     der = derivative(f, x)
     return y, der
 end
 
-function DI.value_and_multiderivative(::AutoForwardDiff, f, x::Number)
+function DI.value_and_multiderivative(::CustomImplem, ::AutoForwardDiff, f, x::Number)
     y = f(x)
     multider = derivative(f, x)
     return y, multider
 end
 
 function DI.value_and_multiderivative!(
-    multider::AbstractArray, ::AutoForwardDiff, f, x::Number
+    ::CustomImplem, multider::AbstractArray, ::AutoForwardDiff, f, x::Number
 )
     y = f(x)
     derivative!(multider, f, x)
     return y, multider
 end
 
-function DI.value_and_gradient(::AutoForwardDiff, f, x::AbstractArray)
+function DI.value_and_gradient(::CustomImplem, ::AutoForwardDiff, f, x::AbstractArray)
     y = f(x)
     grad = gradient(f, x)
     return y, grad
 end
 
-function DI.value_and_gradient!(grad::AbstractArray, ::AutoForwardDiff, f, x::AbstractArray)
+function DI.value_and_gradient!(
+    ::CustomImplem, grad::AbstractArray, ::AutoForwardDiff, f, x::AbstractArray
+)
     y = f(x)
     gradient!(grad, f, x)
     return y, grad
 end
 
-function DI.value_and_jacobian(::AutoForwardDiff, f, x::AbstractArray)
+function DI.value_and_jacobian(::CustomImplem, ::AutoForwardDiff, f, x::AbstractArray)
     y = f(x)
     jac = jacobian(f, x)
     return y, jac
 end
 
-function DI.value_and_jacobian!(jac::AbstractMatrix, ::AutoForwardDiff, f, x::AbstractArray)
+function DI.value_and_jacobian!(
+    ::CustomImplem, jac::AbstractMatrix, ::AutoForwardDiff, f, x::AbstractArray
+)
     y = f(x)
     jacobian!(jac, f, x)
     return y, jac

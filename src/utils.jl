@@ -16,3 +16,6 @@ end
 
 mysimilar(x::Number) = zero(x)
 mysimilar(x::AbstractArray) = similar(x)
+
+update!(_old::Number, new::Number) = new
+update!(old, new) = old .= new
