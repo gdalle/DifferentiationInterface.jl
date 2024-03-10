@@ -1,10 +1,9 @@
-using ADTypes
 using Base: get_extension
 using DifferentiationInterface
 import DifferentiationInterface as DI
 using Documenter
 
-using Diffractor: Diffractor
+using ADTypes
 using Enzyme: Enzyme
 using FiniteDiff: FiniteDiff
 using ForwardDiff: ForwardDiff
@@ -13,7 +12,6 @@ using ReverseDiff: ReverseDiff
 using Zygote: Zygote
 
 ChainRulesCoreExt = get_extension(DI, :DifferentiationInterfaceChainRulesCoreExt)
-DiffractorExt = get_extension(DI, :DifferentiationInterfaceDiffractorExt)
 EnzymeExt = get_extension(DI, :DifferentiationInterfaceEnzymeExt)
 FiniteDiffExt = get_extension(DI, :DifferentiationInterfaceFiniteDiffExt)
 ForwardDiffExt = get_extension(DI, :DifferentiationInterfaceForwardDiffExt)
@@ -49,7 +47,6 @@ makedocs(;
         DifferentiationInterface,
         ADTypes,
         ChainRulesCoreExt,
-        DiffractorExt,
         EnzymeExt,
         FiniteDiffExt,
         ForwardDiffExt,
@@ -62,6 +59,7 @@ makedocs(;
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
         canonical="https://gdalle.github.io/DifferentiationInterface.jl",
+        edit_link="main",
     ),
     pages=["Home" => "index.md", "Interface" => "interface.md"],
 )

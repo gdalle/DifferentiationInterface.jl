@@ -27,7 +27,7 @@ We support some of the backends defined by [ADTypes.jl](https://github.com/SciML
 We also support two more backends which are not yet part of ADTypes.jl:
 
 - [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl) with `AutoChainRules(ruleconfig)`
-- [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl) with `AutoDiffractor()`
+- [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl) with `AutoDiffractor()` (broken for now)
 
 ## Design
 
