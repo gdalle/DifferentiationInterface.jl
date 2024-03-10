@@ -3,6 +3,7 @@ using ADTypes: AbstractADType
 using BenchmarkTools
 using DifferentiationInterface
 using DifferentiationInterface: CustomImplem, FallbackImplem, ForwardMode, ReverseMode
+using DifferentiationInterface: autodiff_mode
 
 ## Pretty printing
 

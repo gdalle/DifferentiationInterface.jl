@@ -45,7 +45,7 @@ From these primitives, several utilities are defined, depending on the type of t
 
 ## Example
 
-```jldoctest
+```julia
 julia> import DifferentiationInterface, ADTypes, ForwardDiff
 
 julia> backend = ADTypes.AutoForwardDiff();
