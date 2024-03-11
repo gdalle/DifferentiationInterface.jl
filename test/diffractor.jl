@@ -1,15 +1,8 @@
-using DifferentiationInterface
+using DifferentiationInterface: AutoDiffractor, CustomImplem, FallbackImplem
 using Diffractor: Diffractor
 
-# see https://github.com/JuliaDiff/Diffractor.jl/issues/277
-
-@test_skip test_pushforward(
-    ChainRulesForwardBackend(Diffractor.DiffractorRuleConfig()),
-    scenarios;
-    type_stability=false,
-);
-@test_skip test_jacobian_and_friends(
-    ChainRulesForwardBackend(Diffractor.DiffractorRuleConfig()),
-    scenarios;
-    type_stability=false,
+test_pushforward(AutoDiffractor(), scenarios; type_stability=false);
+test_jacobian_and_friends(CustomImplem(), AutoDiffractor(), scenarios; type_stability=false);
+test_jacobian_and_friends(
+    FallbackImplem(), AutoDiffractor(), scenarios; type_stability=false
 );

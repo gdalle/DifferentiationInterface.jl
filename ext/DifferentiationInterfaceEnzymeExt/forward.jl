@@ -1,24 +1,17 @@
-
-## Backend construction
-
-"""
-    EnzymeForwardBackend(; custom=true)
-
-Construct a [`EnzymeForwardBackend`](@ref).
-"""
-DI.EnzymeForwardBackend(; custom::Bool=true) = EnzymeForwardBackend{custom}()
+const AutoForwardEnzyme = AutoEnzyme{Val{:forward}}
+DI.autodiff_mode(::AutoForwardEnzyme) = DI.ForwardMode()
 
 ## Primitives
 
 function DI.value_and_pushforward!(
-    _dy::Y, ::EnzymeForwardBackend, f, x::X, dx
+    _dy::Y, ::AutoForwardEnzyme, f, x::X, dx, extras::Nothing=nothing
 ) where {X,Y<:Real}
     y, new_dy = autodiff(Forward, f, Duplicated, Duplicated(x, dx))
     return y, new_dy
 end
 
 function DI.value_and_pushforward!(
-    dy::Y, ::EnzymeForwardBackend, f, x::X, dx
+    dy::Y, ::AutoForwardEnzyme, f, x::X, dx, extras::Nothing=nothing
 ) where {X,Y<:AbstractArray}
     y, new_dy = autodiff(Forward, f, Duplicated, Duplicated(x, dx))
     dy .= new_dy
@@ -27,7 +20,13 @@ end
 
 ## Utilities
 
-function DI.value_and_jacobian(::EnzymeForwardBackend{true}, f, x::AbstractArray)
+function DI.value_and_jacobian(
+    ::AutoForwardEnzyme,
+    f,
+    x::AbstractArray,
+    extras::Nothing=nothing,
+    ::CustomImplem=CustomImplem(),
+)
     y = f(x)
     jac = jacobian(Forward, f, x)
     # see https://github.com/EnzymeAD/Enzyme.jl/issues/1332

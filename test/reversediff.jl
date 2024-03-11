@@ -1,10 +1,11 @@
-using DifferentiationInterface
+using ADTypes: AutoReverseDiff
+using DifferentiationInterface: CustomImplem, FallbackImplem
 using ReverseDiff: ReverseDiff
 
-test_pullback(ReverseDiffBackend(), scenarios; type_stability=false);
+test_pullback(AutoReverseDiff(), scenarios; type_stability=false);
 test_jacobian_and_friends(
-    ReverseDiffBackend(; custom=true), scenarios; type_stability=false
+    CustomImplem(), AutoReverseDiff(), scenarios; type_stability=false
 );
 test_jacobian_and_friends(
-    ReverseDiffBackend(; custom=false), scenarios; type_stability=false
+    FallbackImplem(), AutoReverseDiff(), scenarios; type_stability=false
 );

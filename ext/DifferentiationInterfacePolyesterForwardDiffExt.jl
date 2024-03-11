@@ -1,6 +1,7 @@
 module DifferentiationInterfacePolyesterForwardDiffExt
 
-using DifferentiationInterface: ForwardDiffBackend, PolyesterForwardDiffBackend
+using ADTypes: AutoPolyesterForwardDiff, AutoForwardDiff
+using DifferentiationInterface: CustomImplem
 import DifferentiationInterface as DI
 using DiffResults: DiffResults
 using DocStringExtensions
@@ -8,29 +9,25 @@ using ForwardDiff: Chunk
 using LinearAlgebra: mul!
 using PolyesterForwardDiff: threaded_gradient!, threaded_jacobian!
 
-## Backend construction
-
-"""
-    PolyesterForwardDiffBackend(C; custom=true)
-
-Construct a [`PolyesterForwardDiffBackend`](@ref) with chunk size `C`.
-"""
-function DI.PolyesterForwardDiffBackend(C::Integer; custom::Bool=true)
-    return PolyesterForwardDiffBackend{custom,C}()
-end
-
 ## Primitives
 
 function DI.value_and_pushforward!(
-    dy, ::PolyesterForwardDiffBackend{custom}, f, x, dx
-) where {custom}
-    return DI.value_and_pushforward!(dy, ForwardDiffBackend{custom}(), f, x, dx)
+    dy, ::AutoPolyesterForwardDiff{C}, f, x, dx, extras::Nothing=nothing
+) where {C}
+    return DI.value_and_pushforward!(
+        dy, AutoForwardDiff{C,Nothing}(nothing), f, x, dx, extras
+    )
 end
 
 ## Utilities
 
 function DI.value_and_gradient!(
-    grad::AbstractArray, ::PolyesterForwardDiffBackend{true,C}, f, x::AbstractArray
+    grad::AbstractArray,
+    ::AutoPolyesterForwardDiff{C},
+    f,
+    x::AbstractArray,
+    extras::Nothing=nothing,
+    ::CustomImplem=CustomImplem(),
 ) where {C}
     y = f(x)
     threaded_gradient!(f, grad, x, Chunk{C}())
@@ -38,7 +35,12 @@ function DI.value_and_gradient!(
 end
 
 function DI.value_and_jacobian!(
-    jac::AbstractMatrix, ::PolyesterForwardDiffBackend{true,C}, f, x::AbstractArray
+    jac::AbstractMatrix,
+    ::AutoPolyesterForwardDiff{C},
+    f,
+    x::AbstractArray,
+    extras::Nothing=nothing,
+    ::CustomImplem=CustomImplem(),
 ) where {C}
     y = f(x)
     threaded_jacobian!(f, jac, x, Chunk{C}())

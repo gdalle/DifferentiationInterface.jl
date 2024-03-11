@@ -1,50 +1,74 @@
 module DifferentiationInterfaceZygoteExt
 
-using DifferentiationInterface: ChainRulesReverseBackend, ZygoteBackend
+using ADTypes: AutoZygote
+using DifferentiationInterface: AutoChainRules, CustomImplem, update!
 import DifferentiationInterface as DI
 using DocStringExtensions
-using Zygote: ZygoteRuleConfig, gradient, jacobian, withgradient, withjacobian
+using Zygote: ZygoteRuleConfig, gradient, jacobian, pullback, withgradient, withjacobian
 
-## Backend construction
+## Primitives
 
-"""
-    ZygoteBackend(; custom=true)
+const zygote_chainrules_backend = AutoChainRules(ZygoteRuleConfig())
 
-Enables the use of [Zygote.jl](https://github.com/FluxML/Zygote.jl) by constructing a [`ChainRulesReverseBackend`](@ref) from `ZygoteRuleConfig()`.
-"""
-DI.ZygoteBackend(; custom::Bool=true) = ChainRulesReverseBackend(ZygoteRuleConfig(); custom)
+function DI.value_and_pullback!(dx, ::AutoZygote, f, x, dy, extras::Nothing=nothing)
+    y, back = pullback(f, x)
+    new_dx = only(back(dy))
+    return y, update!(dx, new_dx)
+end
 
-const ZygoteBackendType{custom} = ChainRulesReverseBackend{custom,<:ZygoteRuleConfig}
-
-function Base.show(io::IO, backend::ZygoteBackendType{custom}) where {custom}
-    return print(io, "ZygoteBackend{$(custom ? "custom" : "fallback")}()")
+function DI.value_and_pullback(::AutoZygote, f, x, dy, extras::Nothing=nothing)
+    y, back = pullback(f, x)
+    dx = only(back(dy))
+    return y, dx
 end
 
 ## Utilities
 
-function DI.value_and_gradient(::ZygoteBackendType{true}, f, x::AbstractArray)
+function DI.value_and_gradient(
+    ::AutoZygote,
+    f,
+    x::AbstractArray,
+    extras::Nothing=nothing,
+    ::CustomImplem=CustomImplem(),
+)
     res = withgradient(f, x)
     return res.val, only(res.grad)
 end
 
 function DI.value_and_gradient!(
-    grad::AbstractArray, backend::ZygoteBackendType{true}, f, x::AbstractArray
+    grad::AbstractArray,
+    backend::AutoZygote,
+    f,
+    x::AbstractArray,
+    extras=nothing,
+    implem::CustomImplem=CustomImplem(),
 )
-    y, new_grad = DI.value_and_gradient(backend, f, x)
+    y, new_grad = DI.value_and_gradient(backend, f, x, extras, implem)
     grad .= new_grad
     return y, grad
 end
 
-function DI.value_and_jacobian(::ZygoteBackendType{true}, f, x::AbstractArray)
+function DI.value_and_jacobian(
+    ::AutoZygote,
+    f,
+    x::AbstractArray,
+    extras::Nothing=nothing,
+    ::CustomImplem=CustomImplem(),
+)
     y = f(x)
     jac = jacobian(f, x)
     return y, only(jac)
 end
 
 function DI.value_and_jacobian!(
-    jac::AbstractMatrix, backend::ZygoteBackendType{true}, f, x::AbstractArray
+    jac::AbstractMatrix,
+    backend::AutoZygote,
+    f,
+    x::AbstractArray,
+    extras::Nothing=nothing,
+    implem::CustomImplem=CustomImplem(),
 )
-    y, new_jac = DI.value_and_jacobian(backend, f, x)
+    y, new_jac = DI.value_and_jacobian(backend, f, x, extras, implem)
     jac .= new_jac
     return y, jac
 end

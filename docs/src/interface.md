@@ -55,16 +55,42 @@ Modules = [DifferentiationInterface]
 Pages = ["pullback.jl"]
 ```
 
-## Abstract backends
+## Backends
+
+### ADTypes.jl
+
+The following backends are defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl):
+
+```@docs
+AbstractADType
+```
+
+Only a subset is supported by DifferentiationInterface.jl at the moment.
+
+### DifferentiationInterface.jl
+
+The following backends are defined by DifferentiationInterface.jl:
 
 ```@autodocs
 Modules = [DifferentiationInterface]
-Pages = ["backends_abstract.jl"]
+Pages = ["backends.jl"]
+Order   = [:type]
+Private = false
+```
+
+### Input / output types
+
+```@autodocs
+Modules = [DifferentiationInterface]
+Pages = ["backends.jl"]
+Order   = [:function]
+Private = false
 ```
 
 ## Internals
 
 ```@autodocs
 Modules = [DifferentiationInterface]
-Pages = ["utils.jl"]
+Pages = ["implem.jl", "mode.jl", "utils.jl", "backends.jl"]
+Public = false
 ```

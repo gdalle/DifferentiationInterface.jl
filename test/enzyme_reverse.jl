@@ -1,10 +1,11 @@
-using DifferentiationInterface
+using ADTypes: AutoEnzyme
+using DifferentiationInterface: CustomImplem, FallbackImplem
 using Enzyme: Enzyme
 
-test_pullback(EnzymeReverseBackend(), scenarios; type_stability=true);
+test_pullback(AutoEnzyme(Val(:reverse)), scenarios; type_stability=true);
 test_jacobian_and_friends(
-    EnzymeReverseBackend(; custom=true), scenarios; type_stability=true
+    CustomImplem(), AutoEnzyme(Val(:reverse)), scenarios; type_stability=true
 )
 test_jacobian_and_friends(
-    EnzymeReverseBackend(; custom=false), scenarios; type_stability=true
+    FallbackImplem(), AutoEnzyme(Val(:reverse)), scenarios; type_stability=true
 )

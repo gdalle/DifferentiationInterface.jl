@@ -1,6 +1,7 @@
 module DifferentiationInterfaceEnzymeExt
 
-using DifferentiationInterface: EnzymeForwardBackend, EnzymeReverseBackend
+using ADTypes: AutoEnzyme
+using DifferentiationInterface: CustomImplem
 import DifferentiationInterface as DI
 using DocStringExtensions
 using Enzyme:
@@ -15,9 +16,7 @@ using Enzyme:
     jacobian
 
 # Enzyme's `Duplicated(x, dx)` expects both arguments to be of the same type
-function DI.basisarray(
-    ::Union{EnzymeForwardBackend,EnzymeReverseBackend}, a::AbstractArray{T}, i
-) where {T}
+function DI.basisarray(::AutoEnzyme, a::AbstractArray{T}, i::CartesianIndex) where {T}
     b = zero(a)
     b[i] = one(T)
     return b

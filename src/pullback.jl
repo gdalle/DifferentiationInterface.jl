@@ -1,41 +1,41 @@
 """
-    value_and_pullback!(dx, backend::AbstractReverseBackend, f, x, dy) -> (y, dx)
+    value_and_pullback!(dx, backend, f, x, dy, [extras]) -> (y, dx)
 
 Compute the primal value `y = f(x)` and the vector-Jacobian product `dx = ∂f(x)' * dy`, overwriting `dx` if possible.
 
 !!! info "Interface requirement"
-    This is the only required implementation for an [`AbstractReverseBackend`](@ref).
+    This is the only required implementation for a reverse mode backend.
 """
-function value_and_pullback!(dx, backend::AbstractReverseBackend, f, x, dy)
+function value_and_pullback!(dx, backend::AbstractADType, f, x, dy, extras=nothing)
     return error(
-        "Backend $backend is not loaded or does not support this type combination."
+        "The package for $(typeof(backend)) is not loaded, or the backend does not support this type combination: `typeof(x) = $(typeof(x))` and `typeof(y) = $(typeof(dy))`",
     )
 end
 
 """
-    value_and_pullback(backend::AbstractReverseBackend, f, x, dy) -> (y, dx)
+    value_and_pullback(backend, f, x, dy, [extras]) -> (y, dx)
 
 Compute the primal value `y = f(x)` and the vector-Jacobian product `dx = ∂f(x)' * dy`.
 """
-function value_and_pullback(backend::AbstractReverseBackend, f, x, dy)
+function value_and_pullback(backend::AbstractADType, f, x, dy, extras=nothing)
     dx = mysimilar(x)
-    return value_and_pullback!(dx, backend, f, x, dy)
+    return value_and_pullback!(dx, backend, f, x, dy, extras)
 end
 
 """
-    pullback!(dx, backend::AbstractReverseBackend, f, x, dy) -> dx
+    pullback!(dx, backend, f, x, dy, [extras]) -> dx
 
 Compute the vector-Jacobian product `dx = ∂f(x)' * dy`, overwriting `dx` if possible.
 """
-function pullback!(dx, backend::AbstractReverseBackend, f, x, dy)
-    return last(value_and_pullback!(dx, backend, f, x, dy))
+function pullback!(dx, backend::AbstractADType, f, x, dy, extras=nothing)
+    return last(value_and_pullback!(dx, backend, f, x, dy, extras))
 end
 
 """
-    pullback(backend::AbstractReverseBackend, f, x, dy) -> dx
+    pullback(backend, f, x, dy, [extras]) -> dx
 
 Compute the vector-Jacobian product `dx = ∂f(x)' * dy`.
 """
-function pullback(backend::AbstractReverseBackend, f, x, dy)
-    return last(value_and_pullback(backend, f, x, dy))
+function pullback(backend::AbstractADType, f, x, dy, extras=nothing)
+    return last(value_and_pullback(backend, f, x, dy, extras))
 end

@@ -1,13 +1,15 @@
+using ADTypes
 using BenchmarkTools
 using DifferentiationInterface
 using LinearAlgebra
 
+using Diffractor: Diffractor
 using Enzyme: Enzyme
 using FiniteDiff: FiniteDiff
 using ForwardDiff: ForwardDiff
 using PolyesterForwardDiff: PolyesterForwardDiff
 using ReverseDiff: ReverseDiff
-using Zygote: Zygote
+using Zygote: Zygote, ZygoteRuleConfig
 
 ## Settings
 
@@ -41,37 +43,17 @@ end
 
 ## Backends
 
-forward_custom_backends = [
-    EnzymeForwardBackend(; custom=true),
-    FiniteDiffBackend(; custom=true),
-    ForwardDiffBackend(; custom=true),
-    PolyesterForwardDiffBackend(4; custom=true),
+all_backends = [
+    AutoChainRules(ZygoteRuleConfig()),
+    AutoDiffractor(),
+    AutoEnzyme(Val(:forward)),
+    AutoEnzyme(Val(:reverse)),
+    AutoFiniteDiff(),
+    AutoForwardDiff(),
+    AutoPolyesterForwardDiff(; chunksize=4),
+    AutoReverseDiff(),
+    AutoZygote(),
 ]
-
-forward_fallback_backends = [
-    EnzymeForwardBackend(; custom=false),
-    FiniteDiffBackend(; custom=false),
-    ForwardDiffBackend(; custom=false),
-]
-
-reverse_custom_backends = [
-    ZygoteBackend(; custom=true),
-    EnzymeReverseBackend(; custom=true),
-    ReverseDiffBackend(; custom=true),
-]
-
-reverse_fallback_backends = [
-    ZygoteBackend(; custom=false),
-    EnzymeReverseBackend(; custom=false),
-    ReverseDiffBackend(; custom=false),
-]
-
-all_backends = vcat(
-    forward_custom_backends,
-    forward_fallback_backends,
-    reverse_custom_backends,
-    reverse_fallback_backends,
-)
 
 ## Suite
 
@@ -83,11 +65,7 @@ function make_suite()
 
     for backend in all_backends
         add_derivative_benchmarks!(SUITE, backend, scalar_to_scalar, 1, 1)
-    end
-    for backend in forward_fallback_backends
         add_pushforward_benchmarks!(SUITE, backend, scalar_to_scalar, 1, 1)
-    end
-    for backend in reverse_fallback_backends
         add_pullback_benchmarks!(SUITE, backend, scalar_to_scalar, 1, 1)
     end
 
@@ -97,11 +75,7 @@ function make_suite()
 
         for backend in all_backends
             add_multiderivative_benchmarks!(SUITE, backend, scalar_to_vector, 1, m)
-        end
-        for backend in forward_fallback_backends
             add_pushforward_benchmarks!(SUITE, backend, scalar_to_vector, 1, m)
-        end
-        for backend in reverse_fallback_backends
             add_pullback_benchmarks!(SUITE, backend, scalar_to_vector, 1, m)
         end
     end
@@ -112,11 +86,7 @@ function make_suite()
 
         for backend in all_backends
             add_gradient_benchmarks!(SUITE, backend, vector_to_scalar, n, 1)
-        end
-        for backend in forward_fallback_backends
             add_pushforward_benchmarks!(SUITE, backend, vector_to_scalar, n, 1)
-        end
-        for backend in reverse_fallback_backends
             add_pullback_benchmarks!(SUITE, backend, vector_to_scalar, n, 1)
         end
     end
@@ -127,11 +97,7 @@ function make_suite()
 
         for backend in all_backends
             add_jacobian_benchmarks!(SUITE, backend, vector_to_vector, n, m)
-        end
-        for backend in forward_fallback_backends
             add_pushforward_benchmarks!(SUITE, backend, vector_to_vector, n, m)
-        end
-        for backend in reverse_fallback_backends
             add_pullback_benchmarks!(SUITE, backend, vector_to_vector, n, m)
         end
     end
@@ -144,7 +110,7 @@ include("utils.jl")
 SUITE = make_suite()
 
 # Run benchmarks locally
-# results = BenchmarkTools.run(SUITE; verbose=true)
+results = BenchmarkTools.run(SUITE; verbose=true)
 
 # Compare commits locally
 # using BenchmarkCI; BenchmarkCI.judge(baseline="origin/main"); BenchmarkCI.displayjudgement()

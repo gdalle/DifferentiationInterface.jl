@@ -3,7 +3,7 @@ using DifferentiationInterface
 import DifferentiationInterface as DI
 using Documenter
 
-using DiffResults: DiffResults
+using ADTypes
 using Enzyme: Enzyme
 using FiniteDiff: FiniteDiff
 using ForwardDiff: ForwardDiff
@@ -24,7 +24,7 @@ ZygoteExt = get_extension(DI, :DifferentiationInterfaceZygoteExt)
 DocMeta.setdocmeta!(
     DifferentiationInterface,
     :DocTestSetup,
-    :(using DifferentiationInterface);
+    :(using DifferentiationInterface, ADTypes);
     recursive=true,
 )
 
@@ -45,6 +45,7 @@ end
 makedocs(;
     modules=[
         DifferentiationInterface,
+        ADTypes,
         ChainRulesCoreExt,
         EnzymeExt,
         FiniteDiffExt,
@@ -58,10 +59,9 @@ makedocs(;
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
         canonical="https://gdalle.github.io/DifferentiationInterface.jl",
+        edit_link="main",
     ),
-    pages=[
-        "Home" => "index.md", "Interface" => "interface.md", "Backends" => "backends.md"
-    ],
+    pages=["Home" => "index.md", "Interface" => "interface.md"],
 )
 
 deploydocs(; repo="github.com/gdalle/DifferentiationInterface.jl", devbranch="main")

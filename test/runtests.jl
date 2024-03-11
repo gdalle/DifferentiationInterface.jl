@@ -8,7 +8,8 @@ using Test
 
 ## Utils
 
-include("utils.jl")
+include("scenarios.jl");
+include("utils.jl");
 
 ## Main tests
 
@@ -25,11 +26,13 @@ include("utils.jl")
         JET.test_package(DifferentiationInterface; target_defined_modules=true)
     end
 
-    @testset "Backend utilities" begin
-        include("backends.jl")
+    @testset "ChainRules (forward)" begin
+        @test_skip include("chainrules_forward.jl")
     end
-
-    @testset "Diffractor" begin
+    @testset "ChainRules (reverse)" begin
+        include("chainrules_reverse.jl")
+    end
+    @testset "Diffractor (forward)" begin
         include("diffractor.jl")
     end
     @testset "Enzyme (forward)" begin
