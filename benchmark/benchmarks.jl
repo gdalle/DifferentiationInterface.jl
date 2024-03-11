@@ -3,6 +3,7 @@ using BenchmarkTools
 using DifferentiationInterface
 using LinearAlgebra
 
+using Diffractor: Diffractor
 using Enzyme: Enzyme
 using FiniteDiff: FiniteDiff
 using ForwardDiff: ForwardDiff
