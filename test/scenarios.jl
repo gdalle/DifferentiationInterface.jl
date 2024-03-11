@@ -95,38 +95,18 @@ rng = StableRNG(63)
 ## Scenarios
 
 f_scalar_scalar(x::Number)::Number = sin(x)
+
 f_scalar_vector(x::Number)::AbstractVector = [sin(x), sin(2x)]
 f_scalar_matrix(x::Number)::AbstractMatrix = hcat([sin(x) cos(x)], [sin(2x) cos(2x)])
 
-function f_vector_scalar(x::AbstractVector)::Number
-    a = eachindex(x)
-    return sum(sin.(a .* x))
-end
+f_vector_scalar(x::AbstractVector)::Number = sum(sin, x)
+f_matrix_scalar(x::AbstractMatrix)::Number = sum(sin, x)
 
-function f_matrix_scalar(x::AbstractMatrix)::Number
-    a, b = axes(x)
-    return sum(sin.(a .* x)) + sum(cos.(transpose(b) .* x))
-end
+f_vector_vector(x::AbstractVector)::AbstractVector = vcat(sin.(x), cos.(x))
+f_vector_matrix(x::AbstractVector)::AbstractMatrix = hcat(sin.(x), cos.(x))
 
-function f_vector_vector(x::AbstractVector)::AbstractVector
-    a = eachindex(x)
-    return vcat(sin.(a .* x), cos.(a .* x))
-end
-
-function f_vector_matrix(x::AbstractVector)::AbstractMatrix
-    a = eachindex(x)
-    return hcat(sin.(a .* x), cos.(a .* x))
-end
-
-function f_matrix_vector(x::AbstractMatrix)::AbstractVector
-    a, b = axes(x)
-    return vcat(vec(sin.(a .* x)), vec(cos.(transpose(b) .* x)))
-end
-
-function f_matrix_matrix(x::AbstractMatrix)::AbstractMatrix
-    a, b = axes(x)
-    return hcat(vec(sin.(a .* x)), vec(cos.(transpose(b) .* x)))
-end
+f_matrix_vector(x::AbstractMatrix)::AbstractVector = vcat(vec(sin.(x)), vec(cos.(x)))
+f_matrix_matrix(x::AbstractMatrix)::AbstractMatrix = hcat(vec(sin.(x)), vec(cos.(x)))
 
 ## All
 

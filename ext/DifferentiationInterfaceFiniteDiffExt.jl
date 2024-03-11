@@ -18,7 +18,7 @@ const FUNCTION_NOT_INPLACE = Val{false}
 ## Primitives
 
 function DI.value_and_pushforward!(
-    dy::Y, ::AutoFiniteDiff{fdtype}, f, x, dx
+    dy::Y, ::AutoFiniteDiff{fdtype}, f, x, dx, extras::Nothing=nothing
 ) where {Y<:Number,fdtype}
     y = f(x)
     step(t::Number)::Number = f(x .+ t .* dx)
@@ -27,7 +27,7 @@ function DI.value_and_pushforward!(
 end
 
 function DI.value_and_pushforward!(
-    dy::Y, ::AutoFiniteDiff{fdtype}, f, x, dx
+    dy::Y, ::AutoFiniteDiff{fdtype}, f, x, dx, extras::Nothing=nothing
 ) where {Y<:AbstractArray,fdtype}
     y = f(x)
     step(t::Number)::AbstractArray = f(x .+ t .* dx)
@@ -40,7 +40,11 @@ end
 ## Utilities
 
 function DI.value_and_derivative(
-    ::CustomImplem, ::AutoFiniteDiff{fdtype}, f, x::Number
+    ::AutoFiniteDiff{fdtype},
+    f,
+    x::Number,
+    extras::Nothing=nothing,
+    ::CustomImplem=CustomImplem(),
 ) where {fdtype}
     y = f(x)
     der = finite_difference_derivative(f, x, fdtype, eltype(y), y)
@@ -48,7 +52,12 @@ function DI.value_and_derivative(
 end
 
 function DI.value_and_multiderivative!(
-    ::CustomImplem, multider::AbstractArray, ::AutoFiniteDiff{fdtype}, f, x::Number
+    multider::AbstractArray,
+    ::AutoFiniteDiff{fdtype},
+    f,
+    x::Number,
+    extras::Nothing=nothing,
+    ::CustomImplem=CustomImplem(),
 ) where {fdtype}
     y = f(x)
     finite_difference_gradient!(multider, f, x, fdtype, eltype(y), FUNCTION_NOT_INPLACE, y)
@@ -56,7 +65,11 @@ function DI.value_and_multiderivative!(
 end
 
 function DI.value_and_multiderivative(
-    ::CustomImplem, ::AutoFiniteDiff{fdtype}, f, x::Number
+    ::AutoFiniteDiff{fdtype},
+    f,
+    x::Number,
+    extras::Nothing=nothing,
+    ::CustomImplem=CustomImplem(),
 ) where {fdtype}
     y = f(x)
     multider = finite_difference_gradient(f, x, fdtype, eltype(y), FUNCTION_NOT_INPLACE, y)
@@ -64,7 +77,12 @@ function DI.value_and_multiderivative(
 end
 
 function DI.value_and_gradient!(
-    ::CustomImplem, grad::AbstractArray, ::AutoFiniteDiff{fdtype}, f, x::AbstractArray
+    grad::AbstractArray,
+    ::AutoFiniteDiff{fdtype},
+    f,
+    x::AbstractArray,
+    extras::Nothing=nothing,
+    ::CustomImplem=CustomImplem(),
 ) where {fdtype}
     y = f(x)
     finite_difference_gradient!(grad, f, x, fdtype, eltype(y), FUNCTION_NOT_INPLACE, y)
@@ -72,7 +90,11 @@ function DI.value_and_gradient!(
 end
 
 function DI.value_and_gradient(
-    ::CustomImplem, ::AutoFiniteDiff{fdtype}, f, x::AbstractArray
+    ::AutoFiniteDiff{fdtype},
+    f,
+    x::AbstractArray,
+    extras::Nothing=nothing,
+    ::CustomImplem=CustomImplem(),
 ) where {fdtype}
     y = f(x)
     grad = finite_difference_gradient(f, x, fdtype, eltype(y), FUNCTION_NOT_INPLACE, y)
@@ -80,7 +102,11 @@ function DI.value_and_gradient(
 end
 
 function DI.value_and_jacobian(
-    ::CustomImplem, ::AutoFiniteDiff{fdtype}, f, x::AbstractArray
+    ::AutoFiniteDiff{fdtype},
+    f,
+    x::AbstractArray,
+    extras::Nothing=nothing,
+    ::CustomImplem=CustomImplem(),
 ) where {fdtype}
     y = f(x)
     jac = finite_difference_jacobian(f, x, fdtype, eltype(y))
@@ -88,9 +114,14 @@ function DI.value_and_jacobian(
 end
 
 function DI.value_and_jacobian!(
-    ::CustomImplem, jac::AbstractMatrix, backend::AutoFiniteDiff, f, x::AbstractArray
+    jac::AbstractMatrix,
+    backend::AutoFiniteDiff,
+    f,
+    x::AbstractArray,
+    extras::Nothing=nothing,
+    implem::CustomImplem=CustomImplem(),
 )
-    y, new_jac = DI.value_and_jacobian(backend, f, x)
+    y, new_jac = DI.value_and_jacobian(backend, f, x, extras, implem)
     jac .= new_jac
     return y, jac
 end

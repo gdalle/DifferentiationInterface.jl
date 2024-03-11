@@ -11,14 +11,23 @@ using PolyesterForwardDiff: threaded_gradient!, threaded_jacobian!
 
 ## Primitives
 
-function DI.value_and_pushforward!(dy, ::AutoPolyesterForwardDiff{C}, f, x, dx) where {C}
-    return DI.value_and_pushforward!(dy, AutoForwardDiff{C,Nothing}(nothing), f, x, dx)
+function DI.value_and_pushforward!(
+    dy, ::AutoPolyesterForwardDiff{C}, f, x, dx, extras::Nothing=nothing
+) where {C}
+    return DI.value_and_pushforward!(
+        dy, AutoForwardDiff{C,Nothing}(nothing), f, x, dx, extras
+    )
 end
 
 ## Utilities
 
 function DI.value_and_gradient!(
-    ::CustomImplem, grad::AbstractArray, ::AutoPolyesterForwardDiff{C}, f, x::AbstractArray
+    grad::AbstractArray,
+    ::AutoPolyesterForwardDiff{C},
+    f,
+    x::AbstractArray,
+    extras::Nothing=nothing,
+    ::CustomImplem=CustomImplem(),
 ) where {C}
     y = f(x)
     threaded_gradient!(f, grad, x, Chunk{C}())
@@ -26,7 +35,12 @@ function DI.value_and_gradient!(
 end
 
 function DI.value_and_jacobian!(
-    ::CustomImplem, jac::AbstractMatrix, ::AutoPolyesterForwardDiff{C}, f, x::AbstractArray
+    jac::AbstractMatrix,
+    ::AutoPolyesterForwardDiff{C},
+    f,
+    x::AbstractArray,
+    extras::Nothing=nothing,
+    ::CustomImplem=CustomImplem(),
 ) where {C}
     y = f(x)
     threaded_jacobian!(f, jac, x, Chunk{C}())

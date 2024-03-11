@@ -5,7 +5,7 @@ DI.handles_output_type(::AutoReverseEnzyme, ::Type{<:AbstractArray}) = false
 ## Primitives
 
 function DI.value_and_pullback!(
-    _dx, ::AutoReverseEnzyme, f, x::X, dy::Y
+    _dx, ::AutoReverseEnzyme, f, x::X, dy::Y, extras::Nothing=nothing
 ) where {X<:Number,Y<:Union{Real,Nothing}}
     der, y = autodiff(ReverseWithPrimal, f, Active, Active(x))
     new_dx = dy * only(der)
@@ -13,7 +13,7 @@ function DI.value_and_pullback!(
 end
 
 function DI.value_and_pullback!(
-    dx::X, ::AutoReverseEnzyme, f, x::X, dy::Y
+    dx::X, ::AutoReverseEnzyme, f, x::X, dy::Y, extras::Nothing=nothing
 ) where {X<:AbstractArray,Y<:Union{Real,Nothing}}
     dx .= zero(eltype(dx))
     _, y = autodiff(ReverseWithPrimal, f, Active, Duplicated(x, dx))
@@ -23,14 +23,25 @@ end
 
 ## Utilities
 
-function DI.value_and_gradient(::CustomImplem, ::AutoReverseEnzyme, f, x::AbstractArray)
+function DI.value_and_gradient(
+    ::AutoReverseEnzyme,
+    f,
+    x::AbstractArray,
+    extras::Nothing=nothing,
+    ::CustomImplem=CustomImplem(),
+)
     y = f(x)
     grad = gradient(Reverse, f, x)
     return y, grad
 end
 
 function DI.value_and_gradient!(
-    ::CustomImplem, grad::AbstractArray, ::AutoReverseEnzyme, f, x::AbstractArray
+    grad::AbstractArray,
+    ::AutoReverseEnzyme,
+    f,
+    x::AbstractArray,
+    extras::Nothing=nothing,
+    ::CustomImplem=CustomImplem(),
 )
     y = f(x)
     gradient!(Reverse, grad, f, x)

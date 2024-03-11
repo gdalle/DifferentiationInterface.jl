@@ -5,9 +5,12 @@ using DifferentiationInterface
 using DifferentiationInterface: CustomImplem, FallbackImplem, ForwardMode, ReverseMode
 using DifferentiationInterface: autodiff_mode
 
+const NO_EXTRAS = nothing
+
 ## Pretty printing
 
-pretty(::AutoChainRules{<:ZygoteRuleConfig}) = "ChainRules (Zygote)"
+pretty(::AutoChainRules{<:ZygoteRuleConfig}) = "ChainRules{Zygote}"
+pretty(::AutoDiffractor) = "Diffractor (forward)"
 pretty(::AutoEnzyme{Val{:forward}}) = "Enzyme (forward)"
 pretty(::AutoEnzyme{Val{:reverse}}) = "Enzyme (reverse)"
 pretty(::AutoFiniteDiff) = "FiniteDiff"
@@ -93,11 +96,11 @@ function add_derivative_benchmarks!(
         backend_implem = "$(pretty(backend)) - $(pretty(implem))"
 
         suite["value_and_derivative"][(1, 1)][backend_implem] = @benchmarkable begin
-            value_and_derivative($implem, $backend, $f, $x)
+            value_and_derivative($backend, $f, $x, $NO_EXTRAS, $implem)
         end
 
         suite["derivative"][(1, 1)][backend_implem] = @benchmarkable begin
-            derivative($implem, $backend, $f, $x)
+            derivative($backend, $f, $x, $NO_EXTRAS, $implem)
         end
     end
 
@@ -119,17 +122,17 @@ function add_multiderivative_benchmarks!(
         backend_implem = "$(pretty(backend)) - $(pretty(implem))"
 
         suite["value_and_multiderivative"][(1, m)][backend_implem] = @benchmarkable begin
-            value_and_multiderivative($implem, $backend, $f, $x)
+            value_and_multiderivative($backend, $f, $x, $NO_EXTRAS, $implem)
         end
         suite["value_and_multiderivative!"][(1, m)][backend_implem] = @benchmarkable begin
-            value_and_multiderivative!($implem, $multider, $backend, $f, $x)
+            value_and_multiderivative!($multider, $backend, $f, $x, $NO_EXTRAS, $implem)
         end
 
         suite["multiderivative"][(1, m)][backend_implem] = @benchmarkable begin
-            multiderivative($implem, $backend, $f, $x)
+            multiderivative($backend, $f, $x, $NO_EXTRAS, $implem)
         end
         suite["multiderivative!"][(1, m)][backend_implem] = @benchmarkable begin
-            multiderivative!($implem, $multider, $backend, $f, $x)
+            multiderivative!($multider, $backend, $f, $x, $NO_EXTRAS, $implem)
         end
     end
 
@@ -151,17 +154,17 @@ function add_gradient_benchmarks!(
         backend_implem = "$(pretty(backend)) - $(pretty(implem))"
 
         suite["value_and_gradient"][(n, 1)][backend_implem] = @benchmarkable begin
-            value_and_gradient($implem, $backend, $f, $x)
+            value_and_gradient($backend, $f, $x, $NO_EXTRAS, $implem)
         end
         suite["value_and_gradient!"][(n, 1)][backend_implem] = @benchmarkable begin
-            value_and_gradient!($implem, $grad, $backend, $f, $x)
+            value_and_gradient!($grad, $backend, $f, $x, $NO_EXTRAS, $implem)
         end
 
         suite["gradient"][(n, 1)][backend_implem] = @benchmarkable begin
-            gradient($implem, $backend, $f, $x)
+            gradient($backend, $f, $x, $NO_EXTRAS, $implem)
         end
         suite["gradient!"][(n, 1)][backend_implem] = @benchmarkable begin
-            gradient!($implem, $grad, $backend, $f, $x)
+            gradient!($grad, $backend, $f, $x, $NO_EXTRAS, $implem)
         end
     end
 
@@ -182,17 +185,17 @@ function add_jacobian_benchmarks!(
         backend_implem = "$(pretty(backend)) - $(pretty(implem))"
 
         suite["value_and_jacobian"][(n, m)][backend_implem] = @benchmarkable begin
-            value_and_jacobian($implem, $backend, $f, $x)
+            value_and_jacobian($backend, $f, $x, $NO_EXTRAS, $implem)
         end
         suite["value_and_jacobian!"][(n, m)][backend_implem] = @benchmarkable begin
-            value_and_jacobian!($implem, $jac, $backend, $f, $x)
+            value_and_jacobian!($jac, $backend, $f, $x, $NO_EXTRAS, $implem)
         end
 
         suite["jacobian"][(n, m)][backend_implem] = @benchmarkable begin
-            jacobian($implem, $backend, $f, $x)
+            jacobian($backend, $f, $x, $NO_EXTRAS, $implem)
         end
         suite["jacobian!"][(n, m)][backend_implem] = @benchmarkable begin
-            jacobian!($implem, $jac, $backend, $f, $x)
+            jacobian!($jac, $backend, $f, $x, $NO_EXTRAS, $implem)
         end
     end
 

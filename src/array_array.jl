@@ -6,20 +6,21 @@ This function acts as if the input and output had been flattened with `vec`.
 """
 
 """
-    value_and_jacobian!(jac, backend, f, x) -> (y, jac)
+    value_and_jacobian!(jac, backend, f, x, [extras]) -> (y, jac)
 
 Compute the primal value `y = f(x)` and the Jacobian matrix `jac = ∂f(x)` of an array-to-array function, overwriting `jac` if possible.
 
 $JAC_NOTES
 """
 function value_and_jacobian!(
-    implem::AbstractImplem,
     jac::AbstractMatrix,
     backend::AbstractADType,
     f,
     x::AbstractArray,
+    extras=nothing,
+    implem::AbstractImplem=CustomImplem(),
 )
-    return value_and_jacobian!(implem, autodiff_mode(backend), jac, backend, f, x)
+    return value_and_jacobian!(jac, backend, f, x, extras, implem, autodiff_mode(backend))
 end
 
 function check_jac(jac::AbstractMatrix, x::AbstractArray, y::AbstractArray)
@@ -31,81 +32,77 @@ function check_jac(jac::AbstractMatrix, x::AbstractArray, y::AbstractArray)
 end
 
 function value_and_jacobian!(
-    ::AbstractImplem,
-    ::ForwardMode,
     jac::AbstractMatrix,
     backend::AbstractADType,
     f,
     x::AbstractArray,
+    extras,
+    ::AbstractImplem,
+    ::ForwardMode,
 )
     y = f(x)
     check_jac(jac, x, y)
     for (k, j) in enumerate(eachindex(IndexCartesian(), x))
         dx_j = basisarray(backend, x, j)
         jac_col_j = reshape(view(jac, :, k), size(y))
-        pushforward!(jac_col_j, backend, f, x, dx_j)
+        pushforward!(jac_col_j, backend, f, x, dx_j, extras)
     end
     return y, jac
 end
 
 function value_and_jacobian!(
-    ::AbstractImplem,
-    ::ReverseMode,
     jac::AbstractMatrix,
     backend::AbstractADType,
     f,
     x::AbstractArray,
+    extras,
+    ::AbstractImplem,
+    ::ReverseMode,
 )
     y = f(x)
     check_jac(jac, x, y)
     for (k, i) in enumerate(eachindex(IndexCartesian(), y))
         dy_i = basisarray(backend, y, i)
         jac_row_i = reshape(view(jac, k, :), size(x))
-        pullback!(jac_row_i, backend, f, x, dy_i)
+        pullback!(jac_row_i, backend, f, x, dy_i, extras)
     end
     return y, jac
 end
 
 """
-    value_and_jacobian(backend, f, x) -> (y, jac)
+    value_and_jacobian(backend, f, x, [extras]) -> (y, jac)
 
 Compute the primal value `y = f(x)` and the Jacobian matrix `jac = ∂f(x)` of an array-to-array function.
 
 $JAC_NOTES 
 """
-function value_and_jacobian(
-    implem::AbstractImplem, backend::AbstractADType, f, x::AbstractArray
-)
+function value_and_jacobian(backend::AbstractADType, f, x::AbstractArray, args...)
     y = f(x)
     T = promote_type(eltype(x), eltype(y))
     jac = similar(y, T, length(y), length(x))
-    return value_and_jacobian!(implem, jac, backend, f, x)
+    return value_and_jacobian!(jac, backend, f, x, args...)
 end
 
 """
-    jacobian!(jac, backend, f, x) -> jac
+    jacobian!(jac, backend, f, x, [extras]) -> jac
 
 Compute the Jacobian matrix `jac = ∂f(x)` of an array-to-array function, overwriting `jac` if possible.
 
 $JAC_NOTES
 """
 function jacobian!(
-    implem::AbstractImplem,
-    jac::AbstractMatrix,
-    backend::AbstractADType,
-    f,
-    x::AbstractArray,
+    jac::AbstractMatrix, backend::AbstractADType, f, x::AbstractArray, args...
 )
-    return last(value_and_jacobian!(implem, jac, backend, f, x))
+    return last(value_and_jacobian!(jac, backend, f, x, args...))
 end
 
 """
-    jacobian(backend, f, x) -> jac
+    jacobian(backend, f, x, [extras]) -> jac
 
 Compute the Jacobian matrix `jac = ∂f(x)` of an array-to-array function.
 
 $JAC_NOTES
 """
-function jacobian(implem::AbstractImplem, backend::AbstractADType, f, x::AbstractArray)
-    return last(value_and_jacobian(implem, backend, f, x))
+function jacobian(backend::AbstractADType, f, x::AbstractArray, args...)
+    return last(value_and_jacobian(backend, f, x, args...))
 end

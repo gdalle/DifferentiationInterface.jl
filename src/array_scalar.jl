@@ -1,78 +1,75 @@
 """
-    value_and_gradient!(grad, backend, f, x) -> (y, grad)
+    value_and_gradient!(grad, backend, f, x, [extras]) -> (y, grad)
 
 Compute the primal value `y = f(x)` and the gradient `grad = ∇f(x)` of an array-to-scalar function, overwriting `grad` if possible.
 """
 function value_and_gradient!(
-    implem::AbstractImplem,
     grad::AbstractArray,
     backend::AbstractADType,
     f,
     x::AbstractArray,
+    extras=nothing,
+    implem::AbstractImplem=CustomImplem(),
 )
-    return value_and_gradient!(implem, autodiff_mode(backend), grad, backend, f, x)
+    return value_and_gradient!(grad, backend, f, x, extras, implem, autodiff_mode(backend))
 end
 
 function value_and_gradient!(
-    ::AbstractImplem,
-    ::ForwardMode,
     grad::AbstractArray,
     backend::AbstractADType,
     f,
     x::AbstractArray,
+    extras,
+    ::AbstractImplem,
+    ::ForwardMode,
 )
     y = f(x)
     for j in eachindex(IndexCartesian(), x)
         dx_j = basisarray(backend, x, j)
-        grad[j] = pushforward!(grad[j], backend, f, x, dx_j)
+        grad[j] = pushforward!(grad[j], backend, f, x, dx_j, extras)
     end
     return y, grad
 end
 
 function value_and_gradient!(
-    ::AbstractImplem,
-    ::ReverseMode,
     grad::AbstractArray,
     backend::AbstractADType,
     f,
     x::AbstractArray,
+    extras,
+    ::AbstractImplem,
+    ::ReverseMode,
 )
     y = f(x)
-    return y, pullback!(grad, backend, f, x, one(y))
+    return y, pullback!(grad, backend, f, x, one(y), extras)
 end
 
 """
-    value_and_gradient(backend, f, x) -> (y, grad)
+    value_and_gradient(backend, f, x, [extras]) -> (y, grad)
 
 Compute the primal value `y = f(x)` and the gradient `grad = ∇f(x)` of an array-to-scalar function.
 """
-function value_and_gradient(
-    implem::AbstractImplem, backend::AbstractADType, f, x::AbstractArray
-)
+function value_and_gradient(backend::AbstractADType, f, x::AbstractArray, args...)
     grad = similar(x)
-    return value_and_gradient!(implem, grad, backend, f, x)
+    return value_and_gradient!(grad, backend, f, x, args...)
 end
 
 """
-    gradient!(grad, backend, f, x) -> grad
+    gradient!(grad, backend, f, x, [extras]) -> grad
 
 Compute the gradient `grad = ∇f(x)` of an array-to-scalar function, overwriting `grad` if possible.
 """
 function gradient!(
-    implem::AbstractImplem,
-    grad::AbstractArray,
-    backend::AbstractADType,
-    f,
-    x::AbstractArray,
+    grad::AbstractArray, backend::AbstractADType, f, x::AbstractArray, args...
 )
-    return last(value_and_gradient!(implem, grad, backend, f, x))
+    return last(value_and_gradient!(grad, backend, f, x, args...))
 end
 
 """
-    gradient(backend, f, x) -> grad
+    gradient(backend, f, x, [extras]) -> grad
 
 Compute the gradient `grad = ∇f(x)` of an array-to-scalar function.
 """
-function gradient(implem::AbstractImplem, backend::AbstractADType, f, x::AbstractArray)
-    return last(value_and_gradient(implem, backend, f, x))
+function gradient(backend::AbstractADType, f, x::AbstractArray, args...)
+    return last(value_and_gradient(backend, f, x, args...))
 end

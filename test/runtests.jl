@@ -33,7 +33,7 @@ include("utils.jl");
         include("chainrules_reverse.jl")
     end
     @testset "Diffractor (forward)" begin
-        @test_skip include("diffractor.jl")
+        include("diffractor.jl")
     end
     @testset "Enzyme (forward)" begin
         include("enzyme_forward.jl")

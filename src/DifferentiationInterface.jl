@@ -24,7 +24,6 @@ include("scalar_scalar.jl")
 include("scalar_array.jl")
 include("array_scalar.jl")
 include("array_array.jl")
-include("custom.jl")
 
 export AutoChainRules, AutoDiffractor
 

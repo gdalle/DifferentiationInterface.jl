@@ -8,6 +8,8 @@ using Test
 pretty(::CustomImplem) = "custom"
 pretty(::FallbackImplem) = "fallback"
 
+const NO_EXTRAS = nothing
+
 ## Test utilities
 
 function test_pushforward(
@@ -145,9 +147,9 @@ function test_derivative(
             @testset "$X -> $Y" begin
                 (; f, x, y, der_true) = scenario
 
-                y_out1, der_out1 = value_and_derivative(implem, backend, f, x)
+                y_out1, der_out1 = value_and_derivative(backend, f, x, NO_EXTRAS, implem)
 
-                der_out2 = derivative(implem, backend, f, x)
+                der_out2 = derivative(backend, f, x, NO_EXTRAS, implem)
 
                 @testset "Primal value" begin
                     @test y_out1 ≈ y
@@ -157,12 +159,14 @@ function test_derivative(
                     @test der_out2 ≈ der_true rtol = 1e-3
                 end
                 allocs && @testset "Allocations" begin
-                    @test iszero(@allocated value_and_derivative(implem, backend, f, x))
-                    @test iszero(@allocated derivative(implem, backend, f, x))
+                    @test iszero(
+                        @allocated value_and_derivative(backend, f, x, NO_EXTRAS, implem)
+                    )
+                    @test iszero(@allocated derivative(backend, f, x, NO_EXTRAS, implem))
                 end
                 type_stability && @testset "Type stability" begin
-                    @test_opt value_and_derivative(implem, backend, f, x)
-                    @test_opt derivative(implem, backend, f, x)
+                    @test_opt value_and_derivative(backend, f, x, NO_EXTRAS, implem)
+                    @test_opt derivative(backend, f, x, NO_EXTRAS, implem)
                 end
             end
         end
@@ -187,15 +191,19 @@ function test_multiderivative(
             @testset "$X -> $Y" begin
                 (; f, x, y, multider_true) = scenario
 
-                y_out1, multider_out1 = value_and_multiderivative(implem, backend, f, x)
+                y_out1, multider_out1 = value_and_multiderivative(
+                    backend, f, x, NO_EXTRAS, implem
+                )
                 multider_in2 = zero(multider_out1)
                 y_out2, multider_out2 = value_and_multiderivative!(
-                    implem, multider_in2, backend, f, x
+                    multider_in2, backend, f, x, NO_EXTRAS, implem
                 )
 
-                multider_out3 = multiderivative(implem, backend, f, x)
+                multider_out3 = multiderivative(backend, f, x, NO_EXTRAS, implem)
                 multider_in4 = zero(multider_out3)
-                multider_out4 = multiderivative!(implem, multider_in4, backend, f, x)
+                multider_out4 = multiderivative!(
+                    multider_in4, backend, f, x, NO_EXTRAS, implem
+                )
 
                 @testset "Primal value" begin
                     @test y_out1 ≈ y
@@ -214,16 +222,22 @@ function test_multiderivative(
                 allocs && @testset "Allocations" begin
                     @test iszero(
                         @allocated value_and_multiderivative!(
-                            implem, multider_in2, backend, f, x
+                            multider_in2, backend, f, x, NO_EXTRAS, implem
                         )
                     )
                     @test iszero(
-                        @allocated multiderivative!(implem, multider_in4, backend, f, x)
+                        @allocated multiderivative!(
+                            multider_in4, backend, f, x, NO_EXTRAS, implem
+                        )
                     )
                 end
                 type_stability && @testset "Type stability" begin
-                    @test_opt value_and_multiderivative!(implem, multider_in2, backend, f, x)
-                    @test_opt multiderivative!(implem, multider_in4, backend, f, x)
+                    @test_opt value_and_multiderivative!(
+                        multider_in2, backend, f, x, NO_EXTRAS, implem
+                    )
+                    @test_opt multiderivative!(
+                        multider_in4, backend, f, x, NO_EXTRAS, implem
+                    )
                 end
             end
         end
@@ -248,13 +262,15 @@ function test_gradient(
             @testset "$X -> $Y" begin
                 (; f, x, y, grad_true) = scenario
 
-                y_out1, grad_out1 = value_and_gradient(implem, backend, f, x)
+                y_out1, grad_out1 = value_and_gradient(backend, f, x, NO_EXTRAS, implem)
                 grad_in2 = zero(grad_out1)
-                y_out2, grad_out2 = value_and_gradient!(implem, grad_in2, backend, f, x)
+                y_out2, grad_out2 = value_and_gradient!(
+                    grad_in2, backend, f, x, NO_EXTRAS, implem
+                )
 
-                grad_out3 = gradient(implem, backend, f, x)
+                grad_out3 = gradient(backend, f, x, NO_EXTRAS, implem)
                 grad_in4 = zero(grad_out3)
-                grad_out4 = gradient!(implem, grad_in4, backend, f, x)
+                grad_out4 = gradient!(grad_in4, backend, f, x, NO_EXTRAS, implem)
 
                 @testset "Primal value" begin
                     @test y_out1 ≈ y
@@ -272,13 +288,17 @@ function test_gradient(
                 end
                 allocs && @testset "Allocations" begin
                     @test iszero(
-                        @allocated value_and_gradient!(implem, grad_in2, backend, f, x)
+                        @allocated value_and_gradient!(
+                            grad_in2, backend, f, x, NO_EXTRAS, implem
+                        )
                     )
-                    @test iszero(@allocated gradient!(implem, grad_in4, backend, f, x))
+                    @test iszero(
+                        @allocated gradient!(grad_in4, backend, f, x, NO_EXTRAS, implem)
+                    )
                 end
                 type_stability && @testset "Type stability" begin
-                    @test_opt value_and_gradient!(implem, grad_in2, backend, f, x)
-                    @test_opt gradient!(implem, grad_in4, backend, f, x)
+                    @test_opt value_and_gradient!(grad_in2, backend, f, x, NO_EXTRAS, implem)
+                    @test_opt gradient!(grad_in4, backend, f, x, NO_EXTRAS, implem)
                 end
             end
         end
@@ -303,13 +323,15 @@ function test_jacobian(
             @testset "$X -> $Y" begin
                 (; f, x, y, jac_true) = scenario
 
-                y_out1, jac_out1 = value_and_jacobian(implem, backend, f, x)
+                y_out1, jac_out1 = value_and_jacobian(backend, f, x, NO_EXTRAS, implem)
                 jac_in2 = zero(jac_out1)
-                y_out2, jac_out2 = value_and_jacobian!(implem, jac_in2, backend, f, x)
+                y_out2, jac_out2 = value_and_jacobian!(
+                    jac_in2, backend, f, x, NO_EXTRAS, implem
+                )
 
-                jac_out3 = jacobian(implem, backend, f, x)
+                jac_out3 = jacobian(backend, f, x, NO_EXTRAS, implem)
                 jac_in4 = zero(jac_out3)
-                jac_out4 = jacobian!(implem, jac_in4, backend, f, x)
+                jac_out4 = jacobian!(jac_in4, backend, f, x, NO_EXTRAS, implem)
 
                 @testset "Primal value" begin
                     @test y_out1 ≈ y
@@ -326,12 +348,18 @@ function test_jacobian(
                     end
                 end
                 allocs && @testset "Allocations" begin
-                    @test iszero(@allocated value_and_jacobian!(implem, jac_in2, backend, f, x))
-                    @test iszero(@allocated jacobian!(implem, jac_in4, backend, f, x))
+                    @test iszero(
+                        @allocated value_and_jacobian!(
+                            jac_in2, backend, f, x, NO_EXTRAS, implem
+                        )
+                    )
+                    @test iszero(
+                        @allocated jacobian!(jac_in4, backend, f, x, NO_EXTRAS, implem)
+                    )
                 end
                 type_stability && @testset "Type stability" begin
-                    @test_opt value_and_jacobian!(implem, jac_in2, backend, f, x)
-                    @test_opt jacobian!(implem, jac_in4, backend, f, x)
+                    @test_opt value_and_jacobian!(jac_in2, backend, f, x, NO_EXTRAS, implem)
+                    @test_opt jacobian!(jac_in4, backend, f, x, NO_EXTRAS, implem)
                 end
             end
         end

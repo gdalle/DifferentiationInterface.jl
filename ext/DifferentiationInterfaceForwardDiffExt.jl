@@ -22,7 +22,7 @@ using LinearAlgebra: mul!
 ## Primitives
 
 function DI.value_and_pushforward!(
-    _dy::Y, ::AutoForwardDiff, f, x::X, dx
+    _dy::Y, ::AutoForwardDiff, f, x::X, dx, extras::Nothing=nothing
 ) where {X<:Real,Y<:Real}
     T = typeof(Tag(f, X))
     xdual = Dual{T}(x, dx)
@@ -33,7 +33,7 @@ function DI.value_and_pushforward!(
 end
 
 function DI.value_and_pushforward!(
-    dy::Y, ::AutoForwardDiff, f, x::X, dx
+    dy::Y, ::AutoForwardDiff, f, x::X, dx, extras::Nothing=nothing
 ) where {X<:Real,Y<:AbstractArray}
     T = typeof(Tag(f, X))
     xdual = Dual{T}(x, dx)
@@ -44,7 +44,7 @@ function DI.value_and_pushforward!(
 end
 
 function DI.value_and_pushforward!(
-    _dy::Y, ::AutoForwardDiff, f, x::X, dx
+    _dy::Y, ::AutoForwardDiff, f, x::X, dx, extras::Nothing=nothing
 ) where {X<:AbstractArray,Y<:Real}
     T = typeof(Tag(f, X))  # TODO: unsure
     xdual = Dual{T}.(x, dx)  # TODO: allocation
@@ -55,7 +55,7 @@ function DI.value_and_pushforward!(
 end
 
 function DI.value_and_pushforward!(
-    dy::Y, ::AutoForwardDiff, f, x::X, dx
+    dy::Y, ::AutoForwardDiff, f, x::X, dx, extras::Nothing=nothing
 ) where {X<:AbstractArray,Y<:AbstractArray}
     T = typeof(Tag(f, X))  # TODO: unsure
     xdual = Dual{T}.(x, dx)  # TODO: allocation
@@ -67,48 +67,71 @@ end
 
 ## Utilities (TODO: use DiffResults)
 
-function DI.value_and_derivative(::CustomImplem, ::AutoForwardDiff, f, x::Number)
+function DI.value_and_derivative(
+    ::AutoForwardDiff, f, x::Number, extras::Nothing, ::CustomImplem=CustomImplem()
+)
     y = f(x)
     der = derivative(f, x)
     return y, der
 end
 
-function DI.value_and_multiderivative(::CustomImplem, ::AutoForwardDiff, f, x::Number)
+function DI.value_and_multiderivative(
+    ::AutoForwardDiff, f, x::Number, extras::Nothing, ::CustomImplem=CustomImplem()
+)
     y = f(x)
     multider = derivative(f, x)
     return y, multider
 end
 
 function DI.value_and_multiderivative!(
-    ::CustomImplem, multider::AbstractArray, ::AutoForwardDiff, f, x::Number
+    multider::AbstractArray,
+    ::AutoForwardDiff,
+    f,
+    x::Number,
+    extras::Nothing,
+    ::CustomImplem=CustomImplem(),
 )
     y = f(x)
     derivative!(multider, f, x)
     return y, multider
 end
 
-function DI.value_and_gradient(::CustomImplem, ::AutoForwardDiff, f, x::AbstractArray)
+function DI.value_and_gradient(
+    ::AutoForwardDiff, f, x::AbstractArray, extras::Nothing, ::CustomImplem=CustomImplem()
+)
     y = f(x)
     grad = gradient(f, x)
     return y, grad
 end
 
 function DI.value_and_gradient!(
-    ::CustomImplem, grad::AbstractArray, ::AutoForwardDiff, f, x::AbstractArray
+    grad::AbstractArray,
+    ::AutoForwardDiff,
+    f,
+    x::AbstractArray,
+    extras::Nothing,
+    ::CustomImplem=CustomImplem(),
 )
     y = f(x)
     gradient!(grad, f, x)
     return y, grad
 end
 
-function DI.value_and_jacobian(::CustomImplem, ::AutoForwardDiff, f, x::AbstractArray)
+function DI.value_and_jacobian(
+    ::AutoForwardDiff, f, x::AbstractArray, extras::Nothing, ::CustomImplem=CustomImplem()
+)
     y = f(x)
     jac = jacobian(f, x)
     return y, jac
 end
 
 function DI.value_and_jacobian!(
-    ::CustomImplem, jac::AbstractMatrix, ::AutoForwardDiff, f, x::AbstractArray
+    jac::AbstractMatrix,
+    ::AutoForwardDiff,
+    f,
+    x::AbstractArray,
+    extras::Nothing,
+    ::CustomImplem=CustomImplem(),
 )
     y = f(x)
     jacobian!(jac, f, x)
