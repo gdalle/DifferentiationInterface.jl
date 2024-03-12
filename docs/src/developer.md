@@ -17,56 +17,74 @@ Advanced users are welcome to code more backends and submit pull requests!
 
 ### Forward mode 
 ```mermaid
-stateDiagram-v2
-    pushforward --> value_and_pushforward
-    value_and_pushforward --> value_and_pushforward!
-    pushforward! --> value_and_pushforward!
-
-    jacobian --> value_and_jacobian
-    value_and_jacobian --> value_and_jacobian!
-    jacobian! --> value_and_jacobian!
-    value_and_jacobian! --> value_and_pushforward!
-
-
+flowchart LR
+    subgraph Gradient
     gradient --> value_and_gradient
     value_and_gradient --> value_and_gradient!
     gradient! --> value_and_gradient!
-    value_and_gradient! --> value_and_pushforward!
+    end
 
+    subgraph Jacobian
+    jacobian --> value_and_jacobian
+    value_and_jacobian --> value_and_jacobian!
+    jacobian! --> value_and_jacobian!
+    end
+
+    subgraph Multiderivative
     multiderivative --> value_and_multiderivative
     value_and_multiderivative --> value_and_multiderivative!
     multiderivative! --> value_and_multiderivative!
-    value_and_multiderivative! --> value_and_pushforward!
+    end
 
-
+    subgraph Derivative
     derivative --> value_and_derivative
+    end
+
+    subgraph Pushforward
+    pushforward --> value_and_pushforward
+    value_and_pushforward --> value_and_pushforward!
+    pushforward! --> value_and_pushforward!
+    end
+
+    value_and_jacobian! --> value_and_pushforward!
+    value_and_gradient! --> value_and_pushforward!
+    value_and_multiderivative! --> value_and_pushforward!
     value_and_derivative --> value_and_pushforward
 ```
 
 ### Reverse mode 
 ```mermaid
-stateDiagram-v2
-    pullback --> value_and_pullback
-    value_and_pullback --> value_and_pullback!
-    pullback! --> value_and_pullback!
-
-    jacobian --> value_and_jacobian
-    value_and_jacobian --> value_and_jacobian!
-    jacobian! --> value_and_jacobian!
-    value_and_jacobian! --> value_and_pullback!
-
-
+flowchart LR
+    subgraph Gradient
     gradient --> value_and_gradient
     value_and_gradient --> value_and_gradient!
     gradient! --> value_and_gradient!
-    value_and_gradient! --> value_and_pullback!
+    end
 
+    subgraph Jacobian
+    jacobian --> value_and_jacobian
+    value_and_jacobian --> value_and_jacobian!
+    jacobian! --> value_and_jacobian!
+    end
+
+    subgraph Multiderivative
     multiderivative --> value_and_multiderivative
     value_and_multiderivative --> value_and_multiderivative!
     multiderivative! --> value_and_multiderivative!
-    value_and_multiderivative! --> value_and_pullback!
+    end
 
-
+    subgraph Derivative
     derivative --> value_and_derivative
+    end
+
+    subgraph Pullback
+    pullback --> value_and_pullback
+    value_and_pullback --> value_and_pullback!
+    pullback! --> value_and_pullback!
+    end
+
+    value_and_jacobian! --> value_and_pullback!
+    value_and_gradient! --> value_and_pullback!
+    value_and_multiderivative! --> value_and_pullback!
     value_and_derivative --> value_and_pullback
 ```
