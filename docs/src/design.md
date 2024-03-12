@@ -42,7 +42,7 @@ This is a backend-specific procedure, but we expose a common syntax to achieve i
 
 If you run `prepare_something(backend, f, x)`, it will create an object called `extras` containing the necessary information to speed up the `something` procedure and its variants.
 You can them call `something(backend, f, x, extras)`, which should be faster than `something(backend, f, x)`.
-This is especially worth it if you plan to call `something` several times in similar settings (same backend, same function).
+This is especially worth it if you plan to call `something` several times in similar settings: same backend, same function, but different inputs.
 You can think of it as a warm up.
 
 By default, all the preparation functions return `nothing`.
