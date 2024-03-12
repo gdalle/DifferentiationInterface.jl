@@ -8,6 +8,5 @@ authors:
     given-names: "Adrian"
 title: "DifferentiationInterface.jl"
 version: 0.1.0
-doi:
 date-released: 2024-03-12
 url: "https://github.com/gdalle/DifferentiationInterface.jl"
