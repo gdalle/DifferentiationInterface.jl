@@ -2,6 +2,7 @@ using Base: get_extension
 using DifferentiationInterface
 import DifferentiationInterface as DI
 using Documenter
+using Documenter.Remotes: GitHub
 
 using ADTypes
 using Diffractor: Diffractor
@@ -46,6 +47,7 @@ end
 
 makedocs(;
     modules=[
+        ADTypes,
         DifferentiationInterface,
         ChainRulesCoreExt,
         DiffractorExt,
@@ -58,12 +60,14 @@ makedocs(;
     ],
     authors="Guillaume Dalle, Adrian Hill",
     sitename="DifferentiationInterface.jl",
+    repo=GitHub("gdalle", "DifferentiationInterface.jl"),
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
         canonical="https://gdalle.github.io/DifferentiationInterface.jl",
         edit_link="main",
     ),
-    pages=["Home" => "index.md", "design.md", "api.md"],
+    pages=["Home" => "index.md", "design.md", "api.md", "backends.md"],
+    warnonly=:missing_docs,  # missing docs for ADTypes.jl are normal
 )
 
-deploydocs(; repo="github.com/gdalle/DifferentiationInterface.jl", devbranch="main")
+deploydocs(; repo=GitHub("gdalle", "DifferentiationInterface.jl"), devbranch="main")

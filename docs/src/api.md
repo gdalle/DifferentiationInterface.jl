@@ -71,39 +71,3 @@ Modules = [DifferentiationInterface]
 Pages = ["backends.jl", "mode.jl", "utils.jl"]
 Public = false
 ```
-
-## Package extensions
-
-These are not part of the public API.
-
-```@autodocs
-Modules = [Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceChainRulesCoreExt)]
-```
-
-```@autodocs
-Modules = [Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceDiffractorExt)]
-```
-
-```@autodocs
-Modules = [Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceEnzymeExt)]
-```
-
-```@autodocs
-Modules = [Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceFiniteDiffExt)]
-```
-
-```@autodocs
-Modules = [Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceForwardDiffExt)]
-```
-
-```@autodocs
-Modules = [Base.get_extension(DifferentiationInterface, :DifferentiationInterfacePolyesterForwardDiffExt)]
-```
-
-```@autodocs
-Modules = [Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceReverseDiffExt)]
-```
-
-```@autodocs
-Modules = [Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceZygoteExt)]
-```
