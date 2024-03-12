@@ -34,60 +34,18 @@ AutoZygote
 CurrentModule = DifferentiationInterface
 ```
 
-What follows is not part of the public API.
-
-### ChainRulesCoreExt
+Backend-specific extension content is not part of the public API.
 
 ```@autodocs
-Modules = [Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceChainRulesCoreExt)]
-Filter = t -> !(t <: ADTypes.AbstractADType)
-```
-
-### DiffractorExt
-
-```@autodocs
-Modules = [Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceDiffractorExt)]
-Filter = t -> !(t <: ADTypes.AbstractADType)
-```
-
-### EnzymeExt
-
-```@autodocs
-Modules = [Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceEnzymeExt)]
-Filter = t -> !(t <: ADTypes.AbstractADType)
-```
-
-### FiniteDiffExt
-
-```@autodocs
-Modules = [Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceFiniteDiffExt)]
-Filter = t -> !(t <: ADTypes.AbstractADType)
-```
-
-### ForwardDiffExt
-
-```@autodocs
-Modules = [Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceForwardDiffExt)]
-Filter = t -> !(t <: ADTypes.AbstractADType)
-```
-
-### PolyesterForwardDiffExt
-
-```@autodocs
-Modules = [Base.get_extension(DifferentiationInterface, :DifferentiationInterfacePolyesterForwardDiffExt)]
-Filter = t -> !(t <: ADTypes.AbstractADType)
-```
-
-### ReverseDiffExt
-
-```@autodocs
-Modules = [Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceReverseDiffExt)]
-Filter = t -> !(t <: ADTypes.AbstractADType)
-```
-
-### ZygoteExt
-
-```@autodocs
-Modules = [Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceZygoteExt)]
+Modules = [
+    Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceChainRulesCoreExt),
+    Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceDiffractorExt),
+    Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceEnzymeExt),
+    Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceFiniteDiffExt),
+    Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceForwardDiffExt),
+    Base.get_extension(DifferentiationInterface, :DifferentiationInterfacePolyesterForwardDiffExt),
+    Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceReverseDiffExt),
+    Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceZygoteExt)
+]
 Filter = t -> !(t <: ADTypes.AbstractADType)
 ```
