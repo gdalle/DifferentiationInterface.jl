@@ -1,36 +1,3 @@
-## Additional backends
-
-# TODO: remove once https://github.com/SciML/ADTypes.jl/pull/21 is merged and released
-
-"""
-    AutoChainRules{RC}
-
-Enables the use of AD libraries based on [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl).
-
-# Fields
-
-- `ruleconfig::RC`: a [`RuleConfig`](https://juliadiff.org/ChainRulesCore.jl/stable/rule_author/superpowers/ruleconfig.html) object
-
-# Example
-
-```julia
-using DifferentiationInterface, Zygote
-backend = AutoChainRules(Zygote.ZygoteRuleConfig())
-```
-"""
-struct AutoChainRules{RC} <: AbstractADType
-    ruleconfig::RC
-end
-
-# TODO: remove this once https://github.com/SciML/ADTypes.jl/issues/27 is solved
-
-"""
-    AutoDiffractor
-
-Enables the use of [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl).
-"""
-struct AutoDiffractor <: AbstractADType end
-
 ## Traits and access
 
 """

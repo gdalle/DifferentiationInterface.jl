@@ -1,14 +1,12 @@
 module DifferentiationInterfaceZygoteExt
 
 using ADTypes: AutoZygote
-using DifferentiationInterface: AutoChainRules, CustomImplem, update!
+using DifferentiationInterface: CustomImplem, update!
 import DifferentiationInterface as DI
 using DocStringExtensions
 using Zygote: ZygoteRuleConfig, gradient, jacobian, pullback, withgradient, withjacobian
 
 ## Primitives
-
-const zygote_chainrules_backend = AutoChainRules(ZygoteRuleConfig())
 
 function DI.value_and_pullback!(dx, ::AutoZygote, f, x, dy, extras::Nothing=nothing)
     y, back = pullback(f, x)

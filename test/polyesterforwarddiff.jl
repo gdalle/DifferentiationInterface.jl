@@ -7,9 +7,9 @@ using PolyesterForwardDiff: PolyesterForwardDiff
 test_pushforward(AutoPolyesterForwardDiff(; chunksize=4), scenarios; type_stability=false);
 
 test_jacobian_and_friends(
-    CustomImplem(),
     AutoPolyesterForwardDiff(; chunksize=4),
-    scenarios;
+    scenarios,
+    CustomImplem();
     input_type=Union{Number,AbstractVector},
     output_type=Union{Number,AbstractVector},
     type_stability=false,

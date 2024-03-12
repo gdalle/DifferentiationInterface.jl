@@ -9,6 +9,9 @@ CollapsedDocStrings = true
 DifferentiationInterface
 ```
 
+In every function below, the `extras` argument is meant to contain a backend-specific cache for optimal memory reuse.
+This will be implemented in a future release.
+
 ## Utilities
 
 ### Scalar to scalar
@@ -55,42 +58,48 @@ Modules = [DifferentiationInterface]
 Pages = ["pullback.jl"]
 ```
 
-## Backends
-
-### ADTypes.jl
-
-The following backends are defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl):
-
-```@docs
-AbstractADType
-```
-
-Only a subset is supported by DifferentiationInterface.jl at the moment.
-
-### DifferentiationInterface.jl
-
-The following backends are defined by DifferentiationInterface.jl:
-
-```@autodocs
-Modules = [DifferentiationInterface]
-Pages = ["backends.jl"]
-Order   = [:type]
-Private = false
-```
-
-### Input / output types
-
-```@autodocs
-Modules = [DifferentiationInterface]
-Pages = ["backends.jl"]
-Order   = [:function]
-Private = false
-```
-
 ## Internals
 
+These are not part of the public API.
+
 ```@autodocs
 Modules = [DifferentiationInterface]
-Pages = ["implem.jl", "mode.jl", "utils.jl", "backends.jl"]
+Pages = ["backends.jl", "implem.jl", "mode.jl", "utils.jl"]
 Public = false
+```
+
+## Package extensions
+
+These are not part of the public API.
+
+```@autodocs
+Modules = [Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceChainRulesCoreExt)]
+```
+
+```@autodocs
+Modules = [Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceDiffractorExt)]
+```
+
+```@autodocs
+Modules = [Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceEnzymeExt)]
+```
+
+```@autodocs
+Modules = [Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceFiniteDiffExt)]
+```
+
+```@autodocs
+Modules = [Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceForwardDiffExt)]
+```
+
+```@autodocs
+Modules = [Base.get_extension(DifferentiationInterface, :DifferentiationInterfacePolyesterForwardDiffExt)]
+```
+
+```@autodocs
+Modules = [Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceReverseDiffExt)]
+```
+
+```@autodocs
+Modules = [Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceZygoteExt)]
 ```

@@ -25,10 +25,6 @@ include("scalar_array.jl")
 include("array_scalar.jl")
 include("array_array.jl")
 
-export AutoChainRules, AutoDiffractor
-
-export handles_input_type, handles_output_type, handles_types
-
 export value_and_pushforward!, value_and_pushforward
 export pushforward!, pushforward
 

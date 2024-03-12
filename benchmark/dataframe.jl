@@ -3,13 +3,21 @@ using CSV
 using DataFrames
 using Statistics
 
-function parse_benchmark_results_aux(result::BenchmarkTools.Trial, level=nothing)
+function parse_benchmark_results_aux(
+    result::BenchmarkTools.Trial, level=nothing; aggregators=[median, minimum]
+)
     data = DataFrame(
         :samples => [length(result.times)],
-        :time_median => [median(result.times)],
-        :memory_median => [median(result.memory)],
-        :allocs_median => [median(result.allocs)],
+        :params_evals => [result.params.evals],
+        :params_samples => [result.params.samples],
+        :params_seconds => [result.params.seconds],
     )
+    for agg in aggregators
+        data[!, Symbol("time_$agg")] = [agg(result.times)]
+        data[!, Symbol("memory_$agg")] = [agg(result.memory)]
+        data[!, Symbol("allocs_$agg")] = [agg(result.allocs)]
+        data[!, Symbol("gctime_$agg")] = [agg(result.gctimes)]
+    end
     return data
 end
 
