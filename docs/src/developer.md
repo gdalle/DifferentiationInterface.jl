@@ -1,4 +1,4 @@
-# Developer documentation
+# For AD developers
 
 ## Backend requirements
 
@@ -15,7 +15,8 @@ Advanced users are welcome to code more backends and submit pull requests!
 
 ## Fallback call structure
 
-### Forward mode 
+### Forward mode
+
 ```mermaid
 flowchart LR
     subgraph Gradient
@@ -52,7 +53,8 @@ flowchart LR
     value_and_derivative --> value_and_pushforward
 ```
 
-### Reverse mode 
+### Reverse mode
+
 ```mermaid
 flowchart LR
     subgraph Gradient

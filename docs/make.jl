@@ -65,7 +65,9 @@ makedocs(;
         canonical="https://gdalle.github.io/DifferentiationInterface.jl",
         edit_link="main",
     ),
-    pages=["Home" => "index.md", "getting_started.md", "developer.md", "api.md", "backends.md"],
+    pages=[
+        "Home" => "index.md", "getting_started.md", "api.md", "backends.md", "developer.md"
+    ],
     warnonly=:missing_docs,  # missing docs for ADTypes.jl are normal
 )
 

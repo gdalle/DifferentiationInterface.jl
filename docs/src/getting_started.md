@@ -1,6 +1,7 @@
 # Getting started
 
 ## [Operators](@id operators)
+
 Depending on the type of input and output, differentiation operators can have various names.
 We choose the following terminology for the utilities we provide:
 
@@ -40,11 +41,10 @@ This is a backend-specific procedure, but we expose a common syntax to achieve i
 | Pullback (VJP)    | [`prepare_pullback`](@ref)        |
 | Pushforward (JVP) | [`prepare_pushforward`](@ref)     |
 
-If you run `prepare_operator(backend, f, x)`, it will create an object called `extras` containing the necessary information to speed up the `something` procedure and its variants.
-You can them call `operator(backend, f, x, extras)`, which should be faster than `operator(backend, f, x)`.
-This is especially worth it if you plan to call `something` several times in similar settings (same backend, same function).
-You can think of it as a warm up.
+If you run `prepare_operator(backend, f, x)`, it will create an object called `extras` containing the necessary information to speed up `operator` and its variants.
+This information is specific to `backend` and `f`, as well as the _type and size_ of the input `x`, but it should work with different _values_ of `x`.
+You can them call `operator(backend, f, similar_x, extras)`, which should be faster than `operator(backend, f, similar_x)`.
+This is especially worth it if you plan to call `operator` several times in similar settings: you can think of it as a warm up.
 
 By default, all the preparation functions return `nothing`.
 We do not make any guarantees on their implementation for each backend, or on the performance gains that can be expected.
-
