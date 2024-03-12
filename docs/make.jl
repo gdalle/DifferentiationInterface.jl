@@ -46,6 +46,7 @@ end
 
 makedocs(;
     modules=[
+        ADTypes,
         DifferentiationInterface,
         ChainRulesCoreExt,
         DiffractorExt,
@@ -63,7 +64,8 @@ makedocs(;
         canonical="https://gdalle.github.io/DifferentiationInterface.jl",
         edit_link="main",
     ),
-    pages=["Home" => "index.md", "design.md", "api.md"],
+    pages=["Home" => "index.md", "design.md", "api.md", "backends.md"],
+    warnonly=:missing_docs,  # missing docs for ADTypes.jl are normal
 )
 
 deploydocs(; repo="github.com/gdalle/DifferentiationInterface.jl", devbranch="main")
