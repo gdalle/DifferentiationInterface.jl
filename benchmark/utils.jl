@@ -36,17 +36,19 @@ function add_pushforward_benchmarks!(
         return nothing
     end
 
-    suite["value_and_pushforward"][(n, m)]["$(pretty(backend))"] = @benchmarkable begin
+    subgroup = suite[(n, m)][pretty(backend)][pretty(CustomImplem())]
+
+    subgroup["value_and_pushforward"]["no extras"] = @benchmarkable begin
         value_and_pushforward($backend, $f, $x, $dx)
     end
-    suite["value_and_pushforward!"][(n, m)]["$(pretty(backend))"] = @benchmarkable begin
+    subgroup["value_and_pushforward!"]["no extras"] = @benchmarkable begin
         value_and_pushforward!($dy, $backend, $f, $x, $dx)
     end
 
-    suite["pushforward"][(n, m)]["$(pretty(backend))"] = @benchmarkable begin
+    subgroup["pushforward"]["no extras"] = @benchmarkable begin
         pushforward($backend, $f, $x, $dx)
     end
-    suite["pushforward!"][(n, m)]["$(pretty(backend))"] = @benchmarkable begin
+    subgroup["pushforward!"]["no extras"] = @benchmarkable begin
         pushforward!($dy, $backend, $f, $x, $dx)
     end
 
@@ -65,17 +67,19 @@ function add_pullback_benchmarks!(
         return nothing
     end
 
-    suite["value_and_pullback"][(n, m)]["$(pretty(backend))"] = @benchmarkable begin
+    subgroup = suite[(n, m)][pretty(backend)][pretty(CustomImplem())]
+
+    subgroup["value_and_pullback"]["no extras"] = @benchmarkable begin
         value_and_pullback($backend, $f, $x, $dy)
     end
-    suite["value_and_pullback!"][(n, m)]["$(pretty(backend))"] = @benchmarkable begin
+    subgroup["value_and_pullback!"]["no extras"] = @benchmarkable begin
         value_and_pullback!($dx, $backend, $f, $x, $dy)
     end
 
-    suite["pullback"][(n, m)]["$(pretty(backend))"] = @benchmarkable begin
+    subgroup["pullback"]["no extras"] = @benchmarkable begin
         pullback($backend, $f, $x, $dy)
     end
-    suite["pullback!"][(n, m)]["$(pretty(backend))"] = @benchmarkable begin
+    subgroup["pullback!"]["no extras"] = @benchmarkable begin
         pullback!($dx, $backend, $f, $x, $dy)
     end
 
@@ -93,13 +97,13 @@ function add_derivative_benchmarks!(
     x = randn()
 
     for implem in (CustomImplem(), FallbackImplem())
-        backend_implem = "$(pretty(backend)) - $(pretty(implem))"
+        subgroup = suite[(n, m)][pretty(backend)][pretty(implem)]
 
-        suite["value_and_derivative"][(1, 1)][backend_implem] = @benchmarkable begin
+        subgroup["value_and_derivative"]["no extras"] = @benchmarkable begin
             value_and_derivative($backend, $f, $x, $NO_EXTRAS, $implem)
         end
 
-        suite["derivative"][(1, 1)][backend_implem] = @benchmarkable begin
+        subgroup["derivative"]["no extras"] = @benchmarkable begin
             derivative($backend, $f, $x, $NO_EXTRAS, $implem)
         end
     end
@@ -119,19 +123,19 @@ function add_multiderivative_benchmarks!(
     multider = zeros(m)
 
     for implem in (CustomImplem(), FallbackImplem())
-        backend_implem = "$(pretty(backend)) - $(pretty(implem))"
+        subgroup = suite[(n, m)][pretty(backend)][pretty(implem)]
 
-        suite["value_and_multiderivative"][(1, m)][backend_implem] = @benchmarkable begin
+        subgroup["value_and_multiderivative"]["no extras"] = @benchmarkable begin
             value_and_multiderivative($backend, $f, $x, $NO_EXTRAS, $implem)
         end
-        suite["value_and_multiderivative!"][(1, m)][backend_implem] = @benchmarkable begin
+        subgroup["value_and_multiderivative!"]["no extras"] = @benchmarkable begin
             value_and_multiderivative!($multider, $backend, $f, $x, $NO_EXTRAS, $implem)
         end
 
-        suite["multiderivative"][(1, m)][backend_implem] = @benchmarkable begin
+        subgroup["multiderivative"]["no extras"] = @benchmarkable begin
             multiderivative($backend, $f, $x, $NO_EXTRAS, $implem)
         end
-        suite["multiderivative!"][(1, m)][backend_implem] = @benchmarkable begin
+        subgroup["multiderivative!"]["no extras"] = @benchmarkable begin
             multiderivative!($multider, $backend, $f, $x, $NO_EXTRAS, $implem)
         end
     end
@@ -151,19 +155,19 @@ function add_gradient_benchmarks!(
     grad = zeros(n)
 
     for implem in (CustomImplem(), FallbackImplem())
-        backend_implem = "$(pretty(backend)) - $(pretty(implem))"
+        subgroup = suite[(n, m)][pretty(backend)][pretty(implem)]
 
-        suite["value_and_gradient"][(n, 1)][backend_implem] = @benchmarkable begin
+        subgroup["value_and_gradient"]["no extras"] = @benchmarkable begin
             value_and_gradient($backend, $f, $x, $NO_EXTRAS, $implem)
         end
-        suite["value_and_gradient!"][(n, 1)][backend_implem] = @benchmarkable begin
+        subgroup["value_and_gradient!"]["no extras"] = @benchmarkable begin
             value_and_gradient!($grad, $backend, $f, $x, $NO_EXTRAS, $implem)
         end
 
-        suite["gradient"][(n, 1)][backend_implem] = @benchmarkable begin
+        subgroup["gradient"]["no extras"] = @benchmarkable begin
             gradient($backend, $f, $x, $NO_EXTRAS, $implem)
         end
-        suite["gradient!"][(n, 1)][backend_implem] = @benchmarkable begin
+        subgroup["gradient!"]["no extras"] = @benchmarkable begin
             gradient!($grad, $backend, $f, $x, $NO_EXTRAS, $implem)
         end
     end
@@ -182,19 +186,19 @@ function add_jacobian_benchmarks!(
     jac = zeros(m, n)
 
     for implem in (CustomImplem(), FallbackImplem())
-        backend_implem = "$(pretty(backend)) - $(pretty(implem))"
+        subgroup = suite[(n, m)][pretty(backend)][pretty(implem)]
 
-        suite["value_and_jacobian"][(n, m)][backend_implem] = @benchmarkable begin
+        subgroup["value_and_jacobian"]["no extras"] = @benchmarkable begin
             value_and_jacobian($backend, $f, $x, $NO_EXTRAS, $implem)
         end
-        suite["value_and_jacobian!"][(n, m)][backend_implem] = @benchmarkable begin
+        subgroup["value_and_jacobian!"]["no extras"] = @benchmarkable begin
             value_and_jacobian!($jac, $backend, $f, $x, $NO_EXTRAS, $implem)
         end
 
-        suite["jacobian"][(n, m)][backend_implem] = @benchmarkable begin
+        subgroup["jacobian"]["no extras"] = @benchmarkable begin
             jacobian($backend, $f, $x, $NO_EXTRAS, $implem)
         end
-        suite["jacobian!"][(n, m)][backend_implem] = @benchmarkable begin
+        subgroup["jacobian!"]["no extras"] = @benchmarkable begin
             jacobian!($jac, $backend, $f, $x, $NO_EXTRAS, $implem)
         end
     end

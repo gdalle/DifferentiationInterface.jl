@@ -136,9 +136,9 @@ function test_pullback(
 end
 
 function test_derivative(
-    implem::AbstractImplem,
     backend::AbstractADType,
-    scenarios::Vector{<:Scenario};
+    scenarios::Vector{<:Scenario},
+    implem::AbstractImplem;
     allocs::Bool=false,
     type_stability::Bool=true,
 )
@@ -180,9 +180,9 @@ function test_derivative(
 end
 
 function test_multiderivative(
-    implem::AbstractImplem,
     backend::AbstractADType,
-    scenarios::Vector{<:Scenario};
+    scenarios::Vector{<:Scenario},
+    implem::AbstractImplem;
     allocs::Bool=false,
     type_stability::Bool=true,
 )
@@ -251,9 +251,9 @@ function test_multiderivative(
 end
 
 function test_gradient(
-    implem::AbstractImplem,
     backend::AbstractADType,
-    scenarios::Vector{<:Scenario};
+    scenarios::Vector{<:Scenario},
+    implem::AbstractImplem;
     allocs::Bool=false,
     type_stability::Bool=true,
 )
@@ -312,9 +312,9 @@ function test_gradient(
 end
 
 function test_jacobian(
-    implem::AbstractImplem,
     backend::AbstractADType,
-    scenarios::Vector{<:Scenario};
+    scenarios::Vector{<:Scenario},
+    implem::AbstractImplem;
     allocs::Bool=false,
     type_stability::Bool=true,
 )
@@ -373,9 +373,9 @@ function test_jacobian(
 end
 
 function test_jacobian_and_friends(
-    implem::AbstractImplem,
     backend::AbstractADType,
-    scenarios::Vector{<:Scenario};
+    scenarios::Vector{<:Scenario},
+    implem::AbstractImplem;
     input_type::Type=Any,
     output_type::Type=Any,
     allocs::Bool=false,
@@ -384,9 +384,9 @@ function test_jacobian_and_friends(
     scenarios = filter(scenarios) do s
         (get_input_type(s) <: input_type) && (get_output_type(s) <: output_type)
     end
-    test_derivative(implem, backend, scenarios; allocs, type_stability)
-    test_multiderivative(implem, backend, scenarios; allocs, type_stability)
-    test_gradient(implem, backend, scenarios; allocs, type_stability)
-    test_jacobian(implem, backend, scenarios; allocs, type_stability)
+    test_derivative(backend, scenarios, implem; allocs, type_stability)
+    test_multiderivative(backend, scenarios, implem; allocs, type_stability)
+    test_gradient(backend, scenarios, implem; allocs, type_stability)
+    test_jacobian(backend, scenarios, implem; allocs, type_stability)
     return nothing
 end
