@@ -9,46 +9,42 @@ CollapsedDocStrings = true
 DifferentiationInterface
 ```
 
-## Utilities
-
-### Scalar to scalar
+## Derivative
 
 ```@autodocs
 Modules = [DifferentiationInterface]
-Pages = ["scalar_scalar.jl"]
+Pages = ["src/derivative.jl"]
 ```
 
-### Scalar to array
+## Multiderivative
 
 ```@autodocs
 Modules = [DifferentiationInterface]
-Pages = ["scalar_array.jl"]
+Pages = ["multiderivative.jl"]
 ```
 
-### Array to scalar
+## Gradient
 
 ```@autodocs
 Modules = [DifferentiationInterface]
-Pages = ["array_scalar.jl"]
+Pages = ["gradient.jl"]
 ```
 
-### Array to array
+## Jacobian
 
 ```@autodocs
 Modules = [DifferentiationInterface]
-Pages = ["array_array.jl"]
+Pages = ["jacobian.jl"]
 ```
 
-## Primitives
-
-### Pushforward
+## Pushforward (JVP)
 
 ```@autodocs
 Modules = [DifferentiationInterface]
 Pages = ["pushforward.jl"]
 ```
 
-### Pullback
+## Pullback (JVP)
 
 ```@autodocs
 Modules = [DifferentiationInterface]
