@@ -2,7 +2,7 @@ const JAC_NOTES = """
 ## Notes
 
 Regardless of the shape of `x` and `y`, if `x` has length `n` and `y` has length `m`, then `jac` is expected to be a `m × n` matrix.
-This function acts as if the input and output had been flattened with `vec`. 
+This function acts as if the input and output had been flattened with `vec`.
 """
 
 """
@@ -57,7 +57,7 @@ end
 
 Compute the primal value `y = f(x)` and the Jacobian matrix `jac = ∂f(x)` of an array-to-array function.
 
-$JAC_NOTES 
+$JAC_NOTES
 """
 function value_and_jacobian(backend::AbstractADType, f, x::AbstractArray, args...)
     y = f(x)
