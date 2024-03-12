@@ -15,53 +15,16 @@ The possible backend choices are defined by [ADTypes.jl](https://github.com/SciM
 !!! warning
     Only the backends listed here are supported by DifferentiationInterface.jl, even though ADTypes.jl defines more.
 
-### ChainRulesCore
-
 ```@docs
 AutoChainRules
-```
-
-### Diffractor
-
-```@docs
 AutoDiffractor
-```
-
-### Enzyme
-
-```@docs
 AutoEnzyme
-```
-
-### ForwardDiff
-
-```@docs
 AutoForwardDiff
 AutoForwardDiff()
-```
-
-### FiniteDiff
-
-```@docs
 AutoFiniteDiff
-```
-
-### PolyesterForwardDiff
-
-```@docs
 AutoPolyesterForwardDiff
 AutoPolyesterForwardDiff()
-```
-
-### ReverseDiff
-
-```@docs
 AutoReverseDiff
-```
-
-### Zygote
-
-```@docs
 AutoZygote
 ```
 
