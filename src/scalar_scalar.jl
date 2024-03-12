@@ -3,26 +3,18 @@
 
 Compute the primal value `y = f(x)` and the derivative `der = f'(x)` of a scalar-to-scalar function.
 """
-function value_and_derivative(
-    backend::AbstractADType,
-    f,
-    x::Number,
-    extras=nothing,
-    implem::AbstractImplem=CustomImplem(),
-)
-    return value_and_derivative(backend, f, x, extras, implem, autodiff_mode(backend))
+function value_and_derivative(backend::AbstractADType, f, x::Number, extras=nothing)
+    return value_and_derivative(backend, f, x, extras, autodiff_mode(backend))
 end
 
-function value_and_derivative(
-    backend::AbstractADType, f, x::Number, extras, ::AbstractImplem, ::ForwardMode
-)
-    return value_and_pushforward(backend, f, x, one(x), extras)
+function value_and_derivative(backend::AbstractADType, f, x::Number, extras, ::ForwardMode)
+    # don't use derivative extras for a pushforward
+    return value_and_pushforward(backend, f, x, one(x))
 end
 
-function value_and_derivative(
-    backend::AbstractADType, f, x::Number, extras, ::AbstractImplem, ::ReverseMode
-)
-    return value_and_pullback(backend, f, x, one(x), extras)
+function value_and_derivative(backend::AbstractADType, f, x::Number, extras, ::ReverseMode)
+    # don't use derivative extras for a pullback
+    return value_and_pullback(backend, f, x, one(x))
 end
 
 """

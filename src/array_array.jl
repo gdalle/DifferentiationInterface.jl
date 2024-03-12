@@ -13,14 +13,9 @@ Compute the primal value `y = f(x)` and the Jacobian matrix `jac = ∂f(x)` of a
 $JAC_NOTES
 """
 function value_and_jacobian!(
-    jac::AbstractMatrix,
-    backend::AbstractADType,
-    f,
-    x::AbstractArray,
-    extras=nothing,
-    implem::AbstractImplem=CustomImplem(),
+    jac::AbstractMatrix, backend::AbstractADType, f, x::AbstractArray, extras=nothing
 )
-    return value_and_jacobian!(jac, backend, f, x, extras, implem, autodiff_mode(backend))
+    return value_and_jacobian!(jac, backend, f, x, extras, autodiff_mode(backend))
 end
 
 function check_jac(jac::AbstractMatrix, x::AbstractArray, y::AbstractArray)
@@ -32,39 +27,29 @@ function check_jac(jac::AbstractMatrix, x::AbstractArray, y::AbstractArray)
 end
 
 function value_and_jacobian!(
-    jac::AbstractMatrix,
-    backend::AbstractADType,
-    f,
-    x::AbstractArray,
-    extras,
-    ::AbstractImplem,
-    ::ForwardMode,
+    jac::AbstractMatrix, backend::AbstractADType, f, x::AbstractArray, extras, ::ForwardMode
 )
     y = f(x)
     check_jac(jac, x, y)
     for (k, j) in enumerate(eachindex(IndexCartesian(), x))
         dx_j = basisarray(backend, x, j)
         jac_col_j = reshape(view(jac, :, k), size(y))
-        pushforward!(jac_col_j, backend, f, x, dx_j, extras)
+        # don't use jacobian extras for a pushforward
+        pushforward!(jac_col_j, backend, f, x, dx_j)
     end
     return y, jac
 end
 
 function value_and_jacobian!(
-    jac::AbstractMatrix,
-    backend::AbstractADType,
-    f,
-    x::AbstractArray,
-    extras,
-    ::AbstractImplem,
-    ::ReverseMode,
+    jac::AbstractMatrix, backend::AbstractADType, f, x::AbstractArray, extras, ::ReverseMode
 )
     y = f(x)
     check_jac(jac, x, y)
     for (k, i) in enumerate(eachindex(IndexCartesian(), y))
         dy_i = basisarray(backend, y, i)
         jac_row_i = reshape(view(jac, k, :), size(x))
-        pullback!(jac_row_i, backend, f, x, dy_i, extras)
+        # don't use jacobian extras for a pullback
+        pullback!(jac_row_i, backend, f, x, dy_i)
     end
     return y, jac
 end

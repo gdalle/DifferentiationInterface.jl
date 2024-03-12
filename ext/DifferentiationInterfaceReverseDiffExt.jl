@@ -1,7 +1,6 @@
 module DifferentiationInterfaceReverseDiffExt
 
 using ADTypes: AutoReverseDiff
-using DifferentiationInterface: CustomImplem
 import DifferentiationInterface as DI
 using DiffResults: DiffResults
 using DocStringExtensions
@@ -38,11 +37,7 @@ end
 ## Utilities (TODO: use DiffResults)
 
 function DI.value_and_gradient(
-    ::AutoReverseDiff,
-    f,
-    x::AbstractArray,
-    extras::Nothing=nothing,
-    ::CustomImplem=CustomImplem(),
+    ::AutoReverseDiff, f, x::AbstractArray, extras::Nothing=nothing
 )
     y = f(x)
     grad = gradient(f, x)
@@ -50,12 +45,7 @@ function DI.value_and_gradient(
 end
 
 function DI.value_and_gradient!(
-    grad::AbstractArray,
-    ::AutoReverseDiff,
-    f,
-    x::AbstractArray,
-    extras::Nothing=nothing,
-    ::CustomImplem=CustomImplem(),
+    grad::AbstractArray, ::AutoReverseDiff, f, x::AbstractArray, extras::Nothing=nothing
 )
     y = f(x)
     gradient!(grad, f, x)
@@ -63,11 +53,7 @@ function DI.value_and_gradient!(
 end
 
 function DI.value_and_jacobian(
-    ::AutoReverseDiff,
-    f,
-    x::AbstractArray,
-    extras::Nothing=nothing,
-    ::CustomImplem=CustomImplem(),
+    ::AutoReverseDiff, f, x::AbstractArray, extras::Nothing=nothing
 )
     y = f(x)
     jac = jacobian(f, x)
@@ -75,12 +61,7 @@ function DI.value_and_jacobian(
 end
 
 function DI.value_and_jacobian!(
-    jac::AbstractMatrix,
-    ::AutoReverseDiff,
-    f,
-    x::AbstractArray,
-    extras::Nothing=nothing,
-    ::CustomImplem=CustomImplem(),
+    jac::AbstractMatrix, ::AutoReverseDiff, f, x::AbstractArray, extras::Nothing=nothing
 )
     y = f(x)
     jacobian!(jac, f, x)

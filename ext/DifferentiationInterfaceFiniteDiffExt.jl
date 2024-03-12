@@ -1,7 +1,6 @@
 module DifferentiationInterfaceFiniteDiffExt
 
 using ADTypes: AutoFiniteDiff
-using DifferentiationInterface: CustomImplem
 import DifferentiationInterface as DI
 using DocStringExtensions
 using FiniteDiff:
@@ -40,11 +39,7 @@ end
 ## Utilities
 
 function DI.value_and_derivative(
-    ::AutoFiniteDiff{fdtype},
-    f,
-    x::Number,
-    extras::Nothing=nothing,
-    ::CustomImplem=CustomImplem(),
+    ::AutoFiniteDiff{fdtype}, f, x::Number, extras::Nothing=nothing
 ) where {fdtype}
     y = f(x)
     der = finite_difference_derivative(f, x, fdtype, eltype(y), y)
@@ -52,12 +47,7 @@ function DI.value_and_derivative(
 end
 
 function DI.value_and_multiderivative!(
-    multider::AbstractArray,
-    ::AutoFiniteDiff{fdtype},
-    f,
-    x::Number,
-    extras::Nothing=nothing,
-    ::CustomImplem=CustomImplem(),
+    multider::AbstractArray, ::AutoFiniteDiff{fdtype}, f, x::Number, extras::Nothing=nothing
 ) where {fdtype}
     y = f(x)
     finite_difference_gradient!(multider, f, x, fdtype, eltype(y), FUNCTION_NOT_INPLACE, y)
@@ -65,11 +55,7 @@ function DI.value_and_multiderivative!(
 end
 
 function DI.value_and_multiderivative(
-    ::AutoFiniteDiff{fdtype},
-    f,
-    x::Number,
-    extras::Nothing=nothing,
-    ::CustomImplem=CustomImplem(),
+    ::AutoFiniteDiff{fdtype}, f, x::Number, extras::Nothing=nothing
 ) where {fdtype}
     y = f(x)
     multider = finite_difference_gradient(f, x, fdtype, eltype(y), FUNCTION_NOT_INPLACE, y)
@@ -82,7 +68,6 @@ function DI.value_and_gradient!(
     f,
     x::AbstractArray,
     extras::Nothing=nothing,
-    ::CustomImplem=CustomImplem(),
 ) where {fdtype}
     y = f(x)
     finite_difference_gradient!(grad, f, x, fdtype, eltype(y), FUNCTION_NOT_INPLACE, y)
@@ -90,11 +75,7 @@ function DI.value_and_gradient!(
 end
 
 function DI.value_and_gradient(
-    ::AutoFiniteDiff{fdtype},
-    f,
-    x::AbstractArray,
-    extras::Nothing=nothing,
-    ::CustomImplem=CustomImplem(),
+    ::AutoFiniteDiff{fdtype}, f, x::AbstractArray, extras::Nothing=nothing
 ) where {fdtype}
     y = f(x)
     grad = finite_difference_gradient(f, x, fdtype, eltype(y), FUNCTION_NOT_INPLACE, y)
@@ -102,11 +83,7 @@ function DI.value_and_gradient(
 end
 
 function DI.value_and_jacobian(
-    ::AutoFiniteDiff{fdtype},
-    f,
-    x::AbstractArray,
-    extras::Nothing=nothing,
-    ::CustomImplem=CustomImplem(),
+    ::AutoFiniteDiff{fdtype}, f, x::AbstractArray, extras::Nothing=nothing
 ) where {fdtype}
     y = f(x)
     jac = finite_difference_jacobian(f, x, fdtype, eltype(y))
@@ -119,9 +96,8 @@ function DI.value_and_jacobian!(
     f,
     x::AbstractArray,
     extras::Nothing=nothing,
-    implem::CustomImplem=CustomImplem(),
 )
-    y, new_jac = DI.value_and_jacobian(backend, f, x, extras, implem)
+    y, new_jac = DI.value_and_jacobian(backend, f, x, extras)
     jac .= new_jac
     return y, jac
 end

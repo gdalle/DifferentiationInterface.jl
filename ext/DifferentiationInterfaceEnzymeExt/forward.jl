@@ -21,11 +21,7 @@ end
 ## Utilities
 
 function DI.value_and_jacobian(
-    ::AutoForwardEnzyme,
-    f,
-    x::AbstractArray,
-    extras::Nothing=nothing,
-    ::CustomImplem=CustomImplem(),
+    ::AutoForwardEnzyme, f, x::AbstractArray, extras::Nothing=nothing
 )
     y = f(x)
     jac = jacobian(Forward, f, x)

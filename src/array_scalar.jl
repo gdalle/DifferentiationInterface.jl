@@ -4,44 +4,29 @@
 Compute the primal value `y = f(x)` and the gradient `grad = ∇f(x)` of an array-to-scalar function, overwriting `grad` if possible.
 """
 function value_and_gradient!(
-    grad::AbstractArray,
-    backend::AbstractADType,
-    f,
-    x::AbstractArray,
-    extras=nothing,
-    implem::AbstractImplem=CustomImplem(),
+    grad::AbstractArray, backend::AbstractADType, f, x::AbstractArray, extras=nothing
 )
-    return value_and_gradient!(grad, backend, f, x, extras, implem, autodiff_mode(backend))
+    return value_and_gradient!(grad, backend, f, x, extras, autodiff_mode(backend))
 end
 
 function value_and_gradient!(
-    grad::AbstractArray,
-    backend::AbstractADType,
-    f,
-    x::AbstractArray,
-    extras,
-    ::AbstractImplem,
-    ::ForwardMode,
+    grad::AbstractArray, backend::AbstractADType, f, x::AbstractArray, extras, ::ForwardMode
 )
     y = f(x)
     for j in eachindex(IndexCartesian(), x)
         dx_j = basisarray(backend, x, j)
-        grad[j] = pushforward!(grad[j], backend, f, x, dx_j, extras)
+        # don't use gradient extras for a pushforward
+        grad[j] = pushforward!(grad[j], backend, f, x, dx_j)
     end
     return y, grad
 end
 
 function value_and_gradient!(
-    grad::AbstractArray,
-    backend::AbstractADType,
-    f,
-    x::AbstractArray,
-    extras,
-    ::AbstractImplem,
-    ::ReverseMode,
+    grad::AbstractArray, backend::AbstractADType, f, x::AbstractArray, extras, ::ReverseMode
 )
     y = f(x)
-    return y, pullback!(grad, backend, f, x, one(y), extras)
+    # don't use gradient extras for a pullback
+    return y, pullback!(grad, backend, f, x, one(y))
 end
 
 """

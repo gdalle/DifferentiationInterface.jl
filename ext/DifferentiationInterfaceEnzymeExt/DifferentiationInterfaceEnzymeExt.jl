@@ -1,7 +1,6 @@
 module DifferentiationInterfaceEnzymeExt
 
 using ADTypes: AutoEnzyme
-using DifferentiationInterface: CustomImplem
 import DifferentiationInterface as DI
 using DocStringExtensions
 using Enzyme:
