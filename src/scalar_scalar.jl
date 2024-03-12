@@ -8,13 +8,11 @@ function value_and_derivative(backend::AbstractADType, f, x::Number, extras=noth
 end
 
 function value_and_derivative(backend::AbstractADType, f, x::Number, extras, ::ForwardMode)
-    # don't use derivative extras for a pushforward
-    return value_and_pushforward(backend, f, x, one(x))
+    return value_and_pushforward(backend, f, x, one(x), extras)
 end
 
 function value_and_derivative(backend::AbstractADType, f, x::Number, extras, ::ReverseMode)
-    # don't use derivative extras for a pullback
-    return value_and_pullback(backend, f, x, one(x))
+    return value_and_pullback(backend, f, x, one(x), extras)
 end
 
 """

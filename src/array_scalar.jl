@@ -15,8 +15,7 @@ function value_and_gradient!(
     y = f(x)
     for j in eachindex(IndexCartesian(), x)
         dx_j = basisarray(backend, x, j)
-        # don't use gradient extras for a pushforward
-        grad[j] = pushforward!(grad[j], backend, f, x, dx_j)
+        grad[j] = pushforward!(grad[j], backend, f, x, dx_j, extras)
     end
     return y, grad
 end
@@ -25,8 +24,7 @@ function value_and_gradient!(
     grad::AbstractArray, backend::AbstractADType, f, x::AbstractArray, extras, ::ReverseMode
 )
     y = f(x)
-    # don't use gradient extras for a pullback
-    return y, pullback!(grad, backend, f, x, one(y))
+    return y, pullback!(grad, backend, f, x, one(y), extras)
 end
 
 """

@@ -14,8 +14,7 @@ end
 function value_and_multiderivative!(
     multider::AbstractArray, backend::AbstractADType, f, x::Number, extras, ::ForwardMode
 )
-    # don't use multiderivative extras for a pushforward
-    return value_and_pushforward!(multider, backend, f, x, one(x))
+    return value_and_pushforward!(multider, backend, f, x, one(x), extras)
 end
 
 function value_and_multiderivative!(
@@ -24,8 +23,7 @@ function value_and_multiderivative!(
     y = f(x)
     for i in eachindex(IndexCartesian(), y)
         dy_i = basisarray(backend, y, i)
-        # don't use multiderivative extras for a pullback
-        multider[i] = pullback!(multider[i], backend, f, x, dy_i)
+        multider[i] = pullback!(multider[i], backend, f, x, dy_i, extras)
     end
     return y, multider
 end

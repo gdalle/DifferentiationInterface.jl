@@ -34,8 +34,7 @@ function value_and_jacobian!(
     for (k, j) in enumerate(eachindex(IndexCartesian(), x))
         dx_j = basisarray(backend, x, j)
         jac_col_j = reshape(view(jac, :, k), size(y))
-        # don't use jacobian extras for a pushforward
-        pushforward!(jac_col_j, backend, f, x, dx_j)
+        pushforward!(jac_col_j, backend, f, x, dx_j, extras)
     end
     return y, jac
 end
@@ -48,8 +47,7 @@ function value_and_jacobian!(
     for (k, i) in enumerate(eachindex(IndexCartesian(), y))
         dy_i = basisarray(backend, y, i)
         jac_row_i = reshape(view(jac, k, :), size(x))
-        # don't use jacobian extras for a pullback
-        pullback!(jac_row_i, backend, f, x, dy_i)
+        pullback!(jac_row_i, backend, f, x, dy_i, extras)
     end
     return y, jac
 end
