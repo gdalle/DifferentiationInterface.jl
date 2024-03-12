@@ -2,6 +2,7 @@ using Base: get_extension
 using DifferentiationInterface
 import DifferentiationInterface as DI
 using Documenter
+using DocumenterMermaid
 
 using ADTypes
 using Diffractor: Diffractor
