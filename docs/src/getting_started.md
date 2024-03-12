@@ -3,12 +3,12 @@
 ## [Operators](@id operators)
 
 Depending on the type of input and output, differentiation operators can have various names.
-We choose the following terminology for the utilities we provide:
+We choose the following terminology for the ones we provide:
 
-|                  | **scalar output**   | **array output**  |
-| ---------------- | ------------------- | ----------------- |
-| **array input**  | `gradient`          | `jacobian`        |
-| **scalar input** | `derivative`        | `multiderivative` |
+|                  | **scalar output** | **array output**  |
+| ---------------- | ----------------- | ----------------- |
+| **scalar input** | `derivative`      | `multiderivative` |
+| **array input**  | `gradient`        | `jacobian`        |
 
 Most backends have custom implementations for all of these, which we reuse whenever possible.
 
@@ -16,14 +16,14 @@ Most backends have custom implementations for all of these, which we reuse whene
 
 Whenever it makes sense, four variants of the same operator are defined:
 
-| **Operator**      | **non-mutating**          | **mutating**                 | **non-mutating with primal**        | **mutating with primal**             |
-|:------------------|:--------------------------|:-----------------------------|:------------------------------------|:-------------------------------------|
-| Gradient          | [`gradient`](@ref)        | [`gradient!`](@ref)          | [`value_and_gradient`](@ref)        | [`value_and_gradient!`](@ref)        |
-| Jacobian          | [`jacobian`](@ref)        | [`jacobian!`](@ref)          | [`value_and_jacobian`](@ref)        | [`value_and_jacobian!`](@ref)        |
-| Multiderivative   | [`multiderivative`](@ref) | [`multiderivative!`](@ref)   | [`value_and_multiderivative`](@ref) | [`value_and_multiderivative!`](@ref) |
-| Derivative        | [`derivative`](@ref)      | N/A                          | [`value_and_derivative`](@ref)      | N/A                                  | 
-| Pullback (VJP)    | [`pullback`](@ref)        | [`pullback!`](@ref)          | [`value_and_pullback`](@ref)        | [`value_and_pullback!`](@ref)        |
-| Pushforward (JVP) | [`pushforward`](@ref)     | [`pushforward!`](@ref)       | [`value_and_pushforward`](@ref)     | [`value_and_pushforward!`](@ref)     |
+| **Operator**      | **non-mutating**          | **mutating**               | **non-mutating with primal**        | **mutating with primal**             |
+| :---------------- | :------------------------ | :------------------------- | :---------------------------------- | :----------------------------------- |
+| Derivative        | [`derivative`](@ref)      | N/A                        | [`value_and_derivative`](@ref)      | N/A                                  |
+| Multiderivative   | [`multiderivative`](@ref) | [`multiderivative!`](@ref) | [`value_and_multiderivative`](@ref) | [`value_and_multiderivative!`](@ref) |
+| Gradient          | [`gradient`](@ref)        | [`gradient!`](@ref)        | [`value_and_gradient`](@ref)        | [`value_and_gradient!`](@ref)        |
+| Jacobian          | [`jacobian`](@ref)        | [`jacobian!`](@ref)        | [`value_and_jacobian`](@ref)        | [`value_and_jacobian!`](@ref)        |
+| Pushforward (JVP) | [`pushforward`](@ref)     | [`pushforward!`](@ref)     | [`value_and_pushforward`](@ref)     | [`value_and_pushforward!`](@ref)     |
+| Pullback (VJP)    | [`pullback`](@ref)        | [`pullback!`](@ref)        | [`value_and_pullback`](@ref)        | [`value_and_pullback!`](@ref)        |
 
 Note that scalar outputs can't be mutated, which is why `derivative` doesn't have mutating variants.
 
@@ -33,17 +33,18 @@ In many cases, automatic differentiation can be accelerated if the function has 
 This is a backend-specific procedure, but we expose a common syntax to achieve it.
 
 | **Operator**      | **preparation function**          |
-|:------------------|:----------------------------------|
+| :---------------- | :-------------------------------- |
+| Derivative        | [`prepare_derivative`](@ref)      |
+| Multiderivative   | [`prepare_multiderivative`](@ref) |
 | Gradient          | [`prepare_gradient`](@ref)        |
 | Jacobian          | [`prepare_jacobian`](@ref)        |
-| Multiderivative   | [`prepare_multiderivative`](@ref) |
-| Derivative        | [`prepare_derivative`](@ref)      |
-| Pullback (VJP)    | [`prepare_pullback`](@ref)        |
 | Pushforward (JVP) | [`prepare_pushforward`](@ref)     |
+| Pullback (VJP)    | [`prepare_pullback`](@ref)        |
 
 If you run `prepare_operator(backend, f, x)`, it will create an object called `extras` containing the necessary information to speed up `operator` and its variants.
 This information is specific to `backend` and `f`, as well as the _type and size_ of the input `x`, but it should work with different _values_ of `x`.
-You can them call `operator(backend, f, similar_x, extras)`, which should be faster than `operator(backend, f, similar_x)`.
+
+You can then call `operator(backend, f, similar_x, extras)`, which should be faster than `operator(backend, f, similar_x)`.
 This is especially worth it if you plan to call `operator` several times in similar settings: you can think of it as a warm up.
 
 By default, all the preparation functions return `nothing`.
