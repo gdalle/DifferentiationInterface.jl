@@ -69,6 +69,6 @@ julia> grad
 
 Goals for future releases:
 
-- support backend-specific cache objects
+- implement backend-specific cache objects
 - support in-place functions `f!(y, x)`
 - define user-facing functions to test and benchmark backends against each other

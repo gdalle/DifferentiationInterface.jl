@@ -63,7 +63,7 @@ makedocs(;
         canonical="https://gdalle.github.io/DifferentiationInterface.jl",
         edit_link="main",
     ),
-    pages=["Home" => "index.md", "design.md", "interface.md"],
+    pages=["Home" => "index.md", "design.md", "api.md"],
 )
 
 deploydocs(; repo="github.com/gdalle/DifferentiationInterface.jl", devbranch="main")

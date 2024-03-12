@@ -4,43 +4,28 @@
 Compute the primal value `y = f(x)` and the (array-valued) derivative `multider = f'(x)` of a scalar-to-array function, overwriting `multider` if possible.
 """
 function value_and_multiderivative!(
-    multider::AbstractArray,
-    backend::AbstractADType,
-    f,
-    x::Number,
-    extras=nothing,
-    implem::AbstractImplem=CustomImplem(),
+    multider::AbstractArray, backend::AbstractADType, f, x::Number, extras=nothing
 )
     return value_and_multiderivative!(
-        multider, backend, f, x, extras, implem, autodiff_mode(backend)
+        multider, backend, f, x, extras, autodiff_mode(backend)
     )
 end
 
 function value_and_multiderivative!(
-    multider::AbstractArray,
-    backend::AbstractADType,
-    f,
-    x::Number,
-    extras,
-    ::AbstractImplem,
-    ::ForwardMode,
+    multider::AbstractArray, backend::AbstractADType, f, x::Number, extras, ::ForwardMode
 )
-    return value_and_pushforward!(multider, backend, f, x, one(x), extras)
+    # don't use multiderivative extras for a pushforward
+    return value_and_pushforward!(multider, backend, f, x, one(x))
 end
 
 function value_and_multiderivative!(
-    multider::AbstractArray,
-    backend::AbstractADType,
-    f,
-    x::Number,
-    extras,
-    ::AbstractImplem,
-    ::ReverseMode,
+    multider::AbstractArray, backend::AbstractADType, f, x::Number, extras, ::ReverseMode
 )
     y = f(x)
     for i in eachindex(IndexCartesian(), y)
         dy_i = basisarray(backend, y, i)
-        multider[i] = pullback!(multider[i], backend, f, x, dy_i, extras)
+        # don't use multiderivative extras for a pullback
+        multider[i] = pullback!(multider[i], backend, f, x, dy_i)
     end
     return y, multider
 end

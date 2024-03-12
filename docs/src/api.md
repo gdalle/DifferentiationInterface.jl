@@ -3,14 +3,11 @@ CurrentModule = DifferentiationInterface
 CollapsedDocStrings = true
 ```
 
-# Interface
+# API reference
 
 ```@docs
 DifferentiationInterface
 ```
-
-In every function below, the `extras` argument is meant to contain a backend-specific cache for optimal memory reuse.
-This will be implemented in a future release.
 
 ## Utilities
 
@@ -58,13 +55,20 @@ Modules = [DifferentiationInterface]
 Pages = ["pullback.jl"]
 ```
 
+## Preparation
+
+```@autodocs
+Modules = [DifferentiationInterface]
+Pages = ["prepare.jl"]
+```
+
 ## Internals
 
 These are not part of the public API.
 
 ```@autodocs
 Modules = [DifferentiationInterface]
-Pages = ["backends.jl", "implem.jl", "mode.jl", "utils.jl"]
+Pages = ["backends.jl", "mode.jl", "utils.jl"]
 Public = false
 ```
 

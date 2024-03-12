@@ -3,7 +3,7 @@ module DifferentiationInterfaceChainRulesCoreExt
 using ADTypes: AutoChainRules
 using ChainRulesCore:
     HasForwardsMode, HasReverseMode, NoTangent, RuleConfig, frule_via_ad, rrule_via_ad
-using DifferentiationInterface: CustomImplem, update!
+using DifferentiationInterface: update!
 import DifferentiationInterface as DI
 using DocStringExtensions
 

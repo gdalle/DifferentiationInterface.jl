@@ -24,11 +24,7 @@ end
 ## Utilities
 
 function DI.value_and_gradient(
-    ::AutoReverseEnzyme,
-    f,
-    x::AbstractArray,
-    extras::Nothing=nothing,
-    ::CustomImplem=CustomImplem(),
+    ::AutoReverseEnzyme, f, x::AbstractArray, extras::Nothing=nothing
 )
     y = f(x)
     grad = gradient(Reverse, f, x)
@@ -36,12 +32,7 @@ function DI.value_and_gradient(
 end
 
 function DI.value_and_gradient!(
-    grad::AbstractArray,
-    ::AutoReverseEnzyme,
-    f,
-    x::AbstractArray,
-    extras::Nothing=nothing,
-    ::CustomImplem=CustomImplem(),
+    grad::AbstractArray, ::AutoReverseEnzyme, f, x::AbstractArray, extras::Nothing=nothing
 )
     y = f(x)
     gradient!(Reverse, grad, f, x)
