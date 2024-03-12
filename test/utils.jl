@@ -1,7 +1,13 @@
 using ADTypes: AbstractADType
 using DifferentiationInterface
 using DifferentiationInterface:
-    AbstractImplem, CustomImplem, FallbackImplem, ForwardMode, ReverseMode, autodiff_mode
+    AbstractImplem,
+    CustomImplem,
+    FallbackImplem,
+    ForwardMode,
+    ReverseMode,
+    autodiff_mode,
+    handles_types
 using JET
 using Test
 

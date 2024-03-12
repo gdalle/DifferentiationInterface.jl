@@ -1,7 +1,8 @@
 module DifferentiationInterfaceDiffractorExt
 
 import AbstractDifferentiation as AD  # public API for Diffractor
-using DifferentiationInterface: AutoChainRules, AutoDiffractor, update!
+using ADTypes: AutoChainRules, AutoDiffractor
+using DifferentiationInterface: update!
 import DifferentiationInterface as DI
 using Diffractor: DiffractorForwardBackend, DiffractorRuleConfig
 using DocStringExtensions

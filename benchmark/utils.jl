@@ -2,8 +2,8 @@ using ADTypes
 using ADTypes: AbstractADType
 using BenchmarkTools
 using DifferentiationInterface
-using DifferentiationInterface: CustomImplem, FallbackImplem, ForwardMode, ReverseMode
-using DifferentiationInterface: autodiff_mode
+using DifferentiationInterface:
+    CustomImplem, FallbackImplem, ForwardMode, ReverseMode, autodiff_mode, handles_types
 
 const NO_EXTRAS = nothing
 

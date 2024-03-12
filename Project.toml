@@ -40,7 +40,7 @@ DifferentiationInterfaceZygoteExt = ["Zygote"]
 
 [compat]
 AbstractDifferentiation = "0.6"
-ADTypes = "0.2.6"
+ADTypes = "0.2.7"
 ChainRulesCore = "1.19"
 Diffractor = "0.2"
 DiffResults = "1.1"

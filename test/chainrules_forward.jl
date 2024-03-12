@@ -1,4 +1,5 @@
-using DifferentiationInterface: AutoChainRules, CustomImplem, FallbackImplem
+using ADTypes: AutoChainRules
+using DifferentiationInterface: CustomImplem, FallbackImplem
 using Diffractor: DiffractorRuleConfig
 
 test_pushforward(AutoChainRules(DiffractorRuleConfig()), scenarios; type_stability=false);

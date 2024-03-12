@@ -16,13 +16,13 @@ end
 function value_and_derivative(
     backend::AbstractADType, f, x::Number, extras, ::AbstractImplem, ::ForwardMode
 )
-    return value_and_pushforward!(one(x), backend, f, x, one(x), extras)
+    return value_and_pushforward(backend, f, x, one(x), extras)
 end
 
 function value_and_derivative(
     backend::AbstractADType, f, x::Number, extras, ::AbstractImplem, ::ReverseMode
 )
-    return value_and_pullback!(one(x), backend, f, x, one(x), extras)
+    return value_and_pullback(backend, f, x, one(x), extras)
 end
 
 """

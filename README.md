@@ -9,14 +9,16 @@ An interface to various automatic differentiation backends in Julia.
 
 ## Goal
 
-This package provides a backend-agnostic syntax to differentiate functions `f(x) = y`, where `x` and `y` are either numbers or abstract arrays.
+This package provides a backend-agnostic syntax to differentiate functions `f(x) = y`, where `x` and `y` are either real numbers or abstract arrays.
 
-It started out as an experimental redesign for [AbstractDifferentiation.jl](https://github.com/JuliaDiff/AbstractDifferentiation.jl).
+It supports in-place versions of every operator, and ensures type stability whenever possible.
 
 ## Compatibility
 
 We support some of the backends defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl):
 
+- [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl) with `AutoChainRules(ruleconfig)`
+- [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl) with `AutoDiffractor()`
 - [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl) with `AutoEnzyme(Val(:forward))` or `AutoEnzyme(Val(:reverse))`
 - [FiniteDiff.jl](https://github.com/JuliaDiff/FiniteDiff.jl) with `AutoFiniteDiff()`
 - [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl) with `AutoForwardDiff()`
@@ -24,34 +26,49 @@ We support some of the backends defined by [ADTypes.jl](https://github.com/SciML
 - [ReverseDiff.jl](https://github.com/JuliaDiff/ReverseDiff.jl) with `AutoReverseDiff()`
 - [Zygote.jl](https://github.com/FluxML/Zygote.jl) with `AutoZygote()`
 
-We also support two more backends which are not yet part of ADTypes.jl:
-
-- [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl) with `AutoChainRules(ruleconfig)`
-- [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl) with `AutoDiffractor()`
-
-## Design
-
-Each backend must implement only one primitive:
-
-- forward mode: the pushforward, computing a Jacobian-vector product
-- reverse mode: the pullback, computing a vector-Jacobian product
-
-From these primitives, several utilities are defined, depending on the type of the input and output:
-
-|              | scalar output | array output    |
-| ------------ | ------------- | --------------- |
-| scalar input | derivative    | multiderivative |
-| array input  | gradient      | jacobian        |
-
 ## Example
 
-```jldoctest
+Setup:
+
+```jldoctest readme
 julia> import DifferentiationInterface, ADTypes, ForwardDiff
 
 julia> backend = ADTypes.AutoForwardDiff();
 
 julia> f(x) = sum(abs2, x);
+```
 
+Out-of-place gradient:
+
+```jldoctest readme
 julia> DifferentiationInterface.value_and_gradient(backend, f, [1., 2., 3.])
 (14.0, [2.0, 4.0, 6.0])
 ```
+
+In-place gradient:
+
+```jldoctest readme
+julia> grad = zeros(3);
+
+julia> DifferentiationInterface.value_and_gradient!(grad, backend, f, [1., 2., 3.])
+(14.0, [2.0, 4.0, 6.0])
+
+julia> grad
+3-element Vector{Float64}:
+ 2.0
+ 4.0
+ 6.0
+```
+
+## Related packages
+
+- [AbstractDifferentiation.jl](https://github.com/JuliaDiff/AbstractDifferentiation.jl) is the original inspiration for DifferentiationInterface.jl. We aim to be less generic (one input, one output, first order only) but more efficient (type stability, memory reuse).
+- [AutoDiffOperators.jl](https://github.com/oschulz/AutoDiffOperators.jl) is an attempt to bridge ADTypes.jl with AbstractDifferentiation.jl. We provide similar functionality (except for the matrix-like behavior) but cover more backends.
+
+## Roadmap
+
+Goals for future releases:
+
+- support backend-specific cache objects
+- support in-place functions `f!(y, x)`
+- define user-facing functions to test and benchmark backends against each other

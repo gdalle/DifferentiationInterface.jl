@@ -1,4 +1,5 @@
-using DifferentiationInterface: AutoDiffractor, CustomImplem, FallbackImplem
+using ADTypes: AutoDiffractor
+using DifferentiationInterface: CustomImplem, FallbackImplem
 using Diffractor: Diffractor
 
 test_pushforward(AutoDiffractor(), scenarios; type_stability=false);
