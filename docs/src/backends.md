@@ -6,10 +6,6 @@ CollapsedDocStrings = true
 
 ## Types
 
-```@meta
-CurrentModule = ADTypes
-```
-
 The possible backend choices are defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl).
 
 !!! warning
