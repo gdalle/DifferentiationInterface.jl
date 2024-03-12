@@ -40,17 +40,17 @@ function add_pushforward_benchmarks!(
 
     subgroup["value_and_pushforward"]["no extras"] = @benchmarkable begin
         value_and_pushforward($backend, $f, $x, $dx)
-    end
+    end evals = 1
     subgroup["value_and_pushforward!"]["no extras"] = @benchmarkable begin
         value_and_pushforward!($dy, $backend, $f, $x, $dx)
-    end
+    end evals = 1
 
     subgroup["pushforward"]["no extras"] = @benchmarkable begin
         pushforward($backend, $f, $x, $dx)
-    end
+    end evals = 1
     subgroup["pushforward!"]["no extras"] = @benchmarkable begin
         pushforward!($dy, $backend, $f, $x, $dx)
-    end
+    end evals = 1
 
     return nothing
 end
@@ -71,17 +71,17 @@ function add_pullback_benchmarks!(
 
     subgroup["value_and_pullback"]["no extras"] = @benchmarkable begin
         value_and_pullback($backend, $f, $x, $dy)
-    end
+    end evals = 1
     subgroup["value_and_pullback!"]["no extras"] = @benchmarkable begin
         value_and_pullback!($dx, $backend, $f, $x, $dy)
-    end
+    end evals = 1
 
     subgroup["pullback"]["no extras"] = @benchmarkable begin
         pullback($backend, $f, $x, $dy)
-    end
+    end evals = 1
     subgroup["pullback!"]["no extras"] = @benchmarkable begin
         pullback!($dx, $backend, $f, $x, $dy)
-    end
+    end evals = 1
 
     return nothing
 end
@@ -101,11 +101,11 @@ function add_derivative_benchmarks!(
 
         subgroup["value_and_derivative"]["no extras"] = @benchmarkable begin
             value_and_derivative($backend, $f, $x, $NO_EXTRAS, $implem)
-        end
+        end evals = 1
 
         subgroup["derivative"]["no extras"] = @benchmarkable begin
             derivative($backend, $f, $x, $NO_EXTRAS, $implem)
-        end
+        end evals = 1
     end
 
     return nothing
@@ -127,17 +127,17 @@ function add_multiderivative_benchmarks!(
 
         subgroup["value_and_multiderivative"]["no extras"] = @benchmarkable begin
             value_and_multiderivative($backend, $f, $x, $NO_EXTRAS, $implem)
-        end
+        end evals = 1
         subgroup["value_and_multiderivative!"]["no extras"] = @benchmarkable begin
             value_and_multiderivative!($multider, $backend, $f, $x, $NO_EXTRAS, $implem)
-        end
+        end evals = 1
 
         subgroup["multiderivative"]["no extras"] = @benchmarkable begin
             multiderivative($backend, $f, $x, $NO_EXTRAS, $implem)
-        end
+        end evals = 1
         subgroup["multiderivative!"]["no extras"] = @benchmarkable begin
             multiderivative!($multider, $backend, $f, $x, $NO_EXTRAS, $implem)
-        end
+        end evals = 1
     end
 
     return nothing
@@ -159,17 +159,17 @@ function add_gradient_benchmarks!(
 
         subgroup["value_and_gradient"]["no extras"] = @benchmarkable begin
             value_and_gradient($backend, $f, $x, $NO_EXTRAS, $implem)
-        end
+        end evals = 1
         subgroup["value_and_gradient!"]["no extras"] = @benchmarkable begin
             value_and_gradient!($grad, $backend, $f, $x, $NO_EXTRAS, $implem)
-        end
+        end evals = 1
 
         subgroup["gradient"]["no extras"] = @benchmarkable begin
             gradient($backend, $f, $x, $NO_EXTRAS, $implem)
-        end
+        end evals = 1
         subgroup["gradient!"]["no extras"] = @benchmarkable begin
             gradient!($grad, $backend, $f, $x, $NO_EXTRAS, $implem)
-        end
+        end evals = 1
     end
 
     return nothing
@@ -190,17 +190,17 @@ function add_jacobian_benchmarks!(
 
         subgroup["value_and_jacobian"]["no extras"] = @benchmarkable begin
             value_and_jacobian($backend, $f, $x, $NO_EXTRAS, $implem)
-        end
+        end evals = 1
         subgroup["value_and_jacobian!"]["no extras"] = @benchmarkable begin
             value_and_jacobian!($jac, $backend, $f, $x, $NO_EXTRAS, $implem)
-        end
+        end evals = 1
 
         subgroup["jacobian"]["no extras"] = @benchmarkable begin
             jacobian($backend, $f, $x, $NO_EXTRAS, $implem)
-        end
+        end evals = 1
         subgroup["jacobian!"]["no extras"] = @benchmarkable begin
             jacobian!($jac, $backend, $f, $x, $NO_EXTRAS, $implem)
-        end
+        end evals = 1
     end
 
     return nothing
