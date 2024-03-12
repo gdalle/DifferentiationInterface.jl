@@ -15,7 +15,7 @@ DifferentiationInterface
 
 ```@autodocs
 Modules = [DifferentiationInterface]
-Pages = ["derivative.jl"]
+Pages = ["src/derivative.jl"]
 ```
 
 ### Scalar to array
