@@ -191,17 +191,19 @@ end
 
 ## Preparation
 
+function DI.prepare_gradient(::AutoForwardDiff{nothing}, f, x::AbstractArray)
+    return GradientConfig(f, x, Chunk(x))
+end
+
 function DI.prepare_gradient(::AutoForwardDiff{C}, f, x::AbstractArray) where {C}
-    if isnothing(C)
-        error("Chunk size was not set in `AutoForwardDiff(; chunksize)`")
-    end
     return GradientConfig(f, x, Chunk{C}())
 end
 
+function DI.prepare_jacobian(::AutoForwardDiff{nothing}, f, x::AbstractArray)
+    return JacobianConfig(f, x, Chunk(x))
+end
+
 function DI.prepare_jacobian(::AutoForwardDiff{C}, f, x::AbstractArray) where {C}
-    if isnothing(C)
-        error("Chunk size was not set in `AutoForwardDiff(; chunksize)`")
-    end
     return JacobianConfig(f, x, Chunk{C}())
 end
 
