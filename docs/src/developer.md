@@ -15,41 +15,57 @@ Advanced users are welcome to code more backends and submit pull requests!
 
 ## Fallback call structure
 
+!!! note "Edge labels"
+
+    Non-labeled edges in the following graphs correspond to single function calls.
+
+    Edge labels correspond to the amount of function calls when applying operators to a function $f: \mathbb{R}^n \rightarrow \mathbb{R}^m$.
+
+
 ### Forward mode
 
 ```mermaid
 flowchart LR
-    subgraph Pushforward
-    value_and_pushforward!
-    value_and_pushforward --> value_and_pushforward!
-    pushforward! --> value_and_pushforward!
-    pushforward --> value_and_pushforward
+    subgraph Derivative
+        value_and_derivative
+        derivative
     end
 
-    subgraph Derivative
     value_and_derivative --> value_and_pushforward
     derivative --> pushforward
-    end
     
     subgraph Multiderivative
+        value_and_multiderivative!
+        value_and_multiderivative
+        multiderivative!
+        multiderivative
+    end
+
     value_and_multiderivative! --> value_and_pushforward!
     value_and_multiderivative --> value_and_pushforward
     multiderivative! --> pushforward!
     multiderivative --> pushforward
-    end
 
     subgraph Gradient
-    value_and_gradient! --> pushforward
-    value_and_gradient --> value_and_gradient!
-    gradient! --> value_and_gradient!
-    gradient --> value_and_gradient
+        value_and_gradient --> value_and_gradient!
+        gradient! --> value_and_gradient!
+        gradient --> value_and_gradient
     end
 
+    value_and_gradient! --> |n|pushforward
+
     subgraph Jacobian
-    value_and_jacobian! --> pushforward!
-    value_and_jacobian --> value_and_jacobian!
-    jacobian! --> value_and_jacobian!
-    jacobian --> value_and_jacobian
+        value_and_jacobian --> value_and_jacobian!
+        jacobian! --> value_and_jacobian!
+        jacobian --> value_and_jacobian
+    end
+
+    value_and_jacobian! --> |n|pushforward!
+
+    subgraph Pushforward
+        value_and_pushforward --> value_and_pushforward!
+        pushforward! --> value_and_pushforward!
+        pushforward --> value_and_pushforward
     end
 ```
 
@@ -57,36 +73,45 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    subgraph Pullback
-    value_and_pullback!
-    value_and_pullback --> value_and_pullback!
-    pullback! --> value_and_pullback!
-    pullback --> value_and_pullback
-    end
-    
     subgraph Derivative
-    value_and_derivative --> value_and_pullback
-    derivative --> pullback
-    end
-    
-    subgraph Multiderivative
-    value_and_multiderivative! --> pullback
-    value_and_multiderivative --> value_and_multiderivative!
-    multiderivative! --> value_and_multiderivative!
-    multiderivative --> value_and_multiderivative
+        value_and_derivative
+        derivative
     end
 
+    value_and_derivative --> value_and_pullback
+    derivative --> pullback
+    
+    subgraph Multiderivative
+        value_and_multiderivative --> value_and_multiderivative!
+        multiderivative! --> value_and_multiderivative!
+        multiderivative --> value_and_multiderivative
+    end
+
+    value_and_multiderivative! --> |m|pullback
+
     subgraph Gradient
+        value_and_gradient!
+        value_and_gradient
+        gradient!
+        gradient 
+    end
+
     value_and_gradient! --> value_and_pullback!
     value_and_gradient --> value_and_pullback
     gradient! --> pullback!
     gradient --> pullback
-    end
 
     subgraph Jacobian
-    value_and_jacobian! --> pullback!
-    value_and_jacobian --> value_and_jacobian!
-    jacobian! --> value_and_jacobian!
-    jacobian --> value_and_jacobian
+        value_and_jacobian --> value_and_jacobian!
+        jacobian! --> value_and_jacobian!
+        jacobian --> value_and_jacobian
+    end
+
+    value_and_jacobian! --> |m|pullback!
+
+    subgraph Pullback
+        value_and_pullback --> value_and_pullback!
+        pullback! --> value_and_pullback!
+        pullback --> value_and_pullback
     end
 ```
