@@ -23,6 +23,7 @@ include("derivative.jl")
 include("multiderivative.jl")
 include("gradient.jl")
 include("jacobian.jl")
+include("mode_trait.jl")
 include("prepare.jl")
 
 export value_and_pushforward!, value_and_pushforward
