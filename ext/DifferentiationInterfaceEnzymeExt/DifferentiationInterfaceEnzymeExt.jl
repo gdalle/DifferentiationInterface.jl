@@ -5,6 +5,7 @@ import DifferentiationInterface as DI
 using DocStringExtensions
 using Enzyme:
     Active,
+    Const,
     Duplicated,
     Forward,
     Reverse,

@@ -1,6 +1,15 @@
 const AutoReverseEnzyme = AutoEnzyme{Val{:reverse}}
 DI.autodiff_mode(::AutoReverseEnzyme) = DI.ReverseMode()
-DI.handles_output_type(::AutoReverseEnzyme, ::Type{<:AbstractArray}) = false
+
+struct Mutating{F}
+    f::F
+end
+
+function (m::Mutating{F})(y::AbstractArray, x) where {F}
+    # see https://enzymead.github.io/Enzyme.jl/stable/pullbacks/
+    y .= m.f(x)
+    return nothing
+end
 
 ## Primitives
 
@@ -18,6 +27,25 @@ function DI.value_and_pullback!(
     dx .= zero(eltype(dx))
     _, y = autodiff(ReverseWithPrimal, f, Active, Duplicated(x, dx))
     dx .*= dy
+    return y, dx
+end
+
+function DI.value_and_pullback!(
+    _dx, ::AutoReverseEnzyme, f, x::X, dy::Y, extras::Nothing=nothing
+) where {X<:Number,Y<:AbstractArray}
+    y = f(x)
+    mf = Mutating(f)
+    _, new_dx = autodiff(Reverse, mf, Const, Duplicated(y, dy), Active(x))
+    return y, new_dx
+end
+
+function DI.value_and_pullback!(
+    dx, ::AutoReverseEnzyme, f, x::X, dy::Y, extras::Nothing=nothing
+) where {X<:AbstractArray,Y<:AbstractArray}
+    y = f(x)
+    dx .= zero(eltype(dx))
+    mf = Mutating(f)
+    autodiff(Reverse, mf, Const, Duplicated(y, dy), Duplicated(x, dx))
     return y, dx
 end
 
