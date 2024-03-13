@@ -11,10 +11,6 @@ using PolyesterForwardDiff: PolyesterForwardDiff
 using ReverseDiff: ReverseDiff
 using Zygote: Zygote, ZygoteRuleConfig
 
-## Settings
-
-BenchmarkTools.DEFAULT_PARAMETERS.evals = 1
-BenchmarkTools.DEFAULT_PARAMETERS.samples = 100
 BenchmarkTools.DEFAULT_PARAMETERS.seconds = 1
 
 ## Functions
@@ -49,8 +45,8 @@ all_backends = [
     AutoEnzyme(Val(:forward)),
     AutoEnzyme(Val(:reverse)),
     AutoFiniteDiff(),
-    AutoForwardDiff(),
-    AutoPolyesterForwardDiff(; chunksize=4),
+    AutoForwardDiff(; chunksize=2),
+    AutoPolyesterForwardDiff(; chunksize=2),
     AutoReverseDiff(),
     AutoZygote(),
 ]

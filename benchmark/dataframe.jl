@@ -4,20 +4,19 @@ using DataFrames
 using Statistics
 
 function parse_benchmark_results_aux(
-    result::BenchmarkTools.Trial, level=nothing; aggregators=[median, minimum]
+    result::BenchmarkTools.Trial, level=nothing; aggregators=[minimum, median]
 )
-    data = DataFrame(
-        :samples => [length(result.times)],
-        :params_evals => [result.params.evals],
-        :params_samples => [result.params.samples],
-        :params_seconds => [result.params.seconds],
-    )
+    data = DataFrame()
     for agg in aggregators
         data[!, Symbol("time_$agg")] = [agg(result.times)]
         data[!, Symbol("memory_$agg")] = [agg(result.memory)]
         data[!, Symbol("allocs_$agg")] = [agg(result.allocs)]
         data[!, Symbol("gctime_$agg")] = [agg(result.gctimes)]
     end
+    data[!, :samples] = [length(result.times)]
+    data[!, :params_evals] = [result.params.evals]
+    data[!, :params_samples] = [result.params.samples]
+    data[!, :params_seconds] = [result.params.seconds]
     return data
 end
 

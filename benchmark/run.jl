@@ -3,6 +3,7 @@ using BenchmarkTools
 include("benchmarks.jl")
 
 # Run benchmarks locally
+# BenchmarkTools.tune!(SUITE; verbose=true)
 results = BenchmarkTools.run(SUITE; verbose=true)
 
 # Parse into dataframe
