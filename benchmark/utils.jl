@@ -2,7 +2,7 @@ using ADTypes
 using ADTypes: AbstractADType
 using BenchmarkTools
 using DifferentiationInterface
-using DifferentiationInterface: ForwardMode, ReverseMode, autodiff_mode, handles_types
+using DifferentiationInterface: ForwardMode, ReverseMode, autodiff_mode
 
 ## Pretty printing
 
@@ -28,8 +28,7 @@ function add_pushforward_benchmarks!(
     dx = n == 1 ? randn() : randn(n)
     dy = m == 1 ? 0.0 : zeros(m)
 
-    if !isa(autodiff_mode(backend), ForwardMode) ||
-        !handles_types(backend, typeof(x), typeof(dy))
+    if !isa(autodiff_mode(backend), ForwardMode)
         return nothing
     end
 
@@ -61,8 +60,7 @@ function add_pullback_benchmarks!(
     dx = n == 1 ? 0.0 : zeros(n)
     dy = m == 1 ? randn() : randn(m)
 
-    if !isa(autodiff_mode(backend), ReverseMode) ||
-        !handles_types(backend, typeof(x), typeof(dy))
+    if !isa(autodiff_mode(backend), ReverseMode)
         return nothing
     end
 
@@ -93,9 +91,6 @@ function add_derivative_benchmarks!(
     suite::BenchmarkGroup, backend::AbstractADType, f::F, n::Integer, m::Integer
 ) where {F}
     @assert n == m == 1
-    if !handles_types(backend, Number, Number)
-        return nothing
-    end
 
     x = randn()
 
@@ -118,9 +113,6 @@ function add_multiderivative_benchmarks!(
     suite::BenchmarkGroup, backend::AbstractADType, f::F, n::Integer, m::Integer
 ) where {F}
     @assert n == 1
-    if !handles_types(backend, Number, Vector)
-        return nothing
-    end
 
     x = randn()
     multider = zeros(m)
@@ -150,9 +142,6 @@ function add_gradient_benchmarks!(
     suite::BenchmarkGroup, backend::AbstractADType, f::F, n::Integer, m::Integer
 ) where {F}
     @assert m == 1
-    if !handles_types(backend, Vector, Number)
-        return nothing
-    end
 
     x = randn(n)
     grad = zeros(n)
@@ -181,10 +170,6 @@ end
 function add_jacobian_benchmarks!(
     suite::BenchmarkGroup, backend::AbstractADType, f::F, n::Integer, m::Integer
 ) where {F}
-    if !handles_types(backend, Vector, Vector)
-        return nothing
-    end
-
     x = randn(n)
     jac = zeros(m, n)
 

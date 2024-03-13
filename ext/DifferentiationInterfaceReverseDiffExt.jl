@@ -7,10 +7,6 @@ using DocStringExtensions
 using LinearAlgebra: mul!
 using ReverseDiff: gradient, gradient!, jacobian, jacobian!
 
-## Limitations
-
-DI.handles_input_type(::AutoReverseDiff, ::Type{<:Number}) = false
-
 ## Primitives
 
 function DI.value_and_pullback!(
@@ -32,6 +28,15 @@ function DI.value_and_pullback!(
     J = DiffResults.jacobian(res)
     mul!(vec(dx), transpose(J), vec(dy))
     return y, dx
+end
+
+function DI.value_and_pullback!(
+    _dx, backend::AutoReverseDiff, f, x::X, dy::Y, extras::Nothing=nothing
+) where {X<:Number,Y}
+    x_array = [x]
+    dx_array = [zero(x)]
+    y, dx_array = DI.value_and_pullback!(dx_array, backend, f ∘ only, x_array, dy, extras)
+    return y, only(dx_array)
 end
 
 ## Utilities (TODO: use DiffResults)

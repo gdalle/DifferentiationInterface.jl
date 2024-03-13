@@ -35,7 +35,7 @@ function DI.value_and_pullback!(
 ) where {X<:Number,Y<:AbstractArray}
     y = f(x)
     mf = Mutating(f)
-    _, new_dx = autodiff(Reverse, mf, Const, Duplicated(y, dy), Active(x))
+    _, new_dx = only(autodiff(Reverse, mf, Const, Duplicated(y, copy(dy)), Active(x)))
     return y, new_dx
 end
 
@@ -43,9 +43,11 @@ function DI.value_and_pullback!(
     dx, ::AutoReverseEnzyme, f, x::X, dy::Y, extras::Nothing=nothing
 ) where {X<:AbstractArray,Y<:AbstractArray}
     y = f(x)
-    dx .= zero(eltype(dx))
+    dx_righttype = similar(x)
+    dx_righttype .= zero(eltype(dx_righttype))
     mf = Mutating(f)
-    autodiff(Reverse, mf, Const, Duplicated(y, dy), Duplicated(x, dx))
+    autodiff(Reverse, mf, Const, Duplicated(y, copy(dy)), Duplicated(x, dx_righttype))
+    dx .= dx_righttype
     return y, dx
 end
 
