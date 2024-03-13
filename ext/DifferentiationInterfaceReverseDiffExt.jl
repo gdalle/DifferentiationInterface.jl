@@ -34,7 +34,7 @@ function DI.value_and_pullback!(
     _dx, backend::AutoReverseDiff, f, x::X, dy::Y, extras::Nothing=nothing
 ) where {X<:Number,Y}
     x_array = [x]
-    dx_array = [zero(x)]
+    dx_array = similar(x_array)
     y, dx_array = DI.value_and_pullback!(dx_array, backend, f ∘ only, x_array, dy, extras)
     return y, only(dx_array)
 end
