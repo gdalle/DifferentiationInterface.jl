@@ -20,9 +20,10 @@ Advanced users are welcome to code more backends and submit pull requests!
 ```mermaid
 flowchart LR
     subgraph Pushforward
-    pushforward --> value_and_pushforward
+    value_and_pushforward!
     value_and_pushforward --> value_and_pushforward!
     pushforward! --> value_and_pushforward!
+    pushforward --> value_and_pushforward
     end
 
     subgraph Derivative
@@ -57,9 +58,10 @@ flowchart LR
 ```mermaid
 flowchart LR
     subgraph Pullback
-    pullback --> value_and_pullback
+    value_and_pullback!
     value_and_pullback --> value_and_pullback!
     pullback! --> value_and_pullback!
+    pullback --> value_and_pullback
     end
     
     subgraph Derivative
