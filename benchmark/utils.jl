@@ -37,17 +37,17 @@ function add_pushforward_benchmarks!(
 
         subgroup["value_and_pushforward"] = @benchmarkable begin
             value_and_pushforward($backend, $f, $x, $dx, $extras)
-        end evals = 1
+        end
         subgroup["value_and_pushforward!"] = @benchmarkable begin
             value_and_pushforward!($dy, $backend, $f, $x, $dx, $extras)
-        end evals = 1
+        end
 
         subgroup["pushforward"] = @benchmarkable begin
             pushforward($backend, $f, $x, $dx, $extras)
-        end evals = 1
+        end
         subgroup["pushforward!"] = @benchmarkable begin
             pushforward!($dy, $backend, $f, $x, $dx, $extras)
-        end evals = 1
+        end
     end
 
     return nothing
@@ -71,17 +71,17 @@ function add_pullback_benchmarks!(
 
         subgroup["value_and_pullback"] = @benchmarkable begin
             value_and_pullback($backend, $f, $x, $dy, $extras)
-        end evals = 1
+        end
         subgroup["value_and_pullback!"] = @benchmarkable begin
             value_and_pullback!($dx, $backend, $f, $x, $dy, $extras)
-        end evals = 1
+        end
 
         subgroup["pullback"] = @benchmarkable begin
             pullback($backend, $f, $x, $dy, $extras)
-        end evals = 1
+        end
         subgroup["pullback!"] = @benchmarkable begin
             pullback!($dx, $backend, $f, $x, $dy, $extras)
-        end evals = 1
+        end
     end
 
     return nothing
@@ -99,11 +99,11 @@ function add_derivative_benchmarks!(
 
         subgroup["value_and_derivative"] = @benchmarkable begin
             value_and_derivative($backend, $f, $x, $extras)
-        end evals = 1
+        end
 
         subgroup["derivative"] = @benchmarkable begin
             derivative($backend, $f, $x, $extras)
-        end evals = 1
+        end
     end
 
     return nothing
@@ -122,17 +122,17 @@ function add_multiderivative_benchmarks!(
 
         subgroup["value_and_multiderivative"] = @benchmarkable begin
             value_and_multiderivative($backend, $f, $x, $extras)
-        end evals = 1
+        end
         subgroup["value_and_multiderivative!"] = @benchmarkable begin
             value_and_multiderivative!($multider, $backend, $f, $x, $extras)
-        end evals = 1
+        end
 
         subgroup["multiderivative"] = @benchmarkable begin
             multiderivative($backend, $f, $x, $extras)
-        end evals = 1
+        end
         subgroup["multiderivative!"] = @benchmarkable begin
             multiderivative!($multider, $backend, $f, $x, $extras)
-        end evals = 1
+        end
     end
 
     return nothing
@@ -151,17 +151,17 @@ function add_gradient_benchmarks!(
 
         subgroup["value_and_gradient"] = @benchmarkable begin
             value_and_gradient($backend, $f, $x, $extras)
-        end evals = 1
+        end
         subgroup["value_and_gradient!"] = @benchmarkable begin
             value_and_gradient!($grad, $backend, $f, $x, $extras)
-        end evals = 1
+        end
 
         subgroup["gradient"] = @benchmarkable begin
             gradient($backend, $f, $x, $extras)
-        end evals = 1
+        end
         subgroup["gradient!"] = @benchmarkable begin
             gradient!($grad, $backend, $f, $x, $extras)
-        end evals = 1
+        end
     end
 
     return nothing
@@ -178,17 +178,17 @@ function add_jacobian_benchmarks!(
 
         subgroup["value_and_jacobian"] = @benchmarkable begin
             value_and_jacobian($backend, $f, $x, $extras)
-        end evals = 1
+        end
         subgroup["value_and_jacobian!"] = @benchmarkable begin
             value_and_jacobian!($jac, $backend, $f, $x, $extras)
-        end evals = 1
+        end
 
         subgroup["jacobian"] = @benchmarkable begin
             jacobian($backend, $f, $x, $extras)
-        end evals = 1
+        end
         subgroup["jacobian!"] = @benchmarkable begin
             jacobian!($jac, $backend, $f, $x, $extras)
-        end evals = 1
+        end
     end
 
     return nothing
