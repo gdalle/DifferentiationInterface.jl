@@ -1,6 +1,6 @@
 using ADTypes: AbstractADType
 using DifferentiationInterface
-using DifferentiationInterface: ForwardMode, ReverseMode, autodiff_mode, handles_types
+using DifferentiationInterface: ForwardMode, ReverseMode, autodiff_mode
 using JET
 using Test
 
@@ -23,7 +23,6 @@ function test_pushforward(
     @testset "Pushforward" begin
         for scenario in scenarios
             X, Y = get_input_type(scenario), get_output_type(scenario)
-            handles_types(backend, X, Y) || continue
 
             @testset "$X -> $Y" begin
                 (; f, x, y, dx, dy_true) = scenario
@@ -104,7 +103,6 @@ function test_pullback(
     @testset "Pullback" begin
         for scenario in scenarios
             X, Y = get_input_type(scenario), get_output_type(scenario)
-            handles_types(backend, X, Y) || continue
 
             @testset "$X -> $Y" begin
                 (; f, x, y, dy, dx_true) = scenario
@@ -178,7 +176,6 @@ function test_derivative(
     @testset "Derivative" begin
         for scenario in scenarios
             X, Y = get_input_type(scenario), get_output_type(scenario)
-            handles_types(backend, X, Y) || continue
 
             @testset "$X -> $Y" begin
                 (; f, x, y, der_true) = scenario
@@ -231,7 +228,6 @@ function test_multiderivative(
     @testset "Multiderivative" begin
         for scenario in scenarios
             X, Y = get_input_type(scenario), get_output_type(scenario)
-            handles_types(backend, X, Y) || continue
 
             @testset "$X -> $Y" begin
                 (; f, x, y, multider_true) = scenario
@@ -307,7 +303,6 @@ function test_gradient(
     @testset "Gradient" begin
         for scenario in scenarios
             X, Y = get_input_type(scenario), get_output_type(scenario)
-            handles_types(backend, X, Y) || continue
 
             @testset "$X -> $Y" begin
                 (; f, x, y, grad_true) = scenario
@@ -379,7 +374,6 @@ function test_jacobian(
     @testset "Jacobian" begin
         for scenario in scenarios
             X, Y = get_input_type(scenario), get_output_type(scenario)
-            handles_types(backend, X, Y) || continue
 
             @testset "$X -> $Y" begin
                 (; f, x, y, jac_true) = scenario
