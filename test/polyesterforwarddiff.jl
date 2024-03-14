@@ -1,13 +1,10 @@
 using ADTypes: AutoPolyesterForwardDiff
 using PolyesterForwardDiff: PolyesterForwardDiff
+using DifferentiationInterface.DifferentiationTest
 
-polyesterforwarddiff_backend = AutoPolyesterForwardDiff(; chunksize=2)
-
-test_pushforward(polyesterforwarddiff_backend, scenarios; type_stability=false);
-
-test_jacobian_and_friends(
-    polyesterforwarddiff_backend,
-    scenarios;
+test_all_operators(
+    AutoPolyesterForwardDiff(; chunksize=2),
+    default_scenarios();
     input_type=Union{Number,AbstractVector},
     output_type=Union{Number,AbstractVector},
     type_stability=false,

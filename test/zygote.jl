@@ -1,5 +1,5 @@
 using ADTypes: AutoZygote
 using Zygote: Zygote
+using DifferentiationInterface.DifferentiationTest
 
-test_pullback(AutoZygote(), scenarios; type_stability=false);
-test_jacobian_and_friends(AutoZygote(), scenarios; type_stability=false);
+test_all_operators(AutoZygote(), default_scenarios(); type_stability=false);

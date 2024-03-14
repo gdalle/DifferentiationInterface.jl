@@ -1,5 +1,5 @@
 using ADTypes: AutoEnzyme
 using Enzyme: Enzyme
+using DifferentiationInterface.DifferentiationTest
 
-test_pullback(AutoEnzyme(Val(:reverse)), scenarios; type_stability=true);
-test_jacobian_and_friends(AutoEnzyme(Val(:reverse)), scenarios; type_stability=true);
+test_all_operators(AutoEnzyme(Val(:reverse)), default_scenarios(); type_stability=false);

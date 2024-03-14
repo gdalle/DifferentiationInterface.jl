@@ -2,14 +2,11 @@
 
 using Aqua: Aqua
 using DifferentiationInterface
+using ForwardDiff: ForwardDiff
 using JET: JET
 using JuliaFormatter: JuliaFormatter
+using Random: Random
 using Test
-
-## Utils
-
-include("scenarios.jl");
-include("utils.jl");
 
 ## Main tests
 
@@ -24,6 +21,10 @@ include("utils.jl");
     end
     @testset "JET" begin
         JET.test_package(DifferentiationInterface; target_defined_modules=true)
+    end
+
+    @testset "Zero backend" begin
+        include("zero.jl")
     end
 
     @testset "ChainRules (forward)" begin

@@ -19,3 +19,6 @@ mysimilar(x::AbstractArray) = similar(x)
 
 update!(_old::Number, new::Number) = new
 update!(old, new) = old .= new
+
+zero!(x::Number) = zero(x)
+zero!(x) = x .= zero(eltype(x))

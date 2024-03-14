@@ -64,6 +64,6 @@ These are not part of the public API.
 
 ```@autodocs
 Modules = [DifferentiationInterface]
-Pages = ["backends.jl", "mode.jl", "utils.jl"]
+Pages = ["backends.jl", "mode.jl", "utils.jl", "DifferentiationTest.jl"]
 Public = false
 ```
