@@ -9,7 +9,10 @@ An interface to various automatic differentiation backends in Julia.
 
 ## Goal
 
-This package provides a backend-agnostic syntax to differentiate functions `f(x) = y`, where `x` and `y` are either real numbers or abstract arrays.
+This package provides a backend-agnostic syntax to differentiate functions of two types:
+
+- `f(x) = y` where `x` and `y` are either real numbers or abstract arrays
+- `f!(y, x) = nothing` where `y` is an abstract array and `x` can be a real number or an abstract array
 
 It supports in-place versions of every operator, and ensures type stability whenever possible.
 
@@ -18,7 +21,7 @@ It supports in-place versions of every operator, and ensures type stability when
 We support some of the backends defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl):
 
 | Backend                                                                         | Type                                                       |
-|:--------------------------------------------------------------------------------|:-----------------------------------------------------------|
+| :------------------------------------------------------------------------------ | :--------------------------------------------------------- |
 | [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl)             | `AutoChainRules(ruleconfig)`                               |
 | [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl)                     | `AutoDiffractor()`                                         |
 | [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl)                              | `AutoEnzyme(Val(:forward))` or `AutoEnzyme(Val(:reverse))` |

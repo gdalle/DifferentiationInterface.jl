@@ -14,6 +14,8 @@ using ADTypes:
 using DocStringExtensions
 using FillArrays: OneElement
 
+const NumberOrArray = Union{Number,AbstractArray}
+
 include("backends.jl")
 include("mode.jl")
 include("utils.jl")
