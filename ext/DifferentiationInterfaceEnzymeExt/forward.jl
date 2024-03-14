@@ -4,15 +4,15 @@ DI.autodiff_mode(::AutoForwardEnzyme) = DI.ForwardMode()
 ## Primitives
 
 function DI.value_and_pushforward!(
-    _dy::Y, ::AutoForwardEnzyme, f, x::X, dx, extras::Nothing=nothing
-) where {X,Y<:Real}
+    _dy::Real, ::AutoForwardEnzyme, f, x, dx, extras::Nothing=nothing
+)
     y, new_dy = autodiff(Forward, f, Duplicated, Duplicated(x, dx))
     return y, new_dy
 end
 
 function DI.value_and_pushforward!(
-    dy::Y, ::AutoForwardEnzyme, f, x::X, dx, extras::Nothing=nothing
-) where {X,Y<:AbstractArray}
+    dy::AbstractArray, ::AutoForwardEnzyme, f, x, dx, extras::Nothing=nothing
+)
     y, new_dy = autodiff(Forward, f, Duplicated, Duplicated(x, dx))
     dy .= new_dy
     return y, dy

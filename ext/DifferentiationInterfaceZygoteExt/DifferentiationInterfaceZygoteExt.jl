@@ -8,7 +8,9 @@ using Zygote: ZygoteRuleConfig, gradient, jacobian, pullback, withgradient, with
 
 ## Primitives
 
-function DI.value_and_pullback!(dx, ::AutoZygote, f, x, dy, extras::Nothing=nothing)
+function DI.value_and_pullback!(
+    dx::Union{Number,AbstractArray}, ::AutoZygote, f, x, dy, extras::Nothing=nothing
+)
     y, back = pullback(f, x)
     new_dx = only(back(dy))
     return y, update!(dx, new_dx)

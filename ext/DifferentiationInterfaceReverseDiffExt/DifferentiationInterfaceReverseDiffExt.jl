@@ -10,9 +10,14 @@ using ReverseDiff: gradient, gradient!, jacobian, jacobian!
 ## Primitives
 
 function DI.value_and_pullback!(
-    dx, ::AutoReverseDiff, f, x::X, dy::Y, extras::Nothing=nothing
-) where {X<:AbstractArray,Y<:Real}
-    res = DiffResults.DiffResult(zero(Y), dx)
+    dx::AbstractArray,
+    ::AutoReverseDiff,
+    f,
+    x::AbstractArray,
+    dy::Real,
+    extras::Nothing=nothing,
+)
+    res = DiffResults.DiffResult(zero(dy), dx)
     res = gradient!(res, f, x)
     y = DiffResults.value(res)
     dx .= dy .* DiffResults.gradient(res)
@@ -20,8 +25,13 @@ function DI.value_and_pullback!(
 end
 
 function DI.value_and_pullback!(
-    dx, ::AutoReverseDiff, f, x::X, dy::Y, extras::Nothing=nothing
-) where {X<:AbstractArray,Y<:AbstractArray}
+    dx::AbstractArray,
+    ::AutoReverseDiff,
+    f,
+    x::AbstractArray,
+    dy::AbstractArray,
+    extras::Nothing=nothing,
+)
     res = DiffResults.DiffResult(similar(dy), similar(dy, length(dy), length(x)))
     res = jacobian!(res, f, x)
     y = DiffResults.value(res)
@@ -31,8 +41,8 @@ function DI.value_and_pullback!(
 end
 
 function DI.value_and_pullback!(
-    _dx, backend::AutoReverseDiff, f, x::X, dy::Y, extras::Nothing=nothing
-) where {X<:Number,Y}
+    _dx::Number, backend::AutoReverseDiff, f, x::Number, dy, extras::Nothing=nothing
+)
     x_array = [x]
     dx_array = similar(x_array)
     y, dx_array = DI.value_and_pullback!(dx_array, backend, f ∘ only, x_array, dy, extras)

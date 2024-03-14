@@ -9,16 +9,17 @@ An interface to various automatic differentiation backends in Julia.
 
 ## Goal
 
-This package provides a backend-agnostic syntax to differentiate functions `f(x) = y`, where `x` and `y` are either real numbers or abstract arrays.
+This package provides a backend-agnostic syntax to differentiate functions of the following types:
 
-It supports in-place versions of every operator, and ensures type stability whenever possible.
+- Allocating: `f(x) = y` where `x` and `y` can be real numbers or abstract arrays
+- Mutating: `f!(y, x)` where `y` is an abstract array and `x` can be a real number or an abstract array
 
 ## Compatibility
 
 We support some of the backends defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl):
 
 | Backend                                                                         | Type                                                       |
-|:--------------------------------------------------------------------------------|:-----------------------------------------------------------|
+| :------------------------------------------------------------------------------ | :--------------------------------------------------------- |
 | [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl)             | `AutoChainRules(ruleconfig)`                               |
 | [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl)                     | `AutoDiffractor()`                                         |
 | [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl)                              | `AutoEnzyme(Val(:forward))` or `AutoEnzyme(Val(:reverse))` |
@@ -64,13 +65,12 @@ julia> grad
 
 ## Related packages
 
-- [AbstractDifferentiation.jl](https://github.com/JuliaDiff/AbstractDifferentiation.jl) is the original inspiration for DifferentiationInterface.jl. We aim to be less generic (one input, one output, first order only) but more efficient (type stability, memory reuse).
-- [AutoDiffOperators.jl](https://github.com/oschulz/AutoDiffOperators.jl) is an attempt to bridge ADTypes.jl with AbstractDifferentiation.jl. We provide similar functionality (except for the matrix-like behavior) but cover more backends.
+- [AbstractDifferentiation.jl](https://github.com/JuliaDiff/AbstractDifferentiation.jl) is the original inspiration for DifferentiationInterface.jl.
+- [AutoDiffOperators.jl](https://github.com/oschulz/AutoDiffOperators.jl) is an attempt to bridge ADTypes.jl with AbstractDifferentiation.jl.
 
 ## Roadmap
 
 Goals for future releases:
 
 - implement backend-specific cache objects
-- support in-place functions `f!(y, x)`
 - define user-facing functions to test and benchmark backends against each other

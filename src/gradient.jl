@@ -3,6 +3,8 @@
 
 Compute the primal value `y = f(x)` and the gradient `grad = ∇f(x)` of an array-to-scalar function, overwriting `grad` if possible.
 """
+function value_and_gradient! end
+
 function value_and_gradient!(
     grad::AbstractArray, backend::AbstractADType, f, x::AbstractArray, extras, ::ForwardMode
 )
@@ -25,6 +27,8 @@ end
 
 Compute the primal value `y = f(x)` and the gradient `grad = ∇f(x)` of an array-to-scalar function.
 """
+function value_and_gradient end
+
 function value_and_gradient(
     backend::AbstractADType, f, x::AbstractArray, extras, ::ForwardMode
 )
@@ -43,6 +47,8 @@ end
 
 Compute the gradient `grad = ∇f(x)` of an array-to-scalar function, overwriting `grad` if possible.
 """
+function gradient! end
+
 function gradient!(
     grad::AbstractArray, backend::AbstractADType, f, x::AbstractArray, extras, ::ForwardMode
 )
@@ -60,6 +66,8 @@ end
 
 Compute the gradient `grad = ∇f(x)` of an array-to-scalar function.
 """
+function gradient end
+
 function gradient(backend::AbstractADType, f, x::AbstractArray, extras, ::ForwardMode)
     return last(value_and_gradient(backend, f, x, extras))
 end

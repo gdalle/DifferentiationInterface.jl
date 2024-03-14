@@ -12,11 +12,11 @@ We choose the following terminology for the ones we provide:
 
 Most backends have custom implementations for all of these, which we reuse whenever possible.
 
-### Variants
+## Variants
 
 Whenever it makes sense, four variants of the same operator are defined:
 
-| **Operator**      | **non-mutating**          | **mutating**               | **non-mutating with primal**        | **mutating with primal**             |
+| **Operator**      | **allocating**            | **mutating**               | **allocating with primal**          | **mutating with primal**             |
 | :---------------- | :------------------------ | :------------------------- | :---------------------------------- | :----------------------------------- |
 | Derivative        | [`derivative`](@ref)      | N/A                        | [`value_and_derivative`](@ref)      | N/A                                  |
 | Multiderivative   | [`multiderivative`](@ref) | [`multiderivative!`](@ref) | [`value_and_multiderivative`](@ref) | [`value_and_multiderivative!`](@ref) |
@@ -49,3 +49,22 @@ This is especially worth it if you plan to call `operator` several times in simi
 
 By default, all the preparation functions return `nothing`.
 We do not make any guarantees on their implementation for each backend, or on the performance gains that can be expected.
+
+## Mutating functions
+
+In addition to allocating functions `f(x) = y`, we also support mutating functions `f!(y, x)` whenever the output is an array.
+Since they operate in-place and the primal is computed every time, only four operators are defined:
+
+| **Operator**      | **mutating with primal**             |
+| :---------------- | :----------------------------------- |
+| Multiderivative   | [`value_and_multiderivative!`](@ref) |
+| Jacobian          | [`value_and_jacobian!`](@ref)        |
+| Pushforward (JVP) | [`value_and_pushforward!`](@ref)     |
+| Pullback (VJP)    | [`value_and_pullback!`](@ref)        |
+
+Furthermore, the preparation function takes an additional argument: `prepare_operator(backend, f!, x, y)`.
+
+## Multiple inputs/outputs
+
+Restricting the API to one input and one output has many coding advantages, but it is not very flexible.
+If you need more than that, use [ComponentArrays.jl](https://github.com/jonniedie/ComponentArrays.jl) to wrap several objects inside a single `ComponentVector`.

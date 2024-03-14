@@ -15,16 +15,21 @@ end
 ## Primitives
 
 function DI.value_and_pullback!(
-    _dx, ::AutoReverseEnzyme, f, x::X, dy::Y, extras::Nothing=nothing
-) where {X<:Number,Y<:Union{Real,Nothing}}
+    _dx::Number, ::AutoReverseEnzyme, f, x::Number, dy, extras::Nothing=nothing
+)
     der, y = autodiff(ReverseWithPrimal, f, Active, Active(x))
     new_dx = dy * only(der)
     return y, new_dx
 end
 
 function DI.value_and_pullback!(
-    dx::X, ::AutoReverseEnzyme, f, x::X, dy::Y, extras::Nothing=nothing
-) where {X<:AbstractArray,Y<:Union{Real,Nothing}}
+    dx::AbstractArray,
+    ::AutoReverseEnzyme,
+    f,
+    x::AbstractArray,
+    dy::Number,
+    extras::Nothing=nothing,
+)
     dx .= zero(eltype(dx))
     _, y = autodiff(ReverseWithPrimal, f, Active, Duplicated(x, dx))
     dx .*= dy
@@ -32,8 +37,13 @@ function DI.value_and_pullback!(
 end
 
 function DI.value_and_pullback!(
-    _dx, ::AutoReverseEnzyme, f, x::X, dy::Y, extras::Nothing=nothing
-) where {X<:Number,Y<:AbstractArray}
+    _dx::Number,
+    ::AutoReverseEnzyme,
+    f,
+    x::Number,
+    dy::AbstractArray,
+    extras::Nothing=nothing,
+)
     y = f(x)
     mf! = MakeFunctionMutating(f)
     _, new_dx = only(autodiff(Reverse, mf!, Const, Duplicated(y, copy(dy)), Active(x)))
@@ -41,8 +51,13 @@ function DI.value_and_pullback!(
 end
 
 function DI.value_and_pullback!(
-    dx, ::AutoReverseEnzyme, f, x::X, dy::Y, extras::Nothing=nothing
-) where {X<:AbstractArray,Y<:AbstractArray}
+    dx::AbstractArray,
+    ::AutoReverseEnzyme,
+    f,
+    x::AbstractArray,
+    dy::AbstractArray,
+    extras::Nothing=nothing,
+)
     y = f(x)
     dx_like_x = zero(x)
     mf! = MakeFunctionMutating(f)

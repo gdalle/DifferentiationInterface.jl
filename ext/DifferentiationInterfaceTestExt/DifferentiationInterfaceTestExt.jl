@@ -16,6 +16,7 @@ using Random: AbstractRNG, default_rng, randn!
 using Test: @test, @testset
 
 include("scenarios.jl")
-include("test.jl")
+include("test_non_mutating.jl")
+include("test_mutating.jl")
 
 end

@@ -17,8 +17,8 @@ const FUNCTION_NOT_INPLACE = Val{false}
 ## Primitives
 
 function DI.value_and_pushforward!(
-    dy::Y, ::AutoFiniteDiff{fdtype}, f, x, dx, extras::Nothing=nothing
-) where {Y<:Number,fdtype}
+    _dy::Number, ::AutoFiniteDiff{fdtype}, f, x, dx, extras::Nothing=nothing
+) where {fdtype}
     y = f(x)
     step(t::Number)::Number = f(x .+ t .* dx)
     new_dy = finite_difference_derivative(step, zero(eltype(dx)), fdtype, eltype(y), y)
@@ -26,8 +26,8 @@ function DI.value_and_pushforward!(
 end
 
 function DI.value_and_pushforward!(
-    dy::Y, ::AutoFiniteDiff{fdtype}, f, x, dx, extras::Nothing=nothing
-) where {Y<:AbstractArray,fdtype}
+    dy::AbstractArray, ::AutoFiniteDiff{fdtype}, f, x, dx, extras::Nothing=nothing
+) where {fdtype}
     y = f(x)
     step(t::Number)::AbstractArray = f(x .+ t .* dx)
     finite_difference_gradient!(

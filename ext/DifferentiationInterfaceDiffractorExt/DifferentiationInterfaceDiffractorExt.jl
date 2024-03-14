@@ -16,7 +16,9 @@ function DI.value_and_pushforward(::AutoDiffractor, f, x, dx, extras::Nothing=no
     return y, dy
 end
 
-function DI.value_and_pushforward!(dy, ::AutoDiffractor, f, x, dx, extras::Nothing=nothing)
+function DI.value_and_pushforward!(
+    dy::Union{Number,AbstractArray}, ::AutoDiffractor, f, x, dx, extras::Nothing=nothing
+)
     vpff = AD.value_and_pushforward_function(DiffractorForwardBackend(), f, x)
     y, new_dy = vpff((dx,))
     return y, update!(dy, new_dy)

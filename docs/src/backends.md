@@ -24,6 +24,19 @@ AutoReverseDiff
 AutoZygote
 ```
 
+## Accepted functions
+
+| Backend                    | `f(x) = y` | `f!(y, x)` |
+| -------------------------- | ---------- | ---------- |
+| `AutoChainRules`           | yes        | no         |
+| `AutoDiffractor`           | yes        | no         |
+| `AutoEnzyme`               | yes        | soon       |
+| `AutoForwardDiff`          | yes        | yes        |
+| `AutoFiniteDiff`           | yes        | soon       |
+| `AutoPolyesterForwardDiff` | yes        | soon       |
+| `AutoReverseDiff`          | yes        | soon       |
+| `AutoZygote`               | yes        | no         |
+
 ## Package extensions
 
 ```@meta
