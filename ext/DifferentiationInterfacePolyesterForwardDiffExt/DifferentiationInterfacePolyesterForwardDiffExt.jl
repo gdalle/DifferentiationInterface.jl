@@ -11,7 +11,12 @@ using PolyesterForwardDiff: threaded_gradient!, threaded_jacobian!
 ## Primitives
 
 function DI.value_and_pushforward!(
-    dy, ::AutoPolyesterForwardDiff{C}, f, x, dx, extras::Nothing=nothing
+    dy::Union{Number,AbstractArray},
+    ::AutoPolyesterForwardDiff{C},
+    f,
+    x,
+    dx,
+    extras::Nothing=nothing,
 ) where {C}
     return DI.value_and_pushforward!(
         dy, AutoForwardDiff{C,Nothing}(nothing), f, x, dx, extras

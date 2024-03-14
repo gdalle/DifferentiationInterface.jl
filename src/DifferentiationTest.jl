@@ -15,7 +15,15 @@ using ADTypes: AbstractADType, AbstractForwardMode, AbstractReverseMode
 using DifferentiationInterface: ForwardMode, ReverseMode, autodiff_mode, zero!
 import DifferentiationInterface as DI
 
-@kwdef struct Scenario{F,X,Y,D1,D2,D3,D4}
+@kwdef struct Scenario{
+    F,
+    X<:Union{Number,AbstractArray},
+    Y<:Union{Number,AbstractArray},
+    D1<:Union{Nothing,Number},
+    D2<:Union{Nothing,AbstractArray},
+    D3<:Union{Nothing,AbstractArray},
+    D4<:Union{Nothing,AbstractArray},
+}
     "function"
     f::F
     "argument"
@@ -38,49 +46,79 @@ import DifferentiationInterface as DI
     grad_true::D3 = nothing
     "Jacobian result"
     jac_true::D4 = nothing
+    "mutation"
+    mutating::Bool = false
 end
 
-function make_scenario end
 function default_scenarios end
 function test_pushforward end
+function test_pushforward_mutating end
 function test_pullback end
+function test_pullback_mutating end
 function test_derivative end
 function test_multiderivative end
+function test_multiderivative_mutating end
 function test_gradient end
 function test_jacobian end
+function test_jacobian_mutating end
 function test_all_operators end
+function test_all_operators_mutating end
 
 struct AutoZeroForward <: AbstractForwardMode end
 struct AutoZeroReverse <: AbstractReverseMode end
 
-function DI.value_and_pushforward!(dy, ::AutoZeroForward, f, x, dx, extras=nothing)
+function DI.value_and_pushforward!(
+    dy::Union{Number,AbstractArray}, ::AutoZeroForward, f, x, dx, extras=nothing
+)
     return f(x), zero!(dy)
 end
 
-function DI.value_and_pullback!(dx, ::AutoZeroReverse, f, x, dy, extras=nothing)
+function DI.value_and_pullback!(
+    dx::Union{Number,AbstractArray}, ::AutoZeroReverse, f, x, dy, extras=nothing
+)
     return f(x), zero!(dx)
 end
 
-export Scenario, make_scenario, default_scenarios
+function DI.value_and_pushforward!(
+    y::AbstractArray,
+    dy::Union{Number,AbstractArray},
+    ::AutoZeroForward,
+    f!,
+    x,
+    dx,
+    extras=nothing,
+)
+    f!(y, x)
+    return y, zero!(dy)
+end
+
+function DI.value_and_pullback!(
+    y::AbstractArray,
+    dx::Union{Number,AbstractArray},
+    ::AutoZeroReverse,
+    f!,
+    x,
+    dy,
+    extras=nothing,
+)
+    f!(y, x)
+    return y, zero!(dx)
+end
+
+export Scenario, default_scenarios
 export test_pushforward, test_pullback
+export test_pushforward_mutating, test_pullback_mutating
 export test_derivative, test_multiderivative, test_gradient, test_jacobian
+export test_multiderivative_mutating, test_jacobian_mutating
 export test_all_operators
+export test_all_operators_mutating
 
 # see https://docs.julialang.org/en/v1/base/base/#Base.Experimental.register_error_hint
 
 function __init__()
     Base.Experimental.register_error_hint(MethodError) do io, exc, argtypes, kwargs
-        if exc.f in [
-            make_scenario,
-            default_scenarios,
-            test_pushforward,
-            test_pullback,
-            test_derivative,
-            test_multiderivative,
-            test_gradient,
-            test_jacobian,
-            test_all_operators,
-        ]
+        f_name = string(exc.f)
+        if (contains(f_name, "scenario") || contains(f_name, "test_"))
             print(
                 io,
                 """\n

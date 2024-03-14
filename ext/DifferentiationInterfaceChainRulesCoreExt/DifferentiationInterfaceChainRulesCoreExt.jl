@@ -26,7 +26,12 @@ function DI.value_and_pushforward(
 end
 
 function DI.value_and_pushforward!(
-    dy, backend::AutoForwardChainRules, f, x, dx, extras=nothing
+    dy::Union{Number,AbstractArray},
+    backend::AutoForwardChainRules,
+    f,
+    x,
+    dx,
+    extras=nothing,
 )
     y, new_dy = DI.value_and_pushforward(backend, f, x, dx, extras)
     return y, update!(dy, new_dy)
@@ -42,7 +47,12 @@ function DI.value_and_pullback(
 end
 
 function DI.value_and_pullback!(
-    dx, backend::AutoReverseChainRules, f, x, dy, extras=nothing
+    dx::Union{Number,AbstractArray},
+    backend::AutoReverseChainRules,
+    f,
+    x,
+    dy,
+    extras=nothing,
 )
     y, new_dx = DI.value_and_pullback(backend, f, x, dy, extras)
     return y, update!(dx, new_dx)

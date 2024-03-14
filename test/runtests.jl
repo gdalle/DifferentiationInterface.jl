@@ -1,12 +1,18 @@
 ## Imports
 
 using Aqua: Aqua
+using ChainRulesCore: ChainRulesCore
 using DifferentiationInterface
+using Enzyme: Enzyme
+using FiniteDiff: FiniteDiff
 using ForwardDiff: ForwardDiff
 using JET: JET
 using JuliaFormatter: JuliaFormatter
+using PolyesterForwardDiff: PolyesterForwardDiff
+using ReverseDiff: ReverseDiff
 using Random: Random
 using Test
+using Zygote: Zygote
 
 ## Main tests
 

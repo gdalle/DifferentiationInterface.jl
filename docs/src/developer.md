@@ -21,8 +21,7 @@ Advanced users are welcome to code more backends and submit pull requests!
 
     Edge labels correspond to the amount of function calls when applying operators to a function $f: \mathbb{R}^n \rightarrow \mathbb{R}^m$.
 
-
-### Forward mode
+### Forward mode, allocating functions
 
 ```mermaid
 flowchart LR
@@ -69,7 +68,28 @@ flowchart LR
     end
 ```
 
-### Reverse mode
+### Forward mode, mutating functions
+
+```mermaid
+flowchart LR
+    subgraph Multiderivative
+        value_and_multiderivative!
+    end
+
+    value_and_multiderivative! --> value_and_pushforward!
+
+    subgraph Jacobian
+        value_and_jacobian!
+    end
+
+    value_and_jacobian! --> |n|value_and_pushforward!
+
+    subgraph Pushforward
+        value_and_pushforward!
+    end
+```
+
+### Reverse mode, allocating functions
 
 ```mermaid
 flowchart LR
@@ -113,5 +133,26 @@ flowchart LR
         value_and_pullback --> value_and_pullback!
         pullback! --> value_and_pullback!
         pullback --> value_and_pullback
+    end
+```
+
+### Reverse mode, mutating functions
+
+```mermaid
+flowchart LR
+    subgraph Multiderivative
+        value_and_multiderivative!
+    end
+
+    value_and_multiderivative! --> |m|value_and_pullback!
+
+    subgraph Jacobian
+        value_and_jacobian!
+    end
+
+    value_and_jacobian! --> |m|value_and_pullback!
+
+    subgraph Pullback
+        value_and_pullback!
     end
 ```

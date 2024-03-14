@@ -1,5 +1,6 @@
 using Base: get_extension
 using DifferentiationInterface
+using DifferentiationInterface.DifferentiationTest
 import DifferentiationInterface as DI
 using Documenter
 using DocumenterMermaid
@@ -49,6 +50,7 @@ makedocs(;
     modules=[
         ADTypes,
         DifferentiationInterface,
+        DifferentiationInterface.DifferentiationTest,
         ChainRulesCoreExt,
         DiffractorExt,
         EnzymeExt,

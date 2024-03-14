@@ -15,7 +15,7 @@ end
 
 """
     value_and_jacobian!(jac, backend, f, x, [extras]) -> (y, jac)
-    value_and_jacobian!(y, jac, backend, f, x, [extras]) -> (y, jac)
+    value_and_jacobian!(y, jac, backend, f!, x, [extras]) -> (y, jac)
 
 Compute the primal value `y = f(x)` and the Jacobian matrix `jac = ∂f(x)` of an array-to-array function, overwriting `jac` if possible.
 
@@ -45,12 +45,11 @@ function value_and_jacobian!(
     extras,
     ::ForwardMode,
 )
-    f!(y, x)
     check_jac(jac, x, y)
     for (k, j) in enumerate(eachindex(IndexCartesian(), x))
         dx_j = basisarray(backend, x, j)
         jac_col_j = reshape(view(jac, :, k), size(y))
-        pushforward!(y, jac_col_j, backend, f!, x, dx_j, extras)
+        value_and_pushforward!(y, jac_col_j, backend, f!, x, dx_j, extras)
     end
     return y, jac
 end
@@ -77,12 +76,11 @@ function value_and_jacobian!(
     extras,
     ::ReverseMode,
 )
-    f!(y, x)
     check_jac(jac, x, y)
     for (k, i) in enumerate(eachindex(IndexCartesian(), y))
         dy_i = basisarray(backend, y, i)
         jac_row_i = reshape(view(jac, k, :), size(x))
-        pullback!(y, jac_row_i, backend, f!, x, dy_i, extras)
+        value_and_pullback!(y, jac_row_i, backend, f!, x, dy_i, extras)
     end
     return y, jac
 end
@@ -107,7 +105,6 @@ end
 
 """
     jacobian!(jac, backend, f, x, [extras]) -> jac
-    jacobian!(y, jac, backend, f, x, [extras]) -> jac
 
 Compute the Jacobian matrix `jac = ∂f(x)` of an array-to-array function, overwriting `jac` if possible.
 
@@ -124,18 +121,6 @@ function jacobian!(
     ::AbstractMode,
 )
     return last(value_and_jacobian!(jac, backend, f, x, extras))
-end
-
-function jacobian!(
-    y::AbstractArray,
-    jac::AbstractMatrix,
-    backend::AbstractADType,
-    f!,
-    x::AbstractArray,
-    extras,
-    ::AbstractMode,
-)
-    return last(value_and_jacobian!(y, jac, backend, f!, x, extras))
 end
 
 """

@@ -1,4 +1,3 @@
-
 function DT.test_pushforward(
     ba::AbstractADType,
     scenarios::Vector{<:Scenario};
@@ -8,9 +7,9 @@ function DT.test_pushforward(
     type_stability::Bool=true,
 )
     scenarios = filter(scenarios) do s
-        in_type(s) <: input_type && out_type(s) <: output_type
+        in_type(s) <: input_type && out_type(s) <: output_type && !mutating(s)
     end
-    @testset "Pushforward $(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
+    @testset "Pushforward: $(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
         (; f, x, y, dx, dy_true) = scen
         extras = prepare_pushforward(ba, f, x)
         @testset "Extras: $(isempty(maybe_extras))" for maybe_extras in ((), (extras,))
@@ -61,9 +60,9 @@ function DT.test_pullback(
     type_stability::Bool=true,
 )
     scenarios = filter(scenarios) do s
-        (in_type(s) <: input_type) && (out_type(s) <: output_type)
+        in_type(s) <: input_type && out_type(s) <: output_type && !mutating(s)
     end
-    @testset "Pullback $(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
+    @testset "Pullback: $(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
         (; f, x, y, dy, dx_true) = scen
         extras = prepare_pullback(ba, f, x)
         @testset "Extras: $(isempty(maybe_extras))" for maybe_extras in ((), (extras,))
@@ -115,9 +114,11 @@ function DT.test_derivative(
 )
     scenarios = filter(scenarios) do s
         in_type(s) <: typeintersect(input_type, Number) &&
-            out_type(s) <: typeintersect(output_type, Number)
+            out_type(s) <: typeintersect(output_type, Number) &&
+            !mutating(s)
     end
-    @testset "Derivative $(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
+    @testset "Derivative: $(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
+        @assert !scen.mutating
         (; f, x, y, der_true) = scen
         extras = prepare_derivative(ba, f, x)
         @testset "Extras: $(isempty(maybe_extras))" for maybe_extras in ((), (extras,))
@@ -154,9 +155,10 @@ function DT.test_multiderivative(
 )
     scenarios = filter(scenarios) do s
         in_type(s) <: typeintersect(input_type, Number) &&
-            out_type(s) <: typeintersect(output_type, AbstractArray)
+            out_type(s) <: typeintersect(output_type, AbstractArray) &&
+            !mutating(s)
     end
-    @testset "Multiderivative $(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
+    @testset "Multiderivative: $(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
         (; f, x, y, multider_true) = scen
         extras = prepare_multiderivative(ba, f, x)
         @testset "Extras: $(isempty(maybe_extras))" for maybe_extras in ((), (extras,))
@@ -210,9 +212,10 @@ function DT.test_gradient(
 )
     scenarios = filter(scenarios) do s
         in_type(s) <: typeintersect(input_type, AbstractArray) &&
-            out_type(s) <: typeintersect(output_type, Number)
+            out_type(s) <: typeintersect(output_type, Number) &&
+            !mutating(s)
     end
-    @testset "Gradient $(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
+    @testset "Gradient: $(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
         (; f, x, y, grad_true) = scen
         extras = prepare_gradient(ba, f, x)
         @testset "Extras: $(isempty(maybe_extras))" for maybe_extras in ((), (extras,))
@@ -262,9 +265,11 @@ function DT.test_jacobian(
 )
     scenarios = filter(scenarios) do s
         in_type(s) <: typeintersect(input_type, AbstractArray) &&
-            out_type(s) <: typeintersect(output_type, AbstractArray)
+            out_type(s) <: typeintersect(output_type, AbstractArray) &&
+            !mutating(s)
     end
-    @testset "Jacobian $(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
+    @testset "Jacobian: $(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
+        @assert !scen.mutating
         (; f, x, y, jac_true) = scen
         extras = prepare_jacobian(ba, f, x)
         @testset "Extras: $(isempty(maybe_extras))" for maybe_extras in ((), (extras,))

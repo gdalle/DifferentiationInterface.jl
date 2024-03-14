@@ -1,41 +1,69 @@
 """
     prepare_pullback(backend, f, x) -> extras
+    prepare_pullback(backend, f!, x, y) -> extras
 
 Create an `extras` object that can be given to pullback operators.
 """
-prepare_pullback(backend::AbstractADType, f, x) = nothing
+function prepare_pullback end
+
+prepare_pullback(::AbstractADType, f, x::Union{Number,AbstractArray}) = nothing
+function prepare_pullback(
+    ::AbstractADType, f!, x::Union{Number,AbstractArray}, y::Union{Number,AbstractArray}
+)
+    return nothing
+end
 
 """
     prepare_pushforward(backend, f, x) -> extras
+    prepare_pushforward(backend, f!, x, y) -> extras
 
 Create an `extras` object that can be given to pushforward operators.
 """
-prepare_pushforward(backend::AbstractADType, f, x) = nothing
+function prepare_pushforward end
+
+prepare_pushforward(::AbstractADType, f, x::Union{Number,AbstractArray}) = nothing
+function prepare_pushforward(
+    ::AbstractADType, f!, x::Union{Number,AbstractArray}, y::Union{Number,AbstractArray}
+)
+    return nothing
+end
 
 """
     prepare_derivative(backend, f, x) -> extras
 
 Create an `extras` object that can be given to derivative operators.
 """
-prepare_derivative(backend::AbstractADType, f, x::Number) = nothing
+function prepare_derivative end
+
+prepare_derivative(::AbstractADType, f, x::Number) = nothing
 
 """
     prepare_multiderivative(backend, f, x) -> extras
+    prepare_multiderivative(backend, f!, x, y) -> extras
 
 Create an `extras` object that can be given to multiderivative operators.
 """
-prepare_multiderivative(backend::AbstractADType, f, x::Number) = nothing
+function prepare_multiderivative end
+
+prepare_multiderivative(::AbstractADType, f, x::Number) = nothing
+prepare_multiderivative(::AbstractADType, f!, x::Number, y::AbstractArray) = nothing
 
 """
     prepare_gradient(backend, f, x) -> extras
 
 Create an `extras` object that can be given to gradient operators.
 """
-prepare_gradient(backend::AbstractADType, f, x::AbstractArray) = nothing
+function prepare_gradient end
+
+prepare_gradient(::AbstractADType, f, x::AbstractArray) = nothing
 
 """
     prepare_jacobian(backend, f, x) -> extras
+    prepare_jacobian(backend, f!, x, y) -> extras
 
 Create an `extras` object that can be given to jacobian operators.
 """
-prepare_jacobian(backend::AbstractADType, f, x::AbstractArray) = nothing
+function prepare_jacobian end
+
+prepare_jacobian(::AbstractADType, f, x::AbstractArray) = nothing
+prepare_jacobian(::AbstractADType, f!, x::AbstractArray, y::AbstractArray) = nothing

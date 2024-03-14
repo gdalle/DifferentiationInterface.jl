@@ -8,7 +8,9 @@ for operator in [
     :gradient,
     :jacobian,
 ]
-    @eval function $operator(backend::AbstractADType, f, x::NumberOrArray, extras=nothing)
+    @eval function $operator(
+        backend::AbstractADType, f, x::Union{Number,AbstractArray}, extras=nothing
+    )
         return $operator(backend, f, x, extras, autodiff_mode(backend))
     end
 end
@@ -24,20 +26,23 @@ for operator in [
     :jacobian!,
 ]
     @eval function $operator(
-        storage, backend::AbstractADType, f, x::NumberOrArray, extras=nothing
+        storage::AbstractArray,
+        backend::AbstractADType,
+        f,
+        x::Union{Number,AbstractArray},
+        extras=nothing,
     )
         return $operator(storage, backend, f, x, extras, autodiff_mode(backend))
     end
 end
 
-for operator in
-    [:value_and_multiderivative!, :value_and_jacobian!, :multiderivative!, :jacobian!]
+for operator in [:value_and_multiderivative!, :value_and_jacobian!]
     @eval function $operator(
         y::AbstractArray,
-        storage,
+        storage::AbstractArray,
         backend::AbstractADType,
         f!,
-        x::NumberOrArray,
+        x::Union{Number,AbstractArray},
         extras=nothing,
     )
         return $operator(y, storage, backend, f!, x, extras, autodiff_mode(backend))

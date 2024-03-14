@@ -9,12 +9,10 @@ An interface to various automatic differentiation backends in Julia.
 
 ## Goal
 
-This package provides a backend-agnostic syntax to differentiate functions of two types:
+This package provides a backend-agnostic syntax to differentiate functions of the following types:
 
-- `f(x) = y` where `x` and `y` are either real numbers or abstract arrays
-- `f!(y, x) = nothing` where `y` is an abstract array and `x` can be a real number or an abstract array
-
-It supports in-place versions of every operator, and ensures type stability whenever possible.
+- Allocating: `f(x) = y` where `x` and `y` can be real numbers or abstract arrays
+- Mutating: `f!(y, x)` where `y` is an abstract array and `x` can be a real number or an abstract array
 
 ## Compatibility
 
@@ -67,13 +65,12 @@ julia> grad
 
 ## Related packages
 
-- [AbstractDifferentiation.jl](https://github.com/JuliaDiff/AbstractDifferentiation.jl) is the original inspiration for DifferentiationInterface.jl. We aim to be less generic (one input, one output, first order only) but more efficient (type stability, memory reuse).
-- [AutoDiffOperators.jl](https://github.com/oschulz/AutoDiffOperators.jl) is an attempt to bridge ADTypes.jl with AbstractDifferentiation.jl. We provide similar functionality (except for the matrix-like behavior) but cover more backends.
+- [AbstractDifferentiation.jl](https://github.com/JuliaDiff/AbstractDifferentiation.jl) is the original inspiration for DifferentiationInterface.jl.
+- [AutoDiffOperators.jl](https://github.com/oschulz/AutoDiffOperators.jl) is an attempt to bridge ADTypes.jl with AbstractDifferentiation.jl.
 
 ## Roadmap
 
 Goals for future releases:
 
 - implement backend-specific cache objects
-- support in-place functions `f!(y, x)`
 - define user-facing functions to test and benchmark backends against each other

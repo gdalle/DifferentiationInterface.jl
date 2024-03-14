@@ -14,9 +14,7 @@ function value_and_pushforward! end
 
 Compute the primal value `y = f(x)` and the Jacobian-vector product `dy = ∂f(x) * dx`.
 """
-function value_and_pushforward(
-    backend::AbstractADType, f, x::NumberOrArray, dx, extras=nothing
-)
+function value_and_pushforward(backend::AbstractADType, f, x, dx, extras=nothing)
     dy = mysimilar(f(x))
     return value_and_pushforward!(dy, backend, f, x, dx, extras)
 end
@@ -29,14 +27,8 @@ Compute the Jacobian-vector product `dy = ∂f(x) * dx`, overwriting `dy` if pos
 """
 function pushforward! end
 
-function pushforward!(dy, backend::AbstractADType, f, x::NumberOrArray, dx, extras=nothing)
+function pushforward!(dy, backend::AbstractADType, f, x, dx, extras=nothing)
     return last(value_and_pushforward!(dy, backend, f, x, dx, extras))
-end
-
-function pushforward!(
-    y::AbstractArray, dy, backend::AbstractADType, f!, x::NumberOrArray, dx, extras=nothing
-)
-    return last(value_and_pushforward!(y, dy, backend, f!, x, dx, extras))
 end
 
 """
@@ -46,6 +38,6 @@ Compute the Jacobian-vector product `dy = ∂f(x) * dx`.
 """
 function pushforward end
 
-function pushforward(backend::AbstractADType, f, x::NumberOrArray, dx, extras=nothing)
+function pushforward(backend::AbstractADType, f, x, dx, extras=nothing)
     return last(value_and_pushforward(backend, f, x, dx, extras))
 end
