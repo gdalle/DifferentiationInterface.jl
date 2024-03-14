@@ -81,7 +81,7 @@ function __init__()
             test_jacobian,
             test_all_operators,
         ]
-            println(
+            print(
                 io,
                 """\n
 HINT: To use the `DifferentiationInterface.DifferentiationTest` submodule, you need to load the `DifferentiationInterfaceTestExt` package extension. Run the following command in your REPL:

@@ -63,7 +63,7 @@ function __init__()
         )
             for T in argtypes
                 if T <: AbstractADType
-                    println(
+                    print(
                         io,
                         """\n
 HINT: To use `DifferentiationInterface` with backend `$T`, you need to load the corresponding package extension.
