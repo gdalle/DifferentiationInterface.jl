@@ -1,5 +1,5 @@
 using ADTypes: AutoEnzyme
 using Enzyme: Enzyme
+using DifferentiationInterface.DifferentiationTest
 
-test_pushforward(AutoEnzyme(Val(:forward)), scenarios; type_stability=true);
-test_jacobian_and_friends(AutoEnzyme(Val(:forward)), scenarios; type_stability=true);
+test_all_operators(AutoEnzyme(Val(:forward)), default_scenarios(); type_stability=false);

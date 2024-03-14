@@ -1,7 +1,7 @@
 using ADTypes: AutoChainRules
 using Zygote: ZygoteRuleConfig
+using DifferentiationInterface.DifferentiationTest
 
-test_pullback(AutoChainRules(ZygoteRuleConfig()), scenarios; type_stability=false);
-test_jacobian_and_friends(
-    AutoChainRules(ZygoteRuleConfig()), scenarios; type_stability=false
+test_all_operators(
+    AutoChainRules(ZygoteRuleConfig()), default_scenarios(); type_stability=false
 );

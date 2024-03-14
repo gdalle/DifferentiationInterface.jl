@@ -1,5 +1,5 @@
 using ADTypes: AutoFiniteDiff
 using FiniteDiff: FiniteDiff
+using DifferentiationInterface.DifferentiationTest
 
-test_pushforward(AutoFiniteDiff(), scenarios; type_stability=true);
-test_jacobian_and_friends(AutoFiniteDiff(), scenarios; type_stability=false);
+test_all_operators(AutoFiniteDiff(), default_scenarios(); type_stability=false);
