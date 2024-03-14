@@ -26,28 +26,54 @@ include("jacobian.jl")
 include("mode_trait.jl")
 include("prepare.jl")
 
+# submodules
+include("DifferentiationTest.jl")
+
 export value_and_pushforward!, value_and_pushforward
-export pushforward!, pushforward
-export prepare_pushforward
-
 export value_and_pullback!, value_and_pullback
-export pullback!, pullback
-export prepare_pullback
-
 export value_and_derivative
-export derivative
-export prepare_derivative
-
 export value_and_multiderivative!, value_and_multiderivative
-export multiderivative!, multiderivative
-export prepare_multiderivative
-
 export value_and_gradient!, value_and_gradient
-export gradient!, gradient
-export prepare_gradient
-
 export value_and_jacobian!, value_and_jacobian
+
+export pushforward!, pushforward
+export pullback!, pullback
+export derivative
+export multiderivative!, multiderivative
+export gradient!, gradient
 export jacobian!, jacobian
+
+export prepare_pushforward
+export prepare_pullback
+export prepare_derivative
+export prepare_multiderivative
+export prepare_gradient
 export prepare_jacobian
+
+function __init__()
+    Base.Experimental.register_error_hint(MethodError) do io, exc, argtypes, kwargs
+        f_name = string(exc.f)
+        if (
+            f_name == "autodiff_mode" ||
+            contains(f_name, "pushforward") ||
+            contains(f_name, "pullback") ||
+            contains(f_name, "derivative") ||
+            contains(f_name, "gradient") ||
+            contains(f_name, "jacobian")
+        )
+            for T in argtypes
+                if T <: AbstractADType
+                    print(
+                        io,
+                        """\n
+HINT: To use `DifferentiationInterface` with backend `$T`, you need to load the corresponding package extension.
+            """,
+                    )
+                    return nothing
+                end
+            end
+        end
+    end
+end
 
 end # module
