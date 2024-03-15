@@ -18,7 +18,7 @@ using Zygote: Zygote
 
 @testset verbose = true "DifferentiationInterface.jl" begin
     @testset "Aqua" begin
-        Aqua.test_all(DifferentiationInterface; deps_compat=(; check_extras=false,))
+        Aqua.test_all(DifferentiationInterface)
     end
     @testset "JuliaFormatter" begin
         @test JuliaFormatter.format(

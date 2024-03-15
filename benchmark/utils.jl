@@ -4,6 +4,8 @@ using BenchmarkTools
 using DifferentiationInterface
 using DifferentiationInterface: ForwardMode, ReverseMode, autodiff_mode
 
+BenchmarkTools.DEFAULT_PARAMETERS.seconds = 1
+
 ## Pretty printing
 
 pretty_backend(::AutoChainRules{<:ZygoteRuleConfig}) = "ChainRules{Zygote}"
@@ -16,7 +18,11 @@ end
 pretty_backend(::AutoFiniteDiff) = "FiniteDiff"
 pretty_backend(::AutoForwardDiff) = "ForwardDiff"
 pretty_backend(::AutoPolyesterForwardDiff) = "PolyesterForwardDiff"
-pretty_backend(::AutoReverseDiff) = "ReverseDiff"
+
+function pretty_backend(backend::AutoReverseDiff)
+    return backend.compile ? "ReverseDiff compiled" : "ReverseDiff"
+end
+
 pretty_backend(::AutoZygote) = "Zygote"
 
 pretty_extras(::Nothing) = "unprepared"
@@ -253,4 +259,122 @@ function add_jacobian_benchmarks!(
     end
 
     return nothing
+end
+
+## Functions
+
+struct Layer{W<:Union{Number,AbstractArray},B<:Union{Number,AbstractArray},S<:Function}
+    w::W
+    b::B
+    σ::S
+end
+
+function (l::Layer{<:Number,<:Number})(x::Number)::Number
+    return l.σ(l.w * x + l.b)
+end
+
+function (l::Layer{<:AbstractVector,<:AbstractVector})(x::Number)::AbstractVector
+    return l.σ.(l.w .* x .+ l.b)
+end
+
+function (l!::Layer{<:AbstractVector,<:AbstractVector})(
+    y::AbstractVector, x::Number
+)::Nothing
+    y .= l!.σ.(l!.w .* x .+ l!.b)
+    return nothing
+end
+
+function (l::Layer{<:AbstractVector,<:Number})(x::AbstractVector)::Number
+    return l.σ(dot(l.w, x) + l.b)
+end
+
+function (l::Layer{<:AbstractMatrix,<:AbstractVector})(x::AbstractVector)::AbstractVector
+    return l.σ.(l.w * x .+ l.b)
+end
+
+function (l!::Layer{<:AbstractMatrix,<:AbstractVector})(
+    y::AbstractVector, x::AbstractVector
+)::Nothing
+    mul!(y, l!.w, x)
+    y .= l!.σ.(y .+ l!.b)
+    return nothing
+end
+
+## Suite
+
+function make_suite(;
+    backends,
+    included::Vector{Symbol}=[
+        :pushforward, :pullback, :derivative, :multiderivative, :gradient, :jacobian
+    ],
+)
+    SUITE = BenchmarkGroup()
+
+    ### Scalar to scalar
+    scalar_to_scalar = Layer(randn(), randn(), tanh)
+
+    for backend in backends
+        if :derivative in included
+            add_derivative_benchmarks!(SUITE, backend, scalar_to_scalar, 1, 1)
+        end
+        if :pushforward in included
+            add_pushforward_benchmarks!(SUITE, backend, scalar_to_scalar, 1, 1)
+        end
+        if :pullback in included
+            add_pullback_benchmarks!(SUITE, backend, scalar_to_scalar, 1, 1)
+        end
+    end
+
+    ### Scalar to vector
+    for m in [10]
+        scalar_to_vector = Layer(randn(m), randn(m), tanh)
+
+        for backend in backends
+            if :multiderivative in included
+                add_multiderivative_benchmarks!(SUITE, backend, scalar_to_vector, 1, m)
+            end
+            if :pushforward in included
+                add_pushforward_benchmarks!(SUITE, backend, scalar_to_vector, 1, m)
+            end
+            if :pullback in included
+                add_pullback_benchmarks!(SUITE, backend, scalar_to_vector, 1, m)
+            end
+        end
+    end
+
+    ### Vector to scalar
+    for n in [10]
+        vector_to_scalar = Layer(randn(n), randn(), tanh)
+
+        for backend in backends
+            if :gradient in included
+                add_gradient_benchmarks!(SUITE, backend, vector_to_scalar, n, 1)
+            end
+            if :pushforward in included
+                add_pushforward_benchmarks!(SUITE, backend, vector_to_scalar, n, 1)
+            end
+            if :pullback in included
+                add_pullback_benchmarks!(SUITE, backend, vector_to_scalar, n, 1)
+            end
+        end
+    end
+
+    ### Vector to vector
+    for (n, m) in [(10, 10)]
+        vector_to_vector = Layer(randn(m, n), randn(m), tanh)
+
+        for backend in backends
+            if :jacobian in included
+                add_jacobian_benchmarks!(SUITE, backend, vector_to_vector, n, m)
+            end
+            if :pushforward in included
+                add_pushforward_benchmarks!(SUITE, backend, vector_to_vector, n, m)
+            end
+            if :pullback in included
+                add_pullback_benchmarks!(SUITE, backend, vector_to_vector, n, m)
+            end
+        end
+    end
+
+    return SUITE
 end

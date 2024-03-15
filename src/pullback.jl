@@ -16,7 +16,7 @@ Compute the primal value `y = f(x)` and the vector-Jacobian product `dx = ∂f(x
 """
 function value_and_pullback end
 
-function value_and_pullback(backend::AbstractADType, f, x, dy, extras=nothing)
+function value_and_pullback(backend::AbstractADType, f, x, dy, extras)
     dx = mysimilar(x)
     return value_and_pullback!(dx, backend, f, x, dy, extras)
 end
@@ -28,7 +28,7 @@ Compute the vector-Jacobian product `dx = ∂f(x)' * dy`, overwriting `dx` if po
 """
 function pullback! end
 
-function pullback!(dx, backend::AbstractADType, f, x, dy, extras=nothing)
+function pullback!(dx, backend::AbstractADType, f, x, dy, extras)
     return last(value_and_pullback!(dx, backend, f, x, dy, extras))
 end
 
@@ -39,6 +39,6 @@ Compute the vector-Jacobian product `dx = ∂f(x)' * dy`.
 """
 function pullback end
 
-function pullback(backend::AbstractADType, f, x, dy, extras=nothing)
+function pullback(backend::AbstractADType, f, x, dy, extras)
     return last(value_and_pullback(backend, f, x, dy, extras))
 end

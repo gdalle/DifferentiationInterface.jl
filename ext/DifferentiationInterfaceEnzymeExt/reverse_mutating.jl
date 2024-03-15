@@ -7,7 +7,7 @@ function DI.value_and_pullback!(
     f!,
     x::Number,
     dy::AbstractArray,
-    extras::Nothing=nothing,
+    extras::Nothing,
 )
     _, dx = only(autodiff(Reverse, f!, Const, Duplicated(y, copy(dy)), Active(x)))
     return y, dx
@@ -20,7 +20,7 @@ function DI.value_and_pullback!(
     f!,
     x::AbstractArray,
     dy::AbstractArray,
-    extras::Nothing=nothing,
+    extras::Nothing,
 )
     dx_sametype = convert(typeof(x), dx)
     dx_sametype .= zero(eltype(dx_sametype))

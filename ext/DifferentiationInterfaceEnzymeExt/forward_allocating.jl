@@ -1,43 +1,39 @@
 ## Primitives
 
 function DI.value_and_pushforward!(
-    _dy::Real, backend::AutoForwardEnzyme, f, x, dx, extras::Nothing=nothing
+    _dy::Real, backend::AutoForwardEnzyme, f, x, dx, extras::Nothing
 )
     y, new_dy = autodiff(backend.mode, f, Duplicated, Duplicated(x, dx))
     return y, new_dy
 end
 
 function DI.value_and_pushforward!(
-    dy::AbstractArray, backend::AutoForwardEnzyme, f, x, dx, extras::Nothing=nothing
+    dy::AbstractArray, backend::AutoForwardEnzyme, f, x, dx, extras::Nothing
 )
     y, new_dy = autodiff(backend.mode, f, Duplicated, Duplicated(x, dx))
     dy .= new_dy
     return y, dy
 end
 
-function DI.pushforward!(
-    _dy::Real, backend::AutoForwardEnzyme, f, x, dx, extras::Nothing=nothing
-)
+function DI.pushforward!(_dy::Real, backend::AutoForwardEnzyme, f, x, dx, extras::Nothing)
     new_dy = only(autodiff(backend.mode, f, DuplicatedNoNeed, Duplicated(x, dx)))
     return new_dy
 end
 
 function DI.pushforward!(
-    dy::AbstractArray, backend::AutoForwardEnzyme, f, x, dx, extras::Nothing=nothing
+    dy::AbstractArray, backend::AutoForwardEnzyme, f, x, dx, extras::Nothing
 )
     new_dy = only(autodiff(backend.mode, f, DuplicatedNoNeed, Duplicated(x, dx)))
     dy .= new_dy
     return dy
 end
 
-function DI.value_and_pushforward(
-    backend::AutoForwardEnzyme, f, x, dx, extras::Nothing=nothing
-)
+function DI.value_and_pushforward(backend::AutoForwardEnzyme, f, x, dx, extras::Nothing)
     y, dy = autodiff(backend.mode, f, Duplicated, Duplicated(x, dx))
     return y, dy
 end
 
-function DI.pushforward(backend::AutoForwardEnzyme, f, x, dx, extras::Nothing=nothing)
+function DI.pushforward(backend::AutoForwardEnzyme, f, x, dx, extras::Nothing)
     dy = only(autodiff(backend.mode, f, DuplicatedNoNeed, Duplicated(x, dx)))
     return dy
 end
@@ -45,7 +41,7 @@ end
 ## Utilities
 
 function DI.value_and_jacobian(
-    backend::AutoForwardEnzyme, f, x::AbstractArray, extras::Nothing=nothing
+    backend::AutoForwardEnzyme, f, x::AbstractArray, extras::Nothing
 )
     y = f(x)
     jac = jacobian(backend.mode, f, x)
