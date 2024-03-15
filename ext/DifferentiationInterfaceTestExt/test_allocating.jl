@@ -1,4 +1,4 @@
-function DT.test_pushforward(
+function test_pushforward_allocating(
     ba::AbstractADType,
     scenarios::Vector{<:Scenario};
     input_type::Type=Any,
@@ -10,7 +10,7 @@ function DT.test_pushforward(
         in_type(s) <: input_type && out_type(s) <: output_type && !mutating(s)
     end
     @testset "Pushforward: $(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
-        (; f, x, y, dx, dy_true) = scen
+        (; f, x, y, dx, dy_true) = deepcopy(scen)
         extras = prepare_pushforward(ba, f, x)
         @testset "Extras: $(isempty(maybe_extras))" for maybe_extras in ((), (extras,))
             y_out1, dy_out1 = value_and_pushforward(ba, f, x, dx, maybe_extras...)
@@ -51,7 +51,7 @@ function DT.test_pushforward(
     end
 end
 
-function DT.test_pullback(
+function test_pullback_allocating(
     ba::AbstractADType,
     scenarios::Vector{<:Scenario};
     input_type::Type=Any,
@@ -63,7 +63,7 @@ function DT.test_pullback(
         in_type(s) <: input_type && out_type(s) <: output_type && !mutating(s)
     end
     @testset "Pullback: $(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
-        (; f, x, y, dy, dx_true) = scen
+        (; f, x, y, dy, dx_true) = deepcopy(scen)
         extras = prepare_pullback(ba, f, x)
         @testset "Extras: $(isempty(maybe_extras))" for maybe_extras in ((), (extras,))
             y_out1, dx_out1 = value_and_pullback(ba, f, x, dy, maybe_extras...)
@@ -104,7 +104,7 @@ function DT.test_pullback(
     end
 end
 
-function DT.test_derivative(
+function test_derivative_allocating(
     ba::AbstractADType,
     scenarios::Vector{<:Scenario};
     input_type::Type=Number,
@@ -118,8 +118,7 @@ function DT.test_derivative(
             !mutating(s)
     end
     @testset "Derivative: $(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
-        @assert !scen.mutating
-        (; f, x, y, der_true) = scen
+        (; f, x, y, der_true) = deepcopy(scen)
         extras = prepare_derivative(ba, f, x)
         @testset "Extras: $(isempty(maybe_extras))" for maybe_extras in ((), (extras,))
             y_out1, der_out1 = value_and_derivative(ba, f, x, maybe_extras...)
@@ -145,7 +144,7 @@ function DT.test_derivative(
     end
 end
 
-function DT.test_multiderivative(
+function test_multiderivative_allocating(
     ba::AbstractADType,
     scenarios::Vector{<:Scenario};
     input_type::Type=Number,
@@ -159,7 +158,7 @@ function DT.test_multiderivative(
             !mutating(s)
     end
     @testset "Multiderivative: $(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
-        (; f, x, y, multider_true) = scen
+        (; f, x, y, multider_true) = deepcopy(scen)
         extras = prepare_multiderivative(ba, f, x)
         @testset "Extras: $(isempty(maybe_extras))" for maybe_extras in ((), (extras,))
             y_out1, multider_out1 = value_and_multiderivative(ba, f, x, maybe_extras...)
@@ -202,7 +201,7 @@ function DT.test_multiderivative(
     end
 end
 
-function DT.test_gradient(
+function test_gradient_allocating(
     ba::AbstractADType,
     scenarios::Vector{<:Scenario};
     input_type::Type=AbstractArray,
@@ -216,7 +215,7 @@ function DT.test_gradient(
             !mutating(s)
     end
     @testset "Gradient: $(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
-        (; f, x, y, grad_true) = scen
+        (; f, x, y, grad_true) = deepcopy(scen)
         extras = prepare_gradient(ba, f, x)
         @testset "Extras: $(isempty(maybe_extras))" for maybe_extras in ((), (extras,))
             y_out1, grad_out1 = value_and_gradient(ba, f, x, maybe_extras...)
@@ -255,7 +254,7 @@ function DT.test_gradient(
     end
 end
 
-function DT.test_jacobian(
+function test_jacobian_allocating(
     ba::AbstractADType,
     scenarios::Vector{<:Scenario};
     input_type::Type=AbstractArray,
@@ -270,7 +269,7 @@ function DT.test_jacobian(
     end
     @testset "Jacobian: $(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
         @assert !scen.mutating
-        (; f, x, y, jac_true) = scen
+        (; f, x, y, jac_true) = deepcopy(scen)
         extras = prepare_jacobian(ba, f, x)
         @testset "Extras: $(isempty(maybe_extras))" for maybe_extras in ((), (extras,))
             y_out1, jac_out1 = value_and_jacobian(ba, f, x, maybe_extras...)
@@ -309,34 +308,51 @@ function DT.test_jacobian(
     end
 end
 
-function DT.test_all_operators(
+"""
+$(TYPEDSIGNATURES)
+"""
+function DT.test_operators_allocating(
     ba::AbstractADType,
-    scenarios::Vector{<:Scenario};
+    scenarios::Vector{<:Scenario}=default_scenarios();
     input_type::Type=Any,
     output_type::Type=Any,
     correctness::Bool=true,
     type_stability::Bool=true,
+    included::Vector{Symbol}=[
+        :pushforward, :pullback, :derivative, :multiderivative, :gradient, :jacobian
+    ],
+    excluded::Vector{Symbol}=Symbol[],
 )
-    if autodiff_mode(ba) isa ForwardMode
-        @testset "Pushforward" test_pushforward(
-            ba, scenarios; input_type, output_type, correctness, type_stability
-        )
-    elseif autodiff_mode(ba) isa ReverseMode
-        @testset "Pullback" test_pullback(
+    kept = symdiff(included, excluded)
+    if autodiff_mode(ba) isa ForwardMode && :pushforward in kept
+        @testset "Pushforward" test_pushforward_allocating(
             ba, scenarios; input_type, output_type, correctness, type_stability
         )
     end
-    @testset "Derivative" test_derivative(
-        ba, scenarios; input_type, output_type, correctness, type_stability
-    )
-    @testset "Multiderivative" test_multiderivative(
-        ba, scenarios; input_type, output_type, correctness, type_stability
-    )
-    @testset "Gradient" test_gradient(
-        ba, scenarios; input_type, output_type, correctness, type_stability
-    )
-    @testset "Jacobian" test_jacobian(
-        ba, scenarios; input_type, output_type, correctness, type_stability
-    )
+    if autodiff_mode(ba) isa ReverseMode && :pullback in kept
+        @testset "Pullback" test_pullback_allocating(
+            ba, scenarios; input_type, output_type, correctness, type_stability
+        )
+    end
+    if :derivative in kept
+        @testset "Derivative" test_derivative_allocating(
+            ba, scenarios; input_type, output_type, correctness, type_stability
+        )
+    end
+    if :multiderivative in kept
+        @testset "Multiderivative" test_multiderivative_allocating(
+            ba, scenarios; input_type, output_type, correctness, type_stability
+        )
+    end
+    if :gradient in kept
+        @testset "Gradient" test_gradient_allocating(
+            ba, scenarios; input_type, output_type, correctness, type_stability
+        )
+    end
+    if :jacobian in kept
+        @testset "Jacobian" test_jacobian_allocating(
+            ba, scenarios; input_type, output_type, correctness, type_stability
+        )
+    end
     return nothing
 end

@@ -28,7 +28,7 @@ choose_chunk(::AutoForwardDiff{C}, x) where {C} = Chunk{C}()
 tag_type(::F, ::V) where {F,V<:Number} = Tag{F,V}
 tag_type(::F, ::AbstractArray{V}) where {F,V<:Number} = Tag{F,V}
 
-include("non_mutating.jl")
+include("allocating.jl")
 include("mutating.jl")
 
 end # module

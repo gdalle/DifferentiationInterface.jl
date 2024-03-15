@@ -1,4 +1,4 @@
-function DT.test_pushforward_mutating(
+function test_pushforward_mutating(
     ba::AbstractADType,
     scenarios::Vector{<:Scenario};
     input_type::Type=Any,
@@ -11,7 +11,7 @@ function DT.test_pushforward_mutating(
     end
     @testset "Pushforward (mutating): $(in_type(scen)) -> $(out_type(scen))" for scen in
                                                                                  scenarios
-        (; f, x, y, dx, dy_true) = scen
+        (; f, x, y, dx, dy_true) = deepcopy(scen)
         f! = f
         extras = prepare_pushforward(ba, f!, x, y)
         @testset "Extras: $(isempty(maybe_extras))" for maybe_extras in ((), (extras,))
@@ -46,9 +46,9 @@ function DT.test_pushforward_mutating(
     end
 end
 
-function DT.test_pullback_mutating(
+function test_pullback_mutating(
     ba::AbstractADType,
-    scenarios::Vector{<:Scenario};
+    scenarios::Vector{<:Scenario}=default_scenarios();
     input_type::Type=Any,
     output_type::Type=Any,
     correctness::Bool=true,
@@ -59,7 +59,7 @@ function DT.test_pullback_mutating(
     end
     @testset "Pullback (mutating): $(in_type(scen)) -> $(out_type(scen))" for scen in
                                                                               scenarios
-        (; f, x, y, dy, dx_true) = scen
+        (; f, x, y, dy, dx_true) = deepcopy(scen)
         f! = f
         extras = prepare_pullback(ba, f!, x, y)
         @testset "Extras: $(isempty(maybe_extras))" for maybe_extras in ((), (extras,))
@@ -94,7 +94,7 @@ function DT.test_pullback_mutating(
     end
 end
 
-function DT.test_multiderivative_mutating(
+function test_multiderivative_mutating(
     ba::AbstractADType,
     scenarios::Vector{<:Scenario};
     input_type::Type=Number,
@@ -109,7 +109,7 @@ function DT.test_multiderivative_mutating(
     end
     @testset "Multiderivative (mutating): $(in_type(scen)) -> $(out_type(scen))" for scen in
                                                                                      scenarios
-        (; f, x, y, multider_true) = scen
+        (; f, x, y, multider_true) = deepcopy(scen)
         f! = f
         extras = prepare_multiderivative(ba, f!, x, y)
         @testset "Extras: $(isempty(maybe_extras))" for maybe_extras in ((), (extras,))
@@ -144,7 +144,7 @@ function DT.test_multiderivative_mutating(
     end
 end
 
-function DT.test_jacobian_mutating(
+function test_jacobian_mutating(
     ba::AbstractADType,
     scenarios::Vector{<:Scenario};
     input_type::Type=AbstractArray,
@@ -159,7 +159,7 @@ function DT.test_jacobian_mutating(
     end
     @testset "Jacobian (mutating): $(in_type(scen)) -> $(out_type(scen))" for scen in
                                                                               scenarios
-        (; f, x, y, jac_true) = scen
+        (; f, x, y, jac_true) = deepcopy(scen)
         f! = f
         extras = prepare_jacobian(ba, f!, x, y)
         @testset "Extras: $(isempty(maybe_extras))" for maybe_extras in ((), (extras,))
@@ -190,28 +190,41 @@ function DT.test_jacobian_mutating(
     end
 end
 
-function DT.test_all_operators_mutating(
+"""
+$(TYPEDSIGNATURES)
+"""
+function DT.test_operators_mutating(
     ba::AbstractADType,
-    scenarios::Vector{<:Scenario};
+    scenarios::Vector{<:Scenario}=default_scenarios();
     input_type::Type=Any,
     output_type::Type=Any,
     correctness::Bool=true,
     type_stability::Bool=true,
+    included::Vector{Symbol}=[
+        :pushforward, :pullback, :derivative, :multiderivative, :gradient, :jacobian
+    ],
+    excluded::Vector{Symbol}=Symbol[],
 )
-    if autodiff_mode(ba) isa ForwardMode
+    kept = symdiff(included, excluded)
+    if autodiff_mode(ba) isa ForwardMode && :pushforward in kept
         @testset "Pushforward (mutating)" test_pushforward_mutating(
             ba, scenarios; input_type, output_type, correctness, type_stability
         )
-    elseif autodiff_mode(ba) isa ReverseMode
+    end
+    if autodiff_mode(ba) isa ReverseMode && :pullback in kept
         @testset "Pullback (mutating)" test_pullback_mutating(
             ba, scenarios; input_type, output_type, correctness, type_stability
         )
     end
-    @testset "Multiderivative (mutating)" test_multiderivative_mutating(
-        ba, scenarios; input_type, output_type, correctness, type_stability
-    )
-    @testset "Jacobian (mutating)" test_jacobian_mutating(
-        ba, scenarios; input_type, output_type, correctness, type_stability
-    )
+    if :multiderivative in kept
+        @testset "Multiderivative (mutating)" test_multiderivative_mutating(
+            ba, scenarios; input_type, output_type, correctness, type_stability
+        )
+    end
+    if :jacobian in kept
+        @testset "Jacobian (mutating)" test_jacobian_mutating(
+            ba, scenarios; input_type, output_type, correctness, type_stability
+        )
+    end
     return nothing
 end
