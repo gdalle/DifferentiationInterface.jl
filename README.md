@@ -11,23 +11,24 @@ An interface to various automatic differentiation backends in Julia.
 
 This package provides a backend-agnostic syntax to differentiate functions of the following types:
 
-- Allocating: `f(x) = y` where `x` and `y` can be real numbers or abstract arrays
-- Mutating: `f!(y, x)` where `y` is an abstract array and `x` can be a real number or an abstract array
+- **Allocating**: `f(x) = y` where `x` and `y` can be real numbers or abstract arrays
+- **Mutating**: `f!(y, x) = nothing` where `y` is an abstract array and `x` can be a real number or an abstract array
 
 ## Compatibility
 
 We support some of the backends defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl):
 
-| Backend                                                                         | Type                                                       |
-| :------------------------------------------------------------------------------ | :--------------------------------------------------------- |
-| [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl)             | `AutoChainRules(ruleconfig)`                               |
-| [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl)                     | `AutoDiffractor()`                                         |
-| [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl)                              | `AutoEnzyme(Val(:forward))` or `AutoEnzyme(Val(:reverse))` |
-| [FiniteDiff.jl](https://github.com/JuliaDiff/FiniteDiff.jl)                     | `AutoFiniteDiff()`                                         |
-| [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl)                   | `AutoForwardDiff()`                                        |
-| [PolyesterForwardDiff.jl](https://github.com/JuliaDiff/PolyesterForwardDiff.jl) | `AutoPolyesterForwardDiff(; chunksize=C)`                  |
-| [ReverseDiff.jl](https://github.com/JuliaDiff/ReverseDiff.jl)                   | `AutoReverseDiff()`                                        |
-| [Zygote.jl](https://github.com/FluxML/Zygote.jl)                                | `AutoZygote()`                                             |
+| Backend                                                                         | Object                                  | Allocating | Mutating |
+| :------------------------------------------------------------------------------ | :-------------------------------------- | :--------- | :------- |
+| [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl)             | `AutoChainRules(ruleconfig)`            | ✓          | ✗        |
+| [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl)                     | `AutoDiffractor()`                      | ✓          | ✗        |
+| [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl) (forward)                    | `AutoEnzyme(Enzyme.Forward)`            | ✓          | ✓        |
+| [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl) (reverse)                    | `AutoEnzyme(Enzyme.Reverse)`            | ✓          | ✓        |
+| [FiniteDiff.jl](https://github.com/JuliaDiff/FiniteDiff.jl)                     | `AutoFiniteDiff()`                      | ✓          | soon     |
+| [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl)                   | `AutoForwardDiff()`                     | ✓          | ✓        |
+| [PolyesterForwardDiff.jl](https://github.com/JuliaDiff/PolyesterForwardDiff.jl) | `AutoPolyesterForwardDiff(; chunksize)` | ✓          | ✓        |
+| [ReverseDiff.jl](https://github.com/JuliaDiff/ReverseDiff.jl)                   | `AutoReverseDiff()`                     | ✓          | ✓        |
+| [Zygote.jl](https://github.com/FluxML/Zygote.jl)                                | `AutoZygote()`                          | ✓          | ✗        |
 
 ## Example
 

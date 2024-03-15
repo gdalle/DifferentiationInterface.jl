@@ -52,7 +52,7 @@ We do not make any guarantees on their implementation for each backend, or on th
 
 ## Mutating functions
 
-In addition to allocating functions `f(x) = y`, we also support mutating functions `f!(y, x)` whenever the output is an array.
+In addition to allocating functions `f(x) = y`, we also support mutating functions `f!(y, x) = nothing` whenever the output is an array (beware that it must return `nothing`).
 Since they operate in-place and the primal is computed every time, only four operators are defined:
 
 | **Operator**      | **mutating with primal**             |

@@ -2,4 +2,5 @@ using ADTypes: AutoEnzyme
 using Enzyme: Enzyme
 using DifferentiationInterface.DifferentiationTest
 
-test_all_operators(AutoEnzyme(Val(:reverse)), default_scenarios(); type_stability=true);
+test_operators_allocating(AutoEnzyme(Enzyme.Reverse));
+test_operators_mutating(AutoEnzyme(Enzyme.Reverse));

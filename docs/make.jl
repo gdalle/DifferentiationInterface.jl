@@ -4,6 +4,9 @@ using DifferentiationInterface.DifferentiationTest
 import DifferentiationInterface as DI
 using Documenter
 using DocumenterMermaid
+using JET
+using Random
+using Test
 
 using ADTypes
 using Diffractor: Diffractor
@@ -23,6 +26,7 @@ PolyesterForwardDiffExt = get_extension(
     DI, :DifferentiationInterfacePolyesterForwardDiffExt
 )
 ReverseDiffExt = get_extension(DI, :DifferentiationInterfaceReverseDiffExt)
+TestExt = get_extension(DI, :DifferentiationInterfaceTestExt)
 ZygoteExt = get_extension(DI, :DifferentiationInterfaceZygoteExt)
 
 DocMeta.setdocmeta!(
@@ -58,6 +62,7 @@ makedocs(;
         ForwardDiffExt,
         PolyesterForwardDiffExt,
         ReverseDiffExt,
+        TestExt,
         ZygoteExt,
     ],
     authors="Guillaume Dalle, Adrian Hill",

@@ -7,24 +7,36 @@ using Enzyme:
     Active,
     Const,
     Duplicated,
+    DuplicatedNoNeed,
     Forward,
+    ForwardMode,
     Reverse,
     ReverseWithPrimal,
+    ReverseMode,
     autodiff,
     gradient,
     gradient!,
     jacobian
 
 """
-    AutoEnzyme(Val(:forward))
-    AutoEnzyme(Val(:reverse))
+    AutoEnzyme(Enzyme.Forward)
+    AutoEnzyme(Enzyme.Reverse)
 
 Construct a forward or reverse mode `AutoEnzyme` backend.
-
-!!! warning
-    This is the mode convention chosen by DifferentiationInterface.jl, for lack of a global consensus (see [ADTypes.jl#24](https://github.com/SciML/ADTypes.jl/issues/24)).
 """
 AutoEnzyme
+
+const AutoForwardEnzyme = AutoEnzyme{<:ForwardMode}
+const AutoReverseEnzyme = AutoEnzyme{<:ReverseMode}
+
+function DI.autodiff_mode(::AutoEnzyme)
+    return error(
+        "You need to specify the Enzyme mode with `AutoEnzyme(Enzyme.Forward)` or `AutoEnzyme(Enzyme.Reverse)`",
+    )
+end
+
+DI.autodiff_mode(::AutoForwardEnzyme) = DI.ForwardMode()
+DI.autodiff_mode(::AutoReverseEnzyme) = DI.ReverseMode()
 
 # Enzyme's `Duplicated(x, dx)` expects both arguments to be of the same type
 function DI.basisarray(::AutoEnzyme, a::AbstractArray{T}, i::CartesianIndex) where {T}
@@ -33,7 +45,10 @@ function DI.basisarray(::AutoEnzyme, a::AbstractArray{T}, i::CartesianIndex) whe
     return b
 end
 
-include("forward.jl")
-include("reverse.jl")
+include("forward_allocating.jl")
+include("forward_mutating.jl")
+
+include("reverse_allocating.jl")
+include("reverse_mutating.jl")
 
 end # module

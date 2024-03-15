@@ -122,7 +122,7 @@ function f!_matrix_matrix(y::AbstractMatrix, x::AbstractMatrix)
     return nothing
 end
 
-function default_scenarios_non_mutating(rng::AbstractRNG)
+function default_scenarios_allocating(rng::AbstractRNG)
     scenarios = [
         Scenario(rng, f_scalar_scalar, 1.0),
         Scenario(rng, f_scalar_vector, 1.0),
@@ -150,7 +150,7 @@ function default_scenarios_mutating(rng::AbstractRNG)
 end
 
 function DT.default_scenarios(rng::AbstractRNG)
-    return vcat(default_scenarios_non_mutating(rng), default_scenarios_mutating(rng))
+    return vcat(default_scenarios_allocating(rng), default_scenarios_mutating(rng))
 end
 
 DT.default_scenarios() = default_scenarios(default_rng())

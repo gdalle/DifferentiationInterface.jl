@@ -23,6 +23,20 @@ function DI.value_and_pushforward!(
     )
 end
 
+function DI.value_and_pushforward!(
+    y::AbstractArray,
+    dy::AbstractArray,
+    ::AutoPolyesterForwardDiff{C},
+    f!,
+    x,
+    dx,
+    extras::Nothing=nothing,
+) where {C}
+    return DI.value_and_pushforward!(
+        y, dy, AutoForwardDiff{C,Nothing}(nothing), f!, x, dx, extras
+    )
+end
+
 ## Utilities
 
 function DI.value_and_gradient!(
@@ -37,6 +51,17 @@ function DI.value_and_gradient!(
     return y, grad
 end
 
+function DI.gradient!(
+    grad::AbstractArray,
+    ::AutoPolyesterForwardDiff{C},
+    f,
+    x::AbstractArray,
+    extras::Nothing=nothing,
+) where {C}
+    threaded_gradient!(f, grad, x, Chunk{C}())
+    return grad
+end
+
 function DI.value_and_jacobian!(
     jac::AbstractMatrix,
     ::AutoPolyesterForwardDiff{C},
@@ -46,6 +71,30 @@ function DI.value_and_jacobian!(
 ) where {C}
     y = f(x)
     threaded_jacobian!(f, jac, x, Chunk{C}())
+    return y, jac
+end
+
+function DI.jacobian!(
+    jac::AbstractMatrix,
+    ::AutoPolyesterForwardDiff{C},
+    f,
+    x::AbstractArray,
+    extras::Nothing=nothing,
+) where {C}
+    threaded_jacobian!(f, jac, x, Chunk{C}())
+    return jac
+end
+
+function DI.value_and_jacobian!(
+    y::AbstractArray,
+    jac::AbstractMatrix,
+    ::AutoPolyesterForwardDiff{C},
+    f!,
+    x::AbstractArray,
+    extras::Nothing=nothing,
+) where {C}
+    f!(y, x)
+    threaded_jacobian!(f!, y, jac, x, Chunk{C}())
     return y, jac
 end
 

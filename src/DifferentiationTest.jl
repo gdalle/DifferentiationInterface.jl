@@ -14,7 +14,15 @@ module DifferentiationTest
 using ADTypes: AbstractADType, AbstractForwardMode, AbstractReverseMode
 using DifferentiationInterface: ForwardMode, ReverseMode, autodiff_mode, zero!
 import DifferentiationInterface as DI
+using DocStringExtensions
 
+"""
+    Scenario
+
+# Fields
+
+$(TYPEDFIELDS)
+"""
 @kwdef struct Scenario{
     F,
     X<:Union{Number,AbstractArray},
@@ -51,20 +59,21 @@ import DifferentiationInterface as DI
 end
 
 function default_scenarios end
-function test_pushforward end
-function test_pushforward_mutating end
-function test_pullback end
-function test_pullback_mutating end
-function test_derivative end
-function test_multiderivative end
-function test_multiderivative_mutating end
-function test_gradient end
-function test_jacobian end
-function test_jacobian_mutating end
-function test_all_operators end
-function test_all_operators_mutating end
+function test_operators_allocating end
+function test_operators_mutating end
 
+"""
+    AutoZeroForward <: ADTypes.AbstractForwardMode
+
+Trivial backend that sets all derivatives to zero. Used in testing and benchmarking.
+"""
 struct AutoZeroForward <: AbstractForwardMode end
+
+"""
+    AutoZeroReverse <: ADTypes.AbstractReverseMode
+
+Trivial backend that sets all derivatives to zero. Used in testing and benchmarking.
+"""
 struct AutoZeroReverse <: AbstractReverseMode end
 
 function DI.value_and_pushforward!(
@@ -106,12 +115,7 @@ function DI.value_and_pullback!(
 end
 
 export Scenario, default_scenarios
-export test_pushforward, test_pullback
-export test_pushforward_mutating, test_pullback_mutating
-export test_derivative, test_multiderivative, test_gradient, test_jacobian
-export test_multiderivative_mutating, test_jacobian_mutating
-export test_all_operators
-export test_all_operators_mutating
+export test_operators_allocating, test_operators_mutating
 
 # see https://docs.julialang.org/en/v1/base/base/#Base.Experimental.register_error_hint
 
