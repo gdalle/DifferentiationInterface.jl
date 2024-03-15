@@ -23,7 +23,7 @@ include("derivative.jl")
 include("multiderivative.jl")
 include("gradient.jl")
 include("jacobian.jl")
-include("mode_trait.jl")
+include("additional_args.jl")
 include("prepare.jl")
 
 # submodules

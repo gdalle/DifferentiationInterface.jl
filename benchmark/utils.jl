@@ -16,7 +16,11 @@ end
 pretty_backend(::AutoFiniteDiff) = "FiniteDiff"
 pretty_backend(::AutoForwardDiff) = "ForwardDiff"
 pretty_backend(::AutoPolyesterForwardDiff) = "PolyesterForwardDiff"
-pretty_backend(::AutoReverseDiff) = "ReverseDiff"
+
+function pretty_backend(backend::AutoReverseDiff)
+    return backend.compile ? "ReverseDiff compiled" : "ReverseDiff"
+end
+
 pretty_backend(::AutoZygote) = "Zygote"
 
 pretty_extras(::Nothing) = "unprepared"

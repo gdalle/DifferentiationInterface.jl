@@ -1,7 +1,7 @@
 ## Pushforward
 
 function DI.value_and_pushforward!(
-    y::AbstractArray, dy, ::AutoForwardDiff, f!, x::Real, dx, extras::Nothing=nothing
+    y::AbstractArray, dy::AbstractArray, ::AutoForwardDiff, f!, x::Real, dx, extras::Nothing
 )
     T = tag_type(f!, x)
     xdual = Dual{T}(x, dx)
@@ -19,7 +19,7 @@ function DI.value_and_pushforward!(
     f!,
     x::AbstractArray,
     dx,
-    extras::Nothing=nothing,
+    extras::Nothing,
 )
     T = tag_type(f!, x)
     xdual = Dual{T}.(x, dx)
@@ -32,6 +32,8 @@ end
 
 ## Multiderivative
 
+### Unprepared
+
 function DI.value_and_multiderivative!(
     y::AbstractArray,
     multider::AbstractArray,
@@ -43,6 +45,8 @@ function DI.value_and_multiderivative!(
     config = DI.prepare_multiderivative(backend, f!, x, y)
     return DI.value_and_multiderivative!(y, multider, backend, f!, x, config)
 end
+
+### Prepared
 
 function DI.value_and_multiderivative!(
     y::AbstractArray,
@@ -59,6 +63,8 @@ end
 
 ## Jacobian
 
+### Unprepared
+
 function DI.value_and_jacobian!(
     y::AbstractArray,
     jac::AbstractMatrix,
@@ -70,6 +76,8 @@ function DI.value_and_jacobian!(
     config = DI.prepare_jacobian(backend, f!, x, y)
     return DI.value_and_jacobian!(y, jac, backend, f!, x, config)
 end
+
+### Prepared
 
 function DI.value_and_jacobian!(
     y::AbstractArray,

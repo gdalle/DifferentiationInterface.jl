@@ -6,12 +6,8 @@ Create an `extras` object that can be given to pullback operators.
 """
 function prepare_pullback end
 
-prepare_pullback(::AbstractADType, f, x::Union{Number,AbstractArray}) = nothing
-function prepare_pullback(
-    ::AbstractADType, f!, x::Union{Number,AbstractArray}, y::Union{Number,AbstractArray}
-)
-    return nothing
-end
+prepare_pullback(::AbstractADType, f, x) = nothing
+prepare_pullback(::AbstractADType, f!, x, y) = nothing
 
 """
     prepare_pushforward(backend, f, x) -> extras
@@ -21,12 +17,8 @@ Create an `extras` object that can be given to pushforward operators.
 """
 function prepare_pushforward end
 
-prepare_pushforward(::AbstractADType, f, x::Union{Number,AbstractArray}) = nothing
-function prepare_pushforward(
-    ::AbstractADType, f!, x::Union{Number,AbstractArray}, y::Union{Number,AbstractArray}
-)
-    return nothing
-end
+prepare_pushforward(::AbstractADType, f, x) = nothing
+prepare_pushforward(::AbstractADType, f!, x, y) = nothing
 
 """
     prepare_derivative(backend, f, x) -> extras

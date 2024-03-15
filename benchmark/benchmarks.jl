@@ -63,6 +63,7 @@ all_backends = [
     AutoForwardDiff(; chunksize=2),
     AutoPolyesterForwardDiff(; chunksize=2),
     AutoReverseDiff(),
+    AutoReverseDiff(; compile=true),
     AutoZygote(),
 ]
 
