@@ -29,6 +29,13 @@ function (l::Layer{<:AbstractVector,<:AbstractVector})(x::Number)::AbstractVecto
     return l.σ.(l.w .* x .+ l.b)
 end
 
+function (l!::Layer{<:AbstractVector,<:AbstractVector})(
+    y::AbstractVector, x::Number
+)::Nothing
+    y .= l!.σ.(l!.w .* x .+ l!.b)
+    return nothing
+end
+
 function (l::Layer{<:AbstractVector,<:Number})(x::AbstractVector)::Number
     return l.σ(dot(l.w, x) + l.b)
 end
@@ -37,13 +44,21 @@ function (l::Layer{<:AbstractMatrix,<:AbstractVector})(x::AbstractVector)::Abstr
     return l.σ.(l.w * x .+ l.b)
 end
 
+function (l!::Layer{<:AbstractMatrix,<:AbstractVector})(
+    y::AbstractVector, x::AbstractVector
+)::Nothing
+    mul!(y, l!.w, x)
+    y .= l!.σ.(y .+ l!.b)
+    return nothing
+end
+
 ## Backends
 
 all_backends = [
     AutoChainRules(ZygoteRuleConfig()),
     AutoDiffractor(),
-    AutoEnzyme(Val(:forward)),
-    AutoEnzyme(Val(:reverse)),
+    AutoEnzyme(Enzyme.Forward),
+    AutoEnzyme(Enzyme.Reverse),
     AutoFiniteDiff(),
     AutoForwardDiff(; chunksize=2),
     AutoPolyesterForwardDiff(; chunksize=2),
