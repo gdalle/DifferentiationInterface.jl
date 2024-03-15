@@ -92,7 +92,8 @@ function DI.gradient!(
     x::AbstractArray,
     tape::Union{GradientTape,CompiledGradient},
 )
-    return last(DI.value_and_gradient!(grad, backend, f, x, tape))
+    gradient!(grad, tape, x)
+    return grad
 end
 
 function DI.gradient(
