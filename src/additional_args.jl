@@ -23,17 +23,6 @@ for operator! in [:value_and_pushforward!, :value_and_pullback!]
     )
         return $operator!(y, storage, backend, f!, x, seed, nothing)
     end
-    @eval function $operator!(
-        y::AbstractArray,
-        storage::Union{Number,AbstractArray},
-        backend::AbstractADType,
-        f!,
-        x,
-        seed,
-        extras,
-    )
-        return $operator!(y, storage, backend, f!, x, seed, extras, autodiff_mode(backend))
-    end
 end
 
 for operator in [
