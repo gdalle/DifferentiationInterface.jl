@@ -1,9 +1,19 @@
 using BenchmarkTools
 
-include("benchmarks.jl")
+include("utils.jl")
+
+SUITE = include("benchmarks.jl")
+
+some_backends = [
+    AutoForwardDiff(),
+    AutoForwardDiff(; chunksize=2),
+    AutoReverseDiff(),
+    AutoReverseDiff(; compile=true),
+]
+SUITE = make_suite(some_backends)
 
 # Run benchmarks locally
-# BenchmarkTools.tune!(SUITE; verbose=true)
+BenchmarkTools.tune!(SUITE; verbose=true)
 results = BenchmarkTools.run(SUITE; verbose=true)
 
 # Parse into dataframe
