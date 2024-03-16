@@ -46,8 +46,9 @@ For hessian computations, in theory we can combine any pair of backends into a [
 In practice, many combinations will fail.
 Here are the ones we tested for you:
 
-| Reverse backend     | Forward backend              | Hessian tested |
+| Inner backend       | Outer backend                | Hessian tested |
 | :------------------ | :--------------------------- | -------------- |
+| `AutoForwardDiff()` | `AutoForwardDiff()`          | ✓              |
 | `AutoZygote()`      | `AutoForwardDiff()`          | ✓              |
 | `AutoReverseDiff()` | `AutoForwardDiff()`          | ✓              |
 | `AutoZygote()`      | `AutoEnzyme(Enzyme.Forward)` | ✓              |
