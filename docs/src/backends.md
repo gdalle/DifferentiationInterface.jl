@@ -24,7 +24,7 @@ AutoReverseDiff
 AutoZygote
 ```
 
-## [Mutation compatibility](@id mutcompat)
+## [Mutation support](@id backend_support_mutation)
 
 All backends are compatible with allocating functions `f(x) = y`. Only some are compatible with mutating functions `f!(y, x) = nothing`:
 
@@ -40,14 +40,15 @@ All backends are compatible with allocating functions `f(x) = y`. Only some are 
 | `AutoReverseDiff()`                     | ✓                  |
 | `AutoZygote()`                          | ✗                  |
 
-## [Second order combinations](@id secondcombin)
+## [Second order combinations](@id backend_combination)
 
 For hessian computations, in theory we can combine any pair of backends into a [`SecondOrder`](@ref).
 In practice, many combinations will fail.
 Here are the ones we tested for you:
 
-| Reverse backend     | Forward backend              | Hessian tested |
+| Inner backend       | Outer backend                | Hessian tested |
 | :------------------ | :--------------------------- | -------------- |
+| `AutoForwardDiff()` | `AutoForwardDiff()`          | ✓              |
 | `AutoZygote()`      | `AutoForwardDiff()`          | ✓              |
 | `AutoReverseDiff()` | `AutoForwardDiff()`          | ✓              |
 | `AutoZygote()`      | `AutoEnzyme(Enzyme.Forward)` | ✓              |

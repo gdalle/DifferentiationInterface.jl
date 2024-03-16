@@ -12,7 +12,7 @@ end
 ## Primitives
 
 function DI.value_and_pullback!(
-    _dx::Number, ::AutoReverseEnzyme, f, x::Number, dy::Number, extras::Nothing
+    _dx::Number, ::AutoReverseEnzyme, f, x::Number, dy::Number, extras::Nothing=nothing
 )
     der, y = autodiff(ReverseWithPrimal, f, Active, Active(x))
     new_dx = dy * only(der)
@@ -20,7 +20,12 @@ function DI.value_and_pullback!(
 end
 
 function DI.value_and_pullback!(
-    dx::AbstractArray, ::AutoReverseEnzyme, f, x::AbstractArray, dy::Number, extras::Nothing
+    dx::AbstractArray,
+    ::AutoReverseEnzyme,
+    f,
+    x::AbstractArray,
+    dy::Number,
+    extras::Nothing=nothing,
 )
     dx .= zero(eltype(dx))
     _, y = autodiff(ReverseWithPrimal, f, Active, Duplicated(x, dx))
@@ -29,7 +34,7 @@ function DI.value_and_pullback!(
 end
 
 function DI.pullback!(
-    _dx::Number, ::AutoReverseEnzyme, f, x::Number, dy::Number, extras::Nothing
+    _dx::Number, ::AutoReverseEnzyme, f, x::Number, dy::Number, extras::Nothing=nothing
 )
     der = only(autodiff(Reverse, f, Active, Active(x)))
     new_dx = dy * only(der)
@@ -37,7 +42,12 @@ function DI.pullback!(
 end
 
 function DI.pullback!(
-    dx::AbstractArray, ::AutoReverseEnzyme, f, x::AbstractArray, dy::Number, extras::Nothing
+    dx::AbstractArray,
+    ::AutoReverseEnzyme,
+    f,
+    x::AbstractArray,
+    dy::Number,
+    extras::Nothing=nothing,
 )
     dx .= zero(eltype(dx))
     autodiff(Reverse, f, Active, Duplicated(x, dx))
@@ -46,7 +56,12 @@ function DI.pullback!(
 end
 
 function DI.value_and_pullback!(
-    dx::Number, backend::AutoReverseEnzyme, f, x::Number, dy::AbstractArray, extras::Nothing
+    dx::Number,
+    backend::AutoReverseEnzyme,
+    f,
+    x::Number,
+    dy::AbstractArray,
+    extras::Nothing=nothing,
 )
     y = f(x)
     f! = MakeFunctionMutating(f)
@@ -59,7 +74,7 @@ function DI.value_and_pullback!(
     f,
     x::AbstractArray,
     dy::AbstractArray,
-    extras::Nothing,
+    extras::Nothing=nothing,
 )
     y = f(x)
     f! = MakeFunctionMutating(f)
@@ -69,27 +84,29 @@ end
 ## Utilities
 
 function DI.value_and_gradient!(
-    grad::AbstractArray, ::AutoReverseEnzyme, f, x::AbstractArray, extras::Nothing
+    grad::AbstractArray, ::AutoReverseEnzyme, f, x::AbstractArray, extras::Nothing=nothing
 )
     y = f(x)
     gradient!(Reverse, grad, f, x)
     return y, grad
 end
 
-function DI.value_and_gradient(::AutoReverseEnzyme, f, x::AbstractArray, extras::Nothing)
+function DI.value_and_gradient(
+    ::AutoReverseEnzyme, f, x::AbstractArray, extras::Nothing=nothing
+)
     y = f(x)
     grad = gradient(Reverse, f, x)
     return y, grad
 end
 
 function DI.gradient!(
-    grad::AbstractArray, ::AutoReverseEnzyme, f, x::AbstractArray, extras::Nothing
+    grad::AbstractArray, ::AutoReverseEnzyme, f, x::AbstractArray, extras::Nothing=nothing
 )
     gradient!(Reverse, grad, f, x)
     return grad
 end
 
-function DI.gradient(::AutoReverseEnzyme, f, x::AbstractArray, extras::Nothing)
+function DI.gradient(::AutoReverseEnzyme, f, x::AbstractArray, extras::Nothing=nothing)
     grad = gradient(Reverse, f, x)
     return grad
 end

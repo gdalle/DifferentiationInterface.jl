@@ -62,10 +62,12 @@ end
 
 function default_scenarios end
 function test_operators_allocating end
+function test_second_order_operators_allocating end
 function test_operators_mutating end
 
 export Scenario, default_scenarios
-export test_operators_allocating, test_operators_mutating
+export test_operators_allocating,
+    test_second_order_operators_allocating, test_operators_mutating
 
 # see https://docs.julialang.org/en/v1/base/base/#Base.Experimental.register_error_hint
 
@@ -76,10 +78,10 @@ function __init__()
             print(
                 io,
                 """\n
-HINT: To use the `DifferentiationInterface.DifferentiationTest` submodule, you need to load the `DifferentiationInterfaceTestExt` package extension. Run the following command in your REPL:
+                HINT: To use the `DifferentiationInterface.DifferentiationTest` submodule, you need to load the `DifferentiationInterfaceTestExt` package extension. Run the following command in your REPL:
 
-    import ForwardDiff, JET, Test
-""",
+                    import ForwardDiff, JET, Test
+                """,
             )
         end
     end

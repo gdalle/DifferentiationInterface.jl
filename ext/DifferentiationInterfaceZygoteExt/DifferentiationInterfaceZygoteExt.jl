@@ -9,14 +9,14 @@ using Zygote: ZygoteRuleConfig, gradient, jacobian, pullback, withgradient, with
 ## Primitives
 
 function DI.value_and_pullback!(
-    dx::Union{Number,AbstractArray}, ::AutoZygote, f, x, dy, extras::Nothing
+    dx::Union{Number,AbstractArray}, ::AutoZygote, f, x, dy, extras::Nothing=nothing
 )
     y, back = pullback(f, x)
     new_dx = only(back(dy))
     return y, update!(dx, new_dx)
 end
 
-function DI.value_and_pullback(::AutoZygote, f, x, dy, extras::Nothing)
+function DI.value_and_pullback(::AutoZygote, f, x, dy, extras::Nothing=nothing)
     y, back = pullback(f, x)
     dx = only(back(dy))
     return y, dx
@@ -24,27 +24,27 @@ end
 
 ## Utilities
 
-function DI.value_and_gradient(::AutoZygote, f, x::AbstractArray, extras::Nothing)
+function DI.value_and_gradient(::AutoZygote, f, x::AbstractArray, extras::Nothing=nothing)
     res = withgradient(f, x)
     return res.val, only(res.grad)
 end
 
 function DI.value_and_gradient!(
-    grad::AbstractArray, backend::AutoZygote, f, x::AbstractArray, extras
+    grad::AbstractArray, backend::AutoZygote, f, x::AbstractArray, extras=nothing
 )
     y, new_grad = DI.value_and_gradient(backend, f, x, extras)
     grad .= new_grad
     return y, grad
 end
 
-function DI.value_and_jacobian(::AutoZygote, f, x::AbstractArray, extras::Nothing)
+function DI.value_and_jacobian(::AutoZygote, f, x::AbstractArray, extras::Nothing=nothing)
     y = f(x)
     jac = jacobian(f, x)
     return y, only(jac)
 end
 
 function DI.value_and_jacobian!(
-    jac::AbstractMatrix, backend::AutoZygote, f, x::AbstractArray, extras::Nothing
+    jac::AbstractMatrix, backend::AutoZygote, f, x::AbstractArray, extras::Nothing=nothing
 )
     y, new_jac = DI.value_and_jacobian(backend, f, x, extras)
     jac .= new_jac

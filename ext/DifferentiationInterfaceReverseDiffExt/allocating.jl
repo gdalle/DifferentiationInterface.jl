@@ -1,7 +1,12 @@
 ## Pullback
 
 function DI.value_and_pullback!(
-    dx::AbstractArray, ::AutoReverseDiff, f, x::AbstractArray, dy::Real, extras::Nothing
+    dx::AbstractArray,
+    ::AutoReverseDiff,
+    f,
+    x::AbstractArray,
+    dy::Real,
+    extras::Nothing=nothing,
 )
     res = DiffResults.DiffResult(zero(dy), dx)
     res = gradient!(res, f, x)
@@ -16,7 +21,7 @@ function DI.value_and_pullback!(
     f,
     x::AbstractArray,
     dy::AbstractArray,
-    extras::Nothing,
+    extras::Nothing=nothing,
 )
     res = DiffResults.DiffResult(similar(dy), similar(dy, length(dy), length(x)))
     res = jacobian!(res, f, x)
@@ -27,7 +32,7 @@ function DI.value_and_pullback!(
 end
 
 function DI.value_and_pullback!(
-    _dx::Number, backend::AutoReverseDiff, f, x::Number, dy, extras::Nothing
+    _dx::Number, backend::AutoReverseDiff, f, x::Number, dy, extras::Nothing=nothing
 )
     x_array = [x]
     dx_array = similar(x_array)
@@ -40,24 +45,32 @@ end
 ### Unprepared
 
 function DI.value_and_gradient!(
-    grad::AbstractArray, backend::AutoReverseDiff, f, x::AbstractArray, extras::Nothing
+    grad::AbstractArray,
+    backend::AutoReverseDiff,
+    f,
+    x::AbstractArray,
+    extras::Nothing=nothing,
 )
     return DI.value_and_gradient!(grad, backend, f, x, DI.prepare_gradient(backend, f, x))
 end
 
 function DI.value_and_gradient(
-    backend::AutoReverseDiff, f, x::AbstractArray, extras::Nothing
+    backend::AutoReverseDiff, f, x::AbstractArray, extras::Nothing=nothing
 )
     return DI.value_and_gradient(backend, f, x, DI.prepare_gradient(backend, f, x))
 end
 
 function DI.gradient!(
-    grad::AbstractArray, backend::AutoReverseDiff, f, x::AbstractArray, extras::Nothing
+    grad::AbstractArray,
+    backend::AutoReverseDiff,
+    f,
+    x::AbstractArray,
+    extras::Nothing=nothing,
 )
     return DI.gradient!(grad, backend, f, x, DI.prepare_gradient(backend, f, x))
 end
 
-function DI.gradient(backend::AutoReverseDiff, f, x::AbstractArray, extras::Nothing)
+function DI.gradient(backend::AutoReverseDiff, f, x::AbstractArray, extras::Nothing=nothing)
     return DI.gradient(backend, f, x, DI.prepare_gradient(backend, f, x))
 end
 
@@ -107,31 +120,39 @@ end
 ### Unprepared
 
 function DI.value_and_jacobian!(
-    jac::AbstractArray, backend::AutoReverseDiff, f, x::AbstractArray, extras::Nothing
+    jac::AbstractMatrix,
+    backend::AutoReverseDiff,
+    f,
+    x::AbstractArray,
+    extras::Nothing=nothing,
 )
     return DI.value_and_jacobian!(jac, backend, f, x, DI.prepare_jacobian(backend, f, x))
 end
 
 function DI.value_and_jacobian(
-    backend::AutoReverseDiff, f, x::AbstractArray, extras::Nothing
+    backend::AutoReverseDiff, f, x::AbstractArray, extras::Nothing=nothing
 )
     return DI.value_and_jacobian(backend, f, x, DI.prepare_jacobian(backend, f, x))
 end
 
 function DI.jacobian!(
-    jac::AbstractArray, backend::AutoReverseDiff, f, x::AbstractArray, extras::Nothing
+    jac::AbstractMatrix,
+    backend::AutoReverseDiff,
+    f,
+    x::AbstractArray,
+    extras::Nothing=nothing,
 )
     return DI.jacobian!(jac, backend, f, x, DI.prepare_jacobian(backend, f, x))
 end
 
-function DI.jacobian(backend::AutoReverseDiff, f, x::AbstractArray, extras::Nothing)
+function DI.jacobian(backend::AutoReverseDiff, f, x::AbstractArray, extras::Nothing=nothing)
     return DI.jacobian(backend, f, x, DI.prepare_jacobian(backend, f, x))
 end
 
 ### Prepared
 
 function DI.value_and_jacobian!(
-    jac::AbstractArray,
+    jac::AbstractMatrix,
     backend::AutoReverseDiff,
     f,
     x::AbstractArray,
@@ -155,7 +176,7 @@ function DI.value_and_jacobian(
 end
 
 function DI.jacobian!(
-    jac::AbstractArray,
+    jac::AbstractMatrix,
     backend::AutoReverseDiff,
     f,
     x::AbstractArray,

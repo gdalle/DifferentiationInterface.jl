@@ -3,12 +3,17 @@
 ## [Operators](@id operators)
 
 Depending on the type of input and output, differentiation operators can have various names.
-We choose the following terminology for the first-order operators we provide:
+We choose the following terminology for the operators we provide:
 
-|                  | **scalar output** | **array output**  |
+| First order      | **scalar output** | **array output**  |
 | ---------------- | ----------------- | ----------------- |
 | **scalar input** | `derivative`      | `multiderivative` |
 | **array input**  | `gradient`        | `jacobian`        |
+
+| Second order     | **scalar output**   | **array output** |
+| ---------------- | ------------------- | ---------------- |
+| **scalar input** | `second_derivative` | not implemented  |
+| **array input**  | `hessian`           | not implemented  |
 
 Most backends have custom implementations for all of these, which we reuse if possible.
 
@@ -16,30 +21,40 @@ Most backends have custom implementations for all of these, which we reuse if po
 
 Whenever it makes sense, four variants of the same operator are defined:
 
-| **Operator**      | **allocating**            | **mutating**               | **allocating with primal**          | **mutating with primal**             |
-| :---------------- | :------------------------ | :------------------------- | :---------------------------------- | :----------------------------------- |
-| Derivative        | [`derivative`](@ref)      | N/A                        | [`value_and_derivative`](@ref)      | N/A                                  |
-| Multiderivative   | [`multiderivative`](@ref) | [`multiderivative!`](@ref) | [`value_and_multiderivative`](@ref) | [`value_and_multiderivative!`](@ref) |
-| Gradient          | [`gradient`](@ref)        | [`gradient!`](@ref)        | [`value_and_gradient`](@ref)        | [`value_and_gradient!`](@ref)        |
-| Jacobian          | [`jacobian`](@ref)        | [`jacobian!`](@ref)        | [`value_and_jacobian`](@ref)        | [`value_and_jacobian!`](@ref)        |
-| Pushforward (JVP) | [`pushforward`](@ref)     | [`pushforward!`](@ref)     | [`value_and_pushforward`](@ref)     | [`value_and_pushforward!`](@ref)     |
-| Pullback (VJP)    | [`pullback`](@ref)        | [`pullback!`](@ref)        | [`value_and_pullback`](@ref)        | [`value_and_pullback!`](@ref)        |
+| **Operator**      | **allocating**              | **mutating**               | **allocating with primal**                       | **mutating with primal**              |
+| :---------------- | :-------------------------- | :------------------------- | :----------------------------------------------- | :------------------------------------ |
+| Derivative        | [`derivative`](@ref)        | N/A                        | [`value_and_derivative`](@ref)                   | N/A                                   |
+| Multiderivative   | [`multiderivative`](@ref)   | [`multiderivative!`](@ref) | [`value_and_multiderivative`](@ref)              | [`value_and_multiderivative!`](@ref)  |
+| Gradient          | [`gradient`](@ref)          | [`gradient!`](@ref)        | [`value_and_gradient`](@ref)                     | [`value_and_gradient!`](@ref)         |
+| Jacobian          | [`jacobian`](@ref)          | [`jacobian!`](@ref)        | [`value_and_jacobian`](@ref)                     | [`value_and_jacobian!`](@ref)         |
+| Second derivative | [`second_derivative`](@ref) | N/A                        | [`value_derivative_and_second_derivative`](@ref) | N/A                                   |
+| Hessian           | [`hessian`](@ref)           | [`hessian!`](@ref)         | [`value_gradient_and_hessian`](@ref)             | [`value_gradient_and_hessian!`](@ref) |
 
-Note that scalar outputs can't be mutated, which is why `derivative` doesn't have mutating variants.
+Note that scalar outputs can't be mutated, which is why `derivative` and `second_derivative` do not have mutating variants.
+
+For advanced users, lower-level operators are also exposed:
+
+| **Operator**                 | **allocating**                   | **mutating**                      | **allocating with primal**                    | **mutating with primal**                       |
+| :--------------------------- | :------------------------------- | :-------------------------------- | :-------------------------------------------- | :--------------------------------------------- |
+| Pushforward (JVP)            | [`pushforward`](@ref)            | [`pushforward!`](@ref)            | [`value_and_pushforward`](@ref)               | [`value_and_pushforward!`](@ref)               |
+| Pullback (VJP)               | [`pullback`](@ref)               | [`pullback!`](@ref)               | [`value_and_pullback`](@ref)                  | [`value_and_pullback!`](@ref)                  |
+| Hessian-vector product (HVP) | [`hessian_vector_product`](@ref) | [`hessian_vector_product!`](@ref) | [`gradient_and_hessian_vector_product`](@ref) | [`gradient_and_hessian_vector_product!`](@ref) |
 
 ## Preparation
 
 In many cases, automatic differentiation can be accelerated if the function has been run at least once (e.g. to record a tape) and if some cache objects are provided.
 This is a backend-specific procedure, but we expose a common syntax to achieve it.
 
-| **Operator**      | **preparation function**          |
-| :---------------- | :-------------------------------- |
-| Derivative        | [`prepare_derivative`](@ref)      |
-| Multiderivative   | [`prepare_multiderivative`](@ref) |
-| Gradient          | [`prepare_gradient`](@ref)        |
-| Jacobian          | [`prepare_jacobian`](@ref)        |
-| Pushforward (JVP) | [`prepare_pushforward`](@ref)     |
-| Pullback (VJP)    | [`prepare_pullback`](@ref)        |
+| **Operator**      | **preparation function**            |
+| :---------------- | :---------------------------------- |
+| Derivative        | [`prepare_derivative`](@ref)        |
+| Multiderivative   | [`prepare_multiderivative`](@ref)   |
+| Gradient          | [`prepare_gradient`](@ref)          |
+| Jacobian          | [`prepare_jacobian`](@ref)          |
+| Second derivative | [`prepare_second_derivative`](@ref) |
+| Hessian           | [`prepare_hessian`](@ref)           |
+| Pushforward (JVP) | [`prepare_pushforward`](@ref)       |
+| Pullback (VJP)    | [`prepare_pullback`](@ref)          |
 
 If you run `prepare_operator(backend, f, x)`, it will create an object called `extras` containing the necessary information to speed up `operator` and its variants.
 This information is specific to `backend` and `f`, as well as the _type and size_ of the input `x`, but it should work with different _values_ of `x`.
@@ -65,25 +80,12 @@ Since `f!` operates in-place and the primal is computed every time, only four op
 
 Furthermore, the preparation function takes an additional argument: `prepare_operator(backend, f!, x, y)`.
 
-Check out the list of [backends that support mutating functions](@ref mutcompat).
+Check out the list of [backends that support mutating functions](@ref backend_support_mutation).
 
-## Second order
+## Second order backends
 
-For array-to-scalar functions, the Hessian matrix is of significant interest.
-That is why we provide the following second-order operators:
-
-| **Operator** | **allocating**    | **mutating**       | **allocating with primal**               | **mutating with primal**                  |
-| :----------- | :---------------- | :----------------- | ---------------------------------------- | ----------------------------------------- |
-| Hessian      | [`hessian`](@ref) | [`hessian!`](@ref) | [`value_and_gradient_and_hessian`](@ref) | [`value_and_gradient_and_hessian!`](@ref) |
-
-When the Hessian is too costly to allocate entirely, its products with vectors can be cheaper to compute.
-
-| **Operator**                 | **allocating**                                | **mutating**                                   |
-| :--------------------------- | :-------------------------------------------- | :--------------------------------------------- |
-| Hessian-vector product (HVP) | [`gradient_and_hessian_vector_product`](@ref) | [`gradient_and_hessian_vector_product!`](@ref) |
-
-At the moment, second order operators can only be used with a specific backend of type [`SecondOrder`](@ref).
-Check out the [compatibility table between backends](@ref secondcombin).
+Second order differentiation operators can only be used with a backend of type [`SecondOrder`](@ref).
+Check out the [combination table](@ref backend_combination) between backends.
 
 ## Multiple inputs/outputs
 

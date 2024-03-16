@@ -37,6 +37,20 @@ Modules = [DifferentiationInterface]
 Pages = ["jacobian.jl"]
 ```
 
+## Second order
+
+```@autodocs
+Modules = [DifferentiationInterface]
+Pages = ["second_order.jl"]
+```
+
+## Second derivative
+
+```@autodocs
+Modules = [DifferentiationInterface]
+Pages = ["second_derivative.jl"]
+```
+
 ## Hessian
 
 ```@autodocs
@@ -56,6 +70,13 @@ Pages = ["pushforward.jl"]
 ```@autodocs
 Modules = [DifferentiationInterface]
 Pages = ["pullback.jl"]
+```
+
+## Hessian-vector product (HVP)
+
+```@autodocs
+Modules = [DifferentiationInterface]
+Pages = ["hessian_vector_product.jl"]
 ```
 
 ## Preparation

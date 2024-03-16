@@ -20,17 +20,14 @@ function gradient_scenarios(scenarios::Vector{<:Scenario})
     end
 end
 
-function hessian_scenarios(scenarios::Vector{<:Scenario})
-    filter(scenarios) do scen
-        in_type(scen) <: AbstractArray && out_type(scen) <: Number
-    end
-end
-
 function jacobian_scenarios(scenarios::Vector{<:Scenario})
     filter(scenarios) do scen
         in_type(scen) <: AbstractArray && out_type(scen) <: AbstractArray
     end
 end
+
+second_derivative_scenarios(scenarios) = derivative_scenarios(scenarios)
+hessian_scenarios(scenarios) = gradient_scenarios(scenarios)
 
 for prep in [
     :prepare_pushforward,
@@ -38,8 +35,9 @@ for prep in [
     :prepare_derivative,
     :prepare_multiderivative,
     :prepare_gradient,
-    :prepare_hessian,
     :prepare_jacobian,
+    :prepare_second_derivative,
+    :prepare_hessian,
 ]
     @eval function DI.$prep(ba::AbstractADType, scen::Scenario)
         if is_mutating(scen)

@@ -1,7 +1,13 @@
 ## Pushforward
 
 function DI.value_and_pushforward!(
-    y::AbstractArray, dy::AbstractArray, ::AutoForwardDiff, f!, x::Real, dx, extras::Nothing
+    y::AbstractArray,
+    dy::AbstractArray,
+    ::AutoForwardDiff,
+    f!,
+    x::Real,
+    dx,
+    extras::Nothing=nothing,
 )
     T = tag_type(f!, x)
     xdual = Dual{T}(x, dx)
@@ -19,7 +25,7 @@ function DI.value_and_pushforward!(
     f!,
     x::AbstractArray,
     dx,
-    extras::Nothing,
+    extras::Nothing=nothing,
 )
     T = tag_type(f!, x)
     xdual = Dual{T}.(x, dx)
@@ -40,7 +46,7 @@ function DI.value_and_multiderivative!(
     backend::AutoForwardDiff,
     f!,
     x::Number,
-    extras::Nothing,
+    extras::Nothing=nothing,
 )
     config = DI.prepare_multiderivative(backend, f!, x, y)
     return DI.value_and_multiderivative!(y, multider, backend, f!, x, config)
@@ -71,7 +77,7 @@ function DI.value_and_jacobian!(
     backend::AutoForwardDiff,
     f!,
     x::AbstractArray,
-    extras::Nothing,
+    extras::Nothing=nothing,
 )
     config = DI.prepare_jacobian(backend, f!, x, y)
     return DI.value_and_jacobian!(y, jac, backend, f!, x, config)

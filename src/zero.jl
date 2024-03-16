@@ -14,13 +14,13 @@ Trivial backend that sets all derivatives to zero. Used in testing and benchmark
 struct AutoZeroReverse <: AbstractReverseMode end
 
 function value_and_pushforward!(
-    dy::Union{Number,AbstractArray}, ::AutoZeroForward, f, x, dx, extras::Nothing
+    dy::Union{Number,AbstractArray}, ::AutoZeroForward, f, x, dx, extras::Nothing=nothing
 )
     return f(x), zero!(dy)
 end
 
 function value_and_pullback!(
-    dx::Union{Number,AbstractArray}, ::AutoZeroReverse, f, x, dy, extras::Nothing
+    dx::Union{Number,AbstractArray}, ::AutoZeroReverse, f, x, dy, extras::Nothing=nothing
 )
     return f(x), zero!(dx)
 end
@@ -32,7 +32,7 @@ function value_and_pushforward!(
     f!,
     x,
     dx,
-    extras::Nothing,
+    extras::Nothing=nothing,
 )
     f!(y, x)
     return y, zero!(dy)
@@ -45,7 +45,7 @@ function value_and_pullback!(
     f!,
     x,
     dy,
-    extras::Nothing,
+    extras::Nothing=nothing,
 )
     f!(y, x)
     return y, zero!(dx)

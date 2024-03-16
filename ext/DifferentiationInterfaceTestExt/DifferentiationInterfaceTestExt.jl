@@ -4,11 +4,11 @@ module DifferentiationInterfaceTestExt
 using ADTypes: AbstractADType
 using DifferentiationInterface
 using DifferentiationInterface.DifferentiationTest
-using DifferentiationInterface: ForwardMode, ReverseMode, autodiff_mode
+using DifferentiationInterface: ForwardMode, ReverseMode, mode
 import DifferentiationInterface as DI
 import DifferentiationInterface.DifferentiationTest as DT
 using DocStringExtensions
-using LinearAlgebra: dot
+using LinearAlgebra: LinearAlgebra, dot
 
 # new dependencies
 using ForwardDiff: ForwardDiff

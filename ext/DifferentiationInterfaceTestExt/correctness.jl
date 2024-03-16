@@ -286,65 +286,6 @@ function test_correctness_gradient_allocating(
     end
 end
 
-## Hessian
-
-function test_correctness_hessian_allocating(
-    ba::AbstractADType, scenario::Scenario, maybe_extras...
-)
-    (; f, x, y, dx) = deepcopy(scenario)
-    grad_true = ForwardDiff.gradient(f, x)
-    hess_true = ForwardDiff.hessian(f, x)
-    hvp_true = reshape((hess_true * vec(dx)), size(x))
-
-    y_out1, grad_out1, hess_out1 = value_and_gradient_and_hessian(ba, f, x, maybe_extras...)
-    grad_in2, hess_in2 = zero(grad_out1), zero(hess_out1)
-    y_out2, grad_out2, hess_out2 = value_and_gradient_and_hessian!(
-        grad_in2, hess_in2, ba, f, x, maybe_extras...
-    )
-
-    hess_out3 = hessian(ba, f, x, maybe_extras...)
-    hess_in4 = zero(hess_out3)
-    hess_out4 = hessian!(hess_in4, ba, f, x, maybe_extras...)
-
-    grad_out5, hvp_out5 = gradient_and_hessian_vector_product(ba, f, x, dx, maybe_extras...)
-    grad_in6, hvp_in6 = zero(grad_out5), zero(hvp_out5)
-    grad_out6, hvp_out6 = gradient_and_hessian_vector_product!(
-        grad_in6, hvp_in6, ba, f, x, dx, maybe_extras...
-    )
-
-    @testset "Primal value" begin
-        @test y_out1 ≈ y
-        @test y_out2 ≈ y
-    end
-    @testset "Gradient value" begin
-        @test grad_out1 ≈ grad_true rtol = 1e-3
-        @test grad_out2 ≈ grad_true rtol = 1e-3
-        @test grad_out5 ≈ grad_true rtol = 1e-3
-        @test grad_out6 ≈ grad_true rtol = 1e-3
-        @testset "Mutation" begin
-            @test grad_in2 ≈ grad_true rtol = 1e-3
-            @test grad_in6 ≈ grad_true rtol = 1e-3
-        end
-    end
-    @testset "Hessian value" begin
-        @test hess_out1 ≈ hess_true rtol = 1e-3
-        @test hess_out2 ≈ hess_true rtol = 1e-3
-        @test hess_out3 ≈ hess_true rtol = 1e-3
-        @test hess_out4 ≈ hess_true rtol = 1e-3
-        @testset "Mutation" begin
-            @test hess_in2 ≈ hess_true rtol = 1e-3
-            @test hess_in4 ≈ hess_true rtol = 1e-3
-        end
-    end
-    @testset "Hessian-vector product value" begin
-        @test hvp_out5 ≈ hvp_true rtol = 1e-3
-        @test hvp_out6 ≈ hvp_true rtol = 1e-3
-        @testset "Mutation" begin
-            @test hvp_in6 ≈ hvp_true rtol = 1e-3
-        end
-    end
-end
-
 ## Jacobian
 
 function test_correctness_jacobian_allocating(
@@ -398,6 +339,94 @@ function test_correctness_jacobian_mutating(
         @test jac_out ≈ jac_true rtol = 1e-3
         @testset "Mutation" begin
             @test jac_in ≈ jac_true rtol = 1e-3
+        end
+    end
+end
+
+## Second derivative
+
+function test_correctness_second_derivative_allocating(
+    ba::AbstractADType, scenario::Scenario, maybe_extras...
+)
+    (; f, x, y) = deepcopy(scenario)
+    der_true = ForwardDiff.derivative(f, x)
+    derder_true = ForwardDiff.derivative(x) do z
+        ForwardDiff.derivative(f, z)
+    end
+
+    y_out1, der_out1, derder_out1 = value_derivative_and_second_derivative(
+        ba, f, x, maybe_extras...
+    )
+
+    derder_out2 = second_derivative(ba, f, x, maybe_extras...)
+
+    @testset "Primal value" begin
+        @test y_out1 ≈ y
+    end
+    @testset "Derivative value" begin
+        @test der_out1 ≈ der_true rtol = 1e-3
+    end
+    @testset "Second derivative value" begin
+        @test derder_out1 ≈ derder_true rtol = 1e-3
+        @test derder_out2 ≈ derder_true rtol = 1e-3
+    end
+end
+
+## Hessian
+
+function test_correctness_hessian_allocating(
+    ba::AbstractADType, scenario::Scenario, maybe_extras...
+)
+    (; f, x, y, dx) = deepcopy(scenario)
+    grad_true = ForwardDiff.gradient(f, x)
+    hess_true = ForwardDiff.hessian(f, x)
+    hvp_true = reshape((hess_true * vec(dx)), size(x))
+
+    y_out1, grad_out1, hess_out1 = value_gradient_and_hessian(ba, f, x, maybe_extras...)
+    grad_in2, hess_in2 = zero(grad_out1), zero(hess_out1)
+    y_out2, grad_out2, hess_out2 = value_gradient_and_hessian!(
+        grad_in2, hess_in2, ba, f, x, maybe_extras...
+    )
+
+    hess_out3 = hessian(ba, f, x, maybe_extras...)
+    hess_in4 = zero(hess_out3)
+    hess_out4 = hessian!(hess_in4, ba, f, x, maybe_extras...)
+
+    grad_out5, hvp_out5 = gradient_and_hessian_vector_product(ba, f, x, dx, maybe_extras...)
+    grad_in6, hvp_in6 = zero(grad_out5), zero(hvp_out5)
+    grad_out6, hvp_out6 = gradient_and_hessian_vector_product!(
+        grad_in6, hvp_in6, ba, f, x, dx, maybe_extras...
+    )
+
+    @testset "Primal value" begin
+        @test y_out1 ≈ y
+        @test y_out2 ≈ y
+    end
+    @testset "Gradient value" begin
+        @test grad_out1 ≈ grad_true rtol = 1e-3
+        @test grad_out2 ≈ grad_true rtol = 1e-3
+        @test grad_out5 ≈ grad_true rtol = 1e-3
+        @test grad_out6 ≈ grad_true rtol = 1e-3
+        @testset "Mutation" begin
+            @test grad_in2 ≈ grad_true rtol = 1e-3
+            @test grad_in6 ≈ grad_true rtol = 1e-3
+        end
+    end
+    @testset "Hessian value" begin
+        @test hess_out1 ≈ hess_true rtol = 1e-3
+        @test hess_out2 ≈ hess_true rtol = 1e-3
+        @test hess_out3 ≈ hess_true rtol = 1e-3
+        @test hess_out4 ≈ hess_true rtol = 1e-3
+        @testset "Mutation" begin
+            @test hess_in2 ≈ hess_true rtol = 1e-3
+            @test hess_in4 ≈ hess_true rtol = 1e-3
+        end
+    end
+    @testset "Hessian-vector product value" begin
+        @test hvp_out5 ≈ hvp_true rtol = 1e-3
+        @test hvp_out6 ≈ hvp_true rtol = 1e-3
+        @testset "Mutation" begin
+            @test hvp_in6 ≈ hvp_true rtol = 1e-3
         end
     end
 end

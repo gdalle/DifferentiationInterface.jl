@@ -16,7 +16,7 @@ This package provides a backend-agnostic syntax to differentiate functions of th
 
 ## Compatibility
 
-We support some of the first order backends defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl):
+We support some of the backends defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl):
 
 | Backend                                                                         | Object                                                       |
 | :------------------------------------------------------------------------------ | :----------------------------------------------------------- |
@@ -28,8 +28,6 @@ We support some of the first order backends defined by [ADTypes.jl](https://gith
 | [PolyesterForwardDiff.jl](https://github.com/JuliaDiff/PolyesterForwardDiff.jl) | `AutoPolyesterForwardDiff(; chunksize)`                      |
 | [ReverseDiff.jl](https://github.com/JuliaDiff/ReverseDiff.jl)                   | `AutoReverseDiff()`                                          |
 | [Zygote.jl](https://github.com/FluxML/Zygote.jl)                                | `AutoZygote()`                                               |
-
-We also provide a second order backend `SecondOrder(reverse_backend, forward_backend)` for hessian computations.
 
 ## Example
 
