@@ -3,14 +3,14 @@
 ## [Operators](@id operators)
 
 Depending on the type of input and output, differentiation operators can have various names.
-We choose the following terminology for the ones we provide:
+We choose the following terminology for the first-order operators we provide:
 
 |                  | **scalar output** | **array output**  |
 | ---------------- | ----------------- | ----------------- |
 | **scalar input** | `derivative`      | `multiderivative` |
 | **array input**  | `gradient`        | `jacobian`        |
 
-Most backends have custom implementations for all of these, which we reuse whenever possible.
+Most backends have custom implementations for all of these, which we reuse if possible.
 
 ## Variants
 
@@ -52,8 +52,9 @@ We do not make any guarantees on their implementation for each backend, or on th
 
 ## Mutating functions
 
-In addition to allocating functions `f(x) = y`, we also support mutating functions `f!(y, x) = nothing` whenever the output is an array (beware that it must return `nothing`).
-Since they operate in-place and the primal is computed every time, only four operators are defined:
+In addition to allocating functions `f(x) = y`, some backends also support mutating functions `f!(y, x) = nothing` whenever the output is an array.
+Beware that the function `f!` must return `nothing`!.
+Since `f!` operates in-place and the primal is computed every time, only four operators are defined:
 
 | **Operator**      | **mutating with primal**             |
 | :---------------- | :----------------------------------- |
@@ -63,6 +64,26 @@ Since they operate in-place and the primal is computed every time, only four ope
 | Pullback (VJP)    | [`value_and_pullback!`](@ref)        |
 
 Furthermore, the preparation function takes an additional argument: `prepare_operator(backend, f!, x, y)`.
+
+Check out the list of [backends that support mutating functions](@ref mutcompat).
+
+## Second order
+
+For array-to-scalar functions, the Hessian matrix is of significant interest.
+That is why we provide the following second-order operators:
+
+| **Operator** | **allocating**    | **mutating**       | **allocating with primal**               | **mutating with primal**                  |
+| :----------- | :---------------- | :----------------- | ---------------------------------------- | ----------------------------------------- |
+| Hessian      | [`hessian`](@ref) | [`hessian!`](@ref) | [`value_and_gradient_and_hessian`](@ref) | [`value_and_gradient_and_hessian!`](@ref) |
+
+When the Hessian is too costly to allocate entirely, its products with vectors can be cheaper to compute.
+
+| **Operator**                 | **allocating**                                | **mutating**                                   |
+| :--------------------------- | :-------------------------------------------- | :--------------------------------------------- |
+| Hessian-vector product (HVP) | [`gradient_and_hessian_vector_product`](@ref) | [`gradient_and_hessian_vector_product!`](@ref) |
+
+At the moment, second order operators can only be used with a specific backend of type [`SecondOrder`](@ref).
+Check out the [compatibility table between backends](@ref secondcombin).
 
 ## Multiple inputs/outputs
 

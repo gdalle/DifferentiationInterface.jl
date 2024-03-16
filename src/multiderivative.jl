@@ -2,7 +2,7 @@
     value_and_multiderivative!(multider, backend, f, x, [extras]) -> (y, multider)
     value_and_multiderivative!(y, multider, backend, f!, x, [extras]) -> (y, multider)
 
-Compute the primal value `y = f(x)` and the (array-valued) derivative `multider = f'(x)` of a scalar-to-array function, overwriting `multider` if possible.
+Compute the primal value `y = f(x)` and the (array-valued) derivative `multider = f'(x)` of a scalar-to-array function, overwriting `multider`.
 """
 function value_and_multiderivative! end
 
@@ -74,7 +74,7 @@ end
 """
     multiderivative!(multider, backend, f, x, [extras]) -> multider
 
-Compute the (array-valued) derivative `multider = f'(x)` of a scalar-to-array function, overwriting `multider` if possible.
+Compute the (array-valued) derivative `multider = f'(x)` of a scalar-to-array function, overwriting `multider`.
 """
 function multiderivative! end
 

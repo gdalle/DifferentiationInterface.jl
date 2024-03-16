@@ -1,7 +1,7 @@
 """
     value_and_gradient!(grad, backend, f, x, [extras]) -> (y, grad)
 
-Compute the primal value `y = f(x)` and the gradient `grad = ∇f(x)` of an array-to-scalar function, overwriting `grad` if possible.
+Compute the primal value `y = f(x)` and the gradient `grad = ∇f(x)` of an array-to-scalar function, overwriting `grad`.
 """
 function value_and_gradient! end
 
@@ -45,7 +45,7 @@ end
 """
     gradient!(grad, backend, f, x, [extras]) -> grad
 
-Compute the gradient `grad = ∇f(x)` of an array-to-scalar function, overwriting `grad` if possible.
+Compute the gradient `grad = ∇f(x)` of an array-to-scalar function, overwriting `grad`.
 """
 function gradient! end
 

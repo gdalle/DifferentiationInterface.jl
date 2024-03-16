@@ -21,7 +21,6 @@ end
 
 """
     pushforward!(dy, backend, f, x, dx, [extras]) -> dy
-    pushforward!(y, dy, backend, f!, x, dx, [extras]) -> dy
 
 Compute the Jacobian-vector product `dy = ∂f(x) * dx`, overwriting `dy` if possible.
 """

@@ -17,7 +17,7 @@ end
     value_and_jacobian!(jac, backend, f, x, [extras]) -> (y, jac)
     value_and_jacobian!(y, jac, backend, f!, x, [extras]) -> (y, jac)
 
-Compute the primal value `y = f(x)` and the Jacobian matrix `jac = ∂f(x)` of an array-to-array function, overwriting `jac` if possible.
+Compute the primal value `y = f(x)` and the Jacobian matrix `jac = ∂f(x)` of an array-to-array function, overwriting `jac`.
 
 $JAC_NOTES
 """
@@ -106,7 +106,7 @@ end
 """
     jacobian!(jac, backend, f, x, [extras]) -> jac
 
-Compute the Jacobian matrix `jac = ∂f(x)` of an array-to-array function, overwriting `jac` if possible.
+Compute the Jacobian matrix `jac = ∂f(x)` of an array-to-array function, overwriting `jac`.
 
 $JAC_NOTES
 """

@@ -23,11 +23,15 @@ include("derivative.jl")
 include("multiderivative.jl")
 include("gradient.jl")
 include("jacobian.jl")
-include("additional_args.jl")
+include("hessian.jl")
+include("zero.jl")
 include("prepare.jl")
+include("additional_args.jl")
 
 # submodules
 include("DifferentiationTest.jl")
+
+export SecondOrder
 
 export value_and_pushforward!, value_and_pushforward
 export value_and_pullback!, value_and_pullback
@@ -35,6 +39,8 @@ export value_and_derivative
 export value_and_multiderivative!, value_and_multiderivative
 export value_and_gradient!, value_and_gradient
 export value_and_jacobian!, value_and_jacobian
+export gradient_and_hessian_vector_product!, gradient_and_hessian_vector_product
+export value_and_gradient_and_hessian!, value_and_gradient_and_hessian
 
 export pushforward!, pushforward
 export pullback!, pullback
@@ -42,6 +48,7 @@ export derivative
 export multiderivative!, multiderivative
 export gradient!, gradient
 export jacobian!, jacobian
+export hessian!, hessian
 
 export prepare_pushforward
 export prepare_pullback
@@ -49,6 +56,7 @@ export prepare_derivative
 export prepare_multiderivative
 export prepare_gradient
 export prepare_jacobian
+export prepare_hessian
 
 function __init__()
     Base.Experimental.register_error_hint(MethodError) do io, exc, argtypes, kwargs
