@@ -13,7 +13,6 @@ using ADTypes:
     AbstractADType, AbstractForwardMode, AbstractReverseMode, AbstractFiniteDifferencesMode
 using DocStringExtensions
 using FillArrays: OneElement
-using Random
 
 include("backends.jl")
 include("mode.jl")
@@ -25,8 +24,9 @@ include("multiderivative.jl")
 include("gradient.jl")
 include("jacobian.jl")
 include("hessian.jl")
-include("additional_args.jl")
+include("zero.jl")
 include("prepare.jl")
+include("additional_args.jl")
 
 # submodules
 include("DifferentiationTest.jl")

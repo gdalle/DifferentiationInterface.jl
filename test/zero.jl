@@ -1,6 +1,5 @@
-using DifferentiationInterface
+using DifferentiationInterface: AutoZeroForward, AutoZeroReverse
 using DifferentiationInterface.DifferentiationTest
-using DifferentiationInterface.DifferentiationTest: AutoZeroForward, AutoZeroReverse
 
 test_operators_allocating(AutoZeroForward(); correctness=false);
 test_operators_mutating(AutoZeroForward(); correctness=false);

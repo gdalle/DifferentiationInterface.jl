@@ -11,11 +11,7 @@ To load this extension, run the following command in your REPL:
 """
 module DifferentiationTest
 
-using ADTypes: AbstractADType, AbstractForwardMode, AbstractReverseMode
-using DifferentiationInterface: ForwardMode, ReverseMode, autodiff_mode, zero!
-import DifferentiationInterface as DI
 using DocStringExtensions
-using Random: randn, randn!
 
 """
     Scenario
@@ -42,7 +38,12 @@ $(TYPEDFIELDS)
 end
 
 similar_random(z::Number) = randn(eltype(z))
-similar_random(z::AbstractArray) = randn!(similar(z))
+
+function similar_random(z::AbstractArray)
+    zz = similar(z)
+    zz .= randn(eltype(zz), size(zz))
+    return zz
+end
 
 function Scenario(f, x::Union{Number,AbstractArray})
     y = f(x)
@@ -62,58 +63,6 @@ end
 function default_scenarios end
 function test_operators_allocating end
 function test_operators_mutating end
-
-"""
-    AutoZeroForward <: ADTypes.AbstractForwardMode
-
-Trivial backend that sets all derivatives to zero. Used in testing and benchmarking.
-"""
-struct AutoZeroForward <: AbstractForwardMode end
-
-"""
-    AutoZeroReverse <: ADTypes.AbstractReverseMode
-
-Trivial backend that sets all derivatives to zero. Used in testing and benchmarking.
-"""
-struct AutoZeroReverse <: AbstractReverseMode end
-
-function DI.value_and_pushforward!(
-    dy::Union{Number,AbstractArray}, ::AutoZeroForward, f, x, dx, extras=nothing
-)
-    return f(x), zero!(dy)
-end
-
-function DI.value_and_pullback!(
-    dx::Union{Number,AbstractArray}, ::AutoZeroReverse, f, x, dy, extras=nothing
-)
-    return f(x), zero!(dx)
-end
-
-function DI.value_and_pushforward!(
-    y::AbstractArray,
-    dy::Union{Number,AbstractArray},
-    ::AutoZeroForward,
-    f!,
-    x,
-    dx,
-    extras=nothing,
-)
-    f!(y, x)
-    return y, zero!(dy)
-end
-
-function DI.value_and_pullback!(
-    y::AbstractArray,
-    dx::Union{Number,AbstractArray},
-    ::AutoZeroReverse,
-    f!,
-    x,
-    dy,
-    extras=nothing,
-)
-    f!(y, x)
-    return y, zero!(dx)
-end
 
 export Scenario, default_scenarios
 export test_operators_allocating, test_operators_mutating

@@ -161,15 +161,25 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+    subgraph First order
+        gradient!
+        value_and_pushforward!
+    end
+
     subgraph Hessian-vector product
         gradient_and_hessian_vector_product!
         gradient_and_hessian_vector_product --> gradient_and_hessian_vector_product!
     end
 
+    gradient_and_hessian_vector_product! --> gradient!
+    gradient_and_hessian_vector_product! --> value_and_pushforward!
+
     subgraph Hessian
-        value_and_gradient_and_hessian! --> |n|gradient_and_hessian_vector_product!
+        value_and_gradient_and_hessian!
         value_and_gradient_and_hessian --> value_and_gradient_and_hessian!
         hessian! --> value_and_gradient_and_hessian!
         hessian --> value_and_gradient_and_hessian
     end
+
+    value_and_gradient_and_hessian! --> |n|gradient_and_hessian_vector_product!
 ```

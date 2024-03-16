@@ -24,7 +24,7 @@ AutoReverseDiff
 AutoZygote
 ```
 
-## Mutation compatibility
+## [Mutation compatibility](@id mutcompat)
 
 All backends are compatible with allocating functions `f(x) = y`. Only some are compatible with mutating functions `f!(y, x) = nothing`:
 
@@ -40,7 +40,7 @@ All backends are compatible with allocating functions `f(x) = y`. Only some are 
 | `AutoReverseDiff()`                     | ✓                  |
 | `AutoZygote()`                          | ✗                  |
 
-## Second order combinations
+## [Second order combinations](@id secondcombin)
 
 For hessian computations, in theory we can combine any pair of backends into a [`SecondOrder`](@ref).
 In practice, many combinations will fail.
