@@ -382,9 +382,9 @@ function test_correctness_hessian_allocating(
     hess_true = ForwardDiff.hessian(f, x)
     hvp_true = reshape((hess_true * vec(dx)), size(x))
 
-    y_out1, grad_out1, hess_out1 = value_and_gradient_and_hessian(ba, f, x, maybe_extras...)
+    y_out1, grad_out1, hess_out1 = value_gradient_and_hessian(ba, f, x, maybe_extras...)
     grad_in2, hess_in2 = zero(grad_out1), zero(hess_out1)
-    y_out2, grad_out2, hess_out2 = value_and_gradient_and_hessian!(
+    y_out2, grad_out2, hess_out2 = value_gradient_and_hessian!(
         grad_in2, hess_in2, ba, f, x, maybe_extras...
     )
 

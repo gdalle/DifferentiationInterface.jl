@@ -134,7 +134,7 @@ function test_type_hessian_allocating(
     grad_in = zero(dx)
     hvp_in = zero(dx)
     hess_in = zeros(eltype(x), length(x), length(x))
-    @test_opt ignored_modules = (LinearAlgebra,) value_and_gradient_and_hessian!(
+    @test_opt ignored_modules = (LinearAlgebra,) value_gradient_and_hessian!(
         grad_in, hess_in, ba, f, x, maybe_extras...
     )
     @test_opt ignored_modules = (LinearAlgebra,) hessian!(
@@ -143,7 +143,7 @@ function test_type_hessian_allocating(
     @test_opt ignored_modules = (LinearAlgebra,) gradient_and_hessian_vector_product!(
         grad_in, hvp_in, ba, f, x, dx, maybe_extras...
     )
-    @test_opt ignored_modules = (LinearAlgebra,) value_and_gradient_and_hessian(
+    @test_opt ignored_modules = (LinearAlgebra,) value_gradient_and_hessian(
         ba, f, x, maybe_extras...
     )
     @test_opt ignored_modules = (LinearAlgebra,) hessian(ba, f, x, maybe_extras...)

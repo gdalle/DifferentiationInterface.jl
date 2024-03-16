@@ -51,7 +51,7 @@ export gradient_and_hessian_vector_product!, gradient_and_hessian_vector_product
 export hessian_vector_product!, hessian_vector_product
 
 export value_derivative_and_second_derivative
-export value_and_gradient_and_hessian!, value_and_gradient_and_hessian
+export value_gradient_and_hessian!, value_gradient_and_hessian
 
 export pushforward!, pushforward
 export pullback!, pullback
