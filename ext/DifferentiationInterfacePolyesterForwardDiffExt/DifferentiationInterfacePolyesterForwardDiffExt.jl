@@ -16,7 +16,7 @@ function DI.value_and_pushforward!(
     f,
     x,
     dx,
-    extras::Nothing,
+    extras::Nothing=nothing,
 ) where {C}
     return DI.value_and_pushforward!(
         dy, AutoForwardDiff{C,Nothing}(nothing), f, x, dx, extras
@@ -30,7 +30,7 @@ function DI.value_and_pushforward!(
     f!,
     x,
     dx,
-    extras::Nothing,
+    extras::Nothing=nothing,
 ) where {C}
     return DI.value_and_pushforward!(
         y, dy, AutoForwardDiff{C,Nothing}(nothing), f!, x, dx, extras
@@ -40,7 +40,11 @@ end
 ## Utilities
 
 function DI.value_and_gradient!(
-    grad::AbstractArray, ::AutoPolyesterForwardDiff{C}, f, x::AbstractArray, extras::Nothing
+    grad::AbstractArray,
+    ::AutoPolyesterForwardDiff{C},
+    f,
+    x::AbstractArray,
+    extras::Nothing=nothing,
 ) where {C}
     y = f(x)
     threaded_gradient!(f, grad, x, Chunk{C}())
@@ -48,14 +52,22 @@ function DI.value_and_gradient!(
 end
 
 function DI.gradient!(
-    grad::AbstractArray, ::AutoPolyesterForwardDiff{C}, f, x::AbstractArray, extras::Nothing
+    grad::AbstractArray,
+    ::AutoPolyesterForwardDiff{C},
+    f,
+    x::AbstractArray,
+    extras::Nothing=nothing,
 ) where {C}
     threaded_gradient!(f, grad, x, Chunk{C}())
     return grad
 end
 
 function DI.value_and_jacobian!(
-    jac::AbstractMatrix, ::AutoPolyesterForwardDiff{C}, f, x::AbstractArray, extras::Nothing
+    jac::AbstractMatrix,
+    ::AutoPolyesterForwardDiff{C},
+    f,
+    x::AbstractArray,
+    extras::Nothing=nothing,
 ) where {C}
     y = f(x)
     threaded_jacobian!(f, jac, x, Chunk{C}())
@@ -63,7 +75,11 @@ function DI.value_and_jacobian!(
 end
 
 function DI.jacobian!(
-    jac::AbstractMatrix, ::AutoPolyesterForwardDiff{C}, f, x::AbstractArray, extras::Nothing
+    jac::AbstractMatrix,
+    ::AutoPolyesterForwardDiff{C},
+    f,
+    x::AbstractArray,
+    extras::Nothing=nothing,
 ) where {C}
     threaded_jacobian!(f, jac, x, Chunk{C}())
     return jac
@@ -75,7 +91,7 @@ function DI.value_and_jacobian!(
     ::AutoPolyesterForwardDiff{C},
     f!,
     x::AbstractArray,
-    extras::Nothing,
+    extras::Nothing=nothing,
 ) where {C}
     f!(y, x)
     threaded_jacobian!(f!, y, jac, x, Chunk{C}())

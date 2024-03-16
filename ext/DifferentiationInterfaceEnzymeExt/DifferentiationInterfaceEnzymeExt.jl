@@ -29,14 +29,14 @@ AutoEnzyme
 const AutoForwardEnzyme = AutoEnzyme{<:ForwardMode}
 const AutoReverseEnzyme = AutoEnzyme{<:ReverseMode}
 
-function DI.autodiff_mode(::AutoEnzyme)
+function DI.mode(::AutoEnzyme)
     return error(
         "You need to specify the Enzyme mode with `AutoEnzyme(Enzyme.Forward)` or `AutoEnzyme(Enzyme.Reverse)`",
     )
 end
 
-DI.autodiff_mode(::AutoForwardEnzyme) = DI.ForwardMode()
-DI.autodiff_mode(::AutoReverseEnzyme) = DI.ReverseMode()
+DI.mode(::AutoForwardEnzyme) = DI.ForwardMode()
+DI.mode(::AutoReverseEnzyme) = DI.ReverseMode()
 
 # Enzyme's `Duplicated(x, dx)` expects both arguments to be of the same type
 function DI.basisarray(::AutoEnzyme, a::AbstractArray{T}, i::CartesianIndex) where {T}

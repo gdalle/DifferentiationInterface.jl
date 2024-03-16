@@ -7,7 +7,7 @@ function DI.value_and_pullback!(
     f!,
     x::AbstractArray,
     dy::AbstractArray,
-    extras::Nothing,
+    extras::Nothing=nothing,
 )
     res = DiffResults.DiffResult(y, similar(dy, length(y), length(x)))
     res = jacobian!(res, f!, y, x)
@@ -23,7 +23,7 @@ function DI.value_and_pullback!(
     f!,
     x::Number,
     dy,
-    extras::Nothing,
+    extras::Nothing=nothing,
 )
     x_array = [x]
     dx_array = similar(x_array)
@@ -36,11 +36,11 @@ end
 
 function DI.value_and_jacobian!(
     y::AbstractArray,
-    jac::AbstractArray,
+    jac::AbstractMatrix,
     backend::AutoReverseDiff,
     f!,
     x::AbstractArray,
-    extras::Nothing,
+    extras::Nothing=nothing,
 )
     return DI.value_and_jacobian!(
         y, jac, backend, f!, x, DI.prepare_jacobian(backend, f!, x, y)
@@ -49,7 +49,7 @@ end
 
 function DI.value_and_jacobian!(
     y::AbstractArray,
-    jac::AbstractArray,
+    jac::AbstractMatrix,
     backend::AutoReverseDiff,
     f!,
     x::AbstractArray,

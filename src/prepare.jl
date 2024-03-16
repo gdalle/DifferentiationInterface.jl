@@ -61,6 +61,15 @@ prepare_jacobian(::AbstractADType, f, x::AbstractArray) = nothing
 prepare_jacobian(::AbstractADType, f!, x::AbstractArray, y::AbstractArray) = nothing
 
 """
+    prepare_second_derivative(backend, f, x) -> extras
+
+Create an `extras` object that can be given to second derivative operators.
+"""
+function prepare_second_derivative end
+
+prepare_second_derivative(::AbstractADType, f, x::Number) = nothing
+
+"""
     prepare_hessian(backend, f, x) -> extras
 
 Create an `extras` object that can be given to hessian operators.

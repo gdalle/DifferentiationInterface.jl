@@ -2,7 +2,7 @@ using ADTypes
 using ADTypes: AbstractADType
 using BenchmarkTools
 using DifferentiationInterface
-using DifferentiationInterface: ForwardMode, ReverseMode, autodiff_mode
+using DifferentiationInterface: ForwardMode, ReverseMode, mode
 
 BenchmarkTools.DEFAULT_PARAMETERS.seconds = 1
 
@@ -12,7 +12,7 @@ pretty_backend(::AutoChainRules{<:ZygoteRuleConfig}) = "ChainRules{Zygote}"
 pretty_backend(::AutoDiffractor) = "Diffractor (forward)"
 
 function pretty_backend(backend::AutoEnzyme)
-    return autodiff_mode(backend) isa ForwardMode ? "Enzyme (forward)" : "Enzyme (reverse)"
+    return mode(backend) isa ForwardMode ? "Enzyme (forward)" : "Enzyme (reverse)"
 end
 
 pretty_backend(::AutoFiniteDiff) = "FiniteDiff"
@@ -45,7 +45,7 @@ function add_pushforward_benchmarks!(
     dx = n == 1 ? randn() : randn(n)
     dy = m == 1 ? 0.0 : zeros(m)
 
-    if !isa(autodiff_mode(backend), ForwardMode)
+    if !isa(mode(backend), ForwardMode)
         return nothing
     end
 
@@ -90,7 +90,7 @@ function add_pullback_benchmarks!(
     dx = n == 1 ? 0.0 : zeros(n)
     dy = m == 1 ? randn() : randn(m)
 
-    if !isa(autodiff_mode(backend), ReverseMode)
+    if !isa(mode(backend), ReverseMode)
         return nothing
     end
 

@@ -58,6 +58,13 @@ Modules = [DifferentiationInterface]
 Pages = ["pullback.jl"]
 ```
 
+## Hessian-vector product (HVP)
+
+```@autodocs
+Modules = [DifferentiationInterface]
+Pages = ["hessian_vector_product.jl"]
+```
+
 ## Preparation
 
 ```@autodocs

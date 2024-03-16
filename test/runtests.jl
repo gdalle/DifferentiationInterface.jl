@@ -33,35 +33,37 @@ using Zygote: Zygote
         include("zero.jl")
     end
 
-    @testset "ChainRules (forward)" begin
-        @test_skip include("chainrules_forward.jl")
-    end
-    @testset "ChainRules (reverse)" begin
-        include("chainrules_reverse.jl")
-    end
-    @testset "Diffractor (forward)" begin
-        include("diffractor.jl")
-    end
-    @testset "Enzyme (forward)" begin
-        include("enzyme_forward.jl")
-    end
-    @testset "Enzyme (reverse)" begin
-        include("enzyme_reverse.jl")
-    end
-    @testset "FiniteDiff" begin
-        include("finitediff.jl")
-    end
-    @testset "ForwardDiff" begin
-        include("forwarddiff.jl")
-    end
-    @testset "PolyesterForwardDiff" begin
-        include("polyesterforwarddiff.jl")
-    end
-    @testset "ReverseDiff" begin
-        include("reversediff.jl")
-    end
-    @testset "Zygote" begin
-        include("zygote.jl")
+    @testset verbose = true "First order" begin
+        @testset "ChainRules (forward)" begin
+            @test_skip include("chainrules_forward.jl")
+        end
+        @testset "ChainRules (reverse)" begin
+            include("chainrules_reverse.jl")
+        end
+        @testset "Diffractor (forward)" begin
+            include("diffractor.jl")
+        end
+        @testset "Enzyme (forward)" begin
+            include("enzyme_forward.jl")
+        end
+        @testset "Enzyme (reverse)" begin
+            include("enzyme_reverse.jl")
+        end
+        @testset "FiniteDiff" begin
+            include("finitediff.jl")
+        end
+        @testset "ForwardDiff" begin
+            include("forwarddiff.jl")
+        end
+        @testset "PolyesterForwardDiff" begin
+            include("polyesterforwarddiff.jl")
+        end
+        @testset "ReverseDiff" begin
+            include("reversediff.jl")
+        end
+        @testset "Zygote" begin
+            include("zygote.jl")
+        end
     end
 
     @testset "Second order" begin

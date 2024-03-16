@@ -7,7 +7,7 @@ function DI.value_and_pushforward!(
     f!,
     x,
     dx,
-    extras::Nothing,
+    extras::Nothing=nothing,
 )
     dx_sametype = convert(typeof(x), dx)
     dy_sametype = convert(typeof(y), dy)

@@ -286,6 +286,92 @@ function test_correctness_gradient_allocating(
     end
 end
 
+## Jacobian
+
+function test_correctness_jacobian_allocating(
+    ba::AbstractADType, scenario::Scenario, maybe_extras...
+)
+    (; f, x, y) = deepcopy(scenario)
+    jac_true = ForwardDiff.jacobian(f, x)
+
+    y_out1, jac_out1 = value_and_jacobian(ba, f, x, maybe_extras...)
+    jac_in2 = zero(jac_out1)
+    y_out2, jac_out2 = value_and_jacobian!(jac_in2, ba, f, x, maybe_extras...)
+
+    jac_out3 = jacobian(ba, f, x, maybe_extras...)
+    jac_in4 = zero(jac_out3)
+    jac_out4 = jacobian!(jac_in4, ba, f, x, maybe_extras...)
+
+    @testset "Primal value" begin
+        @test y_out1 ≈ y
+        @test y_out2 ≈ y
+    end
+    @testset "Jacobian value" begin
+        @test jac_out1 ≈ jac_true rtol = 1e-3
+        @test jac_out2 ≈ jac_true rtol = 1e-3
+        @test jac_out3 ≈ jac_true rtol = 1e-3
+        @test jac_out4 ≈ jac_true rtol = 1e-3
+        @testset "Mutation" begin
+            @test jac_in2 ≈ jac_true rtol = 1e-3
+            @test jac_in4 ≈ jac_true rtol = 1e-3
+        end
+    end
+end
+
+function test_correctness_jacobian_mutating(
+    ba::AbstractADType, scenario::Scenario, maybe_extras...
+)
+    (; f, x, y) = deepcopy(scenario)
+    f! = f
+    jac_true = ForwardDiff.jacobian(f!, y, x)
+
+    y_in = zero(y)
+    jac_in = similar(y, length(y), length(x))
+    y_out, jac_out = value_and_jacobian!(y_in, jac_in, ba, f!, x, maybe_extras...)
+
+    @testset "Primal value" begin
+        @test y_out ≈ y
+        @testset "Mutation" begin
+            @test y_in ≈ y
+        end
+    end
+    @testset "Jacobian value" begin
+        @test jac_out ≈ jac_true rtol = 1e-3
+        @testset "Mutation" begin
+            @test jac_in ≈ jac_true rtol = 1e-3
+        end
+    end
+end
+
+## Second derivative
+
+function test_correctness_second_derivative_allocating(
+    ba::AbstractADType, scenario::Scenario, maybe_extras...
+)
+    (; f, x, y) = deepcopy(scenario)
+    der_true = ForwardDiff.derivative(f, x)
+    derder_true = ForwardDiff.derivative(x) do z
+        ForwardDiff.derivative(f, z)
+    end
+
+    y_out1, der_out1, derder_out1 = value_derivative_and_second_derivative(
+        ba, f, x, maybe_extras...
+    )
+
+    derder_out2 = second_derivative(ba, f, x, maybe_extras...)
+
+    @testset "Primal value" begin
+        @test y_out1 ≈ y
+    end
+    @testset "Derivative value" begin
+        @test der_out1 ≈ der_true rtol = 1e-3
+    end
+    @testset "Second derivative value" begin
+        @test derder_out1 ≈ derder_true rtol = 1e-3
+        @test derder_out2 ≈ derder_true rtol = 1e-3
+    end
+end
+
 ## Hessian
 
 function test_correctness_hessian_allocating(
@@ -341,63 +427,6 @@ function test_correctness_hessian_allocating(
         @test hvp_out6 ≈ hvp_true rtol = 1e-3
         @testset "Mutation" begin
             @test hvp_in6 ≈ hvp_true rtol = 1e-3
-        end
-    end
-end
-
-## Jacobian
-
-function test_correctness_jacobian_allocating(
-    ba::AbstractADType, scenario::Scenario, maybe_extras...
-)
-    (; f, x, y) = deepcopy(scenario)
-    jac_true = ForwardDiff.jacobian(f, x)
-
-    y_out1, jac_out1 = value_and_jacobian(ba, f, x, maybe_extras...)
-    jac_in2 = zero(jac_out1)
-    y_out2, jac_out2 = value_and_jacobian!(jac_in2, ba, f, x, maybe_extras...)
-
-    jac_out3 = jacobian(ba, f, x, maybe_extras...)
-    jac_in4 = zero(jac_out3)
-    jac_out4 = jacobian!(jac_in4, ba, f, x, maybe_extras...)
-
-    @testset "Primal value" begin
-        @test y_out1 ≈ y
-        @test y_out2 ≈ y
-    end
-    @testset "Jacobian value" begin
-        @test jac_out1 ≈ jac_true rtol = 1e-3
-        @test jac_out2 ≈ jac_true rtol = 1e-3
-        @test jac_out3 ≈ jac_true rtol = 1e-3
-        @test jac_out4 ≈ jac_true rtol = 1e-3
-        @testset "Mutation" begin
-            @test jac_in2 ≈ jac_true rtol = 1e-3
-            @test jac_in4 ≈ jac_true rtol = 1e-3
-        end
-    end
-end
-
-function test_correctness_jacobian_mutating(
-    ba::AbstractADType, scenario::Scenario, maybe_extras...
-)
-    (; f, x, y) = deepcopy(scenario)
-    f! = f
-    jac_true = ForwardDiff.jacobian(f!, y, x)
-
-    y_in = zero(y)
-    jac_in = similar(y, length(y), length(x))
-    y_out, jac_out = value_and_jacobian!(y_in, jac_in, ba, f!, x, maybe_extras...)
-
-    @testset "Primal value" begin
-        @test y_out ≈ y
-        @testset "Mutation" begin
-            @test y_in ≈ y
-        end
-    end
-    @testset "Jacobian value" begin
-        @test jac_out ≈ jac_true rtol = 1e-3
-        @testset "Mutation" begin
-            @test jac_in ≈ jac_true rtol = 1e-3
         end
     end
 end

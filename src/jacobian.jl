@@ -21,9 +21,24 @@ Compute the primal value `y = f(x)` and the Jacobian matrix `jac = ∂f(x)` of a
 
 $JAC_NOTES
 """
-function value_and_jacobian! end
+function value_and_jacobian!(
+    jac::AbstractMatrix, backend::AbstractADType, f, x::AbstractArray, extras=nothing
+)
+    return value_and_jacobian_aux!(jac, backend, f, x, extras, mode(backend))
+end
 
 function value_and_jacobian!(
+    y::AbstractArray,
+    jac::AbstractMatrix,
+    backend::AbstractADType,
+    f,
+    x::AbstractArray,
+    extras=nothing,
+)
+    return value_and_jacobian_aux!(y, jac, backend, f, x, extras, mode(backend))
+end
+
+function value_and_jacobian_aux!(
     jac::AbstractMatrix, backend::AbstractADType, f, x::AbstractArray, extras, ::ForwardMode
 )
     y = f(x)
@@ -36,7 +51,7 @@ function value_and_jacobian!(
     return y, jac
 end
 
-function value_and_jacobian!(
+function value_and_jacobian_aux!(
     y::AbstractArray,
     jac::AbstractMatrix,
     backend::AbstractADType,
@@ -54,7 +69,7 @@ function value_and_jacobian!(
     return y, jac
 end
 
-function value_and_jacobian!(
+function value_and_jacobian_aux!(
     jac::AbstractMatrix, backend::AbstractADType, f, x::AbstractArray, extras, ::ReverseMode
 )
     y = f(x)
@@ -67,7 +82,7 @@ function value_and_jacobian!(
     return y, jac
 end
 
-function value_and_jacobian!(
+function value_and_jacobian_aux!(
     y::AbstractArray,
     jac::AbstractMatrix,
     backend::AbstractADType,
@@ -92,11 +107,7 @@ Compute the primal value `y = f(x)` and the Jacobian matrix `jac = ∂f(x)` of a
 
 $JAC_NOTES
 """
-function value_and_jacobian end
-
-function value_and_jacobian(
-    backend::AbstractADType, f, x::AbstractArray, extras, ::AbstractMode
-)
+function value_and_jacobian(backend::AbstractADType, f, x::AbstractArray, extras=nothing)
     y = f(x)
     T = promote_type(eltype(x), eltype(y))
     jac = similar(y, T, length(y), length(x))
@@ -110,15 +121,8 @@ Compute the Jacobian matrix `jac = ∂f(x)` of an array-to-array function, overw
 
 $JAC_NOTES
 """
-function jacobian! end
-
 function jacobian!(
-    jac::AbstractMatrix,
-    backend::AbstractADType,
-    f,
-    x::AbstractArray,
-    extras,
-    ::AbstractMode,
+    jac::AbstractMatrix, backend::AbstractADType, f, x::AbstractArray, extras=nothing
 )
     return last(value_and_jacobian!(jac, backend, f, x, extras))
 end
@@ -130,8 +134,6 @@ Compute the Jacobian matrix `jac = ∂f(x)` of an array-to-array function.
 
 $JAC_NOTES
 """
-function jacobian end
-
-function jacobian(backend::AbstractADType, f, x::AbstractArray, extras, ::AbstractMode)
+function jacobian(backend::AbstractADType, f, x::AbstractArray, extras=nothing)
     return last(value_and_jacobian(backend, f, x, extras))
 end

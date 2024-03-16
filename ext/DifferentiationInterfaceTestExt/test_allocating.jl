@@ -94,25 +94,6 @@ function test_gradient_allocating(
     end
 end
 
-function test_hessian_allocating(
-    ba::AbstractADType,
-    scenarios::Vector{<:Scenario};
-    correctness::Bool=true,
-    type_stability::Bool=true,
-    allocs::Bool=false,
-)
-    @testset "$(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
-        @testset "Extras: $(isempty(mex))" for mex in ((), (prepare_hessian(ba, scen),))
-            if correctness
-                test_correctness_hessian_allocating(ba, scen, mex...)
-            end
-            if type_stability
-                test_type_hessian_allocating(ba, scen, mex...)
-            end
-        end
-    end
-end
-
 function test_jacobian_allocating(
     ba::AbstractADType,
     scenarios::Vector{<:Scenario};
@@ -127,6 +108,45 @@ function test_jacobian_allocating(
             end
             if type_stability
                 test_type_jacobian_allocating(ba, scen, mex...)
+            end
+        end
+    end
+end
+
+function test_second_derivative_allocating(
+    ba::AbstractADType,
+    scenarios::Vector{<:Scenario};
+    correctness::Bool=true,
+    type_stability::Bool=true,
+    allocs::Bool=false,
+)
+    @testset "$(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
+        @testset "Extras: $(isempty(mex))" for mex in
+                                               ((), (prepare_second_derivative(ba, scen),))
+            if correctness
+                test_correctness_second_derivative_allocating(ba, scen, mex...)
+            end
+            if type_stability
+                test_type_second_derivative_allocating(ba, scen, mex...)
+            end
+        end
+    end
+end
+
+function test_hessian_allocating(
+    ba::AbstractADType,
+    scenarios::Vector{<:Scenario};
+    correctness::Bool=true,
+    type_stability::Bool=true,
+    allocs::Bool=false,
+)
+    @testset "$(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
+        @testset "Extras: $(isempty(mex))" for mex in ((), (prepare_hessian(ba, scen),))
+            if correctness
+                test_correctness_hessian_allocating(ba, scen, mex...)
+            end
+            if type_stability
+                test_type_hessian_allocating(ba, scen, mex...)
             end
         end
     end
@@ -153,12 +173,12 @@ function DT.test_operators_allocating(
         !is_mutating(scen) && in_type(scen) <: input_type && out_type(scen) <: output_type
     end
 
-    if autodiff_mode(ba) isa ForwardMode && :pushforward in kept
+    if mode(ba) isa ForwardMode && :pushforward in kept
         @testset "Pushforward" test_pushforward_allocating(
             ba, scenarios; correctness, type_stability, allocs
         )
     end
-    if autodiff_mode(ba) isa ReverseMode && :pullback in kept
+    if mode(ba) isa ReverseMode && :pullback in kept
         @testset "Pullback" test_pullback_allocating(
             ba, scenarios; correctness, type_stability, allocs
         )
@@ -178,14 +198,41 @@ function DT.test_operators_allocating(
             ba, gradient_scenarios(scenarios); correctness, type_stability, allocs
         )
     end
-    if :hessian in kept
-        @testset "Hessian" test_hessian_allocating(
-            ba, hessian_scenarios(scenarios); correctness, type_stability, allocs
-        )
-    end
     if :jacobian in kept
         @testset "Jacobian" test_jacobian_allocating(
             ba, jacobian_scenarios(scenarios); correctness, type_stability, allocs
+        )
+    end
+    return nothing
+end
+
+"""
+$(TYPEDSIGNATURES)
+"""
+function DT.test_second_order_operators_allocating(
+    ba::AbstractADType,
+    scenarios::Vector{<:Scenario}=default_scenarios();
+    input_type::Type=Any,
+    output_type::Type=Any,
+    correctness::Bool=true,
+    type_stability::Bool=true,
+    allocs::Bool=false,
+    included::Vector{Symbol}=[:second_derivative, :hessian],
+    excluded::Vector{Symbol}=Symbol[],
+)
+    kept = symdiff(included, excluded)
+    scenarios = filter(scenarios) do scen
+        !is_mutating(scen) && in_type(scen) <: input_type && out_type(scen) <: output_type
+    end
+
+    if :second_derivative in kept
+        @testset "Second derivative" test_second_derivative_allocating(
+            ba, second_derivative_scenarios(scenarios); correctness, type_stability, allocs
+        )
+    end
+    if :hessian in kept
+        @testset "Hessian" test_hessian_allocating(
+            ba, hessian_scenarios(scenarios); correctness, type_stability, allocs
         )
     end
     return nothing

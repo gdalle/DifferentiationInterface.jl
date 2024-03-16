@@ -92,25 +92,6 @@ function test_type_gradient_allocating(
     @test_opt gradient(ba, f, x, maybe_extras...)
 end
 
-## Hessian
-
-function test_type_hessian_allocating(
-    ba::AbstractADType, scenario::Scenario, maybe_extras...
-)
-    (; f, x, dx) = deepcopy(scenario)
-    grad_in = zero(dx)
-    hvp_in = zero(dx)
-    hess_in = zeros(eltype(x), length(x), length(x))
-    @test_opt value_and_gradient_and_hessian!(grad_in, hess_in, ba, f, x, maybe_extras...)
-    @test_opt hessian!(hess_in, ba, f, x, maybe_extras...)
-    @test_opt gradient_and_hessian_vector_product!(
-        grad_in, hvp_in, ba, f, x, dx, maybe_extras...
-    )
-    @test_opt value_and_gradient_and_hessian(ba, f, x, maybe_extras...)
-    @test_opt hessian(ba, f, x, maybe_extras...)
-    @test_opt gradient_and_hessian_vector_product(ba, f, x, dx, maybe_extras...)
-end
-
 ## Jacobian
 
 function test_type_jacobian_allocating(
@@ -132,4 +113,41 @@ function test_type_jacobian_mutating(
     y_in = zero(y)
     jac_in = zeros(eltype(y), length(y), length(x))
     @test_opt value_and_jacobian!(y_in, jac_in, ba, f!, x, maybe_extras...)
+end
+
+## Second derivative
+
+function test_type_second_derivative_allocating(
+    ba::AbstractADType, scenario::Scenario, maybe_extras...
+)
+    (; f, x) = deepcopy(scenario)
+    @test_opt value_derivative_and_second_derivative(ba, f, x, maybe_extras...)
+    @test_opt second_derivative(ba, f, x, maybe_extras...)
+end
+
+## Hessian
+
+function test_type_hessian_allocating(
+    ba::AbstractADType, scenario::Scenario, maybe_extras...
+)
+    (; f, x, dx) = deepcopy(scenario)
+    grad_in = zero(dx)
+    hvp_in = zero(dx)
+    hess_in = zeros(eltype(x), length(x), length(x))
+    @test_opt ignored_modules = (LinearAlgebra,) value_and_gradient_and_hessian!(
+        grad_in, hess_in, ba, f, x, maybe_extras...
+    )
+    @test_opt ignored_modules = (LinearAlgebra,) hessian!(
+        hess_in, ba, f, x, maybe_extras...
+    )
+    @test_opt ignored_modules = (LinearAlgebra,) gradient_and_hessian_vector_product!(
+        grad_in, hvp_in, ba, f, x, dx, maybe_extras...
+    )
+    @test_opt ignored_modules = (LinearAlgebra,) value_and_gradient_and_hessian(
+        ba, f, x, maybe_extras...
+    )
+    @test_opt ignored_modules = (LinearAlgebra,) hessian(ba, f, x, maybe_extras...)
+    @test_opt ignored_modules = (LinearAlgebra,) gradient_and_hessian_vector_product(
+        ba, f, x, dx, maybe_extras...
+    )
 end

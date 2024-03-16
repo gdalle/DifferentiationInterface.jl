@@ -96,12 +96,12 @@ function DT.test_operators_mutating(
         is_mutating(scen) && in_type(scen) <: input_type && out_type(scen) <: output_type
     end
 
-    if autodiff_mode(ba) isa ForwardMode && :pushforward in kept
+    if mode(ba) isa ForwardMode && :pushforward in kept
         @testset "Pushforward (mutating)" test_pushforward_mutating(
             ba, scenarios; correctness, type_stability, allocs
         )
     end
-    if autodiff_mode(ba) isa ReverseMode && :pullback in kept
+    if mode(ba) isa ReverseMode && :pullback in kept
         @testset "Pullback (mutating)" test_pullback_mutating(
             ba, scenarios; correctness, type_stability, allocs
         )
