@@ -1,68 +1,53 @@
 in_type(::Scenario{F,X}) where {F,X} = X
 out_type(::Scenario{F,X,Y}) where {F,X,Y} = Y
-mutating(s::Scenario) = s.mutating
+is_mutating(s::Scenario) = s.mutating
 
-## Auto fill
-
-function DT.Scenario(rng::AbstractRNG, f, x::Union{Number,AbstractArray})
-    y = f(x)
-    return make_scenario(rng, f, x, y; mutating=false)
-end
-
-function DT.Scenario(
-    rng::AbstractRNG, f!, x::Union{Number,AbstractArray}, s::NTuple{N,<:Integer}
-) where {N}
-    y = randn(eltype(x), s...)
-    f!(y, x)
-    return make_scenario(rng, f!, x, y; mutating=true)
-end
-
-function make_scenario(rng::AbstractRNG, f, x::Number, y::Number; mutating)
-    dx = randn(rng, typeof(x))
-    dy = randn(rng, typeof(y))
-    der_true = ForwardDiff.derivative(f, x)
-    dx_true = der_true * dy
-    dy_true = der_true * dx
-    return Scenario(; f, x, y, dx, dy, dx_true, dy_true, der_true, mutating)
-end
-
-function make_scenario(rng::AbstractRNG, f, x::Number, y::AbstractArray; mutating)
-    dx = randn(rng, typeof(x))
-    dy = similar(y)
-    randn!(rng, dy)
-    if mutating
-        multider_true = ForwardDiff.derivative(f, y, x)
-    else
-        multider_true = ForwardDiff.derivative(f, x)
+function derivative_scenarios(scenarios::Vector{<:Scenario})
+    filter(scenarios) do scen
+        in_type(scen) <: Number && out_type(scen) <: Number
     end
-    dx_true = dot(multider_true, dy)
-    dy_true = multider_true .* dx
-    return Scenario(; f, x, y, dx, dy, dx_true, dy_true, multider_true, mutating)
 end
 
-function make_scenario(rng::AbstractRNG, f, x::AbstractArray, y::Number; mutating)
-    dx = similar(x)
-    randn!(rng, dx)
-    dy = randn(rng, typeof(y))
-    grad_true = ForwardDiff.gradient(f, x)
-    dx_true = grad_true .* dy
-    dy_true = dot(grad_true, dx)
-    return Scenario(; f, x, y, dx, dy, dx_true, dy_true, grad_true, mutating)
-end
-
-function make_scenario(rng::AbstractRNG, f, x::AbstractArray, y::AbstractArray; mutating)
-    dx = similar(x)
-    randn!(rng, dx)
-    dy = similar(y)
-    randn!(rng, dy)
-    if mutating
-        jac_true = ForwardDiff.jacobian(f, y, x)
-    else
-        jac_true = ForwardDiff.jacobian(f, x)
+function multiderivative_scenarios(scenarios::Vector{<:Scenario})
+    filter(scenarios) do scen
+        in_type(scen) <: Number && out_type(scen) <: AbstractArray
     end
-    dx_true = reshape(transpose(jac_true) * vec(dy), size(x))
-    dy_true = reshape(jac_true * vec(dx), size(y))
-    return Scenario(; f, x, y, dx, dy, dx_true, dy_true, jac_true, mutating)
+end
+
+function gradient_scenarios(scenarios::Vector{<:Scenario})
+    filter(scenarios) do scen
+        in_type(scen) <: AbstractArray && out_type(scen) <: Number
+    end
+end
+
+function hessian_scenarios(scenarios::Vector{<:Scenario})
+    filter(scenarios) do scen
+        in_type(scen) <: AbstractArray && out_type(scen) <: Number
+    end
+end
+
+function jacobian_scenarios(scenarios::Vector{<:Scenario})
+    filter(scenarios) do scen
+        in_type(scen) <: AbstractArray && out_type(scen) <: AbstractArray
+    end
+end
+
+for prep in [
+    :prepare_pushforward,
+    :prepare_pullback,
+    :prepare_derivative,
+    :prepare_multiderivative,
+    :prepare_gradient,
+    :prepare_hessian,
+    :prepare_jacobian,
+]
+    @eval function DI.$prep(ba::AbstractADType, scen::Scenario)
+        if is_mutating(scen)
+            return DI.$prep(ba, scen.f, scen.x, deepcopy(scen.y))
+        else
+            return DI.$prep(ba, scen.f, scen.x)
+        end
+    end
 end
 
 ## Defaults
@@ -122,35 +107,33 @@ function f!_matrix_matrix(y::AbstractMatrix, x::AbstractMatrix)
     return nothing
 end
 
-function default_scenarios_allocating(rng::AbstractRNG)
+function default_scenarios_allocating()
     scenarios = [
-        Scenario(rng, f_scalar_scalar, 1.0),
-        Scenario(rng, f_scalar_vector, 1.0),
-        Scenario(rng, f_scalar_matrix, 1.0),
-        Scenario(rng, f_vector_scalar, [1.0, 2.0]),
-        Scenario(rng, f_matrix_scalar, [1.0 2.0; 3.0 4.0]),
-        Scenario(rng, f_vector_vector, [1.0, 2.0]),
-        Scenario(rng, f_vector_matrix, [1.0, 2.0]),
-        Scenario(rng, f_matrix_vector, [1.0 2.0; 3.0 4.0]),
-        Scenario(rng, f_matrix_matrix, [1.0 2.0; 3.0 4.0]),
+        Scenario(f_scalar_scalar, 1.0),
+        Scenario(f_scalar_vector, 1.0),
+        Scenario(f_scalar_matrix, 1.0),
+        Scenario(f_vector_scalar, [1.0, 2.0]),
+        Scenario(f_matrix_scalar, [1.0 2.0; 3.0 4.0]),
+        Scenario(f_vector_vector, [1.0, 2.0]),
+        Scenario(f_vector_matrix, [1.0, 2.0]),
+        Scenario(f_matrix_vector, [1.0 2.0; 3.0 4.0]),
+        Scenario(f_matrix_matrix, [1.0 2.0; 3.0 4.0]),
     ]
     return scenarios
 end
 
-function default_scenarios_mutating(rng::AbstractRNG)
+function default_scenarios_mutating()
     scenarios = [
-        Scenario(rng, f!_scalar_vector, 1.0, (2,)),
-        Scenario(rng, f!_scalar_matrix, 1.0, (2, 2)),
-        Scenario(rng, f!_vector_vector, [1.0, 2.0], (4,)),
-        Scenario(rng, f!_vector_matrix, [1.0, 2.0], (2, 2)),
-        Scenario(rng, f!_matrix_vector, [1.0 2.0; 3.0 4.0], (8,)),
-        Scenario(rng, f!_matrix_matrix, [1.0 2.0; 3.0 4.0], (4, 2)),
+        Scenario(f!_scalar_vector, 1.0, (2,)),
+        Scenario(f!_scalar_matrix, 1.0, (2, 2)),
+        Scenario(f!_vector_vector, [1.0, 2.0], (4,)),
+        Scenario(f!_vector_matrix, [1.0, 2.0], (2, 2)),
+        Scenario(f!_matrix_vector, [1.0 2.0; 3.0 4.0], (8,)),
+        Scenario(f!_matrix_matrix, [1.0 2.0; 3.0 4.0], (4, 2)),
     ]
     return scenarios
 end
 
-function DT.default_scenarios(rng::AbstractRNG)
-    return vcat(default_scenarios_allocating(rng), default_scenarios_mutating(rng))
+function DT.default_scenarios()
+    return vcat(default_scenarios_allocating(), default_scenarios_mutating())
 end
-
-DT.default_scenarios() = default_scenarios(default_rng())

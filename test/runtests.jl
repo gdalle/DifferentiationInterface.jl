@@ -63,4 +63,8 @@ using Zygote: Zygote
     @testset "Zygote" begin
         include("zygote.jl")
     end
+
+    @testset "Second order" begin
+        include("second_order.jl")
+    end
 end

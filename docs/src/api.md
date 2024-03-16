@@ -37,6 +37,13 @@ Modules = [DifferentiationInterface]
 Pages = ["jacobian.jl"]
 ```
 
+## Hessian
+
+```@autodocs
+Modules = [DifferentiationInterface]
+Pages = ["hessian.jl"]
+```
+
 ## Pushforward (JVP)
 
 ```@autodocs

@@ -7,7 +7,7 @@ The functions defined here are empty shells, their implementation is in the pack
 
 To load this extension, run the following command in your REPL:
 
-    import ForwardDiff, JET, Random, Test
+    import ForwardDiff, JET, Test
 """
 module DifferentiationTest
 
@@ -15,47 +15,48 @@ using ADTypes: AbstractADType, AbstractForwardMode, AbstractReverseMode
 using DifferentiationInterface: ForwardMode, ReverseMode, autodiff_mode, zero!
 import DifferentiationInterface as DI
 using DocStringExtensions
+using Random: randn, randn!
 
 """
     Scenario
+
+Store a testing scenario composed of a function and its input + output + tangents.
 
 # Fields
 
 $(TYPEDFIELDS)
 """
-@kwdef struct Scenario{
-    F,
-    X<:Union{Number,AbstractArray},
-    Y<:Union{Number,AbstractArray},
-    D1<:Union{Nothing,Number},
-    D2<:Union{Nothing,AbstractArray},
-    D3<:Union{Nothing,AbstractArray},
-    D4<:Union{Nothing,AbstractArray},
-}
+@kwdef struct Scenario{F,X<:Union{Number,AbstractArray},Y<:Union{Number,AbstractArray}}
     "function"
     f::F
-    "argument"
+    "mutation"
+    mutating::Bool
+    "input"
     x::X
-    "primal value"
+    "output"
     y::Y
     "pushforward seed"
     dx::X
     "pullback seed"
     dy::Y
-    "pullback result"
-    dx_true::X
-    "pushforward result"
-    dy_true::Y
-    "derivative result"
-    der_true::D1 = nothing
-    "multiderivative result"
-    multider_true::D2 = nothing
-    "gradient result"
-    grad_true::D3 = nothing
-    "Jacobian result"
-    jac_true::D4 = nothing
-    "mutation"
-    mutating::Bool = false
+end
+
+similar_random(z::Number) = randn(eltype(z))
+similar_random(z::AbstractArray) = randn!(similar(z))
+
+function Scenario(f, x::Union{Number,AbstractArray})
+    y = f(x)
+    dx = similar_random(x)
+    dy = similar_random(y)
+    return Scenario(; f, x, y, dx, dy, mutating=false)
+end
+
+function Scenario(f!, x::Union{Number,AbstractArray}, s::NTuple{N,<:Integer}) where {N}
+    y = zeros(eltype(x), s...)
+    f!(y, x)
+    dx = similar_random(x)
+    dy = similar_random(y)
+    return Scenario(; f=f!, x, y, dx, dy, mutating=true)
 end
 
 function default_scenarios end
@@ -128,7 +129,7 @@ function __init__()
                 """\n
 HINT: To use the `DifferentiationInterface.DifferentiationTest` submodule, you need to load the `DifferentiationInterfaceTestExt` package extension. Run the following command in your REPL:
 
-    import ForwardDiff, JET, Random, Test
+    import ForwardDiff, JET, Test
 """,
             )
         end

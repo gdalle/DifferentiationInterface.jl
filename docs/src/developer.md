@@ -156,3 +156,20 @@ flowchart LR
         value_and_pullback!
     end
 ```
+
+### Second order, scalar-valued functions
+
+```mermaid
+flowchart LR
+    subgraph Hessian-vector product
+        gradient_and_hessian_vector_product!
+        gradient_and_hessian_vector_product --> gradient_and_hessian_vector_product!
+    end
+
+    subgraph Hessian
+        value_and_gradient_and_hessian! --> |n|gradient_and_hessian_vector_product!
+        value_and_gradient_and_hessian --> value_and_gradient_and_hessian!
+        hessian! --> value_and_gradient_and_hessian!
+        hessian --> value_and_gradient_and_hessian
+    end
+```

@@ -16,26 +16,29 @@ This package provides a backend-agnostic syntax to differentiate functions of th
 
 ## Compatibility
 
-We support some of the backends defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl):
+We support some of the first order backends defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl):
 
-| Backend                                                                         | Object                                  | Allocating | Mutating |
-| :------------------------------------------------------------------------------ | :-------------------------------------- | :--------- | :------- |
-| [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl)             | `AutoChainRules(ruleconfig)`            | ✓          | ✗        |
-| [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl)                     | `AutoDiffractor()`                      | ✓          | ✗        |
-| [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl) (forward)                    | `AutoEnzyme(Enzyme.Forward)`            | ✓          | ✓        |
-| [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl) (reverse)                    | `AutoEnzyme(Enzyme.Reverse)`            | ✓          | ✓        |
-| [FiniteDiff.jl](https://github.com/JuliaDiff/FiniteDiff.jl)                     | `AutoFiniteDiff()`                      | ✓          | soon     |
-| [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl)                   | `AutoForwardDiff()`                     | ✓          | ✓        |
-| [PolyesterForwardDiff.jl](https://github.com/JuliaDiff/PolyesterForwardDiff.jl) | `AutoPolyesterForwardDiff(; chunksize)` | ✓          | ✓        |
-| [ReverseDiff.jl](https://github.com/JuliaDiff/ReverseDiff.jl)                   | `AutoReverseDiff()`                     | ✓          | ✓        |
-| [Zygote.jl](https://github.com/FluxML/Zygote.jl)                                | `AutoZygote()`                          | ✓          | ✗        |
+| Backend                                                                         | Object                                                       |
+| :------------------------------------------------------------------------------ | :----------------------------------------------------------- |
+| [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl)             | `AutoChainRules(ruleconfig)`                                 |
+| [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl)                     | `AutoDiffractor()`                                           |
+| [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl)                              | `AutoEnzyme(Enzyme.Forward)` or `AutoEnzyme(Enzyme.Reverse)` |
+| [FiniteDiff.jl](https://github.com/JuliaDiff/FiniteDiff.jl)                     | `AutoFiniteDiff()`                                           |
+| [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl)                   | `AutoForwardDiff()`                                          |
+| [PolyesterForwardDiff.jl](https://github.com/JuliaDiff/PolyesterForwardDiff.jl) | `AutoPolyesterForwardDiff(; chunksize)`                      |
+| [ReverseDiff.jl](https://github.com/JuliaDiff/ReverseDiff.jl)                   | `AutoReverseDiff()`                                          |
+| [Zygote.jl](https://github.com/FluxML/Zygote.jl)                                | `AutoZygote()`                                               |
+
+We also provide a second order backend `SecondOrder(reverse_backend, forward_backend)` for hessian computations.
 
 ## Example
 
 Setup:
 
 ```jldoctest readme
-julia> import DifferentiationInterface, ADTypes, ForwardDiff
+julia> import ADTypes, ForwardDiff
+
+julia> using DifferentiationInterface
 
 julia> backend = ADTypes.AutoForwardDiff();
 
@@ -45,7 +48,7 @@ julia> f(x) = sum(abs2, x);
 Out-of-place gradient:
 
 ```jldoctest readme
-julia> DifferentiationInterface.value_and_gradient(backend, f, [1., 2., 3.])
+julia> value_and_gradient(backend, f, [1., 2., 3.])
 (14.0, [2.0, 4.0, 6.0])
 ```
 
@@ -54,7 +57,7 @@ In-place gradient:
 ```jldoctest readme
 julia> grad = zeros(3);
 
-julia> DifferentiationInterface.value_and_gradient!(grad, backend, f, [1., 2., 3.])
+julia> value_and_gradient!(grad, backend, f, [1., 2., 3.])
 (14.0, [2.0, 4.0, 6.0])
 
 julia> grad
@@ -73,5 +76,5 @@ julia> grad
 
 Goals for future releases:
 
-- implement backend-specific cache objects
+- optimize performance for each backend
 - define user-facing functions to test and benchmark backends against each other

@@ -1,51 +1,17 @@
 function test_pushforward_allocating(
     ba::AbstractADType,
     scenarios::Vector{<:Scenario};
-    input_type::Type=Any,
-    output_type::Type=Any,
     correctness::Bool=true,
     type_stability::Bool=true,
+    allocs::Bool=false,
 )
-    scenarios = filter(scenarios) do s
-        in_type(s) <: input_type && out_type(s) <: output_type && !mutating(s)
-    end
-    @testset "Pushforward: $(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
-        (; f, x, y, dx, dy_true) = deepcopy(scen)
-        extras = prepare_pushforward(ba, f, x)
-        @testset "Extras: $(isempty(maybe_extras))" for maybe_extras in ((), (extras,))
-            y_out1, dy_out1 = value_and_pushforward(ba, f, x, dx, maybe_extras...)
-            dy_in2 = zero(dy_out1)
-            y_out2, dy_out2 = value_and_pushforward!(dy_in2, ba, f, x, dx, maybe_extras...)
-
-            dy_out3 = pushforward(ba, f, x, dx, maybe_extras...)
-            dy_in4 = zero(dy_out3)
-            dy_out4 = pushforward!(dy_in4, ba, f, x, dx, maybe_extras...)
-
+    @testset "$(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
+        @testset "Extras: $(isempty(mex))" for mex in ((), (prepare_pushforward(ba, scen),))
             if correctness
-                @testset "Primal value" begin
-                    @test y_out1 ≈ y
-                    @test y_out2 ≈ y
-                end
-                @testset "Tangent value" begin
-                    @test dy_out1 ≈ dy_true rtol = 1e-3
-                    @test dy_out2 ≈ dy_true rtol = 1e-3
-                    @test dy_out3 ≈ dy_true rtol = 1e-3
-                    @test dy_out4 ≈ dy_true rtol = 1e-3
-                    if ismutable(dy_true)
-                        @testset "Mutation" begin
-                            @test dy_in2 ≈ dy_true rtol = 1e-3
-                            @test dy_in4 ≈ dy_true rtol = 1e-3
-                        end
-                    end
-                end
+                test_correctness_pushforward_allocating(ba, scen, mex...)
             end
             if type_stability
-                @testset "Type stability" begin
-                    @test_opt value_and_pushforward!(dy_in2, ba, f, x, dx, maybe_extras...)
-                    @test_opt pushforward!(dy_in4, ba, f, x, dx, maybe_extras...)
-                    @test_opt value_and_pushforward(ba, f, x, dx, maybe_extras...)
-                    @test_opt pushforward(ba, f, x, dx, maybe_extras...)
-                end
+                test_type_pushforward_allocating(ba, scen, mex...)
             end
         end
     end
@@ -54,51 +20,17 @@ end
 function test_pullback_allocating(
     ba::AbstractADType,
     scenarios::Vector{<:Scenario};
-    input_type::Type=Any,
-    output_type::Type=Any,
     correctness::Bool=true,
     type_stability::Bool=true,
+    allocs::Bool=false,
 )
-    scenarios = filter(scenarios) do s
-        in_type(s) <: input_type && out_type(s) <: output_type && !mutating(s)
-    end
-    @testset "Pullback: $(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
-        (; f, x, y, dy, dx_true) = deepcopy(scen)
-        extras = prepare_pullback(ba, f, x)
-        @testset "Extras: $(isempty(maybe_extras))" for maybe_extras in ((), (extras,))
-            y_out1, dx_out1 = value_and_pullback(ba, f, x, dy, maybe_extras...)
-            dx_in2 = zero(dx_out1)
-            y_out2, dx_out2 = value_and_pullback!(dx_in2, ba, f, x, dy, maybe_extras...)
-
-            dx_out3 = pullback(ba, f, x, dy, maybe_extras...)
-            dx_in4 = zero(dx_out3)
-            dx_out4 = pullback!(dx_in4, ba, f, x, dy, maybe_extras...)
-
+    @testset "$(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
+        @testset "Extras: $(isempty(mex))" for mex in ((), (prepare_pullback(ba, scen),))
             if correctness
-                @testset "Primal value" begin
-                    @test y_out1 ≈ y
-                    @test y_out2 ≈ y
-                end
-                @testset "Cotangent value" begin
-                    @test dx_out1 ≈ dx_true rtol = 1e-3
-                    @test dx_out2 ≈ dx_true rtol = 1e-3
-                    @test dx_out3 ≈ dx_true rtol = 1e-3
-                    @test dx_out4 ≈ dx_true rtol = 1e-3
-                    if ismutable(dx_true)
-                        @testset "Mutation" begin
-                            @test dx_in2 ≈ dx_true rtol = 1e-3
-                            @test dx_in4 ≈ dx_true rtol = 1e-3
-                        end
-                    end
-                end
+                test_correctness_pullback_allocating(ba, scen, mex...)
             end
             if type_stability
-                @testset "Type stability" begin
-                    @test_opt value_and_pullback!(dx_in2, ba, f, x, dy, maybe_extras...)
-                    @test_opt pullback!(dx_in4, ba, f, x, dy, maybe_extras...)
-                    @test_opt value_and_pullback(ba, f, x, dy, maybe_extras...)
-                    @test_opt pullback(ba, f, x, dy, maybe_extras...)
-                end
+                test_type_pullback_allocating(ba, scen, mex...)
             end
         end
     end
@@ -107,38 +39,17 @@ end
 function test_derivative_allocating(
     ba::AbstractADType,
     scenarios::Vector{<:Scenario};
-    input_type::Type=Number,
-    output_type::Type=Number,
     correctness::Bool=true,
     type_stability::Bool=true,
+    allocs::Bool=false,
 )
-    scenarios = filter(scenarios) do s
-        in_type(s) <: typeintersect(input_type, Number) &&
-            out_type(s) <: typeintersect(output_type, Number) &&
-            !mutating(s)
-    end
-    @testset "Derivative: $(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
-        (; f, x, y, der_true) = deepcopy(scen)
-        extras = prepare_derivative(ba, f, x)
-        @testset "Extras: $(isempty(maybe_extras))" for maybe_extras in ((), (extras,))
-            y_out1, der_out1 = value_and_derivative(ba, f, x, maybe_extras...)
-
-            der_out2 = derivative(ba, f, x, maybe_extras...)
-
+    @testset "$(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
+        @testset "Extras: $(isempty(mex))" for mex in ((), (prepare_derivative(ba, scen),))
             if correctness
-                @testset "Primal value" begin
-                    @test y_out1 ≈ y
-                end
-                @testset "Derivative value" begin
-                    @test der_out1 ≈ der_true rtol = 1e-3
-                    @test der_out2 ≈ der_true rtol = 1e-3
-                end
+                test_correctness_derivative_allocating(ba, scen, mex...)
             end
             if type_stability
-                @testset "Type stability" begin
-                    @test_opt value_and_derivative(ba, f, x, maybe_extras...)
-                    @test_opt derivative(ba, f, x, maybe_extras...)
-                end
+                test_type_derivative_allocating(ba, scen, mex...)
             end
         end
     end
@@ -147,55 +58,18 @@ end
 function test_multiderivative_allocating(
     ba::AbstractADType,
     scenarios::Vector{<:Scenario};
-    input_type::Type=Number,
-    output_type::Type=AbstractArray,
     correctness::Bool=true,
     type_stability::Bool=true,
+    allocs::Bool=false,
 )
-    scenarios = filter(scenarios) do s
-        in_type(s) <: typeintersect(input_type, Number) &&
-            out_type(s) <: typeintersect(output_type, AbstractArray) &&
-            !mutating(s)
-    end
-    @testset "Multiderivative: $(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
-        (; f, x, y, multider_true) = deepcopy(scen)
-        extras = prepare_multiderivative(ba, f, x)
-        @testset "Extras: $(isempty(maybe_extras))" for maybe_extras in ((), (extras,))
-            y_out1, multider_out1 = value_and_multiderivative(ba, f, x, maybe_extras...)
-            multider_in2 = zero(multider_out1)
-            y_out2, multider_out2 = value_and_multiderivative!(
-                multider_in2, ba, f, x, maybe_extras...
-            )
-
-            multider_out3 = multiderivative(ba, f, x, maybe_extras...)
-            multider_in4 = zero(multider_out3)
-            multider_out4 = multiderivative!(multider_in4, ba, f, x, maybe_extras...)
-
+    @testset "$(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
+        @testset "Extras: $(isempty(mex))" for mex in
+                                               ((), (prepare_multiderivative(ba, scen),))
             if correctness
-                @testset "Primal value" begin
-                    @test y_out1 ≈ y
-                    @test y_out2 ≈ y
-                end
-                @testset "Multiderivative value" begin
-                    @test multider_out1 ≈ multider_true rtol = 1e-3
-                    @test multider_out2 ≈ multider_true rtol = 1e-3
-                    @test multider_out3 ≈ multider_true rtol = 1e-3
-                    @test multider_out4 ≈ multider_true rtol = 1e-3
-                    @testset "Mutation" begin
-                        @test multider_in2 ≈ multider_true rtol = 1e-3
-                        @test multider_in4 ≈ multider_true rtol = 1e-3
-                    end
-                end
+                test_correctness_multiderivative_allocating(ba, scen, mex...)
             end
             if type_stability
-                @testset "Type stability" begin
-                    @test_opt value_and_multiderivative!(
-                        multider_in2, ba, f, x, maybe_extras...
-                    )
-                    @test_opt multiderivative!(multider_in4, ba, f, x, maybe_extras...)
-                    @test_opt value_and_multiderivative(ba, f, x, maybe_extras...)
-                    @test_opt multiderivative(ba, f, x, maybe_extras...)
-                end
+                test_type_multiderivative_allocating(ba, scen, mex...)
             end
         end
     end
@@ -204,51 +78,36 @@ end
 function test_gradient_allocating(
     ba::AbstractADType,
     scenarios::Vector{<:Scenario};
-    input_type::Type=AbstractArray,
-    output_type::Type=Number,
     correctness::Bool=true,
     type_stability::Bool=true,
+    allocs::Bool=false,
 )
-    scenarios = filter(scenarios) do s
-        in_type(s) <: typeintersect(input_type, AbstractArray) &&
-            out_type(s) <: typeintersect(output_type, Number) &&
-            !mutating(s)
-    end
     @testset "Gradient: $(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
-        (; f, x, y, grad_true) = deepcopy(scen)
-        extras = prepare_gradient(ba, f, x)
-        @testset "Extras: $(isempty(maybe_extras))" for maybe_extras in ((), (extras,))
-            y_out1, grad_out1 = value_and_gradient(ba, f, x, maybe_extras...)
-            grad_in2 = zero(grad_out1)
-            y_out2, grad_out2 = value_and_gradient!(grad_in2, ba, f, x, maybe_extras...)
-
-            grad_out3 = gradient(ba, f, x, maybe_extras...)
-            grad_in4 = zero(grad_out3)
-            grad_out4 = gradient!(grad_in4, ba, f, x, maybe_extras...)
-
+        @testset "Extras: $(isempty(mex))" for mex in ((), (prepare_gradient(ba, scen),))
             if correctness
-                @testset "Primal value" begin
-                    @test y_out1 ≈ y
-                    @test y_out2 ≈ y
-                end
-                @testset "Gradient value" begin
-                    @test grad_out1 ≈ grad_true rtol = 1e-3
-                    @test grad_out2 ≈ grad_true rtol = 1e-3
-                    @test grad_out3 ≈ grad_true rtol = 1e-3
-                    @test grad_out4 ≈ grad_true rtol = 1e-3
-                    @testset "Mutation" begin
-                        @test grad_in2 ≈ grad_true rtol = 1e-3
-                        @test grad_in4 ≈ grad_true rtol = 1e-3
-                    end
-                end
+                test_correctness_gradient_allocating(ba, scen, mex...)
             end
             if type_stability
-                @testset "Type stability" begin
-                    @test_opt value_and_gradient!(grad_in2, ba, f, x, maybe_extras...)
-                    @test_opt gradient!(grad_in4, ba, f, x, maybe_extras...)
-                    @test_opt value_and_gradient(ba, f, x, maybe_extras...)
-                    @test_opt gradient(ba, f, x, maybe_extras...)
-                end
+                test_type_gradient_allocating(ba, scen, mex...)
+            end
+        end
+    end
+end
+
+function test_hessian_allocating(
+    ba::AbstractADType,
+    scenarios::Vector{<:Scenario};
+    correctness::Bool=true,
+    type_stability::Bool=true,
+    allocs::Bool=false,
+)
+    @testset "$(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
+        @testset "Extras: $(isempty(mex))" for mex in ((), (prepare_hessian(ba, scen),))
+            if correctness
+                test_correctness_hessian_allocating(ba, scen, mex...)
+            end
+            if type_stability
+                test_type_hessian_allocating(ba, scen, mex...)
             end
         end
     end
@@ -257,52 +116,17 @@ end
 function test_jacobian_allocating(
     ba::AbstractADType,
     scenarios::Vector{<:Scenario};
-    input_type::Type=AbstractArray,
-    output_type::Type=AbstractArray,
     correctness::Bool=true,
     type_stability::Bool=true,
+    allocs::Bool=false,
 )
-    scenarios = filter(scenarios) do s
-        in_type(s) <: typeintersect(input_type, AbstractArray) &&
-            out_type(s) <: typeintersect(output_type, AbstractArray) &&
-            !mutating(s)
-    end
-    @testset "Jacobian: $(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
-        @assert !scen.mutating
-        (; f, x, y, jac_true) = deepcopy(scen)
-        extras = prepare_jacobian(ba, f, x)
-        @testset "Extras: $(isempty(maybe_extras))" for maybe_extras in ((), (extras,))
-            y_out1, jac_out1 = value_and_jacobian(ba, f, x, maybe_extras...)
-            jac_in2 = zero(jac_out1)
-            y_out2, jac_out2 = value_and_jacobian!(jac_in2, ba, f, x, maybe_extras...)
-
-            jac_out3 = jacobian(ba, f, x, maybe_extras...)
-            jac_in4 = zero(jac_out3)
-            jac_out4 = jacobian!(jac_in4, ba, f, x, maybe_extras...)
-
+    @testset "$(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
+        @testset "Extras: $(isempty(mex))" for mex in ((), (prepare_jacobian(ba, scen),))
             if correctness
-                @testset "Primal value" begin
-                    @test y_out1 ≈ y
-                    @test y_out2 ≈ y
-                end
-                @testset "Jacobian value" begin
-                    @test jac_out1 ≈ jac_true rtol = 1e-3
-                    @test jac_out2 ≈ jac_true rtol = 1e-3
-                    @test jac_out3 ≈ jac_true rtol = 1e-3
-                    @test jac_out4 ≈ jac_true rtol = 1e-3
-                    @testset "Mutation" begin
-                        @test jac_in2 ≈ jac_true rtol = 1e-3
-                        @test jac_in4 ≈ jac_true rtol = 1e-3
-                    end
-                end
+                test_correctness_jacobian_allocating(ba, scen, mex...)
             end
             if type_stability
-                @testset "Type stability" begin
-                    @test_opt value_and_jacobian!(jac_in2, ba, f, x, maybe_extras...)
-                    @test_opt jacobian!(jac_in4, ba, f, x, maybe_extras...)
-                    @test_opt value_and_jacobian(ba, f, x, maybe_extras...)
-                    @test_opt jacobian(ba, f, x, maybe_extras...)
-                end
+                test_type_jacobian_allocating(ba, scen, mex...)
             end
         end
     end
@@ -318,40 +142,50 @@ function DT.test_operators_allocating(
     output_type::Type=Any,
     correctness::Bool=true,
     type_stability::Bool=true,
+    allocs::Bool=false,
     included::Vector{Symbol}=[
         :pushforward, :pullback, :derivative, :multiderivative, :gradient, :jacobian
     ],
     excluded::Vector{Symbol}=Symbol[],
 )
     kept = symdiff(included, excluded)
+    scenarios = filter(scenarios) do scen
+        !is_mutating(scen) && in_type(scen) <: input_type && out_type(scen) <: output_type
+    end
+
     if autodiff_mode(ba) isa ForwardMode && :pushforward in kept
         @testset "Pushforward" test_pushforward_allocating(
-            ba, scenarios; input_type, output_type, correctness, type_stability
+            ba, scenarios; correctness, type_stability, allocs
         )
     end
     if autodiff_mode(ba) isa ReverseMode && :pullback in kept
         @testset "Pullback" test_pullback_allocating(
-            ba, scenarios; input_type, output_type, correctness, type_stability
+            ba, scenarios; correctness, type_stability, allocs
         )
     end
     if :derivative in kept
         @testset "Derivative" test_derivative_allocating(
-            ba, scenarios; input_type, output_type, correctness, type_stability
+            ba, derivative_scenarios(scenarios); correctness, type_stability, allocs
         )
     end
     if :multiderivative in kept
         @testset "Multiderivative" test_multiderivative_allocating(
-            ba, scenarios; input_type, output_type, correctness, type_stability
+            ba, multiderivative_scenarios(scenarios); correctness, type_stability, allocs
         )
     end
     if :gradient in kept
         @testset "Gradient" test_gradient_allocating(
-            ba, scenarios; input_type, output_type, correctness, type_stability
+            ba, gradient_scenarios(scenarios); correctness, type_stability, allocs
+        )
+    end
+    if :hessian in kept
+        @testset "Hessian" test_hessian_allocating(
+            ba, hessian_scenarios(scenarios); correctness, type_stability, allocs
         )
     end
     if :jacobian in kept
         @testset "Jacobian" test_jacobian_allocating(
-            ba, scenarios; input_type, output_type, correctness, type_stability
+            ba, jacobian_scenarios(scenarios); correctness, type_stability, allocs
         )
     end
     return nothing

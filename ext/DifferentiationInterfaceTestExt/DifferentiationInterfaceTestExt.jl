@@ -13,10 +13,11 @@ using LinearAlgebra: dot
 # new dependencies
 using ForwardDiff: ForwardDiff
 using JET: @test_opt
-using Random: AbstractRNG, default_rng, randn!
 using Test: @test, @testset
 
 include("scenarios.jl")
+include("correctness.jl")
+include("type_stability.jl")
 include("test_allocating.jl")
 include("test_mutating.jl")
 

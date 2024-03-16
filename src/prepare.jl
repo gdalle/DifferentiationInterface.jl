@@ -59,3 +59,12 @@ function prepare_jacobian end
 
 prepare_jacobian(::AbstractADType, f, x::AbstractArray) = nothing
 prepare_jacobian(::AbstractADType, f!, x::AbstractArray, y::AbstractArray) = nothing
+
+"""
+    prepare_hessian(backend, f, x) -> extras
+
+Create an `extras` object that can be given to hessian operators.
+"""
+function prepare_hessian end
+
+prepare_hessian(::AbstractADType, f, x::AbstractArray) = nothing
