@@ -124,7 +124,7 @@ function DI.value_and_pullback!(
     dy::AbstractArray,
     extras::Nothing,
 )
-    y, jac = DI.value_and_jacobian(backend, f, x, extras)  # allocates
+    y, jac = DI.value_and_jacobian(backend, f, x)  # allocates
     mul!(vec(dx), transpose(jac), vec(dy))
     return y, dx
 end

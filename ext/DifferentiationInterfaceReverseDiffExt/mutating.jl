@@ -48,7 +48,7 @@ function DI.value_and_pullback!(
     extras::Nothing,
 )
     jac = similar(dy, length(y), length(x))  # allocates
-    y, jac = DI.value_and_jacobian!(y, jac, backend, f!, x, extras)
+    y, jac = DI.value_and_jacobian!(y, jac, backend, f!, x)
     mul!(vec(dx), transpose(jac), vec(dy))
     return y, dx
 end
