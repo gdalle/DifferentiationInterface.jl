@@ -81,7 +81,6 @@ makedocs(;
         "developer.md",
     ],
     warnonly=:missing_docs,  # missing docs for ADTypes.jl are normal
-    pagesonly=true,
 )
 
 deploydocs(; repo="github.com/gdalle/DifferentiationInterface.jl", devbranch="main")
