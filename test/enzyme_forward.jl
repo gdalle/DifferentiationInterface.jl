@@ -2,9 +2,9 @@ using ADTypes: AutoEnzyme
 using Enzyme: Enzyme
 using DifferentiationInterface.DifferentiationTest
 
-test_operators_allocating(AutoEnzyme(Enzyme.Forward); excluded=[:jacobian]);
-test_operators_allocating(
-    AutoEnzyme(Enzyme.Forward); included=[:jacobian], type_stability=false
+test_operators(
+    AutoEnzyme(Enzyme.Forward); second_order=false, excluded=[:jacobian_allocating]
 );
-
-test_operators_mutating(AutoEnzyme(Enzyme.Forward));
+test_operators(
+    AutoEnzyme(Enzyme.Forward); operators=[:jacobian_allocating], type_stability=false
+);

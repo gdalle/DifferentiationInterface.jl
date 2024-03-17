@@ -13,6 +13,7 @@ using ADTypes: ADTypes, AbstractADType
 using DocStringExtensions
 using FillArrays: OneElement
 using LinearAlgebra: dot
+using Test: Test
 
 """
     AutoFastDifferentiation
@@ -40,7 +41,7 @@ include("hessian_vector_product.jl")
 include("hessian.jl")
 
 # submodules
-include("DifferentiationTest.jl")
+include("DifferentiationTest/DifferentiationTest.jl")
 
 export AutoFastDifferentiation
 export SecondOrder

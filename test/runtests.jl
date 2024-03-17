@@ -3,6 +3,7 @@
 using Aqua: Aqua
 using ChainRulesCore: ChainRulesCore
 using DifferentiationInterface
+using DifferentiationInterface.DifferentiationTest
 using Enzyme: Enzyme
 using FiniteDiff: FiniteDiff
 using ForwardDiff: ForwardDiff
@@ -33,9 +34,6 @@ using Zygote: Zygote
         include("zero.jl")
     end
 
-    @testset "ChainRules (forward)" begin
-        @test_skip include("chainrules_forward.jl")
-    end
     @testset "ChainRules (reverse)" begin
         include("chainrules_reverse.jl")
     end

@@ -1,24 +1,12 @@
 using DifferentiationInterface: SecondOrder, AutoZeroForward, AutoZeroReverse
 using DifferentiationInterface.DifferentiationTest
 
-test_operators_allocating(AutoZeroForward(); correctness=false);
-test_operators_mutating(AutoZeroForward(); correctness=false);
+test_operators(AutoZeroForward(); correctness=false);
+test_operators(AutoZeroReverse(); correctness=false);
 
-test_operators_allocating(AutoZeroReverse(); correctness=false);
-test_operators_mutating(AutoZeroReverse(); correctness=false);
-
-test_second_order_operators_allocating(
-    SecondOrder(AutoZeroForward(), AutoZeroForward()); correctness=false
-)
-
-test_second_order_operators_allocating(
-    SecondOrder(AutoZeroReverse(), AutoZeroForward()); correctness=false
-)
-
-test_second_order_operators_allocating(
-    SecondOrder(AutoZeroForward(), AutoZeroReverse()); correctness=false
-)
-
-test_second_order_operators_allocating(
-    SecondOrder(AutoZeroReverse(), AutoZeroReverse()); correctness=false
-)
+test_operators(
+    SecondOrder(AutoZeroForward(), AutoZeroReverse()); first_order=false, correctness=false
+);
+test_operators(
+    SecondOrder(AutoZeroReverse(), AutoZeroForward()); first_order=false, correctness=false
+);

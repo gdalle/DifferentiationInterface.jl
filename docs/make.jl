@@ -28,7 +28,6 @@ PolyesterForwardDiffExt = get_extension(
     DI, :DifferentiationInterfacePolyesterForwardDiffExt
 )
 ReverseDiffExt = get_extension(DI, :DifferentiationInterfaceReverseDiffExt)
-TestExt = get_extension(DI, :DifferentiationInterfaceTestExt)
 ZygoteExt = get_extension(DI, :DifferentiationInterfaceZygoteExt)
 
 DocMeta.setdocmeta!(
@@ -65,7 +64,6 @@ makedocs(;
         ForwardDiffExt,
         PolyesterForwardDiffExt,
         ReverseDiffExt,
-        TestExt,
         ZygoteExt,
     ],
     authors="Guillaume Dalle, Adrian Hill",
@@ -76,7 +74,11 @@ makedocs(;
         edit_link="main",
     ),
     pages=[
-        "Home" => "index.md", "getting_started.md", "api.md", "backends.md", "developer.md"
+        "Home" => "index.md", #
+        "getting_started.md", #
+        "api.md", #
+        "backends.md", #
+        "developer.md",
     ],
     warnonly=:missing_docs,  # missing docs for ADTypes.jl are normal
 )
