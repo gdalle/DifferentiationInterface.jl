@@ -1,13 +1,7 @@
 ## Pushforward
 
 function DI.value_and_pushforward!(
-    y::AbstractArray,
-    dy::AbstractArray,
-    ::AutoForwardDiff,
-    f!,
-    x::Real,
-    dx,
-    extras::Nothing=nothing,
+    y::AbstractArray, dy::AbstractArray, ::AutoForwardDiff, f!, x::Real, dx, extras::Nothing
 )
     T = tag_type(f!, x)
     xdual = Dual{T}(x, dx)
@@ -25,7 +19,7 @@ function DI.value_and_pushforward!(
     f!,
     x::AbstractArray,
     dx,
-    extras::Nothing=nothing,
+    extras::Nothing,
 )
     T = tag_type(f!, x)
     xdual = Dual{T}.(x, dx)
@@ -38,21 +32,9 @@ end
 
 ## Multiderivative
 
-### Unprepared
-
-function DI.value_and_multiderivative!(
-    y::AbstractArray,
-    multider::AbstractArray,
-    backend::AutoForwardDiff,
-    f!,
-    x::Number,
-    extras::Nothing=nothing,
-)
-    config = DI.prepare_multiderivative(backend, f!, x, y)
-    return DI.value_and_multiderivative!(y, multider, backend, f!, x, config)
+function DI.prepare_multiderivative(::AutoForwardDiff, f!, x::Number, y::AbstractArray)
+    return DerivativeConfig(f!, y, x)
 end
-
-### Prepared
 
 function DI.value_and_multiderivative!(
     y::AbstractArray,
@@ -69,21 +51,11 @@ end
 
 ## Jacobian
 
-### Unprepared
-
-function DI.value_and_jacobian!(
-    y::AbstractArray,
-    jac::AbstractMatrix,
-    backend::AutoForwardDiff,
-    f!,
-    x::AbstractArray,
-    extras::Nothing=nothing,
+function DI.prepare_jacobian(
+    backend::AutoForwardDiff, f!, x::AbstractArray, y::AbstractArray
 )
-    config = DI.prepare_jacobian(backend, f!, x, y)
-    return DI.value_and_jacobian!(y, jac, backend, f!, x, config)
+    return JacobianConfig(f!, y, x, choose_chunk(backend, x))
 end
-
-### Prepared
 
 function DI.value_and_jacobian!(
     y::AbstractArray,
@@ -96,16 +68,4 @@ function DI.value_and_jacobian!(
     result = DiffResults.DiffResult(y, jac)
     result = jacobian!(result, f!, y, x, config)
     return DiffResults.value(result), DiffResults.jacobian(result)
-end
-
-## Preparation
-
-function DI.prepare_multiderivative(::AutoForwardDiff, f!, x::Number, y::AbstractArray)
-    return DerivativeConfig(f!, y, x)
-end
-
-function DI.prepare_jacobian(
-    backend::AutoForwardDiff, f!, x::AbstractArray, y::AbstractArray
-)
-    return JacobianConfig(f!, y, x, choose_chunk(backend, x))
 end

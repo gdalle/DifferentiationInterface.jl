@@ -29,6 +29,12 @@ We support some of the backends defined by [ADTypes.jl](https://github.com/SciML
 | [ReverseDiff.jl](https://github.com/JuliaDiff/ReverseDiff.jl)                   | `AutoReverseDiff()`                                          |
 | [Zygote.jl](https://github.com/FluxML/Zygote.jl)                                | `AutoZygote()`                                               |
 
+We also provide additional backends:
+
+| Backend                                                                          | Object                      |
+| :------------------------------------------------------------------------------- | :-------------------------- |
+| [FastDifferentiation.jl](https://github.com/brianguenter/FastDifferentiation.jl) | `AutoFastDifferentiation()` |
+
 ## Example
 
 Setup:

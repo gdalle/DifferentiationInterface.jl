@@ -6,7 +6,7 @@ Sources:
 Start by reading the allocating versions
 =#
 
-## Forward-over-something gives gradient too
+## Forward-over-something backends give gradient in addition to HVP
 
 """
     gradient_and_hessian_vector_product(backend, f, x, v, [extras]) -> (grad, hvp)
@@ -17,7 +17,23 @@ Compute the gradient `grad = ∇f(x)` and the Hessian-vector product `hvp = ∇�
     Only works with a forward outer mode.
 """
 function gradient_and_hessian_vector_product(
-    backend::SecondOrder, f, x::AbstractArray, v::AbstractArray, extras=nothing
+    backend::AbstractADType,
+    f,
+    x::AbstractArray,
+    v::AbstractArray,
+    extras=prepare_hessian_vector_product(backend, f, x),
+)
+    return gradient_and_hessian_vector_product(
+        SecondOrder(backend, backend), f, x, v, extras
+    )
+end
+
+function gradient_and_hessian_vector_product(
+    backend::SecondOrder,
+    f,
+    x::AbstractArray,
+    v::AbstractArray,
+    extras=prepare_hessian_vector_product(backend, f, x),
 )
     return gradient_and_hessian_vector_product_aux(
         backend, f, x, v, extras, mode(inner(backend)), mode(outer(backend))
@@ -60,11 +76,25 @@ Compute the gradient `grad = ∇f(x)` and the Hessian-vector product `hvp = ∇�
 function gradient_and_hessian_vector_product!(
     grad::AbstractArray,
     hvp::AbstractArray,
+    backend::AbstractADType,
+    f,
+    x::AbstractArray,
+    v::AbstractArray,
+    extras=prepare_hessian_vector_product(backend, f, x),
+)
+    return gradient_and_hessian_vector_product!(
+        grad, hvp, SecondOrder(backend, backend), f, x, v, extras
+    )
+end
+
+function gradient_and_hessian_vector_product!(
+    grad::AbstractArray,
+    hvp::AbstractArray,
     backend::SecondOrder,
     f,
     x::AbstractArray,
     v::AbstractArray,
-    extras=nothing,
+    extras=prepare_hessian_vector_product(backend, f, x),
 )
     return gradient_and_hessian_vector_product_aux!(
         grad, hvp, backend, f, x, v, extras, mode(inner(backend)), mode(outer(backend))
@@ -103,7 +133,7 @@ function gradient_and_hessian_vector_product_aux!(
     throw(ArgumentError("HVP must be computed without gradient for reverse-over-something"))
 end
 
-## Reverse-over-something only gives hvp
+## All backends can give the HVP
 
 """
     hessian_vector_product(backend, f, x, v, [extras]) -> hvp
@@ -111,7 +141,21 @@ end
 Compute the Hessian-vector product `hvp = ∇²f(x) * v` of an array-to-scalar function.
 """
 function hessian_vector_product(
-    backend::SecondOrder, f, x::AbstractArray, v::AbstractArray, extras=nothing
+    backend::AbstractADType,
+    f,
+    x::AbstractArray,
+    v::AbstractArray,
+    extras=prepare_hessian_vector_product(backend, f, x),
+)
+    return hessian_vector_product(SecondOrder(backend, backend), f, x, v, extras)
+end
+
+function hessian_vector_product(
+    backend::SecondOrder,
+    f,
+    x::AbstractArray,
+    v::AbstractArray,
+    extras=prepare_hessian_vector_product(backend, f, x),
 )
     return hessian_vector_product_aux(
         backend, f, x, v, extras, mode(inner(backend)), mode(outer(backend))
@@ -153,7 +197,8 @@ function hessian_vector_product_aux(
     ::AbstractMode,
     ::ForwardMode,
 )
-    throw(ArgumentError("HVP must be computed with gradient for forward-over-something"))
+    _, hvp = gradient_and_hessian_vector_product(backend, f, x, v, extras)
+    return hvp
 end
 
 """
@@ -163,11 +208,22 @@ Compute the Hessian-vector product `hvp = ∇²f(x) * v` of an array-to-scalar f
 """
 function hessian_vector_product!(
     hvp::AbstractArray,
+    backend::AbstractADType,
+    f,
+    x::AbstractArray,
+    v::AbstractArray,
+    extras=prepare_hessian_vector_product(backend, f, x),
+)
+    return hessian_vector_product!(hvp, SecondOrder(backend, backend), f, x, v, extras)
+end
+
+function hessian_vector_product!(
+    hvp::AbstractArray,
     backend::SecondOrder,
     f,
     x::AbstractArray,
     v::AbstractArray,
-    extras=nothing,
+    extras=prepare_hessian_vector_product(backend, f, x),
 )
     return hessian_vector_product_aux!(
         hvp, backend, f, x, v, extras, mode(inner(backend)), mode(outer(backend))
@@ -212,5 +268,7 @@ function hessian_vector_product_aux!(
     ::AbstractMode,
     ::ForwardMode,
 )
-    throw(ArgumentError("HVP must be computed with gradient for forward-over-something"))
+    grad = similar(x)  # allocates
+    _, hvp = gradient_and_hessian_vector_product!(grad, hvp, backend, f, x, v, extras)
+    return hvp
 end

@@ -4,8 +4,6 @@
 
 Create an `extras` object that can be given to pullback operators.
 """
-function prepare_pullback end
-
 prepare_pullback(::AbstractADType, f, x) = nothing
 prepare_pullback(::AbstractADType, f!, x, y) = nothing
 
@@ -15,8 +13,6 @@ prepare_pullback(::AbstractADType, f!, x, y) = nothing
 
 Create an `extras` object that can be given to pushforward operators.
 """
-function prepare_pushforward end
-
 prepare_pushforward(::AbstractADType, f, x) = nothing
 prepare_pushforward(::AbstractADType, f!, x, y) = nothing
 
@@ -25,8 +21,6 @@ prepare_pushforward(::AbstractADType, f!, x, y) = nothing
 
 Create an `extras` object that can be given to derivative operators.
 """
-function prepare_derivative end
-
 prepare_derivative(::AbstractADType, f, x::Number) = nothing
 
 """
@@ -35,8 +29,6 @@ prepare_derivative(::AbstractADType, f, x::Number) = nothing
 
 Create an `extras` object that can be given to multiderivative operators.
 """
-function prepare_multiderivative end
-
 prepare_multiderivative(::AbstractADType, f, x::Number) = nothing
 prepare_multiderivative(::AbstractADType, f!, x::Number, y::AbstractArray) = nothing
 
@@ -45,18 +37,14 @@ prepare_multiderivative(::AbstractADType, f!, x::Number, y::AbstractArray) = not
 
 Create an `extras` object that can be given to gradient operators.
 """
-function prepare_gradient end
-
 prepare_gradient(::AbstractADType, f, x::AbstractArray) = nothing
 
 """
     prepare_jacobian(backend, f, x) -> extras
     prepare_jacobian(backend, f!, x, y) -> extras
 
-Create an `extras` object that can be given to jacobian operators.
+Create an `extras` object that can be given to Jacobian operators.
 """
-function prepare_jacobian end
-
 prepare_jacobian(::AbstractADType, f, x::AbstractArray) = nothing
 prepare_jacobian(::AbstractADType, f!, x::AbstractArray, y::AbstractArray) = nothing
 
@@ -65,15 +53,18 @@ prepare_jacobian(::AbstractADType, f!, x::AbstractArray, y::AbstractArray) = not
 
 Create an `extras` object that can be given to second derivative operators.
 """
-function prepare_second_derivative end
-
 prepare_second_derivative(::AbstractADType, f, x::Number) = nothing
 
 """
     prepare_hessian(backend, f, x) -> extras
 
-Create an `extras` object that can be given to hessian operators.
+Create an `extras` object that can be given to Hessian operators.
 """
-function prepare_hessian end
-
 prepare_hessian(::AbstractADType, f, x::AbstractArray) = nothing
+
+"""
+    prepare_hessian_vector_product(backend, f, x) -> extras
+
+Create an `extras` object that can be given to Hessian-vector product operators.
+"""
+prepare_hessian_vector_product(::AbstractADType, f, x::AbstractArray) = nothing
