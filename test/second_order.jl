@@ -18,5 +18,5 @@ cross_backends = [
 ]
 
 @testset "$(typeof(b.outer)) over $(typeof(b.inner))" for b in cross_backends
-    test_second_order_operators_allocating(b; type_stability=false)
+    test_operators(b; first_order=false, mutating=false, type_stability=false)
 end;
