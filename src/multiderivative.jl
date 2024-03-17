@@ -5,7 +5,11 @@
 Compute the primal value `y = f(x)` and the (array-valued) derivative `multider = f'(x)` of a scalar-to-array function, overwriting `multider`.
 """
 function value_and_multiderivative!(
-    multider::AbstractArray, backend::AbstractADType, f, x::Number, extras=nothing
+    multider::AbstractArray,
+    backend::AbstractADType,
+    f,
+    x::Number,
+    extras=prepare_multiderivative(backend, f, x),
 )
     return value_and_multiderivative_aux!(multider, backend, f, x, extras, mode(backend))
 end
@@ -16,7 +20,7 @@ function value_and_multiderivative!(
     backend::AbstractADType,
     f,
     x::Number,
-    extras=nothing,
+    extras=prepare_multiderivative(backend, f, x, y),
 )
     return value_and_multiderivative_aux!(y, multider, backend, f, x, extras, mode(backend))
 end
@@ -71,7 +75,9 @@ end
 
 Compute the primal value `y = f(x)` and the (array-valued) derivative `multider = f'(x)` of a scalar-to-array function.
 """
-function value_and_multiderivative(backend::AbstractADType, f, x::Number, extras=nothing)
+function value_and_multiderivative(
+    backend::AbstractADType, f, x::Number, extras=prepare_multiderivative(backend, f, x)
+)
     return value_and_multiderivative_aux(backend, f, x, extras, mode(backend))
 end
 
@@ -82,7 +88,7 @@ function value_and_multiderivative_aux(
 end
 
 function value_and_multiderivative_aux(
-    backend::AbstractADType, f, x::Number, extras, ::ReverseMode
+    backend::AbstractADType, f, x::Number, extras, ::AbstractMode
 )
     multider = similar(f(x))
     return value_and_multiderivative!(multider, backend, f, x, extras)
@@ -94,7 +100,11 @@ end
 Compute the (array-valued) derivative `multider = f'(x)` of a scalar-to-array function, overwriting `multider`.
 """
 function multiderivative!(
-    multider::AbstractArray, backend::AbstractADType, f, x::Number, extras=nothing
+    multider::AbstractArray,
+    backend::AbstractADType,
+    f,
+    x::Number,
+    extras=prepare_multiderivative(backend, f, x),
 )
     return multiderivative_aux!(multider, backend, f, x, extras, mode(backend))
 end
@@ -106,7 +116,7 @@ function multiderivative_aux!(
 end
 
 function multiderivative_aux!(
-    multider::AbstractArray, backend::AbstractADType, f, x::Number, extras, ::ReverseMode
+    multider::AbstractArray, backend::AbstractADType, f, x::Number, extras, ::AbstractMode
 )
     return last(value_and_multiderivative!(multider, backend, f, x, extras))
 end
@@ -116,7 +126,9 @@ end
 
 Compute the (array-valued) derivative `multider = f'(x)` of a scalar-to-array function.
 """
-function multiderivative(backend::AbstractADType, f, x::Number, extras=nothing)
+function multiderivative(
+    backend::AbstractADType, f, x::Number, extras=prepare_multiderivative(backend, f, x)
+)
     return multiderivative_aux(backend, f, x, extras, mode(backend))
 end
 
@@ -124,6 +136,6 @@ function multiderivative_aux(backend::AbstractADType, f, x::Number, extras, ::Fo
     return pushforward(backend, f, x, one(x), extras)
 end
 
-function multiderivative_aux(backend::AbstractADType, f, x::Number, extras, ::ReverseMode)
+function multiderivative_aux(backend::AbstractADType, f, x::Number, extras, ::AbstractMode)
     return last(value_and_multiderivative(backend, f, x, extras))
 end

@@ -6,13 +6,11 @@ function test_pushforward_mutating(
     allocs::Bool=false,
 )
     @testset "$(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
-        @testset "Extras: $(isempty(mex))" for mex in ((), (prepare_pushforward(ba, scen),))
-            if correctness
-                test_correctness_pushforward_mutating(ba, scen, mex...)
-            end
-            if type_stability
-                test_type_pushforward_mutating(ba, scen, mex...)
-            end
+        if correctness
+            test_correctness_pushforward_mutating(ba, scen)
+        end
+        if type_stability
+            test_type_pushforward_mutating(ba, scen)
         end
     end
 end
@@ -25,13 +23,11 @@ function test_pullback_mutating(
     allocs::Bool=false,
 )
     @testset "$(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
-        @testset "Extras: $(isempty(mex))" for mex in ((), (prepare_pullback(ba, scen),))
-            if correctness
-                test_correctness_pullback_mutating(ba, scen, mex...)
-            end
-            if type_stability
-                test_type_pullback_mutating(ba, scen, mex...)
-            end
+        if correctness
+            test_correctness_pullback_mutating(ba, scen)
+        end
+        if type_stability
+            test_type_pullback_mutating(ba, scen)
         end
     end
 end
@@ -44,14 +40,11 @@ function test_multiderivative_mutating(
     allocs::Bool=false,
 )
     @testset "$(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
-        @testset "Extras: $(isempty(mex))" for mex in
-                                               ((), (prepare_multiderivative(ba, scen),))
-            if correctness
-                test_correctness_multiderivative_mutating(ba, scen, mex...)
-            end
-            if type_stability
-                test_type_multiderivative_mutating(ba, scen, mex...)
-            end
+        if correctness
+            test_correctness_multiderivative_mutating(ba, scen)
+        end
+        if type_stability
+            test_type_multiderivative_mutating(ba, scen)
         end
     end
 end
@@ -64,13 +57,11 @@ function test_jacobian_mutating(
     allocs::Bool=false,
 )
     @testset "$(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
-        @testset "Extras: $(isempty(mex))" for mex in ((), (prepare_jacobian(ba, scen),))
-            if correctness
-                test_correctness_jacobian_mutating(ba, scen, mex...)
-            end
-            if type_stability
-                test_type_jacobian_mutating(ba, scen, mex...)
-            end
+        if correctness
+            test_correctness_jacobian_mutating(ba, scen)
+        end
+        if type_stability
+            test_type_jacobian_mutating(ba, scen)
         end
     end
 end

@@ -8,25 +8,17 @@ test_operators_allocating(AutoZeroReverse(); correctness=false);
 test_operators_mutating(AutoZeroReverse(); correctness=false);
 
 test_second_order_operators_allocating(
-    SecondOrder(AutoZeroForward(), AutoZeroForward());
-    correctness=false,
-    included=[:second_derivative, :hessian],
+    SecondOrder(AutoZeroForward(), AutoZeroForward()); correctness=false
 )
 
 test_second_order_operators_allocating(
-    SecondOrder(AutoZeroReverse(), AutoZeroForward());
-    correctness=false,
-    included=[:second_derivative, :hessian],
+    SecondOrder(AutoZeroReverse(), AutoZeroForward()); correctness=false
 )
 
 test_second_order_operators_allocating(
-    SecondOrder(AutoZeroForward(), AutoZeroReverse());
-    correctness=false,
-    included=[:second_derivative, :hessian],
+    SecondOrder(AutoZeroForward(), AutoZeroReverse()); correctness=false
 )
 
 test_second_order_operators_allocating(
-    SecondOrder(AutoZeroReverse(), AutoZeroReverse());
-    correctness=false,
-    included=[:second_derivative, :hessian],
+    SecondOrder(AutoZeroReverse(), AutoZeroReverse()); correctness=false
 )

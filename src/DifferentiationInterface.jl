@@ -9,14 +9,21 @@ $(EXPORTS)
 """
 module DifferentiationInterface
 
-using ADTypes:
-    AbstractADType, AbstractForwardMode, AbstractReverseMode, AbstractFiniteDifferencesMode
+using ADTypes: ADTypes, AbstractADType
 using DocStringExtensions
 using FillArrays: OneElement
 using LinearAlgebra: dot
 
+"""
+    AutoFastDifferentiation
+
+Chooses [FastDifferentiation.jl](https://github.com/brianguenter/FastDifferentiation.jl).
+"""
+struct AutoFastDifferentiation <: ADTypes.AbstractSymbolicDifferentiationMode end
+
 include("mode.jl")
 include("utils.jl")
+include("prepare.jl")
 
 include("pushforward.jl")
 include("pullback.jl")
@@ -32,11 +39,10 @@ include("second_derivative.jl")
 include("hessian_vector_product.jl")
 include("hessian.jl")
 
-include("prepare.jl")
-
 # submodules
 include("DifferentiationTest.jl")
 
+export AutoFastDifferentiation
 export SecondOrder
 
 export value_and_pushforward!, value_and_pushforward
@@ -74,6 +80,7 @@ export prepare_jacobian
 
 export prepare_second_derivative
 export prepare_hessian
+export prepare_hessian_vector_product
 
 function __init__()
     Base.Experimental.register_error_hint(MethodError) do io, exc, argtypes, kwargs

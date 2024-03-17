@@ -1,80 +1,12 @@
-## Pullback
-
-function DI.value_and_pullback!(
-    dx::AbstractArray,
-    ::AutoReverseDiff,
-    f,
-    x::AbstractArray,
-    dy::Real,
-    extras::Nothing=nothing,
-)
-    res = DiffResults.DiffResult(zero(dy), dx)
-    res = gradient!(res, f, x)
-    y = DiffResults.value(res)
-    dx .= dy .* DiffResults.gradient(res)
-    return y, dx
-end
-
-function DI.value_and_pullback!(
-    dx::AbstractArray,
-    ::AutoReverseDiff,
-    f,
-    x::AbstractArray,
-    dy::AbstractArray,
-    extras::Nothing=nothing,
-)
-    res = DiffResults.DiffResult(similar(dy), similar(dy, length(dy), length(x)))
-    res = jacobian!(res, f, x)
-    y = DiffResults.value(res)
-    jac = DiffResults.jacobian(res)
-    mul!(vec(dx), transpose(jac), vec(dy))
-    return y, dx
-end
-
-function DI.value_and_pullback!(
-    _dx::Number, backend::AutoReverseDiff, f, x::Number, dy, extras::Nothing=nothing
-)
-    x_array = [x]
-    dx_array = similar(x_array)
-    y, dx_array = DI.value_and_pullback!(dx_array, backend, f ∘ only, x_array, dy, extras)
-    return y, only(dx_array)
-end
-
 ## Gradient
 
-### Unprepared
-
-function DI.value_and_gradient!(
-    grad::AbstractArray,
-    backend::AutoReverseDiff,
-    f,
-    x::AbstractArray,
-    extras::Nothing=nothing,
-)
-    return DI.value_and_gradient!(grad, backend, f, x, DI.prepare_gradient(backend, f, x))
+function DI.prepare_gradient(backend::AutoReverseDiff, f, x::AbstractArray)
+    tape = GradientTape(f, x)
+    if backend.compile
+        tape = compile(tape)
+    end
+    return tape
 end
-
-function DI.value_and_gradient(
-    backend::AutoReverseDiff, f, x::AbstractArray, extras::Nothing=nothing
-)
-    return DI.value_and_gradient(backend, f, x, DI.prepare_gradient(backend, f, x))
-end
-
-function DI.gradient!(
-    grad::AbstractArray,
-    backend::AutoReverseDiff,
-    f,
-    x::AbstractArray,
-    extras::Nothing=nothing,
-)
-    return DI.gradient!(grad, backend, f, x, DI.prepare_gradient(backend, f, x))
-end
-
-function DI.gradient(backend::AutoReverseDiff, f, x::AbstractArray, extras::Nothing=nothing)
-    return DI.gradient(backend, f, x, DI.prepare_gradient(backend, f, x))
-end
-
-### Prepared
 
 function DI.value_and_gradient!(
     grad::AbstractArray,
@@ -117,39 +49,13 @@ end
 
 ## Jacobian
 
-### Unprepared
-
-function DI.value_and_jacobian!(
-    jac::AbstractMatrix,
-    backend::AutoReverseDiff,
-    f,
-    x::AbstractArray,
-    extras::Nothing=nothing,
-)
-    return DI.value_and_jacobian!(jac, backend, f, x, DI.prepare_jacobian(backend, f, x))
+function DI.prepare_jacobian(backend::AutoReverseDiff, f, x::AbstractArray)
+    tape = JacobianTape(f, x)
+    if backend.compile
+        tape = compile(tape)
+    end
+    return tape
 end
-
-function DI.value_and_jacobian(
-    backend::AutoReverseDiff, f, x::AbstractArray, extras::Nothing=nothing
-)
-    return DI.value_and_jacobian(backend, f, x, DI.prepare_jacobian(backend, f, x))
-end
-
-function DI.jacobian!(
-    jac::AbstractMatrix,
-    backend::AutoReverseDiff,
-    f,
-    x::AbstractArray,
-    extras::Nothing=nothing,
-)
-    return DI.jacobian!(jac, backend, f, x, DI.prepare_jacobian(backend, f, x))
-end
-
-function DI.jacobian(backend::AutoReverseDiff, f, x::AbstractArray, extras::Nothing=nothing)
-    return DI.jacobian(backend, f, x, DI.prepare_jacobian(backend, f, x))
-end
-
-### Prepared
 
 function DI.value_and_jacobian!(
     jac::AbstractMatrix,
@@ -195,20 +101,44 @@ function DI.jacobian(
     return jacobian!(tape, x)
 end
 
-## Preparation
+## Pullback
 
-function DI.prepare_gradient(backend::AutoReverseDiff, f, x::AbstractArray)
-    tape = GradientTape(f, x)
-    if backend.compile
-        tape = compile(tape)
-    end
-    return tape
+function DI.value_and_pullback!(
+    dx::AbstractArray,
+    backend::AutoReverseDiff,
+    f,
+    x::AbstractArray,
+    dy::Real,
+    extras::Nothing,
+)
+    y, dx = DI.value_and_gradient!(dx, backend, f, x)
+    dx .*= dy
+    return y, dx
 end
 
-function DI.prepare_jacobian(backend::AutoReverseDiff, f, x::AbstractArray)
-    tape = JacobianTape(f, x)
-    if backend.compile
-        tape = compile(tape)
-    end
-    return tape
+function DI.value_and_pullback!(
+    dx::AbstractArray,
+    backend::AutoReverseDiff,
+    f,
+    x::AbstractArray,
+    dy::AbstractArray,
+    extras::Nothing,
+)
+    y, jac = DI.value_and_jacobian(backend, f, x)  # allocates
+    mul!(vec(dx), transpose(jac), vec(dy))
+    return y, dx
+end
+
+function DI.value_and_pullback!(
+    _dx::Number,
+    backend::AutoReverseDiff,
+    f,
+    x::Number,
+    dy::Union{Number,AbstractArray},
+    extras::Nothing,
+)
+    x_array = [x]
+    dx_array = similar(x_array)
+    y, dx_array = DI.value_and_pullback!(dx_array, backend, f ∘ only, x_array, dy, extras)
+    return y, only(dx_array)
 end

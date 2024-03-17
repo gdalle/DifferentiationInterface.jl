@@ -24,10 +24,23 @@ $HESS_NOTES
 function value_gradient_and_hessian!(
     grad::AbstractArray,
     hess::AbstractMatrix,
+    backend::AbstractADType,
+    f,
+    x::AbstractArray,
+    extras=prepare_hessian(backend, f, x),
+)
+    return value_gradient_and_hessian!(
+        grad, hess, SecondOrder(backend, backend), f, x, extras
+    )
+end
+
+function value_gradient_and_hessian!(
+    grad::AbstractArray,
+    hess::AbstractMatrix,
     backend::SecondOrder,
     f,
     x::AbstractArray,
-    extras=nothing,
+    extras=prepare_hessian(backend, f, x),
 )
     return value_gradient_and_hessian_aux!(
         grad, hess, backend, f, x, extras, mode(inner(backend)), mode(outer(backend))
@@ -82,7 +95,7 @@ Compute the primal value `y = f(x)`, the gradient `grad = ∇f(x)` and the Hessi
 $HESS_NOTES
 """
 function value_gradient_and_hessian(
-    backend::AbstractADType, f, x::AbstractArray, extras=nothing
+    backend::AbstractADType, f, x::AbstractArray, extras=prepare_hessian(backend, f, x)
 )
     grad = similar(x)
     hess = similar(x, length(x), length(x))
@@ -97,7 +110,11 @@ Compute the Hessian `hess = ∇²f(x)` of an array-to-scalar function, overwriti
 $HESS_NOTES
 """
 function hessian!(
-    hess::AbstractMatrix, backend::AbstractADType, f, x::AbstractArray, extras=nothing
+    hess::AbstractMatrix,
+    backend::AbstractADType,
+    f,
+    x::AbstractArray,
+    extras=prepare_hessian(backend, f, x),
 )
     grad = similar(x)
     return last(value_gradient_and_hessian!(grad, hess, backend, f, x, extras))
@@ -110,6 +127,8 @@ Compute the Hessian `hess = ∇²f(x)` of an array-to-scalar function.
 
 $HESS_NOTES
 """
-function hessian(backend::AbstractADType, f, x::AbstractArray, extras=nothing)
+function hessian(
+    backend::AbstractADType, f, x::AbstractArray, extras=prepare_hessian(backend, f, x)
+)
     return last(value_gradient_and_hessian(backend, f, x, extras))
 end

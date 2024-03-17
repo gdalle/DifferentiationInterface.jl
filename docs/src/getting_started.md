@@ -3,19 +3,23 @@
 ## [Operators](@id operators)
 
 Depending on the type of input and output, differentiation operators can have various names.
+Most backends have custom implementations, which we reuse if possible.
+
 We choose the following terminology for the operators we provide:
 
-| First order      | **scalar output** | **array output**  |
+### First order differentiation
+
+|                  | **scalar output** | **array output**  |
 | ---------------- | ----------------- | ----------------- |
 | **scalar input** | `derivative`      | `multiderivative` |
 | **array input**  | `gradient`        | `jacobian`        |
 
-| Second order     | **scalar output**   | **array output** |
+### Second order differentiation
+
+|                  | **scalar output**   | **array output** |
 | ---------------- | ------------------- | ---------------- |
 | **scalar input** | `second_derivative` | not implemented  |
 | **array input**  | `hessian`           | not implemented  |
-
-Most backends have custom implementations for all of these, which we reuse if possible.
 
 ## Variants
 
@@ -45,16 +49,17 @@ For advanced users, lower-level operators are also exposed:
 In many cases, automatic differentiation can be accelerated if the function has been run at least once (e.g. to record a tape) and if some cache objects are provided.
 This is a backend-specific procedure, but we expose a common syntax to achieve it.
 
-| **Operator**      | **preparation function**            |
-| :---------------- | :---------------------------------- |
-| Derivative        | [`prepare_derivative`](@ref)        |
-| Multiderivative   | [`prepare_multiderivative`](@ref)   |
-| Gradient          | [`prepare_gradient`](@ref)          |
-| Jacobian          | [`prepare_jacobian`](@ref)          |
-| Second derivative | [`prepare_second_derivative`](@ref) |
-| Hessian           | [`prepare_hessian`](@ref)           |
-| Pushforward (JVP) | [`prepare_pushforward`](@ref)       |
-| Pullback (VJP)    | [`prepare_pullback`](@ref)          |
+| **Operator**                 | **preparation function**                 |
+| :--------------------------- | :--------------------------------------- |
+| Derivative                   | [`prepare_derivative`](@ref)             |
+| Multiderivative              | [`prepare_multiderivative`](@ref)        |
+| Gradient                     | [`prepare_gradient`](@ref)               |
+| Jacobian                     | [`prepare_jacobian`](@ref)               |
+| Second derivative            | [`prepare_second_derivative`](@ref)      |
+| Hessian                      | [`prepare_hessian`](@ref)                |
+| Pushforward (JVP)            | [`prepare_pushforward`](@ref)            |
+| Pullback (VJP)               | [`prepare_pullback`](@ref)               |
+| Hessian-vector product (HVP) | [`prepare_hessian_vector_product`](@ref) |
 
 If you run `prepare_operator(backend, f, x)`, it will create an object called `extras` containing the necessary information to speed up `operator` and its variants.
 This information is specific to `backend` and `f`, as well as the _type and size_ of the input `x`, but it should work with different _values_ of `x`.
@@ -81,11 +86,6 @@ Since `f!` operates in-place and the primal is computed every time, only four op
 Furthermore, the preparation function takes an additional argument: `prepare_operator(backend, f!, x, y)`.
 
 Check out the list of [backends that support mutating functions](@ref backend_support_mutation).
-
-## Second order backends
-
-Second order differentiation operators can only be used with a backend of type [`SecondOrder`](@ref).
-Check out the [combination table](@ref backend_combination) between backends.
 
 ## Multiple inputs/outputs
 

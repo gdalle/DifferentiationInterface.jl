@@ -8,14 +8,15 @@ using ForwardDiff: ForwardDiff
 using ReverseDiff: ReverseDiff
 using Zygote: Zygote
 
-second_order_backends = [
-    SecondOrder(AutoForwardDiff(), AutoForwardDiff()),
+cross_backends = [
+    # forward over reverse
     SecondOrder(AutoZygote(), AutoForwardDiff()),
-    SecondOrder(AutoReverseDiff(), AutoForwardDiff()),
     SecondOrder(AutoZygote(), AutoEnzyme(Enzyme.Forward)),
+    SecondOrder(AutoReverseDiff(), AutoForwardDiff()),
+    # reverse over forward
+    SecondOrder(AutoForwardDiff(), AutoEnzyme(Enzyme.Reverse)),
 ]
 
-@testset "$(typeof(backend.outer)) over $(typeof(backend.inner))" for backend in
-                                                                      second_order_backends
-    test_second_order_operators_allocating(backend; type_stability=false)
+@testset "$(typeof(b.outer)) over $(typeof(b.inner))" for b in cross_backends
+    test_second_order_operators_allocating(b; type_stability=false)
 end;

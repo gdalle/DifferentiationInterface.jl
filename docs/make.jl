@@ -11,6 +11,7 @@ using Test
 using ADTypes
 using Diffractor: Diffractor
 using Enzyme: Enzyme
+using FastDifferentiation: FastDifferentiation
 using FiniteDiff: FiniteDiff
 using ForwardDiff: ForwardDiff
 using PolyesterForwardDiff: PolyesterForwardDiff
@@ -20,6 +21,7 @@ using Zygote: Zygote
 ChainRulesCoreExt = get_extension(DI, :DifferentiationInterfaceChainRulesCoreExt)
 DiffractorExt = get_extension(DI, :DifferentiationInterfaceDiffractorExt)
 EnzymeExt = get_extension(DI, :DifferentiationInterfaceEnzymeExt)
+FastDifferentiationExt = get_extension(DI, :DifferentiationInterfaceFastDifferentiationExt)
 FiniteDiffExt = get_extension(DI, :DifferentiationInterfaceFiniteDiffExt)
 ForwardDiffExt = get_extension(DI, :DifferentiationInterfaceForwardDiffExt)
 PolyesterForwardDiffExt = get_extension(
@@ -58,6 +60,7 @@ makedocs(;
         ChainRulesCoreExt,
         DiffractorExt,
         EnzymeExt,
+        FastDifferentiationExt,
         FiniteDiffExt,
         ForwardDiffExt,
         PolyesterForwardDiffExt,

@@ -6,13 +6,11 @@ function test_pushforward_allocating(
     allocs::Bool=false,
 )
     @testset "$(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
-        @testset "Extras: $(isempty(mex))" for mex in ((), (prepare_pushforward(ba, scen),))
-            if correctness
-                test_correctness_pushforward_allocating(ba, scen, mex...)
-            end
-            if type_stability
-                test_type_pushforward_allocating(ba, scen, mex...)
-            end
+        if correctness
+            test_correctness_pushforward_allocating(ba, scen)
+        end
+        if type_stability
+            test_type_pushforward_allocating(ba, scen)
         end
     end
 end
@@ -25,13 +23,11 @@ function test_pullback_allocating(
     allocs::Bool=false,
 )
     @testset "$(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
-        @testset "Extras: $(isempty(mex))" for mex in ((), (prepare_pullback(ba, scen),))
-            if correctness
-                test_correctness_pullback_allocating(ba, scen, mex...)
-            end
-            if type_stability
-                test_type_pullback_allocating(ba, scen, mex...)
-            end
+        if correctness
+            test_correctness_pullback_allocating(ba, scen)
+        end
+        if type_stability
+            test_type_pullback_allocating(ba, scen)
         end
     end
 end
@@ -44,13 +40,11 @@ function test_derivative_allocating(
     allocs::Bool=false,
 )
     @testset "$(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
-        @testset "Extras: $(isempty(mex))" for mex in ((), (prepare_derivative(ba, scen),))
-            if correctness
-                test_correctness_derivative_allocating(ba, scen, mex...)
-            end
-            if type_stability
-                test_type_derivative_allocating(ba, scen, mex...)
-            end
+        if correctness
+            test_correctness_derivative_allocating(ba, scen)
+        end
+        if type_stability
+            test_type_derivative_allocating(ba, scen)
         end
     end
 end
@@ -63,14 +57,11 @@ function test_multiderivative_allocating(
     allocs::Bool=false,
 )
     @testset "$(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
-        @testset "Extras: $(isempty(mex))" for mex in
-                                               ((), (prepare_multiderivative(ba, scen),))
-            if correctness
-                test_correctness_multiderivative_allocating(ba, scen, mex...)
-            end
-            if type_stability
-                test_type_multiderivative_allocating(ba, scen, mex...)
-            end
+        if correctness
+            test_correctness_multiderivative_allocating(ba, scen)
+        end
+        if type_stability
+            test_type_multiderivative_allocating(ba, scen)
         end
     end
 end
@@ -83,13 +74,11 @@ function test_gradient_allocating(
     allocs::Bool=false,
 )
     @testset "Gradient: $(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
-        @testset "Extras: $(isempty(mex))" for mex in ((), (prepare_gradient(ba, scen),))
-            if correctness
-                test_correctness_gradient_allocating(ba, scen, mex...)
-            end
-            if type_stability
-                test_type_gradient_allocating(ba, scen, mex...)
-            end
+        if correctness
+            test_correctness_gradient_allocating(ba, scen)
+        end
+        if type_stability
+            test_type_gradient_allocating(ba, scen)
         end
     end
 end
@@ -102,13 +91,11 @@ function test_jacobian_allocating(
     allocs::Bool=false,
 )
     @testset "$(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
-        @testset "Extras: $(isempty(mex))" for mex in ((), (prepare_jacobian(ba, scen),))
-            if correctness
-                test_correctness_jacobian_allocating(ba, scen, mex...)
-            end
-            if type_stability
-                test_type_jacobian_allocating(ba, scen, mex...)
-            end
+        if correctness
+            test_correctness_jacobian_allocating(ba, scen)
+        end
+        if type_stability
+            test_type_jacobian_allocating(ba, scen)
         end
     end
 end
@@ -121,14 +108,11 @@ function test_second_derivative_allocating(
     allocs::Bool=false,
 )
     @testset "$(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
-        @testset "Extras: $(isempty(mex))" for mex in
-                                               ((), (prepare_second_derivative(ba, scen),))
-            if correctness
-                test_correctness_second_derivative_allocating(ba, scen, mex...)
-            end
-            if type_stability
-                test_type_second_derivative_allocating(ba, scen, mex...)
-            end
+        if correctness
+            test_correctness_second_derivative_allocating(ba, scen)
+        end
+        if type_stability
+            test_type_second_derivative_allocating(ba, scen)
         end
     end
 end
@@ -141,13 +125,11 @@ function test_hessian_allocating(
     allocs::Bool=false,
 )
     @testset "$(in_type(scen)) -> $(out_type(scen))" for scen in scenarios
-        @testset "Extras: $(isempty(mex))" for mex in ((), (prepare_hessian(ba, scen),))
-            if correctness
-                test_correctness_hessian_allocating(ba, scen, mex...)
-            end
-            if type_stability
-                test_type_hessian_allocating(ba, scen, mex...)
-            end
+        if correctness
+            test_correctness_hessian_allocating(ba, scen)
+        end
+        if type_stability
+            test_type_hessian_allocating(ba, scen)
         end
     end
 end
@@ -173,12 +155,12 @@ function DT.test_operators_allocating(
         !is_mutating(scen) && in_type(scen) <: input_type && out_type(scen) <: output_type
     end
 
-    if mode(ba) isa ForwardMode && :pushforward in kept
+    if !(mode(ba) isa ReverseMode) && :pushforward in kept
         @testset "Pushforward" test_pushforward_allocating(
             ba, scenarios; correctness, type_stability, allocs
         )
     end
-    if mode(ba) isa ReverseMode && :pullback in kept
+    if !(mode(ba) isa ForwardMode) && :pullback in kept
         @testset "Pullback" test_pullback_allocating(
             ba, scenarios; correctness, type_stability, allocs
         )

@@ -1,7 +1,7 @@
 ## Pushforward
 
 function DI.value_and_pushforward!(
-    _dy::Real, ::AutoForwardDiff, f, x::Real, dx, extras::Nothing=nothing
+    _dy::Real, ::AutoForwardDiff, f, x::Real, dx, extras::Nothing
 )
     T = tag_type(f, x)
     xdual = Dual{T}(x, dx)
@@ -12,7 +12,7 @@ function DI.value_and_pushforward!(
 end
 
 function DI.value_and_pushforward!(
-    dy::AbstractArray, ::AutoForwardDiff, f, x::Real, dx, extras::Nothing=nothing
+    dy::AbstractArray, ::AutoForwardDiff, f, x::Real, dx, extras::Nothing
 )
     T = tag_type(f, x)
     xdual = Dual{T}(x, dx)
@@ -23,7 +23,7 @@ function DI.value_and_pushforward!(
 end
 
 function DI.value_and_pushforward!(
-    _dy::Real, ::AutoForwardDiff, f, x::AbstractArray, dx, extras::Nothing=nothing
+    _dy::Real, ::AutoForwardDiff, f, x::AbstractArray, dx, extras::Nothing
 )
     T = tag_type(f, x)
     xdual = Dual{T}.(x, dx)
@@ -34,7 +34,7 @@ function DI.value_and_pushforward!(
 end
 
 function DI.value_and_pushforward!(
-    dy::AbstractArray, ::AutoForwardDiff, f, x::AbstractArray, dx, extras::Nothing=nothing
+    dy::AbstractArray, ::AutoForwardDiff, f, x::AbstractArray, dx, extras::Nothing
 )
     T = tag_type(f, x)
     xdual = Dual{T}.(x, dx)
@@ -46,62 +46,28 @@ end
 
 ## Derivative
 
-function DI.derivative(::AutoForwardDiff, f, x::Number, extras::Nothing=nothing)
+function DI.derivative(::AutoForwardDiff, f, x::Number, extras::Nothing)
     return derivative(f, x)
 end
 
 ## Multiderivative
 
 function DI.multiderivative!(
-    multider::AbstractArray, ::AutoForwardDiff, f, x::Number, extras::Nothing=nothing
+    multider::AbstractArray, ::AutoForwardDiff, f, x::Number, extras::Nothing
 )
     derivative!(multider, f, x)
     return multider
 end
 
-function DI.multiderivative(::AutoForwardDiff, f, x::Number, extras::Nothing=nothing)
+function DI.multiderivative(::AutoForwardDiff, f, x::Number, extras::Nothing)
     return derivative(f, x)
 end
 
 ## Gradient
 
-### Unprepared
-
-function DI.value_and_gradient!(
-    grad::AbstractArray,
-    backend::AutoForwardDiff,
-    f,
-    x::AbstractArray,
-    extras::Nothing=nothing,
-)
-    config = DI.prepare_gradient(backend, f, x)
-    return DI.value_and_gradient!(grad, backend, f, x, config)
+function DI.prepare_gradient(backend::AutoForwardDiff, f, x::AbstractArray)
+    return GradientConfig(f, x, choose_chunk(backend, x))
 end
-
-function DI.value_and_gradient(
-    backend::AutoForwardDiff, f, x::AbstractArray, extras::Nothing=nothing
-)
-    config = DI.prepare_gradient(backend, f, x)
-    return DI.value_and_gradient(backend, f, x, config)
-end
-
-function DI.gradient!(
-    grad::AbstractArray,
-    backend::AutoForwardDiff,
-    f,
-    x::AbstractArray,
-    extras::Nothing=nothing,
-)
-    config = DI.prepare_gradient(backend, f, x)
-    return DI.gradient!(grad, backend, f, x, config)
-end
-
-function DI.gradient(backend::AutoForwardDiff, f, x::AbstractArray, extras::Nothing=nothing)
-    config = DI.prepare_gradient(backend, f, x)
-    return DI.gradient(backend, f, x, config)
-end
-
-### Prepared
 
 function DI.value_and_gradient!(
     grad::AbstractArray, ::AutoForwardDiff, f, x::AbstractArray, config::GradientConfig
@@ -132,43 +98,9 @@ end
 
 ## Jacobian
 
-### Unprepared
-
-function DI.value_and_jacobian!(
-    jac::AbstractMatrix,
-    backend::AutoForwardDiff,
-    f,
-    x::AbstractArray,
-    extras::Nothing=nothing,
-)
-    config = DI.prepare_jacobian(backend, f, x)
-    return DI.value_and_jacobian!(jac, backend, f, x, config)
+function DI.prepare_jacobian(backend::AutoForwardDiff, f, x::AbstractArray)
+    return JacobianConfig(f, x, choose_chunk(backend, x))
 end
-
-function DI.value_and_jacobian(
-    backend::AutoForwardDiff, f, x::AbstractArray, extras::Nothing=nothing
-)
-    config = DI.prepare_jacobian(backend, f, x)
-    return DI.value_and_jacobian(backend, f, x, config)
-end
-
-function DI.jacobian!(
-    jac::AbstractMatrix,
-    backend::AutoForwardDiff,
-    f,
-    x::AbstractArray,
-    extras::Nothing=nothing,
-)
-    config = DI.prepare_jacobian(backend, f, x)
-    return DI.jacobian!(jac, backend, f, x, config)
-end
-
-function DI.jacobian(backend::AutoForwardDiff, f, x::AbstractArray, extras::Nothing=nothing)
-    config = DI.prepare_jacobian(backend, f, x)
-    return DI.jacobian(backend, f, x, config)
-end
-
-### Prepared
 
 function DI.value_and_jacobian!(
     jac::AbstractMatrix, ::AutoForwardDiff, f, x::AbstractArray, config::JacobianConfig
@@ -194,14 +126,4 @@ end
 
 function DI.jacobian(::AutoForwardDiff, f, x::AbstractArray, config::JacobianConfig)
     return jacobian(f, x, config)
-end
-
-## Preparation
-
-function DI.prepare_gradient(backend::AutoForwardDiff, f, x::AbstractArray)
-    return GradientConfig(f, x, choose_chunk(backend, x))
-end
-
-function DI.prepare_jacobian(backend::AutoForwardDiff, f, x::AbstractArray)
-    return JacobianConfig(f, x, choose_chunk(backend, x))
 end

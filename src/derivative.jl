@@ -3,7 +3,9 @@
 
 Compute the primal value `y = f(x)` and the derivative `der = f'(x)` of a scalar-to-scalar function.
 """
-function value_and_derivative(backend::AbstractADType, f, x::Number, extras=nothing)
+function value_and_derivative(
+    backend::AbstractADType, f, x::Number, extras=prepare_derivative(backend, f, x)
+)
     return value_and_derivative_aux(backend, f, x, extras, mode(backend))
 end
 
@@ -24,7 +26,9 @@ end
 
 Compute the derivative `der = f'(x)` of a scalar-to-scalar function.
 """
-function derivative(backend::AbstractADType, f, x::Number, extras=nothing)
+function derivative(
+    backend::AbstractADType, f, x::Number, extras=prepare_derivative(backend, f, x)
+)
     return derivative_aux(backend, f, x, extras, mode(backend))
 end
 
