@@ -8,32 +8,6 @@ function DI.prepare_gradient(backend::AutoReverseDiff, f, x::AbstractArray)
     return tape
 end
 
-### Unprepared
-
-function DI.value_and_gradient!(
-    grad::AbstractArray, backend::AutoReverseDiff, f, x::AbstractArray, extras::Nothing
-)
-    return DI.value_and_gradient!(grad, backend, f, x, DI.prepare_gradient(backend, f, x))
-end
-
-function DI.value_and_gradient(
-    backend::AutoReverseDiff, f, x::AbstractArray, extras::Nothing
-)
-    return DI.value_and_gradient(backend, f, x, DI.prepare_gradient(backend, f, x))
-end
-
-function DI.gradient!(
-    grad::AbstractArray, backend::AutoReverseDiff, f, x::AbstractArray, extras::Nothing
-)
-    return DI.gradient!(grad, backend, f, x, DI.prepare_gradient(backend, f, x))
-end
-
-function DI.gradient(backend::AutoReverseDiff, f, x::AbstractArray, extras::Nothing)
-    return DI.gradient(backend, f, x, DI.prepare_gradient(backend, f, x))
-end
-
-### Prepared
-
 function DI.value_and_gradient!(
     grad::AbstractArray,
     ::AutoReverseDiff,
@@ -82,32 +56,6 @@ function DI.prepare_jacobian(backend::AutoReverseDiff, f, x::AbstractArray)
     end
     return tape
 end
-
-### Unprepared
-
-function DI.value_and_jacobian!(
-    jac::AbstractMatrix, backend::AutoReverseDiff, f, x::AbstractArray, extras::Nothing
-)
-    return DI.value_and_jacobian!(jac, backend, f, x, DI.prepare_jacobian(backend, f, x))
-end
-
-function DI.value_and_jacobian(
-    backend::AutoReverseDiff, f, x::AbstractArray, extras::Nothing
-)
-    return DI.value_and_jacobian(backend, f, x, DI.prepare_jacobian(backend, f, x))
-end
-
-function DI.jacobian!(
-    jac::AbstractMatrix, backend::AutoReverseDiff, f, x::AbstractArray, extras::Nothing
-)
-    return DI.jacobian!(jac, backend, f, x, DI.prepare_jacobian(backend, f, x))
-end
-
-function DI.jacobian(backend::AutoReverseDiff, f, x::AbstractArray, extras::Nothing)
-    return DI.jacobian(backend, f, x, DI.prepare_jacobian(backend, f, x))
-end
-
-### Prepared
 
 function DI.value_and_jacobian!(
     jac::AbstractMatrix,
