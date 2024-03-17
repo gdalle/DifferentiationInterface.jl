@@ -155,12 +155,12 @@ function DT.test_operators_allocating(
         !is_mutating(scen) && in_type(scen) <: input_type && out_type(scen) <: output_type
     end
 
-    if mode(ba) isa ForwardMode && :pushforward in kept
+    if !(mode(ba) isa ReverseMode) && :pushforward in kept
         @testset "Pushforward" test_pushforward_allocating(
             ba, scenarios; correctness, type_stability, allocs
         )
     end
-    if mode(ba) isa ReverseMode && :pullback in kept
+    if !(mode(ba) isa ForwardMode) && :pullback in kept
         @testset "Pullback" test_pullback_allocating(
             ba, scenarios; correctness, type_stability, allocs
         )
