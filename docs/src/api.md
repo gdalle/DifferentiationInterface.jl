@@ -93,5 +93,5 @@ Public = false
 These are not part of the public API.
 
 ```@autodocs
-Modules = [DifferentiationTest, Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceTestExt)]
+Modules = [DifferentiationTest]
 ```

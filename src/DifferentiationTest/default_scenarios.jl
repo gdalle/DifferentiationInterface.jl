@@ -1,55 +1,3 @@
-in_type(::Scenario{F,X}) where {F,X} = X
-out_type(::Scenario{F,X,Y}) where {F,X,Y} = Y
-is_mutating(s::Scenario) = s.mutating
-
-function derivative_scenarios(scenarios::Vector{<:Scenario})
-    filter(scenarios) do scen
-        in_type(scen) <: Number && out_type(scen) <: Number
-    end
-end
-
-function multiderivative_scenarios(scenarios::Vector{<:Scenario})
-    filter(scenarios) do scen
-        in_type(scen) <: Number && out_type(scen) <: AbstractArray
-    end
-end
-
-function gradient_scenarios(scenarios::Vector{<:Scenario})
-    filter(scenarios) do scen
-        in_type(scen) <: AbstractArray && out_type(scen) <: Number
-    end
-end
-
-function jacobian_scenarios(scenarios::Vector{<:Scenario})
-    filter(scenarios) do scen
-        in_type(scen) <: AbstractArray && out_type(scen) <: AbstractArray
-    end
-end
-
-second_derivative_scenarios(scenarios) = derivative_scenarios(scenarios)
-hessian_scenarios(scenarios) = gradient_scenarios(scenarios)
-
-for prep in [
-    :prepare_pushforward,
-    :prepare_pullback,
-    :prepare_derivative,
-    :prepare_multiderivative,
-    :prepare_gradient,
-    :prepare_jacobian,
-    :prepare_second_derivative,
-    :prepare_hessian,
-]
-    @eval function DI.$prep(ba::AbstractADType, scen::Scenario)
-        if is_mutating(scen)
-            return DI.$prep(ba, scen.f, scen.x, deepcopy(scen.y))
-        else
-            return DI.$prep(ba, scen.f, scen.x)
-        end
-    end
-end
-
-## Defaults
-
 f_scalar_scalar(x::Number)::Number = sin(x)
 
 f_scalar_vector(x::Number)::AbstractVector = [sin(x), sin(2x)]
@@ -132,6 +80,6 @@ function default_scenarios_mutating()
     return scenarios
 end
 
-function DT.default_scenarios()
+function default_scenarios()
     return vcat(default_scenarios_allocating(), default_scenarios_mutating())
 end
