@@ -13,6 +13,8 @@ using FastDifferentiation:
 using LinearAlgebra: dot
 using RuntimeGeneratedFunctions: RuntimeGeneratedFunction
 
+DI.mutation_behavior(::AutoFastDifferentiation) = DI.MutationNotSupported()
+
 include("allocating.jl")
 
 end

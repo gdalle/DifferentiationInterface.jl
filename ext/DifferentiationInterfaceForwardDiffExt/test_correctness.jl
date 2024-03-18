@@ -2,62 +2,83 @@
 ## Selector
 
 function DT.test_correctness(
-    ba::AbstractADType, scens::Vector{<:Scenario}; operators::Vector{Symbol}
+    backends::Vector{<:AbstractADType},
+    operators::Vector{Symbol},
+    scenarios::Vector{<:Scenario};
 )
-    @testset "Correctness - $op" for op in operators
-        if op == :pushforward_allocating
-            !isa(mode(ba), ReverseMode) &&
-                test_correctness_pushforward_allocating.(Ref(ba), allocating(scens))
-        elseif op == :pushforward_mutating
-            !isa(mode(ba), ReverseMode) &&
-                test_correctness_pushforward_mutating.(Ref(ba), mutating(scens))
+    @testset verbose = true "Correctness" begin
+        @testset "$op - $(backend_string(backend))" for op in operators, backend in backends
+            if op == :pushforward_allocating
+                @testset "$(typeof(s))" for s in allocating(scenarios)
+                    test_correctness_pushforward_allocating(backend, s)
+                end
+            elseif op == :pushforward_mutating
+                @testset "$(typeof(s))" for s in mutating(scenarios)
+                    test_correctness_pushforward_mutating(backend, s)
+                end
 
-        elseif op == :pullback_allocating
-            !isa(mode(ba), ForwardMode) &&
-                test_correctness_pullback_allocating.(Ref(ba), allocating(scens))
-        elseif op == :pullback_mutating
-            !isa(mode(ba), ForwardMode) &&
-                test_correctness_pullback_mutating.(Ref(ba), mutating(scens))
+            elseif op == :pullback_allocating
+                @testset "$(typeof(s))" for s in allocating(scenarios)
+                    test_correctness_pullback_allocating(backend, s)
+                end
+            elseif op == :pullback_mutating
+                @testset "$(typeof(s))" for s in mutating(scenarios)
+                    test_correctness_pullback_mutating(backend, s)
+                end
 
-        elseif op == :derivative_allocating
-            test_correctness_derivative_allocating.(
-                Ref(ba), allocating(scalar_scalar(scens))
-            )
+            elseif op == :derivative_allocating
+                @testset "$(typeof(s))" for s in allocating(scalar_scalar(scenarios))
+                    test_correctness_derivative_allocating(backend, s)
+                end
 
-        elseif op == :multiderivative_allocating
-            test_correctness_multiderivative_allocating.(
-                Ref(ba), allocating(scalar_array(scens))
-            )
-        elseif op == :multiderivative_mutating
-            test_correctness_multiderivative_mutating.(
-                Ref(ba), mutating(scalar_array(scens))
-            )
+            elseif op == :multiderivative_allocating
+                @testset "$(typeof(s))" for s in allocating(scalar_array(scenarios))
+                    test_correctness_multiderivative_allocating(backend, s)
+                end
+            elseif op == :multiderivative_mutating
+                @testset "$(typeof(s))" for s in mutating(scalar_array(scenarios))
+                    test_correctness_multiderivative_mutating(backend, s)
+                end
 
-        elseif op == :gradient_allocating
-            test_correctness_gradient_allocating.(Ref(ba), allocating(array_scalar(scens)))
+            elseif op == :gradient_allocating
+                @testset "$(typeof(s))" for s in allocating(array_scalar(scenarios))
+                    test_correctness_gradient_allocating(backend, s)
+                end
 
-        elseif op == :jacobian_allocating
-            test_correctness_jacobian_allocating.(Ref(ba), allocating(array_array(scens)))
-        elseif op == :jacobian_mutating
-            test_correctness_jacobian_mutating.(Ref(ba), mutating(array_array(scens)))
+            elseif op == :jacobian_allocating
+                @testset "$(typeof(s))" for s in allocating(array_array(scenarios))
+                    test_correctness_jacobian_allocating(backend, s)
+                end
+            elseif op == :jacobian_mutating
+                @testset "$(typeof(s))" for s in mutating(array_array(scenarios))
+                    test_correctness_jacobian_mutating(backend, s)
+                end
 
-        elseif op == :second_derivative_allocating
-            test_correctness_second_derivative_allocating.(
-                Ref(ba), allocating(scalar_scalar(scens))
-            )
-        elseif op == :hessian_allocating
-            test_correctness_hessian_allocating.(Ref(ba), allocating(array_scalar(scens)))
+            elseif op == :second_derivative_allocating
+                @testset "$(typeof(s))" for s in allocating(scalar_scalar(scenarios))
+                    test_correctness_second_derivative_allocating(backend, s)
+                end
 
-        else
-            throw(ArgumentError("Invalid operator to test: `:$op`"))
+            elseif op == :hessian_vector_product_allocating
+                @testset "$(typeof(s))" for s in allocating(array_scalar(scenarios))
+                    test_correctness_hessian_vector_product_allocating(backend, s)
+                end
+            elseif op == :hessian_allocating
+                @testset "$(typeof(s))" for s in allocating(array_scalar(scenarios))
+                    test_correctness_hessian_allocating(backend, s)
+                end
+
+            else
+                throw(ArgumentError("Invalid operator to test: `:$op`"))
+            end
         end
     end
-    return nothing
 end
 
 ## Pushforward
 
 function test_correctness_pushforward_allocating(ba::AbstractADType, scenario::Scenario)
+    isa(mode(ba), ReverseMode) && return nothing
     (; f, x, y, dx) = deepcopy(scenario)
     dy_true = true_pushforward(f, x, y, dx; mutating=false)
 
@@ -88,6 +109,8 @@ function test_correctness_pushforward_allocating(ba::AbstractADType, scenario::S
 end
 
 function test_correctness_pushforward_mutating(ba::AbstractADType, scenario::Scenario)
+    isa(mode(ba), ReverseMode) && return nothing
+    isa(mutation_behavior(ba), MutationNotSupported) && return nothing
     (; f, x, y, dx) = deepcopy(scenario)
     f! = f
     dy_true = true_pushforward(f!, x, y, dx; mutating=true)
@@ -113,6 +136,7 @@ end
 ## Pullback
 
 function test_correctness_pullback_allocating(ba::AbstractADType, scenario::Scenario)
+    isa(mode(ba), ForwardMode) && return nothing
     (; f, x, y, dy) = deepcopy(scenario)
     dx_true = true_pullback(f, x, y, dy; mutating=false)
 
@@ -143,6 +167,8 @@ function test_correctness_pullback_allocating(ba::AbstractADType, scenario::Scen
 end
 
 function test_correctness_pullback_mutating(ba::AbstractADType, scenario::Scenario)
+    isa(mode(ba), ForwardMode) && return nothing
+    isa(mutation_behavior(ba), MutationNotSupported) && return nothing
     (; f, x, y, dy) = deepcopy(scenario)
     f! = f
     dx_true = true_pullback(f, x, y, dy; mutating=true)
@@ -217,6 +243,7 @@ function test_correctness_multiderivative_allocating(ba::AbstractADType, scenari
 end
 
 function test_correctness_multiderivative_mutating(ba::AbstractADType, scenario::Scenario)
+    isa(mutation_behavior(ba), MutationNotSupported) && return nothing
     (; f, x, y) = deepcopy(scenario)
     f! = f
     multider_true = ForwardDiff.derivative(f!, y, x)
@@ -300,6 +327,7 @@ function test_correctness_jacobian_allocating(ba::AbstractADType, scenario::Scen
 end
 
 function test_correctness_jacobian_mutating(ba::AbstractADType, scenario::Scenario)
+    isa(mutation_behavior(ba), MutationNotSupported) && return nothing
     (; f, x, y) = deepcopy(scenario)
     f! = f
     jac_true = ForwardDiff.jacobian(f!, y, x)
@@ -349,13 +377,36 @@ function test_correctness_second_derivative_allocating(
     end
 end
 
-## Hessian
+## Hessian-vector product
 
-function test_correctness_hessian_allocating(ba::AbstractADType, scenario::Scenario)
-    (; f, x, y, dx) = deepcopy(scenario)
+function test_correctness_hessian_vector_product_allocating(
+    ba::AbstractADType, scenario::Scenario
+)
+    (; f, x, dx) = deepcopy(scenario)
     grad_true = ForwardDiff.gradient(f, x)
     hess_true = ForwardDiff.hessian(f, x)
     hvp_true = reshape((hess_true * vec(dx)), size(x))
+
+    hvp_out5 = DI.hessian_vector_product(ba, f, x, dx)
+    hvp_in6 = zero(hvp_out5)
+    hvp_out6 = DI.hessian_vector_product!(hvp_in6, ba, f, x, dx)
+
+    @testset "Hessian-vector product value" begin
+        @test hvp_out5 ≈ hvp_true rtol = 1e-3
+        @test hvp_out6 ≈ hvp_true rtol = 1e-3
+        @testset "Mutation" begin
+            @test hvp_in6 ≈ hvp_true rtol = 1e-3
+        end
+    end
+    # TODO: add gradient
+end
+
+## Hessian
+
+function test_correctness_hessian_allocating(ba::AbstractADType, scenario::Scenario)
+    (; f, x, y) = deepcopy(scenario)
+    grad_true = ForwardDiff.gradient(f, x)
+    hess_true = ForwardDiff.hessian(f, x)
 
     y_out1, grad_out1, hess_out1 = DI.value_gradient_and_hessian(ba, f, x)
     grad_in2, hess_in2 = zero(grad_out1), zero(hess_out1)
@@ -366,10 +417,6 @@ function test_correctness_hessian_allocating(ba::AbstractADType, scenario::Scena
     hess_out3 = DI.hessian(ba, f, x)
     hess_in4 = zero(hess_out3)
     hess_out4 = DI.hessian!(hess_in4, ba, f, x)
-
-    hvp_out5 = DI.hessian_vector_product(ba, f, x, dx)
-    hvp_in6 = zero(hvp_out5)
-    hvp_out6 = DI.hessian_vector_product!(hvp_in6, ba, f, x, dx)
 
     @testset "Primal value" begin
         @test y_out1 ≈ y
@@ -390,13 +437,6 @@ function test_correctness_hessian_allocating(ba::AbstractADType, scenario::Scena
         @testset "Mutation" begin
             @test hess_in2 ≈ hess_true rtol = 1e-3
             @test hess_in4 ≈ hess_true rtol = 1e-3
-        end
-    end
-    @testset "Hessian-vector product value" begin
-        @test hvp_out5 ≈ hvp_true rtol = 1e-3
-        @test hvp_out6 ≈ hvp_true rtol = 1e-3
-        @testset "Mutation" begin
-            @test hvp_in6 ≈ hvp_true rtol = 1e-3
         end
     end
 end

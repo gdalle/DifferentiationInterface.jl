@@ -17,6 +17,6 @@ cross_backends = [
     SecondOrder(AutoForwardDiff(), AutoEnzyme(Enzyme.Reverse)),
 ]
 
-@testset "$(typeof(b.outer)) over $(typeof(b.inner))" for b in cross_backends
-    test_operators(b; first_order=false, mutating=false, type_stability=false)
+@testset "$(backend_string(backend))" for backend in cross_backends
+    test_operators(backend; first_order=false, mutating=false, type_stability=false)
 end;

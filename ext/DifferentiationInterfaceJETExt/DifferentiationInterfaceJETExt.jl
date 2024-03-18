@@ -2,7 +2,13 @@ module DifferentiationInterfaceJETExt
 
 using ADTypes: AbstractADType
 using DifferentiationInterface
-using DifferentiationInterface: ForwardMode, ReverseMode, mode
+using DifferentiationInterface:
+    ForwardMode,
+    ReverseMode,
+    MutationSupported,
+    MutationNotSupported,
+    mode,
+    mutation_behavior
 using DifferentiationInterface.DifferentiationTest
 import DifferentiationInterface.DifferentiationTest as DT
 using JET: @test_opt
@@ -12,56 +18,83 @@ using Test
 ## Selector
 
 function DT.test_type_stability(
-    ba::AbstractADType, scens::Vector{<:Scenario}; operators::Vector{Symbol}
+    backends::Vector{<:AbstractADType},
+    operators::Vector{Symbol},
+    scenarios::Vector{<:Scenario};
 )
-    @testset "Type stability - $op" for op in operators
-        if op == :pushforward_allocating
-            !isa(mode(ba), ReverseMode) &&
-                test_type_pushforward_allocating.(Ref(ba), allocating(scens))
-        elseif op == :pushforward_mutating
-            !isa(mode(ba), ReverseMode) &&
-                test_type_pushforward_mutating.(Ref(ba), mutating(scens))
+    @testset verbose = true "Type stability" begin
+        @testset "$op - $(backend_string(backend))" for op in operators, backend in backends
+            if op == :pushforward_allocating
+                @testset "$(typeof(s))" for s in allocating(scenarios)
+                    test_type_pushforward_allocating(backend, s)
+                end
+            elseif op == :pushforward_mutating
+                @testset "$(typeof(s))" for s in mutating(scenarios)
+                    test_type_pushforward_mutating(backend, s)
+                end
 
-        elseif op == :pullback_allocating
-            !isa(mode(ba), ForwardMode) &&
-                test_type_pullback_allocating.(Ref(ba), allocating(scens))
-        elseif op == :pullback_mutating
-            !isa(mode(ba), ForwardMode) &&
-                test_type_pullback_mutating.(Ref(ba), mutating(scens))
+            elseif op == :pullback_allocating
+                @testset "$(typeof(s))" for s in allocating(scenarios)
+                    test_type_pullback_allocating(backend, s)
+                end
+            elseif op == :pullback_mutating
+                @testset "$(typeof(s))" for s in mutating(scenarios)
+                    test_type_pullback_mutating(backend, s)
+                end
 
-        elseif op == :derivative_allocating
-            test_type_derivative_allocating.(Ref(ba), allocating(scalar_scalar(scens)))
+            elseif op == :derivative_allocating
+                @testset "$(typeof(s))" for s in allocating(scalar_scalar(scenarios))
+                    test_type_derivative_allocating(backend, s)
+                end
 
-        elseif op == :multiderivative_allocating
-            test_type_multiderivative_allocating.(Ref(ba), allocating(scalar_array(scens)))
-        elseif op == :multiderivative_mutating
-            test_type_multiderivative_mutating.(Ref(ba), mutating(scalar_array(scens)))
+            elseif op == :multiderivative_allocating
+                @testset "$(typeof(s))" for s in allocating(scalar_array(scenarios))
+                    test_type_multiderivative_allocating(backend, s)
+                end
+            elseif op == :multiderivative_mutating
+                @testset "$(typeof(s))" for s in mutating(scalar_array(scenarios))
+                    test_type_multiderivative_mutating(backend, s)
+                end
 
-        elseif op == :gradient_allocating
-            test_type_gradient_allocating.(Ref(ba), allocating(array_scalar(scens)))
+            elseif op == :gradient_allocating
+                @testset "$(typeof(s))" for s in allocating(array_scalar(scenarios))
+                    test_type_gradient_allocating(backend, s)
+                end
 
-        elseif op == :jacobian_allocating
-            test_type_jacobian_allocating.(Ref(ba), allocating(array_array(scens)))
-        elseif op == :jacobian_mutating
-            test_type_jacobian_mutating.(Ref(ba), mutating(array_array(scens)))
+            elseif op == :jacobian_allocating
+                @testset "$(typeof(s))" for s in allocating(array_array(scenarios))
+                    test_type_jacobian_allocating(backend, s)
+                end
+            elseif op == :jacobian_mutating
+                @testset "$(typeof(s))" for s in mutating(array_array(scenarios))
+                    test_type_jacobian_mutating(backend, s)
+                end
 
-        elseif op == :second_derivative_allocating
-            test_type_second_derivative_allocating.(
-                Ref(ba), allocating(scalar_scalar(scens))
-            )
-        elseif op == :hessian_allocating
-            test_type_hessian_allocating.(Ref(ba), allocating(array_scalar(scens)))
+            elseif op == :second_derivative_allocating
+                @testset "$(typeof(s))" for s in allocating(scalar_scalar(scenarios))
+                    test_type_second_derivative_allocating(backend, s)
+                end
 
-        else
-            throw(ArgumentError("Invalid operator to test: `:$op`"))
+            elseif op == :hessian_vector_product_allocating
+                @testset "$(typeof(s))" for s in allocating(array_scalar(scenarios))
+                    test_type_hessian_vector_product_allocating(backend, s)
+                end
+            elseif op == :hessian_allocating
+                @testset "$(typeof(s))" for s in allocating(array_scalar(scenarios))
+                    test_type_hessian_allocating(backend, s)
+                end
+
+            else
+                throw(ArgumentError("Invalid operator to test: `:$op`"))
+            end
         end
     end
-    return nothing
 end
 
 ## Pushforward 
 
 function test_type_pushforward_allocating(ba::AbstractADType, scen::Scenario)
+    isa(mode(ba), ReverseMode) && return nothing
     (; f, x, dx, dy) = deepcopy(scen)
     dy_in = zero(dy)
     @test_opt value_and_pushforward!(dy_in, ba, f, x, dx)
@@ -71,6 +104,8 @@ function test_type_pushforward_allocating(ba::AbstractADType, scen::Scenario)
 end
 
 function test_type_pushforward_mutating(ba::AbstractADType, scen::Scenario)
+    isa(mode(ba), ReverseMode) && return nothing
+    isa(mutation_behavior(ba), MutationNotSupported) && return nothing
     (; f, x, y, dx, dy) = deepcopy(scen)
     f! = f
     y_in = zero(y)
@@ -81,6 +116,7 @@ end
 ## Pullback
 
 function test_type_pullback_allocating(ba::AbstractADType, scen::Scenario)
+    isa(mode(ba), ForwardMode) && return nothing
     (; f, x, dx, dy) = deepcopy(scen)
     dx_in = zero(dx)
     @test_opt value_and_pullback!(dx_in, ba, f, x, dy)
@@ -90,6 +126,8 @@ function test_type_pullback_allocating(ba::AbstractADType, scen::Scenario)
 end
 
 function test_type_pullback_mutating(ba::AbstractADType, scen::Scenario)
+    isa(mode(ba), ForwardMode) && return nothing
+    isa(mutation_behavior(ba), MutationNotSupported) && return nothing
     (; f, x, y, dx, dy) = deepcopy(scen)
     f! = f
     y_in = zero(y)
@@ -117,6 +155,7 @@ function test_type_multiderivative_allocating(ba::AbstractADType, scen::Scenario
 end
 
 function test_type_multiderivative_mutating(ba::AbstractADType, scen::Scenario)
+    isa(mutation_behavior(ba), MutationNotSupported) && return nothing
     (; f, x, y, dy) = deepcopy(scen)
     f! = f
     y_in = zero(y)
@@ -147,6 +186,7 @@ function test_type_jacobian_allocating(ba::AbstractADType, scen::Scenario)
 end
 
 function test_type_jacobian_mutating(ba::AbstractADType, scen::Scenario)
+    isa(mutation_behavior(ba), MutationNotSupported) && return nothing
     (; f, x, y) = deepcopy(scen)
     f! = f
     y_in = zero(y)
@@ -162,25 +202,29 @@ function test_type_second_derivative_allocating(ba::AbstractADType, scen::Scenar
     @test_opt second_derivative(ba, f, x)
 end
 
+## Hessian-vector product
+
+function test_type_hessian_vector_product_allocating(ba::AbstractADType, scen::Scenario)
+    (; f, x, dx) = deepcopy(scen)
+    hvp_in = zero(dx)
+    @test_opt ignored_modules = (LinearAlgebra,) hessian_vector_product!(
+        hvp_in, ba, f, x, dx
+    )
+    @test_opt ignored_modules = (LinearAlgebra,) hessian_vector_product(ba, f, x, dx)
+    # TODO: add gradient
+end
 ## Hessian
 
 function test_type_hessian_allocating(ba::AbstractADType, scen::Scenario)
     (; f, x, dx) = deepcopy(scen)
     grad_in = zero(dx)
-    hvp_in = zero(dx)
     hess_in = zeros(eltype(x), length(x), length(x))
     @test_opt ignored_modules = (LinearAlgebra,) value_gradient_and_hessian!(
         grad_in, hess_in, ba, f, x
     )
     @test_opt ignored_modules = (LinearAlgebra,) hessian!(hess_in, ba, f, x)
-    @test_opt ignored_modules = (LinearAlgebra,) gradient_and_hessian_vector_product!(
-        grad_in, hvp_in, ba, f, x, dx
-    )
     @test_opt ignored_modules = (LinearAlgebra,) value_gradient_and_hessian(ba, f, x)
     @test_opt ignored_modules = (LinearAlgebra,) hessian(ba, f, x)
-    @test_opt ignored_modules = (LinearAlgebra,) gradient_and_hessian_vector_product(
-        ba, f, x, dx
-    )
 end
 
 end

@@ -25,13 +25,18 @@ const FIRST_ORDER_OPERATORS = [
     :jacobian_mutating,
 ]
 
-const SECOND_ORDER_OPERATORS = [:second_derivative_allocating, :hessian_allocating]
+const SECOND_ORDER_OPERATORS = [
+    :second_derivative_allocating, :hessian_vector_product_allocating, :hessian_allocating
+]
 
 """
 $(TYPEDSIGNATURES)
+
+Cross-test a set of `backends` for a set of `operators` on a set of `scenarios.`
 """
 function test_operators(
-    backend::AbstractADType,
+    backends::Vector{<:AbstractADType},
+    operators=vcat(FIRST_ORDER_OPERATORS, SECOND_ORDER_OPERATORS),
     scenarios::Vector{<:Scenario}=default_scenarios();
     correctness::Bool=true,
     type_stability::Bool=true,
@@ -42,7 +47,6 @@ function test_operators(
     second_order=true,
     allocating=true,
     mutating=true,
-    operators=vcat(FIRST_ORDER_OPERATORS, SECOND_ORDER_OPERATORS),
     excluded::Vector{Symbol}=Symbol[],
 )
     scenarios = filter(scenarios) do scen
@@ -65,20 +69,23 @@ function test_operators(
 
     @testset verbose = true "Backend tests" begin
         if correctness
-            @testset verbose = true "Correctness" begin
-                test_correctness(backend, scenarios; operators)
-            end
+            test_correctness(backends, operators, scenarios)
         end
         if type_stability
-            @testset verbose = true "Type stability" begin
-                test_type_stability(backend, scenarios; operators)
-            end
+            test_type_stability(backends, operators, scenarios)
         end
         if allocations
-            @testset verbose = true "Allocations" begin
-                test_allocations(backend, scenarios; operators)
-            end
+            test_allocations(backends, operators, scenarios)
         end
     end
     return nothing
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Shortcut for a single backend.
+"""
+function test_operators(backend::AbstractADType, args...; kwargs...)
+    return test_operators([backend], args...; kwargs...)
 end

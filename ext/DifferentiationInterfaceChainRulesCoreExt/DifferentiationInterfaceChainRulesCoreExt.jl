@@ -12,6 +12,7 @@ ruleconfig(backend::AutoChainRules) = backend.ruleconfig
 const AutoForwardChainRules = AutoChainRules{<:RuleConfig{>:HasForwardsMode}}
 const AutoReverseChainRules = AutoChainRules{<:RuleConfig{>:HasReverseMode}}
 
+DI.mutation_behavior(::AutoChainRules) = DI.MutationNotSupported()
 DI.mode(::AutoForwardChainRules) = DI.ForwardMode()
 DI.mode(::AutoReverseChainRules) = DI.ReverseMode()
 
