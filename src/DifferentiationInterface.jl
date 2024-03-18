@@ -23,6 +23,7 @@ Chooses [FastDifferentiation.jl](https://github.com/brianguenter/FastDifferentia
 struct AutoFastDifferentiation <: ADTypes.AbstractSymbolicDifferentiationMode end
 
 include("mode.jl")
+include("mutation.jl")
 include("utils.jl")
 include("prepare.jl")
 
@@ -39,9 +40,6 @@ include("second_order.jl")
 include("second_derivative.jl")
 include("hessian_vector_product.jl")
 include("hessian.jl")
-
-# submodules
-include("DifferentiationTest/DifferentiationTest.jl")
 
 export AutoFastDifferentiation
 export SecondOrder
@@ -82,6 +80,9 @@ export prepare_jacobian
 export prepare_second_derivative
 export prepare_hessian
 export prepare_hessian_vector_product
+
+# submodules
+include("DifferentiationTest/DifferentiationTest.jl")
 
 function __init__()
     Base.Experimental.register_error_hint(MethodError) do io, exc, argtypes, kwargs

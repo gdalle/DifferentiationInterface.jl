@@ -85,7 +85,7 @@ Since `f!` operates in-place and the primal is computed every time, only four op
 
 Furthermore, the preparation function takes an additional argument: `prepare_operator(backend, f!, x, y)`.
 
-Check out the list of [backends that support mutating functions](@ref backend_support_mutation).
+Check out the list of [backends that support mutating functions](@ref backend_mutation_behavior).
 
 ## Multiple inputs/outputs
 

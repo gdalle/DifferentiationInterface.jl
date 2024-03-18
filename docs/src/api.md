@@ -81,16 +81,16 @@ Pages = ["prepare.jl"]
 
 ## Internals
 
-These are not part of the public API.
+This is not part of the public API.
 
 ```@autodocs
 Modules = [DifferentiationInterface]
 Public = false
 ```
 
-## Submodules
+## Testing
 
-These are not part of the public API.
+This is not part of the public API.
 
 ```@autodocs
 Modules = [DifferentiationTest]

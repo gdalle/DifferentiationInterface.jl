@@ -171,7 +171,7 @@ function hessian_vector_product_aux(
     ::ReverseMode,
     ::ReverseMode,
 )
-    dotgrad_aux(z) = dot(gradient(inner(backend), f, z), v, extras)
+    dotgrad_aux(z) = dot(gradient(inner(backend), f, z, extras), v)
     return gradient(outer(backend), dotgrad_aux, x, extras)
 end
 
@@ -240,7 +240,7 @@ function hessian_vector_product_aux!(
     ::ReverseMode,
     ::ReverseMode,
 )
-    dotgrad_aux(z) = dot(gradient(inner(backend), f, z), v, extras)  # allocates
+    dotgrad_aux(z) = dot(gradient(inner(backend), f, z, extras), v)  # allocates
     return gradient!(hvp, outer(backend), dotgrad_aux, x, extras)
 end
 

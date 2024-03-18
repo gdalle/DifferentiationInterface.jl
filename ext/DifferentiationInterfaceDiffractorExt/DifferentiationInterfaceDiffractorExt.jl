@@ -7,6 +7,7 @@ import DifferentiationInterface as DI
 using Diffractor: DiffractorForwardBackend, DiffractorRuleConfig
 using DocStringExtensions
 
+DI.mutation_behavior(::AutoDiffractor) = DI.MutationNotSupported()
 DI.mode(::AutoDiffractor) = DI.ForwardMode()
 DI.mode(::AutoChainRules{<:DiffractorRuleConfig}) = DI.ForwardMode()
 

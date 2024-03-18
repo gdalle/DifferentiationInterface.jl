@@ -65,7 +65,7 @@ function value_and_multiderivative_aux!(
 )
     for i in eachindex(IndexCartesian(), multider)
         dy_i = basisarray(backend, multider, i)
-        _, multider[i] = value_and_pullback!(y, multider[i], backend, f!, x, dy_i, extras)
+        y, multider[i] = value_and_pullback!(y, multider[i], backend, f!, x, dy_i, extras)
     end
     return y, multider
 end

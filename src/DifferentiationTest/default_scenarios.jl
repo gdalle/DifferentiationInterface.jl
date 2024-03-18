@@ -40,16 +40,20 @@ end
 f_matrix_vector(x::AbstractMatrix)::AbstractVector = vcat(vec(sin.(x)), vec(cos.(x)))
 
 function f!_matrix_vector(y::AbstractVector, x::AbstractMatrix)
-    y[1:length(x)] .= sin.(vec(x))
-    y[(length(x) + 1):(2length(x))] .= cos.(vec(x))
+    for i in eachindex(IndexLinear(), x)
+        y[i] = sin(x[i])
+        y[length(x) + i] = cos(x[i])
+    end
     return nothing
 end
 
 f_matrix_matrix(x::AbstractMatrix)::AbstractMatrix = hcat(vec(sin.(x)), vec(cos.(x)))
 
 function f!_matrix_matrix(y::AbstractMatrix, x::AbstractMatrix)
-    y[:, 1] .= sin.(vec(x))
-    y[:, 2] .= cos.(vec(x))
+    for i in eachindex(IndexLinear(), x)
+        y[i, 1] = sin(x[i])
+        y[i, 2] = cos(x[i])
+    end
     return nothing
 end
 

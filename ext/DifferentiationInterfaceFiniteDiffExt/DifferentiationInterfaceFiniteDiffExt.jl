@@ -10,6 +10,8 @@ using FiniteDiff:
     finite_difference_jacobian
 using LinearAlgebra: dot, mul!
 
+DI.mutation_behavior(::AutoFiniteDiff) = DI.MutationNotSupported()  # TODO
+
 # see https://docs.sciml.ai/FiniteDiff/stable/#f-Definitions
 const FUNCTION_INPLACE = Val{true}
 const FUNCTION_NOT_INPLACE = Val{false}

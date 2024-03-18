@@ -31,7 +31,7 @@ AutoFastDifferentiation
 SecondOrder
 ```
 
-## [Mutation support](@id backend_support_mutation)
+## [Mutation support](@id backend_mutation_behavior)
 
 All backends are compatible with allocating functions `f(x) = y`. Only some are compatible with mutating functions `f!(y, x) = nothing`:
 
