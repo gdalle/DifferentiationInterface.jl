@@ -42,9 +42,7 @@ function value_and_jacobian!(
     return value_and_jacobian_aux!(y, jac, backend, f, x, extras, mode(backend))
 end
 
-function value_and_jacobian_aux!(
-    jac::AbstractMatrix, backend::AbstractADType, f, x::AbstractArray, extras, ::ForwardMode
-)
+function value_and_jacobian_aux!(jac, backend, f, x, extras, ::ForwardMode)
     y = f(x)
     check_jac(jac, x, y)
     for (k, j) in enumerate(eachindex(IndexCartesian(), x))
@@ -55,15 +53,7 @@ function value_and_jacobian_aux!(
     return y, jac
 end
 
-function value_and_jacobian_aux!(
-    y::AbstractArray,
-    jac::AbstractMatrix,
-    backend::AbstractADType,
-    f!,
-    x::AbstractArray,
-    extras,
-    ::ForwardMode,
-)
+function value_and_jacobian_aux!(y, jac, backend, f!, x, extras, ::ForwardMode)
     check_jac(jac, x, y)
     for (k, j) in enumerate(eachindex(IndexCartesian(), x))
         dx_j = basisarray(backend, x, j)
@@ -73,9 +63,7 @@ function value_and_jacobian_aux!(
     return y, jac
 end
 
-function value_and_jacobian_aux!(
-    jac::AbstractMatrix, backend::AbstractADType, f, x::AbstractArray, extras, ::ReverseMode
-)
+function value_and_jacobian_aux!(jac, backend, f, x, extras, ::ReverseMode)
     y = f(x)
     check_jac(jac, x, y)
     for (k, i) in enumerate(eachindex(IndexCartesian(), y))
@@ -86,15 +74,7 @@ function value_and_jacobian_aux!(
     return y, jac
 end
 
-function value_and_jacobian_aux!(
-    y::AbstractArray,
-    jac::AbstractMatrix,
-    backend::AbstractADType,
-    f!,
-    x::AbstractArray,
-    extras,
-    ::ReverseMode,
-)
+function value_and_jacobian_aux!(y, jac, backend, f!, x, extras, ::ReverseMode)
     check_jac(jac, x, y)
     for (k, i) in enumerate(eachindex(IndexCartesian(), y))
         dy_i = basisarray(backend, y, i)

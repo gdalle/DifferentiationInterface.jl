@@ -41,26 +41,14 @@ function gradient_and_hessian_vector_product(
 end
 
 function gradient_and_hessian_vector_product_aux(
-    backend::SecondOrder,
-    f,
-    x::AbstractArray,
-    v::AbstractArray,
-    extras,
-    ::AbstractMode,
-    ::ForwardMode,
+    backend, f, x, v, extras, ::AbstractMode, ::ForwardMode
 )
     grad_aux(z) = gradient(inner(backend), f, z, extras)
     return value_and_pushforward(outer(backend), grad_aux, x, v, extras)
 end
 
 function gradient_and_hessian_vector_product_aux(
-    backend::SecondOrder,
-    f,
-    x::AbstractArray,
-    v::AbstractArray,
-    extras,
-    ::AbstractMode,
-    ::ReverseMode,
+    backend, f, x, v, extras, ::AbstractMode, ::ReverseMode
 )
     throw(ArgumentError("HVP must be computed without gradient for reverse-over-something"))
 end
@@ -102,15 +90,7 @@ function gradient_and_hessian_vector_product!(
 end
 
 function gradient_and_hessian_vector_product_aux!(
-    grad::AbstractArray,
-    hvp::AbstractArray,
-    backend::SecondOrder,
-    f,
-    x::AbstractArray,
-    v::AbstractArray,
-    extras,
-    ::AbstractMode,
-    ::ForwardMode,
+    grad, hvp, backend, f, x, v, extras, ::AbstractMode, ::ForwardMode
 )
     function grad_aux!(storage, z)
         gradient!(storage, inner(backend), f, z, extras)
@@ -120,15 +100,7 @@ function gradient_and_hessian_vector_product_aux!(
 end
 
 function gradient_and_hessian_vector_product_aux!(
-    grad::AbstractArray,
-    hvp::AbstractArray,
-    backend::SecondOrder,
-    f,
-    x::AbstractArray,
-    v::AbstractArray,
-    extras,
-    ::AbstractMode,
-    ::ReverseMode,
+    grad, hvp, backend, f, x, v, extras, ::AbstractMode, ::ReverseMode
 )
     throw(ArgumentError("HVP must be computed without gradient for reverse-over-something"))
 end
@@ -162,41 +134,17 @@ function hessian_vector_product(
     )
 end
 
-function hessian_vector_product_aux(
-    backend::SecondOrder,
-    f,
-    x::AbstractArray,
-    v::AbstractArray,
-    extras,
-    ::ReverseMode,
-    ::ReverseMode,
-)
+function hessian_vector_product_aux(backend, f, x, v, extras, ::ReverseMode, ::ReverseMode)
     dotgrad_aux(z) = dot(gradient(inner(backend), f, z, extras), v)
     return gradient(outer(backend), dotgrad_aux, x, extras)
 end
 
-function hessian_vector_product_aux(
-    backend::SecondOrder,
-    f,
-    x::AbstractArray,
-    v::AbstractArray,
-    extras,
-    ::ForwardMode,
-    ::ReverseMode,
-)
+function hessian_vector_product_aux(backend, f, x, v, extras, ::ForwardMode, ::ReverseMode)
     jvp_aux(z) = pushforward(inner(backend), f, z, v, extras)
     return gradient(outer(backend), jvp_aux, x, extras)
 end
 
-function hessian_vector_product_aux(
-    backend::SecondOrder,
-    f,
-    x::AbstractArray,
-    v::AbstractArray,
-    extras,
-    ::AbstractMode,
-    ::ForwardMode,
-)
+function hessian_vector_product_aux(backend, f, x, v, extras, ::AbstractMode, ::ForwardMode)
     _, hvp = gradient_and_hessian_vector_product(backend, f, x, v, extras)
     return hvp
 end
@@ -231,42 +179,21 @@ function hessian_vector_product!(
 end
 
 function hessian_vector_product_aux!(
-    hvp::AbstractArray,
-    backend::SecondOrder,
-    f,
-    x::AbstractArray,
-    v::AbstractArray,
-    extras,
-    ::ReverseMode,
-    ::ReverseMode,
+    hvp, backend, f, x, v, extras, ::ReverseMode, ::ReverseMode
 )
     dotgrad_aux(z) = dot(gradient(inner(backend), f, z, extras), v)  # allocates
     return gradient!(hvp, outer(backend), dotgrad_aux, x, extras)
 end
 
 function hessian_vector_product_aux!(
-    hvp::AbstractArray,
-    backend::SecondOrder,
-    f,
-    x::AbstractArray,
-    v::AbstractArray,
-    extras,
-    ::ForwardMode,
-    ::ReverseMode,
+    hvp, backend, f, x, v, extras, ::ForwardMode, ::ReverseMode
 )
     jvp_aux(z) = pushforward(inner(backend), f, z, v, extras)
     return gradient!(hvp, outer(backend), jvp_aux, x, extras)
 end
 
 function hessian_vector_product_aux!(
-    hvp::AbstractArray,
-    backend::SecondOrder,
-    f,
-    x::AbstractArray,
-    v::AbstractArray,
-    extras,
-    ::AbstractMode,
-    ::ForwardMode,
+    hvp, backend, f, x, v, extras, ::AbstractMode, ::ForwardMode
 )
     grad = similar(x)  # allocates
     _, hvp = gradient_and_hessian_vector_product!(grad, hvp, backend, f, x, v, extras)

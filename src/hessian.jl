@@ -48,14 +48,7 @@ function value_gradient_and_hessian!(
 end
 
 function value_gradient_and_hessian_aux!(
-    grad::AbstractArray,
-    hess::AbstractMatrix,
-    backend::SecondOrder,
-    f,
-    x::AbstractArray,
-    extras,
-    ::AbstractMode,
-    ::ForwardMode,
+    grad, hess, backend, f, x, extras, ::AbstractMode, ::ForwardMode
 )
     y = f(x)
     check_hess(hess, x)
@@ -68,14 +61,7 @@ function value_gradient_and_hessian_aux!(
 end
 
 function value_gradient_and_hessian_aux!(
-    grad::AbstractArray,
-    hess::AbstractMatrix,
-    backend::SecondOrder,
-    f,
-    x::AbstractArray,
-    extras,
-    ::AbstractMode,
-    ::ReverseMode,
+    grad, hess, backend, f, x, extras, ::AbstractMode, ::ReverseMode
 )
     y, _ = value_and_gradient!(grad, inner(backend), f, x, extras)
     check_hess(hess, x)

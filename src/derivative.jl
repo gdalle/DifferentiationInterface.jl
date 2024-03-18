@@ -9,15 +9,11 @@ function value_and_derivative(
     return value_and_derivative_aux(backend, f, x, extras, mode(backend))
 end
 
-function value_and_derivative_aux(
-    backend::AbstractADType, f, x::Number, extras, ::ForwardMode
-)
+function value_and_derivative_aux(backend, f, x, extras, ::ForwardMode)
     return value_and_pushforward(backend, f, x, one(x), extras)
 end
 
-function value_and_derivative_aux(
-    backend::AbstractADType, f, x::Number, extras, ::ReverseMode
-)
+function value_and_derivative_aux(backend, f, x, extras, ::ReverseMode)
     return value_and_pullback(backend, f, x, one(x), extras)
 end
 
@@ -32,10 +28,10 @@ function derivative(
     return derivative_aux(backend, f, x, extras, mode(backend))
 end
 
-function derivative_aux(backend::AbstractADType, f, x::Number, extras, ::ForwardMode)
+function derivative_aux(backend, f, x, extras, ::ForwardMode)
     return pushforward(backend, f, x, one(x), extras)
 end
 
-function derivative_aux(backend::AbstractADType, f, x::Number, extras, ::ReverseMode)
+function derivative_aux(backend, f, x, extras, ::ReverseMode)
     return pullback(backend, f, x, one(x), extras)
 end
