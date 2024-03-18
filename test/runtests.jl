@@ -2,6 +2,7 @@
 
 using Aqua: Aqua
 using ChainRulesCore: ChainRulesCore
+using Chairmarks: Chairmarks
 using DifferentiationInterface
 using DifferentiationInterface.DifferentiationTest
 using Enzyme: Enzyme
