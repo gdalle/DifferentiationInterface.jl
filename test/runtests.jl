@@ -3,6 +3,7 @@
 using Aqua: Aqua
 using ChainRulesCore: ChainRulesCore
 using Chairmarks: Chairmarks
+using DataFrames: DataFrames
 using DifferentiationInterface
 using DifferentiationInterface.DifferentiationTest
 using Enzyme: Enzyme

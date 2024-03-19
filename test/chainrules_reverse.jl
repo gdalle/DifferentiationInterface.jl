@@ -1,7 +1,8 @@
 using ADTypes: AutoChainRules
-using Zygote: ZygoteRuleConfig
+using DifferentiationInterface
 using DifferentiationInterface.DifferentiationTest
 using Test
+using Zygote: ZygoteRuleConfig
 
 @test available(AutoChainRules(ZygoteRuleConfig()))
 

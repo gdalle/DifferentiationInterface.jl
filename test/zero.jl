@@ -1,4 +1,7 @@
-using DifferentiationInterface: SecondOrder, AutoZeroForward, AutoZeroReverse
+using Chairmarks: Chairmarks
+using DataFrames: DataFrames
+using DifferentiationInterface
+using DifferentiationInterface: AutoZeroForward, AutoZeroReverse
 using DifferentiationInterface.DifferentiationTest
 using Test
 
@@ -18,9 +21,18 @@ test_operators(
 
 # allocs (experimental)
 
-test_operators(
-    [AutoZeroForward(), AutoZeroReverse()];
+result = test_operators(
+    AutoZeroForward();
     correctness=false,
     type_stability=false,
+    benchmark=true,
+    allocations=true,
+);
+
+result = test_operators(
+    AutoZeroReverse();
+    correctness=false,
+    type_stability=false,
+    benchmark=true,
     allocations=true,
 );

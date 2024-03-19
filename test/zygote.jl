@@ -1,7 +1,8 @@
 using ADTypes: AutoZygote
-using Zygote: Zygote
+using DifferentiationInterface
 using DifferentiationInterface.DifferentiationTest
 using Test
+using Zygote: Zygote
 
 @test available(AutoZygote())
 

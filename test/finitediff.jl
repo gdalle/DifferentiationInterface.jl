@@ -1,6 +1,7 @@
 using ADTypes: AutoFiniteDiff
-using FiniteDiff: FiniteDiff
+using DifferentiationInterface
 using DifferentiationInterface.DifferentiationTest
+using FiniteDiff: FiniteDiff
 using Test
 
 @test available(AutoFiniteDiff())

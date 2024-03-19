@@ -1,6 +1,7 @@
 using ADTypes: AutoDiffractor
-using Diffractor: Diffractor
+using DifferentiationInterface
 using DifferentiationInterface.DifferentiationTest
+using Diffractor: Diffractor
 using Test
 
 @test available(AutoDiffractor())

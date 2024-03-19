@@ -1,7 +1,8 @@
 using ADTypes: AutoTracker
-using Tracker: Tracker
+using DifferentiationInterface
 using DifferentiationInterface.DifferentiationTest
 using Test
+using Tracker: Tracker
 
 @test available(AutoTracker())
 

@@ -1,3 +1,4 @@
+using DifferentiationInterface
 using DifferentiationInterface: AutoFastDifferentiation
 using DifferentiationInterface.DifferentiationTest
 using FastDifferentiation: FastDifferentiation

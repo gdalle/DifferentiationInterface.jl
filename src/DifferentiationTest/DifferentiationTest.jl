@@ -28,7 +28,7 @@ include("pretty.jl")
 export Scenario, default_scenarios
 export allocating, mutating
 export scalar_scalar, scalar_array, array_scalar, array_array
-export test_operators
+export test_operators, parse_benchmark
 export backend_string
 
 end

@@ -1,6 +1,7 @@
 using ADTypes: AutoForwardDiff
-using ForwardDiff: ForwardDiff
+using DifferentiationInterface
 using DifferentiationInterface.DifferentiationTest
+using ForwardDiff: ForwardDiff
 using Test
 
 @test available(AutoForwardDiff())
