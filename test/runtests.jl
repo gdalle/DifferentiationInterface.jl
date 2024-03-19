@@ -62,6 +62,9 @@ using Zygote: Zygote
     @testset "ReverseDiff" begin
         include("reversediff.jl")
     end
+    @testset "Tracker" begin
+        include("tracker.jl")
+    end
     @testset "Zygote" begin
         include("zygote.jl")
     end

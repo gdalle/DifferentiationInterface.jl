@@ -16,6 +16,7 @@ using FiniteDiff: FiniteDiff
 using ForwardDiff: ForwardDiff
 using PolyesterForwardDiff: PolyesterForwardDiff
 using ReverseDiff: ReverseDiff
+using Tracker: Tracker
 using Zygote: Zygote
 
 ChainRulesCoreExt = get_extension(DI, :DifferentiationInterfaceChainRulesCoreExt)
@@ -28,6 +29,7 @@ PolyesterForwardDiffExt = get_extension(
     DI, :DifferentiationInterfacePolyesterForwardDiffExt
 )
 ReverseDiffExt = get_extension(DI, :DifferentiationInterfaceReverseDiffExt)
+TrackerExt = get_extension(DI, :DifferentiationInterfaceTrackerExt)
 ZygoteExt = get_extension(DI, :DifferentiationInterfaceZygoteExt)
 
 DocMeta.setdocmeta!(
@@ -64,6 +66,7 @@ makedocs(;
         ForwardDiffExt,
         PolyesterForwardDiffExt,
         ReverseDiffExt,
+        TrackerExt,
         ZygoteExt,
     ],
     authors="Guillaume Dalle, Adrian Hill",
