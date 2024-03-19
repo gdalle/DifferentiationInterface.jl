@@ -16,6 +16,7 @@ using FiniteDiff: FiniteDiff
 using ForwardDiff: ForwardDiff
 using PolyesterForwardDiff: PolyesterForwardDiff
 using ReverseDiff: ReverseDiff
+using Tracker: Tracker
 using Zygote: Zygote
 
 ChainRulesCoreExt = get_extension(DI, :DifferentiationInterfaceChainRulesCoreExt)

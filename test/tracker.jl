@@ -4,8 +4,8 @@ using DifferentiationInterface.DifferentiationTest
 
 test_operators(
     AutoTracker();
-    input_type=AbstractVector,
-    output_type=Number,
+    output_type=Union{Number,AbstractVector},
     second_order=false,
+    mutating=false,
     type_stability=false,
 );

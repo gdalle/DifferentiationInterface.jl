@@ -2,9 +2,22 @@ module DifferentiationInterfaceTrackerExt
 
 using ADTypes: AutoTracker
 import DifferentiationInterface as DI
-using Tracker: Tracker, back!, gradient, param, withgradient
+using DifferentiationInterface: update!
+using Tracker: Tracker, back, forward, gradient, jacobian, param, withgradient
 
-# TODO: make faster by prerecording tape
+## Pullback
+
+function DI.value_and_pullback(::AutoTracker, f, x, dy, extras::Nothing)
+    y, back = forward(f, x)
+    return y, Tracker.data(only(back(dy)))
+end
+
+function DI.value_and_pullback!(dx, backend::AutoTracker, f, x, dy, extras::Nothing)
+    y, new_dx = DI.value_and_pullback(backend, f, x, dy, extras)
+    return y, update!(dx, new_dx)
+end
+
+## Gradient
 
 function DI.value_and_gradient(::AutoTracker, f, x::AbstractArray, extras::Nothing)
     res = withgradient(f, x)
@@ -29,19 +42,6 @@ function DI.gradient!(
     new_grad = DI.gradient(backend, f, x, extras)
     grad .= Tracker.data(new_grad)
     return grad
-end
-
-function DI.value_and_pullback!(
-    dx::AbstractArray,
-    backend::AutoTracker,
-    f,
-    x::AbstractArray,
-    dy::Number,
-    extras::Nothing,
-)
-    y, dx = DI.value_and_gradient!(dx, backend, f, x, extras)
-    dx .*= dy
-    return y, dx
 end
 
 end
