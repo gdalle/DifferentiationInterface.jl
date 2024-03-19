@@ -30,6 +30,7 @@ result = test_operators(
     type_stability=false,
     benchmark=true,
     allocations=true,
+    second_order=false,
 );
 
 data = parse_benchmark(result)

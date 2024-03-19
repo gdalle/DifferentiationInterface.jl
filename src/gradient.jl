@@ -6,14 +6,16 @@ Compute the primal value `y = f(x)` and the gradient `grad = ∇f(x)` of an arra
 function value_and_gradient!(
     grad::AbstractArray,
     backend::AbstractADType,
-    f,
+    f::F,
     x::AbstractArray,
     extras=prepare_gradient(backend, f, x),
-)
+) where {F}
     return value_and_gradient_aux!(grad, backend, f, x, extras, mode(backend))
 end
 
-function value_and_gradient_aux!(grad, backend::AbstractADType, f, x, extras, ::ForwardMode)
+function value_and_gradient_aux!(
+    grad, backend::AbstractADType, f::F, x, extras, ::ForwardMode
+) where {F}
     y = f(x)
     for j in eachindex(IndexCartesian(), grad)
         dx_j = basisarray(backend, grad, j)
@@ -22,7 +24,7 @@ function value_and_gradient_aux!(grad, backend::AbstractADType, f, x, extras, ::
     return y, grad
 end
 
-function value_and_gradient_aux!(grad, backend, f, x, extras, ::ReverseMode)
+function value_and_gradient_aux!(grad, backend, f::F, x, extras, ::ReverseMode) where {F}
     return value_and_pullback!(grad, backend, f, x, one(eltype(x)), extras)
 end
 
@@ -32,17 +34,17 @@ end
 Compute the primal value `y = f(x)` and the gradient `grad = ∇f(x)` of an array-to-scalar function.
 """
 function value_and_gradient(
-    backend::AbstractADType, f, x::AbstractArray, extras=prepare_gradient(backend, f, x)
-)
+    backend::AbstractADType, f::F, x::AbstractArray, extras=prepare_gradient(backend, f, x)
+) where {F}
     return value_and_gradient_aux(backend, f, x, extras, mode(backend))
 end
 
-function value_and_gradient_aux(backend, f, x, extras, ::AbstractMode)
+function value_and_gradient_aux(backend, f::F, x, extras, ::AbstractMode) where {F}
     grad = similar(x)
     return value_and_gradient!(grad, backend, f, x, extras)
 end
 
-function value_and_gradient_aux(backend, f, x, extras, ::ReverseMode)
+function value_and_gradient_aux(backend, f::F, x, extras, ::ReverseMode) where {F}
     return value_and_pullback(backend, f, x, one(eltype(x)), extras)
 end
 
@@ -54,18 +56,18 @@ Compute the gradient `grad = ∇f(x)` of an array-to-scalar function, overwritin
 function gradient!(
     grad::AbstractArray,
     backend::AbstractADType,
-    f,
+    f::F,
     x::AbstractArray,
     extras=prepare_gradient(backend, f, x),
-)
+) where {F}
     return gradient_aux!(grad, backend, f, x, extras, mode(backend))
 end
 
-function gradient_aux!(grad, backend, f, x, extras, ::AbstractMode)
+function gradient_aux!(grad, backend, f::F, x, extras, ::AbstractMode) where {F}
     return last(value_and_gradient!(grad, backend, f, x, extras))
 end
 
-function gradient_aux!(grad, backend, f, x, extras, ::ReverseMode)
+function gradient_aux!(grad, backend, f::F, x, extras, ::ReverseMode) where {F}
     return pullback!(grad, backend, f, x, one(eltype(x)), extras)
 end
 
@@ -75,15 +77,15 @@ end
 Compute the gradient `grad = ∇f(x)` of an array-to-scalar function.
 """
 function gradient(
-    backend::AbstractADType, f, x::AbstractArray, extras=prepare_gradient(backend, f, x)
-)
+    backend::AbstractADType, f::F, x::AbstractArray, extras=prepare_gradient(backend, f, x)
+) where {F}
     return gradient_aux(backend, f, x, extras, mode(backend))
 end
 
-function gradient_aux(backend, f, x, extras, ::AbstractMode)
+function gradient_aux(backend, f::F, x, extras, ::AbstractMode) where {F}
     return last(value_and_gradient(backend, f, x, extras))
 end
 
-function gradient_aux(backend, f, x, extras, ::ReverseMode)
+function gradient_aux(backend, f::F, x, extras, ::ReverseMode) where {F}
     return pullback(backend, f, x, one(eltype(x)), extras)
 end
