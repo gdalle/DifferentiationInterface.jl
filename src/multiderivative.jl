@@ -25,27 +25,15 @@ function value_and_multiderivative!(
     return value_and_multiderivative_aux!(y, multider, backend, f, x, extras, mode(backend))
 end
 
-function value_and_multiderivative_aux!(
-    multider::AbstractArray, backend::AbstractADType, f, x::Number, extras, ::ForwardMode
-)
+function value_and_multiderivative_aux!(multider, backend, f, x, extras, ::ForwardMode)
     return value_and_pushforward!(multider, backend, f, x, one(x), extras)
 end
 
-function value_and_multiderivative_aux!(
-    y::AbstractArray,
-    multider::AbstractArray,
-    backend::AbstractADType,
-    f!,
-    x::Number,
-    extras,
-    ::ForwardMode,
-)
+function value_and_multiderivative_aux!(y, multider, backend, f!, x, extras, ::ForwardMode)
     return value_and_pushforward!(y, multider, backend, f!, x, one(x), extras)
 end
 
-function value_and_multiderivative_aux!(
-    multider::AbstractArray, backend::AbstractADType, f, x::Number, extras, ::ReverseMode
-)
+function value_and_multiderivative_aux!(multider, backend, f, x, extras, ::ReverseMode)
     y = f(x)
     for i in eachindex(IndexCartesian(), multider)
         dy_i = basisarray(backend, multider, i)
@@ -54,15 +42,7 @@ function value_and_multiderivative_aux!(
     return y, multider
 end
 
-function value_and_multiderivative_aux!(
-    y::AbstractArray,
-    multider::AbstractArray,
-    backend::AbstractADType,
-    f!,
-    x::Number,
-    extras,
-    ::ReverseMode,
-)
+function value_and_multiderivative_aux!(y, multider, backend, f!, x, extras, ::ReverseMode)
     for i in eachindex(IndexCartesian(), multider)
         dy_i = basisarray(backend, multider, i)
         y, multider[i] = value_and_pullback!(y, multider[i], backend, f!, x, dy_i, extras)
@@ -81,15 +61,11 @@ function value_and_multiderivative(
     return value_and_multiderivative_aux(backend, f, x, extras, mode(backend))
 end
 
-function value_and_multiderivative_aux(
-    backend::AbstractADType, f, x::Number, extras, ::ForwardMode
-)
+function value_and_multiderivative_aux(backend, f, x, extras, ::ForwardMode)
     return value_and_pushforward(backend, f, x, one(x), extras)
 end
 
-function value_and_multiderivative_aux(
-    backend::AbstractADType, f, x::Number, extras, ::AbstractMode
-)
+function value_and_multiderivative_aux(backend, f, x, extras, ::AbstractMode)
     multider = similar(f(x))
     return value_and_multiderivative!(multider, backend, f, x, extras)
 end
@@ -109,15 +85,11 @@ function multiderivative!(
     return multiderivative_aux!(multider, backend, f, x, extras, mode(backend))
 end
 
-function multiderivative_aux!(
-    multider::AbstractArray, backend::AbstractADType, f, x::Number, extras, ::ForwardMode
-)
+function multiderivative_aux!(multider, backend, f, x, extras, ::ForwardMode)
     return pushforward!(multider, backend, f, x, one(x), extras)
 end
 
-function multiderivative_aux!(
-    multider::AbstractArray, backend::AbstractADType, f, x::Number, extras, ::AbstractMode
-)
+function multiderivative_aux!(multider, backend, f, x, extras, ::AbstractMode)
     return last(value_and_multiderivative!(multider, backend, f, x, extras))
 end
 
@@ -132,10 +104,10 @@ function multiderivative(
     return multiderivative_aux(backend, f, x, extras, mode(backend))
 end
 
-function multiderivative_aux(backend::AbstractADType, f, x::Number, extras, ::ForwardMode)
+function multiderivative_aux(backend, f, x, extras, ::ForwardMode)
     return pushforward(backend, f, x, one(x), extras)
 end
 
-function multiderivative_aux(backend::AbstractADType, f, x::Number, extras, ::AbstractMode)
+function multiderivative_aux(backend, f, x, extras, ::AbstractMode)
     return last(value_and_multiderivative(backend, f, x, extras))
 end

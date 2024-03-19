@@ -13,9 +13,7 @@ function value_and_gradient!(
     return value_and_gradient_aux!(grad, backend, f, x, extras, mode(backend))
 end
 
-function value_and_gradient_aux!(
-    grad::AbstractArray, backend::AbstractADType, f, x::AbstractArray, extras, ::ForwardMode
-)
+function value_and_gradient_aux!(grad, backend::AbstractADType, f, x, extras, ::ForwardMode)
     y = f(x)
     for j in eachindex(IndexCartesian(), grad)
         dx_j = basisarray(backend, grad, j)
@@ -24,9 +22,7 @@ function value_and_gradient_aux!(
     return y, grad
 end
 
-function value_and_gradient_aux!(
-    grad::AbstractArray, backend::AbstractADType, f, x::AbstractArray, extras, ::ReverseMode
-)
+function value_and_gradient_aux!(grad, backend, f, x, extras, ::ReverseMode)
     return value_and_pullback!(grad, backend, f, x, one(eltype(x)), extras)
 end
 
@@ -41,16 +37,12 @@ function value_and_gradient(
     return value_and_gradient_aux(backend, f, x, extras, mode(backend))
 end
 
-function value_and_gradient_aux(
-    backend::AbstractADType, f, x::AbstractArray, extras, ::AbstractMode
-)
+function value_and_gradient_aux(backend, f, x, extras, ::AbstractMode)
     grad = similar(x)
     return value_and_gradient!(grad, backend, f, x, extras)
 end
 
-function value_and_gradient_aux(
-    backend::AbstractADType, f, x::AbstractArray, extras, ::ReverseMode
-)
+function value_and_gradient_aux(backend, f, x, extras, ::ReverseMode)
     return value_and_pullback(backend, f, x, one(eltype(x)), extras)
 end
 
@@ -69,20 +61,11 @@ function gradient!(
     return gradient_aux!(grad, backend, f, x, extras, mode(backend))
 end
 
-function gradient_aux!(
-    grad::AbstractArray,
-    backend::AbstractADType,
-    f,
-    x::AbstractArray,
-    extras,
-    ::AbstractMode,
-)
+function gradient_aux!(grad, backend, f, x, extras, ::AbstractMode)
     return last(value_and_gradient!(grad, backend, f, x, extras))
 end
 
-function gradient_aux!(
-    grad::AbstractArray, backend::AbstractADType, f, x::AbstractArray, extras, ::ReverseMode
-)
+function gradient_aux!(grad, backend, f, x, extras, ::ReverseMode)
     return pullback!(grad, backend, f, x, one(eltype(x)), extras)
 end
 
@@ -97,10 +80,10 @@ function gradient(
     return gradient_aux(backend, f, x, extras, mode(backend))
 end
 
-function gradient_aux(backend::AbstractADType, f, x::AbstractArray, extras, ::AbstractMode)
+function gradient_aux(backend, f, x, extras, ::AbstractMode)
     return last(value_and_gradient(backend, f, x, extras))
 end
 
-function gradient_aux(backend::AbstractADType, f, x::AbstractArray, extras, ::ReverseMode)
+function gradient_aux(backend, f, x, extras, ::ReverseMode)
     return pullback(backend, f, x, one(eltype(x)), extras)
 end
