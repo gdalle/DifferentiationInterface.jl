@@ -3,7 +3,7 @@ using PolyesterForwardDiff: PolyesterForwardDiff
 using DifferentiationInterface.DifferentiationTest
 using Test
 
-@test available(AutoPolyesterForwardDiff())
+@test available(AutoPolyesterForwardDiff(; chunksize=2))
 
 test_operators(
     AutoPolyesterForwardDiff(; chunksize=2);
