@@ -20,9 +20,12 @@ struct BenchmarkDict{D}
     d::D
 end
 
+Base.show(io::IO, bd::BenchmarkDict) = print(io, bd.d)
+
 BenchmarkDict() = BenchmarkDict(Dict())
 BenchmarkDict(args...) = BenchmarkDict(Dict(args...))
 
+Base.isempty(bd::BenchmarkDict) = isempty(bd.d)
 Base.keys(bd::BenchmarkDict) = keys(bd.d)
 Base.values(bd::BenchmarkDict, k) = values(bd.d)
 Base.getindex(bd::BenchmarkDict, k) = get!(bd.d, k, BenchmarkDict())
@@ -63,11 +66,9 @@ end
 
 ## Selector
 
-NAMES = [
-    :backend, :function, :input_type, :output_type, :input_size, :output_size, :operator
-]
-
-scen_id(s::Scenario) = (Symbol(s.f), typeof(s.x), typeof(s.y), size(s.x), size(s.y))
+function scen_id(s::Scenario)
+    return (Symbol(s.f), s.mutating, typeof(s.x), typeof(s.y), size(s.x), size(s.y))
+end
 
 function DT.run_benchmark(
     backends::Vector{<:AbstractADType},
@@ -76,8 +77,8 @@ function DT.run_benchmark(
 )
     all_results = BenchmarkDict()
     for backend in backends
-        results = all_results[backend_string(backend)]
         for op in operators
+            results = all_results[backend_string(backend)][op]
             if op == :pushforward_allocating
                 for s in allocating(scenarios)
                     merge!(
