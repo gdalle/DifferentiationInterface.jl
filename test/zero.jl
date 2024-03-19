@@ -1,5 +1,10 @@
 using DifferentiationInterface: SecondOrder, AutoZeroForward, AutoZeroReverse
 using DifferentiationInterface.DifferentiationTest
+using Test
+
+@test available(AutoZeroForward())
+@test available(AutoZeroReverse())
+@test available(SecondOrder(AutoZeroForward(), AutoZeroReverse()))
 
 test_operators(AutoZeroForward(); correctness=false);
 test_operators(AutoZeroReverse(); correctness=false);

@@ -1,6 +1,9 @@
 using ADTypes: AutoPolyesterForwardDiff
 using PolyesterForwardDiff: PolyesterForwardDiff
 using DifferentiationInterface.DifferentiationTest
+using Test
+
+@test available(AutoPolyesterForwardDiff())
 
 test_operators(
     AutoPolyesterForwardDiff(; chunksize=2);

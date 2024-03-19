@@ -1,6 +1,9 @@
 using ADTypes: AutoTracker
 using Tracker: Tracker
 using DifferentiationInterface.DifferentiationTest
+using Test
+
+@test available(AutoTracker())
 
 test_operators(
     AutoTracker();

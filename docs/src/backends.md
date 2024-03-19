@@ -4,9 +4,14 @@ CollapsedDocStrings = true
 
 # Backends
 
+```@docs
+available
+```
+
 ## Types
 
 Most backend choices are defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl).
+
 
 !!! warning
     Only the backends listed here are supported by DifferentiationInterface.jl, even though ADTypes.jl defines more.

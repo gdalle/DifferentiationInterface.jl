@@ -5,12 +5,8 @@ using Test
 struct AutoNothingForward <: ADTypes.AbstractForwardMode end
 struct AutoNothingReverse <: ADTypes.AbstractReverseMode end
 
-@test_throws ArgumentError jacobian(AutoNothingForward(), copy, zeros(1))
-@test_throws ArgumentError jacobian(AutoNothingReverse(), copy, zeros(1))
+@test !available(AutoNothingForward())
+@test !available(AutoNothingReverse())
 
-@test_throws ArgumentError value_and_jacobian!(
-    zeros(1), zeros(1, 1), AutoNothingForward(), copyto!, zeros(1)
-)
-@test_throws ArgumentError value_and_jacobian!(
-    zeros(1), zeros(1, 1), AutoNothingReverse(), copyto!, zeros(1)
-)
+@test_throws MethodError derivative(AutoNothingForward(), identity, 1.0)
+@test_throws MethodError derivative(AutoNothingReverse(), identity, 1.0)
