@@ -15,7 +15,7 @@ function basisarray(a::AbstractArray{T,N}, i::CartesianIndex{N}) where {T,N}
 end
 
 mysimilar(x::Number) = zero(x)
-mysimilar(x::AbstractArray) = similar(x)
+mysimilar(x::AbstractArray{T}) where {T} = similar(x, T, axes(x)) # strip structure (issue #35)
 
 update!(_old::Number, new::Number) = new
 update!(old, new) = old .= new
