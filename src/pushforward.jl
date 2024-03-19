@@ -17,24 +17,6 @@ function value_and_pushforward!(y, dy, backend::AbstractADType, f, x, dx)
     )
 end
 
-function value_and_pushforward!(dy, backend::AbstractADType, f, x, dx, extras)
-    throw(
-        ArgumentError(
-            "The backend `$backend` is not available.
-            You may need to load the right package extension, implement `DifferentiationInterface.value_and_pushforward!`, or choose another backend.",
-        ),
-    )
-end
-
-function value_and_pushforward!(y, dy, backend::AbstractADType, f, x, dx, extras)
-    throw(
-        ArgumentError(
-            "The backend `$backend` is not available.
-            You may need to load the right package extension, implement `DifferentiationInterface.value_and_pushforward!`, or choose another backend.",
-        ),
-    )
-end
-
 """
     value_and_pushforward(backend, f, x, dx, [extras]) -> (y, dy)
 
