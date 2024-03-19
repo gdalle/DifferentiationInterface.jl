@@ -28,7 +28,7 @@ result = test_operators(
     [AutoZeroForward(), AutoZeroReverse()];
     correctness=false,
     type_stability=false,
-    benchmark=true,
+    benchmark=false,
     allocations=true,
 );
 
