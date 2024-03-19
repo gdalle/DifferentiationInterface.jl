@@ -9,6 +9,7 @@ pretty(::AutoFiniteDiff) = "FiniteDiff"
 pretty(::AutoForwardDiff) = "ForwardDiff"
 pretty(::AutoPolyesterForwardDiff) = "PolyesterForwardDiff"
 pretty(b::AutoReverseDiff) = "ReverseDiff($(b.compile))"
+pretty(::AutoTracker) = "Tracker"
 pretty(::AutoZygote) = "Zygote"
 pretty(b::AbstractADType) = string(b)
 
