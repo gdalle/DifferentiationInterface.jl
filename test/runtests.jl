@@ -31,6 +31,9 @@ using Zygote: Zygote
         JET.test_package(DifferentiationInterface; target_defined_modules=true)
     end
 
+    @testset "No backend" begin
+        include("nobackend.jl")
+    end
     @testset "Zero backend" begin
         include("zero.jl")
     end
