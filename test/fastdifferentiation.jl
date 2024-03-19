@@ -1,6 +1,9 @@
 using DifferentiationInterface: AutoFastDifferentiation
 using DifferentiationInterface.DifferentiationTest
 using FastDifferentiation: FastDifferentiation
+using Test
+
+@test available(AutoFastDifferentiation())
 
 test_operators(
     AutoFastDifferentiation();
