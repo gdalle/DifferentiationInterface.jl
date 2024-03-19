@@ -1,7 +1,7 @@
-function test_correctness end
-function test_type_stability end
-function run_benchmark end
-function test_allocations end
+test_correctness(args...; kwargs...) = error("Please load ForwardDiff.jl")
+test_type_stability(args...; kwargs...) = error("Please load JET.jl")
+run_benchmark(args...; kwargs...) = error("Please load Chairmarks.jl")
+test_allocations(args...; kwargs...) = error("Please load Chairmarks.jl")
 
 """
     parse_benchmark(result; aggregators)
@@ -12,7 +12,7 @@ Parse the output of `test_operators(args...; benchmark=true)` into a `DataFrame`
 
 - `aggregators=[minimum]`: aggregation functions to apply on benchmark samples
 """
-function parse_benchmark end
+parse_benchmark(args...; kwargs...) = error("Please load Chairmarks.jl and DataFrames.jl")
 
 const FIRST_ORDER_OPERATORS = [
     :pushforward_allocating,
