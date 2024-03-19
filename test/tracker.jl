@@ -1,8 +1,11 @@
 using ADTypes: AutoTracker
 using DifferentiationInterface
 using DifferentiationInterface.DifferentiationTest
-using Test
 using Tracker: Tracker
+
+using ForwardDiff: ForwardDiff
+using JET: JET
+using Test
 
 @test available(AutoTracker())
 

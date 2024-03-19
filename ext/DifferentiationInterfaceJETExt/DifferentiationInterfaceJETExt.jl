@@ -23,69 +23,71 @@ function DT.test_type_stability(
     scenarios::Vector{<:Scenario};
 )
     @testset verbose = true "Type stability" begin
-        @testset "$op - $(backend_string(backend))" for op in operators, backend in backends
-            if op == :pushforward_allocating
-                @testset "$(typeof(s))" for s in allocating(scenarios)
-                    test_type_pushforward_allocating(backend, s)
-                end
-            elseif op == :pushforward_mutating
-                @testset "$(typeof(s))" for s in mutating(scenarios)
-                    test_type_pushforward_mutating(backend, s)
-                end
+        @testset verbose = true "$(backend_string(backend))" for backend in backends
+            @testset "$op" for op in operators
+                if op == :pushforward_allocating
+                    @testset "$(typeof(s))" for s in allocating(scenarios)
+                        test_type_pushforward_allocating(backend, s)
+                    end
+                elseif op == :pushforward_mutating
+                    @testset "$(typeof(s))" for s in mutating(scenarios)
+                        test_type_pushforward_mutating(backend, s)
+                    end
 
-            elseif op == :pullback_allocating
-                @testset "$(typeof(s))" for s in allocating(scenarios)
-                    test_type_pullback_allocating(backend, s)
-                end
-            elseif op == :pullback_mutating
-                @testset "$(typeof(s))" for s in mutating(scenarios)
-                    test_type_pullback_mutating(backend, s)
-                end
+                elseif op == :pullback_allocating
+                    @testset "$(typeof(s))" for s in allocating(scenarios)
+                        test_type_pullback_allocating(backend, s)
+                    end
+                elseif op == :pullback_mutating
+                    @testset "$(typeof(s))" for s in mutating(scenarios)
+                        test_type_pullback_mutating(backend, s)
+                    end
 
-            elseif op == :derivative_allocating
-                @testset "$(typeof(s))" for s in allocating(scalar_scalar(scenarios))
-                    test_type_derivative_allocating(backend, s)
-                end
+                elseif op == :derivative_allocating
+                    @testset "$(typeof(s))" for s in allocating(scalar_scalar(scenarios))
+                        test_type_derivative_allocating(backend, s)
+                    end
 
-            elseif op == :multiderivative_allocating
-                @testset "$(typeof(s))" for s in allocating(scalar_array(scenarios))
-                    test_type_multiderivative_allocating(backend, s)
-                end
-            elseif op == :multiderivative_mutating
-                @testset "$(typeof(s))" for s in mutating(scalar_array(scenarios))
-                    test_type_multiderivative_mutating(backend, s)
-                end
+                elseif op == :multiderivative_allocating
+                    @testset "$(typeof(s))" for s in allocating(scalar_array(scenarios))
+                        test_type_multiderivative_allocating(backend, s)
+                    end
+                elseif op == :multiderivative_mutating
+                    @testset "$(typeof(s))" for s in mutating(scalar_array(scenarios))
+                        test_type_multiderivative_mutating(backend, s)
+                    end
 
-            elseif op == :gradient_allocating
-                @testset "$(typeof(s))" for s in allocating(array_scalar(scenarios))
-                    test_type_gradient_allocating(backend, s)
-                end
+                elseif op == :gradient_allocating
+                    @testset "$(typeof(s))" for s in allocating(array_scalar(scenarios))
+                        test_type_gradient_allocating(backend, s)
+                    end
 
-            elseif op == :jacobian_allocating
-                @testset "$(typeof(s))" for s in allocating(array_array(scenarios))
-                    test_type_jacobian_allocating(backend, s)
-                end
-            elseif op == :jacobian_mutating
-                @testset "$(typeof(s))" for s in mutating(array_array(scenarios))
-                    test_type_jacobian_mutating(backend, s)
-                end
+                elseif op == :jacobian_allocating
+                    @testset "$(typeof(s))" for s in allocating(array_array(scenarios))
+                        test_type_jacobian_allocating(backend, s)
+                    end
+                elseif op == :jacobian_mutating
+                    @testset "$(typeof(s))" for s in mutating(array_array(scenarios))
+                        test_type_jacobian_mutating(backend, s)
+                    end
 
-            elseif op == :second_derivative_allocating
-                @testset "$(typeof(s))" for s in allocating(scalar_scalar(scenarios))
-                    test_type_second_derivative_allocating(backend, s)
-                end
+                elseif op == :second_derivative_allocating
+                    @testset "$(typeof(s))" for s in allocating(scalar_scalar(scenarios))
+                        test_type_second_derivative_allocating(backend, s)
+                    end
 
-            elseif op == :hessian_vector_product_allocating
-                @testset "$(typeof(s))" for s in allocating(array_scalar(scenarios))
-                    test_type_hessian_vector_product_allocating(backend, s)
-                end
-            elseif op == :hessian_allocating
-                @testset "$(typeof(s))" for s in allocating(array_scalar(scenarios))
-                    test_type_hessian_allocating(backend, s)
-                end
+                elseif op == :hessian_vector_product_allocating
+                    @testset "$(typeof(s))" for s in allocating(array_scalar(scenarios))
+                        test_type_hessian_vector_product_allocating(backend, s)
+                    end
+                elseif op == :hessian_allocating
+                    @testset "$(typeof(s))" for s in allocating(array_scalar(scenarios))
+                        test_type_hessian_allocating(backend, s)
+                    end
 
-            else
-                throw(ArgumentError("Invalid operator to test: `:$op`"))
+                else
+                    throw(ArgumentError("Invalid operator to test: `:$op`"))
+                end
             end
         end
     end

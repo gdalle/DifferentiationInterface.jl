@@ -1,8 +1,11 @@
 using ADTypes: AutoZygote
 using DifferentiationInterface
 using DifferentiationInterface.DifferentiationTest
-using Test
 using Zygote: Zygote
+
+using ForwardDiff: ForwardDiff
+using JET: JET
+using Test
 
 @test available(AutoZygote())
 

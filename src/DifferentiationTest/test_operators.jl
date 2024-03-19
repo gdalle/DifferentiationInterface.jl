@@ -1,31 +1,18 @@
-function test_correctness(args...; kwargs...)
-    return error(
-        "Please load ForwardDiff.jl, this functionality is in a package extension."
-    )
-end
-
-function test_type_stability(args...; kwargs...)
-    return error("Please load JET.jl, this functionality is in a package extension.")
-end
-
-function test_allocations(args...; kwargs...)
-    return error("Please load Chairmarks.jl, this functionality is in a package extension.")
-end
-
-function run_benchmark(args...; kwargs...)
-    return error("Please load Chairmarks.jl, this functionality is in a package extension.")
-end
+function test_correctness end
+function test_type_stability end
+function run_benchmark end
+function test_allocations end
 
 """
-    parse_benchmark(result)
+    parse_benchmark(result; aggregators)
 
 Parse the output of `test_operators(args...; benchmark=true)` into a `DataFrame`.
+
+# Keyword arguments
+
+- `aggregators=[minimum]`: aggregation functions to apply on benchmark samples
 """
-function parse_benchmark(args...; kwargs...)
-    return error(
-        "Please load Chairmarks.jl and DataFrames.jl, this functionality is in a package extension.",
-    )
-end
+function parse_benchmark end
 
 const FIRST_ORDER_OPERATORS = [
     :pushforward_allocating,

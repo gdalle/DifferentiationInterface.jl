@@ -2,6 +2,9 @@ using ADTypes: AutoFiniteDiff
 using DifferentiationInterface
 using DifferentiationInterface.DifferentiationTest
 using FiniteDiff: FiniteDiff
+
+using ForwardDiff: ForwardDiff
+using JET: JET
 using Test
 
 @test available(AutoFiniteDiff())

@@ -2,6 +2,9 @@ using ADTypes: AutoDiffractor
 using DifferentiationInterface
 using DifferentiationInterface.DifferentiationTest
 using Diffractor: Diffractor
+
+using ForwardDiff: ForwardDiff
+using JET: JET
 using Test
 
 @test available(AutoDiffractor())
