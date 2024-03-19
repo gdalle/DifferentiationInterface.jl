@@ -26,6 +26,7 @@ AutoFiniteDiff
 AutoPolyesterForwardDiff
 AutoPolyesterForwardDiff()
 AutoReverseDiff
+AutoTracker
 AutoZygote
 ```
 
@@ -38,7 +39,7 @@ SecondOrder
 
 ## [Mutation support](@id backend_mutation_behavior)
 
-All backends are compatible with allocating functions `f(x) = y`. Only some are compatible with mutating functions `f!(y, x) = nothing`:
+All backends are compatible with allocating functions `f(x) = y`. Only some are compatible with mutating functions `f!(y, x) = nothing`.
 
 | Backend                                 | Mutating functions |
 | :-------------------------------------- | ------------------ |
@@ -46,10 +47,11 @@ All backends are compatible with allocating functions `f(x) = y`. Only some are 
 | `AutoDiffractor()`                      | ✗                  |
 | `AutoEnzyme(Enzyme.Forward)`            | ✓                  |
 | `AutoEnzyme(Enzyme.Reverse)`            | ✓                  |
-| `AutoFiniteDiff()`                      | soon               |
+| `AutoFiniteDiff()`                      | ✓                  |
 | `AutoForwardDiff()`                     | ✓                  |
 | `AutoPolyesterForwardDiff(; chunksize)` | ✓                  |
 | `AutoReverseDiff()`                     | ✓                  |
+| `AutoTracker()`                         | ✗                  |
 | `AutoZygote()`                          | ✗                  |
 
 ## Second order

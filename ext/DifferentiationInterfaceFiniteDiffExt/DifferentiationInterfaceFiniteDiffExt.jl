@@ -7,7 +7,8 @@ using FiniteDiff:
     finite_difference_derivative,
     finite_difference_gradient,
     finite_difference_gradient!,
-    finite_difference_jacobian
+    finite_difference_jacobian,
+    finite_difference_jacobian!
 using LinearAlgebra: dot, mul!
 
 # see https://docs.sciml.ai/FiniteDiff/stable/#f-Definitions

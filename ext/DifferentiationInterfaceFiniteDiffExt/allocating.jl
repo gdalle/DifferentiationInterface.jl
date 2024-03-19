@@ -1,3 +1,4 @@
+
 ## Pushforward
 
 function DI.value_and_pushforward!(
@@ -72,7 +73,7 @@ function DI.value_and_jacobian(
     ::AutoFiniteDiff{fdtype}, f, x::AbstractArray, extras::Nothing
 ) where {fdtype}
     y = f(x)
-    jac = finite_difference_jacobian(f, x, fdtype, eltype(y))
+    jac = finite_difference_jacobian(f, x, fdtype, eltype(y), y)
     return y, jac
 end
 
