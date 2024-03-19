@@ -84,31 +84,4 @@ export prepare_hessian_vector_product
 # submodules
 include("DifferentiationTest/DifferentiationTest.jl")
 
-function __init__()
-    Base.Experimental.register_error_hint(MethodError) do io, exc, argtypes, kwargs
-        f_name = string(exc.f)
-        if (
-            f_name == "mode" ||
-            contains(f_name, "pushforward") ||
-            contains(f_name, "pullback") ||
-            contains(f_name, "derivative") ||
-            contains(f_name, "gradient") ||
-            contains(f_name, "jacobian") ||
-            contains(f_name, "hessian")
-        )
-            for T in argtypes
-                if T <: AbstractADType
-                    print(
-                        io,
-                        """\n
-                        HINT: To use `DifferentiationInterface` with backend `$T`, you need to load the corresponding package extension.
-                        """,
-                    )
-                    return nothing
-                end
-            end
-        end
-    end
-end
-
 end # module
