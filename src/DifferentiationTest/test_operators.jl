@@ -118,13 +118,16 @@ function test_operators(
             test_type_stability(backends, operators, scenarios)
         end
         if benchmark || allocations
-            result = run_benchmark(backends, operators, scenarios)
-            if allocations
-                test_allocations(result)
-            end
+            result = run_benchmark(
+                backends, operators, scenarios; test_allocations=allocations
+            )
         end
     end
-    return result
+    if benchmark
+        return result
+    else
+        return nothing
+    end
 end
 
 """
