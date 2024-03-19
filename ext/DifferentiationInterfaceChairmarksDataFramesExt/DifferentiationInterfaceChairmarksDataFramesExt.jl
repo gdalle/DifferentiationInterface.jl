@@ -5,11 +5,6 @@ using DataFrames: DataFrame, Not, select!
 using DifferentiationInterface
 import DifferentiationInterface.DifferentiationTest as DT
 
-NAMES =
-    Base.get_extension(
-        DifferentiationInterface, :DifferentiationInterfaceChairmarksExt
-    ).NAMES
-
 function parse_benchmark_results_aux(bench::Benchmark, level; colnames, aggregators)
     data = DataFrame()
     data[!, :samples] = [length(bench.samples)]
