@@ -1,6 +1,10 @@
 using ADTypes: AutoEnzyme
-using Enzyme: Enzyme
+using DifferentiationInterface
 using DifferentiationInterface.DifferentiationTest
+using Enzyme: Enzyme
+
+using ForwardDiff: ForwardDiff
+using JET: JET
 using Test
 
 @test available(AutoEnzyme(Enzyme.Forward))

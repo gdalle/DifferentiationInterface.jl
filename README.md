@@ -27,6 +27,7 @@ We support some of the backends defined by [ADTypes.jl](https://github.com/SciML
 | [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl)                   | `AutoForwardDiff()`                                          |
 | [PolyesterForwardDiff.jl](https://github.com/JuliaDiff/PolyesterForwardDiff.jl) | `AutoPolyesterForwardDiff(; chunksize)`                      |
 | [ReverseDiff.jl](https://github.com/JuliaDiff/ReverseDiff.jl)                   | `AutoReverseDiff()`                                          |
+| [Tracker.jl](https://github.com/FluxML/Tracker.jl)                   | `AutoTracker()`                                          |
 | [Zygote.jl](https://github.com/FluxML/Zygote.jl)                                | `AutoZygote()`                                               |
 
 We also provide additional backends:

@@ -9,6 +9,8 @@ using Random
 using Test
 
 using ADTypes
+using Chairmarks: Chairmarks
+using DataFrames: DataFrames
 using Diffractor: Diffractor
 using Enzyme: Enzyme
 using FastDifferentiation: FastDifferentiation

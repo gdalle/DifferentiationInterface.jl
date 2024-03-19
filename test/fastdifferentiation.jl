@@ -1,6 +1,10 @@
+using DifferentiationInterface
 using DifferentiationInterface: AutoFastDifferentiation
 using DifferentiationInterface.DifferentiationTest
 using FastDifferentiation: FastDifferentiation
+
+using ForwardDiff: ForwardDiff
+using JET: JET
 using Test
 
 @test available(AutoFastDifferentiation())

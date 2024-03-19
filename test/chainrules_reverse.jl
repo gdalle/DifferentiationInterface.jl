@@ -1,6 +1,10 @@
 using ADTypes: AutoChainRules
-using Zygote: ZygoteRuleConfig
+using DifferentiationInterface
 using DifferentiationInterface.DifferentiationTest
+using Zygote: ZygoteRuleConfig
+
+using ForwardDiff: ForwardDiff
+using JET: JET
 using Test
 
 @test available(AutoChainRules(ZygoteRuleConfig()))

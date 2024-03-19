@@ -1,6 +1,10 @@
 using ADTypes: AutoReverseDiff
-using ReverseDiff: ReverseDiff
+using DifferentiationInterface
 using DifferentiationInterface.DifferentiationTest
+using ReverseDiff: ReverseDiff
+
+using ForwardDiff: ForwardDiff
+using JET: JET
 using Test
 
 @test available(AutoReverseDiff())

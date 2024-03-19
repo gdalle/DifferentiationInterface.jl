@@ -1,12 +1,14 @@
 using ADTypes
 using DifferentiationInterface
 using DifferentiationInterface.DifferentiationTest
-using Test
 
 using Enzyme: Enzyme
 using ForwardDiff: ForwardDiff
 using ReverseDiff: ReverseDiff
 using Zygote: Zygote
+
+using JET: JET
+using Test
 
 cross_backends = [
     # forward over reverse

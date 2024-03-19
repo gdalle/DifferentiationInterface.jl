@@ -1,6 +1,10 @@
 using ADTypes: AutoDiffractor
-using Diffractor: Diffractor
+using DifferentiationInterface
 using DifferentiationInterface.DifferentiationTest
+using Diffractor: Diffractor
+
+using ForwardDiff: ForwardDiff
+using JET: JET
 using Test
 
 @test available(AutoDiffractor())
