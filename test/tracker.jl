@@ -8,6 +8,7 @@ using JET: JET
 using Test
 
 @test available(AutoTracker())
+@test !supports_mutation(AutoTracker())
 
 test_operators(
     AutoTracker();

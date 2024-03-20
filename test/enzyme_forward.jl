@@ -8,6 +8,7 @@ using JET: JET
 using Test
 
 @test available(AutoEnzyme(Enzyme.Forward))
+@test supports_mutation(AutoEnzyme(Enzyme.Forward))
 
 test_operators(
     AutoEnzyme(Enzyme.Forward); second_order=false, excluded=[:jacobian_allocating]

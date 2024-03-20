@@ -41,7 +41,7 @@ include("second_derivative.jl")
 include("hessian_vector_product.jl")
 include("hessian.jl")
 
-include("available.jl")
+include("backends.jl")
 
 export AutoFastDifferentiation
 export SecondOrder
@@ -83,7 +83,7 @@ export prepare_second_derivative
 export prepare_hessian
 export prepare_hessian_vector_product
 
-export available
+export available, supports_mutation, supports_hessian
 
 # submodules
 include("DifferentiationTest/DifferentiationTest.jl")
