@@ -9,7 +9,8 @@ using DifferentiationInterface:
     MutationSupported,
     MutationNotSupported,
     mode,
-    mutation_behavior
+    mutation_behavior,
+    outer
 using DifferentiationInterface.DifferentiationTest
 import DifferentiationInterface.DifferentiationTest as DT
 using Test
@@ -63,7 +64,7 @@ function DT.run_benchmark(
             @testset "$op" for op in operators
                 results = all_results[backend_string(backend)][op]
                 if op == :pushforward_allocating
-                    for s in allocating(scenarios)
+                    @testset "$(scen_string(s))" for s in allocating(scenarios)
                         merge!(
                             results[scen_id(s)...],
                             run_benchmark_pushforward_allocating(
@@ -72,7 +73,7 @@ function DT.run_benchmark(
                         )
                     end
                 elseif op == :pushforward_mutating
-                    for s in mutating(scenarios)
+                    @testset "$(scen_string(s))" for s in mutating(scenarios)
                         merge!(
                             results[scen_id(s)...],
                             run_benchmark_pushforward_mutating(
@@ -82,14 +83,14 @@ function DT.run_benchmark(
                     end
 
                 elseif op == :pullback_allocating
-                    for s in allocating(scenarios)
+                    @testset "$(scen_string(s))" for s in allocating(scenarios)
                         merge!(
                             results[scen_id(s)...],
                             run_benchmark_pullback_allocating(backend, s; test_allocations),
                         )
                     end
                 elseif op == :pullback_mutating
-                    for s in mutating(scenarios)
+                    @testset "$(scen_string(s))" for s in mutating(scenarios)
                         merge!(
                             results[scen_id(s)...],
                             run_benchmark_pullback_mutating(backend, s; test_allocations),
@@ -97,7 +98,8 @@ function DT.run_benchmark(
                     end
 
                 elseif op == :derivative_allocating
-                    for s in allocating(scalar_scalar(scenarios))
+                    @testset "$(scen_string(s))" for s in
+                                                     allocating(scalar_scalar(scenarios))
                         merge!(
                             results[scen_id(s)...],
                             run_benchmark_derivative_allocating(
@@ -107,7 +109,8 @@ function DT.run_benchmark(
                     end
 
                 elseif op == :multiderivative_allocating
-                    for s in allocating(scalar_array(scenarios))
+                    @testset "$(scen_string(s))" for s in
+                                                     allocating(scalar_array(scenarios))
                         merge!(
                             results[scen_id(s)...],
                             run_benchmark_multiderivative_allocating(
@@ -116,7 +119,7 @@ function DT.run_benchmark(
                         )
                     end
                 elseif op == :multiderivative_mutating
-                    for s in mutating(scalar_array(scenarios))
+                    @testset "$(scen_string(s))" for s in mutating(scalar_array(scenarios))
                         merge!(
                             results[scen_id(s)...],
                             run_benchmark_multiderivative_mutating(
@@ -126,7 +129,8 @@ function DT.run_benchmark(
                     end
 
                 elseif op == :gradient_allocating
-                    for s in allocating(array_scalar(scenarios))
+                    @testset "$(scen_string(s))" for s in
+                                                     allocating(array_scalar(scenarios))
                         merge!(
                             results[scen_id(s)...],
                             run_benchmark_gradient_allocating(backend, s; test_allocations),
@@ -134,14 +138,14 @@ function DT.run_benchmark(
                     end
 
                 elseif op == :jacobian_allocating
-                    for s in allocating(array_array(scenarios))
+                    @testset "$(scen_string(s))" for s in allocating(array_array(scenarios))
                         merge!(
                             results[scen_id(s)...],
                             run_benchmark_jacobian_allocating(backend, s; test_allocations),
                         )
                     end
                 elseif op == :jacobian_mutating
-                    for s in mutating(array_array(scenarios))
+                    @testset "$(scen_string(s))" for s in mutating(array_array(scenarios))
                         merge!(
                             results[scen_id(s)...],
                             run_benchmark_jacobian_mutating(backend, s; test_allocations),
@@ -149,7 +153,8 @@ function DT.run_benchmark(
                     end
 
                 elseif op == :second_derivative_allocating
-                    for s in allocating(scalar_scalar(scenarios))
+                    @testset "$(scen_string(s))" for s in
+                                                     allocating(scalar_scalar(scenarios))
                         merge!(
                             results[scen_id(s)...],
                             run_benchmark_second_derivative_allocating(
@@ -159,7 +164,8 @@ function DT.run_benchmark(
                     end
 
                 elseif op == :hessian_vector_product_allocating
-                    for s in allocating(array_scalar(scenarios))
+                    @testset "$(scen_string(s))" for s in
+                                                     allocating(array_scalar(scenarios))
                         merge!(
                             results[scen_id(s)...],
                             run_benchmark_hessian_vector_product_allocating(
@@ -168,7 +174,8 @@ function DT.run_benchmark(
                         )
                     end
                 elseif op == :hessian_allocating
-                    for s in allocating(array_scalar(scenarios))
+                    @testset "$(scen_string(s))" for s in
+                                                     allocating(array_scalar(scenarios))
                         merge!(
                             results[scen_id(s)...],
                             run_benchmark_hessian_allocating(backend, s; test_allocations),
@@ -357,10 +364,16 @@ function run_benchmark_hessian_vector_product_allocating(
     (; f, x, dx) = deepcopy(scenario)
     extras = prepare_hessian_vector_product(ba, f, x)
     bench1 = @be zero(dx) hessian_vector_product!(_, ba, f, x, dx, extras)
-    if test_allocations
+    bench2 = @be (zero(dx), zero(dx)) gradient_and_hessian_vector_product!(
+        _[1], _[2], ba, f, x, dx, extras
+    )
+    if test_allocations  # TODO: distinguish
         soft_test_zero(minimum(bench1).allocs)
+        soft_test_zero(minimum(bench2).allocs)
     end
-    return Dict(:hessian_vector_product! => bench1)
+    return Dict(
+        :hessian_vector_product! => bench1, :gradient_and_hessian_vector_product! => bench2
+    )
 end
 
 ## Hessian

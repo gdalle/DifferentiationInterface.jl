@@ -9,5 +9,6 @@ using Test
 
 @test available(AutoChainRules(ZygoteRuleConfig()))
 @test !supports_mutation(AutoChainRules(ZygoteRuleConfig()))
+@test supports_hessian(AutoChainRules(ZygoteRuleConfig()))
 
-test_operators(AutoChainRules(ZygoteRuleConfig()); second_order=false, type_stability=false);
+test_operators(AutoChainRules(ZygoteRuleConfig()); type_stability=false);

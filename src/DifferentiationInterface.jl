@@ -12,7 +12,7 @@ module DifferentiationInterface
 using ADTypes: ADTypes, AbstractADType
 using DocStringExtensions
 using FillArrays: OneElement
-using LinearAlgebra: dot
+using LinearAlgebra: dot, norm
 using Test: Test
 
 """

@@ -12,9 +12,6 @@ Start by reading the allocating versions
     gradient_and_hessian_vector_product(backend, f, x, v, [extras]) -> (grad, hvp)
 
 Compute the gradient `grad = ∇f(x)` and the Hessian-vector product `hvp = ∇²f(x) * v` of an array-to-scalar function.
-
-!!! warning
-    Only works with a forward outer mode.
 """
 function gradient_and_hessian_vector_product(
     backend::AbstractADType,
@@ -48,18 +45,17 @@ function gradient_and_hessian_vector_product_aux(
 end
 
 function gradient_and_hessian_vector_product_aux(
-    backend, f, x, v, extras, ::AbstractMode, ::ReverseMode
-)
-    throw(ArgumentError("HVP must be computed without gradient for reverse-over-something"))
+    backend, f::F, x, v, extras, ::AbstractMode, ::ReverseMode
+) where {F}
+    grad = gradient(inner(backend), f, x)
+    hvp = hessian_vector_product(backend, f, x, v, extras)
+    return grad, hvp
 end
 
 """
     gradient_and_hessian_vector_product!(grad, backend, hvp, backend, f, x, v, [extras]) -> (grad, hvp)
 
 Compute the gradient `grad = ∇f(x)` and the Hessian-vector product `hvp = ∇²f(x) * v` of an array-to-scalar function, overwriting `grad` and `hvp`.
-
-!!! warning
-    Only works with a forward outer mode.
 """
 function gradient_and_hessian_vector_product!(
     grad::AbstractArray,
@@ -85,12 +81,30 @@ function gradient_and_hessian_vector_product!(
     extras=prepare_hessian_vector_product(backend, f, x),
 ) where {F}
     return gradient_and_hessian_vector_product_aux!(
-        grad, hvp, backend, f, x, v, extras, mode(inner(backend)), mode(outer(backend))
+        grad,
+        hvp,
+        backend,
+        f,
+        x,
+        v,
+        extras,
+        mode(inner(backend)),
+        mode(outer(backend)),
+        mutation_behavior(inner(backend)),
     )
 end
 
 function gradient_and_hessian_vector_product_aux!(
-    grad, hvp, backend, f::F, x, v, extras, ::AbstractMode, ::ForwardMode
+    grad,
+    hvp,
+    backend,
+    f::F,
+    x,
+    v,
+    extras,
+    ::AbstractMode,
+    ::ForwardMode,
+    ::MutationSupported,
 ) where {F}
     function grad_aux!(storage, z)
         gradient!(storage, inner(backend), f, z, extras)
@@ -100,9 +114,38 @@ function gradient_and_hessian_vector_product_aux!(
 end
 
 function gradient_and_hessian_vector_product_aux!(
-    grad, hvp, backend, f, x, v, extras, ::AbstractMode, ::ReverseMode
-)
-    throw(ArgumentError("HVP must be computed without gradient for reverse-over-something"))
+    grad,
+    hvp,
+    backend,
+    f::F,
+    x,
+    v,
+    extras,
+    ::AbstractMode,
+    ::ForwardMode,
+    ::MutationNotSupported,
+) where {F}
+    grad_aux(z) = gradient(inner(backend), f, z, extras)
+    new_grad, hvp = value_and_pushforward!(hvp, outer(backend), grad_aux, x, v, extras)
+    grad .= new_grad
+    return grad, hvp
+end
+
+function gradient_and_hessian_vector_product_aux!(
+    grad,
+    hvp,
+    backend,
+    f::F,
+    x,
+    v,
+    extras,
+    ::AbstractMode,
+    ::AbstractMode,
+    ::MutationBehavior,
+) where {F}
+    grad = gradient!(grad, inner(backend), f, x)
+    hvp = hessian_vector_product!(hvp, backend, f, x, v, extras)
+    return grad, hvp
 end
 
 ## All backends can give the HVP

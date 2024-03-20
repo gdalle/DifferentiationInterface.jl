@@ -7,7 +7,8 @@ using DifferentiationInterface:
     MutationSupported,
     MutationNotSupported,
     mode,
-    mutation_behavior
+    mutation_behavior,
+    outer
 import DifferentiationInterface as DI
 using DifferentiationInterface.DifferentiationTest
 import DifferentiationInterface.DifferentiationTest as DT

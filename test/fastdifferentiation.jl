@@ -8,6 +8,8 @@ using JET: JET
 using Test
 
 @test available(AutoFastDifferentiation())
+@test !supports_mutation(AutoFastDifferentiation())
+@test !supports_hessian(AutoFastDifferentiation())
 
 test_operators(
     AutoFastDifferentiation();

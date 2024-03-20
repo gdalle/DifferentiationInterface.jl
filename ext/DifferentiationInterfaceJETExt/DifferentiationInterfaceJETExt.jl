@@ -8,7 +8,8 @@ using DifferentiationInterface:
     MutationSupported,
     MutationNotSupported,
     mode,
-    mutation_behavior
+    mutation_behavior,
+    outer
 using DifferentiationInterface.DifferentiationTest
 import DifferentiationInterface.DifferentiationTest as DT
 using JET: @test_opt
@@ -26,62 +27,68 @@ function DT.test_type_stability(
         @testset verbose = true "$(backend_string(backend))" for backend in backends
             @testset "$op" for op in operators
                 if op == :pushforward_allocating
-                    @testset "$(typeof(s))" for s in allocating(scenarios)
+                    @testset "$(scen_string(s))" for s in allocating(scenarios)
                         test_type_pushforward_allocating(backend, s)
                     end
                 elseif op == :pushforward_mutating
-                    @testset "$(typeof(s))" for s in mutating(scenarios)
+                    @testset "$(scen_string(s))" for s in mutating(scenarios)
                         test_type_pushforward_mutating(backend, s)
                     end
 
                 elseif op == :pullback_allocating
-                    @testset "$(typeof(s))" for s in allocating(scenarios)
+                    @testset "$(scen_string(s))" for s in allocating(scenarios)
                         test_type_pullback_allocating(backend, s)
                     end
                 elseif op == :pullback_mutating
-                    @testset "$(typeof(s))" for s in mutating(scenarios)
+                    @testset "$(scen_string(s))" for s in mutating(scenarios)
                         test_type_pullback_mutating(backend, s)
                     end
 
                 elseif op == :derivative_allocating
-                    @testset "$(typeof(s))" for s in allocating(scalar_scalar(scenarios))
+                    @testset "$(scen_string(s))" for s in
+                                                     allocating(scalar_scalar(scenarios))
                         test_type_derivative_allocating(backend, s)
                     end
 
                 elseif op == :multiderivative_allocating
-                    @testset "$(typeof(s))" for s in allocating(scalar_array(scenarios))
+                    @testset "$(scen_string(s))" for s in
+                                                     allocating(scalar_array(scenarios))
                         test_type_multiderivative_allocating(backend, s)
                     end
                 elseif op == :multiderivative_mutating
-                    @testset "$(typeof(s))" for s in mutating(scalar_array(scenarios))
+                    @testset "$(scen_string(s))" for s in mutating(scalar_array(scenarios))
                         test_type_multiderivative_mutating(backend, s)
                     end
 
                 elseif op == :gradient_allocating
-                    @testset "$(typeof(s))" for s in allocating(array_scalar(scenarios))
+                    @testset "$(scen_string(s))" for s in
+                                                     allocating(array_scalar(scenarios))
                         test_type_gradient_allocating(backend, s)
                     end
 
                 elseif op == :jacobian_allocating
-                    @testset "$(typeof(s))" for s in allocating(array_array(scenarios))
+                    @testset "$(scen_string(s))" for s in allocating(array_array(scenarios))
                         test_type_jacobian_allocating(backend, s)
                     end
                 elseif op == :jacobian_mutating
-                    @testset "$(typeof(s))" for s in mutating(array_array(scenarios))
+                    @testset "$(scen_string(s))" for s in mutating(array_array(scenarios))
                         test_type_jacobian_mutating(backend, s)
                     end
 
                 elseif op == :second_derivative_allocating
-                    @testset "$(typeof(s))" for s in allocating(scalar_scalar(scenarios))
+                    @testset "$(scen_string(s))" for s in
+                                                     allocating(scalar_scalar(scenarios))
                         test_type_second_derivative_allocating(backend, s)
                     end
 
                 elseif op == :hessian_vector_product_allocating
-                    @testset "$(typeof(s))" for s in allocating(array_scalar(scenarios))
+                    @testset "$(scen_string(s))" for s in
+                                                     allocating(array_scalar(scenarios))
                         test_type_hessian_vector_product_allocating(backend, s)
                     end
                 elseif op == :hessian_allocating
-                    @testset "$(typeof(s))" for s in allocating(array_scalar(scenarios))
+                    @testset "$(scen_string(s))" for s in
+                                                     allocating(array_scalar(scenarios))
                         test_type_hessian_allocating(backend, s)
                     end
 
@@ -208,13 +215,20 @@ end
 
 function test_type_hessian_vector_product_allocating(ba::AbstractADType, scen::Scenario)
     (; f, x, dx) = deepcopy(scen)
+    grad_in = zero(dx)
     hvp_in = zero(dx)
     @test_opt ignored_modules = (LinearAlgebra,) hessian_vector_product!(
         hvp_in, ba, f, x, dx
     )
     @test_opt ignored_modules = (LinearAlgebra,) hessian_vector_product(ba, f, x, dx)
-    # TODO: add gradient
+    @test_opt ignored_modules = (LinearAlgebra,) gradient_and_hessian_vector_product!(
+        grad_in, hvp_in, ba, f, x, dx
+    )
+    @test_opt ignored_modules = (LinearAlgebra,) gradient_and_hessian_vector_product(
+        ba, f, x, dx
+    )
 end
+
 ## Hessian
 
 function test_type_hessian_allocating(ba::AbstractADType, scen::Scenario)
