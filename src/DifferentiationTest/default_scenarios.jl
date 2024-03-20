@@ -1,20 +1,27 @@
+const SCALING_VEC = Vector(1:12)
+const SCALING_MAT = Matrix((1:3) .* transpose(1:4))
+
 f_scalar_scalar(x::Number)::Number = sin(x)
 
-f_scalar_vector(x::Number)::AbstractVector = [sin(x), sin(2x)]
+function f_scalar_vector(x::Number)::AbstractVector
+    return sin.(SCALING_VEC .* x) # output size 12
+end
 
 function f!_scalar_vector(y::AbstractVector, x::Number)
-    y[1] = sin(x)
-    y[2] = sin(2x)
+    for i in eachindex(y)
+        y[i] = sin(i * x)
+    end
     return nothing
 end
 
-f_scalar_matrix(x::Number)::AbstractMatrix = hcat([sin(x) cos(x)], [sin(2x) cos(2x)])
+function f_scalar_matrix(x::Number)::AbstractMatrix
+    return sin.(SCALING_MAT .* x)  # output size (3, 4)
+end
 
 function f!_scalar_matrix(y::AbstractMatrix, x::Number)
-    y[1, 1] = sin(x)
-    y[2, 1] = cos(x)
-    y[1, 2] = sin(2x)
-    y[2, 2] = cos(2x)
+    for i in axes(y, 1), j in axes(y, 2)
+        y[i, j] = sin(i * j * x)
+    end
     return nothing
 end
 
@@ -59,27 +66,27 @@ end
 
 function default_scenarios_allocating()
     scenarios = [
-        Scenario(f_scalar_scalar, 1.0),
-        Scenario(f_scalar_vector, 1.0),
-        Scenario(f_scalar_matrix, 1.0),
-        Scenario(f_vector_scalar, [1.0, 2.0]),
-        Scenario(f_matrix_scalar, [1.0 2.0; 3.0 4.0]),
-        Scenario(f_vector_vector, [1.0, 2.0]),
-        Scenario(f_vector_matrix, [1.0, 2.0]),
-        Scenario(f_matrix_vector, [1.0 2.0; 3.0 4.0]),
-        Scenario(f_matrix_matrix, [1.0 2.0; 3.0 4.0]),
+        Scenario(f_scalar_scalar, 2.0),
+        Scenario(f_scalar_vector, 2.0),
+        Scenario(f_scalar_matrix, 2.0),
+        Scenario(f_vector_scalar, Vector{Float64}(1:12)),
+        Scenario(f_matrix_scalar, Matrix{Float64}(reshape(1:12, 3, 4))),
+        Scenario(f_vector_vector, Vector{Float64}(1:12)),
+        Scenario(f_vector_matrix, Vector{Float64}(1:12)),
+        Scenario(f_matrix_vector, Matrix{Float64}(reshape(1:12, 3, 4))),
+        Scenario(f_matrix_matrix, Matrix{Float64}(reshape(1:12, 3, 4))),
     ]
     return scenarios
 end
 
 function default_scenarios_mutating()
     scenarios = [
-        Scenario(f!_scalar_vector, 1.0, (2,)),
-        Scenario(f!_scalar_matrix, 1.0, (2, 2)),
-        Scenario(f!_vector_vector, [1.0, 2.0], (4,)),
-        Scenario(f!_vector_matrix, [1.0, 2.0], (2, 2)),
-        Scenario(f!_matrix_vector, [1.0 2.0; 3.0 4.0], (8,)),
-        Scenario(f!_matrix_matrix, [1.0 2.0; 3.0 4.0], (4, 2)),
+        Scenario(f!_scalar_vector, 2.0, (12,)),
+        Scenario(f!_scalar_matrix, 2.0, (3, 4)),
+        Scenario(f!_vector_vector, Vector{Float64}(1:12), (24,)),
+        Scenario(f!_vector_matrix, Vector{Float64}(1:12), (12, 2)),
+        Scenario(f!_matrix_vector, Matrix{Float64}(reshape(1:12, 3, 4)), (24,)),
+        Scenario(f!_matrix_matrix, Matrix{Float64}(reshape(1:12, 3, 4)), (12, 2)),
     ]
     return scenarios
 end

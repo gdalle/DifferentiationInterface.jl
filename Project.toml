@@ -14,7 +14,6 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 AbstractDifferentiation = "c29ec348-61ec-40c8-8164-b8c60e9d9f3d"
 ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
 Chairmarks = "0ca39b1e-fe0b-4e98-acfc-b1656634c4de"
-DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 DiffResults = "163ba53b-c6d8-5494-b064-1a9d43ac40c5"
 Diffractor = "9f5e2b26-1114-432f-b630-d3fe2085c51c"
 Enzyme = "7da242da-08ed-463a-9acd-ee780be4f1d9"
@@ -31,7 +30,6 @@ Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 [extensions]
 DifferentiationInterfaceChainRulesCoreExt = "ChainRulesCore"
 DifferentiationInterfaceChairmarksExt = ["Chairmarks"]
-DifferentiationInterfaceChairmarksDataFramesExt = ["Chairmarks", "DataFrames"]
 DifferentiationInterfaceDiffractorExt = [
     "AbstractDifferentiation",
     "Diffractor",
@@ -58,7 +56,6 @@ ADTypes = "0.2.7"
 AbstractDifferentiation = "0.6"
 Chairmarks = "1.2"
 ChainRulesCore = "1.19"
-DataFrames = "1.6"
 DiffResults = "1.1"
 Diffractor = "0.2"
 DocStringExtensions = "0.9"

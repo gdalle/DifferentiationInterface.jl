@@ -32,15 +32,26 @@ test_operators(
     [AutoZeroForward(), AutoZeroReverse()];
     correctness=false,
     type_stability=false,
+    benchmark=true,
     allocations=true,
     second_order=false,
 );
 
-result = test_operators(
+data = test_operators(
     [AutoZeroForward(), AutoZeroReverse()];
     correctness=false,
     type_stability=false,
     benchmark=true,
 );
 
-data = parse_benchmark(result)
+df = DataFrames.DataFrame(pairs(data)...)
+
+# call count (experimental)
+
+test_operators(
+    [AutoZeroForward(), AutoZeroReverse()];
+    correctness=false,
+    type_stability=false,
+    call_count=true,
+    second_order=false,
+);
