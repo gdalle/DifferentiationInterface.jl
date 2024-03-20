@@ -243,7 +243,7 @@ end
 ## Hessian-vector product
 
 function test_call_count_hessian_vector_product_allocating(
-    ba::AbstractADType, scen::Scenario{<:Any,<:AbstractArray,<:AbstractArray}
+    ba::AbstractADType, scen::Scenario{<:Any,<:AbstractArray,<:Number}
 )
     (; f, x, dx) = deepcopy(scen)
     cc1 = CallCounter(f)
@@ -257,7 +257,7 @@ end
 ## Hessian
 
 function test_call_count_hessian_allocating(
-    ba::AbstractADType, scen::Scenario{<:Any,<:AbstractArray,<:AbstractArray}
+    ba::AbstractADType, scen::Scenario{<:Any,<:AbstractArray,<:Number}
 )
     (; f, x, y) = deepcopy(scen)
     cc1 = CallCounter(f)
