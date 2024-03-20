@@ -39,7 +39,7 @@ function supports_mutation(backend::AbstractADType)
     end
 end
 
-sqnorm(x::AbstractArray) = sum(abs2, x)
+sqnorm(x::AbstractArray) = sum(abs2.(x))
 
 """
     supports_hessian(backend)
