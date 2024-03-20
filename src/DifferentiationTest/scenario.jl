@@ -23,7 +23,7 @@ $(TYPEDFIELDS)
     dy::Y
 end
 
-scen_string(scen::Scenario) = "$(string(scen.f)): $(typeof(scen.x)) -> $(typeof(scen.y))"
+Base.string(scen::Scenario) = "$(string(scen.f)): $(typeof(scen.x)) -> $(typeof(scen.y))"
 
 function Scenario(f, x::Union{Number,AbstractArray})
     y = f(x)

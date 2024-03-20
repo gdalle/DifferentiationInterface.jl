@@ -1,18 +1,5 @@
 test_correctness(args...; kwargs...) = error("Please load ForwardDiff.jl")
 test_type_stability(args...; kwargs...) = error("Please load JET.jl")
-run_benchmark(args...; kwargs...) = error("Please load Chairmarks.jl")
-test_allocations(args...; kwargs...) = error("Please load Chairmarks.jl")
-
-"""
-    parse_benchmark(result; aggregators)
-
-Parse the output of `test_operators(args...; benchmark=true)` into a `DataFrame`.
-
-# Keyword arguments
-
-- `aggregators=[minimum]`: aggregation functions to apply on benchmark samples
-"""
-parse_benchmark(args...; kwargs...) = error("Please load Chairmarks.jl and DataFrames.jl")
 
 const FIRST_ORDER_OPERATORS = [
     :pushforward_allocating,
@@ -77,6 +64,7 @@ Return `nothing`, except when `benchmark=true`.
 
 - `correctness=true`: whether to compare the differentiation results with those given by ForwardDiff.jl
 - `type_stability=true`: whether to check type stability with JET.jl
+- `call_count=false`: whether to check that the function is called the right number of times
 - `benchmark=false`: whether to run and return a benchmark suite with Chairmarks.jl
 - `allocations=false`: whether to check that the benchmarks are allocation-free
 - `input_type=Any`: restrict scenario inputs to subtypes of this
@@ -93,6 +81,7 @@ function test_operators(
     scenarios::Vector{<:Scenario}=default_scenarios();
     correctness::Bool=true,
     type_stability::Bool=true,
+    call_count::Bool=false,
     benchmark::Bool=false,
     allocations::Bool=false,
     input_type::Type=Any,
@@ -109,7 +98,7 @@ function test_operators(
     operators = filter_operators(
         operators; first_order, second_order, allocating, mutating, excluded
     )
-    result = nothing
+    benchmark_data = nothing
     set = @testset verbose = true "Backend tests" begin
         if correctness
             test_correctness(backends, operators, scenarios)
@@ -117,14 +106,17 @@ function test_operators(
         if type_stability
             test_type_stability(backends, operators, scenarios)
         end
+        if call_count
+            test_call_count(backends, operators, scenarios)
+        end
         if benchmark || allocations
-            result = run_benchmark(
-                backends, operators, scenarios; test_allocations=allocations
+            benchmark_data = run_benchmark(
+                backends, operators, scenarios; allocations=allocations
             )
         end
     end
     if benchmark
-        return result
+        return benchmark_data
     else
         return nothing
     end
