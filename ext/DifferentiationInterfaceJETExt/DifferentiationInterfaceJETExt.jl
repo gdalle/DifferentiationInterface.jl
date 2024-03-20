@@ -8,7 +8,8 @@ using DifferentiationInterface:
     MutationSupported,
     MutationNotSupported,
     mode,
-    mutation_behavior
+    mutation_behavior,
+    outer
 using DifferentiationInterface.DifferentiationTest
 import DifferentiationInterface.DifferentiationTest as DT
 using JET: @test_opt
@@ -208,13 +209,20 @@ end
 
 function test_type_hessian_vector_product_allocating(ba::AbstractADType, scen::Scenario)
     (; f, x, dx) = deepcopy(scen)
+    grad_in = zero(dx)
     hvp_in = zero(dx)
     @test_opt ignored_modules = (LinearAlgebra,) hessian_vector_product!(
         hvp_in, ba, f, x, dx
     )
+    @test_opt ignored_modules = (LinearAlgebra,) gradient_and_hessian_vector_product!(
+        grad_in, hvp_in, ba, f, x, dx
+    )
     @test_opt ignored_modules = (LinearAlgebra,) hessian_vector_product(ba, f, x, dx)
-    # TODO: add gradient
+    @test_opt ignored_modules = (LinearAlgebra,) gradient_and_hessian_vector_product(
+        ba, f, x, dx
+    )
 end
+
 ## Hessian
 
 function test_type_hessian_allocating(ba::AbstractADType, scen::Scenario)

@@ -9,7 +9,8 @@ using DifferentiationInterface:
     MutationSupported,
     MutationNotSupported,
     mode,
-    mutation_behavior
+    mutation_behavior,
+    outer
 using DifferentiationInterface.DifferentiationTest
 import DifferentiationInterface.DifferentiationTest as DT
 using Test
@@ -357,10 +358,16 @@ function run_benchmark_hessian_vector_product_allocating(
     (; f, x, dx) = deepcopy(scenario)
     extras = prepare_hessian_vector_product(ba, f, x)
     bench1 = @be zero(dx) hessian_vector_product!(_, ba, f, x, dx, extras)
-    if test_allocations
+    bench2 = @be (zero(dx), zero(dx)) gradient_and_hessian_vector_product!(
+        _[1], _[2], ba, f, x, dx, extras
+    )
+    if test_allocations  # TODO: distinguish
         soft_test_zero(minimum(bench1).allocs)
+        soft_test_zero(minimum(bench2).allocs)
     end
-    return Dict(:hessian_vector_product! => bench1)
+    return Dict(
+        :hessian_vector_product! => bench1, :gradient_and_hessian_vector_product! => bench2
+    )
 end
 
 ## Hessian

@@ -393,14 +393,30 @@ function test_correctness_hessian_vector_product_allocating(
     hvp_in6 = zero(hvp_out5)
     hvp_out6 = DI.hessian_vector_product!(hvp_in6, ba, f, x, dx)
 
+    grad_out7, hvp_out_7 = DI.gradient_and_hessian_vector_product(ba, f, x, dx)
+    grad_in8, hvp_in8 = zero(grad_out7), zero(hvp_out_7)
+    grad_out8, hvp_out8 = DI.gradient_and_hessian_vector_product!(
+        grad_in8, hvp_in8, ba, f, x, dx
+    )
+
+    @testset "Gradient value" begin
+        @test grad_out7 ≈ grad_true rtol = 1e-3
+        @test grad_out8 ≈ grad_true rtol = 1e-3
+        @testset "Mutation" begin
+            @test grad_in8 ≈ grad_true rtol = 1e-3
+        end
+    end
+
     @testset "Hessian-vector product value" begin
         @test hvp_out5 ≈ hvp_true rtol = 1e-3
         @test hvp_out6 ≈ hvp_true rtol = 1e-3
+        @test hvp_out7 ≈ hvp_true rtol = 1e-3
+        @test hvp_out8 ≈ hvp_true rtol = 1e-3
         @testset "Mutation" begin
             @test hvp_in6 ≈ hvp_true rtol = 1e-3
+            @test hvp_in8 ≈ hvp_true rtol = 1e-3
         end
     end
-    # TODO: add gradient
 end
 
 ## Hessian
