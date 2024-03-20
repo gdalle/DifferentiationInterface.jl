@@ -135,7 +135,9 @@ end
 
 ## Derivative
 
-function test_call_count_derivative_allocating(ba::AbstractADType, scen::Scenario)
+function test_call_count_derivative_allocating(
+    ba::AbstractADType, scen::Scenario{<:Any,<:Number}
+)
     (; f, x, y) = deepcopy(scen)
     cc = CallCounter(f)
     value_and_derivative(ba, cc, x)
@@ -144,7 +146,9 @@ end
 
 ## Multiderivative
 
-function test_call_count_multiderivative_allocating(ba::AbstractADType, scen::Scenario)
+function test_call_count_multiderivative_allocating(
+    ba::AbstractADType, scen::Scenario{<:Any,<:Number,<:AbstractArray}
+)
     (; f, x, y) = deepcopy(scen)
     cc1 = CallCounter(f)
     cc2 = CallCounter(f)
@@ -159,7 +163,9 @@ function test_call_count_multiderivative_allocating(ba::AbstractADType, scen::Sc
     end
 end
 
-function test_call_count_multiderivative_mutating(ba::AbstractADType, scen::Scenario)
+function test_call_count_multiderivative_mutating(
+    ba::AbstractADType, scen::Scenario{<:Any,<:Number,<:AbstractArray}
+)
     isa(mutation_behavior(ba), MutationNotSupported) && return nothing
     (; f, x, y, dy) = deepcopy(scen)
     cc! = CallCounter(f)
@@ -175,7 +181,9 @@ end
 
 ## Gradient
 
-function test_call_count_gradient_allocating(ba::AbstractADType, scen::Scenario)
+function test_call_count_gradient_allocating(
+    ba::AbstractADType, scen::Scenario{<:Any,<:AbstractArray,<:Number}
+)
     isa(mode(ba), ForwardMode) && return nothing
     (; f, x, y) = deepcopy(scen)
     cc1 = CallCounter(f)
@@ -188,7 +196,9 @@ end
 
 ## Jacobian
 
-function test_call_count_jacobian_allocating(ba::AbstractADType, scen::Scenario)
+function test_call_count_jacobian_allocating(
+    ba::AbstractADType, scen::Scenario{<:Any,<:AbstractArray,<:AbstractArray}
+)
     (; f, x, y) = deepcopy(scen)
     cc1 = CallCounter(f)
     cc2 = CallCounter(f)
@@ -203,7 +213,9 @@ function test_call_count_jacobian_allocating(ba::AbstractADType, scen::Scenario)
     end
 end
 
-function test_call_count_jacobian_mutating(ba::AbstractADType, scen::Scenario)
+function test_call_count_jacobian_mutating(
+    ba::AbstractADType, scen::Scenario{<:Any,<:AbstractArray,<:AbstractArray}
+)
     isa(mutation_behavior(ba), MutationNotSupported) && return nothing
     (; f, x, y) = deepcopy(scen)
     cc! = CallCounter(f)
@@ -219,7 +231,9 @@ end
 
 ## Second derivative
 
-function test_call_count_second_derivative_allocating(ba::AbstractADType, scen::Scenario)
+function test_call_count_second_derivative_allocating(
+    ba::AbstractADType, scen::Scenario{<:Any,<:Number,<:Number}
+)
     (; f, x, y) = deepcopy(scen)
     cc = CallCounter(f)
     value_derivative_and_second_derivative(ba, cc, x)
@@ -229,7 +243,7 @@ end
 ## Hessian-vector product
 
 function test_call_count_hessian_vector_product_allocating(
-    ba::AbstractADType, scen::Scenario
+    ba::AbstractADType, scen::Scenario{<:Any,<:AbstractArray,<:AbstractArray}
 )
     (; f, x, dx) = deepcopy(scen)
     cc1 = CallCounter(f)
@@ -242,7 +256,9 @@ end
 
 ## Hessian
 
-function test_call_count_hessian_allocating(ba::AbstractADType, scen::Scenario)
+function test_call_count_hessian_allocating(
+    ba::AbstractADType, scen::Scenario{<:Any,<:AbstractArray,<:AbstractArray}
+)
     (; f, x, y) = deepcopy(scen)
     cc1 = CallCounter(f)
     cc2 = CallCounter(f)

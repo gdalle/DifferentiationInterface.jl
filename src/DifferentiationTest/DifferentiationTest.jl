@@ -30,7 +30,7 @@ include("default_scenarios.jl")
 include("test_operators.jl")
 
 export backend_string
-export Scenario, default_scenarios, scen_string
+export Scenario, default_scenarios
 export allocating, mutating, scalar_scalar, scalar_array, array_scalar, array_array
 export BenchmarkData, record!
 export test_operators
