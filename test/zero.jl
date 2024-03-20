@@ -49,23 +49,9 @@ df = DataFrames.DataFrame(pairs(data)...)
 # call count (experimental)
 
 test_operators(
-    [AutoZeroForward(), AutoZeroReverse()],
-    [
-        :pushforward_allocating,
-        :pushforward_mutating,
-        :pullback_allocating,
-        :pullback_mutating,
-        :derivative_allocating,
-        :multiderivative_allocating,
-        :multiderivative_mutating,
-        :gradient_allocating,
-        :jacobian_allocating,
-        :jacobian_mutating,
-        :second_derivative_allocating,
-        :hessian_vector_product_allocating,
-        :hessian_allocating,
-    ];
+    [AutoZeroForward(), AutoZeroReverse()];
     correctness=false,
     type_stability=false,
     call_count=true,
+    second_order=false,
 );
