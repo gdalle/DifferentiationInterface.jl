@@ -17,6 +17,10 @@ struct MutationNotSupported <: MutationBehavior end
 """
     mutation_behavior(backend)
 
-Return the mutation behavior of a backend.
+Return the mutation behavior of a backend in a statically predictable way.
+
+# Note
+
+This is different from [`supports_mutation`](@ref), which performs an actual call to `jacobian!`.
 """
 mutation_behavior(::AbstractADType) = MutationSupported()

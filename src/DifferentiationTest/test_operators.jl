@@ -110,7 +110,7 @@ function test_operators(
         operators; first_order, second_order, allocating, mutating, excluded
     )
     result = nothing
-    @testset verbose = true "Backend tests" begin
+    set = @testset verbose = true "Backend tests" begin
         if correctness
             test_correctness(backends, operators, scenarios)
         end

@@ -9,5 +9,6 @@ using Test
 
 @test available(AutoEnzyme(Enzyme.Reverse))
 @test supports_mutation(AutoEnzyme(Enzyme.Reverse))
+@test !supports_hessian(AutoEnzyme(Enzyme.Reverse))
 
 test_operators(AutoEnzyme(Enzyme.Reverse); second_order=false);

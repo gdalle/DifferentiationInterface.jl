@@ -19,6 +19,7 @@ mysimilar(x::AbstractArray{T}) where {T} = similar(x, T, axes(x)) # strip struct
 
 update!(_old::Number, new::Number) = new
 update!(old, new) = old .= new
+update!(old, new::Nothing) = old
 
 zero!(x::Number) = zero(x)
 zero!(x) = x .= zero(eltype(x))

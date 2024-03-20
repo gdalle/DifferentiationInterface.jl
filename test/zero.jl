@@ -11,12 +11,16 @@ using Test
 @test available(AutoZeroReverse())
 @test available(SecondOrder(AutoZeroForward(), AutoZeroReverse()))
 
-test_operators([AutoZeroForward(), AutoZeroReverse()]; correctness=false);
+test_operators(
+    [AutoZeroForward(), AutoZeroReverse()]; second_order=false, correctness=false
+);
 
 test_operators(
     [
+        SecondOrder(AutoZeroForward(), AutoZeroForward()),
         SecondOrder(AutoZeroForward(), AutoZeroReverse()),
         SecondOrder(AutoZeroReverse(), AutoZeroForward()),
+        SecondOrder(AutoZeroReverse(), AutoZeroReverse()),
     ];
     first_order=false,
     correctness=false,
@@ -24,13 +28,19 @@ test_operators(
 
 # allocs (experimental)
 
+test_operators(
+    [AutoZeroForward(), AutoZeroReverse()];
+    correctness=false,
+    type_stability=false,
+    allocations=true,
+    second_order=false,
+);
+
 result = test_operators(
     [AutoZeroForward(), AutoZeroReverse()];
     correctness=false,
     type_stability=false,
     benchmark=true,
-    allocations=true,
-    second_order=false,
 );
 
 data = parse_benchmark(result)

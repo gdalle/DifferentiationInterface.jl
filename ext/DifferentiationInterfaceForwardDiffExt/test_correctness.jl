@@ -10,62 +10,68 @@ function DT.test_correctness(
         @testset verbose = true "$(backend_string(backend))" for backend in backends
             @testset "$op" for op in operators
                 if op == :pushforward_allocating
-                    @testset "$(typeof(s))" for s in allocating(scenarios)
+                    @testset "$(scen_string(s))" for s in allocating(scenarios)
                         test_correctness_pushforward_allocating(backend, s)
                     end
                 elseif op == :pushforward_mutating
-                    @testset "$(typeof(s))" for s in mutating(scenarios)
+                    @testset "$(scen_string(s))" for s in mutating(scenarios)
                         test_correctness_pushforward_mutating(backend, s)
                     end
 
                 elseif op == :pullback_allocating
-                    @testset "$(typeof(s))" for s in allocating(scenarios)
+                    @testset "$(scen_string(s))" for s in allocating(scenarios)
                         test_correctness_pullback_allocating(backend, s)
                     end
                 elseif op == :pullback_mutating
-                    @testset "$(typeof(s))" for s in mutating(scenarios)
+                    @testset "$(scen_string(s))" for s in mutating(scenarios)
                         test_correctness_pullback_mutating(backend, s)
                     end
 
                 elseif op == :derivative_allocating
-                    @testset "$(typeof(s))" for s in allocating(scalar_scalar(scenarios))
+                    @testset "$(scen_string(s))" for s in
+                                                     allocating(scalar_scalar(scenarios))
                         test_correctness_derivative_allocating(backend, s)
                     end
 
                 elseif op == :multiderivative_allocating
-                    @testset "$(typeof(s))" for s in allocating(scalar_array(scenarios))
+                    @testset "$(scen_string(s))" for s in
+                                                     allocating(scalar_array(scenarios))
                         test_correctness_multiderivative_allocating(backend, s)
                     end
                 elseif op == :multiderivative_mutating
-                    @testset "$(typeof(s))" for s in mutating(scalar_array(scenarios))
+                    @testset "$(scen_string(s))" for s in mutating(scalar_array(scenarios))
                         test_correctness_multiderivative_mutating(backend, s)
                     end
 
                 elseif op == :gradient_allocating
-                    @testset "$(typeof(s))" for s in allocating(array_scalar(scenarios))
+                    @testset "$(scen_string(s))" for s in
+                                                     allocating(array_scalar(scenarios))
                         test_correctness_gradient_allocating(backend, s)
                     end
 
                 elseif op == :jacobian_allocating
-                    @testset "$(typeof(s))" for s in allocating(array_array(scenarios))
+                    @testset "$(scen_string(s))" for s in allocating(array_array(scenarios))
                         test_correctness_jacobian_allocating(backend, s)
                     end
                 elseif op == :jacobian_mutating
-                    @testset "$(typeof(s))" for s in mutating(array_array(scenarios))
+                    @testset "$(scen_string(s))" for s in mutating(array_array(scenarios))
                         test_correctness_jacobian_mutating(backend, s)
                     end
 
                 elseif op == :second_derivative_allocating
-                    @testset "$(typeof(s))" for s in allocating(scalar_scalar(scenarios))
+                    @testset "$(scen_string(s))" for s in
+                                                     allocating(scalar_scalar(scenarios))
                         test_correctness_second_derivative_allocating(backend, s)
                     end
 
                 elseif op == :hessian_vector_product_allocating
-                    @testset "$(typeof(s))" for s in allocating(array_scalar(scenarios))
+                    @testset "$(scen_string(s))" for s in
+                                                     allocating(array_scalar(scenarios))
                         test_correctness_hessian_vector_product_allocating(backend, s)
                     end
                 elseif op == :hessian_allocating
-                    @testset "$(typeof(s))" for s in allocating(array_scalar(scenarios))
+                    @testset "$(scen_string(s))" for s in
+                                                     allocating(array_scalar(scenarios))
                         test_correctness_hessian_allocating(backend, s)
                     end
 
@@ -393,8 +399,8 @@ function test_correctness_hessian_vector_product_allocating(
     hvp_in6 = zero(hvp_out5)
     hvp_out6 = DI.hessian_vector_product!(hvp_in6, ba, f, x, dx)
 
-    grad_out7, hvp_out_7 = DI.gradient_and_hessian_vector_product(ba, f, x, dx)
-    grad_in8, hvp_in8 = zero(grad_out7), zero(hvp_out_7)
+    grad_out7, hvp_out7 = DI.gradient_and_hessian_vector_product(ba, f, x, dx)
+    grad_in8, hvp_in8 = zero(grad_out7), zero(hvp_out7)
     grad_out8, hvp_out8 = DI.gradient_and_hessian_vector_product!(
         grad_in8, hvp_in8, ba, f, x, dx
     )

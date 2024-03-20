@@ -12,9 +12,6 @@ Start by reading the allocating versions
     gradient_and_hessian_vector_product(backend, f, x, v, [extras]) -> (grad, hvp)
 
 Compute the gradient `grad = ∇f(x)` and the Hessian-vector product `hvp = ∇²f(x) * v` of an array-to-scalar function.
-
-!!! warning
-    Only works with a forward outer mode.
 """
 function gradient_and_hessian_vector_product(
     backend::AbstractADType,
@@ -50,7 +47,7 @@ end
 function gradient_and_hessian_vector_product_aux(
     backend, f::F, x, v, extras, ::AbstractMode, ::ReverseMode
 ) where {F}
-    grad = gradient(backend, f, x)
+    grad = gradient(inner(backend), f, x)
     hvp = hessian_vector_product(backend, f, x, v, extras)
     return grad, hvp
 end
@@ -59,9 +56,6 @@ end
     gradient_and_hessian_vector_product!(grad, backend, hvp, backend, f, x, v, [extras]) -> (grad, hvp)
 
 Compute the gradient `grad = ∇f(x)` and the Hessian-vector product `hvp = ∇²f(x) * v` of an array-to-scalar function, overwriting `grad` and `hvp`.
-
-!!! warning
-    Only works with a forward outer mode.
 """
 function gradient_and_hessian_vector_product!(
     grad::AbstractArray,
@@ -146,10 +140,10 @@ function gradient_and_hessian_vector_product_aux!(
     v,
     extras,
     ::AbstractMode,
-    ::ReverseMode,
+    ::AbstractMode,
     ::MutationBehavior,
 ) where {F}
-    grad = gradient!(grad, backend, f, x)
+    grad = gradient!(grad, inner(backend), f, x)
     hvp = hessian_vector_product!(hvp, backend, f, x, v, extras)
     return grad, hvp
 end

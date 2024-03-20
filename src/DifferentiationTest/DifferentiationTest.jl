@@ -13,7 +13,9 @@ using ..DifferentiationInterface:
     ReverseMode,
     SymbolicMode,
     SecondOrder,
-    mode
+    mode,
+    inner,
+    outer
 using ADTypes
 using ADTypes: AbstractADType
 using DocStringExtensions
@@ -25,7 +27,7 @@ include("default_scenarios.jl")
 include("test_operators.jl")
 include("pretty.jl")
 
-export Scenario, default_scenarios
+export Scenario, default_scenarios, scen_string
 export allocating, mutating
 export scalar_scalar, scalar_array, array_scalar, array_array
 export test_operators, parse_benchmark

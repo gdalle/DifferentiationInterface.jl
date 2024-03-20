@@ -22,8 +22,10 @@ end
 function DI.value_and_pullback!(
     dx::AbstractArray, ::AutoReverseEnzyme, f, x::AbstractArray, dy::Number, extras::Nothing
 )
-    dx .= zero(eltype(dx))
-    _, y = autodiff(ReverseWithPrimal, f, Active, Duplicated(x, dx))
+    dx_sametype = convert(typeof(x), dx)
+    dx_sametype .= zero(eltype(dx_sametype))
+    _, y = autodiff(ReverseWithPrimal, f, Active, Duplicated(x, dx_sametype))
+    dx .= dx_sametype
     dx .*= dy
     return y, dx
 end
@@ -39,8 +41,10 @@ end
 function DI.pullback!(
     dx::AbstractArray, ::AutoReverseEnzyme, f, x::AbstractArray, dy::Number, extras::Nothing
 )
-    dx .= zero(eltype(dx))
-    autodiff(Reverse, f, Active, Duplicated(x, dx))
+    dx_sametype = convert(typeof(x), dx)
+    dx_sametype .= zero(eltype(dx_sametype))
+    autodiff(Reverse, f, Active, Duplicated(x, dx_sametype))
+    dx .= dx_sametype
     dx .*= dy
     return dx
 end
