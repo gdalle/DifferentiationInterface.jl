@@ -8,5 +8,6 @@ using JET: JET
 using Test
 
 @test available(AutoChainRules(ZygoteRuleConfig()))
+@test !supports_mutation(AutoChainRules(ZygoteRuleConfig()))
 
 test_operators(AutoChainRules(ZygoteRuleConfig()); second_order=false, type_stability=false);
