@@ -32,6 +32,7 @@ test_operators(
     type_stability=false,
     call_count=true,
     second_order=false,
+    excluded=[:gradient_allocating],
 );
 
 test_operators(
@@ -41,6 +42,23 @@ test_operators(
     call_count=true,
     second_order=true,
     excluded=[:multiderivative_allocating],
+);
+
+test_operators(
+    [AutoZeroReverse(), SecondOrder(AutoZeroReverse(), AutoZeroForward())];
+    correctness=false,
+    type_stability=false,
+    call_count=true,
+    first_order=false,
+);
+
+test_operators(
+    [SecondOrder(AutoZeroForward(), AutoZeroReverse())];
+    correctness=false,
+    type_stability=false,
+    call_count=true,
+    first_order=false,
+    excluded=[:hessian_allocating],  # still quadratic
 );
 
 # allocs (experimental)

@@ -192,7 +192,6 @@ end
 function test_call_count_gradient_allocating(
     ba::AbstractADType, scen::Scenario{<:Any,<:AbstractArray,<:Number}
 )
-    mode(ba) == AbstractForwardMode && return nothing
     (; f, x, y) = deepcopy(scen)
     cc1 = CallCounter(f)
     cc2 = CallCounter(f)
