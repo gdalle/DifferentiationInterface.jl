@@ -5,6 +5,8 @@ import DifferentiationInterface as DI
 using DifferentiationInterface: update!
 using Tracker: Tracker, back, data, forward, gradient, jacobian, param, withgradient
 
+DI.supports_mutation(::AutoTracker) = DI.MutationNotSupported()
+
 ## Pullback
 
 function DI.value_and_pullback(::AutoTracker, f, x, dy, extras::Nothing)

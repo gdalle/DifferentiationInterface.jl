@@ -6,7 +6,7 @@ import DifferentiationInterface as DI
 using DocStringExtensions
 using Zygote: ZygoteRuleConfig, gradient, jacobian, pullback, withgradient, withjacobian
 
-DI.mutation_behavior(::AutoZygote) = DI.MutationNotSupported()
+DI.supports_mutation(::AutoZygote) = DI.MutationNotSupported()
 
 ## Primitives
 

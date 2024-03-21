@@ -5,30 +5,40 @@ Testing utilities for [`DifferentiationInterface`](@ref).
 """
 module DifferentiationTest
 
+using ..DifferentiationInterface
+import ..DifferentiationInterface as DI
 using ..DifferentiationInterface:
-    AutoFastDifferentiation,
-    AutoZeroForward,
-    AutoZeroReverse,
-    ForwardMode,
-    ReverseMode,
-    SymbolicMode,
-    SecondOrder,
-    mode
+    inner,
+    mode,
+    outer,
+    supports_mutation,
+    supports_pushforward,
+    supports_pullback,
+    supports_hvp,
+    zero!
 using ADTypes
-using ADTypes: AbstractADType
+using ADTypes:
+    AbstractADType,
+    AbstractFiniteDifferencesMode,
+    AbstractForwardMode,
+    AbstractReverseMode,
+    AbstractSymbolicDifferentiationMode
 using DocStringExtensions
-using Test: @testset
+using Test: @testset, @test
 
-include("utils.jl")
 include("scenario.jl")
+include("benchmark.jl")
+include("call_count.jl")
 include("default_scenarios.jl")
 include("test_operators.jl")
-include("pretty.jl")
+include("zero.jl")
+include("printing.jl")
 
-export Scenario, default_scenarios
-export allocating, mutating
-export scalar_scalar, scalar_array, array_scalar, array_array
-export test_operators, parse_benchmark
 export backend_string
+export Scenario, default_scenarios
+export allocating, mutating, scalar_scalar, scalar_array, array_scalar, array_array
+export BenchmarkData, record!
+export test_operators
+export AutoZeroForward, AutoZeroReverse
 
 end

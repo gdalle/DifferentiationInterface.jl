@@ -1,5 +1,4 @@
 using DifferentiationInterface
-using DifferentiationInterface: AutoZeroForward, AutoZeroReverse
 using DifferentiationInterface.DifferentiationTest
 
 using Chairmarks: Chairmarks
@@ -7,14 +6,17 @@ using DataFrames: DataFrames
 using JET: JET
 using Test
 
-@test available(AutoZeroForward())
-@test available(AutoZeroReverse())
-@test available(SecondOrder(AutoZeroForward(), AutoZeroReverse()))
+@test check_available(AutoZeroForward())
+@test check_available(AutoZeroReverse())
 
-test_operators([AutoZeroForward(), AutoZeroReverse()]; correctness=false);
+test_operators(
+    [AutoZeroForward(), AutoZeroReverse()]; second_order=false, correctness=false
+);
 
 test_operators(
     [
+        AutoZeroForward(),
+        AutoZeroReverse(),
         SecondOrder(AutoZeroForward(), AutoZeroReverse()),
         SecondOrder(AutoZeroReverse(), AutoZeroForward()),
     ];
@@ -22,14 +24,58 @@ test_operators(
     correctness=false,
 );
 
+# call count (experimental)
+
+test_operators(
+    AutoZeroForward();
+    correctness=false,
+    type_stability=false,
+    call_count=true,
+    second_order=false,
+    excluded=[:gradient_allocating],
+);
+
+test_operators(
+    AutoZeroReverse();
+    correctness=false,
+    type_stability=false,
+    call_count=true,
+    second_order=true,
+    excluded=[:multiderivative_allocating],
+);
+
+test_operators(
+    [AutoZeroReverse(), SecondOrder(AutoZeroReverse(), AutoZeroForward())];
+    correctness=false,
+    type_stability=false,
+    call_count=true,
+    first_order=false,
+);
+
+test_operators(
+    [SecondOrder(AutoZeroForward(), AutoZeroReverse())];
+    correctness=false,
+    type_stability=false,
+    call_count=true,
+    first_order=false,
+    excluded=[:hessian_allocating],  # still quadratic
+);
+
 # allocs (experimental)
 
-result = test_operators(
+test_operators(
     [AutoZeroForward(), AutoZeroReverse()];
     correctness=false,
     type_stability=false,
-    benchmark=false,
     allocations=true,
+    second_order=false,
 );
 
-data = parse_benchmark(result)
+data = test_operators(
+    [AutoZeroForward(), AutoZeroReverse()];
+    correctness=false,
+    type_stability=false,
+    benchmark=true,
+);
+
+df = DataFrames.DataFrame(pairs(data)...)

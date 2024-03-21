@@ -9,67 +9,39 @@ CollapsedDocStrings = true
 DifferentiationInterface
 ```
 
-## Derivative
+## Scalar to scalar
 
 ```@autodocs
 Modules = [DifferentiationInterface]
-Pages = ["src/derivative.jl"]
+Pages = ["src/derivative.jl", "src/second_derivative.jl"]
 ```
 
-## Multiderivative
+## Scalar to array
 
 ```@autodocs
 Modules = [DifferentiationInterface]
 Pages = ["multiderivative.jl"]
 ```
 
-## Gradient
+## Array to scalar
 
 ```@autodocs
 Modules = [DifferentiationInterface]
-Pages = ["gradient.jl"]
+Pages = ["gradient.jl", "hessian.jl", "hessian_vector_product.jl"]
 ```
 
-## Jacobian
+## Array to array
 
 ```@autodocs
 Modules = [DifferentiationInterface]
 Pages = ["jacobian.jl"]
 ```
 
-## Second derivative
+## Lower-level operators
 
 ```@autodocs
 Modules = [DifferentiationInterface]
-Pages = ["second_derivative.jl"]
-```
-
-## Hessian
-
-```@autodocs
-Modules = [DifferentiationInterface]
-Pages = ["hessian.jl"]
-```
-
-## Pushforward (JVP)
-
-```@autodocs
-Modules = [DifferentiationInterface]
-Pages = ["pushforward.jl"]
-```
-
-## Pullback (JVP)
-
-```@autodocs
-Modules = [DifferentiationInterface]
-Pages = ["pullback.jl"]
-```
-
-## Hessian-vector product (HVP)
-
-```@autodocs
-Modules = [DifferentiationInterface]
-Pages = ["hessian_vector_product.jl"]
+Pages = ["pushforward.jl", "pullback.jl"]
 ```
 
 ## Preparation
@@ -77,6 +49,13 @@ Pages = ["hessian_vector_product.jl"]
 ```@autodocs
 Modules = [DifferentiationInterface]
 Pages = ["prepare.jl"]
+```
+
+## Backend queries
+
+```@autodocs
+Modules = [DifferentiationInterface]
+Pages = ["backends.jl"]
 ```
 
 ## Internals

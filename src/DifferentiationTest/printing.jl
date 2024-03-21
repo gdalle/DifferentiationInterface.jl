@@ -1,4 +1,3 @@
-
 pretty(::AutoZeroForward) = "ZeroForward"
 pretty(::AutoZeroReverse) = "ZeroReverse"
 pretty(::AutoChainRules) = "ChainRules"
@@ -8,7 +7,7 @@ pretty(::AutoFastDifferentiation) = "FastDifferentiation"
 pretty(::AutoFiniteDiff) = "FiniteDiff"
 pretty(::AutoForwardDiff) = "ForwardDiff"
 pretty(::AutoPolyesterForwardDiff) = "PolyesterForwardDiff"
-pretty(b::AutoReverseDiff) = "ReverseDiff($(b.compile))"
+pretty(b::AutoReverseDiff) = "ReverseDiff$(b.compile ? "{compiled}" : "")"
 pretty(::AutoTracker) = "Tracker"
 pretty(::AutoZygote) = "Zygote"
 pretty(b::AbstractADType) = string(b)
@@ -21,11 +20,13 @@ Might be ambiguous.
 """
 function backend_string(backend::AbstractADType)
     bs = pretty(backend)
-    if isa(mode(backend), ForwardMode)
+    if mode(backend) == AbstractFiniteDifferencesMode
+        return "$bs (finite)"
+    elseif mode(backend) == AbstractForwardMode
         return "$bs (forward)"
-    elseif isa(mode(backend), ReverseMode)
+    elseif mode(backend) == AbstractReverseMode
         return "$bs (reverse)"
-    elseif isa(mode(backend), SymbolicMode)
+    elseif mode(backend) == AbstractSymbolicDifferentiationMode
         return "$bs (symbolic)"
     else
         error("Unknown mode")
@@ -33,5 +34,5 @@ function backend_string(backend::AbstractADType)
 end
 
 function backend_string(backend::SecondOrder)
-    return "$(backend_string(backend.outer)) / $(backend_string(backend.inner))"
+    return "$(backend_string(inner(backend))) + $(backend_string(outer(backend)))"
 end

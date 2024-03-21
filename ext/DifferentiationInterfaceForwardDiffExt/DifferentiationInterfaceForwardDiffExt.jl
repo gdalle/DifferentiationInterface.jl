@@ -1,13 +1,20 @@
 module DifferentiationInterfaceForwardDiffExt
 
-using ADTypes: AbstractADType, AutoForwardDiff
+using ADTypes:
+    AbstractADType,
+    AbstractFiniteDifferencesMode,
+    AbstractForwardMode,
+    AbstractReverseMode,
+    AbstractSymbolicDifferentiationMode,
+    AutoForwardDiff
 using DifferentiationInterface:
-    ForwardMode,
-    ReverseMode,
-    MutationSupported,
-    MutationNotSupported,
+    inner,
     mode,
-    mutation_behavior
+    outer,
+    supports_mutation,
+    supports_pushforward,
+    supports_pullback,
+    supports_hvp
 import DifferentiationInterface as DI
 using DifferentiationInterface.DifferentiationTest
 import DifferentiationInterface.DifferentiationTest as DT

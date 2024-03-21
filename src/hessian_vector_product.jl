@@ -14,15 +14,15 @@ Start by reading the allocating versions
 Compute the gradient `grad = ∇f(x)` and the Hessian-vector product `hvp = ∇²f(x) * v` of an array-to-scalar function.
 
 !!! warning
-    Only works with a forward outer mode.
+    Only implemented in forward-over-reverse mode.
 """
 function gradient_and_hessian_vector_product(
     backend::AbstractADType,
-    f,
+    f::F,
     x::AbstractArray,
     v::AbstractArray,
     extras=prepare_hessian_vector_product(backend, f, x),
-)
+) where {F}
     return gradient_and_hessian_vector_product(
         SecondOrder(backend, backend), f, x, v, extras
     )
@@ -30,27 +30,21 @@ end
 
 function gradient_and_hessian_vector_product(
     backend::SecondOrder,
-    f,
+    f::F,
     x::AbstractArray,
     v::AbstractArray,
     extras=prepare_hessian_vector_product(backend, f, x),
-)
+) where {F}
     return gradient_and_hessian_vector_product_aux(
         backend, f, x, v, extras, mode(inner(backend)), mode(outer(backend))
     )
 end
 
 function gradient_and_hessian_vector_product_aux(
-    backend, f, x, v, extras, ::AbstractMode, ::ForwardMode
-)
-    grad_aux(z) = gradient(inner(backend), f, z, extras)
-    return value_and_pushforward(outer(backend), grad_aux, x, v, extras)
-end
-
-function gradient_and_hessian_vector_product_aux(
-    backend, f, x, v, extras, ::AbstractMode, ::ReverseMode
-)
-    throw(ArgumentError("HVP must be computed without gradient for reverse-over-something"))
+    backend, f::F, x, v, extras, ::Type{AbstractReverseMode}, ::Type{AbstractForwardMode}
+) where {F}
+    grad_closure(z) = gradient(inner(backend), f, z, extras)
+    return value_and_pushforward(outer(backend), grad_closure, x, v, extras)
 end
 
 """
@@ -59,17 +53,17 @@ end
 Compute the gradient `grad = ∇f(x)` and the Hessian-vector product `hvp = ∇²f(x) * v` of an array-to-scalar function, overwriting `grad` and `hvp`.
 
 !!! warning
-    Only works with a forward outer mode.
+    Only implemented in forward-over-reverse mode.
 """
 function gradient_and_hessian_vector_product!(
     grad::AbstractArray,
     hvp::AbstractArray,
     backend::AbstractADType,
-    f,
+    f::F,
     x::AbstractArray,
     v::AbstractArray,
     extras=prepare_hessian_vector_product(backend, f, x),
-)
+) where {F}
     return gradient_and_hessian_vector_product!(
         grad, hvp, SecondOrder(backend, backend), f, x, v, extras
     )
@@ -79,30 +73,60 @@ function gradient_and_hessian_vector_product!(
     grad::AbstractArray,
     hvp::AbstractArray,
     backend::SecondOrder,
-    f,
+    f::F,
     x::AbstractArray,
     v::AbstractArray,
     extras=prepare_hessian_vector_product(backend, f, x),
-)
+) where {F}
     return gradient_and_hessian_vector_product_aux!(
-        grad, hvp, backend, f, x, v, extras, mode(inner(backend)), mode(outer(backend))
+        grad,
+        hvp,
+        backend,
+        f,
+        x,
+        v,
+        extras,
+        mode(inner(backend)),
+        mode(outer(backend)),
+        supports_mutation(inner(backend)),
     )
 end
 
 function gradient_and_hessian_vector_product_aux!(
-    grad, hvp, backend, f, x, v, extras, ::AbstractMode, ::ForwardMode
-)
-    function grad_aux!(storage, z)
+    grad,
+    hvp,
+    backend,
+    f::F,
+    x,
+    v,
+    extras,
+    ::Type{AbstractReverseMode},
+    ::Type{AbstractForwardMode},
+    ::MutationSupported,
+) where {F}
+    function grad_closure!(storage, z)
         gradient!(storage, inner(backend), f, z, extras)
         return nothing
     end
-    return value_and_pushforward!(grad, hvp, outer(backend), grad_aux!, x, v, extras)
+    return value_and_pushforward!(grad, hvp, outer(backend), grad_closure!, x, v, extras)
 end
 
 function gradient_and_hessian_vector_product_aux!(
-    grad, hvp, backend, f, x, v, extras, ::AbstractMode, ::ReverseMode
-)
-    throw(ArgumentError("HVP must be computed without gradient for reverse-over-something"))
+    grad,
+    hvp,
+    backend,
+    f::F,
+    x,
+    v,
+    extras,
+    ::Type{AbstractReverseMode},
+    ::Type{AbstractForwardMode},
+    ::MutationNotSupported,
+) where {F}
+    grad_closure(z) = gradient(inner(backend), f, z, extras)
+    new_grad, hvp = value_and_pushforward!(hvp, outer(backend), grad_closure, x, v, extras)
+    grad .= new_grad
+    return grad, hvp
 end
 
 ## All backends can give the HVP
@@ -111,91 +135,124 @@ end
     hessian_vector_product(backend, f, x, v, [extras]) -> hvp
 
 Compute the Hessian-vector product `hvp = ∇²f(x) * v` of an array-to-scalar function.
+
+!!! warning
+    Not implemented in forward-over-forward mode (inefficient).
 """
 function hessian_vector_product(
     backend::AbstractADType,
-    f,
+    f::F,
     x::AbstractArray,
     v::AbstractArray,
     extras=prepare_hessian_vector_product(backend, f, x),
-)
+) where {F}
     return hessian_vector_product(SecondOrder(backend, backend), f, x, v, extras)
 end
 
 function hessian_vector_product(
     backend::SecondOrder,
-    f,
+    f::F,
     x::AbstractArray,
     v::AbstractArray,
     extras=prepare_hessian_vector_product(backend, f, x),
-)
+) where {F}
     return hessian_vector_product_aux(
         backend, f, x, v, extras, mode(inner(backend)), mode(outer(backend))
     )
 end
 
-function hessian_vector_product_aux(backend, f, x, v, extras, ::ReverseMode, ::ReverseMode)
-    dotgrad_aux(z) = dot(gradient(inner(backend), f, z, extras), v)
-    return gradient(outer(backend), dotgrad_aux, x, extras)
-end
-
-function hessian_vector_product_aux(backend, f, x, v, extras, ::ForwardMode, ::ReverseMode)
-    jvp_aux(z) = pushforward(inner(backend), f, z, v, extras)
-    return gradient(outer(backend), jvp_aux, x, extras)
-end
-
-function hessian_vector_product_aux(backend, f, x, v, extras, ::AbstractMode, ::ForwardMode)
+function hessian_vector_product_aux(
+    backend, f::F, x, v, extras, ::Type{AbstractReverseMode}, ::Type{AbstractForwardMode}
+) where {F}
     _, hvp = gradient_and_hessian_vector_product(backend, f, x, v, extras)
     return hvp
+end
+
+function hessian_vector_product_aux(
+    backend, f::F, x, v, extras, ::Type{AbstractReverseMode}, ::Type{AbstractReverseMode}
+) where {F}
+    dotgrad_closure(z) = dot(gradient(inner(backend), f, z, extras), v)
+    return gradient(outer(backend), dotgrad_closure, x, extras)
+end
+
+function hessian_vector_product_aux(
+    backend, f::F, x, v, extras, ::Type{AbstractForwardMode}, ::Type{AbstractReverseMode}
+) where {F}
+    jvp_closure(z) = pushforward(inner(backend), f, z, v, extras)
+    return gradient(outer(backend), jvp_closure, x, extras)
 end
 
 """
     hessian_vector_product!(hvp, backend, f, x, v, [extras]) -> hvp
 
 Compute the Hessian-vector product `hvp = ∇²f(x) * v` of an array-to-scalar function, overwriting `hvp`.
+
+!!! warning
+    Not implemented in forward-over-forward mode (inefficient).
 """
 function hessian_vector_product!(
     hvp::AbstractArray,
     backend::AbstractADType,
-    f,
+    f::F,
     x::AbstractArray,
     v::AbstractArray,
     extras=prepare_hessian_vector_product(backend, f, x),
-)
+) where {F}
     return hessian_vector_product!(hvp, SecondOrder(backend, backend), f, x, v, extras)
 end
 
 function hessian_vector_product!(
     hvp::AbstractArray,
     backend::SecondOrder,
-    f,
+    f::F,
     x::AbstractArray,
     v::AbstractArray,
     extras=prepare_hessian_vector_product(backend, f, x),
-)
+) where {F}
     return hessian_vector_product_aux!(
         hvp, backend, f, x, v, extras, mode(inner(backend)), mode(outer(backend))
     )
 end
 
 function hessian_vector_product_aux!(
-    hvp, backend, f, x, v, extras, ::ReverseMode, ::ReverseMode
-)
-    dotgrad_aux(z) = dot(gradient(inner(backend), f, z, extras), v)  # allocates
-    return gradient!(hvp, outer(backend), dotgrad_aux, x, extras)
-end
-
-function hessian_vector_product_aux!(
-    hvp, backend, f, x, v, extras, ::ForwardMode, ::ReverseMode
-)
-    jvp_aux(z) = pushforward(inner(backend), f, z, v, extras)
-    return gradient!(hvp, outer(backend), jvp_aux, x, extras)
-end
-
-function hessian_vector_product_aux!(
-    hvp, backend, f, x, v, extras, ::AbstractMode, ::ForwardMode
-)
+    hvp,
+    backend,
+    f::F,
+    x,
+    v,
+    extras,
+    ::Type{AbstractReverseMode},
+    ::Type{AbstractForwardMode},
+) where {F}
     grad = similar(x)  # allocates
     _, hvp = gradient_and_hessian_vector_product!(grad, hvp, backend, f, x, v, extras)
     return hvp
+end
+
+function hessian_vector_product_aux!(
+    hvp,
+    backend,
+    f::F,
+    x,
+    v,
+    extras,
+    ::Type{AbstractReverseMode},
+    ::Type{AbstractReverseMode},
+) where {F}
+    dotgrad_closure(z) = dot(gradient(inner(backend), f, z, extras), v)  # allocates
+    return gradient!(hvp, outer(backend), dotgrad_closure, x, extras)
+end
+
+function hessian_vector_product_aux!(
+    hvp,
+    backend,
+    f::F,
+    x,
+    v,
+    extras,
+    ::Type{AbstractForwardMode},
+    ::Type{AbstractReverseMode},
+) where {F}
+    jvp_closure(z) = pushforward(inner(backend), f, z, v, extras)
+    return gradient!(hvp, outer(backend), jvp_closure, x, extras)
 end

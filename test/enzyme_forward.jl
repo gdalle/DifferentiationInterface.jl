@@ -7,7 +7,9 @@ using ForwardDiff: ForwardDiff
 using JET: JET
 using Test
 
-@test available(AutoEnzyme(Enzyme.Forward))
+@test check_available(AutoEnzyme(Enzyme.Forward))
+@test check_mutation(AutoEnzyme(Enzyme.Forward))
+@test !check_hessian(AutoEnzyme(Enzyme.Forward))
 
 test_operators(
     AutoEnzyme(Enzyme.Forward); second_order=false, excluded=[:jacobian_allocating]

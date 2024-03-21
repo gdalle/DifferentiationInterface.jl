@@ -24,25 +24,31 @@ $JAC_NOTES
 function value_and_jacobian!(
     jac::AbstractMatrix,
     backend::AbstractADType,
-    f,
+    f::F,
     x::AbstractArray,
     extras=prepare_jacobian(backend, f, x),
-)
-    return value_and_jacobian_aux!(jac, backend, f, x, extras, mode(backend))
+) where {F}
+    return value_and_jacobian_aux!(
+        jac, backend, f, x, extras, supports_pushforward(backend)
+    )
 end
 
 function value_and_jacobian!(
     y::AbstractArray,
     jac::AbstractMatrix,
     backend::AbstractADType,
-    f,
+    f::F,
     x::AbstractArray,
     extras=prepare_jacobian(backend, f, x, y),
-)
-    return value_and_jacobian_aux!(y, jac, backend, f, x, extras, mode(backend))
+) where {F}
+    return value_and_jacobian_aux!(
+        y, jac, backend, f, x, extras, supports_pushforward(backend)
+    )
 end
 
-function value_and_jacobian_aux!(jac, backend, f, x, extras, ::ForwardMode)
+function value_and_jacobian_aux!(
+    jac, backend, f::F, x, extras, ::PushforwardSupported
+) where {F}
     y = f(x)
     check_jac(jac, x, y)
     for (k, j) in enumerate(eachindex(IndexCartesian(), x))
@@ -53,7 +59,9 @@ function value_and_jacobian_aux!(jac, backend, f, x, extras, ::ForwardMode)
     return y, jac
 end
 
-function value_and_jacobian_aux!(y, jac, backend, f!, x, extras, ::ForwardMode)
+function value_and_jacobian_aux!(
+    y, jac, backend, f!::F, x, extras, ::PushforwardSupported
+) where {F}
     check_jac(jac, x, y)
     for (k, j) in enumerate(eachindex(IndexCartesian(), x))
         dx_j = basisarray(backend, x, j)
@@ -63,7 +71,9 @@ function value_and_jacobian_aux!(y, jac, backend, f!, x, extras, ::ForwardMode)
     return y, jac
 end
 
-function value_and_jacobian_aux!(jac, backend, f, x, extras, ::ReverseMode)
+function value_and_jacobian_aux!(
+    jac, backend, f::F, x, extras, ::PushforwardNotSupported
+) where {F}
     y = f(x)
     check_jac(jac, x, y)
     for (k, i) in enumerate(eachindex(IndexCartesian(), y))
@@ -74,7 +84,9 @@ function value_and_jacobian_aux!(jac, backend, f, x, extras, ::ReverseMode)
     return y, jac
 end
 
-function value_and_jacobian_aux!(y, jac, backend, f!, x, extras, ::ReverseMode)
+function value_and_jacobian_aux!(
+    y, jac, backend, f!::F, x, extras, ::PushforwardNotSupported
+) where {F}
     check_jac(jac, x, y)
     for (k, i) in enumerate(eachindex(IndexCartesian(), y))
         dy_i = basisarray(backend, y, i)
@@ -92,8 +104,8 @@ Compute the primal value `y = f(x)` and the Jacobian matrix `jac = ∂f(x)` of a
 $JAC_NOTES
 """
 function value_and_jacobian(
-    backend::AbstractADType, f, x::AbstractArray, extras=prepare_jacobian(backend, f, x)
-)
+    backend::AbstractADType, f::F, x::AbstractArray, extras=prepare_jacobian(backend, f, x)
+) where {F}
     y = f(x)
     T = promote_type(eltype(x), eltype(y))
     jac = similar(y, T, length(y), length(x))
@@ -110,10 +122,10 @@ $JAC_NOTES
 function jacobian!(
     jac::AbstractMatrix,
     backend::AbstractADType,
-    f,
+    f::F,
     x::AbstractArray,
     extras=prepare_jacobian(backend, f, x),
-)
+) where {F}
     return last(value_and_jacobian!(jac, backend, f, x, extras))
 end
 
@@ -125,7 +137,7 @@ Compute the Jacobian matrix `jac = ∂f(x)` of an array-to-array function.
 $JAC_NOTES
 """
 function jacobian(
-    backend::AbstractADType, f, x::AbstractArray, extras=prepare_jacobian(backend, f, x)
-)
+    backend::AbstractADType, f::F, x::AbstractArray, extras=prepare_jacobian(backend, f, x)
+) where {F}
     return last(value_and_jacobian(backend, f, x, extras))
 end
