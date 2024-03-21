@@ -43,33 +43,31 @@ function value_gradient_and_hessian!(
     extras=prepare_hessian(backend, f, x),
 ) where {F}
     return value_gradient_and_hessian_aux!(
-        grad, hess, backend, f, x, extras, mode(inner(backend)), mode(outer(backend))
+        grad, hess, backend, f, x, extras, supports_mutation(outer(backend))
     )
 end
 
 function value_gradient_and_hessian_aux!(
-    grad, hess, backend, f::F, x, extras, ::AbstractMode, ::ForwardMode
+    grad, hess, backend, f::F, x, extras, ::MutationSupported
 ) where {F}
+    # TODO: suboptimal for reverse-over-forward (n^2 calls instead of n)
     y = f(x)
-    check_hess(hess, x)
-    for (k, j) in enumerate(eachindex(IndexCartesian(), x))
-        dx_j = basisarray(backend, x, j)
-        hess_col_j = reshape(view(hess, :, k), size(x))
-        gradient_and_hessian_vector_product!(grad, hess_col_j, backend, f, x, dx_j, extras)
+    function grad_closure!(storage, z)
+        gradient!(storage, inner(backend), f, z, extras)
+        return nothing
     end
+    grad, hess = value_and_jacobian!(grad, hess, outer(backend), grad_closure!, x, extras)
     return y, grad, hess
 end
 
 function value_gradient_and_hessian_aux!(
-    grad, hess, backend, f::F, x, extras, ::AbstractMode, ::ReverseMode
+    grad, hess, backend, f::F, x, extras, ::MutationNotSupported
 ) where {F}
-    y, _ = value_and_gradient!(grad, inner(backend), f, x, extras)
-    check_hess(hess, x)
-    for (k, j) in enumerate(eachindex(IndexCartesian(), x))
-        dx_j = basisarray(backend, x, j)
-        hess_col_j = reshape(view(hess, :, k), size(x))
-        hessian_vector_product!(hess_col_j, backend, f, x, dx_j, extras)
-    end
+    # TODO: suboptimal for reverse-over-forward (n^2 calls instead of n)
+    y = f(x)
+    grad_closure(z) = gradient(inner(backend), f, z, extras)
+    new_grad, hess = value_and_jacobian!(hess, outer(backend), grad_closure, x, extras)
+    grad .= new_grad
     return y, grad, hess
 end
 

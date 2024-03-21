@@ -16,7 +16,6 @@ end
 
 inner(backend::SecondOrder) = backend.inner
 outer(backend::SecondOrder) = backend.outer
-mode(backend::SecondOrder) = (mode(inner(backend)), mode(outer(backend)))
 
 function Base.show(io::IO, backend::SecondOrder)
     return print(io, "SecondOrder($(inner(backend)), $(outer(backend)))")

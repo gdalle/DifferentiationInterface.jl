@@ -1,40 +1,19 @@
 using ADTypes
-using ADTypes: AbstractADType
+using ADTypes:
+    AbstractADType, AbstractFiniteDifferencesMode, AbstractForwardMode, AbstractReverseMode
 using BenchmarkTools
 using DifferentiationInterface
-using DifferentiationInterface: ForwardMode, ReverseMode, mode
+using DifferentiationInterface: MutationSupported, mode, mutation
+using DifferentiationInterface.DifferentiationTest
 
 BenchmarkTools.DEFAULT_PARAMETERS.seconds = 1
-
-## Pretty printing
-
-pretty_backend(::AutoChainRules{<:ZygoteRuleConfig}) = "ChainRules{Zygote}"
-pretty_backend(::AutoDiffractor) = "Diffractor (forward)"
-
-function pretty_backend(backend::AutoEnzyme)
-    return mode(backend) isa ForwardMode ? "Enzyme (forward)" : "Enzyme (reverse)"
-end
-
-pretty_backend(::AutoFiniteDiff) = "FiniteDiff"
-pretty_backend(::AutoForwardDiff) = "ForwardDiff"
-pretty_backend(::AutoPolyesterForwardDiff) = "PolyesterForwardDiff"
-
-function pretty_backend(backend::AutoReverseDiff)
-    return backend.compile ? "ReverseDiff compiled" : "ReverseDiff"
-end
-
-pretty_backend(::AutoZygote) = "Zygote"
 
 pretty_extras(::Nothing) = "unprepared"
 pretty_extras(something) = "prepared"
 
 ## Mutation
 
-handles_mutation(::AbstractADType) = false
-handles_mutation(::AutoForwardDiff) = true
-handles_mutation(::AutoEnzyme) = true
-handles_mutation(::AutoPolyesterForwardDiff) = true
-handles_mutation(::AutoReverseDiff) = true
+handles_mutation(b::AbstractADType) = supports_mutation(b) == MutationSupported()
 
 ## Benchmark suite
 
@@ -45,12 +24,12 @@ function add_pushforward_benchmarks!(
     dx = n == 1 ? randn() : randn(n)
     dy = m == 1 ? 0.0 : zeros(m)
 
-    if !isa(mode(backend), ForwardMode)
+    if mode(backend) == AbstractReverseMode
         return nothing
     end
 
     for extras in unique([nothing, prepare_pushforward(backend, f, x)])
-        subgroup = suite[n][m]["allocating"][pretty_backend(backend)][pretty_extras(extras)]
+        subgroup = suite[n][m]["allocating"][backend_string(backend)][pretty_extras(extras)]
 
         subgroup["value_and_pushforward"] = @benchmarkable begin
             value_and_pushforward($backend, $f, $x, $dx, $extras)
@@ -70,7 +49,7 @@ function add_pushforward_benchmarks!(
     if dy isa AbstractArray && handles_mutation(backend)
         y = similar(dy)
         for extras in unique([nothing, prepare_pushforward(backend, f, x, y)])
-            subgroup = suite[n][m]["mutating"][pretty_backend(backend)][pretty_extras(
+            subgroup = suite[n][m]["mutating"][backend_string(backend)][pretty_extras(
                 extras
             )]
 
@@ -90,12 +69,12 @@ function add_pullback_benchmarks!(
     dx = n == 1 ? 0.0 : zeros(n)
     dy = m == 1 ? randn() : randn(m)
 
-    if !isa(mode(backend), ReverseMode)
+    if mode(backend) in (AbstractForwardMode, AbstractFiniteDifferencesMode)
         return nothing
     end
 
     for extras in unique([nothing, prepare_pullback(backend, f, x)])
-        subgroup = suite[n][m]["allocating"][pretty_backend(backend)][pretty_extras(extras)]
+        subgroup = suite[n][m]["allocating"][backend_string(backend)][pretty_extras(extras)]
 
         subgroup["value_and_pullback"] = @benchmarkable begin
             value_and_pullback($backend, $f, $x, $dy, $extras)
@@ -115,7 +94,7 @@ function add_pullback_benchmarks!(
     if dy isa AbstractArray && handles_mutation(backend)
         y = similar(dy)
         for extras in unique([nothing, prepare_pullback(backend, f, x, y)])
-            subgroup = suite[n][m]["mutating"][pretty_backend(backend)][pretty_extras(
+            subgroup = suite[n][m]["mutating"][backend_string(backend)][pretty_extras(
                 extras
             )]
 
@@ -136,7 +115,7 @@ function add_derivative_benchmarks!(
     x = randn()
 
     for extras in unique([nothing, prepare_derivative(backend, f, x)])
-        subgroup = suite[n][m]["allocating"][pretty_backend(backend)][pretty_extras(extras)]
+        subgroup = suite[n][m]["allocating"][backend_string(backend)][pretty_extras(extras)]
 
         subgroup["value_and_derivative"] = @benchmarkable begin
             value_and_derivative($backend, $f, $x, $extras)
@@ -159,7 +138,7 @@ function add_multiderivative_benchmarks!(
     multider = zeros(m)
 
     for extras in unique([nothing, prepare_multiderivative(backend, f, x)])
-        subgroup = suite[n][m]["allocating"][pretty_backend(backend)][pretty_extras(extras)]
+        subgroup = suite[n][m]["allocating"][backend_string(backend)][pretty_extras(extras)]
 
         subgroup["value_and_multiderivative"] = @benchmarkable begin
             value_and_multiderivative($backend, $f, $x, $extras)
@@ -179,7 +158,7 @@ function add_multiderivative_benchmarks!(
     if handles_mutation(backend)
         y = zeros(m)
         for extras in unique([nothing, prepare_multiderivative(backend, f, x, y)])
-            subgroup = suite[n][m]["mutating"][pretty_backend(backend)][pretty_extras(
+            subgroup = suite[n][m]["mutating"][backend_string(backend)][pretty_extras(
                 extras
             )]
 
@@ -201,7 +180,7 @@ function add_gradient_benchmarks!(
     grad = zeros(n)
 
     for extras in unique([nothing, prepare_gradient(backend, f, x)])
-        subgroup = suite[n][m]["allocating"][pretty_backend(backend)][pretty_extras(extras)]
+        subgroup = suite[n][m]["allocating"][backend_string(backend)][pretty_extras(extras)]
 
         subgroup["value_and_gradient"] = @benchmarkable begin
             value_and_gradient($backend, $f, $x, $extras)
@@ -228,7 +207,7 @@ function add_jacobian_benchmarks!(
     jac = zeros(m, n)
 
     for extras in unique([nothing, prepare_jacobian(backend, f, x)])
-        subgroup = suite[n][m]["allocating"][pretty_backend(backend)][pretty_extras(extras)]
+        subgroup = suite[n][m]["allocating"][backend_string(backend)][pretty_extras(extras)]
 
         subgroup["value_and_jacobian"] = @benchmarkable begin
             value_and_jacobian($backend, $f, $x, $extras)
@@ -248,7 +227,7 @@ function add_jacobian_benchmarks!(
     if handles_mutation(backend)
         y = zeros(m)
         for extras in unique([nothing, prepare_jacobian(backend, f, x, y)])
-            subgroup = suite[n][m]["mutating"][pretty_backend(backend)][pretty_extras(
+            subgroup = suite[n][m]["mutating"][backend_string(backend)][pretty_extras(
                 extras
             )]
 

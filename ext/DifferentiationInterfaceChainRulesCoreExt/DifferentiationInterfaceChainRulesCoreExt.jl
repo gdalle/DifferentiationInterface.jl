@@ -1,6 +1,6 @@
 module DifferentiationInterfaceChainRulesCoreExt
 
-using ADTypes: AutoChainRules
+using ADTypes: ADTypes, AutoChainRules
 using ChainRulesCore:
     HasForwardsMode, HasReverseMode, NoTangent, RuleConfig, frule_via_ad, rrule_via_ad
 using DifferentiationInterface: update!
@@ -12,9 +12,9 @@ ruleconfig(backend::AutoChainRules) = backend.ruleconfig
 const AutoForwardChainRules = AutoChainRules{<:RuleConfig{>:HasForwardsMode}}
 const AutoReverseChainRules = AutoChainRules{<:RuleConfig{>:HasReverseMode}}
 
-DI.mutation_behavior(::AutoChainRules) = DI.MutationNotSupported()
-DI.mode(::AutoForwardChainRules) = DI.ForwardMode()
-DI.mode(::AutoReverseChainRules) = DI.ReverseMode()
+DI.supports_mutation(::AutoChainRules) = DI.MutationNotSupported()
+DI.mode(::AutoForwardChainRules) = ADTypes.AbstractForwardMode
+DI.mode(::AutoReverseChainRules) = ADTypes.AbstractReverseMode
 
 ## Primitives
 

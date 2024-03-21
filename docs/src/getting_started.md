@@ -7,19 +7,25 @@ Most backends have custom implementations, which we reuse if possible.
 
 We choose the following terminology for the operators we provide:
 
-### First order differentiation
+### First order
 
 |                  | **scalar output** | **array output**  |
 | ---------------- | ----------------- | ----------------- |
 | **scalar input** | `derivative`      | `multiderivative` |
 | **array input**  | `gradient`        | `jacobian`        |
 
-### Second order differentiation
+### Second order
 
 |                  | **scalar output**   | **array output** |
 | ---------------- | ------------------- | ---------------- |
 | **scalar input** | `second_derivative` | not implemented  |
 | **array input**  | `hessian`           | not implemented  |
+
+### Lower level
+
+| **propagate tangents (JVP)** | **propagate adjoints (VJP)** |
+| ---------------------------- | ---------------------------- |
+| `pushforward`                | `pullback`                   |
 
 ## Variants
 
@@ -36,7 +42,7 @@ Whenever it makes sense, four variants of the same operator are defined:
 
 Note that scalar outputs can't be mutated, which is why `derivative` and `second_derivative` do not have mutating variants.
 
-For advanced users, lower-level operators are also exposed:
+For advanced users, variants of lower-level operators are also exposed:
 
 | **Operator**                 | **allocating**                   | **mutating**                      | **allocating with primal**                    | **mutating with primal**                       |
 | :--------------------------- | :------------------------------- | :-------------------------------- | :-------------------------------------------- | :--------------------------------------------- |

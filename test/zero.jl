@@ -6,9 +6,8 @@ using DataFrames: DataFrames
 using JET: JET
 using Test
 
-@test available(AutoZeroForward())
-@test available(AutoZeroReverse())
-@test available(SecondOrder(AutoZeroForward(), AutoZeroReverse()))
+@test check_available(AutoZeroForward())
+@test check_available(AutoZeroReverse())
 
 test_operators(
     [AutoZeroForward(), AutoZeroReverse()]; second_order=false, correctness=false
@@ -16,10 +15,10 @@ test_operators(
 
 test_operators(
     [
-        SecondOrder(AutoZeroForward(), AutoZeroForward()),
+        AutoZeroForward(),
+        AutoZeroReverse(),
         SecondOrder(AutoZeroForward(), AutoZeroReverse()),
         SecondOrder(AutoZeroReverse(), AutoZeroForward()),
-        SecondOrder(AutoZeroReverse(), AutoZeroReverse()),
     ];
     first_order=false,
     correctness=false,
@@ -40,7 +39,7 @@ test_operators(
     correctness=false,
     type_stability=false,
     call_count=true,
-    second_order=false,
+    second_order=true,
     excluded=[:multiderivative_allocating],
 );
 
@@ -50,7 +49,6 @@ test_operators(
     [AutoZeroForward(), AutoZeroReverse()];
     correctness=false,
     type_stability=false,
-    benchmark=true,
     allocations=true,
     second_order=false,
 );

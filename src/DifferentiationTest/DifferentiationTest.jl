@@ -8,17 +8,21 @@ module DifferentiationTest
 using ..DifferentiationInterface
 import ..DifferentiationInterface as DI
 using ..DifferentiationInterface:
-    ForwardMode,
-    MutationNotSupported,
-    ReverseMode,
-    SymbolicMode,
     inner,
     mode,
-    mutation_behavior,
     outer,
+    supports_mutation,
+    supports_pushforward,
+    supports_pullback,
+    supports_hvp,
     zero!
 using ADTypes
-using ADTypes: AbstractADType
+using ADTypes:
+    AbstractADType,
+    AbstractFiniteDifferencesMode,
+    AbstractForwardMode,
+    AbstractReverseMode,
+    AbstractSymbolicDifferentiationMode
 using DocStringExtensions
 using Test: @testset, @test
 

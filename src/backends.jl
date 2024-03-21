@@ -1,14 +1,15 @@
 """
-    available(backend)
+    check_available(backend)
 
 Check whether `backend` is available by trying a scalar-to-scalar derivative.
 Might take a while due to compilation time.
 """
-function available(backend::AbstractADType)
+function check_available(backend::AbstractADType)
     try
-        derivative(backend, identity, 1.0)
+        derivative(backend, abs2, 2.0)
         return true
     catch e
+        throw(e)
         if e isa MethodError
             return false
         else
@@ -22,12 +23,12 @@ available(backend::SecondOrder) = available(inner(backend)) && available(outer(b
 square!(y::AbstractArray, x::AbstractArray) = y .= x .^ 2
 
 """
-    supports_mutation(backend)
+    check_mutation(backend)
 
 Check whether `backend` supports differentiation of mutating functions by trying a jacobian.
 Might take a while due to compilation time.
 """
-function supports_mutation(backend::AbstractADType)
+function check_mutation(backend::AbstractADType)
     try
         x = [3.0]
         y = [0.0]
@@ -42,12 +43,12 @@ end
 sqnorm(x::AbstractArray) = sum(abs2, x)
 
 """
-    supports_hessian(backend)
+    check_hessian(backend)
 
 Check whether `backend` supports second order differentiation by trying a hessian.
 Might take a while due to compilation time.
 """
-function supports_hessian(backend::AbstractADType)
+function check_hessian(backend::AbstractADType)
     try
         x = [3.0]
         hess = hessian(backend, sqnorm, x)

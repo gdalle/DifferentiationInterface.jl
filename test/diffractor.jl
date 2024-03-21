@@ -7,8 +7,8 @@ using ForwardDiff: ForwardDiff
 using JET: JET
 using Test
 
-@test available(AutoDiffractor())
-@test !supports_mutation(AutoDiffractor())
-@test !supports_hessian(AutoDiffractor())
+@test check_available(AutoDiffractor())
+@test !check_mutation(AutoDiffractor())
+@test !check_hessian(AutoDiffractor())
 
 test_operators(AutoDiffractor(); second_order=false, type_stability=false);

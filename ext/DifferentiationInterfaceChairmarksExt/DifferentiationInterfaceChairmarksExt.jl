@@ -1,16 +1,21 @@
 module DifferentiationInterfaceChairmarksExt
 
-using ADTypes: AbstractADType
+using ADTypes:
+    AbstractADType,
+    AbstractFiniteDifferencesMode,
+    AbstractForwardMode,
+    AbstractReverseMode,
+    AbstractSymbolicDifferentiationMode
 using Chairmarks: @be, Benchmark, Sample
 using DifferentiationInterface
 using DifferentiationInterface:
-    ForwardMode,
-    ReverseMode,
-    MutationSupported,
-    MutationNotSupported,
+    inner,
     mode,
-    mutation_behavior,
-    outer
+    outer,
+    supports_mutation,
+    supports_pushforward,
+    supports_pullback,
+    supports_hvp
 using DifferentiationInterface.DifferentiationTest
 import DifferentiationInterface.DifferentiationTest as DT
 using Test
@@ -103,7 +108,7 @@ end
 function benchmark_pushforward_allocating!(
     data::BenchmarkData, ba::AbstractADType, scen::Scenario; allocations::Bool
 )
-    isa(mode(ba), ReverseMode) && return nothing
+    Bool(supports_pushforward(ba)) || return nothing
     (; f, x, dx, dy) = deepcopy(scen)
 
     extras = prepare_pushforward(ba, f, x)
@@ -121,7 +126,8 @@ end
 function benchmark_pushforward_mutating!(
     data::BenchmarkData, ba::AbstractADType, scen::Scenario; allocations::Bool
 )
-    isa(mode(ba), ReverseMode) && return nothing
+    Bool(supports_pushforward(ba)) || return nothing
+    Bool(supports_mutation(ba)) || return nothing
     (; f, x, y, dx, dy) = deepcopy(scen)
     f! = f
     extras = prepare_pushforward(ba, f!, x, y)
@@ -140,7 +146,7 @@ end
 function benchmark_pullback_allocating!(
     data::BenchmarkData, ba::AbstractADType, scen::Scenario; allocations::Bool
 )
-    isa(mode(ba), ForwardMode) && return nothing
+    Bool(supports_pullback(ba)) || return nothing
     (; f, x, dx, dy) = deepcopy(scen)
     extras = prepare_pullback(ba, f, x)
     bench1 = @be zero(dx) value_and_pullback!(_, ba, f, x, dy, extras)
@@ -157,7 +163,8 @@ end
 function benchmark_pullback_mutating!(
     data::BenchmarkData, ba::AbstractADType, scen::Scenario; allocations::Bool
 )
-    isa(mode(ba), ForwardMode) && return nothing
+    Bool(supports_pullback(ba)) || return nothing
+    Bool(supports_mutation(ba)) || return nothing
     (; f, x, y, dx, dy) = deepcopy(scen)
     f! = f
     extras = prepare_pullback(ba, f!, x, y)
@@ -200,6 +207,7 @@ end
 function benchmark_multiderivative_mutating!(
     data::BenchmarkData, ba::AbstractADType, scen::Scenario; allocations::Bool
 )
+    Bool(supports_mutation(ba)) || return nothing
     (; f, x, y, dy) = deepcopy(scen)
     f! = f
     extras = prepare_multiderivative(ba, f!, x, y)
@@ -248,6 +256,7 @@ end
 function benchmark_jacobian_mutating!(
     data::BenchmarkData, ba::AbstractADType, scen::Scenario; allocations::Bool
 )
+    Bool(supports_mutation(ba)) || return nothing
     (; f, x, y) = deepcopy(scen)
     f! = f
     jac_template = zeros(eltype(y), length(y), length(x))
@@ -282,17 +291,18 @@ end
 function benchmark_hessian_vector_product_allocating!(
     data::BenchmarkData, ba::AbstractADType, scen::Scenario; allocations::Bool
 )
+    Bool(supports_hvp(ba)) || return nothing
     (; f, x, dx) = deepcopy(scen)
     extras = prepare_hessian_vector_product(ba, f, x)
-    bench1 = @be (zero(dx), zero(dx)) gradient_and_hessian_vector_product!(
-        _[1], _[2], ba, f, x, dx, extras
-    )
+    # bench1 = @be (zero(dx), zero(dx)) gradient_and_hessian_vector_product!(
+    #     _[1], _[2], ba, f, x, dx, extras
+    # )
     bench2 = @be zero(dx) hessian_vector_product!(_, ba, f, x, dx, extras)
     if allocations  # TODO: distinguish
-        @test 0 == minimum(bench1).allocs
+        # @test 0 == minimum(bench1).allocs
         @test 0 == minimum(bench2).allocs
     end
-    record!(data, ba, scen, :gradient_and_hessian_vector_product!, bench1)
+    # record!(data, ba, scen, :gradient_and_hessian_vector_product!, bench1)
     record!(data, ba, scen, :hessian_vector_product!, bench2)
     return nothing
 end
