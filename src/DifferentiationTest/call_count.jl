@@ -98,7 +98,9 @@ function test_call_count_pushforward_allocating(ba::AbstractADType, scen::Scenar
     (; f, x, dx) = deepcopy(scen)
     cc = CallCounter(f)
     value_and_pushforward(ba, cc, x, dx)
-    @test cc.count[] <= 2
+    if isa(mode(ba), ForwardMode)
+        @test cc.count[] <= 1
+    end
 end
 
 function test_call_count_pushforward_mutating(ba::AbstractADType, scen::Scenario)
@@ -109,7 +111,9 @@ function test_call_count_pushforward_mutating(ba::AbstractADType, scen::Scenario
     y_in = zero(y)
     dy_in = zero(dy)
     value_and_pushforward!(y_in, dy_in, ba, cc!, x, dx)
-    @test cc!.count[] <= 2
+    if isa(mode(ba), ForwardMode)
+        @test cc!.count[] <= 1
+    end
 end
 
 ## Pullback
@@ -119,7 +123,9 @@ function test_call_count_pullback_allocating(ba::AbstractADType, scen::Scenario)
     (; f, x, y, dy) = deepcopy(scen)
     cc = CallCounter(f)
     value_and_pullback(ba, cc, x, dy)
-    @test cc.count[] <= 2
+    if isa(mode(ba), ReverseMode)
+        @test cc.count[] <= 1
+    end
 end
 
 function test_call_count_pullback_mutating(ba::AbstractADType, scen::Scenario)
@@ -130,7 +136,9 @@ function test_call_count_pullback_mutating(ba::AbstractADType, scen::Scenario)
     y_in = zero(y)
     dx_in = zero(dx)
     value_and_pullback!(y_in, dx_in, ba, cc!, x, dy)
-    @test cc!.count[] <= 2
+    if isa(mode(ba), ReverseMode)
+        @test cc!.count[] <= 1
+    end
 end
 
 ## Derivative
@@ -141,7 +149,7 @@ function test_call_count_derivative_allocating(
     (; f, x, y) = deepcopy(scen)
     cc = CallCounter(f)
     value_and_derivative(ba, cc, x)
-    @test cc.count[] <= 2
+    @test cc.count[] <= 1
 end
 
 ## Multiderivative
@@ -155,11 +163,11 @@ function test_call_count_multiderivative_allocating(
     value_and_multiderivative(ba, cc1, x)
     multiderivative(ba, cc2, x)
     if isa(mode(ba), ForwardMode)
-        @test cc1.count[] <= 2
-        @test cc2.count[] <= 2
+        @test cc1.count[] <= 1
+        @test cc2.count[] <= 1
     elseif isa(mode(ba), ReverseMode)
-        @test cc1.count[] <= 2 + length(y)
-        @test cc2.count[] <= 2 + length(y)
+        @test cc1.count[] <= length(y)
+        @test cc2.count[] <= length(y)
     end
 end
 
@@ -173,9 +181,9 @@ function test_call_count_multiderivative_mutating(
     multider_in = zero(dy)
     value_and_multiderivative!(y_in, multider_in, ba, cc!, x)
     if isa(mode(ba), ForwardMode)
-        @test cc!.count[] <= 2
+        @test cc!.count[] <= 1
     elseif isa(mode(ba), ReverseMode)
-        @test cc!.count[] <= 2 + length(y)
+        @test cc!.count[] <= length(y)
     end
 end
 
@@ -190,8 +198,13 @@ function test_call_count_gradient_allocating(
     cc2 = CallCounter(f)
     value_and_gradient(ba, cc1, x)
     gradient(ba, cc2, x)
-    @test cc1.count[] <= 2
-    @test cc2.count[] <= 2
+    if isa(mode(ba), ForwardMode)
+        @test cc1.count[] <= length(x)
+        @test cc2.count[] <= length(x)
+    elseif isa(mode(ba), ReverseMode)
+        @test cc1.count[] <= 1
+        @test cc2.count[] <= 1
+    end
 end
 
 ## Jacobian
@@ -205,11 +218,11 @@ function test_call_count_jacobian_allocating(
     value_and_jacobian(ba, cc1, x)
     jacobian(ba, cc2, x)
     if isa(mode(ba), ForwardMode)
-        @test cc1.count[] <= 2 + length(x)
-        @test cc2.count[] <= 2 + length(x)
+        @test cc1.count[] <= 2 + length(x)  # at least one too many
+        @test cc2.count[] <= 2 + length(x)  # at least one too many
     elseif isa(mode(ba), ReverseMode)
-        @test cc1.count[] <= 2 + length(y)
-        @test cc2.count[] <= 2 + length(y)
+        @test cc1.count[] <= 2 + length(y)  # at least one too many
+        @test cc2.count[] <= 2 + length(y)  # at least one too many
     end
 end
 
@@ -223,9 +236,9 @@ function test_call_count_jacobian_mutating(
     jac_in = similar(y, length(y), length(x))
     value_and_jacobian!(y_in, jac_in, ba, cc!, x)
     if isa(mode(ba), ForwardMode)
-        @test cc!.count[] <= 2 + length(x)
+        @test cc!.count[] <= 1 + length(x)
     elseif isa(mode(ba), ReverseMode)
-        @test cc!.count[] <= 2 + length(y)
+        @test cc!.count[] <= 1 + length(y)
     end
 end
 
@@ -237,7 +250,7 @@ function test_call_count_second_derivative_allocating(
     (; f, x, y) = deepcopy(scen)
     cc = CallCounter(f)
     value_derivative_and_second_derivative(ba, cc, x)
-    @test cc.count[] <= 3
+    @test cc.count[] <= 2
 end
 
 ## Hessian-vector product
@@ -250,8 +263,8 @@ function test_call_count_hessian_vector_product_allocating(
     cc2 = CallCounter(f)
     hessian_vector_product(ba, cc1, x, dx)
     gradient_and_hessian_vector_product(ba, cc2, x, dx)
-    @test cc1.count[] <= 3
-    @test cc2.count[] <= 3
+    @test cc1.count[] <= 2
+    @test cc2.count[] <= 2
 end
 
 ## Hessian
@@ -264,6 +277,6 @@ function test_call_count_hessian_allocating(
     cc2 = CallCounter(f)
     value_gradient_and_hessian(ba, cc1, x)
     hessian(ba, cc2, x)
-    @test cc1.count[] <= 3 + 2length(x)
-    @test cc2.count[] <= 3 + 2length(x)
+    @test cc1.count[] <= 2 + length(x)
+    @test cc2.count[] <= 2 + length(x)
 end

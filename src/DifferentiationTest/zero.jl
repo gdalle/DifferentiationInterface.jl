@@ -15,26 +15,46 @@ Used in testing and benchmarking.
 """
 struct AutoZeroReverse <: ADTypes.AbstractReverseMode end
 
-function value_and_pushforward!(
+function DI.value_and_pushforward!(
     dy, ::AutoZeroForward, f::F, x, dx, extras::Nothing
 ) where {F}
-    return f(x), zero!(dy)
+    y = f(x)
+    dy = zero!(dy)
+    return y, dy
 end
 
-function value_and_pullback!(dx, ::AutoZeroReverse, f::F, x, dy, extras::Nothing) where {F}
-    return f(x), zero!(dx)
+function DI.value_and_pushforward(::AutoZeroForward, f::F, x, dx, extras::Nothing) where {F}
+    y = f(x)
+    dy = zero(y)
+    return y, dy
 end
 
-function value_and_pushforward!(
+function DI.value_and_pushforward!(
     y::AbstractArray, dy, ::AutoZeroForward, f!::F, x, dx, extras::Nothing
 ) where {F}
     f!(y, x)
-    return y, zero!(dy)
+    dy = zero!(dy)
+    return y, dy
 end
 
-function value_and_pullback!(
+function DI.value_and_pullback!(
+    dx, ::AutoZeroReverse, f::F, x, dy, extras::Nothing
+) where {F}
+    y = f(x)
+    dx = zero!(dx)
+    return y, dx
+end
+
+function DI.value_and_pullback(::AutoZeroReverse, f::F, x, dy, extras::Nothing) where {F}
+    y = f(x)
+    dx = zero(x)
+    return y, dx
+end
+
+function DI.value_and_pullback!(
     y::AbstractArray, dx, ::AutoZeroReverse, f!::F, x, dy, extras::Nothing
 ) where {F}
     f!(y, x)
-    return y, zero!(dx)
+    dx = zero!(dx)
+    return y, dx
 end

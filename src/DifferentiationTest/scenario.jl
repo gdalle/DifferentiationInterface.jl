@@ -25,6 +25,14 @@ end
 
 Base.string(scen::Scenario) = "$(string(scen.f)): $(typeof(scen.x)) -> $(typeof(scen.y))"
 
+similar_random(z::Number) = randn(eltype(z))
+
+function similar_random(z::AbstractArray)
+    zz = similar(z)
+    zz .= randn(eltype(zz), size(zz))
+    return zz
+end
+
 function Scenario(f, x::Union{Number,AbstractArray})
     y = f(x)
     dx = similar_random(x)

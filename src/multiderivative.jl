@@ -40,8 +40,8 @@ end
 function value_and_multiderivative_aux!(
     multider, backend, f::F, x, extras, ::ReverseMode
 ) where {F}
-    y = f(x)
-    for i in eachindex(IndexCartesian(), multider)
+    y = f(x)  # one call too many
+    for i in CartesianIndices(multider)
         dy_i = basisarray(backend, multider, i)
         multider[i] = pullback(backend, f, x, dy_i, extras)
     end
@@ -51,7 +51,7 @@ end
 function value_and_multiderivative_aux!(
     y, multider, backend, f!::F, x, extras, ::ReverseMode
 ) where {F}
-    for i in eachindex(IndexCartesian(), multider)
+    for i in CartesianIndices(multider)
         dy_i = basisarray(backend, multider, i)
         y, multider[i] = value_and_pullback!(y, multider[i], backend, f!, x, dy_i, extras)
     end

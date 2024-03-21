@@ -29,7 +29,6 @@ include("prepare.jl")
 
 include("pushforward.jl")
 include("pullback.jl")
-include("zero.jl")
 
 include("derivative.jl")
 include("multiderivative.jl")

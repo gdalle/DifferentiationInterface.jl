@@ -45,7 +45,7 @@ end
 function value_and_jacobian_aux!(jac, backend, f::F, x, extras, ::ForwardMode) where {F}
     y = f(x)
     check_jac(jac, x, y)
-    for (k, j) in enumerate(eachindex(IndexCartesian(), x))
+    for (k, j) in enumerate(CartesianIndices(x))
         dx_j = basisarray(backend, x, j)
         jac_col_j = reshape(view(jac, :, k), size(y))
         pushforward!(jac_col_j, backend, f, x, dx_j, extras)
@@ -55,7 +55,7 @@ end
 
 function value_and_jacobian_aux!(y, jac, backend, f!::F, x, extras, ::ForwardMode) where {F}
     check_jac(jac, x, y)
-    for (k, j) in enumerate(eachindex(IndexCartesian(), x))
+    for (k, j) in enumerate(CartesianIndices(x))
         dx_j = basisarray(backend, x, j)
         jac_col_j = reshape(view(jac, :, k), size(y))
         value_and_pushforward!(y, jac_col_j, backend, f!, x, dx_j, extras)
@@ -66,7 +66,7 @@ end
 function value_and_jacobian_aux!(jac, backend, f::F, x, extras, ::ReverseMode) where {F}
     y = f(x)
     check_jac(jac, x, y)
-    for (k, i) in enumerate(eachindex(IndexCartesian(), y))
+    for (k, i) in enumerate(CartesianIndices(y))
         dy_i = basisarray(backend, y, i)
         jac_row_i = reshape(view(jac, k, :), size(x))
         pullback!(jac_row_i, backend, f, x, dy_i, extras)
@@ -76,7 +76,7 @@ end
 
 function value_and_jacobian_aux!(y, jac, backend, f!::F, x, extras, ::ReverseMode) where {F}
     check_jac(jac, x, y)
-    for (k, i) in enumerate(eachindex(IndexCartesian(), y))
+    for (k, i) in enumerate(CartesianIndices(y))
         dy_i = basisarray(backend, y, i)
         jac_row_i = reshape(view(jac, k, :), size(x))
         value_and_pullback!(y, jac_row_i, backend, f!, x, dy_i, extras)

@@ -17,7 +17,7 @@ function value_and_gradient_aux!(
     grad, backend::AbstractADType, f::F, x, extras, ::ForwardMode
 ) where {F}
     y = f(x)
-    for j in eachindex(IndexCartesian(), grad)
+    for j in CartesianIndices(grad)
         dx_j = basisarray(backend, grad, j)
         grad[j] = pushforward(backend, f, x, dx_j, extras)
     end
