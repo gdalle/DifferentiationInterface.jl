@@ -1,41 +1,18 @@
 """
-    value_and_derivative(backend, f, x, [extras]) -> (y, der)
-
-Compute the primal value `y = f(x)` and the derivative `der = f'(x)` of a scalar-to-scalar function.
+    value_and_derivative!(f, der, backend, x, [extras]) -> (y, der)
+    value_and_derivative!(f!, y, der, backend, x, [extras]) -> (y, der)
 """
-function value_and_derivative(
-    backend::AbstractADType, f::F, x::Number, extras=prepare_derivative(backend, f, x)
-) where {F}
-    return value_and_derivative_aux(backend, f, x, extras, supports_pushforward(backend))
+function value_and_derivative!(f::F, der, backend::AbstractADType, x) where {F}
+    return value_and_pushforward!(f, der, backend, x, one(x))
 end
 
-function value_and_derivative_aux(
-    backend, f::F, x, extras, ::PushforwardSupported
-) where {F}
-    return value_and_pushforward(backend, f, x, one(x), extras)
-end
-
-function value_and_derivative_aux(
-    backend, f::F, x, extras, ::PushforwardNotSupported
-) where {F}
-    return value_and_pullback(backend, f, x, one(x), extras)
+function value_and_derivative!(f!::F, y, der, backend::AbstractADType, x) where {F}
+    return value_and_pushforward!(f!, y, der, backend, x, one(x))
 end
 
 """
-    derivative(backend, f, x, [extras]) -> der
-
-Compute the derivative `der = f'(x)` of a scalar-to-scalar function.
+    value_and_derivative(f, backend, x, [extras]) -> (y, der)
 """
-function derivative(
-    backend::AbstractADType, f::F, x::Number, extras=prepare_derivative(backend, f, x)
-) where {F}
-    return derivative_aux(backend, f, x, extras, supports_pushforward(backend))
-end
-
-function derivative_aux(backend, f::F, x, extras, ::PushforwardSupported) where {F}
-    return pushforward(backend, f, x, one(x), extras)
-end
-
-function derivative_aux(backend, f::F, x, extras, ::PushforwardNotSupported) where {F}
-    return pullback(backend, f, x, one(x), extras)
+function value_and_derivative(f::F, backend::AbstractADType, x) where {F}
+    return value_and_pushforward(f, backend, x, one(x))
 end

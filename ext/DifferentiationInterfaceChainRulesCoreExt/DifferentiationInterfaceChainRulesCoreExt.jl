@@ -18,30 +18,28 @@ DI.mode(::AutoReverseChainRules) = ADTypes.AbstractReverseMode
 
 ## Primitives
 
-function DI.value_and_pushforward(backend::AutoForwardChainRules, f, x, dx, extras::Nothing)
+function DI.value_and_pushforward(f::F, backend::AutoForwardChainRules, x, dx) where {F}
     rc = ruleconfig(backend)
     y, new_dy = frule_via_ad(rc, (NoTangent(), dx), f, x)
     return y, new_dy
 end
 
 function DI.value_and_pushforward!(
-    dy::Union{Number,AbstractArray}, backend::AutoForwardChainRules, f, x, dx, extras
-)
-    y, new_dy = DI.value_and_pushforward(backend, f, x, dx, extras)
+    f::F, dy, backend::AutoForwardChainRules, x, dx
+) where {F}
+    y, new_dy = DI.value_and_pushforward(f, backend, x, dx)
     return y, update!(dy, new_dy)
 end
 
-function DI.value_and_pullback(backend::AutoReverseChainRules, f, x, dy, extras::Nothing)
+function DI.value_and_pullback(f::F, backend::AutoReverseChainRules, x, dy) where {F}
     rc = ruleconfig(backend)
     y, pullback = rrule_via_ad(rc, f, x)
     _, new_dx = pullback(dy)
     return y, new_dx
 end
 
-function DI.value_and_pullback!(
-    dx::Union{Number,AbstractArray}, backend::AutoReverseChainRules, f, x, dy, extras
-)
-    y, new_dx = DI.value_and_pullback(backend, f, x, dy, extras)
+function DI.value_and_pullback!(f::F, dx, backend::AutoReverseChainRules, x, dy) where {F}
+    y, new_dx = DI.value_and_pullback(f, backend, x, dy)
     return y, update!(dx, new_dx)
 end
 

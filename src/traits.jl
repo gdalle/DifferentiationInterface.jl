@@ -18,7 +18,6 @@ mode(::AbstractForwardMode) = AbstractForwardMode
 mode(::AbstractFiniteDifferencesMode) = AbstractFiniteDifferencesMode
 mode(::AbstractReverseMode) = AbstractReverseMode
 mode(::AbstractSymbolicDifferentiationMode) = AbstractSymbolicDifferentiationMode
-mode(backend::SecondOrder) = mode(inner(backend)), mode(outer(backend))
 
 ## Mutation
 
@@ -103,51 +102,6 @@ supports_pullback(::Type{AbstractFiniteDifferencesMode}) = PullbackNotSupported(
 supports_pullback(::Type{AbstractReverseMode}) = PullbackSupported()
 supports_pullback(::Type{AbstractSymbolicDifferentiationMode}) = PullbackSupported()
 
-## Hessian-vector product
-
-abstract type HVPBehavior end
-
-"""
-    HVPSupported
-
-Trait identifying backends that support efficient HVPs.
-"""
-struct HVPSupported <: HVPBehavior end
-
-"""
-    HVPNotSupported
-
-Trait identifying backends that do not support efficient HVPs.
-"""
-struct HVPNotSupported <: HVPBehavior end
-
-"""
-    supports_hvp(backend)
-
-Return [`HVPSupported`](@ref) or [`HVPNotSupported`](@ref) in a statically predictable way.
-"""
-supports_hvp(backend::AbstractADType) = supports_hvp(SecondOrder(backend, backend))
-
-function supports_hvp(backend::SecondOrder)
-    return supports_hvp(mode(inner(backend)), mode(outer(backend)))
-end
-
-function supports_hvp(::Type{<:AbstractMode}, ::Type{<:AbstractMode})
-    return HVPNotSupported()
-end
-
-function supports_hvp(::Type{AbstractReverseMode}, ::Type{AbstractForwardMode})
-    return HVPSupported()
-end
-
-function supports_hvp(::Type{AbstractReverseMode}, ::Type{AbstractReverseMode})
-    return HVPSupported()
-end
-
-function supports_hvp(::Type{AbstractForwardMode}, ::Type{AbstractReverseMode})
-    return HVPSupported()
-end
-
 ## Conversions
 
 Base.Bool(::MutationSupported) = true
@@ -158,6 +112,3 @@ Base.Bool(::PushforwardNotSupported) = false
 
 Base.Bool(::PullbackSupported) = true
 Base.Bool(::PullbackNotSupported) = false
-
-Base.Bool(::HVPSupported) = true
-Base.Bool(::HVPNotSupported) = false

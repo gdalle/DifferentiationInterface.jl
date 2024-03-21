@@ -8,13 +8,10 @@ module DifferentiationTest
 using ..DifferentiationInterface
 import ..DifferentiationInterface as DI
 using ..DifferentiationInterface:
-    inner,
     mode,
-    outer,
     supports_mutation,
     supports_pushforward,
     supports_pullback,
-    supports_hvp,
     zero!
 using ADTypes
 using ADTypes:
@@ -27,18 +24,13 @@ using DocStringExtensions
 using Test: @testset, @test
 
 include("scenario.jl")
-include("benchmark.jl")
-include("call_count.jl")
 include("default_scenarios.jl")
-include("test_operators.jl")
 include("zero.jl")
 include("printing.jl")
 
-export backend_string
 export Scenario, default_scenarios
 export allocating, mutating, scalar_scalar, scalar_array, array_scalar, array_array
-export BenchmarkData, record!
-export test_operators
 export AutoZeroForward, AutoZeroReverse
+export backend_string
 
 end

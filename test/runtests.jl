@@ -19,7 +19,7 @@ using Zygote: Zygote
 
 ## Main tests
 
-@testset verbose = true "DifferentiationInterface.jl" begin
+@time @testset verbose = true "DifferentiationInterface.jl" begin
     @testset verbose = true "Formal tests" begin
         @testset "Aqua" begin
             Aqua.test_all(DifferentiationInterface; ambiguities=false)

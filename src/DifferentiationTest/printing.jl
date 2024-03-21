@@ -32,7 +32,3 @@ function backend_string(backend::AbstractADType)
         error("Unknown mode")
     end
 end
-
-function backend_string(backend::SecondOrder)
-    return "$(backend_string(inner(backend))) + $(backend_string(outer(backend)))"
-end
