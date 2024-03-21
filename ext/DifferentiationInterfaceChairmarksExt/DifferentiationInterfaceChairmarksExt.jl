@@ -15,14 +15,6 @@ using DifferentiationInterface.DifferentiationTest
 import DifferentiationInterface.DifferentiationTest as DT
 using Test
 
-function soft_test_zero(v)
-    if iszero(v)
-        @test v == 0
-    else
-        @test_broken v == 0
-    end
-end
-
 function DT.run_benchmark(
     backends::Vector{<:AbstractADType},
     operators::Vector{Symbol},
@@ -118,8 +110,8 @@ function benchmark_pushforward_allocating!(
     bench1 = @be zero(dy) value_and_pushforward!(_, ba, f, x, dx, extras)
     bench2 = @be zero(dy) pushforward!(_, ba, f, x, dx, extras)
     if allocations && dy isa Number
-        soft_test_zero(minimum(bench1).allocs)
-        soft_test_zero(minimum(bench2).allocs)
+        @test 0 == minimum(bench1).allocs
+        @test 0 == minimum(bench2).allocs
     end
     record!(data, ba, scen, :value_and_pushforward!, bench1)
     record!(data, ba, scen, :pushforward!, bench2)
@@ -137,7 +129,7 @@ function benchmark_pushforward_mutating!(
         _[1], _[2], ba, f!, x, dx, extras
     )
     if allocations
-        soft_test_zero(minimum(bench1).allocs)
+        @test 0 == minimum(bench1).allocs
     end
     record!(data, ba, scen, :value_and_pushforward!, bench1)
     return nothing
@@ -154,8 +146,8 @@ function benchmark_pullback_allocating!(
     bench1 = @be zero(dx) value_and_pullback!(_, ba, f, x, dy, extras)
     bench2 = @be zero(dx) pullback!(_, ba, f, x, dy, extras)
     if allocations && dy isa Number
-        soft_test_zero(minimum(bench1).allocs)
-        soft_test_zero(minimum(bench2).allocs)
+        @test 0 == minimum(bench1).allocs
+        @test 0 == minimum(bench2).allocs
     end
     record!(data, ba, scen, :value_and_pullback!, bench1)
     record!(data, ba, scen, :pullback!, bench2)
@@ -171,7 +163,7 @@ function benchmark_pullback_mutating!(
     extras = prepare_pullback(ba, f!, x, y)
     bench1 = @be (zero(y), zero(dx)) value_and_pullback!(_[1], _[2], ba, f!, x, dy, extras)
     if allocations
-        soft_test_zero(minimum(bench1).allocs)
+        @test 0 == minimum(bench1).allocs
     end
     record!(data, ba, scen, :value_and_pullback!, bench1)
     return nothing
@@ -186,7 +178,7 @@ function benchmark_derivative_allocating!(
     extras = prepare_derivative(ba, f, x)
     bench1 = @be value_and_derivative(ba, f, x, extras)
     if allocations
-        soft_test_zero(minimum(bench1).allocs)
+        @test 0 == minimum(bench1).allocs
     end
     record!(data, ba, scen, :value_and_derivative, bench1)
     return nothing
@@ -215,7 +207,7 @@ function benchmark_multiderivative_mutating!(
         _[1], _[2], ba, f!, x, extras
     )
     if allocations
-        soft_test_zero(minimum(bench1).allocs)
+        @test 0 == minimum(bench1).allocs
     end
     record!(data, ba, scen, :value_and_multiderivative!, bench1)
     return nothing
@@ -231,8 +223,8 @@ function benchmark_gradient_allocating!(
     bench1 = @be zero(dx) value_and_gradient!(_, ba, f, x, extras)
     bench2 = @be zero(dx) gradient!(_, ba, f, x, extras)
     if allocations
-        soft_test_zero(minimum(bench1).allocs)
-        soft_test_zero(minimum(bench2).allocs)
+        @test 0 == minimum(bench1).allocs
+        @test 0 == minimum(bench2).allocs
     end
     record!(data, ba, scen, :value_and_gradient!, bench1)
     record!(data, ba, scen, :gradient!, bench2)
@@ -264,7 +256,7 @@ function benchmark_jacobian_mutating!(
         _[1], _[2], ba, f!, x, extras
     )
     if allocations
-        soft_test_zero(minimum(bench1).allocs)
+        @test 0 == minimum(bench1).allocs
     end
     record!(data, ba, scen, :value_and_jacobian!, bench1)
     return nothing
@@ -279,7 +271,7 @@ function benchmark_second_derivative_allocating!(
     extras = prepare_second_derivative(ba, f, x)
     bench1 = @be value_derivative_and_second_derivative(ba, f, x, extras)
     if allocations
-        soft_test_zero(minimum(bench1).allocs)
+        @test 0 == minimum(bench1).allocs
     end
     record!(data, ba, scen, :value_derivative_and_second_derivative, bench1)
     return nothing
@@ -297,8 +289,8 @@ function benchmark_hessian_vector_product_allocating!(
     )
     bench2 = @be zero(dx) hessian_vector_product!(_, ba, f, x, dx, extras)
     if allocations  # TODO: distinguish
-        soft_test_zero(minimum(bench1).allocs)
-        soft_test_zero(minimum(bench2).allocs)
+        @test 0 == minimum(bench1).allocs
+        @test 0 == minimum(bench2).allocs
     end
     record!(data, ba, scen, :gradient_and_hessian_vector_product!, bench1)
     record!(data, ba, scen, :hessian_vector_product!, bench2)
@@ -318,8 +310,8 @@ function benchmark_hessian_allocating!(
     )
     bench2 = @be (zero(hess_template)) hessian!(_, ba, f, x, extras)
     if allocations
-        soft_test_zero(minimum(bench1).allocs)
-        soft_test_zero(minimum(bench2).allocs)
+        @test 0 == minimum(bench1).allocs
+        @test 0 == minimum(bench2).allocs
     end
     record!(data, ba, scen, :value_gradient_and_hessian!, bench1)
     record!(data, ba, scen, :hessian!, bench2)

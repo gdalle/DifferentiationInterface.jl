@@ -1,5 +1,4 @@
 using DifferentiationInterface
-using DifferentiationInterface: AutoZeroForward, AutoZeroReverse
 using DifferentiationInterface.DifferentiationTest
 
 using Chairmarks: Chairmarks
@@ -26,6 +25,25 @@ test_operators(
     correctness=false,
 );
 
+# call count (experimental)
+
+test_operators(
+    AutoZeroForward();
+    correctness=false,
+    type_stability=false,
+    call_count=true,
+    second_order=false,
+);
+
+test_operators(
+    AutoZeroReverse();
+    correctness=false,
+    type_stability=false,
+    call_count=true,
+    second_order=false,
+    excluded=[:multiderivative_allocating],
+);
+
 # allocs (experimental)
 
 test_operators(
@@ -45,13 +63,3 @@ data = test_operators(
 );
 
 df = DataFrames.DataFrame(pairs(data)...)
-
-# call count (experimental)
-
-test_operators(
-    [AutoZeroForward(), AutoZeroReverse()];
-    correctness=false,
-    type_stability=false,
-    call_count=true,
-    second_order=false,
-);
