@@ -20,11 +20,13 @@ Might be ambiguous.
 """
 function backend_string(backend::AbstractADType)
     bs = pretty(backend)
-    if isa(mode(backend), ForwardMode)
+    if mode(backend) == AbstractFiniteDifferencesMode
+        return "$bs (finite)"
+    elseif mode(backend) == AbstractForwardMode
         return "$bs (forward)"
-    elseif isa(mode(backend), ReverseMode)
+    elseif mode(backend) == AbstractReverseMode
         return "$bs (reverse)"
-    elseif isa(mode(backend), SymbolicMode)
+    elseif mode(backend) == AbstractSymbolicDifferentiationMode
         return "$bs (symbolic)"
     else
         error("Unknown mode")

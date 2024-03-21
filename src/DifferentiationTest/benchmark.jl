@@ -9,6 +9,7 @@ $(TYPEDFIELDS)
 """
 @kwdef struct BenchmarkData
     backend::Vector = []
+    mode::Vector = []
     operator::Vector = []
     func::Vector = []
     mutating::Vector = []
@@ -46,6 +47,7 @@ function record!(
     bench_min = minimum(bench)
     tup = (;
         backend=backend_string(backend),
+        mode=mode(backend),
         operator=operator,
         func=string(scenario.f),
         mutating=scenario.mutating,

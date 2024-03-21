@@ -28,7 +28,9 @@ function value_and_jacobian!(
     x::AbstractArray,
     extras=prepare_jacobian(backend, f, x),
 ) where {F}
-    return value_and_jacobian_aux!(jac, backend, f, x, extras, mode(backend))
+    return value_and_jacobian_aux!(
+        jac, backend, f, x, extras, supports_pushforward(backend)
+    )
 end
 
 function value_and_jacobian!(
@@ -39,10 +41,14 @@ function value_and_jacobian!(
     x::AbstractArray,
     extras=prepare_jacobian(backend, f, x, y),
 ) where {F}
-    return value_and_jacobian_aux!(y, jac, backend, f, x, extras, mode(backend))
+    return value_and_jacobian_aux!(
+        y, jac, backend, f, x, extras, supports_pushforward(backend)
+    )
 end
 
-function value_and_jacobian_aux!(jac, backend, f::F, x, extras, ::ForwardMode) where {F}
+function value_and_jacobian_aux!(
+    jac, backend, f::F, x, extras, ::PushforwardSupported
+) where {F}
     y = f(x)
     check_jac(jac, x, y)
     for (k, j) in enumerate(eachindex(IndexCartesian(), x))
@@ -53,7 +59,9 @@ function value_and_jacobian_aux!(jac, backend, f::F, x, extras, ::ForwardMode) w
     return y, jac
 end
 
-function value_and_jacobian_aux!(y, jac, backend, f!::F, x, extras, ::ForwardMode) where {F}
+function value_and_jacobian_aux!(
+    y, jac, backend, f!::F, x, extras, ::PushforwardSupported
+) where {F}
     check_jac(jac, x, y)
     for (k, j) in enumerate(eachindex(IndexCartesian(), x))
         dx_j = basisarray(backend, x, j)
@@ -63,7 +71,9 @@ function value_and_jacobian_aux!(y, jac, backend, f!::F, x, extras, ::ForwardMod
     return y, jac
 end
 
-function value_and_jacobian_aux!(jac, backend, f::F, x, extras, ::ReverseMode) where {F}
+function value_and_jacobian_aux!(
+    jac, backend, f::F, x, extras, ::PushforwardNotSupported
+) where {F}
     y = f(x)
     check_jac(jac, x, y)
     for (k, i) in enumerate(eachindex(IndexCartesian(), y))
@@ -74,7 +84,9 @@ function value_and_jacobian_aux!(jac, backend, f::F, x, extras, ::ReverseMode) w
     return y, jac
 end
 
-function value_and_jacobian_aux!(y, jac, backend, f!::F, x, extras, ::ReverseMode) where {F}
+function value_and_jacobian_aux!(
+    y, jac, backend, f!::F, x, extras, ::PushforwardNotSupported
+) where {F}
     check_jac(jac, x, y)
     for (k, i) in enumerate(eachindex(IndexCartesian(), y))
         dy_i = basisarray(backend, y, i)

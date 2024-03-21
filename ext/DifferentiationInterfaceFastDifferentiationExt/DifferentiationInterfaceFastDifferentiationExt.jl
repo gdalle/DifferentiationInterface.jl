@@ -1,5 +1,6 @@
 module DifferentiationInterfaceFastDifferentiationExt
 
+using ADTypes: ADTypes
 using DifferentiationInterface: AutoFastDifferentiation
 import DifferentiationInterface as DI
 using DocStringExtensions
@@ -13,7 +14,8 @@ using FastDifferentiation:
 using LinearAlgebra: dot
 using RuntimeGeneratedFunctions: RuntimeGeneratedFunction
 
-DI.mutation_behavior(::AutoFastDifferentiation) = DI.MutationNotSupported()
+DI.mode(::AutoFastDifferentiation) = ADTypes.AbstractSymbolicDifferentiationMode
+DI.supports_mutation(::AutoFastDifferentiation) = DI.MutationNotSupported()
 
 include("allocating.jl")
 

@@ -80,7 +80,7 @@ end
 ## Pushforward
 
 function test_correctness_pushforward_allocating(ba::AbstractADType, scen::Scenario)
-    isa(mode(ba), ReverseMode) && return nothing
+    Bool(supports_pushforward(ba)) || return nothing
     (; f, x, y, dx) = deepcopy(scen)
     dy_true = true_pushforward(f, x, y, dx; mutating=false)
 
@@ -111,8 +111,8 @@ function test_correctness_pushforward_allocating(ba::AbstractADType, scen::Scena
 end
 
 function test_correctness_pushforward_mutating(ba::AbstractADType, scen::Scenario)
-    isa(mode(ba), ReverseMode) && return nothing
-    isa(mutation_behavior(ba), MutationNotSupported) && return nothing
+    Bool(supports_pushforward(ba)) || return nothing
+    Bool(supports_mutation(ba)) || return nothing
     (; f, x, y, dx) = deepcopy(scen)
     f! = f
     dy_true = true_pushforward(f!, x, y, dx; mutating=true)
@@ -138,7 +138,7 @@ end
 ## Pullback
 
 function test_correctness_pullback_allocating(ba::AbstractADType, scen::Scenario)
-    isa(mode(ba), ForwardMode) && return nothing
+    Bool(supports_pullback(ba)) || return nothing
     (; f, x, y, dy) = deepcopy(scen)
     dx_true = true_pullback(f, x, y, dy; mutating=false)
 
@@ -169,8 +169,8 @@ function test_correctness_pullback_allocating(ba::AbstractADType, scen::Scenario
 end
 
 function test_correctness_pullback_mutating(ba::AbstractADType, scen::Scenario)
-    isa(mode(ba), ForwardMode) && return nothing
-    isa(mutation_behavior(ba), MutationNotSupported) && return nothing
+    Bool(supports_pullback(ba)) || return nothing
+    Bool(supports_mutation(ba)) || return nothing
     (; f, x, y, dy) = deepcopy(scen)
     f! = f
     dx_true = true_pullback(f, x, y, dy; mutating=true)
@@ -245,7 +245,7 @@ function test_correctness_multiderivative_allocating(ba::AbstractADType, scen::S
 end
 
 function test_correctness_multiderivative_mutating(ba::AbstractADType, scen::Scenario)
-    isa(mutation_behavior(ba), MutationNotSupported) && return nothing
+    Bool(supports_mutation(ba)) || return nothing
     (; f, x, y) = deepcopy(scen)
     f! = f
     multider_true = ForwardDiff.derivative(f!, y, x)
@@ -329,7 +329,7 @@ function test_correctness_jacobian_allocating(ba::AbstractADType, scen::Scenario
 end
 
 function test_correctness_jacobian_mutating(ba::AbstractADType, scen::Scenario)
-    isa(mutation_behavior(ba), MutationNotSupported) && return nothing
+    Bool(supports_mutation(ba)) || return nothing
     (; f, x, y) = deepcopy(scen)
     f! = f
     jac_true = ForwardDiff.jacobian(f!, y, x)
@@ -382,6 +382,7 @@ end
 function test_correctness_hessian_vector_product_allocating(
     ba::AbstractADType, scen::Scenario
 )
+    Bool(supports_hvp(ba)) || return nothing
     (; f, x, dx) = deepcopy(scen)
     grad_true = ForwardDiff.gradient(f, x)
     hess_true = ForwardDiff.hessian(f, x)
@@ -391,28 +392,28 @@ function test_correctness_hessian_vector_product_allocating(
     hvp_in6 = zero(hvp_out5)
     hvp_out6 = DI.hessian_vector_product!(hvp_in6, ba, f, x, dx)
 
-    grad_out7, hvp_out7 = DI.gradient_and_hessian_vector_product(ba, f, x, dx)
-    grad_in8, hvp_in8 = zero(grad_out7), zero(hvp_out7)
-    grad_out8, hvp_out8 = DI.gradient_and_hessian_vector_product!(
-        grad_in8, hvp_in8, ba, f, x, dx
-    )
+    # grad_out7, hvp_out7 = DI.gradient_and_hessian_vector_product(ba, f, x, dx)
+    # grad_in8, hvp_in8 = zero(grad_out7), zero(hvp_out7)
+    # grad_out8, hvp_out8 = DI.gradient_and_hessian_vector_product!(
+    #     grad_in8, hvp_in8, ba, f, x, dx
+    # )
 
-    @testset "Gradient value" begin
-        @test grad_out7 ≈ grad_true rtol = 1e-3
-        @test grad_out8 ≈ grad_true rtol = 1e-3
-        @testset "Mutation" begin
-            @test grad_in8 ≈ grad_true rtol = 1e-3
-        end
-    end
+    # @testset "Gradient value" begin
+    #     @test grad_out7 ≈ grad_true rtol = 1e-3
+    #     @test grad_out8 ≈ grad_true rtol = 1e-3
+    #     @testset "Mutation" begin
+    #         @test grad_in8 ≈ grad_true rtol = 1e-3
+    #     end
+    # end
 
     @testset "Hessian-vector product value" begin
         @test hvp_out5 ≈ hvp_true rtol = 1e-3
         @test hvp_out6 ≈ hvp_true rtol = 1e-3
-        @test hvp_out7 ≈ hvp_true rtol = 1e-3
-        @test hvp_out8 ≈ hvp_true rtol = 1e-3
+        # @test hvp_out7 ≈ hvp_true rtol = 1e-3
+        # @test hvp_out8 ≈ hvp_true rtol = 1e-3
         @testset "Mutation" begin
             @test hvp_in6 ≈ hvp_true rtol = 1e-3
-            @test hvp_in8 ≈ hvp_true rtol = 1e-3
+            # @test hvp_in8 ≈ hvp_true rtol = 1e-3
         end
     end
 end

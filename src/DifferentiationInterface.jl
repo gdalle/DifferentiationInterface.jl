@@ -9,10 +9,16 @@ $(EXPORTS)
 """
 module DifferentiationInterface
 
-using ADTypes: ADTypes, AbstractADType
+using ADTypes:
+    ADTypes,
+    AbstractADType,
+    AbstractForwardMode,
+    AbstractFiniteDifferencesMode,
+    AbstractReverseMode,
+    AbstractSymbolicDifferentiationMode
 using DocStringExtensions
 using FillArrays: OneElement
-using LinearAlgebra: dot, norm
+using LinearAlgebra: dot
 using Test: Test
 
 """
@@ -22,8 +28,8 @@ Chooses [FastDifferentiation.jl](https://github.com/brianguenter/FastDifferentia
 """
 struct AutoFastDifferentiation <: ADTypes.AbstractSymbolicDifferentiationMode end
 
-include("mode.jl")
-include("mutation.jl")
+include("second_order.jl")
+include("traits.jl")
 include("utils.jl")
 include("prepare.jl")
 
@@ -35,7 +41,6 @@ include("multiderivative.jl")
 include("gradient.jl")
 include("jacobian.jl")
 
-include("second_order.jl")
 include("second_derivative.jl")
 include("hessian_vector_product.jl")
 include("hessian.jl")
@@ -82,7 +87,7 @@ export prepare_second_derivative
 export prepare_hessian
 export prepare_hessian_vector_product
 
-export available, supports_mutation, supports_hessian
+export check_available, check_mutation, check_hessian
 
 # submodules
 include("DifferentiationTest/DifferentiationTest.jl")

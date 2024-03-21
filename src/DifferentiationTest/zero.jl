@@ -1,4 +1,3 @@
-
 """
     AutoZeroForward <: ADTypes.AbstractForwardMode
 
@@ -7,6 +6,8 @@ Used in testing and benchmarking.
 """
 struct AutoZeroForward <: ADTypes.AbstractForwardMode end
 
+DI.supports_mutation(::AutoZeroForward) = DI.MutationSupported()
+
 """
     AutoZeroReverse <: ADTypes.AbstractReverseMode
 
@@ -14,6 +15,10 @@ Trivial backend that sets all derivatives to zero.
 Used in testing and benchmarking.
 """
 struct AutoZeroReverse <: ADTypes.AbstractReverseMode end
+
+DI.supports_mutation(::AutoZeroReverse) = DI.MutationSupported()
+
+## Primitives
 
 function DI.value_and_pushforward!(
     dy, ::AutoZeroForward, f::F, x, dx, extras::Nothing
