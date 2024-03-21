@@ -52,7 +52,7 @@ function value_gradient_and_hessian_aux!(
 ) where {F}
     y = f(x)
     check_hess(hess, x)
-    for (k, j) in enumerate(CartesianIndices(x))
+    for (k, j) in enumerate(eachindex(IndexCartesian(), x))
         dx_j = basisarray(backend, x, j)
         hess_col_j = reshape(view(hess, :, k), size(x))
         gradient_and_hessian_vector_product!(grad, hess_col_j, backend, f, x, dx_j, extras)
@@ -65,7 +65,7 @@ function value_gradient_and_hessian_aux!(
 ) where {F}
     y, _ = value_and_gradient!(grad, inner(backend), f, x, extras)
     check_hess(hess, x)
-    for (k, j) in enumerate(CartesianIndices(x))
+    for (k, j) in enumerate(eachindex(IndexCartesian(), x))
         dx_j = basisarray(backend, x, j)
         hess_col_j = reshape(view(hess, :, k), size(x))
         hessian_vector_product!(hess_col_j, backend, f, x, dx_j, extras)
