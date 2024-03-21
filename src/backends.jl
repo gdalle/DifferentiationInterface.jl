@@ -9,7 +9,6 @@ function check_available(backend::AbstractADType)
         derivative(backend, abs2, 2.0)
         return true
     catch e
-        throw(e)
         if e isa MethodError
             return false
         else
