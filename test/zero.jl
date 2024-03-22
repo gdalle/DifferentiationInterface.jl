@@ -1,5 +1,6 @@
 using DifferentiationInterface
 using DifferentiationInterface.DifferentiationTest
+using DifferentiationInterface.DifferentiationTest: AutoZeroForward, AutoZeroReverse
 
 using Chairmarks: Chairmarks
 using DataFrames: DataFrames
