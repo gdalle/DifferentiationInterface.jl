@@ -9,7 +9,7 @@ function DT.test_correctness(
     @testset verbose = true "Correctness" begin
         @testset verbose = true "$(backend_string(backend))" for backend in backends
             @testset "$op" for op in operators
-                @testset "$s" for s in filter_compatible(op, scenarios)
+                @testset "$s" for s in compatible_scenarios(op, scenarios)
                     test_correctness(op, backend, s)
                 end
             end

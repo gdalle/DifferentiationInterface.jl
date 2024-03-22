@@ -33,7 +33,7 @@ using DifferentiationInterface.DifferentiationTest:
     SecondDerivativeAllocating,
     HessianAllocating,
     HessianVectorProductAllocating,
-    filter_compatible
+    compatible_scenarios
 using DiffResults: DiffResults
 using DocStringExtensions
 using ForwardDiff:

@@ -32,7 +32,7 @@ using DifferentiationInterface.DifferentiationTest:
     SecondDerivativeAllocating,
     HessianAllocating,
     HessianVectorProductAllocating,
-    filter_compatible
+    compatible_scenarios
 using JET: @test_call, @test_opt
 using LinearAlgebra: LinearAlgebra
 using Test
@@ -47,7 +47,7 @@ function DT.test_type_stability(
     @testset verbose = true "Type stability" begin
         @testset verbose = true "$(backend_string(backend))" for backend in backends
             @testset "$op" for op in operators
-                @testset "$s" for s in filter_compatible(op, scenarios)
+                @testset "$s" for s in compatible_scenarios(op, scenarios)
                     test_type(op, backend, s)
                 end
             end

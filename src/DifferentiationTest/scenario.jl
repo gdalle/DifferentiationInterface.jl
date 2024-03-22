@@ -33,7 +33,7 @@ function iscompatible(op::AbstractOperator, s::Scenario)
     return ismutable(op) == ismutable(s) && iscompatible(op, s.x, s.y)
 end
 
-function filter_compatible(op::AbstractOperator, scs::AbstractVector{Scenario})
+function compatible_scenarios(op::AbstractOperator, scs::AbstractVector{Scenario})
     return filter(s -> iscompatible(op, s), scs)
 end
 

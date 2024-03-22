@@ -23,7 +23,7 @@ function test_call_count(
     @testset verbose = true "Call count" begin
         @testset verbose = true "$(backend_string(backend))" for backend in backends
             @testset "$op" for op in operators
-                @testset "$s" for s in filter_compatible(op, scenarios)
+                @testset "$s" for s in compatible_scenarios(op, scenarios)
                     test_call_count(op, backend, s)
                 end
             end
