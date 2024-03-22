@@ -36,6 +36,13 @@ const HessianVectorProductAllocating = HessianVectorProduct{MutationNotSupported
 const HessianVectorProductMutating   = HessianVectorProduct{MutationSupported}
 
 ## Utilities
+# order
+isfirstorder(::AbstractOperator)           = false
+isfirstorder(::AbstractFirstOrderOperator) = true
+
+issecondorder(::AbstractOperator)            = false
+issecondorder(::AbstractSecondOrderOperator) = true
+
 # allocations
 ismutating(::Type{<:MutationBehavior}) = false
 ismutating(::Type{MutationSupported})  = true
@@ -52,9 +59,14 @@ ismutating(::HessianVectorProduct{M}) where {M} = ismutating(M)
 
 isallocating(op) = !ismutating(op)
 
-# order
-isfirstorder(::AbstractOperator)           = false
-isfirstorder(::AbstractFirstOrderOperator) = true
+# input-output compatibility
+iscompatible(op::AbstractOperator, x, y) = false
+iscompatible(op::Pullback, x, y)         = true
+iscompatible(op::Pushforward, x, y)      = true
 
-issecondorder(::AbstractOperator)            = false
-issecondorder(::AbstractSecondOrderOperator) = true
+iscompatible(op::Gradient, x::AbstractArray, y::Number)        = true
+iscompatible(op::Multiderivative, x::Number, y::AbstractArray) = true
+iscompatible(op::Derivative, x::Number, y::Number)             = true
+iscompatible(op::Jacobian, x::AbstractArray, y::AbstractArray) = true
+iscompatible(op::SecondDerivative, x::Number, y::Number)       = true
+iscompatible(op::Hessian, x::AbstractArray, y::Number)         = true

@@ -27,7 +27,11 @@ Base.string(scen::Scenario) = "$(string(scen.f)): $(typeof(scen.x)) -> $(typeof(
 
 ismutating(s::Scenario) = s.mutating
 isallocating(s::Scenario) = !ismutating(s)
-iscompatible(op::AbstractOperator, s::Scenario) = ismutating(op) == ismutating(s)
+
+## Check operator compatibility
+function iscompatible(op::AbstractOperator, s::Scenario)
+    return ismutable(op) == ismutable(s) && iscompatible(op, s.x, s.y)
+end
 
 function filter_compatible(op::AbstractOperator, scs::AbstractVector{Scenario})
     return filter(s -> iscompatible(op, s), scs)
@@ -57,25 +61,25 @@ function Scenario(f!, x::Union{Number,AbstractArray}, s::NTuple{N,<:Integer}) wh
     return Scenario(; f=f!, x, y, dx, dy, mutating=true)
 end
 
-function scalar_scalar(scenarios::Vector{<:Scenario})
+function scalar_to_scalar(scenarios::Vector{<:Scenario})
     return filter(scenarios) do s
         typeof(s.x) <: Number && typeof(s.y) <: Number
     end
 end
 
-function scalar_array(scenarios::Vector{<:Scenario})
+function scalar_to_array(scenarios::Vector{<:Scenario})
     return filter(scenarios) do s
         typeof(s.x) <: Number && typeof(s.y) <: AbstractArray
     end
 end
 
-function array_scalar(scenarios::Vector{<:Scenario})
+function array_to_scalar(scenarios::Vector{<:Scenario})
     return filter(scenarios) do s
         typeof(s.x) <: AbstractArray && typeof(s.y) <: Number
     end
 end
 
-function array_array(scenarios::Vector{<:Scenario})
+function array_to_array(scenarios::Vector{<:Scenario})
     return filter(scenarios) do s
         typeof(s.x) <: AbstractArray && typeof(s.y) <: AbstractArray
     end
