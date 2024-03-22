@@ -1,4 +1,6 @@
-function DI.value_and_pushforward!(f::F, dy, ::AutoForwardDiff, x, dx) where {F}
+function DI.value_and_pushforward!(
+    f::F, dy, ::AutoForwardDiff, x, dx, extras::Nothing
+) where {F}
     T = tag_type(f, x)
     xdual = make_dual(T, x, dx)
     ydual = f(xdual)
@@ -7,7 +9,7 @@ function DI.value_and_pushforward!(f::F, dy, ::AutoForwardDiff, x, dx) where {F}
     return y, dy
 end
 
-function DI.value_and_pushforward(f::F, ::AutoForwardDiff, x, dx) where {F}
+function DI.value_and_pushforward(f::F, ::AutoForwardDiff, x, dx, extras::Nothing) where {F}
     T = tag_type(f, x)
     xdual = make_dual(T, x, dx)
     ydual = f(xdual)

@@ -44,7 +44,7 @@ end
 """
     test_operators(
         backends, [operators, scenarios];
-        correctness, type_stability, benchmark, allocations,
+        correctness, type_stability, call_count, benchmark, allocations,
         input_type, output_type,
         first_order, second_order, allocating, mutating,
         excluded,
@@ -57,12 +57,12 @@ Cross-test a list of `backends` for a list of `operators` on a list of `scenario
 
 # Default arguments
 
-- `operators`: defaults to $FIRST_ORDER_OPERATORS
-- `scenarios`: defaults to the output of [`default_scenarios()`](@ref)
+- `operators`: `$FIRST_ORDER_OPERATORS`
+- `scenarios`: the output of [`default_scenarios()`](@ref)
 
 # Keyword arguments
 
-Tests families:
+Test families:
 
 - `correctness=true`: whether to compare the differentiation results with those given by ForwardDiff.jl
 - `type_stability=true`: whether to check type stability with JET.jl

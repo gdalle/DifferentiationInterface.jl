@@ -1,7 +1,12 @@
 ## Pullback
 
 function DI.value_and_pullback!(
-    f::F, dx::AbstractArray, ::AutoReverseDiff, x::AbstractArray, dy::Number
+    f::F,
+    dx::AbstractArray,
+    ::AutoReverseDiff,
+    x::AbstractArray,
+    dy::Number,
+    extras::Nothing,
 ) where {F}
     y = f(x)
     gradient!(dx, f, x)
@@ -10,7 +15,7 @@ function DI.value_and_pullback!(
 end
 
 function DI.value_and_pullback(
-    f::F, ::AutoReverseDiff, x::AbstractArray, dy::Number
+    f::F, ::AutoReverseDiff, x::AbstractArray, dy::Number, extras::Nothing
 ) where {F}
     y = f(x)
     dx = gradient(f, x)
@@ -19,7 +24,12 @@ function DI.value_and_pullback(
 end
 
 function DI.value_and_pullback!(
-    f::F, dx::AbstractArray, ::AutoReverseDiff, x::AbstractArray, dy::AbstractArray
+    f::F,
+    dx::AbstractArray,
+    ::AutoReverseDiff,
+    x::AbstractArray,
+    dy::AbstractArray,
+    extras::Nothing,
 ) where {F}
     y = f(x)
     jac = jacobian(f, x)  # allocates
@@ -28,7 +38,7 @@ function DI.value_and_pullback!(
 end
 
 function DI.value_and_pullback(
-    f::F, ::AutoReverseDiff, x::AbstractArray, dy::AbstractArray
+    f::F, ::AutoReverseDiff, x::AbstractArray, dy::AbstractArray, extras::Nothing
 ) where {F}
     y = f(x)
     jac = jacobian(f, x)  # allocates

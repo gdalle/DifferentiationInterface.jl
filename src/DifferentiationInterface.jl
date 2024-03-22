@@ -30,6 +30,7 @@ struct AutoFastDifferentiation <: AbstractSymbolicDifferentiationMode end
 
 include("traits.jl")
 include("utils.jl")
+include("prepare.jl")
 
 include("pushforward.jl")
 include("pullback.jl")
@@ -48,6 +49,10 @@ export value_and_pullback!, value_and_pullback
 export value_and_derivative!, value_and_derivative
 export value_and_gradient!, value_and_gradient
 export value_and_jacobian!, value_and_jacobian
+
+export prepare_pushforward, prepare_pullback
+export prepare_derivative, prepare_gradient, prepare_jacobian
+export prepare_second_derivative, prepare_hessian_vector_product, prepare_hessian
 
 export check_available, check_mutation
 

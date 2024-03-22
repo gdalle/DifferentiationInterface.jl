@@ -9,13 +9,13 @@ DI.supports_mutation(::AutoTracker) = DI.MutationNotSupported()
 
 ## Pullback
 
-function DI.value_and_pullback(f::F, ::AutoTracker, x, dy) where {F}
+function DI.value_and_pullback(f::F, ::AutoTracker, x, dy, extras::Nothing) where {F}
     y, back = forward(f, x)
     return y, data(only(back(dy)))
 end
 
-function DI.value_and_pullback!(f::F, dx, backend::AutoTracker, x, dy) where {F}
-    y, new_dx = DI.value_and_pullback(f, backend, x, dy)
+function DI.value_and_pullback!(f::F, dx, backend::AutoTracker, x, dy, extras) where {F}
+    y, new_dx = DI.value_and_pullback(f, backend, x, dy, extras)
     return y, myupdate!(dx, new_dx)
 end
 

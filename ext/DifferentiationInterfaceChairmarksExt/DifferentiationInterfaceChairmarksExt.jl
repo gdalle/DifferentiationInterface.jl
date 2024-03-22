@@ -85,8 +85,8 @@ function benchmark_pushforward_allocating!(
 )
     Bool(supports_pushforward(ba)) || return nothing
     (; f, x, dx, dy) = deepcopy(scen)
-
-    bench1 = @be myzero(dy) value_and_pushforward!(f, _, ba, x, dx)
+    extras = prepare_pushforward(f, ba, x)
+    bench1 = @be myzero(dy) value_and_pushforward!(f, _, ba, x, dx, extras)
     if allocations && dy isa Number
         @test 0 == minimum(bench1).allocs
     end
@@ -101,7 +101,10 @@ function benchmark_pushforward_mutating!(
     Bool(supports_mutation(ba)) || return nothing
     (; f, x, y, dx, dy) = deepcopy(scen)
     f! = f
-    bench1 = @be (myzero(y), myzero(dy)) value_and_pushforward!(f!, _[1], _[2], ba, x, dx)
+    extras = prepare_pushforward(f!, ba, y, x)
+    bench1 = @be (myzero(y), myzero(dy)) value_and_pushforward!(
+        f!, _[1], _[2], ba, x, dx, extras
+    )
     if allocations
         @test 0 == minimum(bench1).allocs
     end
@@ -116,7 +119,8 @@ function benchmark_pullback_allocating!(
 )
     Bool(supports_pullback(ba)) || return nothing
     (; f, x, dx, dy) = deepcopy(scen)
-    bench1 = @be myzero(dx) value_and_pullback!(f, _, ba, x, dy)
+    extras = prepare_pullback(f, ba, x)
+    bench1 = @be myzero(dx) value_and_pullback!(f, _, ba, x, dy, extras)
     if allocations && dy isa Number
         @test 0 == minimum(bench1).allocs
     end
@@ -131,7 +135,10 @@ function benchmark_pullback_mutating!(
     Bool(supports_mutation(ba)) || return nothing
     (; f, x, y, dx, dy) = deepcopy(scen)
     f! = f
-    bench1 = @be (myzero(y), myzero(dx)) value_and_pullback!(f!, _[1], _[2], ba, x, dy)
+    extras = prepare_pullback(f!, ba, y, x)
+    bench1 = @be (myzero(y), myzero(dx)) value_and_pullback!(
+        f!, _[1], _[2], ba, x, dy, extras
+    )
     if allocations
         @test 0 == minimum(bench1).allocs
     end
@@ -145,7 +152,8 @@ function benchmark_derivative_allocating!(
     data::BenchmarkData, ba::AbstractADType, scen::Scenario; allocations::Bool
 )
     (; f, x, dy) = deepcopy(scen)
-    bench1 = @be myzero(dy) value_and_derivative!(f, _, ba, x)
+    extras = prepare_derivative(f, ba, x)
+    bench1 = @be myzero(dy) value_and_derivative!(f, _, ba, x, extras)
     # never test allocations
     record!(data, ba, scen, :value_and_derivative!, bench1)
     return nothing
@@ -157,7 +165,10 @@ function benchmark_derivative_mutating!(
     Bool(supports_mutation(ba)) || return nothing
     (; f, x, y, dy) = deepcopy(scen)
     f! = f
-    bench1 = @be (myzero(y), myzero(dy)) value_and_derivative!(f!, _[1], _[2], ba, x)
+    extras = prepare_derivative(f!, ba, y, x)
+    bench1 = @be (myzero(y), myzero(dy)) value_and_derivative!(
+        f!, _[1], _[2], ba, x, extras
+    )
     if allocations
         @test 0 == minimum(bench1).allocs
     end
@@ -171,7 +182,8 @@ function benchmark_gradient_allocating!(
     data::BenchmarkData, ba::AbstractADType, scen::Scenario; allocations::Bool
 )
     (; f, x, dx) = deepcopy(scen)
-    bench1 = @be myzero(dx) value_and_gradient!(f, _, ba, x)
+    extras = prepare_gradient(f, ba, x)
+    bench1 = @be myzero(dx) value_and_gradient!(f, _, ba, x, extras)
     if allocations
         @test 0 == minimum(bench1).allocs
     end
@@ -185,8 +197,9 @@ function benchmark_jacobian_allocating!(
     data::BenchmarkData, ba::AbstractADType, scen::Scenario; allocations::Bool
 )
     (; f, x, y) = deepcopy(scen)
+    extras = prepare_jacobian(f, ba, x)
     jac_template = zeros(eltype(y), length(y), length(x))
-    bench1 = @be myzero(jac_template) value_and_jacobian!(f, _, ba, x)
+    bench1 = @be myzero(jac_template) value_and_jacobian!(f, _, ba, x, extras)
     # never test allocations
     record!(data, ba, scen, :value_and_jacobian!, bench1)
     return nothing
@@ -198,9 +211,10 @@ function benchmark_jacobian_mutating!(
     Bool(supports_mutation(ba)) || return nothing
     (; f, x, y) = deepcopy(scen)
     f! = f
+    extras = prepare_jacobian(f!, ba, y, x)
     jac_template = zeros(eltype(y), length(y), length(x))
     bench1 = @be (myzero(y), myzero(jac_template)) value_and_jacobian!(
-        f!, _[1], _[2], ba, x
+        f!, _[1], _[2], ba, x, extras
     )
     if allocations
         @test 0 == minimum(bench1).allocs

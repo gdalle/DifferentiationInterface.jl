@@ -44,6 +44,13 @@ Modules = [DifferentiationInterface]
 Pages = ["backends.jl"]
 ```
 
+## Preparation
+
+```@autodocs
+Modules = [DifferentiationInterface]
+Pages = ["prepare.jl"]
+```
+
 ## Testing & benchmarking
 
 ```@autodocs

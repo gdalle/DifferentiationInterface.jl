@@ -1,4 +1,6 @@
-function DI.value_and_pushforward!(f!::F, y, dy, ::AutoForwardDiff, x, dx) where {F}
+function DI.value_and_pushforward!(
+    f!::F, y, dy, ::AutoForwardDiff, x, dx, extras::Nothing
+) where {F}
     T = tag_type(f!, x)
     xdual = make_dual(T, x, dx)
     ydual = make_dual(T, y, dy)

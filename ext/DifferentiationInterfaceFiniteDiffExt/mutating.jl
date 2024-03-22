@@ -1,7 +1,13 @@
 ## Pushforward
 
 function DI.value_and_pushforward!(
-    f!::F, y::AbstractArray, dy::AbstractArray, ::AutoFiniteDiff{fdtype}, x, dx
+    f!::F,
+    y::AbstractArray,
+    dy::AbstractArray,
+    ::AutoFiniteDiff{fdtype},
+    x,
+    dx,
+    extras::Nothing,
 ) where {F,fdtype}
     function step(t::Number)::AbstractArray
         new_y = similar(y)

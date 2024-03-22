@@ -77,8 +77,9 @@ end
 function test_call_count_pushforward_allocating(ba::AbstractADType, scen::Scenario)
     Bool(supports_pushforward(ba)) || return nothing
     (; f, x, dx) = deepcopy(scen)
+    extras = prepare_pushforward(CallCounter(f), ba, x)
     cc = CallCounter(f)
-    value_and_pushforward(cc, ba, x, dx)
+    value_and_pushforward(cc, ba, x, dx, extras)
     if mode(ba) == AbstractForwardMode
         @test cc.count[] <= 1
     end
@@ -88,10 +89,11 @@ function test_call_count_pushforward_mutating(ba::AbstractADType, scen::Scenario
     Bool(supports_pushforward(ba)) || return nothing
     Bool(supports_mutation(ba)) || return nothing
     (; f, x, y, dx, dy) = deepcopy(scen)
+    extras = prepare_pushforward(CallCounter(f), ba, y, x)
     cc! = CallCounter(f)
     y_in = myzero(y)
     dy_in = myzero(dy)
-    value_and_pushforward!(cc!, y_in, dy_in, ba, x, dx)
+    value_and_pushforward!(cc!, y_in, dy_in, ba, x, dx, extras)
     if mode(ba) == AbstractForwardMode
         @test cc!.count[] <= 1
     end
@@ -102,8 +104,9 @@ end
 function test_call_count_pullback_allocating(ba::AbstractADType, scen::Scenario)
     Bool(supports_pullback(ba)) || return nothing
     (; f, x, y, dy) = deepcopy(scen)
+    extras = prepare_pullback(CallCounter(f), ba, x)
     cc = CallCounter(f)
-    value_and_pullback(cc, ba, x, dy)
+    value_and_pullback(cc, ba, x, dy, extras)
     if mode(ba) == AbstractReverseMode
         @test cc.count[] <= 1
     end
@@ -113,10 +116,11 @@ function test_call_count_pullback_mutating(ba::AbstractADType, scen::Scenario)
     Bool(supports_pullback(ba)) || return nothing
     Bool(supports_mutation(ba)) || return nothing
     (; f, x, y, dx, dy) = deepcopy(scen)
+    extras = prepare_pullback(CallCounter(f), ba, y, x)
     cc! = CallCounter(f)
     y_in = myzero(y)
     dx_in = myzero(dx)
-    value_and_pullback!(cc!, y_in, dx_in, ba, x, dy)
+    value_and_pullback!(cc!, y_in, dx_in, ba, x, dy, extras)
     if mode(ba) == AbstractReverseMode
         @test cc!.count[] <= 1
     end
@@ -128,8 +132,9 @@ function test_call_count_derivative_allocating(
     ba::AbstractADType, scen::Scenario{<:Any,<:Number,<:Any}
 )
     (; f, x, y) = deepcopy(scen)
+    extras = prepare_derivative(CallCounter(f), ba, x)
     cc = CallCounter(f)
-    value_and_derivative(cc, ba, x)
+    value_and_derivative(cc, ba, x, extras)
     if mode(ba) == AbstractForwardMode
         @test cc.count[] <= 1
     elseif mode(ba) == AbstractReverseMode
@@ -142,10 +147,11 @@ function test_call_count_derivative_mutating(
 )
     Bool(supports_mutation(ba)) || return nothing
     (; f, x, y, dy) = deepcopy(scen)
+    extras = prepare_derivative(CallCounter(f), ba, y, x)
     cc! = CallCounter(f)
     y_in = myzero(y)
     der_in = myzero(dy)
-    value_and_derivative!(cc!, y_in, der_in, ba, x)
+    value_and_derivative!(cc!, y_in, der_in, ba, x, extras)
     if mode(ba) == AbstractForwardMode
         @test cc!.count[] <= 1
     elseif mode(ba) == AbstractReverseMode
@@ -159,8 +165,9 @@ function test_call_count_gradient_allocating(
     ba::AbstractADType, scen::Scenario{<:Any,<:Any,<:Number}
 )
     (; f, x, y) = deepcopy(scen)
+    extras = prepare_gradient(CallCounter(f), ba, x)
     cc = CallCounter(f)
-    value_and_gradient(cc, ba, x)
+    value_and_gradient(cc, ba, x, extras)
     if mode(ba) == AbstractForwardMode
         @test cc.count[] <= length(x)
     elseif mode(ba) == AbstractReverseMode
@@ -174,9 +181,9 @@ function test_call_count_jacobian_allocating(
     ba::AbstractADType, scen::Scenario{<:Any,<:AbstractArray,<:AbstractArray}
 )
     (; f, x, y) = deepcopy(scen)
+    extras = prepare_jacobian(CallCounter(f), ba, x)
     cc = CallCounter(f)
-    cc2 = CallCounter(f)
-    value_and_jacobian(cc, ba, x)
+    value_and_jacobian(cc, ba, x, extras)
     if mode(ba) == AbstractForwardMode
         @test cc.count[] <= 2 + length(x)  # at least one too many
     elseif mode(ba) == AbstractReverseMode
@@ -189,10 +196,11 @@ function test_call_count_jacobian_mutating(
 )
     Bool(supports_mutation(ba)) || return nothing
     (; f, x, y) = deepcopy(scen)
+    extras = prepare_jacobian(CallCounter(f), ba, y, x)
     cc! = CallCounter(f)
     y_in = myzero(y)
     jac_in = similar(y, length(y), length(x))
-    value_and_jacobian!(cc!, y_in, jac_in, ba, x)
+    value_and_jacobian!(cc!, y_in, jac_in, ba, x, extras)
     if mode(ba) == AbstractForwardMode
         @test cc!.count[] <= 1 + length(x)
     elseif mode(ba) == AbstractReverseMode

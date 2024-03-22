@@ -7,6 +7,7 @@ function DI.value_and_pullback!(
     ::AutoReverseDiff,
     x::AbstractArray,
     dy::AbstractArray,
+    extras::Nothing,
 ) where {F}
     jac = jacobian(f!, y, x)
     mul!(vec(dx), transpose(jac), vec(dy))
