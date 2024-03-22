@@ -41,7 +41,7 @@ using Test
 
 function DT.test_type_stability(
     backends::Vector{<:AbstractADType},
-    operators::Vector{Symbol},
+    operators::Vector{<:AbstractOperator},
     scenarios::Vector{<:Scenario};
 )
     @testset verbose = true "Type stability" begin

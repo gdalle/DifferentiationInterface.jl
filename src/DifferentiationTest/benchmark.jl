@@ -41,7 +41,7 @@ function record!(
     data::BenchmarkData,
     backend::AbstractADType,
     scenario::Scenario,
-    operator::Symbol,
+    operator::AbstractOperator,
     bench,
 )
     bench_min = minimum(bench)

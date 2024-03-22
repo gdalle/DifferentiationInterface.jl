@@ -38,7 +38,7 @@ using Test
 
 function DT.run_benchmark(
     backends::Vector{<:AbstractADType},
-    operators::Vector{Symbol},
+    operators::Vector{<:AbstractOperator},
     scenarios::Vector{<:Scenario};
     allocations=false,
 )
