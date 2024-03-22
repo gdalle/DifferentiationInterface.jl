@@ -30,7 +30,7 @@ isallocating(s::Scenario) = !ismutating(s)
 
 ## Check operator compatibility
 function iscompatible(op::AbstractOperator, s::Scenario)
-    return ismutable(op) == ismutable(s) && iscompatible(op, s.x, s.y)
+    return ismutating(op) == ismutating(s) && iscompatible(op, s.x, s.y)
 end
 
 function compatible_scenarios(op::AbstractOperator, scs::AbstractVector{Scenario})
