@@ -40,8 +40,8 @@ include("printing.jl")
 
 export backend_string
 export Scenario, default_scenarios
-export allocating, mutating, scalar_scalar, scalar_array, array_scalar, array_array
 export isallocating, ismutating
+export scalar_to_scalar, scalar_to_array, array_to_scalar, array_to_array
 export BenchmarkData, record!
 export test_operators
 export AutoZeroForward, AutoZeroReverse
