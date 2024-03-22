@@ -7,11 +7,11 @@ Most backends have custom implementations, which we reuse if possible.
 
 We choose the following terminology for the high-level operators we provide:
 
-| input  `x`      | output   `y`    | operator   | result type                     |
-| --------------- | --------------- | ---------- | ------------------------------- |
-| `Number`        | `Any`           | derivative | same as output                  |
-| `Any`           | `Number`        | gradient   | same as input                   |
-| `AbstractArray` | `AbstractArray` | Jacobian   | matrix `(length(y), length(x))` |
+| operator   | input  `x`      | output   `y`    | result type                     |
+| ---------- | --------------- | --------------- | ------------------------------- |
+| derivative | `Number`        | `Any`           | same as output                  |
+| gradient   | `Any`           | `Number`        | same as input                   |
+| Jacobian   | `AbstractArray` | `AbstractArray` | matrix `(length(y), length(x))` |
 
 They are all based on the following low-level operators:
 
