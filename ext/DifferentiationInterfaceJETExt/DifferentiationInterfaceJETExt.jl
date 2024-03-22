@@ -279,4 +279,8 @@ function test_type(::HessianAllocating, ba::AbstractADType, scen::Scenario)
     @test_opt ignored_modules = (LinearAlgebra,) hessian(ba, f, x)
 end
 
+function test_type(op::AbstractOperator, ba::AbstractADType, scen::Scenario)
+    throw(ArgumentError("Invalid operator to test: $op"))
 end
+
+end #module
