@@ -2,42 +2,43 @@ test_correctness(args...; kwargs...) = error("Please load ForwardDiff.jl")
 test_type_stability(args...; kwargs...) = error("Please load JET.jl")
 
 const FIRST_ORDER_OPERATORS = [
-    :pushforward_allocating,
-    :pushforward_mutating,
-    :pullback_allocating,
-    :pullback_mutating,
-    :derivative_allocating,
-    :multiderivative_allocating,
-    :multiderivative_mutating,
-    :gradient_allocating,
-    :jacobian_allocating,
-    :jacobian_mutating,
+    PushforwardAllocating(),
+    PushforwardMutating(),
+    PullbackAllocating(),
+    PullbackMutating(),
+    MultiderivativeAllocating(),
+    MultiderivativeMutating(),
+    DerivativeAllocating(),
+    # DerivativeMutating(),
+    GradientAllocating(),
+    # GradientMutating(),
+    JacobianAllocating(),
+    JacobianMutating(),
 ]
 
 const SECOND_ORDER_OPERATORS = [
-    :second_derivative_allocating, :hessian_vector_product_allocating, :hessian_allocating
+    SecondDerivativeAllocating(),
+    # SecondDerivativeMutating(),
+    HessianAllocating(),
+    # HessianMutating(),
+    HessianVectorProductAllocating(),
+    # HessianVectorProductMutating(),
 ]
 
+const ALL_OPERATORS = vcat(FIRST_ORDER_OPERATORS, SECOND_ORDER_OPERATORS)
+
 function filter_operators(
-    operators::Vector{Symbol};
+    operators::Vector{<:AbstractOperator};
     first_order::Bool,
     second_order::Bool,
     allocating::Bool,
     mutating::Bool,
-    excluded::Vector{Symbol},
+    excluded::Vector{<:AbstractOperator},
 )
-    if !first_order
-        operators = setdiff(operators, FIRST_ORDER_OPERATORS)
-    end
-    if !second_order
-        operators = setdiff(operators, SECOND_ORDER_OPERATORS)
-    end
-    if !allocating
-        operators = filter(op -> !endswith(string(op), "allocating"), operators)
-    end
-    if !mutating
-        operators = filter(op -> !endswith(string(op), "mutating"), operators)
-    end
+    !first_order && (operators = filter(!isfirstorder, operators))
+    !second_order && (operators = filter(!issecondorder, operators))
+    !allocating && (operators = filter(!isallocating, operators))
+    !mutating && (operators = filter(!ismutating, operators))
     operators = filter(op -> !in(op, excluded), operators)
     return operators
 end
@@ -77,7 +78,7 @@ Return `nothing`, except when `benchmark=true`.
 """
 function test_operators(
     backends::Vector{<:AbstractADType},
-    operators::Vector{Symbol}=vcat(FIRST_ORDER_OPERATORS, SECOND_ORDER_OPERATORS),
+    operators::Vector{<:AbstractOperator}=ALL_OPERATORS,
     scenarios::Vector{<:Scenario}=default_scenarios();
     correctness::Bool=true,
     type_stability::Bool=true,
@@ -90,7 +91,7 @@ function test_operators(
     second_order=true,
     allocating=true,
     mutating=true,
-    excluded::Vector{Symbol}=Symbol[],
+    excluded::Vector{<:AbstractOperator}=AbstractOperator[],
 )
     scenarios = filter(scenarios) do scen
         typeof(scen.x) <: input_type && typeof(scen.y) <: output_type

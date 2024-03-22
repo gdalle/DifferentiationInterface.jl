@@ -25,6 +25,15 @@ end
 
 Base.string(scen::Scenario) = "$(string(scen.f)): $(typeof(scen.x)) -> $(typeof(scen.y))"
 
+ismutating(s::Scenario) = s.mutating
+isallocating(s::Scenario) = !ismutating(s)
+iscompatible(op::AbstractOperator, s::Scenario) = ismutating(op) == ismutating(s)
+
+function filter_compatible(op::AbstractOperator, scs::AbstractVector{Scenario})
+    return filter(s -> iscompatible(op, s), scs)
+end
+
+## Scenario constructors
 similar_random(z::Number) = randn(eltype(z))
 
 function similar_random(z::AbstractArray)
@@ -47,9 +56,6 @@ function Scenario(f!, x::Union{Number,AbstractArray}, s::NTuple{N,<:Integer}) wh
     dy = similar_random(y)
     return Scenario(; f=f!, x, y, dx, dy, mutating=true)
 end
-
-allocating(scenarios::Vector{<:Scenario}) = filter(s -> !s.mutating, scenarios)
-mutating(scenarios::Vector{<:Scenario}) = filter(s -> s.mutating, scenarios)
 
 function scalar_scalar(scenarios::Vector{<:Scenario})
     return filter(scenarios) do s
