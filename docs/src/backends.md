@@ -16,6 +16,7 @@ function all_backends()
         AutoEnzyme(Enzyme.Reverse),
         AutoFastDifferentiation(),
         AutoFiniteDiff(),
+        AutoFiniteDifferences(FiniteDifferences.central_fdm(5, 1)),
         AutoForwardDiff(),
         AutoPolyesterForwardDiff(; chunksize=2),
         AutoReverseDiff(),
@@ -47,6 +48,7 @@ AutoEnzyme
 AutoForwardDiff
 AutoForwardDiff()
 AutoFiniteDiff
+AutoFiniteDifferences
 AutoPolyesterForwardDiff
 AutoPolyesterForwardDiff()
 AutoReverseDiff
@@ -137,6 +139,7 @@ Modules = [
     Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceEnzymeExt),
     Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceFastDifferentiationExt),
     Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceFiniteDiffExt),
+    Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceFiniteDifferencesExt),
     Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceForwardDiffExt),
     Base.get_extension(DifferentiationInterface, :DifferentiationInterfacePolyesterForwardDiffExt),
     Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceReverseDiffExt),

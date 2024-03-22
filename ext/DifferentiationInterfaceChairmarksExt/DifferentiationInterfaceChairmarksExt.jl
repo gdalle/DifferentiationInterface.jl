@@ -1,19 +1,10 @@
 module DifferentiationInterfaceChairmarksExt
 
-using ADTypes:
-    AbstractADType,
-    AbstractFiniteDifferencesMode,
-    AbstractForwardMode,
-    AbstractReverseMode,
-    AbstractSymbolicDifferentiationMode
+using ADTypes: AbstractADType
 using Chairmarks: @be, Benchmark, Sample
 using DifferentiationInterface
 using DifferentiationInterface:
-    mode,
-    supports_mutation,
-    supports_pushforward,
-    supports_pullback,
-    supports_hvp
+    mode, myzero, supports_mutation, supports_pushforward, supports_pullback
 using DifferentiationInterface.DifferentiationTest
 import DifferentiationInterface.DifferentiationTest as DT
 using Test: @testset, @test
@@ -47,16 +38,16 @@ function DT.run_benchmark(
                     end
 
                 elseif op == :derivative_allocating
-                    @testset "$s" for s in allocating(scalar_array(scenarios))
+                    @testset "$s" for s in allocating(scalar_in(scenarios))
                         benchmark_derivative_allocating!(data, backend, s; allocations)
                     end
                 elseif op == :derivative_mutating
-                    @testset "$s" for s in mutating(scalar_array(scenarios))
+                    @testset "$s" for s in mutating(scalar_in(scenarios))
                         benchmark_derivative_mutating!(data, backend, s; allocations)
                     end
 
                 elseif op == :gradient_allocating
-                    @testset "$s" for s in allocating(array_scalar(scenarios))
+                    @testset "$s" for s in allocating(scalar_out(scenarios))
                         benchmark_gradient_allocating!(data, backend, s; allocations)
                     end
 
@@ -86,15 +77,11 @@ function benchmark_pushforward_allocating!(
     Bool(supports_pushforward(ba)) || return nothing
     (; f, x, dx, dy) = deepcopy(scen)
 
-    extras = prepare_pushforward(ba, f, x)
-    bench1 = @be zero(dy) value_and_pushforward!(_, ba, f, x, dx, extras)
-    bench2 = @be zero(dy) pushforward!(_, ba, f, x, dx, extras)
+    bench1 = @be myzero(dy) value_and_pushforward!(f, _, ba, x, dx)
     if allocations && dy isa Number
         @test 0 == minimum(bench1).allocs
-        @test 0 == minimum(bench2).allocs
     end
     record!(data, ba, scen, :value_and_pushforward!, bench1)
-    record!(data, ba, scen, :pushforward!, bench2)
     return nothing
 end
 
@@ -105,10 +92,7 @@ function benchmark_pushforward_mutating!(
     Bool(supports_mutation(ba)) || return nothing
     (; f, x, y, dx, dy) = deepcopy(scen)
     f! = f
-    extras = prepare_pushforward(ba, f!, x, y)
-    bench1 = @be (zero(y), zero(dy)) value_and_pushforward!(
-        _[1], _[2], ba, f!, x, dx, extras
-    )
+    bench1 = @be (myzero(y), myzero(dy)) value_and_pushforward!(f!, _[1], _[2], ba, x, dx)
     if allocations
         @test 0 == minimum(bench1).allocs
     end
@@ -123,15 +107,11 @@ function benchmark_pullback_allocating!(
 )
     Bool(supports_pullback(ba)) || return nothing
     (; f, x, dx, dy) = deepcopy(scen)
-    extras = prepare_pullback(ba, f, x)
-    bench1 = @be zero(dx) value_and_pullback!(_, ba, f, x, dy, extras)
-    bench2 = @be zero(dx) pullback!(_, ba, f, x, dy, extras)
+    bench1 = @be myzero(dx) value_and_pullback!(f, _, ba, x, dy)
     if allocations && dy isa Number
         @test 0 == minimum(bench1).allocs
-        @test 0 == minimum(bench2).allocs
     end
     record!(data, ba, scen, :value_and_pullback!, bench1)
-    record!(data, ba, scen, :pullback!, bench2)
     return nothing
 end
 
@@ -142,8 +122,7 @@ function benchmark_pullback_mutating!(
     Bool(supports_mutation(ba)) || return nothing
     (; f, x, y, dx, dy) = deepcopy(scen)
     f! = f
-    extras = prepare_pullback(ba, f!, x, y)
-    bench1 = @be (zero(y), zero(dx)) value_and_pullback!(_[1], _[2], ba, f!, x, dy, extras)
+    bench1 = @be (myzero(y), myzero(dx)) value_and_pullback!(f!, _[1], _[2], ba, x, dy)
     if allocations
         @test 0 == minimum(bench1).allocs
     end
@@ -157,8 +136,7 @@ function benchmark_derivative_allocating!(
     data::BenchmarkData, ba::AbstractADType, scen::Scenario; allocations::Bool
 )
     (; f, x, dy) = deepcopy(scen)
-    extras = prepare_derivative(ba, f, x)
-    bench1 = @be zero(dy) value_and_derivative!(_, ba, f, x, extras)
+    bench1 = @be myzero(dy) value_and_derivative!(f, _, ba, x)
     # never test allocations
     record!(data, ba, scen, :value_and_derivative!, bench1)
     return nothing
@@ -170,10 +148,7 @@ function benchmark_derivative_mutating!(
     Bool(supports_mutation(ba)) || return nothing
     (; f, x, y, dy) = deepcopy(scen)
     f! = f
-    extras = prepare_derivative(ba, f!, x, y)
-    bench1 = @be (zero(y), zero(dy)) value_and_derivative!(
-        _[1], _[2], ba, f!, x, extras
-    )
+    bench1 = @be (myzero(y), myzero(dy)) value_and_derivative!(f!, _[1], _[2], ba, x)
     if allocations
         @test 0 == minimum(bench1).allocs
     end
@@ -187,15 +162,11 @@ function benchmark_gradient_allocating!(
     data::BenchmarkData, ba::AbstractADType, scen::Scenario; allocations::Bool
 )
     (; f, x, dx) = deepcopy(scen)
-    extras = prepare_gradient(ba, f, x)
-    bench1 = @be zero(dx) value_and_gradient!(_, ba, f, x, extras)
-    bench2 = @be zero(dx) gradient!(_, ba, f, x, extras)
+    bench1 = @be myzero(dx) value_and_gradient!(f, _, ba, x)
     if allocations
         @test 0 == minimum(bench1).allocs
-        @test 0 == minimum(bench2).allocs
     end
     record!(data, ba, scen, :value_and_gradient!, bench1)
-    record!(data, ba, scen, :gradient!, bench2)
     return nothing
 end
 
@@ -206,8 +177,7 @@ function benchmark_jacobian_allocating!(
 )
     (; f, x, y) = deepcopy(scen)
     jac_template = zeros(eltype(y), length(y), length(x))
-    extras = prepare_jacobian(ba, f, x)
-    bench1 = @be zero(jac_template) value_and_jacobian!(_, ba, f, x, extras)
+    bench1 = @be myzero(jac_template) value_and_jacobian!(f, _, ba, x)
     # never test allocations
     record!(data, ba, scen, :value_and_jacobian!, bench1)
     return nothing
@@ -220,9 +190,8 @@ function benchmark_jacobian_mutating!(
     (; f, x, y) = deepcopy(scen)
     f! = f
     jac_template = zeros(eltype(y), length(y), length(x))
-    extras = prepare_jacobian(ba, f!, x, y)
-    bench1 = @be (zero(y), zero(jac_template)) value_and_jacobian!(
-        _[1], _[2], ba, f!, x, extras
+    bench1 = @be (myzero(y), myzero(jac_template)) value_and_jacobian!(
+        f!, _[1], _[2], ba, x
     )
     if allocations
         @test 0 == minimum(bench1).allocs

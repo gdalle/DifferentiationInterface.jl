@@ -102,7 +102,6 @@ function test_operators(
         if correctness
             test_correctness(backends, operators, scenarios)
         end
-        #=
         if type_stability
             test_type_stability(backends, operators, scenarios)
         end
@@ -114,7 +113,6 @@ function test_operators(
                 backends, operators, scenarios; allocations=allocations
             )
         end
-        =#
     end
     if benchmark
         return benchmark_data

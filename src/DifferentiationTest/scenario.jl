@@ -63,9 +63,8 @@ function scalar_out(scenarios::Vector{<:Scenario})
     end
 end
 
-function same_in_out(scenarios::Vector{<:Scenario})
+function array_array(scenarios::Vector{<:Scenario})
     return filter(scenarios) do s
-        (s.x isa Number && s.y isa Number) ||
-            (s.x isa AbstractArray && s.y isa AbstractArray)
+        s.x isa AbstractArray && s.y isa AbstractArray
     end
 end

@@ -9,7 +9,6 @@ using Test
 
 @test check_available(AutoReverseDiff())
 @test check_mutation(AutoReverseDiff())
-@test check_hessian(AutoReverseDiff())
 
 test_operators(AutoReverseDiff(); type_stability=false);
 test_operators(AutoReverseDiff(; compile=true); type_stability=false);

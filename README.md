@@ -11,8 +11,9 @@ An interface to various automatic differentiation backends in Julia.
 
 This package provides a backend-agnostic syntax to differentiate functions of the following types:
 
-- **Allocating**: `f(x) = y` where `x` and `y` can be real numbers or abstract arrays
-- **Mutating**: `f!(y, x) = nothing` where `y` is an abstract array and `x` can be a real number or an abstract array
+| Allocating | Mutating   |
+| ---------- | ---------- |
+| `f(x) = y` | `f!(y, x)` |
 
 ## Compatibility
 
@@ -27,7 +28,7 @@ We support some of the backends defined by [ADTypes.jl](https://github.com/SciML
 | [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl)                   | `AutoForwardDiff()`                                          |
 | [PolyesterForwardDiff.jl](https://github.com/JuliaDiff/PolyesterForwardDiff.jl) | `AutoPolyesterForwardDiff(; chunksize)`                      |
 | [ReverseDiff.jl](https://github.com/JuliaDiff/ReverseDiff.jl)                   | `AutoReverseDiff()`                                          |
-| [Tracker.jl](https://github.com/FluxML/Tracker.jl)                   | `AutoTracker()`                                          |
+| [Tracker.jl](https://github.com/FluxML/Tracker.jl)                              | `AutoTracker()`                                              |
 | [Zygote.jl](https://github.com/FluxML/Zygote.jl)                                | `AutoZygote()`                                               |
 
 We also provide additional backends:
@@ -38,8 +39,6 @@ We also provide additional backends:
 
 ## Example
 
-Setup:
-
 ```jldoctest readme
 julia> import ADTypes, ForwardDiff
 
@@ -48,28 +47,9 @@ julia> using DifferentiationInterface
 julia> backend = ADTypes.AutoForwardDiff();
 
 julia> f(x) = sum(abs2, x);
-```
 
-Out-of-place gradient:
-
-```jldoctest readme
-julia> value_and_gradient(backend, f, [1., 2., 3.])
+julia> value_and_gradient(f, backend, [1., 2., 3.])
 (14.0, [2.0, 4.0, 6.0])
-```
-
-In-place gradient:
-
-```jldoctest readme
-julia> grad = zeros(3);
-
-julia> value_and_gradient!(grad, backend, f, [1., 2., 3.])
-(14.0, [2.0, 4.0, 6.0])
-
-julia> grad
-3-element Vector{Float64}:
- 2.0
- 4.0
- 6.0
 ```
 
 ## Related packages

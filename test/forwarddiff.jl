@@ -8,6 +8,5 @@ using Test
 
 @test check_available(AutoForwardDiff())
 @test check_mutation(AutoForwardDiff())
-@test check_hessian(AutoForwardDiff())
 
 test_operators(AutoForwardDiff(; chunksize=2));

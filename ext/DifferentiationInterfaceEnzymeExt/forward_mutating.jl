@@ -1,6 +1,8 @@
 ## Pushforward
 
-function DI.value_and_pushforward!(y, dy, backend::AutoForwardEnzyme, f!, x, dx)
+function DI.value_and_pushforward!(
+    f!::F, y, dy, backend::AutoForwardEnzyme, x, dx
+) where {F}
     dx_sametype = convert(typeof(x), copy(dx))
     dy_sametype = convert(typeof(y), dy)
     autodiff(

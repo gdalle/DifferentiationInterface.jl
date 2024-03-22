@@ -15,6 +15,7 @@ using Diffractor: Diffractor
 using Enzyme: Enzyme
 using FastDifferentiation: FastDifferentiation
 using FiniteDiff: FiniteDiff
+using FiniteDifferences: FiniteDifferences
 using ForwardDiff: ForwardDiff
 using PolyesterForwardDiff: PolyesterForwardDiff
 using ReverseDiff: ReverseDiff
@@ -26,6 +27,7 @@ DiffractorExt = get_extension(DI, :DifferentiationInterfaceDiffractorExt)
 EnzymeExt = get_extension(DI, :DifferentiationInterfaceEnzymeExt)
 FastDifferentiationExt = get_extension(DI, :DifferentiationInterfaceFastDifferentiationExt)
 FiniteDiffExt = get_extension(DI, :DifferentiationInterfaceFiniteDiffExt)
+FiniteDifferencesExt = get_extension(DI, :DifferentiationInterfaceFiniteDifferencesExt)
 ForwardDiffExt = get_extension(DI, :DifferentiationInterfaceForwardDiffExt)
 PolyesterForwardDiffExt = get_extension(
     DI, :DifferentiationInterfacePolyesterForwardDiffExt
@@ -65,6 +67,7 @@ makedocs(;
         EnzymeExt,
         FastDifferentiationExt,
         FiniteDiffExt,
+        FiniteDifferencesExt,
         ForwardDiffExt,
         PolyesterForwardDiffExt,
         ReverseDiffExt,
