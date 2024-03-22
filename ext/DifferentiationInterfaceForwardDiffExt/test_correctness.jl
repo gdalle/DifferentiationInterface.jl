@@ -404,11 +404,11 @@ end
 
 ## Utils
 
-function true_pushforward(f, x::Number, y::Number, dx; mutating)
+function true_pushforward(f::F, x::Number, y::Number, dx; mutating) where {F}
     return ForwardDiff.derivative(f, x) * dx
 end
 
-function true_pushforward(f, x::Number, y::AbstractArray, dx; mutating)
+function true_pushforward(f::F, x::Number, y::AbstractArray, dx; mutating) where {F}
     if mutating
         return ForwardDiff.derivative(f, deepcopy(y), x) .* dx
     else
@@ -416,11 +416,11 @@ function true_pushforward(f, x::Number, y::AbstractArray, dx; mutating)
     end
 end
 
-function true_pushforward(f, x::AbstractArray, y::Number, dx; mutating)
+function true_pushforward(f::F, x::AbstractArray, y::Number, dx; mutating) where {F}
     return dot(ForwardDiff.gradient(f, x), dx)
 end
 
-function true_pushforward(f, x::AbstractArray, y::AbstractArray, dx; mutating)
+function true_pushforward(f::F, x::AbstractArray, y::AbstractArray, dx; mutating) where {F}
     if mutating
         return reshape(ForwardDiff.jacobian(f, deepcopy(y), x) * vec(dx), size(y))
     else
@@ -428,11 +428,11 @@ function true_pushforward(f, x::AbstractArray, y::AbstractArray, dx; mutating)
     end
 end
 
-function true_pullback(f, x::Number, y::Number, dy; mutating)
+function true_pullback(f::F, x::Number, y::Number, dy; mutating) where {F}
     return ForwardDiff.derivative(f, x) * dy
 end
 
-function true_pullback(f, x::Number, y::AbstractArray, dy; mutating)
+function true_pullback(f::F, x::Number, y::AbstractArray, dy; mutating) where {F}
     if mutating
         return dot(ForwardDiff.derivative(f, deepcopy(y), x), dy)
     else
@@ -440,11 +440,11 @@ function true_pullback(f, x::Number, y::AbstractArray, dy; mutating)
     end
 end
 
-function true_pullback(f, x::AbstractArray, y::Number, dy; mutating)
+function true_pullback(f::F, x::AbstractArray, y::Number, dy; mutating) where {F}
     return ForwardDiff.gradient(f, x) .* dy
 end
 
-function true_pullback(f, x::AbstractArray, y::AbstractArray, dy; mutating)
+function true_pullback(f::F, x::AbstractArray, y::AbstractArray, dy; mutating) where {F}
     if mutating
         return reshape(
             transpose(ForwardDiff.jacobian(f, deepcopy(y), x)) * vec(dy), size(x)
