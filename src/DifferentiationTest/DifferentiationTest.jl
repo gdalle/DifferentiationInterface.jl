@@ -33,7 +33,7 @@ include("benchmark.jl")
 include("call_count.jl")
 include("test_operators.jl")
 
-export Scenario, default_scenarios 
+export Scenario, default_scenarios
 export BenchmarkData
 export test_operators
 
