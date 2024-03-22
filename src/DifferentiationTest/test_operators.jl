@@ -85,8 +85,9 @@ function test_operators(
     second_order=true,
     allocating=true,
     mutating=true,
-    excluded::Vector{<:AbstractOperator}=AbstractOperator[],
+    excluded::Union{Vector{<:AbstractOperator},Vector{Symbol}}=AbstractOperator[],
 )
+    excluded = operator_trait.(excluded)
     scenarios = filter(scenarios) do scen
         typeof(scen.x) <: input_type && typeof(scen.y) <: output_type
     end
@@ -124,4 +125,11 @@ Shortcut for a single backend.
 """
 function test_operators(backend::AbstractADType, args...; kwargs...)
     return test_operators([backend], args...; kwargs...)
+end
+
+function test_operators(
+    backend::AbstractADType, operators::Vector{Symbol}, args...; kwargs...
+)
+    operators = operator_trait.(operators)
+    return test_operators([backend], operators, args...; kwargs...)
 end

@@ -84,3 +84,32 @@ Base.string(::Jacobian{M}) where {M}             = "Jacobian, $(alloc_string(M))
 Base.string(::SecondDerivative{M}) where {M}     = "Second derivative, $(alloc_string(M))"
 Base.string(::Hessian{M}) where {M}              = "Hessian, $(alloc_string(M))"
 Base.string(::HessianVectorProduct{M}) where {M} = "Hessian-vector product, $(alloc_string(M))"
+
+## Convert symbols to traits
+const OPERATOR_SYMBOL_TO_TRAIT = Dict(
+    :pushforward_allocating            => PushforwardAllocating(),
+    :pushforward_mutating              => PushforwardMutating(),
+    :pullback_allocating               => PullbackAllocating(),
+    :pullback_mutating                 => PullbackMutating(),
+    :multiderivative_allocating        => MultiderivativeAllocating(),
+    :multiderivating_mutating          => MultiderivativeMutating(),
+    :derivative_allocating             => DerivativeAllocating(),
+    :derivative_mutating               => DerivativeMutating(),
+    :gradient_allocating               => GradientAllocating(),
+    :gradient_mutating                 => GradientMutating(),
+    :jacobian_allocating               => JacobianAllocating(),
+    :jacobian_mutating                 => JacobianMutating(),
+    :second_derivative_allocating      => SecondDerivativeAllocating(),
+    :second_derivative_mutating        => SecondDerivativeMutating(),
+    :hessian_allocating                => HessianAllocating(),
+    :hessian_mutating                  => HessianMutating(),
+    :hessian_vector_product_allocating => HessianVectorProductAllocating(),
+    :hessian_vector_product_mutating   => HessianVectorProductMutating(),
+)
+
+operator_trait(op::AbstractOperator) = op
+function operator_trait(op_sym::Symbol)
+    !haskey(OPERATOR_SYMBOL_TO_TRAIT, op_sym) &&
+        throw(ArgumentError("Invalid operator symbol: $op_sym"))
+    return OPERATOR_SYMBOL_TO_TRAIT[op_sym]
+end
