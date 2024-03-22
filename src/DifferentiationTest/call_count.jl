@@ -17,74 +17,14 @@ end
 
 function test_call_count(
     backends::Vector{<:AbstractADType},
-    operators::Vector{Symbol},
+    operators::Vector{<:AbstractOperator},
     scenarios::Vector{<:Scenario};
 )
-    @testset verbose = true "Correctness" begin
+    @testset verbose = true "Call count" begin
         @testset verbose = true "$(backend_string(backend))" for backend in backends
             @testset "$op" for op in operators
-                if op == :pushforward_allocating
-                    @testset "$s" for s in allocating(scenarios)
-                        test_call_count_pushforward_allocating(backend, s)
-                    end
-                elseif op == :pushforward_mutating
-                    @testset "$s" for s in mutating(scenarios)
-                        test_call_count_pushforward_mutating(backend, s)
-                    end
-
-                elseif op == :pullback_allocating
-                    @testset "$s" for s in allocating(scenarios)
-                        test_call_count_pullback_allocating(backend, s)
-                    end
-                elseif op == :pullback_mutating
-                    @testset "$s" for s in mutating(scenarios)
-                        test_call_count_pullback_mutating(backend, s)
-                    end
-
-                elseif op == :derivative_allocating
-                    @testset "$s" for s in allocating(scalar_scalar(scenarios))
-                        test_call_count_derivative_allocating(backend, s)
-                    end
-
-                elseif op == :multiderivative_allocating
-                    @testset "$s" for s in allocating(scalar_array(scenarios))
-                        test_call_count_multiderivative_allocating(backend, s)
-                    end
-                elseif op == :multiderivative_mutating
-                    @testset "$s" for s in mutating(scalar_array(scenarios))
-                        test_call_count_multiderivative_mutating(backend, s)
-                    end
-
-                elseif op == :gradient_allocating
-                    @testset "$s" for s in allocating(array_scalar(scenarios))
-                        test_call_count_gradient_allocating(backend, s)
-                    end
-
-                elseif op == :jacobian_allocating
-                    @testset "$s" for s in allocating(array_array(scenarios))
-                        test_call_count_jacobian_allocating(backend, s)
-                    end
-                elseif op == :jacobian_mutating
-                    @testset "$s" for s in mutating(array_array(scenarios))
-                        test_call_count_jacobian_mutating(backend, s)
-                    end
-
-                elseif op == :second_derivative_allocating
-                    @testset "$s" for s in allocating(scalar_scalar(scenarios))
-                        test_call_count_second_derivative_allocating(backend, s)
-                    end
-
-                elseif op == :hessian_vector_product_allocating
-                    @testset "$s" for s in allocating(array_scalar(scenarios))
-                        test_call_count_hessian_vector_product_allocating(backend, s)
-                    end
-                elseif op == :hessian_allocating
-                    @testset "$s" for s in allocating(array_scalar(scenarios))
-                        test_call_count_hessian_allocating(backend, s)
-                    end
-
-                else
-                    throw(ArgumentError("Invalid operator to test: `:$op`"))
+                @testset "$s" for s in compatible_scenarios(op, scenarios)
+                    test_call_count(op, backend, s)
                 end
             end
         end
@@ -93,7 +33,7 @@ end
 
 ## Pushforward
 
-function test_call_count_pushforward_allocating(ba::AbstractADType, scen::Scenario)
+function test_call_count(::PushforwardAllocating, ba::AbstractADType, scen::Scenario)
     Bool(supports_pushforward(ba)) || return nothing
     (; f, x, dx) = deepcopy(scen)
     cc = CallCounter(f)
@@ -103,7 +43,7 @@ function test_call_count_pushforward_allocating(ba::AbstractADType, scen::Scenar
     end
 end
 
-function test_call_count_pushforward_mutating(ba::AbstractADType, scen::Scenario)
+function test_call_count(::PushforwardMutating, ba::AbstractADType, scen::Scenario)
     Bool(supports_pushforward(ba)) || return nothing
     Bool(supports_mutation(ba)) || return nothing
     (; f, x, y, dx, dy) = deepcopy(scen)
@@ -118,7 +58,7 @@ end
 
 ## Pullback
 
-function test_call_count_pullback_allocating(ba::AbstractADType, scen::Scenario)
+function test_call_count(::PullbackAllocating, ba::AbstractADType, scen::Scenario)
     Bool(supports_pullback(ba)) || return nothing
     (; f, x, y, dy) = deepcopy(scen)
     cc = CallCounter(f)
@@ -128,7 +68,7 @@ function test_call_count_pullback_allocating(ba::AbstractADType, scen::Scenario)
     end
 end
 
-function test_call_count_pullback_mutating(ba::AbstractADType, scen::Scenario)
+function test_call_count(::PullbackMutating, ba::AbstractADType, scen::Scenario)
     Bool(supports_pullback(ba)) || return nothing
     Bool(supports_mutation(ba)) || return nothing
     (; f, x, y, dx, dy) = deepcopy(scen)
@@ -143,8 +83,8 @@ end
 
 ## Derivative
 
-function test_call_count_derivative_allocating(
-    ba::AbstractADType, scen::Scenario{<:Any,<:Number}
+function test_call_count(
+    ::DerivativeAllocating, ba::AbstractADType, scen::Scenario{<:Any,<:Number}
 )
     (; f, x, y) = deepcopy(scen)
     cc = CallCounter(f)
@@ -154,8 +94,10 @@ end
 
 ## Multiderivative
 
-function test_call_count_multiderivative_allocating(
-    ba::AbstractADType, scen::Scenario{<:Any,<:Number,<:AbstractArray}
+function test_call_count(
+    ::MultiderivativeAllocating,
+    ba::AbstractADType,
+    scen::Scenario{<:Any,<:Number,<:AbstractArray},
 )
     (; f, x, y) = deepcopy(scen)
     cc1 = CallCounter(f)
@@ -171,8 +113,10 @@ function test_call_count_multiderivative_allocating(
     end
 end
 
-function test_call_count_multiderivative_mutating(
-    ba::AbstractADType, scen::Scenario{<:Any,<:Number,<:AbstractArray}
+function test_call_count(
+    ::MultiderivativeMutating,
+    ba::AbstractADType,
+    scen::Scenario{<:Any,<:Number,<:AbstractArray},
 )
     Bool(supports_mutation(ba)) || return nothing
     (; f, x, y, dy) = deepcopy(scen)
@@ -189,8 +133,8 @@ end
 
 ## Gradient
 
-function test_call_count_gradient_allocating(
-    ba::AbstractADType, scen::Scenario{<:Any,<:AbstractArray,<:Number}
+function test_call_count(
+    ::GradientAllocating, ba::AbstractADType, scen::Scenario{<:Any,<:AbstractArray,<:Number}
 )
     (; f, x, y) = deepcopy(scen)
     cc1 = CallCounter(f)
@@ -208,8 +152,10 @@ end
 
 ## Jacobian
 
-function test_call_count_jacobian_allocating(
-    ba::AbstractADType, scen::Scenario{<:Any,<:AbstractArray,<:AbstractArray}
+function test_call_count(
+    ::JacobianAllocating,
+    ba::AbstractADType,
+    scen::Scenario{<:Any,<:AbstractArray,<:AbstractArray},
 )
     (; f, x, y) = deepcopy(scen)
     cc1 = CallCounter(f)
@@ -225,8 +171,10 @@ function test_call_count_jacobian_allocating(
     end
 end
 
-function test_call_count_jacobian_mutating(
-    ba::AbstractADType, scen::Scenario{<:Any,<:AbstractArray,<:AbstractArray}
+function test_call_count(
+    ::JacobianMutating,
+    ba::AbstractADType,
+    scen::Scenario{<:Any,<:AbstractArray,<:AbstractArray},
 )
     Bool(supports_mutation(ba)) || return nothing
     (; f, x, y) = deepcopy(scen)
@@ -243,8 +191,10 @@ end
 
 ## Second derivative
 
-function test_call_count_second_derivative_allocating(
-    ba::AbstractADType, scen::Scenario{<:Any,<:Number,<:Number}
+function test_call_count(
+    ::SecondDerivativeAllocating,
+    ba::AbstractADType,
+    scen::Scenario{<:Any,<:Number,<:Number},
 )
     (; f, x, y) = deepcopy(scen)
     cc = CallCounter(f)
@@ -254,8 +204,10 @@ end
 
 ## Hessian-vector product
 
-function test_call_count_hessian_vector_product_allocating(
-    ba::AbstractADType, scen::Scenario{<:Any,<:AbstractArray,<:Number}
+function test_call_count(
+    ::HessianVectorProductAllocating,
+    ba::AbstractADType,
+    scen::Scenario{<:Any,<:AbstractArray,<:Number},
 )
     Bool(supports_hvp(ba)) || return nothing
     (; f, x, dx) = deepcopy(scen)
@@ -269,8 +221,8 @@ end
 
 ## Hessian
 
-function test_call_count_hessian_allocating(
-    ba::AbstractADType, scen::Scenario{<:Any,<:AbstractArray,<:Number}
+function test_call_count(
+    ::HessianAllocating, ba::AbstractADType, scen::Scenario{<:Any,<:AbstractArray,<:Number}
 )
     (; f, x, y) = deepcopy(scen)
     cc1 = CallCounter(f)
@@ -279,4 +231,8 @@ function test_call_count_hessian_allocating(
     hessian(ba, cc2, x)
     @test cc1.count[] <= 2 + length(x)
     @test cc2.count[] <= 2 + length(x)
+end
+
+function test_call_count(op::AbstractOperator, ba::AbstractADType, scen::Scenario)
+    throw(ArgumentError("Invalid operator to test: $op"))
 end

@@ -15,7 +15,10 @@ using ..DifferentiationInterface:
     supports_pushforward,
     supports_pullback,
     supports_hvp,
-    zero!
+    zero!,
+    MutationBehavior,
+    MutationSupported,
+    MutationNotSupported
 using ADTypes
 using ADTypes:
     AbstractADType,
@@ -26,6 +29,7 @@ using ADTypes:
 using DocStringExtensions
 using Test: @testset, @test
 
+include("operator_traits.jl")
 include("scenario.jl")
 include("benchmark.jl")
 include("call_count.jl")
@@ -36,7 +40,7 @@ include("printing.jl")
 
 export backend_string
 export Scenario, default_scenarios
-export allocating, mutating, scalar_scalar, scalar_array, array_scalar, array_array
+export isallocating, ismutating
 export BenchmarkData, record!
 export test_operators
 export AutoZeroForward, AutoZeroReverse

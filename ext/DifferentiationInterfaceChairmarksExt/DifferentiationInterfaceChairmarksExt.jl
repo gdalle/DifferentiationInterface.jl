@@ -18,11 +18,27 @@ using DifferentiationInterface:
     supports_hvp
 using DifferentiationInterface.DifferentiationTest
 import DifferentiationInterface.DifferentiationTest as DT
+using DifferentiationInterface.DifferentiationTest:
+    AbstractOperator,
+    PushforwardAllocating,
+    PushforwardMutating,
+    PullbackAllocating,
+    PullbackMutating,
+    MultiderivativeAllocating,
+    MultiderivativeMutating,
+    GradientAllocating,
+    JacobianAllocating,
+    JacobianMutating,
+    DerivativeAllocating,
+    SecondDerivativeAllocating,
+    HessianAllocating,
+    HessianVectorProductAllocating,
+    compatible_scenarios
 using Test
 
 function DT.run_benchmark(
     backends::Vector{<:AbstractADType},
-    operators::Vector{Symbol},
+    operators::Vector{<:AbstractOperator},
     scenarios::Vector{<:Scenario};
     allocations=false,
 )
@@ -30,72 +46,8 @@ function DT.run_benchmark(
     @testset verbose = true "Allocations" begin
         @testset verbose = true "$(backend_string(backend))" for backend in backends
             @testset "$op" for op in operators
-                if op == :pushforward_allocating
-                    @testset "$s" for s in allocating(scenarios)
-                        benchmark_pushforward_allocating!(data, backend, s; allocations)
-                    end
-                elseif op == :pushforward_mutating
-                    @testset "$s" for s in mutating(scenarios)
-                        benchmark_pushforward_mutating!(data, backend, s; allocations)
-                    end
-
-                elseif op == :pullback_allocating
-                    @testset "$s" for s in allocating(scenarios)
-                        benchmark_pullback_allocating!(data, backend, s; allocations)
-                    end
-                elseif op == :pullback_mutating
-                    @testset "$s" for s in mutating(scenarios)
-                        benchmark_pullback_mutating!(data, backend, s; allocations)
-                    end
-
-                elseif op == :derivative_allocating
-                    @testset "$s" for s in allocating(scalar_scalar(scenarios))
-                        benchmark_derivative_allocating!(data, backend, s; allocations)
-                    end
-
-                elseif op == :multiderivative_allocating
-                    @testset "$s" for s in allocating(scalar_array(scenarios))
-                        benchmark_multiderivative_allocating!(data, backend, s; allocations)
-                    end
-                elseif op == :multiderivative_mutating
-                    @testset "$s" for s in mutating(scalar_array(scenarios))
-                        benchmark_multiderivative_mutating!(data, backend, s; allocations)
-                    end
-
-                elseif op == :gradient_allocating
-                    @testset "$s" for s in allocating(array_scalar(scenarios))
-                        benchmark_gradient_allocating!(data, backend, s; allocations)
-                    end
-
-                elseif op == :jacobian_allocating
-                    @testset "$s" for s in allocating(array_array(scenarios))
-                        benchmark_jacobian_allocating!(data, backend, s; allocations)
-                    end
-                elseif op == :jacobian_mutating
-                    @testset "$s" for s in mutating(array_array(scenarios))
-                        benchmark_jacobian_mutating!(data, backend, s; allocations)
-                    end
-
-                elseif op == :second_derivative_allocating
-                    @testset "$s" for s in allocating(scalar_scalar(scenarios))
-                        benchmark_second_derivative_allocating!(
-                            data, backend, s; allocations
-                        )
-                    end
-
-                elseif op == :hessian_vector_product_allocating
-                    @testset "$s" for s in allocating(array_scalar(scenarios))
-                        benchmark_hessian_vector_product_allocating!(
-                            data, backend, s; allocations
-                        )
-                    end
-                elseif op == :hessian_allocating
-                    @testset "$s" for s in allocating(array_scalar(scenarios))
-                        benchmark_hessian_allocating!(data, backend, s; allocations)
-                    end
-
-                else
-                    throw(ArgumentError("Invalid operator to benchmark: `:$op`"))
+                @testset "$s" for s in compatible_scenarios(op, scenarios)
+                    benchmark!(op, data, backend, s; allocations)
                 end
             end
         end
@@ -105,8 +57,12 @@ end
 
 ## Pushforward
 
-function benchmark_pushforward_allocating!(
-    data::BenchmarkData, ba::AbstractADType, scen::Scenario; allocations::Bool
+function benchmark!(
+    ::PushforwardAllocating,
+    data::BenchmarkData,
+    ba::AbstractADType,
+    scen::Scenario;
+    allocations::Bool,
 )
     Bool(supports_pushforward(ba)) || return nothing
     (; f, x, dx, dy) = deepcopy(scen)
@@ -123,8 +79,12 @@ function benchmark_pushforward_allocating!(
     return nothing
 end
 
-function benchmark_pushforward_mutating!(
-    data::BenchmarkData, ba::AbstractADType, scen::Scenario; allocations::Bool
+function benchmark!(
+    ::PushforwardMutating,
+    data::BenchmarkData,
+    ba::AbstractADType,
+    scen::Scenario;
+    allocations::Bool,
 )
     Bool(supports_pushforward(ba)) || return nothing
     Bool(supports_mutation(ba)) || return nothing
@@ -143,8 +103,12 @@ end
 
 ## Pullback
 
-function benchmark_pullback_allocating!(
-    data::BenchmarkData, ba::AbstractADType, scen::Scenario; allocations::Bool
+function benchmark!(
+    ::PullbackAllocating,
+    data::BenchmarkData,
+    ba::AbstractADType,
+    scen::Scenario;
+    allocations::Bool,
 )
     Bool(supports_pullback(ba)) || return nothing
     (; f, x, dx, dy) = deepcopy(scen)
@@ -160,8 +124,12 @@ function benchmark_pullback_allocating!(
     return nothing
 end
 
-function benchmark_pullback_mutating!(
-    data::BenchmarkData, ba::AbstractADType, scen::Scenario; allocations::Bool
+function benchmark!(
+    ::PullbackMutating,
+    data::BenchmarkData,
+    ba::AbstractADType,
+    scen::Scenario;
+    allocations::Bool,
 )
     Bool(supports_pullback(ba)) || return nothing
     Bool(supports_mutation(ba)) || return nothing
@@ -178,8 +146,12 @@ end
 
 ## Derivative
 
-function benchmark_derivative_allocating!(
-    data::BenchmarkData, ba::AbstractADType, scen::Scenario; allocations::Bool
+function benchmark!(
+    ::DerivativeAllocating,
+    data::BenchmarkData,
+    ba::AbstractADType,
+    scen::Scenario;
+    allocations::Bool,
 )
     (; f, x) = deepcopy(scen)
     extras = prepare_derivative(ba, f, x)
@@ -193,8 +165,12 @@ end
 
 ## Multiderivative
 
-function benchmark_multiderivative_allocating!(
-    data::BenchmarkData, ba::AbstractADType, scen::Scenario; allocations::Bool
+function benchmark!(
+    ::MultiderivativeAllocating,
+    data::BenchmarkData,
+    ba::AbstractADType,
+    scen::Scenario;
+    allocations::Bool,
 )
     (; f, x, dy) = deepcopy(scen)
     extras = prepare_multiderivative(ba, f, x)
@@ -204,8 +180,12 @@ function benchmark_multiderivative_allocating!(
     return nothing
 end
 
-function benchmark_multiderivative_mutating!(
-    data::BenchmarkData, ba::AbstractADType, scen::Scenario; allocations::Bool
+function benchmark!(
+    ::MultiderivativeMutating,
+    data::BenchmarkData,
+    ba::AbstractADType,
+    scen::Scenario;
+    allocations::Bool,
 )
     Bool(supports_mutation(ba)) || return nothing
     (; f, x, y, dy) = deepcopy(scen)
@@ -223,8 +203,12 @@ end
 
 ## Gradient
 
-function benchmark_gradient_allocating!(
-    data::BenchmarkData, ba::AbstractADType, scen::Scenario; allocations::Bool
+function benchmark!(
+    ::GradientAllocating,
+    data::BenchmarkData,
+    ba::AbstractADType,
+    scen::Scenario;
+    allocations::Bool,
 )
     (; f, x, dx) = deepcopy(scen)
     extras = prepare_gradient(ba, f, x)
@@ -241,8 +225,12 @@ end
 
 ## Jacobian
 
-function benchmark_jacobian_allocating!(
-    data::BenchmarkData, ba::AbstractADType, scen::Scenario; allocations::Bool
+function benchmark!(
+    ::JacobianAllocating,
+    data::BenchmarkData,
+    ba::AbstractADType,
+    scen::Scenario;
+    allocations::Bool,
 )
     (; f, x, y) = deepcopy(scen)
     jac_template = zeros(eltype(y), length(y), length(x))
@@ -253,8 +241,12 @@ function benchmark_jacobian_allocating!(
     return nothing
 end
 
-function benchmark_jacobian_mutating!(
-    data::BenchmarkData, ba::AbstractADType, scen::Scenario; allocations::Bool
+function benchmark!(
+    ::JacobianMutating,
+    data::BenchmarkData,
+    ba::AbstractADType,
+    scen::Scenario;
+    allocations::Bool,
 )
     Bool(supports_mutation(ba)) || return nothing
     (; f, x, y) = deepcopy(scen)
@@ -273,8 +265,12 @@ end
 
 ## Second derivative
 
-function benchmark_second_derivative_allocating!(
-    data::BenchmarkData, ba::AbstractADType, scen::Scenario; allocations::Bool
+function benchmark!(
+    ::SecondDerivativeAllocating,
+    data::BenchmarkData,
+    ba::AbstractADType,
+    scen::Scenario;
+    allocations::Bool,
 )
     (; f, x) = deepcopy(scen)
     extras = prepare_second_derivative(ba, f, x)
@@ -288,8 +284,12 @@ end
 
 ## Hessian-vector product
 
-function benchmark_hessian_vector_product_allocating!(
-    data::BenchmarkData, ba::AbstractADType, scen::Scenario; allocations::Bool
+function benchmark!(
+    ::HessianVectorProductAllocating,
+    data::BenchmarkData,
+    ba::AbstractADType,
+    scen::Scenario;
+    allocations::Bool,
 )
     Bool(supports_hvp(ba)) || return nothing
     (; f, x, dx) = deepcopy(scen)
@@ -309,8 +309,12 @@ end
 
 ## Hessian
 
-function benchmark_hessian_allocating!(
-    data::BenchmarkData, ba::AbstractADType, scen::Scenario; allocations::Bool
+function benchmark!(
+    ::HessianAllocating,
+    data::BenchmarkData,
+    ba::AbstractADType,
+    scen::Scenario;
+    allocations::Bool,
 )
     (; f, x, y, dx) = deepcopy(scen)
     extras = prepare_hessian(ba, f, x)
@@ -328,4 +332,14 @@ function benchmark_hessian_allocating!(
     return nothing
 end
 
+function benchmark!(
+    op::AbstractOperator,
+    data::BenchmarkData,
+    ba::AbstractADType,
+    scen::Scenario;
+    allocations::Bool,
+)
+    throw(ArgumentError("Invalid operator to test: $op"))
 end
+
+end # module

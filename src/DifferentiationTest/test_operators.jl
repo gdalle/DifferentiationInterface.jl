@@ -2,54 +2,49 @@ test_correctness(args...; kwargs...) = error("Please load ForwardDiff.jl")
 test_type_stability(args...; kwargs...) = error("Please load JET.jl")
 
 const FIRST_ORDER_OPERATORS = [
-    :pushforward_allocating,
-    :pushforward_mutating,
-    :pullback_allocating,
-    :pullback_mutating,
-    :derivative_allocating,
-    :multiderivative_allocating,
-    :multiderivative_mutating,
-    :gradient_allocating,
-    :jacobian_allocating,
-    :jacobian_mutating,
+    PushforwardAllocating(),
+    PushforwardMutating(),
+    PullbackAllocating(),
+    PullbackMutating(),
+    MultiderivativeAllocating(),
+    MultiderivativeMutating(),
+    DerivativeAllocating(),
+    # DerivativeMutating(),
+    GradientAllocating(),
+    # GradientMutating(),
+    JacobianAllocating(),
+    JacobianMutating(),
 ]
 
 const SECOND_ORDER_OPERATORS = [
-    :second_derivative_allocating, :hessian_vector_product_allocating, :hessian_allocating
+    SecondDerivativeAllocating(),
+    # SecondDerivativeMutating(),
+    HessianAllocating(),
+    # HessianMutating(),
+    HessianVectorProductAllocating(),
+    # HessianVectorProductMutating(),
 ]
 
+const ALL_OPERATORS = vcat(FIRST_ORDER_OPERATORS, SECOND_ORDER_OPERATORS)
+
 function filter_operators(
-    operators::Vector{Symbol};
+    operators::Vector{<:AbstractOperator};
     first_order::Bool,
     second_order::Bool,
     allocating::Bool,
     mutating::Bool,
-    excluded::Vector{Symbol},
+    excluded::Vector{<:AbstractOperator},
 )
-    if !first_order
-        operators = setdiff(operators, FIRST_ORDER_OPERATORS)
-    end
-    if !second_order
-        operators = setdiff(operators, SECOND_ORDER_OPERATORS)
-    end
-    if !allocating
-        operators = filter(op -> !endswith(string(op), "allocating"), operators)
-    end
-    if !mutating
-        operators = filter(op -> !endswith(string(op), "mutating"), operators)
-    end
+    !first_order && (operators = filter(!isfirstorder, operators))
+    !second_order && (operators = filter(!issecondorder, operators))
+    !allocating && (operators = filter(!isallocating, operators))
+    !mutating && (operators = filter(!ismutating, operators))
     operators = filter(op -> !in(op, excluded), operators)
     return operators
 end
 
 """
-    test_operators(
-        backends, [operators, scenarios];
-        correctness, type_stability, benchmark, allocations,
-        input_type, output_type,
-        first_order, second_order, allocating, mutating,
-        excluded,
-    )
+    test_operators(backends, [operators, scenarios]; [kwargs...])
 
 Cross-test a list of `backends` for a list of `operators` on a list of `scenarios.`
 
@@ -57,7 +52,7 @@ Return `nothing`, except when `benchmark=true`.
 
 # Default arguments
 
-- `operators`: defaults to all of them
+- `operators`: defaults to all operators
 - `scenarios`: defaults to a set of default scenarios
 
 # Keyword arguments
@@ -77,7 +72,7 @@ Return `nothing`, except when `benchmark=true`.
 """
 function test_operators(
     backends::Vector{<:AbstractADType},
-    operators::Vector{Symbol}=vcat(FIRST_ORDER_OPERATORS, SECOND_ORDER_OPERATORS),
+    operators::Vector{<:AbstractOperator}=ALL_OPERATORS,
     scenarios::Vector{<:Scenario}=default_scenarios();
     correctness::Bool=true,
     type_stability::Bool=true,
@@ -90,8 +85,9 @@ function test_operators(
     second_order=true,
     allocating=true,
     mutating=true,
-    excluded::Vector{Symbol}=Symbol[],
+    excluded::Union{Vector{<:AbstractOperator},Vector{Symbol}}=AbstractOperator[],
 )
+    excluded = operator_trait.(excluded)
     scenarios = filter(scenarios) do scen
         typeof(scen.x) <: input_type && typeof(scen.y) <: output_type
     end
@@ -129,4 +125,11 @@ Shortcut for a single backend.
 """
 function test_operators(backend::AbstractADType, args...; kwargs...)
     return test_operators([backend], args...; kwargs...)
+end
+
+function test_operators(
+    backend::AbstractADType, operators::Vector{Symbol}, args...; kwargs...
+)
+    operators = operator_trait.(operators)
+    return test_operators([backend], operators, args...; kwargs...)
 end

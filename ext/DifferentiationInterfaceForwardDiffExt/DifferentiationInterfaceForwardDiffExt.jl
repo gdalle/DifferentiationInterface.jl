@@ -18,6 +18,22 @@ using DifferentiationInterface:
 import DifferentiationInterface as DI
 using DifferentiationInterface.DifferentiationTest
 import DifferentiationInterface.DifferentiationTest as DT
+using DifferentiationInterface.DifferentiationTest:
+    AbstractOperator,
+    PushforwardAllocating,
+    PushforwardMutating,
+    PullbackAllocating,
+    PullbackMutating,
+    MultiderivativeAllocating,
+    MultiderivativeMutating,
+    GradientAllocating,
+    JacobianAllocating,
+    JacobianMutating,
+    DerivativeAllocating,
+    SecondDerivativeAllocating,
+    HessianAllocating,
+    HessianVectorProductAllocating,
+    compatible_scenarios
 using DiffResults: DiffResults
 using DocStringExtensions
 using ForwardDiff:
