@@ -53,8 +53,8 @@ ismutating(::Gradient{M}) where {M}             = ismutating(M)
 ismutating(::Multiderivative{M}) where {M}      = ismutating(M)
 ismutating(::Derivative{M}) where {M}           = ismutating(M)
 ismutating(::Jacobian{M}) where {M}             = ismutating(M)
-ismutating(::Hessian{M}) where {M}              = ismutating(M)
 ismutating(::SecondDerivative{M}) where {M}     = ismutating(M)
+ismutating(::Hessian{M}) where {M}              = ismutating(M)
 ismutating(::HessianVectorProduct{M}) where {M} = ismutating(M)
 
 isallocating(op) = !ismutating(op)
@@ -64,9 +64,23 @@ iscompatible(op::AbstractOperator, x, y) = false
 iscompatible(op::Pullback, x, y)         = true
 iscompatible(op::Pushforward, x, y)      = true
 
-iscompatible(op::Gradient, x::AbstractArray, y::Number)        = true
-iscompatible(op::Multiderivative, x::Number, y::AbstractArray) = true
-iscompatible(op::Derivative, x::Number, y::Number)             = true
-iscompatible(op::Jacobian, x::AbstractArray, y::AbstractArray) = true
-iscompatible(op::SecondDerivative, x::Number, y::Number)       = true
-iscompatible(op::Hessian, x::AbstractArray, y::Number)         = true
+iscompatible(op::Gradient, x::AbstractArray, y::Number)             = true
+iscompatible(op::Multiderivative, x::Number, y::AbstractArray)      = true
+iscompatible(op::Derivative, x::Number, y::Number)                  = true
+iscompatible(op::Jacobian, x::AbstractArray, y::AbstractArray)      = true
+iscompatible(op::SecondDerivative, x::Number, y::Number)            = true
+iscompatible(op::Hessian, x::AbstractArray, y::Number)              = true
+iscompatible(op::HessianVectorProduct, x::AbstractArray, y::Number) = true
+
+## Pretty-printing
+alloc_string(T::Type{<:MutationBehavior}) = ismutating(T) ? "mutating" : "allocating"
+
+Base.string(::Pullback{M}) where {M}             = "Pullback, $(alloc_string(M))"
+Base.string(::Pushforward{M}) where {M}          = "Pushforward, $(alloc_string(M))"
+Base.string(::Gradient{M}) where {M}             = "Gradient, $(alloc_string(M))"
+Base.string(::Multiderivative{M}) where {M}      = "Multiderivative, $(alloc_string(M))"
+Base.string(::Derivative{M}) where {M}           = "Derivative, $(alloc_string(M))"
+Base.string(::Jacobian{M}) where {M}             = "Jacobian, $(alloc_string(M))"
+Base.string(::SecondDerivative{M}) where {M}     = "Second derivative, $(alloc_string(M))"
+Base.string(::Hessian{M}) where {M}              = "Hessian, $(alloc_string(M))"
+Base.string(::HessianVectorProduct{M}) where {M} = "Hessian-vector product, $(alloc_string(M))"
