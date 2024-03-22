@@ -44,6 +44,7 @@ function record!(
     operator::AbstractOperator,
     bench,
 )
+    operator = operator_symbol(operator)
     bench_min = minimum(bench)
     tup = (;
         backend=backend_string(backend),

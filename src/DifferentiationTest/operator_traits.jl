@@ -107,9 +107,18 @@ const OPERATOR_SYMBOL_TO_TRAIT = Dict(
     :hessian_vector_product_mutating   => HessianVectorProductMutating(),
 )
 
+const OPERATOR_TRAIT_TO_SYMBOL = Dict(op => sym for (sym, op) in OPERATOR_SYMBOL_TO_TRAIT)
+
 operator_trait(op::AbstractOperator) = op
-function operator_trait(op_sym::Symbol)
-    !haskey(OPERATOR_SYMBOL_TO_TRAIT, op_sym) &&
+function operator_trait(sym::Symbol)
+    !haskey(OPERATOR_SYMBOL_TO_TRAIT, sym) &&
         throw(ArgumentError("Invalid operator symbol: $op_sym"))
-    return OPERATOR_SYMBOL_TO_TRAIT[op_sym]
+    return OPERATOR_SYMBOL_TO_TRAIT[sym]
+end
+
+operator_symbol(sym::Symbol) = sym
+function operator_symbol(op::AbstractOperator)
+    !haskey(OPERATOR_TRAIT_TO_SYMBOL, op) &&
+        throw(ArgumentError("Invalid operator trait: $op"))
+    return OPERATOR_TRAIT_TO_SYMBOL[op]
 end
