@@ -29,7 +29,7 @@ using ADTypes:
 using DocStringExtensions
 using Test: @testset, @test
 
-include("testtraits.jl")
+include("operator_traits.jl")
 include("scenario.jl")
 include("benchmark.jl")
 include("call_count.jl")
