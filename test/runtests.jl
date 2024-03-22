@@ -52,13 +52,13 @@ using Zygote: Zygote
         include("enzyme_reverse.jl")
     end
     @time "FastDifferentiation" @testset "FastDifferentiation" begin
-        @test_skip include("fastdifferentiation.jl")
+        include("fastdifferentiation.jl")
     end
     @time "FiniteDiff" @testset "FiniteDiff" begin
-        @test_skip include("finitediff.jl")
+        include("finitediff.jl")
     end
     @time "FiniteDifferences" @testset "FiniteDifferences" begin
-        @test_skip include("finitedifferences.jl")
+        include("finitedifferences.jl")
     end
     @time "ForwardDiff" @testset "ForwardDiff" begin
         include("forwarddiff.jl")
@@ -67,7 +67,7 @@ using Zygote: Zygote
         include("polyesterforwarddiff.jl")
     end
     @time "ReverseDiff" @testset "ReverseDiff" begin
-        @test_skip include("reversediff.jl")
+        include("reversediff.jl")
     end
     @time "Tracker" @testset "Tracker" begin
         include("tracker.jl")

@@ -13,6 +13,9 @@ myzero(x) = zero(x)
 myzero!(x::Number) = zero(x)
 myzero!(x) = x .= zero(myeltype(x))
 
+myvec(x::Number) = [x]
+myvec(x) = vec(x)
+
 """
     basisarray(backend, a::AbstractArray, i::CartesianIndex)
 

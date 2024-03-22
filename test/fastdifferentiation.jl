@@ -9,7 +9,6 @@ using Test
 
 @test check_available(AutoFastDifferentiation())
 @test !check_mutation(AutoFastDifferentiation())
-@test !check_hessian(AutoFastDifferentiation())
 
 test_operators(
     AutoFastDifferentiation();
