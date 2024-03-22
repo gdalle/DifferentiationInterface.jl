@@ -44,13 +44,7 @@ function filter_operators(
 end
 
 """
-    test_operators(
-        backends, [operators, scenarios];
-        correctness, type_stability, benchmark, allocations,
-        input_type, output_type,
-        first_order, second_order, allocating, mutating,
-        excluded,
-    )
+    test_operators(backends, [operators, scenarios]; [kwargs...])
 
 Cross-test a list of `backends` for a list of `operators` on a list of `scenarios.`
 
@@ -58,7 +52,7 @@ Return `nothing`, except when `benchmark=true`.
 
 # Default arguments
 
-- `operators`: defaults to all of them
+- `operators`: defaults to all operators
 - `scenarios`: defaults to a set of default scenarios
 
 # Keyword arguments
