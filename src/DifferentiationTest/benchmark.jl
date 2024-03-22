@@ -41,10 +41,9 @@ function record!(
     data::BenchmarkData,
     backend::AbstractADType,
     scenario::Scenario,
-    operator::AbstractOperator,
+    operator::Symbol,
     bench,
 )
-    operator = operator_symbol(operator)
     bench_min = minimum(bench)
     tup = (;
         backend=backend_string(backend),
