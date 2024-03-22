@@ -11,9 +11,8 @@ An interface to various automatic differentiation backends in Julia.
 
 This package provides a backend-agnostic syntax to differentiate functions of the following types:
 
-| Allocating | Mutating   |
-| ---------- | ---------- |
-| `f(x) = y` | `f!(y, x)` |
+- **allocating**: `f(x) = y`
+- **mutating**: `f!(y, x) = nothing`
 
 ## Compatibility
 
@@ -25,6 +24,7 @@ We support some of the backends defined by [ADTypes.jl](https://github.com/SciML
 | [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl)                     | `AutoDiffractor()`                                           |
 | [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl)                              | `AutoEnzyme(Enzyme.Forward)` or `AutoEnzyme(Enzyme.Reverse)` |
 | [FiniteDiff.jl](https://github.com/JuliaDiff/FiniteDiff.jl)                     | `AutoFiniteDiff()`                                           |
+| [FiniteDifferences.jl](https://github.com/JuliaDiff/FiniteDifferences.jl)       | `AutoFiniteDifferences(fdm)`                                 |
 | [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl)                   | `AutoForwardDiff()`                                          |
 | [PolyesterForwardDiff.jl](https://github.com/JuliaDiff/PolyesterForwardDiff.jl) | `AutoPolyesterForwardDiff(; chunksize)`                      |
 | [ReverseDiff.jl](https://github.com/JuliaDiff/ReverseDiff.jl)                   | `AutoReverseDiff()`                                          |
@@ -56,10 +56,3 @@ julia> value_and_gradient(f, backend, [1., 2., 3.])
 
 - [AbstractDifferentiation.jl](https://github.com/JuliaDiff/AbstractDifferentiation.jl) is the original inspiration for DifferentiationInterface.jl.
 - [AutoDiffOperators.jl](https://github.com/oschulz/AutoDiffOperators.jl) is an attempt to bridge ADTypes.jl with AbstractDifferentiation.jl.
-
-## Roadmap
-
-Goals for future releases:
-
-- optimize performance for each backend
-- define user-facing functions to test and benchmark backends against each other

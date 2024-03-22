@@ -33,11 +33,8 @@ include("benchmark.jl")
 include("call_count.jl")
 include("test_operators.jl")
 
-export Scenario, default_scenarios
-export allocating, mutating, scalar_in, scalar_out, array_array
-export AutoZeroForward, AutoZeroReverse
-export backend_string
-export BenchmarkData, record!
+export Scenario, default_scenarios 
+export BenchmarkData
 export test_operators
 
 end

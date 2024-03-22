@@ -4,7 +4,8 @@ using ADTypes: AbstractADType
 using DifferentiationInterface
 using DifferentiationInterface:
     mode, myeltype, supports_mutation, supports_pushforward, supports_pullback
-using DifferentiationInterface.DifferentiationTest
+using DifferentiationInterface.DifferentiationTest:
+    Scenario, allocating, backend_string, mutating, scalar_in, scalar_out, array_array
 import DifferentiationInterface.DifferentiationTest as DT
 using ForwardDiff: ForwardDiff
 using LinearAlgebra: dot

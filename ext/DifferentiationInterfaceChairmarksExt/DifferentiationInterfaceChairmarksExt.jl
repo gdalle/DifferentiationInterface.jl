@@ -5,7 +5,16 @@ using Chairmarks: @be, Benchmark, Sample
 using DifferentiationInterface
 using DifferentiationInterface:
     mode, myzero, supports_mutation, supports_pushforward, supports_pullback
-using DifferentiationInterface.DifferentiationTest
+using DifferentiationInterface.DifferentiationTest:
+    Scenario,
+    BenchmarkData,
+    allocating,
+    backend_string,
+    mutating,
+    scalar_in,
+    scalar_out,
+    array_array,
+    record!
 import DifferentiationInterface.DifferentiationTest as DT
 using Test: @testset, @test
 

@@ -50,22 +50,28 @@ end
         excluded,
     )
 
-Cross-test a list of `backends` for a list of `operators` on a list of `scenarios.`
+Cross-test a list of `backends` for a list of `operators` on a list of `scenarios`, running a variety of different tests.
 
-Return `nothing`, except when `benchmark=true`.
+- If `benchmark` is `false`, this returns a `TestSet` object.
+- If `benchmark` is `true`, this returns a [`BenchmarkData`](@ref) object, which is easy to turn into a `DataFrame`.
 
 # Default arguments
 
-- `operators`: defaults to all of them
-- `scenarios`: defaults to a set of default scenarios
+- `operators`: defaults to $FIRST_ORDER_OPERATORS
+- `scenarios`: defaults to the output of [`default_scenarios()`](@ref)
 
 # Keyword arguments
+
+Tests families:
 
 - `correctness=true`: whether to compare the differentiation results with those given by ForwardDiff.jl
 - `type_stability=true`: whether to check type stability with JET.jl
 - `call_count=false`: whether to check that the function is called the right number of times
 - `benchmark=false`: whether to run and return a benchmark suite with Chairmarks.jl
 - `allocations=false`: whether to check that the benchmarks are allocation-free
+
+Filtering:
+
 - `input_type=Any`: restrict scenario inputs to subtypes of this
 - `output_type=Any`: restrict scenario outputs to subtypes of this
 - `first_order=true`: consider first order operators
@@ -117,7 +123,7 @@ function test_operators(
     if benchmark
         return benchmark_data
     else
-        return nothing
+        return set
     end
 end
 

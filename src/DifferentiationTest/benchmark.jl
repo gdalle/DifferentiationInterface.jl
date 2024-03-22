@@ -3,7 +3,16 @@ run_benchmark(args...; kwargs...) = error("Please load Chairmarks.jl")
 """
     BenchmarkData
 
+Ad-hoc storage type for differentiation benchmarking results.
+You can turn it into a `DataFrame` as follows:
+
+```julia
+df = DataFrames.DataFrame(pairs(benchmark_data)...)
+```
+
 #  Fields
+
+These are not part of the public API.
 
 $(TYPEDFIELDS)
 """
