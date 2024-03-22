@@ -60,27 +60,3 @@ function Scenario(f!, x::Union{Number,AbstractArray}, s::NTuple{N,<:Integer}) wh
     dy = similar_random(y)
     return Scenario(; f=f!, x, y, dx, dy, mutating=true)
 end
-
-function scalar_to_scalar(scenarios::Vector{<:Scenario})
-    return filter(scenarios) do s
-        typeof(s.x) <: Number && typeof(s.y) <: Number
-    end
-end
-
-function scalar_to_array(scenarios::Vector{<:Scenario})
-    return filter(scenarios) do s
-        typeof(s.x) <: Number && typeof(s.y) <: AbstractArray
-    end
-end
-
-function array_to_scalar(scenarios::Vector{<:Scenario})
-    return filter(scenarios) do s
-        typeof(s.x) <: AbstractArray && typeof(s.y) <: Number
-    end
-end
-
-function array_to_array(scenarios::Vector{<:Scenario})
-    return filter(scenarios) do s
-        typeof(s.x) <: AbstractArray && typeof(s.y) <: AbstractArray
-    end
-end
