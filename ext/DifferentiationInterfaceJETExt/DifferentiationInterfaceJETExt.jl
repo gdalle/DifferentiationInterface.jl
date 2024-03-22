@@ -8,13 +8,7 @@ using ADTypes:
     AbstractSymbolicDifferentiationMode
 using DifferentiationInterface
 using DifferentiationInterface:
-    inner,
-    mode,
-    outer,
-    supports_mutation,
-    supports_pushforward,
-    supports_pullback,
-    supports_hvp
+    mode, supports_mutation, supports_pushforward, supports_pullback
 using DifferentiationInterface.DifferentiationTest
 import DifferentiationInterface.DifferentiationTest as DT
 using JET: @test_call, @test_opt

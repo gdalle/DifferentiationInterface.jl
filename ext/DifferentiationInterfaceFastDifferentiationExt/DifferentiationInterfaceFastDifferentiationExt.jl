@@ -3,7 +3,6 @@ module DifferentiationInterfaceFastDifferentiationExt
 using ADTypes: ADTypes
 using DifferentiationInterface: AutoFastDifferentiation
 import DifferentiationInterface as DI
-using DocStringExtensions
 using FastDifferentiation:
     derivative,
     jacobian,

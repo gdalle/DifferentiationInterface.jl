@@ -51,26 +51,21 @@ end
 allocating(scenarios::Vector{<:Scenario}) = filter(s -> !s.mutating, scenarios)
 mutating(scenarios::Vector{<:Scenario}) = filter(s -> s.mutating, scenarios)
 
-function scalar_scalar(scenarios::Vector{<:Scenario})
+function scalar_in(scenarios::Vector{<:Scenario})
     return filter(scenarios) do s
-        typeof(s.x) <: Number && typeof(s.y) <: Number
+        s.x isa Number
     end
 end
 
-function scalar_array(scenarios::Vector{<:Scenario})
+function scalar_out(scenarios::Vector{<:Scenario})
     return filter(scenarios) do s
-        typeof(s.x) <: Number && typeof(s.y) <: AbstractArray
+        s.y isa Number
     end
 end
 
-function array_scalar(scenarios::Vector{<:Scenario})
+function same_in_out(scenarios::Vector{<:Scenario})
     return filter(scenarios) do s
-        typeof(s.x) <: AbstractArray && typeof(s.y) <: Number
-    end
-end
-
-function array_array(scenarios::Vector{<:Scenario})
-    return filter(scenarios) do s
-        typeof(s.x) <: AbstractArray && typeof(s.y) <: AbstractArray
+        (s.x isa Number && s.y isa Number) ||
+            (s.x isa AbstractArray && s.y isa AbstractArray)
     end
 end

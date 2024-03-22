@@ -9,16 +9,14 @@ using ADTypes:
 using Chairmarks: @be, Benchmark, Sample
 using DifferentiationInterface
 using DifferentiationInterface:
-    inner,
     mode,
-    outer,
     supports_mutation,
     supports_pushforward,
     supports_pullback,
     supports_hvp
 using DifferentiationInterface.DifferentiationTest
 import DifferentiationInterface.DifferentiationTest as DT
-using Test
+using Test: @testset, @test
 
 function DT.run_benchmark(
     backends::Vector{<:AbstractADType},
@@ -49,17 +47,12 @@ function DT.run_benchmark(
                     end
 
                 elseif op == :derivative_allocating
-                    @testset "$s" for s in allocating(scalar_scalar(scenarios))
+                    @testset "$s" for s in allocating(scalar_array(scenarios))
                         benchmark_derivative_allocating!(data, backend, s; allocations)
                     end
-
-                elseif op == :multiderivative_allocating
-                    @testset "$s" for s in allocating(scalar_array(scenarios))
-                        benchmark_multiderivative_allocating!(data, backend, s; allocations)
-                    end
-                elseif op == :multiderivative_mutating
+                elseif op == :derivative_mutating
                     @testset "$s" for s in mutating(scalar_array(scenarios))
-                        benchmark_multiderivative_mutating!(data, backend, s; allocations)
+                        benchmark_derivative_mutating!(data, backend, s; allocations)
                     end
 
                 elseif op == :gradient_allocating
@@ -74,24 +67,6 @@ function DT.run_benchmark(
                 elseif op == :jacobian_mutating
                     @testset "$s" for s in mutating(array_array(scenarios))
                         benchmark_jacobian_mutating!(data, backend, s; allocations)
-                    end
-
-                elseif op == :second_derivative_allocating
-                    @testset "$s" for s in allocating(scalar_scalar(scenarios))
-                        benchmark_second_derivative_allocating!(
-                            data, backend, s; allocations
-                        )
-                    end
-
-                elseif op == :hessian_vector_product_allocating
-                    @testset "$s" for s in allocating(array_scalar(scenarios))
-                        benchmark_hessian_vector_product_allocating!(
-                            data, backend, s; allocations
-                        )
-                    end
-                elseif op == :hessian_allocating
-                    @testset "$s" for s in allocating(array_scalar(scenarios))
-                        benchmark_hessian_allocating!(data, backend, s; allocations)
                     end
 
                 else
@@ -181,43 +156,28 @@ end
 function benchmark_derivative_allocating!(
     data::BenchmarkData, ba::AbstractADType, scen::Scenario; allocations::Bool
 )
-    (; f, x) = deepcopy(scen)
-    extras = prepare_derivative(ba, f, x)
-    bench1 = @be value_and_derivative(ba, f, x, extras)
-    if allocations
-        @test 0 == minimum(bench1).allocs
-    end
-    record!(data, ba, scen, :value_and_derivative, bench1)
-    return nothing
-end
-
-## Multiderivative
-
-function benchmark_multiderivative_allocating!(
-    data::BenchmarkData, ba::AbstractADType, scen::Scenario; allocations::Bool
-)
     (; f, x, dy) = deepcopy(scen)
-    extras = prepare_multiderivative(ba, f, x)
-    bench1 = @be zero(dy) value_and_multiderivative!(_, ba, f, x, extras)
+    extras = prepare_derivative(ba, f, x)
+    bench1 = @be zero(dy) value_and_derivative!(_, ba, f, x, extras)
     # never test allocations
-    record!(data, ba, scen, :value_and_multiderivative!, bench1)
+    record!(data, ba, scen, :value_and_derivative!, bench1)
     return nothing
 end
 
-function benchmark_multiderivative_mutating!(
+function benchmark_derivative_mutating!(
     data::BenchmarkData, ba::AbstractADType, scen::Scenario; allocations::Bool
 )
     Bool(supports_mutation(ba)) || return nothing
     (; f, x, y, dy) = deepcopy(scen)
     f! = f
-    extras = prepare_multiderivative(ba, f!, x, y)
-    bench1 = @be (zero(y), zero(dy)) value_and_multiderivative!(
+    extras = prepare_derivative(ba, f!, x, y)
+    bench1 = @be (zero(y), zero(dy)) value_and_derivative!(
         _[1], _[2], ba, f!, x, extras
     )
     if allocations
         @test 0 == minimum(bench1).allocs
     end
-    record!(data, ba, scen, :value_and_multiderivative!, bench1)
+    record!(data, ba, scen, :value_and_derivative!, bench1)
     return nothing
 end
 
@@ -268,63 +228,6 @@ function benchmark_jacobian_mutating!(
         @test 0 == minimum(bench1).allocs
     end
     record!(data, ba, scen, :value_and_jacobian!, bench1)
-    return nothing
-end
-
-## Second derivative
-
-function benchmark_second_derivative_allocating!(
-    data::BenchmarkData, ba::AbstractADType, scen::Scenario; allocations::Bool
-)
-    (; f, x) = deepcopy(scen)
-    extras = prepare_second_derivative(ba, f, x)
-    bench1 = @be value_derivative_and_second_derivative(ba, f, x, extras)
-    if allocations
-        @test 0 == minimum(bench1).allocs
-    end
-    record!(data, ba, scen, :value_derivative_and_second_derivative, bench1)
-    return nothing
-end
-
-## Hessian-vector product
-
-function benchmark_hessian_vector_product_allocating!(
-    data::BenchmarkData, ba::AbstractADType, scen::Scenario; allocations::Bool
-)
-    Bool(supports_hvp(ba)) || return nothing
-    (; f, x, dx) = deepcopy(scen)
-    extras = prepare_hessian_vector_product(ba, f, x)
-    # bench1 = @be (zero(dx), zero(dx)) gradient_and_hessian_vector_product!(
-    #     _[1], _[2], ba, f, x, dx, extras
-    # )
-    bench2 = @be zero(dx) hessian_vector_product!(_, ba, f, x, dx, extras)
-    if allocations  # TODO: distinguish
-        # @test 0 == minimum(bench1).allocs
-        @test 0 == minimum(bench2).allocs
-    end
-    # record!(data, ba, scen, :gradient_and_hessian_vector_product!, bench1)
-    record!(data, ba, scen, :hessian_vector_product!, bench2)
-    return nothing
-end
-
-## Hessian
-
-function benchmark_hessian_allocating!(
-    data::BenchmarkData, ba::AbstractADType, scen::Scenario; allocations::Bool
-)
-    (; f, x, y, dx) = deepcopy(scen)
-    extras = prepare_hessian(ba, f, x)
-    hess_template = zeros(eltype(y), length(x), length(x))
-    bench1 = @be (zero(dx), zero(hess_template)) value_gradient_and_hessian!(
-        _[1], _[2], ba, f, x, extras
-    )
-    bench2 = @be (zero(hess_template)) hessian!(_, ba, f, x, extras)
-    if allocations
-        @test 0 == minimum(bench1).allocs
-        @test 0 == minimum(bench2).allocs
-    end
-    record!(data, ba, scen, :value_gradient_and_hessian!, bench1)
-    record!(data, ba, scen, :hessian!, bench2)
     return nothing
 end
 

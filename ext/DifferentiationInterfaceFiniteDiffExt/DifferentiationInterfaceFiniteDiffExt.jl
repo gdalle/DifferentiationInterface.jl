@@ -2,7 +2,6 @@ module DifferentiationInterfaceFiniteDiffExt
 
 using ADTypes: AutoFiniteDiff
 import DifferentiationInterface as DI
-using DocStringExtensions
 using FiniteDiff:
     finite_difference_derivative,
     finite_difference_gradient,
@@ -16,6 +15,6 @@ const FUNCTION_INPLACE = Val{true}
 const FUNCTION_NOT_INPLACE = Val{false}
 
 include("allocating.jl")
-include("mutating.jl")
+# include("mutating.jl")
 
 end # module

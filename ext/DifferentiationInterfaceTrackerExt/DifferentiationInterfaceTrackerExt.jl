@@ -2,7 +2,7 @@ module DifferentiationInterfaceTrackerExt
 
 using ADTypes: AutoTracker
 import DifferentiationInterface as DI
-using DifferentiationInterface: update!
+using DifferentiationInterface: myupdate!
 using Tracker: Tracker, back, data, forward, gradient, jacobian, param, withgradient
 
 DI.supports_mutation(::AutoTracker) = DI.MutationNotSupported()
@@ -16,7 +16,7 @@ end
 
 function DI.value_and_pullback!(f::F, dx, backend::AutoTracker, x, dy) where {F}
     y, new_dx = DI.value_and_pullback(f, backend, x, dy)
-    return y, update!(dx, new_dx)
+    return y, myupdate!(dx, new_dx)
 end
 
 end

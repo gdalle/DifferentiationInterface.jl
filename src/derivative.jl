@@ -14,5 +14,5 @@ end
     value_and_derivative(f, backend, x, [extras]) -> (y, der)
 """
 function value_and_derivative(f::F, backend::AbstractADType, x) where {F}
-    return value_and_pushforward(f, backend, x, one(x))
+    return value_and_derivative_aux(f, backend, x, one(x))
 end

@@ -1,6 +1,7 @@
 module DifferentiationInterfaceEnzymeExt
 
 using ADTypes: ADTypes, AutoEnzyme
+using DifferentiationInterface: myupdate!, mysimilar, myzero!
 import DifferentiationInterface as DI
 using DocStringExtensions
 using Enzyme:
@@ -16,7 +17,8 @@ using Enzyme:
     autodiff,
     gradient,
     gradient!,
-    jacobian
+    jacobian,
+    make_zero
 
 """
     AutoEnzyme(Enzyme.Forward)
@@ -40,7 +42,7 @@ DI.mode(::AutoReverseEnzyme) = ADTypes.AbstractReverseMode
 
 # Enzyme's `Duplicated(x, dx)` expects both arguments to be of the same type
 function DI.basisarray(::AutoEnzyme, a::AbstractArray{T}, i::CartesianIndex) where {T}
-    b = zero(a)
+    b = make_zero(a)
     b[i] = one(T)
     return b
 end
@@ -48,7 +50,7 @@ end
 include("forward_allocating.jl")
 include("forward_mutating.jl")
 
-include("reverse_allocating.jl")
-include("reverse_mutating.jl")
+# include("reverse_allocating.jl")
+# include("reverse_mutating.jl")
 
 end # module
