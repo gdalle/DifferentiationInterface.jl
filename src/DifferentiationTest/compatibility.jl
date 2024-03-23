@@ -4,11 +4,11 @@ function compatible(::AbstractADType, ::Function)
     return true
 end
 
-function compatible(backend::AbstractADType, ::typeof(value_and_pushforward))
+function compatible(backend::AbstractADType, ::typeof(pushforward))
     return Bool(supports_pushforward(backend))
 end
 
-function compatible(backend::AbstractADType, ::typeof(value_and_pullback))
+function compatible(backend::AbstractADType, ::typeof(pullback))
     return Bool(supports_pullback(backend))
 end
 
@@ -28,15 +28,25 @@ function compatible(::Function, ::Scenario)
     return true
 end
 
-function compatible(::typeof(value_and_derivative), scen::Scenario)
+function compatible(::typeof(derivative), scen::Scenario)
     return scen.x isa Number
 end
 
-function compatible(::typeof(value_and_gradient), scen::Scenario{mutating}) where {mutating}
+function compatible(::typeof(second_derivative), scen::Scenario{mutating}) where {mutating}
+    return scen.x isa Number && !mutating
+end
+
+function compatible(
+    ::Union{typeof(gradient),typeof(hvp)}, scen::Scenario{mutating}
+) where {mutating}
     return scen.y isa Number && !mutating
 end
 
-function compatible(::typeof(value_and_jacobian), scen::Scenario)
+function compatible(::typeof(hessian), scen::Scenario{mutating}) where {mutating}
+    return scen.y isa Number && !mutating && scen.x isa AbstractArray
+end
+
+function compatible(::typeof(jacobian), scen::Scenario)
     return scen.x isa AbstractArray && scen.y isa AbstractArray
 end
 

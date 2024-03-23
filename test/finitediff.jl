@@ -9,5 +9,6 @@ using Test
 
 @test check_available(AutoFiniteDiff())
 @test check_mutation(AutoFiniteDiff())
+@test_broken check_hessian(AutoFiniteDiff())
 
 test_operators(AutoFiniteDiff(); second_order=false, type_stability=false);

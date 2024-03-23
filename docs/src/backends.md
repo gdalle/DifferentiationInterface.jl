@@ -74,7 +74,7 @@ end  # hide
 Markdown.parse(join(vcat(header, subheader, rows...), "\n"))  # hide
 ```
 
-## [Mutation support](@id backend_mutation_behavior)
+## Mutation support
 
 All backends are compatible with allocating functions `f(x) = y`.
 Only some are compatible with mutating functions `f!(y, x) = nothing`.

@@ -12,24 +12,18 @@ function run_benchmark!(
     return error("Please load Chairmarks.jl or check your method signature")
 end
 
-FIRST_ORDER_OPERATORS = [
-    value_and_pushforward,
-    value_and_pullback,
-    value_and_derivative,
-    value_and_gradient,
-    value_and_jacobian,
-]
-
-ALL_OPERATORS = vcat(FIRST_ORDER_OPERATORS)
-
 function filter_operators(
     operators::Vector{<:Function};
     first_order::Bool,
     second_order::Bool,
     excluded::Vector{<:Function},
 )
-    !first_order && (operators = filter(!in(FIRST_ORDER_OPERATORS), operators))
-    !second_order && (operators = filter(in(FIRST_ORDER_OPERATORS), operators))
+    !first_order && (
+        operators = filter(
+            !in([pushforward, pullback, derivative, gradient, jacobian]), operators
+        )
+    )
+    !second_order && (operators = filter(!in([second_derivative, hvp, hessian]), operators))
     operators = filter(!in(excluded), operators)
     return operators
 end
@@ -59,8 +53,8 @@ Cross-test a list of `backends` for a list of `operators` on a list of `scenario
 
 # Default arguments
 
-- `operators`: `$FIRST_ORDER_OPERATORS`
-- `scenarios`: the output of [`default_scenarios()`](@ref)
+- `operators::Vector{Function}`: the list `[pushforward, pullback,derivative, gradient, jacobian, second_derivative, hvp, hessian]`
+- `scenarios::Vector{Scenario}`: the output of [`default_scenarios()`](@ref)
 
 # Keyword arguments
 
@@ -85,7 +79,16 @@ Filtering:
 """
 function test_operators(
     backends::Vector{<:AbstractADType},
-    operators::Vector{<:Function}=ALL_OPERATORS,
+    operators::Vector{<:Function}=[
+        pushforward,
+        pullback,
+        derivative,
+        gradient,
+        jacobian,
+        second_derivative,
+        hvp,
+        hessian,
+    ],
     scenarios::Vector{<:Scenario}=default_scenarios();
     # testing
     correctness::Bool=true,

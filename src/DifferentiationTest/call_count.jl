@@ -17,9 +17,7 @@ end
 
 ## Pushforward
 
-function test_call_count(
-    ba::AbstractADType, ::typeof(value_and_pushforward), scen::Scenario{false}
-)
+function test_call_count(ba::AbstractADType, ::typeof(pushforward), scen::Scenario{false})
     (; f, x, dx) = deepcopy(scen)
     extras = prepare_pushforward(CallCounter(f), ba, x)
     cc = CallCounter(f)
@@ -29,9 +27,7 @@ function test_call_count(
     end
 end
 
-function test_call_count(
-    ba::AbstractADType, ::typeof(value_and_pushforward), scen::Scenario{true}
-)
+function test_call_count(ba::AbstractADType, ::typeof(pushforward), scen::Scenario{true})
     (; f, x, y, dx, dy) = deepcopy(scen)
     extras = prepare_pushforward(CallCounter(f), ba, y, x)
     cc! = CallCounter(f)
@@ -45,9 +41,7 @@ end
 
 ## Pullback
 
-function test_call_count(
-    ba::AbstractADType, ::typeof(value_and_pullback), scen::Scenario{false}
-)
+function test_call_count(ba::AbstractADType, ::typeof(pullback), scen::Scenario{false})
     (; f, x, y, dy) = deepcopy(scen)
     extras = prepare_pullback(CallCounter(f), ba, x)
     cc = CallCounter(f)
@@ -57,9 +51,7 @@ function test_call_count(
     end
 end
 
-function test_call_count(
-    ba::AbstractADType, ::typeof(value_and_pullback), scen::Scenario{true}
-)
+function test_call_count(ba::AbstractADType, ::typeof(pullback), scen::Scenario{true})
     (; f, x, y, dx, dy) = deepcopy(scen)
     extras = prepare_pullback(CallCounter(f), ba, y, x)
     cc! = CallCounter(f)
@@ -73,9 +65,7 @@ end
 
 ## Derivative
 
-function test_call_count(
-    ba::AbstractADType, ::typeof(value_and_derivative), scen::Scenario{false}
-)
+function test_call_count(ba::AbstractADType, ::typeof(derivative), scen::Scenario{false})
     (; f, x, y) = deepcopy(scen)
     extras = prepare_derivative(CallCounter(f), ba, x)
     cc = CallCounter(f)
@@ -87,9 +77,7 @@ function test_call_count(
     end
 end
 
-function test_call_count(
-    ba::AbstractADType, ::typeof(value_and_derivative), scen::Scenario{true}
-)
+function test_call_count(ba::AbstractADType, ::typeof(derivative), scen::Scenario{true})
     (; f, x, y, dy) = deepcopy(scen)
     extras = prepare_derivative(CallCounter(f), ba, y, x)
     cc! = CallCounter(f)
@@ -105,9 +93,7 @@ end
 
 ## Gradient
 
-function test_call_count(
-    ba::AbstractADType, ::typeof(value_and_gradient), scen::Scenario{false}
-)
+function test_call_count(ba::AbstractADType, ::typeof(gradient), scen::Scenario{false})
     (; f, x, y) = deepcopy(scen)
     extras = prepare_gradient(CallCounter(f), ba, x)
     cc = CallCounter(f)
@@ -121,9 +107,7 @@ end
 
 ## Jacobian
 
-function test_call_count(
-    ba::AbstractADType, ::typeof(value_and_jacobian), scen::Scenario{false}
-)
+function test_call_count(ba::AbstractADType, ::typeof(jacobian), scen::Scenario{false})
     (; f, x, y) = deepcopy(scen)
     extras = prepare_jacobian(CallCounter(f), ba, x)
     cc = CallCounter(f)
@@ -135,9 +119,7 @@ function test_call_count(
     end
 end
 
-function test_call_count(
-    ba::AbstractADType, ::typeof(value_and_jacobian), scen::Scenario{true}
-)
+function test_call_count(ba::AbstractADType, ::typeof(jacobian), scen::Scenario{true})
     (; f, x, y) = deepcopy(scen)
     extras = prepare_jacobian(CallCounter(f), ba, y, x)
     cc! = CallCounter(f)
@@ -151,6 +133,37 @@ function test_call_count(
     end
 end
 
-function test_call_count(ba::AbstractADType, op::Function, scen::Scenario)
-    throw(ArgumentError("Invalid operator to test: $op"))
+## Second derivative
+
+function test_call_count(
+    ba::AbstractADType, ::typeof(second_derivative), scen::Scenario{false}
+)
+    (; f, x, y) = deepcopy(scen)
+    extras = prepare_second_derivative(CallCounter(f), ba, x)
+    cc = CallCounter(f)
+    second_derivative(cc, ba, x, extras)
+    # what to test?
+    return nothing
+end
+
+## Hessian-vector product
+
+function test_call_count(ba::AbstractADType, ::typeof(hvp), scen::Scenario{false})
+    (; f, x, y, dx) = deepcopy(scen)
+    extras = prepare_hvp(CallCounter(f), ba, x)
+    cc = CallCounter(f)
+    hvp(cc, ba, x, dx, extras)
+    # what to test?
+    return nothing
+end
+
+## Hessian
+
+function test_call_count(ba::AbstractADType, ::typeof(hessian), scen::Scenario{false})
+    (; f, x, y, dx) = deepcopy(scen)
+    extras = prepare_hessian(CallCounter(f), ba, x)
+    cc = CallCounter(f)
+    hessian(cc, ba, x, extras)
+    # what to test?
+    return nothing
 end

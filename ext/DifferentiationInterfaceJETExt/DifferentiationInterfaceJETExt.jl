@@ -11,7 +11,7 @@ using Test: @testset, @test
 ## Pushforward
 
 function DT.test_type_stability(
-    ba::AbstractADType, ::typeof(value_and_pushforward), scen::Scenario{false}
+    ba::AbstractADType, ::typeof(pushforward), scen::Scenario{false}
 )
     (; f, x, dx, dy) = deepcopy(scen)
     extras = prepare_pushforward(f, ba, x)
@@ -25,7 +25,7 @@ function DT.test_type_stability(
 end
 
 function DT.test_type_stability(
-    ba::AbstractADType, ::typeof(value_and_pushforward), scen::Scenario{true}
+    ba::AbstractADType, ::typeof(pushforward), scen::Scenario{true}
 )
     (; f, x, y, dx, dy) = deepcopy(scen)
     f! = f
@@ -40,7 +40,7 @@ end
 ## Pullback
 
 function DT.test_type_stability(
-    ba::AbstractADType, ::typeof(value_and_pullback), scen::Scenario{false}
+    ba::AbstractADType, ::typeof(pullback), scen::Scenario{false}
 )
     (; f, x, dx, dy) = deepcopy(scen)
     extras = prepare_pullback(f, ba, x)
@@ -54,7 +54,7 @@ function DT.test_type_stability(
 end
 
 function DT.test_type_stability(
-    ba::AbstractADType, ::typeof(value_and_pullback), scen::Scenario{true}
+    ba::AbstractADType, ::typeof(pullback), scen::Scenario{true}
 )
     (; f, x, y, dx, dy) = deepcopy(scen)
     f! = f
@@ -69,7 +69,7 @@ end
 ## Derivative
 
 function DT.test_type_stability(
-    ba::AbstractADType, ::typeof(value_and_derivative), scen::Scenario{false}
+    ba::AbstractADType, ::typeof(derivative), scen::Scenario{false}
 )
     (; f, x, dy) = deepcopy(scen)
     extras = prepare_derivative(f, ba, x)
@@ -83,7 +83,7 @@ function DT.test_type_stability(
 end
 
 function DT.test_type_stability(
-    ba::AbstractADType, ::typeof(value_and_derivative), scen::Scenario{true}
+    ba::AbstractADType, ::typeof(derivative), scen::Scenario{true}
 )
     (; f, x, y, dy) = deepcopy(scen)
     f! = f
@@ -98,7 +98,7 @@ end
 ## Gradient
 
 function DT.test_type_stability(
-    ba::AbstractADType, ::typeof(value_and_gradient), scen::Scenario{false}
+    ba::AbstractADType, ::typeof(gradient), scen::Scenario{false}
 )
     (; f, x, dx) = deepcopy(scen)
     extras = prepare_gradient(f, ba, x)
@@ -114,7 +114,7 @@ end
 ## Jacobian
 
 function DT.test_type_stability(
-    ba::AbstractADType, ::typeof(value_and_jacobian), scen::Scenario{false}
+    ba::AbstractADType, ::typeof(jacobian), scen::Scenario{false}
 )
     (; f, x, y) = deepcopy(scen)
     extras = prepare_jacobian(f, ba, x)
@@ -128,7 +128,7 @@ function DT.test_type_stability(
 end
 
 function DT.test_type_stability(
-    ba::AbstractADType, ::typeof(value_and_jacobian), scen::Scenario{true}
+    ba::AbstractADType, ::typeof(jacobian), scen::Scenario{true}
 )
     (; f, x, y) = deepcopy(scen)
     f! = f
@@ -138,6 +138,39 @@ function DT.test_type_stability(
 
     @test_call value_and_jacobian!!(f!, y_in, jac_in, ba, x, extras)
     @test_opt value_and_jacobian!!(f!, y_in, jac_in, ba, x, extras)
+end
+
+## Second derivative
+
+function DT.test_type_stability(
+    ba::AbstractADType, ::typeof(second_derivative), scen::Scenario{false}
+)
+    (; f, x) = deepcopy(scen)
+    extras = prepare_second_derivative(f, ba, x)
+
+    @test_call second_derivative(f, ba, x, extras)
+end
+
+## HVP
+
+function DT.test_type_stability(ba::AbstractADType, ::typeof(hvp), scen::Scenario{false})
+    (; f, x, dx) = deepcopy(scen)
+    extras = prepare_hvp(f, ba, x)
+
+    @test_call hvp(f, ba, x, dx, extras)
+    @test_opt hvp(f, ba, x, dx, extras)
+end
+
+## Hessian
+
+function DT.test_type_stability(
+    ba::AbstractADType, ::typeof(hessian), scen::Scenario{false}
+)
+    (; f, x) = deepcopy(scen)
+    extras = prepare_hessian(f, ba, x)
+
+    @test_call hessian(f, ba, x, extras)
+    @test_opt hessian(f, ba, x, extras)
 end
 
 end #module

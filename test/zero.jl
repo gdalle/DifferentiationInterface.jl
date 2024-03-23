@@ -10,9 +10,7 @@ using Test
 @test check_available(AutoZeroForward())
 @test check_available(AutoZeroReverse())
 
-test_operators(
-    [AutoZeroForward(), AutoZeroReverse()]; second_order=false, correctness=false
-);
+test_operators([AutoZeroForward(), AutoZeroReverse()]; correctness=false);
 
 # call count (experimental)
 
@@ -21,8 +19,7 @@ test_operators(
     correctness=false,
     type_stability=false,
     call_count=true,
-    second_order=false,
-    excluded=[value_and_gradient],
+    excluded=[gradient],
 );
 
 test_operators(
@@ -30,8 +27,7 @@ test_operators(
     correctness=false,
     type_stability=false,
     call_count=true,
-    second_order=true,
-    excluded=[value_and_derivative],
+    excluded=[derivative],
 );
 
 # allocs (experimental)
@@ -41,7 +37,6 @@ test_operators(
     correctness=false,
     type_stability=false,
     allocations=true,
-    second_order=false,
 );
 
 data = test_operators(

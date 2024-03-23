@@ -30,6 +30,13 @@ Modules = [DifferentiationInterface]
 Pages = ["jacobian.jl"]
 ```
 
+## Second order
+
+```@autodocs
+Modules = [DifferentiationInterface]
+Pages = ["second_order.jl", "second_derivative.jl", "hessian.jl", "hvp.jl"]
+```
+
 ## Primitives
 
 ```@autodocs

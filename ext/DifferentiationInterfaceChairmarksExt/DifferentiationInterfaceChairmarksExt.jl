@@ -13,7 +13,7 @@ using Test: @testset, @test
 function DT.run_benchmark!(
     data::BenchmarkData,
     ba::AbstractADType,
-    op::typeof(value_and_pushforward),
+    op::typeof(pushforward),
     scen::Scenario{false};
     allocations::Bool,
 )
@@ -23,14 +23,14 @@ function DT.run_benchmark!(
     if allocations && dy isa Number
         @test 0 == minimum(bench1).allocs
     end
-    record!(data, ba, op, scen, bench1)
+    record!(data, ba, op, value_and_pushforward!!, scen, bench1)
     return nothing
 end
 
 function DT.run_benchmark!(
     data::BenchmarkData,
     ba::AbstractADType,
-    op::typeof(value_and_pushforward),
+    op::typeof(pushforward),
     scen::Scenario{true};
     allocations::Bool,
 )
@@ -43,7 +43,7 @@ function DT.run_benchmark!(
     if allocations
         @test 0 == minimum(bench1).allocs
     end
-    record!(data, ba, op, scen, bench1)
+    record!(data, ba, op, value_and_pushforward!!, scen, bench1)
     return nothing
 end
 
@@ -52,7 +52,7 @@ end
 function DT.run_benchmark!(
     data::BenchmarkData,
     ba::AbstractADType,
-    op::typeof(value_and_pullback),
+    op::typeof(pullback),
     scen::Scenario{false};
     allocations::Bool,
 )
@@ -62,14 +62,14 @@ function DT.run_benchmark!(
     if allocations && dy isa Number
         @test 0 == minimum(bench1).allocs
     end
-    record!(data, ba, op, scen, bench1)
+    record!(data, ba, op, value_and_pullback!!, scen, bench1)
     return nothing
 end
 
 function DT.run_benchmark!(
     data::BenchmarkData,
     ba::AbstractADType,
-    op::typeof(value_and_pullback),
+    op::typeof(pullback),
     scen::Scenario{true};
     allocations::Bool,
 )
@@ -82,7 +82,7 @@ function DT.run_benchmark!(
     if allocations
         @test 0 == minimum(bench1).allocs
     end
-    record!(data, ba, op, scen, bench1)
+    record!(data, ba, op, value_and_pullback!!, scen, bench1)
     return nothing
 end
 
@@ -91,7 +91,7 @@ end
 function DT.run_benchmark!(
     data::BenchmarkData,
     ba::AbstractADType,
-    op::typeof(value_and_derivative),
+    op::typeof(derivative),
     scen::Scenario{false};
     allocations::Bool,
 )
@@ -102,14 +102,14 @@ function DT.run_benchmark!(
     if allocations && y isa Number
         @test 0 == minimum(bench1).allocs
     end
-    record!(data, ba, op, scen, bench1)
+    record!(data, ba, op, value_and_derivative!!, scen, bench1)
     return nothing
 end
 
 function DT.run_benchmark!(
     data::BenchmarkData,
     ba::AbstractADType,
-    op::typeof(value_and_derivative),
+    op::typeof(derivative),
     scen::Scenario{true};
     allocations::Bool,
 )
@@ -122,7 +122,7 @@ function DT.run_benchmark!(
     if allocations
         @test 0 == minimum(bench1).allocs
     end
-    record!(data, ba, op, scen, bench1)
+    record!(data, ba, op, value_and_derivative!!, scen, bench1)
     return nothing
 end
 
@@ -131,7 +131,7 @@ end
 function DT.run_benchmark!(
     data::BenchmarkData,
     ba::AbstractADType,
-    op::typeof(value_and_gradient),
+    op::typeof(gradient),
     scen::Scenario{false};
     allocations::Bool,
 )
@@ -141,7 +141,7 @@ function DT.run_benchmark!(
     if allocations
         @test 0 == minimum(bench1).allocs
     end
-    record!(data, ba, op, scen, bench1)
+    record!(data, ba, op, value_and_gradient!!, scen, bench1)
     return nothing
 end
 
@@ -150,7 +150,7 @@ end
 function DT.run_benchmark!(
     data::BenchmarkData,
     ba::AbstractADType,
-    op::typeof(value_and_jacobian),
+    op::typeof(jacobian),
     scen::Scenario{false};
     allocations::Bool,
 )
@@ -159,14 +159,14 @@ function DT.run_benchmark!(
     jac_template = zeros(eltype(y), length(y), length(x))
     bench1 = @be myzero(jac_template) value_and_jacobian!!(f, _, ba, x, extras)
     # never test allocations
-    record!(data, ba, op, scen, bench1)
+    record!(data, ba, op, value_and_jacobian!!, scen, bench1)
     return nothing
 end
 
 function DT.run_benchmark!(
     data::BenchmarkData,
     ba::AbstractADType,
-    op::typeof(value_and_jacobian),
+    op::typeof(jacobian),
     scen::Scenario{true};
     allocations::Bool,
 )
@@ -180,7 +180,61 @@ function DT.run_benchmark!(
     if allocations
         @test 0 == minimum(bench1).allocs
     end
-    record!(data, ba, op, scen, bench1)
+    record!(data, ba, op, value_and_jacobian!!, scen, bench1)
+    return nothing
+end
+
+## Second derivative
+
+function DT.run_benchmark!(
+    data::BenchmarkData,
+    ba::AbstractADType,
+    op::typeof(second_derivative),
+    scen::Scenario{false};
+    allocations::Bool,
+)
+    (; f, x, y, dy) = deepcopy(scen)
+    extras = prepare_second_derivative(f, ba, x)
+    bench1 = @be second_derivative(f, ba, x, extras)
+    # only test allocations if the output is scalar
+    if allocations && y isa Number
+        @test 0 == minimum(bench1).allocs
+    end
+    record!(data, ba, op, second_derivative, scen, bench1)
+    return nothing
+end
+
+## Hessian-vector product
+
+function DT.run_benchmark!(
+    data::BenchmarkData,
+    ba::AbstractADType,
+    op::typeof(hvp),
+    scen::Scenario{false};
+    allocations::Bool,
+)
+    (; f, x, y, dx) = deepcopy(scen)
+    extras = prepare_hvp(f, ba, x)
+    bench1 = @be hvp(f, ba, x, dx, extras)
+    # no test for now
+    record!(data, ba, op, hvp, scen, bench1)
+    return nothing
+end
+
+## Hessian
+
+function DT.run_benchmark!(
+    data::BenchmarkData,
+    ba::AbstractADType,
+    op::typeof(hessian),
+    scen::Scenario{false};
+    allocations::Bool,
+)
+    (; f, x, y) = deepcopy(scen)
+    extras = prepare_hessian(f, ba, x)
+    bench1 = @be hessian(f, ba, x, extras)
+    # no test for now
+    record!(data, ba, op, hessian, scen, bench1)
     return nothing
 end
 

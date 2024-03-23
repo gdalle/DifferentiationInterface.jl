@@ -14,6 +14,14 @@ This package provides a backend-agnostic syntax to differentiate functions of th
 - **allocating**: `f(x) = y`
 - **mutating**: `f!(y, x) = nothing`
 
+## Features
+
+- First and second order operators
+- In-place and out-of-place differentiation
+- Preparation mechanism (e.g. to create a config or tape)
+- Cross-backend testing and benchmarking utilities
+- Thorough validation on standard inputs and outputs (scalars, vectors, matrices)
+
 ## Compatibility
 
 We support most of the backends defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl):

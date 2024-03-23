@@ -22,27 +22,6 @@ using ReverseDiff: ReverseDiff
 using Tracker: Tracker
 using Zygote: Zygote
 
-ChainRulesCoreExt = get_extension(DI, :DifferentiationInterfaceChainRulesCoreExt)
-DiffractorExt = get_extension(DI, :DifferentiationInterfaceDiffractorExt)
-EnzymeExt = get_extension(DI, :DifferentiationInterfaceEnzymeExt)
-FastDifferentiationExt = get_extension(DI, :DifferentiationInterfaceFastDifferentiationExt)
-FiniteDiffExt = get_extension(DI, :DifferentiationInterfaceFiniteDiffExt)
-FiniteDifferencesExt = get_extension(DI, :DifferentiationInterfaceFiniteDifferencesExt)
-ForwardDiffExt = get_extension(DI, :DifferentiationInterfaceForwardDiffExt)
-PolyesterForwardDiffExt = get_extension(
-    DI, :DifferentiationInterfacePolyesterForwardDiffExt
-)
-ReverseDiffExt = get_extension(DI, :DifferentiationInterfaceReverseDiffExt)
-TrackerExt = get_extension(DI, :DifferentiationInterfaceTrackerExt)
-ZygoteExt = get_extension(DI, :DifferentiationInterfaceZygoteExt)
-
-DocMeta.setdocmeta!(
-    DifferentiationInterface,
-    :DocTestSetup,
-    :(using DifferentiationInterface, ADTypes);
-    recursive=true,
-)
-
 open(joinpath(@__DIR__, "src", "index.md"), "w") do io
     println(
         io,
@@ -62,17 +41,17 @@ makedocs(;
         ADTypes,
         DifferentiationInterface,
         DifferentiationInterface.DifferentiationTest,
-        ChainRulesCoreExt,
-        DiffractorExt,
-        EnzymeExt,
-        FastDifferentiationExt,
-        FiniteDiffExt,
-        FiniteDifferencesExt,
-        ForwardDiffExt,
-        PolyesterForwardDiffExt,
-        ReverseDiffExt,
-        TrackerExt,
-        ZygoteExt,
+        get_extension(DI, :DifferentiationInterfaceChainRulesCoreExt),
+        get_extension(DI, :DifferentiationInterfaceDiffractorExt),
+        get_extension(DI, :DifferentiationInterfaceEnzymeExt),
+        get_extension(DI, :DifferentiationInterfaceFastDifferentiationExt),
+        get_extension(DI, :DifferentiationInterfaceFiniteDiffExt),
+        get_extension(DI, :DifferentiationInterfaceFiniteDifferencesExt),
+        get_extension(DI, :DifferentiationInterfaceForwardDiffExt),
+        get_extension(DI, :DifferentiationInterfacePolyesterForwardDiffExt),
+        get_extension(DI, :DifferentiationInterfaceReverseDiffExt),
+        get_extension(DI, :DifferentiationInterfaceTrackerExt),
+        get_extension(DI, :DifferentiationInterfaceZygoteExt),
     ],
     authors="Guillaume Dalle, Adrian Hill",
     sitename="DifferentiationInterface.jl",
@@ -83,9 +62,9 @@ makedocs(;
     ),
     pages=[
         "Home" => "index.md", #
-        "getting_started.md", #
-        "api.md", #
+        "overview.md", #
         "backends.md", #
+        "api.md", #
         "developer.md",
     ],
     warnonly=:missing_docs,  # missing docs for ADTypes.jl are normal

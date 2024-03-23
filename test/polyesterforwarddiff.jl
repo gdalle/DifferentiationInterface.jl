@@ -8,6 +8,7 @@ using Test
 
 @test check_available(AutoPolyesterForwardDiff(; chunksize=2))
 @test check_mutation(AutoPolyesterForwardDiff(; chunksize=2))
+@test check_hessian(AutoPolyesterForwardDiff(; chunksize=2))
 
 test_operators(
     AutoPolyesterForwardDiff(; chunksize=2);

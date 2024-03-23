@@ -112,3 +112,25 @@ function value_and_jacobian_aux(
     end
     return y, jac
 end
+
+"""
+    jacobian!!(f, jac, backend, x, [extras]) -> jac
+"""
+function jacobian!!(
+    f::F,
+    jac::AbstractMatrix,
+    backend::AbstractADType,
+    x::AbstractArray,
+    extras=prepare_jacobian(f, backend, x),
+) where {F}
+    return last(value_and_jacobian!!(f, jac, backend, x, extras))
+end
+
+"""
+    jacobian(f, backend, x, [extras]) -> jac
+"""
+function jacobian(
+    f::F, backend::AbstractADType, x::AbstractArray, extras=prepare_jacobian(f, backend, x)
+) where {F}
+    return last(value_and_jacobian(f, backend, x, extras))
+end

@@ -34,7 +34,7 @@ prepare_gradient(f, ::AbstractADType, x) = nothing
 
 """
     prepare_jacobian(f, backend, x) -> extras
-    prepare_jacobian(f!, backend, x, y) -> extras
+    prepare_jacobian(f!, backend, y, x) -> extras
 
 Create an `extras` object that can be given to Jacobian operators.
 """
@@ -51,11 +51,11 @@ prepare_second_derivative(f, ::AbstractADType, x) = nothing
 prepare_second_derivative(f!, ::AbstractADType, y, x) = nothing
 
 """
-    prepare_hessian_vector_product(f, backend, x) -> extras
+    prepare_hvp(f, backend, x) -> extras
 
 Create an `extras` object that can be given to Hessian-vector product operators.
 """
-prepare_hessian_vector_product(f, ::AbstractADType, x) = nothing
+prepare_hvp(f, ::AbstractADType, x) = nothing
 
 """
     prepare_hessian(f, backend, x) -> extras

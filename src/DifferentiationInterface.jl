@@ -28,6 +28,7 @@ Chooses [FastDifferentiation.jl](https://github.com/brianguenter/FastDifferentia
 """
 struct AutoFastDifferentiation <: AbstractSymbolicDifferentiationMode end
 
+include("second_order.jl")
 include("traits.jl")
 include("utils.jl")
 include("prepare.jl")
@@ -39,9 +40,14 @@ include("derivative.jl")
 include("gradient.jl")
 include("jacobian.jl")
 
+include("second_derivative.jl")
+include("hvp.jl")
+include("hessian.jl")
+
 include("backends.jl")
 
 export AutoFastDifferentiation
+export SecondOrder
 
 export value_and_pushforward!!, value_and_pushforward
 export value_and_pullback!!, value_and_pullback
@@ -50,11 +56,22 @@ export value_and_derivative!!, value_and_derivative
 export value_and_gradient!!, value_and_gradient
 export value_and_jacobian!!, value_and_jacobian
 
+export pushforward!!, pushforward
+export pullback!!, pullback
+
+export derivative!!, derivative
+export gradient!!, gradient
+export jacobian!!, jacobian
+
+export second_derivative
+export hvp
+export hessian
+
 export prepare_pushforward, prepare_pullback
 export prepare_derivative, prepare_gradient, prepare_jacobian
-export prepare_second_derivative, prepare_hessian_vector_product, prepare_hessian
+export prepare_second_derivative, prepare_hvp, prepare_hessian
 
-export check_available, check_mutation
+export check_available, check_mutation, check_hessian
 
 # submodules
 include("DifferentiationTest/DifferentiationTest.jl")
@@ -69,6 +86,7 @@ function __init__()
             contains(f_name, "derivative") ||
             contains(f_name, "gradient") ||
             contains(f_name, "jacobian") ||
+            contains(f_name, "hvp") ||
             contains(f_name, "hessian")
         )
             for T in argtypes
@@ -79,7 +97,7 @@ function __init__()
                         HINT: One of DifferentiationInterface's functions is missing a method. Some possible fixes:
                         - switch to another backend
                         - if you don't want to switch, load the package extension corresponding to backend `$T`
-                        - if the package is already loaded, define the method `$f_name` for arguments `$(Tuple(argtypes))`
+                        - if the package is already loaded, define the method `$f_name` for the right combination of argument types
                         """,
                     )
                     return nothing

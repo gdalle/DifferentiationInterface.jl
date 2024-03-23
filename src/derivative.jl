@@ -101,3 +101,21 @@ function value_and_derivative_aux(
         return y, der
     end
 end
+
+"""
+    derivative!!(f, der, backend, x, [extras]) -> der
+"""
+function derivative!!(
+    f::F, der, backend::AbstractADType, x::Number, extras=prepare_derivative(f, backend, x)
+) where {F}
+    return last(value_and_derivative!!(f, der, backend, x, extras))
+end
+
+"""
+    derivative(f, backend, x, [extras]) -> der
+"""
+function derivative(
+    f::F, backend::AbstractADType, x::Number, extras=prepare_derivative(f, backend, x)
+) where {F}
+    return last(value_and_derivative(f, backend, x, extras))
+end

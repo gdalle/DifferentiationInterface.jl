@@ -9,5 +9,6 @@ using Test
 
 @test_broken check_available(AutoReverseDiff())
 @test check_mutation(AutoReverseDiff())
+@test check_hessian(AutoReverseDiff())
 
 test_operators(AutoReverseDiff(); input_type=AbstractArray, type_stability=false);

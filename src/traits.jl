@@ -102,6 +102,54 @@ supports_pullback(::Type{AbstractFiniteDifferencesMode}) = PullbackNotSupported(
 supports_pullback(::Type{AbstractReverseMode}) = PullbackSupported()
 supports_pullback(::Type{AbstractSymbolicDifferentiationMode}) = PullbackSupported()
 
+## HVP
+
+abstract type HVPMode end
+
+"""
+    ForwardOverReverse
+
+Traits identifying second-order backends that compute HVPs in forward over reverse mode.
+"""
+struct ForwardOverReverse end
+
+"""
+    ReverseOverForward
+
+Traits identifying second-order backends that compute HVPs in reverse over forward mode.
+"""
+struct ReverseOverForward end
+
+"""
+    ReverseOverReverse
+
+Traits identifying second-order backends that compute HVPs in reverse over reverse mode.
+"""
+struct ReverseOverReverse end
+
+"""
+    ForwardOverForward
+
+Traits identifying second-order backends that compute HVPs in forward over forward mode (inefficient).
+"""
+struct ForwardOverForward end
+
+hvp_mode(::AbstractADType) = error("HVP mode undefined for first order backend")
+
+function hvp_mode(ba::SecondOrder)
+    if Bool(supports_pushforward(outer(ba))) && Bool(supports_pullback(inner(ba)))
+        return ForwardOverReverse()
+    elseif Bool(supports_pullback(outer(ba))) && Bool(supports_pushforward(inner(ba)))
+        return ReverseOverForward()
+    elseif Bool(supports_pullback(outer(ba))) && Bool(supports_pullback(inner(ba)))
+        return ReverseOverReverse()
+    elseif Bool(supports_pushforward(outer(ba))) && Bool(supports_pushforward(inner(ba)))
+        return ForwardOverForward()
+    else
+        error("HVP mode unknown")
+    end
+end
+
 ## Conversions
 
 Base.Bool(::MutationSupported) = true

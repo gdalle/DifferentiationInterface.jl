@@ -2,7 +2,9 @@
     check_available(backend)
 
 Check whether `backend` is available by trying a scalar-to-scalar derivative.
-Might take a while due to compilation time.
+
+!!! warning
+    Might take a while due to compilation time.
 """
 function check_available(backend::AbstractADType)
     try
@@ -23,12 +25,34 @@ square!(y, x) = y .= x .^ 2
     check_mutation(backend)
 
 Check whether `backend` supports differentiation of mutating functions by trying a jacobian.
-Might take a while due to compilation time.
+
+!!! warning
+    Might take a while due to compilation time.
 """
 function check_mutation(backend::AbstractADType)
     try
         y, jac = value_and_jacobian!!(square!, [0.0], [0.0;;], backend, [3.0])
         return isapprox(y, [9.0]; rtol=1e-3) && isapprox(jac, [6.0;;]; rtol=1e-3)
+    catch e
+        return false
+    end
+end
+
+sqnorm(x::AbstractArray) = sum(abs2, x)
+
+"""
+    check_hessian(backend)
+
+Check whether `backend` supports second order differentiation by trying a hessian.
+
+!!! warning
+    Might take a while due to compilation time.
+"""
+function check_hessian(backend::AbstractADType)
+    try
+        x = [3.0]
+        hess = hessian(sqnorm, backend, x)
+        return isapprox(hess, [2.0;;]; rtol=1e-3)
     catch e
         return false
     end

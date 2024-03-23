@@ -20,7 +20,7 @@ end
 ## Pushforward
 
 function DT.test_correctness(
-    ba::AbstractADType, ::typeof(value_and_pushforward), scen::Scenario{false}
+    ba::AbstractADType, ::typeof(pushforward), scen::Scenario{false}
 )
     (; f, x, y, dx) = new_scen = deepcopy(scen)
     dy_true = true_pushforward(f, x, y, dx; mutating=false)
@@ -29,6 +29,10 @@ function DT.test_correctness(
     dy_in2 = zero(dy_out1)
     y_out2, dy_out2 = value_and_pushforward!!(f, dy_in2, ba, x, dx)
 
+    dy_out3 = pushforward(f, ba, x, dx)
+    dy_in4 = zero(dy_out3)
+    dy_out4 = pushforward!!(f, dy_in4, ba, x, dx)
+
     @testset "Primal value" begin
         @test y_out1 ≈ y
         @test y_out2 ≈ y
@@ -36,9 +40,12 @@ function DT.test_correctness(
     @testset "Tangent value" begin
         @test dy_out1 ≈ dy_true rtol = 1e-3
         @test dy_out2 ≈ dy_true rtol = 1e-3
+        @test dy_out3 ≈ dy_true rtol = 1e-3
+        @test dy_out4 ≈ dy_true rtol = 1e-3
         if ismutable(dy_true)
             @testset "Mutation" begin
                 @test dy_in2 ≈ dy_true rtol = 1e-3
+                @test dy_in4 ≈ dy_true rtol = 1e-3
             end
         end
     end
@@ -46,7 +53,7 @@ function DT.test_correctness(
 end
 
 function DT.test_correctness(
-    ba::AbstractADType, ::typeof(value_and_pushforward), scen::Scenario{true}
+    ba::AbstractADType, ::typeof(pushforward), scen::Scenario{true}
 )
     (; f, x, y, dx) = new_scen = deepcopy(scen)
     f! = f
@@ -77,15 +84,17 @@ end
 
 ## Pullback
 
-function DT.test_correctness(
-    ba::AbstractADType, ::typeof(value_and_pullback), scen::Scenario{false}
-)
+function DT.test_correctness(ba::AbstractADType, ::typeof(pullback), scen::Scenario{false})
     (; f, x, y, dy) = new_scen = deepcopy(scen)
     dx_true = true_pullback(f, x, y, dy; mutating=false)
 
     y_out1, dx_out1 = value_and_pullback(f, ba, x, dy)
     dx_in2 = zero(dx_out1)
     y_out2, dx_out2 = value_and_pullback!!(f, dx_in2, ba, x, dy)
+
+    dx_out3 = pullback(f, ba, x, dy)
+    dx_in4 = zero(dx_out3)
+    dx_out4 = pullback!!(f, dx_in4, ba, x, dy)
 
     @testset "Primal value" begin
         @test y_out1 ≈ y
@@ -94,18 +103,19 @@ function DT.test_correctness(
     @testset "Cotangent value" begin
         @test dx_out1 ≈ dx_true rtol = 1e-3
         @test dx_out2 ≈ dx_true rtol = 1e-3
+        @test dx_out3 ≈ dx_true rtol = 1e-3
+        @test dx_out4 ≈ dx_true rtol = 1e-3
         if ismutable(dx_true)
             @testset "Mutation" begin
                 @test dx_in2 ≈ dx_true rtol = 1e-3
+                @test dx_in4 ≈ dx_true rtol = 1e-3
             end
         end
     end
     return test_scen_intact(new_scen, scen)
 end
 
-function DT.test_correctness(
-    ba::AbstractADType, ::typeof(value_and_pullback), scen::Scenario{true}
-)
+function DT.test_correctness(ba::AbstractADType, ::typeof(pullback), scen::Scenario{true})
     (; f, x, y, dy) = new_scen = deepcopy(scen)
     f! = f
     dx_true = true_pullback(f, x, y, dy; mutating=true)
@@ -138,7 +148,7 @@ end
 ## Derivative
 
 function DT.test_correctness(
-    ba::AbstractADType, ::typeof(value_and_derivative), scen::Scenario{false}
+    ba::AbstractADType, ::typeof(derivative), scen::Scenario{false}
 )
     (; f, x, y) = new_scen = deepcopy(scen)
     der_true = ForwardDiff.derivative(f, x)
@@ -147,6 +157,10 @@ function DT.test_correctness(
     der_in2 = zero(der_out1)
     y_out2, der_out2 = value_and_derivative!!(f, der_in2, ba, x)
 
+    der_out3 = derivative(f, ba, x)
+    der_in4 = zero(der_out3)
+    der_out4 = derivative!!(f, der_in4, ba, x)
+
     @testset "Primal value" begin
         @test y_out1 ≈ y
         @test y_out2 ≈ y
@@ -154,18 +168,19 @@ function DT.test_correctness(
     @testset "Derivative value" begin
         @test der_out1 ≈ der_true rtol = 1e-3
         @test der_out2 ≈ der_true rtol = 1e-3
+        @test der_out3 ≈ der_true rtol = 1e-3
+        @test der_out4 ≈ der_true rtol = 1e-3
         @testset "Mutation" begin
             if ismutable(der_true)
                 @test der_in2 ≈ der_true rtol = 1e-3
+                @test der_in4 ≈ der_true rtol = 1e-3
             end
         end
     end
     return test_scen_intact(new_scen, scen)
 end
 
-function DT.test_correctness(
-    ba::AbstractADType, ::typeof(value_and_derivative), scen::Scenario{true}
-)
+function DT.test_correctness(ba::AbstractADType, ::typeof(derivative), scen::Scenario{true})
     (; f, x, y) = new_scen = deepcopy(scen)
     f! = f
     der_true = ForwardDiff.derivative(f!, y, x)
@@ -195,9 +210,7 @@ end
 
 ## Gradient
 
-function DT.test_correctness(
-    ba::AbstractADType, ::typeof(value_and_gradient), scen::Scenario{false}
-)
+function DT.test_correctness(ba::AbstractADType, ::typeof(gradient), scen::Scenario{false})
     (; f, x, y) = new_scen = deepcopy(scen)
     grad_true = if x isa Number
         ForwardDiff.derivative(f, x)
@@ -209,6 +222,10 @@ function DT.test_correctness(
     grad_in2 = zero(grad_out1)
     y_out2, grad_out2 = value_and_gradient!!(f, grad_in2, ba, x)
 
+    grad_out3 = gradient(f, ba, x)
+    grad_in4 = zero(grad_out3)
+    grad_out4 = gradient!!(f, grad_in4, ba, x)
+
     @testset "Primal value" begin
         @test y_out1 ≈ y
         @test y_out2 ≈ y
@@ -216,9 +233,12 @@ function DT.test_correctness(
     @testset "Gradient value" begin
         @test grad_out1 ≈ grad_true rtol = 1e-3
         @test grad_out2 ≈ grad_true rtol = 1e-3
+        @test grad_out3 ≈ grad_true rtol = 1e-3
+        @test grad_out4 ≈ grad_true rtol = 1e-3
         @testset "Mutation" begin
             if ismutable(grad_true)
                 @test grad_in2 ≈ grad_true rtol = 1e-3
+                @test grad_in4 ≈ grad_true rtol = 1e-3
             end
         end
     end
@@ -227,15 +247,17 @@ end
 
 ## Jacobian
 
-function DT.test_correctness(
-    ba::AbstractADType, ::typeof(value_and_jacobian), scen::Scenario{false}
-)
+function DT.test_correctness(ba::AbstractADType, ::typeof(jacobian), scen::Scenario{false})
     (; f, x, y) = new_scen = deepcopy(scen)
     jac_true = ForwardDiff.jacobian(f, x)
 
     y_out1, jac_out1 = value_and_jacobian(f, ba, x)
     jac_in2 = zero(jac_out1)
     y_out2, jac_out2 = value_and_jacobian!!(f, jac_in2, ba, x)
+
+    jac_out3 = jacobian(f, ba, x)
+    jac_in4 = zero(jac_out3)
+    jac_out4 = jacobian!!(f, jac_in4, ba, x)
 
     @testset "Primal value" begin
         @test y_out1 ≈ y
@@ -244,16 +266,17 @@ function DT.test_correctness(
     @testset "Jacobian value" begin
         @test jac_out1 ≈ jac_true rtol = 1e-3
         @test jac_out2 ≈ jac_true rtol = 1e-3
+        @test jac_out3 ≈ jac_true rtol = 1e-3
+        @test jac_out4 ≈ jac_true rtol = 1e-3
         @testset "Mutation" begin
             @test jac_in2 ≈ jac_true rtol = 1e-3
+            @test jac_in4 ≈ jac_true rtol = 1e-3
         end
     end
     return test_scen_intact(new_scen, scen)
 end
 
-function DT.test_correctness(
-    ba::AbstractADType, ::typeof(value_and_jacobian), scen::Scenario{true}
-)
+function DT.test_correctness(ba::AbstractADType, ::typeof(jacobian), scen::Scenario{true})
     (; f, x, y) = new_scen = deepcopy(scen)
     f! = f
     jac_true = ForwardDiff.jacobian(f!, y, x)
@@ -275,6 +298,56 @@ function DT.test_correctness(
         end
     end
     return test_scen_intact(new_scen, scen)
+end
+
+## Second derivative
+
+function DT.test_correctness(
+    ba::AbstractADType, ::typeof(second_derivative), scen::Scenario
+)
+    (; f, x) = deepcopy(scen)
+    der2_true = ForwardDiff.derivative(z -> ForwardDiff.derivative(f, z), x)
+
+    der2_out1 = second_derivative(f, ba, x)
+
+    @testset "Second derivative value" begin
+        @test der2_out1 ≈ der2_true rtol = 1e-3
+    end
+end
+
+## Hessian-vector product
+
+function DT.test_correctness(ba::AbstractADType, ::typeof(hvp), scen::Scenario)
+    (; f, x, dx) = deepcopy(scen)
+    hess_true = if x isa Number
+        ForwardDiff.derivative(z -> ForwardDiff.derivative(f, z), x)
+    else
+        ForwardDiff.hessian(f, x)
+    end
+    hvp_true = if x isa Number
+        hess_true * dx
+    else
+        reshape((hess_true * vec(dx)), size(x))
+    end
+
+    hvp_out1 = hvp(f, ba, x, dx)
+
+    @testset "Hessian-vector product value" begin
+        @test hvp_out1 ≈ hvp_true rtol = 1e-3
+    end
+end
+
+## Hessian
+
+function DT.test_correctness(ba::AbstractADType, ::typeof(hessian), scen::Scenario)
+    (; f, x, y) = deepcopy(scen)
+    hess_true = ForwardDiff.hessian(f, x)
+
+    hess_out1 = hessian(f, ba, x)
+
+    @testset "Hessian value" begin
+        @test hess_out1 ≈ hess_true rtol = 1e-3
+    end
 end
 
 ## Utils

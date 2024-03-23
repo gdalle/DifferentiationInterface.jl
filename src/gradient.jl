@@ -59,3 +59,21 @@ function value_and_gradient_aux(
     end
     return y, grad
 end
+
+"""
+    gradient!!(f, grad, backend, x, [extras]) -> grad
+"""
+function gradient!!(
+    f::F, grad, backend::AbstractADType, x, extras=prepare_gradient(f, backend, x)
+) where {F}
+    return last(value_and_gradient!!(f, grad, backend, x, extras))
+end
+
+"""
+    gradient(f, backend, x, [extras]) -> grad
+"""
+function gradient(
+    f::F, backend::AbstractADType, x, extras=prepare_gradient(f, backend, x)
+) where {F}
+    return last(value_and_gradient(f, backend, x, extras))
+end

@@ -18,6 +18,7 @@ $(TYPEDFIELDS)
     backend::Vector{String} = []
     mode::Vector{Type} = []
     operator::Vector{Function} = []
+    variant::Vector{Function} = []
     func::Vector{String} = []
     mutating::Vector{Bool} = []
     input_type::Vector{Type} = []
@@ -48,6 +49,7 @@ function record!(
     data::BenchmarkData,
     backend::AbstractADType,
     operator::Function,
+    variant::Function,
     scenario::Scenario,
     bench,
 )
@@ -56,6 +58,7 @@ function record!(
         backend=backend_string(backend),
         mode=mode(backend),
         operator=operator,
+        variant=variant,
         func=string(scenario.f),
         mutating=is_mutating(scenario),
         input_type=typeof(scenario.x),

@@ -9,6 +9,7 @@ using Test
 
 @test check_available(AutoTracker())
 @test !check_mutation(AutoTracker())
+@test !check_hessian(AutoTracker())
 
 test_operators(
     AutoTracker();
