@@ -1,5 +1,3 @@
-run_benchmark(args...; kwargs...) = error("Please load Chairmarks.jl")
-
 """
     BenchmarkData
 
@@ -17,22 +15,22 @@ These are not part of the public API.
 $(TYPEDFIELDS)
 """
 @kwdef struct BenchmarkData
-    backend::Vector = []
-    mode::Vector = []
-    operator::Vector = []
-    func::Vector = []
-    mutating::Vector = []
-    input_type::Vector = []
-    output_type::Vector = []
+    backend::Vector{String} = []
+    mode::Vector{Type} = []
+    operator::Vector{Function} = []
+    func::Vector{String} = []
+    mutating::Vector{Bool} = []
+    input_type::Vector{Type} = []
+    output_type::Vector{Type} = []
     input_size::Vector = []
     output_size::Vector = []
-    samples::Vector = []
-    time::Vector = []
-    bytes::Vector = []
-    allocs::Vector = []
-    compile_fraction::Vector = []
-    gc_fraction::Vector = []
-    evals::Vector = []
+    samples::Vector{Int} = []
+    time::Vector{Float64} = []
+    bytes::Vector{Float64} = []
+    allocs::Vector{Float64} = []
+    compile_fraction::Vector{Float64} = []
+    gc_fraction::Vector{Float64} = []
+    evals::Vector{Float64} = []
 end
 
 function Base.pairs(data::BenchmarkData)
@@ -49,8 +47,8 @@ end
 function record!(
     data::BenchmarkData,
     backend::AbstractADType,
+    operator::Function,
     scenario::Scenario,
-    operator::Symbol,
     bench,
 )
     bench_min = minimum(bench)
@@ -59,7 +57,7 @@ function record!(
         mode=mode(backend),
         operator=operator,
         func=string(scenario.f),
-        mutating=scenario.mutating,
+        mutating=is_mutating(scenario),
         input_type=typeof(scenario.x),
         output_type=typeof(scenario.y),
         input_size=size(scenario.x),

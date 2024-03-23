@@ -15,67 +15,11 @@ function (cc::CallCounter{F})(y, x) where {F}
     return cc.f(y, x)
 end
 
-function test_call_count(
-    backends::Vector{<:AbstractADType},
-    operators::Vector{Symbol},
-    scenarios::Vector{<:Scenario};
-)
-    @testset verbose = true "Correctness" begin
-        @testset verbose = true "$(backend_string(backend))" for backend in backends
-            @testset "$op" for op in operators
-                if op == :pushforward_allocating
-                    @testset "$s" for s in allocating(scenarios)
-                        test_call_count_pushforward_allocating(backend, s)
-                    end
-                elseif op == :pushforward_mutating
-                    @testset "$s" for s in mutating(scenarios)
-                        test_call_count_pushforward_mutating(backend, s)
-                    end
-
-                elseif op == :pullback_allocating
-                    @testset "$s" for s in allocating(scenarios)
-                        test_call_count_pullback_allocating(backend, s)
-                    end
-                elseif op == :pullback_mutating
-                    @testset "$s" for s in mutating(scenarios)
-                        test_call_count_pullback_mutating(backend, s)
-                    end
-
-                elseif op == :derivative_allocating
-                    @testset "$s" for s in allocating(scalar_in(scenarios))
-                        test_call_count_derivative_allocating(backend, s)
-                    end
-                elseif op == :derivative_mutating
-                    @testset "$s" for s in mutating(scalar_in(scenarios))
-                        test_call_count_derivative_mutating(backend, s)
-                    end
-
-                elseif op == :gradient_allocating
-                    @testset "$s" for s in allocating(scalar_out(scenarios))
-                        test_call_count_gradient_allocating(backend, s)
-                    end
-
-                elseif op == :jacobian_allocating
-                    @testset "$s" for s in allocating(array_array(scenarios))
-                        test_call_count_jacobian_allocating(backend, s)
-                    end
-                elseif op == :jacobian_mutating
-                    @testset "$s" for s in mutating(array_array(scenarios))
-                        test_call_count_jacobian_mutating(backend, s)
-                    end
-
-                else
-                    throw(ArgumentError("Invalid operator to test: `:$op`"))
-                end
-            end
-        end
-    end
-end
-
 ## Pushforward
 
-function test_call_count_pushforward_allocating(ba::AbstractADType, scen::Scenario)
-    Bool(supports_pushforward(ba)) || return nothing
+function test_call_count(
+    ba::AbstractADType, ::typeof(value_and_pushforward), scen::Scenario{false}
+)
     (; f, x, dx) = deepcopy(scen)
     extras = prepare_pushforward(CallCounter(f), ba, x)
     cc = CallCounter(f)
@@ -85,9 +29,9 @@ function test_call_count_pushforward_allocating(ba::AbstractADType, scen::Scenar
     end
 end
 
-function test_call_count_pushforward_mutating(ba::AbstractADType, scen::Scenario)
-    Bool(supports_pushforward(ba)) || return nothing
-    Bool(supports_mutation(ba)) || return nothing
+function test_call_count(
+    ba::AbstractADType, ::typeof(value_and_pushforward), scen::Scenario{true}
+)
     (; f, x, y, dx, dy) = deepcopy(scen)
     extras = prepare_pushforward(CallCounter(f), ba, y, x)
     cc! = CallCounter(f)
@@ -101,8 +45,9 @@ end
 
 ## Pullback
 
-function test_call_count_pullback_allocating(ba::AbstractADType, scen::Scenario)
-    Bool(supports_pullback(ba)) || return nothing
+function test_call_count(
+    ba::AbstractADType, ::typeof(value_and_pullback), scen::Scenario{false}
+)
     (; f, x, y, dy) = deepcopy(scen)
     extras = prepare_pullback(CallCounter(f), ba, x)
     cc = CallCounter(f)
@@ -112,9 +57,9 @@ function test_call_count_pullback_allocating(ba::AbstractADType, scen::Scenario)
     end
 end
 
-function test_call_count_pullback_mutating(ba::AbstractADType, scen::Scenario)
-    Bool(supports_pullback(ba)) || return nothing
-    Bool(supports_mutation(ba)) || return nothing
+function test_call_count(
+    ba::AbstractADType, ::typeof(value_and_pullback), scen::Scenario{true}
+)
     (; f, x, y, dx, dy) = deepcopy(scen)
     extras = prepare_pullback(CallCounter(f), ba, y, x)
     cc! = CallCounter(f)
@@ -128,8 +73,8 @@ end
 
 ## Derivative
 
-function test_call_count_derivative_allocating(
-    ba::AbstractADType, scen::Scenario{<:Any,<:Number,<:Any}
+function test_call_count(
+    ba::AbstractADType, ::typeof(value_and_derivative), scen::Scenario{false}
 )
     (; f, x, y) = deepcopy(scen)
     extras = prepare_derivative(CallCounter(f), ba, x)
@@ -142,10 +87,9 @@ function test_call_count_derivative_allocating(
     end
 end
 
-function test_call_count_derivative_mutating(
-    ba::AbstractADType, scen::Scenario{<:Any,<:Number,<:AbstractArray}
+function test_call_count(
+    ba::AbstractADType, ::typeof(value_and_derivative), scen::Scenario{true}
 )
-    Bool(supports_mutation(ba)) || return nothing
     (; f, x, y, dy) = deepcopy(scen)
     extras = prepare_derivative(CallCounter(f), ba, y, x)
     cc! = CallCounter(f)
@@ -161,8 +105,8 @@ end
 
 ## Gradient
 
-function test_call_count_gradient_allocating(
-    ba::AbstractADType, scen::Scenario{<:Any,<:Any,<:Number}
+function test_call_count(
+    ba::AbstractADType, ::typeof(value_and_gradient), scen::Scenario{false}
 )
     (; f, x, y) = deepcopy(scen)
     extras = prepare_gradient(CallCounter(f), ba, x)
@@ -177,8 +121,8 @@ end
 
 ## Jacobian
 
-function test_call_count_jacobian_allocating(
-    ba::AbstractADType, scen::Scenario{<:Any,<:AbstractArray,<:AbstractArray}
+function test_call_count(
+    ba::AbstractADType, ::typeof(value_and_jacobian), scen::Scenario{false}
 )
     (; f, x, y) = deepcopy(scen)
     extras = prepare_jacobian(CallCounter(f), ba, x)
@@ -191,10 +135,9 @@ function test_call_count_jacobian_allocating(
     end
 end
 
-function test_call_count_jacobian_mutating(
-    ba::AbstractADType, scen::Scenario{<:Any,<:AbstractArray,<:AbstractArray}
+function test_call_count(
+    ba::AbstractADType, ::typeof(value_and_jacobian), scen::Scenario{true}
 )
-    Bool(supports_mutation(ba)) || return nothing
     (; f, x, y) = deepcopy(scen)
     extras = prepare_jacobian(CallCounter(f), ba, y, x)
     cc! = CallCounter(f)
@@ -206,4 +149,8 @@ function test_call_count_jacobian_mutating(
     elseif mode(ba) == AbstractReverseMode
         @test cc!.count[] <= 1 + length(y)
     end
+end
+
+function test_call_count(ba::AbstractADType, op::Function, scen::Scenario)
+    throw(ArgumentError("Invalid operator to test: $op"))
 end

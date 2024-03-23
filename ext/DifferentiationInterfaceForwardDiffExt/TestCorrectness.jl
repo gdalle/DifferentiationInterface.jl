@@ -1,72 +1,12 @@
-module DifferentiationInterfaceForwardDiffTestExt
+module TestCorrectness
 
 using ADTypes: AbstractADType
 using DifferentiationInterface
-using DifferentiationInterface:
-    mode, myeltype, supports_mutation, supports_pushforward, supports_pullback
-using DifferentiationInterface.DifferentiationTest:
-    Scenario, allocating, backend_string, mutating, scalar_in, scalar_out, array_array
+using DifferentiationInterface.DifferentiationTest: Scenario
 import DifferentiationInterface.DifferentiationTest as DT
 using ForwardDiff: ForwardDiff
 using LinearAlgebra: dot
 using Test: @testset, @test
-
-function DT.test_correctness(
-    backends::Vector{<:AbstractADType},
-    operators::Vector{Symbol},
-    scenarios::Vector{<:Scenario};
-)
-    @testset verbose = true "Correctness" begin
-        @testset verbose = true "$(backend_string(backend))" for backend in backends
-            @testset "$op" for op in operators
-                if op == :pushforward_allocating
-                    @testset "$s" for s in allocating(scenarios)
-                        test_correctness_pushforward_allocating(backend, s)
-                    end
-                elseif op == :pushforward_mutating
-                    @testset "$s" for s in mutating(scenarios)
-                        test_correctness_pushforward_mutating(backend, s)
-                    end
-
-                elseif op == :pullback_allocating
-                    @testset "$s" for s in allocating(scenarios)
-                        test_correctness_pullback_allocating(backend, s)
-                    end
-                elseif op == :pullback_mutating
-                    @testset "$s" for s in mutating(scenarios)
-                        test_correctness_pullback_mutating(backend, s)
-                    end
-
-                elseif op == :derivative_allocating
-                    @testset "$s" for s in allocating(scalar_in(scenarios))
-                        test_correctness_derivative_allocating(backend, s)
-                    end
-                elseif op == :derivative_mutating
-                    @testset "$s" for s in mutating(scalar_in(scenarios))
-                        test_correctness_derivative_mutating(backend, s)
-                    end
-
-                elseif op == :gradient_allocating
-                    @testset "$s" for s in allocating(scalar_out(scenarios))
-                        test_correctness_gradient_allocating(backend, s)
-                    end
-
-                elseif op == :jacobian_allocating
-                    @testset "$s" for s in allocating(array_array(scenarios))
-                        test_correctness_jacobian_allocating(backend, s)
-                    end
-                elseif op == :jacobian_mutating
-                    @testset "$s" for s in mutating(array_array(scenarios))
-                        test_correctness_jacobian_mutating(backend, s)
-                    end
-
-                else
-                    throw(ArgumentError("Invalid operator to test: `:$op`"))
-                end
-            end
-        end
-    end
-end
 
 function test_scen_intact(new_scen, scen)
     @testset "Scenario intact" begin
@@ -79,8 +19,9 @@ end
 
 ## Pushforward
 
-function test_correctness_pushforward_allocating(ba::AbstractADType, scen::Scenario)
-    Bool(supports_pushforward(ba)) || return nothing
+function DT.test_correctness(
+    ba::AbstractADType, ::typeof(value_and_pushforward), scen::Scenario{false}
+)
     (; f, x, y, dx) = new_scen = deepcopy(scen)
     dy_true = true_pushforward(f, x, y, dx; mutating=false)
 
@@ -104,9 +45,9 @@ function test_correctness_pushforward_allocating(ba::AbstractADType, scen::Scena
     return test_scen_intact(new_scen, scen)
 end
 
-function test_correctness_pushforward_mutating(ba::AbstractADType, scen::Scenario)
-    Bool(supports_pushforward(ba)) || return nothing
-    Bool(supports_mutation(ba)) || return nothing
+function DT.test_correctness(
+    ba::AbstractADType, ::typeof(value_and_pushforward), scen::Scenario{true}
+)
     (; f, x, y, dx) = new_scen = deepcopy(scen)
     f! = f
     dy_true = true_pushforward(f!, x, y, dx; mutating=true)
@@ -136,8 +77,9 @@ end
 
 ## Pullback
 
-function test_correctness_pullback_allocating(ba::AbstractADType, scen::Scenario)
-    Bool(supports_pullback(ba)) || return nothing
+function DT.test_correctness(
+    ba::AbstractADType, ::typeof(value_and_pullback), scen::Scenario{false}
+)
     (; f, x, y, dy) = new_scen = deepcopy(scen)
     dx_true = true_pullback(f, x, y, dy; mutating=false)
 
@@ -161,9 +103,9 @@ function test_correctness_pullback_allocating(ba::AbstractADType, scen::Scenario
     return test_scen_intact(new_scen, scen)
 end
 
-function test_correctness_pullback_mutating(ba::AbstractADType, scen::Scenario)
-    Bool(supports_pullback(ba)) || return nothing
-    Bool(supports_mutation(ba)) || return nothing
+function DT.test_correctness(
+    ba::AbstractADType, ::typeof(value_and_pullback), scen::Scenario{true}
+)
     (; f, x, y, dy) = new_scen = deepcopy(scen)
     f! = f
     dx_true = true_pullback(f, x, y, dy; mutating=true)
@@ -195,7 +137,9 @@ end
 
 ## Derivative
 
-function test_correctness_derivative_allocating(ba::AbstractADType, scen::Scenario)
+function DT.test_correctness(
+    ba::AbstractADType, ::typeof(value_and_derivative), scen::Scenario{false}
+)
     (; f, x, y) = new_scen = deepcopy(scen)
     der_true = ForwardDiff.derivative(f, x)
 
@@ -219,8 +163,9 @@ function test_correctness_derivative_allocating(ba::AbstractADType, scen::Scenar
     return test_scen_intact(new_scen, scen)
 end
 
-function test_correctness_derivative_mutating(ba::AbstractADType, scen::Scenario)
-    Bool(supports_mutation(ba)) || return nothing
+function DT.test_correctness(
+    ba::AbstractADType, ::typeof(value_and_derivative), scen::Scenario{true}
+)
     (; f, x, y) = new_scen = deepcopy(scen)
     f! = f
     der_true = ForwardDiff.derivative(f!, y, x)
@@ -250,7 +195,9 @@ end
 
 ## Gradient
 
-function test_correctness_gradient_allocating(ba::AbstractADType, scen::Scenario)
+function DT.test_correctness(
+    ba::AbstractADType, ::typeof(value_and_gradient), scen::Scenario{false}
+)
     (; f, x, y) = new_scen = deepcopy(scen)
     grad_true = if x isa Number
         ForwardDiff.derivative(f, x)
@@ -280,7 +227,9 @@ end
 
 ## Jacobian
 
-function test_correctness_jacobian_allocating(ba::AbstractADType, scen::Scenario)
+function DT.test_correctness(
+    ba::AbstractADType, ::typeof(value_and_jacobian), scen::Scenario{false}
+)
     (; f, x, y) = new_scen = deepcopy(scen)
     jac_true = ForwardDiff.jacobian(f, x)
 
@@ -302,8 +251,9 @@ function test_correctness_jacobian_allocating(ba::AbstractADType, scen::Scenario
     return test_scen_intact(new_scen, scen)
 end
 
-function test_correctness_jacobian_mutating(ba::AbstractADType, scen::Scenario)
-    Bool(supports_mutation(ba)) || return nothing
+function DT.test_correctness(
+    ba::AbstractADType, ::typeof(value_and_jacobian), scen::Scenario{true}
+)
     (; f, x, y) = new_scen = deepcopy(scen)
     f! = f
     jac_true = ForwardDiff.jacobian(f!, y, x)

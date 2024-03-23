@@ -1,54 +1,46 @@
-test_correctness(args...; kwargs...) = error("Please load ForwardDiff.jl")
-test_type_stability(args...; kwargs...) = error("Please load JET.jl")
+function test_correctness end
+function test_type_stability end
+function run_benchmark! end
 
-FIRST_ORDER_OPERATORS = [
-    :pushforward_allocating,
-    :pushforward_mutating,
-    :pullback_allocating,
-    :pullback_mutating,
-    :derivative_allocating,
-    :derivative_mutating,
-    :gradient_allocating,
-    :jacobian_allocating,
-    :jacobian_mutating,
+const FIRST_ORDER_OPERATORS = [
+    value_and_pushforward,
+    value_and_pullback,
+    value_and_derivative,
+    value_and_gradient,
+    value_and_jacobian,
 ]
 
-SECOND_ORDER_OPERATORS = [
-    :second_derivative_allocating, :hessian_vector_product_allocating, :hessian_allocating
-]
+const ALL_OPERATORS = vcat(FIRST_ORDER_OPERATORS)
 
 function filter_operators(
-    operators::Vector{Symbol};
+    operators::Vector{<:Function};
     first_order::Bool,
     second_order::Bool,
-    allocating::Bool,
-    mutating::Bool,
-    excluded::Vector{Symbol},
+    excluded::Vector{<:Function},
 )
-    if !first_order
-        operators = setdiff(operators, FIRST_ORDER_OPERATORS)
-    end
-    if !second_order
-        operators = setdiff(operators, SECOND_ORDER_OPERATORS)
-    end
-    if !allocating
-        operators = filter(op -> !endswith(string(op), "allocating"), operators)
-    end
-    if !mutating
-        operators = filter(op -> !endswith(string(op), "mutating"), operators)
-    end
-    operators = filter(op -> !in(op, excluded), operators)
+    !first_order && (operators = filter(!in(FIRST_ORDER_OPERATORS), operators))
+    !second_order && (operators = filter(in(FIRST_ORDER_OPERATORS), operators))
+    operators = filter(!in(excluded), operators)
     return operators
 end
 
+function filter_scenarios(
+    scenarios::Vector{Scenario};
+    input_type::Type,
+    output_type::Type,
+    allocating::Bool,
+    mutating::Bool,
+)
+    scenarios = filter(scenarios) do scen
+        typeof(scen.x) <: input_type && typeof(scen.y) <: output_type
+    end
+    !allocating && (scenarios = filter(is_mutating, scenarios))
+    !mutating && (scenarios = filter(!is_mutating, scenarios))
+    return scenarios
+end
+
 """
-    test_operators(
-        backends, [operators, scenarios];
-        correctness, type_stability, call_count, benchmark, allocations,
-        input_type, output_type,
-        first_order, second_order, allocating, mutating,
-        excluded,
-    )
+    test_operators(backends, [operators, scenarios]; [kwargs...])
 
 Cross-test a list of `backends` for a list of `operators` on a list of `scenarios`, running a variety of different tests.
 
@@ -62,13 +54,14 @@ Cross-test a list of `backends` for a list of `operators` on a list of `scenario
 
 # Keyword arguments
 
-Test families:
+Testing:
 
 - `correctness=true`: whether to compare the differentiation results with those given by ForwardDiff.jl
 - `type_stability=true`: whether to check type stability with JET.jl
 - `call_count=false`: whether to check that the function is called the right number of times
 - `benchmark=false`: whether to run and return a benchmark suite with Chairmarks.jl
 - `allocations=false`: whether to check that the benchmarks are allocation-free
+- `detailed=false`: whether to print a detailed test set (by scenario) or condensed test set (by operator)
 
 Filtering:
 
@@ -82,48 +75,73 @@ Filtering:
 """
 function test_operators(
     backends::Vector{<:AbstractADType},
-    operators::Vector{Symbol}=FIRST_ORDER_OPERATORS,
+    operators::Vector{<:Function}=ALL_OPERATORS,
     scenarios::Vector{<:Scenario}=default_scenarios();
+    # testing
     correctness::Bool=true,
     type_stability::Bool=true,
     call_count::Bool=false,
     benchmark::Bool=false,
     allocations::Bool=false,
+    detailed=false,
+    # filtering
     input_type::Type=Any,
     output_type::Type=Any,
     first_order=true,
     second_order=true,
     allocating=true,
     mutating=true,
-    excluded::Vector{Symbol}=Symbol[],
+    excluded::Vector{<:Function}=Function[],
 )
-    scenarios = filter(scenarios) do scen
-        typeof(scen.x) <: input_type && typeof(scen.y) <: output_type
+    operators = filter_operators(operators; first_order, second_order, excluded)
+    scenarios = filter_scenarios(scenarios; input_type, output_type, allocating, mutating)
+
+    benchmark_data = BenchmarkData()
+
+    title =
+        "Differentiation tests -" *
+        (correctness ? " correctness" : "") *
+        (type_stability ? " types" : "") *
+        (call_count ? " calls" : "") *
+        (benchmark ? " benchmark" : "") *
+        (allocations ? " allocations" : "")
+    test_set = @testset verbose = true "$title" begin
+        @testset verbose = true "$(backend_string(backend))" for backend in backends
+            @testset verbose = detailed "$op" for op in operators
+                @testset "$scen" for scen in filter(scenarios) do scen
+                    compatible(backend, op, scen)
+                end
+                    if correctness
+                        @testset verbose = true "Call count" begin
+                            test_correctness(backend, op, scen)
+                        end
+                    end
+                    if type_stability
+                        @testset verbose = true "Type stability" begin
+                            test_type_stability(backend, op, scen)
+                        end
+                    end
+                    if call_count
+                        @testset verbose = true "Call count" begin
+                            test_call_count(backend, op, scen)
+                        end
+                    end
+                    if benchmark || allocations
+                        @testset verbose = true "Allocations" begin
+                            run_benchmark!(
+                                benchmark_data, backend, op, scen; allocations=allocations
+                            )
+                        end
+                    end
+                end
+            end
+        end
     end
-    operators = filter_operators(
-        operators; first_order, second_order, allocating, mutating, excluded
-    )
-    benchmark_data = nothing
-    set = @testset verbose = true "Backend tests" begin
-        if correctness
-            test_correctness(backends, operators, scenarios)
-        end
-        if type_stability
-            test_type_stability(backends, operators, scenarios)
-        end
-        if call_count
-            test_call_count(backends, operators, scenarios)
-        end
-        if benchmark || allocations
-            benchmark_data = run_benchmark(
-                backends, operators, scenarios; allocations=allocations
-            )
-        end
-    end
+
     if benchmark
         return benchmark_data
     else
-        return set
+        return test_set
     end
 end
 

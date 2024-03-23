@@ -16,7 +16,7 @@ This package provides a backend-agnostic syntax to differentiate functions of th
 
 ## Compatibility
 
-We support some of the backends defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl):
+We support most of the backends defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl):
 
 | Backend                                                                         | Object                                                       |
 | :------------------------------------------------------------------------------ | :----------------------------------------------------------- |
@@ -31,7 +31,7 @@ We support some of the backends defined by [ADTypes.jl](https://github.com/SciML
 | [Tracker.jl](https://github.com/FluxML/Tracker.jl)                              | `AutoTracker()`                                              |
 | [Zygote.jl](https://github.com/FluxML/Zygote.jl)                                | `AutoZygote()`                                               |
 
-We also provide additional backends:
+We also provide one additional backend:
 
 | Backend                                                                          | Object                      |
 | :------------------------------------------------------------------------------- | :-------------------------- |

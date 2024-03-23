@@ -22,7 +22,7 @@ test_operators(
     type_stability=false,
     call_count=true,
     second_order=false,
-    excluded=[:gradient_allocating],
+    excluded=[value_and_gradient],
 );
 
 test_operators(
@@ -31,7 +31,7 @@ test_operators(
     type_stability=false,
     call_count=true,
     second_order=true,
-    excluded=[:derivative_allocating],
+    excluded=[value_and_derivative],
 );
 
 # allocs (experimental)

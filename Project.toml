@@ -43,7 +43,6 @@ DifferentiationInterfaceFastDifferentiationExt = [
 DifferentiationInterfaceFiniteDiffExt = "FiniteDiff"
 DifferentiationInterfaceFiniteDifferencesExt = "FiniteDifferences"
 DifferentiationInterfaceForwardDiffExt = ["DiffResults", "ForwardDiff"]
-DifferentiationInterfaceForwardDiffTestExt = ["ForwardDiff"]
 DifferentiationInterfaceJETExt = ["JET"]
 DifferentiationInterfacePolyesterForwardDiffExt = [
     "PolyesterForwardDiff",
