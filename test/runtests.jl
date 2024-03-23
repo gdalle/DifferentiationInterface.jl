@@ -73,6 +73,10 @@ using Zygote: Zygote
             @info "Running FiniteDiff tests..."
             @time include("finitediff.jl")
         end
+        @testset "FiniteDifferences" begin
+            @info "Running FiniteDifferences tests..."
+            @time include("finitedifferences.jl")
+        end
         @testset "ForwardDiff" begin
             @info "Running ForwardDiff tests..."
             @time include("forwarddiff.jl")

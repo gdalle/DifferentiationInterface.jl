@@ -111,28 +111,28 @@ abstract type HVPMode end
 
 Traits identifying second-order backends that compute HVPs in forward over reverse mode.
 """
-struct ForwardOverReverse end
+struct ForwardOverReverse <: HVPMode end
 
 """
     ReverseOverForward
 
 Traits identifying second-order backends that compute HVPs in reverse over forward mode.
 """
-struct ReverseOverForward end
+struct ReverseOverForward <: HVPMode end
 
 """
     ReverseOverReverse
 
 Traits identifying second-order backends that compute HVPs in reverse over reverse mode.
 """
-struct ReverseOverReverse end
+struct ReverseOverReverse <: HVPMode end
 
 """
     ForwardOverForward
 
 Traits identifying second-order backends that compute HVPs in forward over forward mode (inefficient).
 """
-struct ForwardOverForward end
+struct ForwardOverForward <: HVPMode end
 
 hvp_mode(::AbstractADType) = error("HVP mode undefined for first order backend")
 
