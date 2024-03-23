@@ -2,157 +2,48 @@
 
 ## Backend requirements
 
-Every [operator](@ref operators) can be implemented from either of these two primitives:
+To be usable with DifferentiationInterface.jl, an AD backend needs an object subtyping `ADTypes.AbstractADType`.
+In addition, some operators must be defined:
 
-- the pushforward (in forward mode), computing a Jacobian-vector product
-- the pullback (in reverse mode), computing a vector-Jacobian product
-
-The only requirement for a backend is therefore to implement either [`value_and_pushforward!`](@ref) or [`value_and_pullback!`](@ref), from which the rest of the operators can be deduced.
-We provide a standard series of fallbacks, but we leave it to each backend to redefine as many of the utilities as necessary to achieve optimal performance.
+| backend subtype                               | pushforward necessary | pullback necessary |
+| --------------------------------------------- | --------------------- | ------------------ |
+| `ADTypes.AbstractForwardMode`                 | yes                   | no                 |
+| `ADTypes.AbstractFiniteDifferencesMode`       | yes                   | no                 |
+| `ADTypes.AbstractReverseMode`                 | no                    | yes                |
+| `ADTypes.AbstractSymbolicDifferentiationMode` | yes                   | yes                |
 
 Every backend we support corresponds to a package extension of DifferentiationInterface.jl (located in the `ext` subfolder).
 Advanced users are welcome to code more backends and submit pull requests!
 
 ## Fallback call structure
 
+For simplicity, we remove `value_` in the operator names below.
+
 !!! note "Edge labels"
 
-    Non-labeled edges in the following graphs correspond to single function calls.
-
-    Edge labels correspond to the amount of function calls when applying operators to a function $f: \mathbb{R}^n \rightarrow \mathbb{R}^m$.
+    Full edges in the following graphs require a single call to the destination.
+    Dotted edges require multiple calls to the destination, the number is indicated above.
 
 ### Forward mode, allocating functions
 
 ```mermaid
 flowchart LR
-    subgraph Derivative
-        value_and_derivative
-        derivative
-    end
-
-    value_and_derivative --> value_and_pushforward
     derivative --> pushforward
-    
-    subgraph Multiderivative
-        value_and_multiderivative!
-        value_and_multiderivative
-        multiderivative!
-        multiderivative
-    end
-
-    value_and_multiderivative! --> value_and_pushforward!
-    value_and_multiderivative --> value_and_pushforward
-    multiderivative! --> pushforward!
-    multiderivative --> pushforward
-
-    subgraph Gradient
-        value_and_gradient --> value_and_gradient!
-        gradient! --> value_and_gradient!
-        gradient --> value_and_gradient
-    end
-
-    value_and_gradient! --> |n|pushforward
-
-    subgraph Jacobian
-        value_and_jacobian --> value_and_jacobian!
-        jacobian! --> value_and_jacobian!
-        jacobian --> value_and_jacobian
-    end
-
-    value_and_jacobian! --> |n|pushforward!
-
-    subgraph Pushforward
-        value_and_pushforward --> value_and_pushforward!
-        pushforward! --> value_and_pushforward!
-        pushforward --> value_and_pushforward
-    end
-```
-
-### Forward mode, mutating functions
-
-```mermaid
-flowchart LR
-    subgraph Multiderivative
-        value_and_multiderivative!
-    end
-
-    value_and_multiderivative! --> value_and_pushforward!
-
-    subgraph Jacobian
-        value_and_jacobian!
-    end
-
-    value_and_jacobian! --> |n|value_and_pushforward!
-
-    subgraph Pushforward
-        value_and_pushforward!
-    end
+    derivative!! --> pushforward!!
+    gradient .-> |n|pushforward
+    gradient!! .-> |n|pushforward!!
+    jacobian .-> |n|pushforward
+    jacobian!! .-> |n|pushforward!!
 ```
 
 ### Reverse mode, allocating functions
 
 ```mermaid
 flowchart LR
-    subgraph Derivative
-        value_and_derivative
-        derivative
-    end
-
-    value_and_derivative --> value_and_pullback
-    derivative --> pullback
-    
-    subgraph Multiderivative
-        value_and_multiderivative --> value_and_multiderivative!
-        multiderivative! --> value_and_multiderivative!
-        multiderivative --> value_and_multiderivative
-    end
-
-    value_and_multiderivative! --> |m|pullback
-
-    subgraph Gradient
-        value_and_gradient!
-        value_and_gradient
-        gradient!
-        gradient 
-    end
-
-    value_and_gradient! --> value_and_pullback!
-    value_and_gradient --> value_and_pullback
-    gradient! --> pullback!
+    derivative .-> |m|pullback
+    derivative!! .-> |m|pullback!!
     gradient --> pullback
-
-    subgraph Jacobian
-        value_and_jacobian --> value_and_jacobian!
-        jacobian! --> value_and_jacobian!
-        jacobian --> value_and_jacobian
-    end
-
-    value_and_jacobian! --> |m|pullback!
-
-    subgraph Pullback
-        value_and_pullback --> value_and_pullback!
-        pullback! --> value_and_pullback!
-        pullback --> value_and_pullback
-    end
-```
-
-### Reverse mode, mutating functions
-
-```mermaid
-flowchart LR
-    subgraph Multiderivative
-        value_and_multiderivative!
-    end
-
-    value_and_multiderivative! --> |m|value_and_pullback!
-
-    subgraph Jacobian
-        value_and_jacobian!
-    end
-
-    value_and_jacobian! --> |m|value_and_pullback!
-
-    subgraph Pullback
-        value_and_pullback!
-    end
+    gradient!! --> pullback!!
+    jacobian .-> |m|pullback
+    jacobian!! .-> |m|pullback!!
 ```

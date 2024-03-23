@@ -1,93 +1,79 @@
 """
-    value_and_gradient!(grad, backend, f, x, [extras]) -> (y, grad)
-
-Compute the primal value `y = f(x)` and the gradient `grad = ∇f(x)` of an array-to-scalar function, overwriting `grad`.
+    value_and_gradient!!(f, grad, backend, x, [extras]) -> (y, grad)
 """
-function value_and_gradient!(
-    grad::AbstractArray,
-    backend::AbstractADType,
-    f::F,
-    x::AbstractArray,
-    extras=prepare_gradient(backend, f, x),
+function value_and_gradient!!(
+    f::F, grad, backend::AbstractADType, x, extras=prepare_gradient(f, backend, x)
 ) where {F}
-    return value_and_gradient_aux!(grad, backend, f, x, extras, supports_pullback(backend))
+    return value_and_gradient_aux!!(f, grad, backend, x, extras, supports_pullback(backend))
 end
 
-function value_and_gradient_aux!(
-    grad, backend::AbstractADType, f::F, x, extras, ::PullbackNotSupported
+function value_and_gradient_aux!!(
+    f::F, grad, backend, x, extras, ::PullbackSupported
+) where {F}
+    return value_and_pullback!!(f, grad, backend, x, one(myeltype(grad)), extras)
+end
+
+function value_and_gradient_aux!!(
+    f::F, grad, backend, x::Number, extras, ::PullbackNotSupported
+) where {F}
+    return value_and_derivative(f, backend, x, extras)
+end
+
+function value_and_gradient_aux!!(
+    f::F, grad, backend, x::AbstractArray, extras, ::PullbackNotSupported
 ) where {F}
     y = f(x)
-    for j in eachindex(IndexCartesian(), grad)
-        dx_j = basisarray(backend, grad, j)
-        grad[j] = pushforward(backend, f, x, dx_j, extras)
+    for j in CartesianIndices(x)
+        dx_j = basisarray(backend, x, j)
+        _, grad[j] = value_and_pushforward(f, backend, x, dx_j, extras)
     end
     return y, grad
 end
 
-function value_and_gradient_aux!(
-    grad, backend, f::F, x, extras, ::PullbackSupported
-) where {F}
-    return value_and_pullback!(grad, backend, f, x, one(eltype(x)), extras)
-end
-
 """
-    value_and_gradient(backend, f, x, [extras]) -> (y, grad)
-
-Compute the primal value `y = f(x)` and the gradient `grad = ∇f(x)` of an array-to-scalar function.
+    value_and_gradient(f, backend, x, [extras]) -> (y, grad)
 """
 function value_and_gradient(
-    backend::AbstractADType, f::F, x::AbstractArray, extras=prepare_gradient(backend, f, x)
+    f::F, backend::AbstractADType, x, extras=prepare_gradient(f, backend, x)
 ) where {F}
-    return value_and_gradient_aux(backend, f, x, extras, supports_pullback(backend))
+    return value_and_gradient_aux(f, backend, x, extras, supports_pullback(backend))
 end
 
-function value_and_gradient_aux(backend, f::F, x, extras, ::PullbackNotSupported) where {F}
-    grad = similar(x)
-    return value_and_gradient!(grad, backend, f, x, extras)
+function value_and_gradient_aux(f::F, backend, x, extras, ::PullbackSupported) where {F}
+    return value_and_pullback(f, backend, x, one(myeltype(x)), extras)
 end
 
-function value_and_gradient_aux(backend, f::F, x, extras, ::PullbackSupported) where {F}
-    return value_and_pullback(backend, f, x, one(eltype(x)), extras)
-end
-
-"""
-    gradient!(grad, backend, f, x, [extras]) -> grad
-
-Compute the gradient `grad = ∇f(x)` of an array-to-scalar function, overwriting `grad`.
-"""
-function gradient!(
-    grad::AbstractArray,
-    backend::AbstractADType,
-    f::F,
-    x::AbstractArray,
-    extras=prepare_gradient(backend, f, x),
+function value_and_gradient_aux(
+    f::F, backend, x::Number, extras, ::PullbackNotSupported
 ) where {F}
-    return gradient_aux!(grad, backend, f, x, extras, supports_pullback(backend))
+    return value_and_derivative(f, backend, x, extras)
 end
 
-function gradient_aux!(grad, backend, f::F, x, extras, ::PullbackNotSupported) where {F}
-    return last(value_and_gradient!(grad, backend, f, x, extras))
-end
-
-function gradient_aux!(grad, backend, f::F, x, extras, ::PullbackSupported) where {F}
-    return pullback!(grad, backend, f, x, one(eltype(x)), extras)
+function value_and_gradient_aux(
+    f::F, backend, x::AbstractArray, extras, ::PullbackNotSupported
+) where {F}
+    y = f(x)
+    grad = map(CartesianIndices(x)) do j
+        dx_j = basisarray(backend, x, j)
+        last(value_and_pushforward(f, backend, x, dx_j, extras))
+    end
+    return y, grad
 end
 
 """
-    gradient(backend, f, x, [extras]) -> grad
+    gradient!!(f, grad, backend, x, [extras]) -> grad
+"""
+function gradient!!(
+    f::F, grad, backend::AbstractADType, x, extras=prepare_gradient(f, backend, x)
+) where {F}
+    return last(value_and_gradient!!(f, grad, backend, x, extras))
+end
 
-Compute the gradient `grad = ∇f(x)` of an array-to-scalar function.
+"""
+    gradient(f, backend, x, [extras]) -> grad
 """
 function gradient(
-    backend::AbstractADType, f::F, x::AbstractArray, extras=prepare_gradient(backend, f, x)
+    f::F, backend::AbstractADType, x, extras=prepare_gradient(f, backend, x)
 ) where {F}
-    return gradient_aux(backend, f, x, extras, supports_pullback(backend))
-end
-
-function gradient_aux(backend, f::F, x, extras, ::PullbackNotSupported) where {F}
-    return last(value_and_gradient(backend, f, x, extras))
-end
-
-function gradient_aux(backend, f::F, x, extras, ::PullbackSupported) where {F}
-    return pullback(backend, f, x, one(eltype(x)), extras)
+    return last(value_and_gradient(f, backend, x, extras))
 end

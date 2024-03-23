@@ -8,9 +8,6 @@
 /docs/build/
 /docs/src/index.md
 
-/Manifest.toml
-/docs/Manifest.toml
-/test/Manifest.toml
-/benchmark/Manifest.toml
+Manifest.toml
 
 *.csv

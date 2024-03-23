@@ -5,20 +5,6 @@ Testing utilities for [`DifferentiationInterface`](@ref).
 """
 module DifferentiationTest
 
-using ..DifferentiationInterface
-import ..DifferentiationInterface as DI
-using ..DifferentiationInterface:
-    inner,
-    mode,
-    outer,
-    supports_mutation,
-    supports_pushforward,
-    supports_pullback,
-    supports_hvp,
-    zero!,
-    MutationBehavior,
-    MutationSupported,
-    MutationNotSupported
 using ADTypes
 using ADTypes:
     AbstractADType,
@@ -26,23 +12,30 @@ using ADTypes:
     AbstractForwardMode,
     AbstractReverseMode,
     AbstractSymbolicDifferentiationMode
+using ..DifferentiationInterface
+import ..DifferentiationInterface as DI
+using ..DifferentiationInterface:
+    mode,
+    mysimilar,
+    myzero,
+    myzero!!,
+    supports_mutation,
+    supports_pushforward,
+    supports_pullback
 using DocStringExtensions
 using Test: @testset, @test
 
-include("operator_traits.jl")
 include("scenario.jl")
-include("benchmark.jl")
-include("call_count.jl")
+include("compatibility.jl")
 include("default_scenarios.jl")
-include("test_operators.jl")
 include("zero.jl")
 include("printing.jl")
+include("benchmark.jl")
+include("call_count.jl")
+include("test_operators.jl")
 
-export backend_string
 export Scenario, default_scenarios
-export isallocating, ismutating
 export BenchmarkData, record!
 export test_operators
-export AutoZeroForward, AutoZeroReverse
 
 end

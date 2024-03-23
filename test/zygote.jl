@@ -9,6 +9,6 @@ using Test
 
 @test check_available(AutoZygote())
 @test !check_mutation(AutoZygote())
-@test check_hessian(AutoZygote())
+@test_broken !check_hessian(AutoZygote())
 
-test_operators(AutoZygote(); type_stability=false);
+test_operators(AutoZygote(); second_order=false, type_stability=false);

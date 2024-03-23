@@ -1,6 +1,6 @@
 
 """
-    Scenario
+    Scenario{mutating}
 
 Store a testing scenario composed of a function and its input + output + tangents.
 
@@ -8,55 +8,50 @@ Store a testing scenario composed of a function and its input + output + tangent
 
 $(TYPEDFIELDS)
 """
-@kwdef struct Scenario{F,X<:Union{Number,AbstractArray},Y<:Union{Number,AbstractArray}}
+struct Scenario{mutating,F,X,Y,DX,DY}
     "function"
     f::F
-    "mutation"
-    mutating::Bool
     "input"
     x::X
     "output"
     y::Y
     "pushforward seed"
-    dx::X
+    dx::DX
     "pullback seed"
-    dy::Y
+    dy::DY
 end
 
-Base.string(scen::Scenario) = "$(string(scen.f)): $(typeof(scen.x)) -> $(typeof(scen.y))"
-
-ismutating(s::Scenario) = s.mutating
-isallocating(s::Scenario) = !ismutating(s)
-
-## Check operator compatibility
-function iscompatible(op::AbstractOperator, s::Scenario)
-    return ismutating(op) == ismutating(s) && iscompatible(op, s.x, s.y)
+function Scenario{mutating}(f::F, x::X, y::Y, dx::DX, dy::DY) where {mutating,F,X,Y,DX,DY}
+    return Scenario{mutating,F,X,Y,DX,DY}(f, x, y, dx, dy)
 end
 
-function compatible_scenarios(op::AbstractOperator, scs::AbstractVector{Scenario})
-    return filter(s -> iscompatible(op, s), scs)
+function Base.string(scen::Scenario{mutating}) where {mutating}
+    return "$(string(scen.f)): $(typeof(scen.x)) -> $(typeof(scen.y))"
 end
+
+is_mutating(::Scenario{mutating}) where {mutating} = mutating
 
 ## Scenario constructors
-similar_random(z::Number) = randn(eltype(z))
 
-function similar_random(z::AbstractArray)
-    zz = similar(z)
+mysimilar_random(z::Number) = randn(eltype(z))
+
+function mysimilar_random(z::AbstractArray)
+    zz = mysimilar(z)
     zz .= randn(eltype(zz), size(zz))
     return zz
 end
 
 function Scenario(f, x::Union{Number,AbstractArray})
     y = f(x)
-    dx = similar_random(x)
-    dy = similar_random(y)
-    return Scenario(; f, x, y, dx, dy, mutating=false)
+    dx = mysimilar_random(x)
+    dy = mysimilar_random(y)
+    return Scenario{false}(f, x, y, dx, dy)
 end
 
 function Scenario(f!, x::Union{Number,AbstractArray}, s::NTuple{N,<:Integer}) where {N}
     y = zeros(eltype(x), s...)
     f!(y, x)
-    dx = similar_random(x)
-    dy = similar_random(y)
-    return Scenario(; f=f!, x, y, dx, dy, mutating=true)
+    dx = mysimilar_random(x)
+    dy = mysimilar_random(y)
+    return Scenario{true}(f!, x, y, dx, dy)
 end

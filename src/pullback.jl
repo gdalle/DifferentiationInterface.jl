@@ -1,50 +1,39 @@
 """
-    value_and_pullback!(dx, backend, f, x, dy, [extras]) -> (y, dx)
-    value_and_pullback!(y, dx, backend, f!, x, dy, [extras]) -> (y, dx)
-
-Compute the primal value `y = f(x)` and the vector-Jacobian product `dx = ∂f(x)' * dy`, overwriting `dx` if possible.
-
-!!! info "Interface requirement"
-    This is the only required implementation for a reverse mode backend.
+    value_and_pullback!!(f, dx, backend, x, dy, [extras]) -> (y, dx)
+    value_and_pullback!!(f!, y, dx, backend, x, dy, [extras]) -> (y, dx)
 """
-function value_and_pullback!(dx, backend::AbstractADType, f::F, x, dy) where {F}
-    return value_and_pullback!(dx, backend, f, x, dy, prepare_pullback(backend, f, x))
+function value_and_pullback!!(f::F, dx, backend::AbstractADType, x, dy) where {F}
+    extras = prepare_pullback(f, backend, x)
+    return value_and_pullback!!(f, dx, backend, x, dy, extras)
 end
 
-function value_and_pullback!(y, dx, backend::AbstractADType, f::F, x, dy) where {F}
-    return value_and_pullback!(y, dx, backend, f, x, dy, prepare_pullback(backend, f, x, y))
+function value_and_pullback!!(f!::F, y, dx, backend::AbstractADType, x, dy) where {F}
+    extras = prepare_pullback(f!, backend, y, x)
+    return value_and_pullback!!(f!, y, dx, backend, x, dy, extras)
 end
 
 """
-    value_and_pullback(backend, f, x, dy, [extras]) -> (y, dx)
-
-Compute the primal value `y = f(x)` and the vector-Jacobian product `dx = ∂f(x)' * dy`.
+    value_and_pullback(f, backend, x, dy, [extras]) -> (y, dx)
 """
-function value_and_pullback(
-    backend::AbstractADType, f::F, x, dy, extras=prepare_pullback(backend, f, x)
+function value_and_pullback(f::F, backend::AbstractADType, x, dy) where {F}
+    extras = prepare_pullback(f, backend, x)
+    return value_and_pullback(f, backend, x, dy, extras)
+end
+
+"""
+    pullback!!(f, dx, backend, x, dy, [extras]) -> dx
+"""
+function pullback!!(
+    f::F, dx, backend::AbstractADType, x, dy, extras=prepare_pullback(f, backend, x)
 ) where {F}
-    dx = mysimilar(x)
-    return value_and_pullback!(dx, backend, f, x, dy, extras)
+    return last(value_and_pullback!!(f, dx, backend, x, dy, extras))
 end
 
 """
-    pullback!(dx, backend, f, x, dy, [extras]) -> dx
-
-Compute the vector-Jacobian product `dx = ∂f(x)' * dy`, overwriting `dx` if possible.
-"""
-function pullback!(
-    dx, backend::AbstractADType, f::F, x, dy, extras=prepare_pullback(backend, f, x)
-) where {F}
-    return last(value_and_pullback!(dx, backend, f, x, dy, extras))
-end
-
-"""
-    pullback(backend, f, x, dy, [extras]) -> dx
-
-Compute the vector-Jacobian product `dx = ∂f(x)' * dy`.
+    pullback(f, backend, x, dy, [extras]) -> dx
 """
 function pullback(
-    backend::AbstractADType, f::F, x, dy, extras=prepare_pullback(backend, f, x)
+    f::F, backend::AbstractADType, x, dy, extras=prepare_pullback(f, backend, x)
 ) where {F}
-    return last(value_and_pullback(backend, f, x, dy, extras))
+    return last(value_and_pullback(f, backend, x, dy, extras))
 end

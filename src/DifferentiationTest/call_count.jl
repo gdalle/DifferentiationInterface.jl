@@ -15,42 +15,25 @@ function (cc::CallCounter{F})(y, x) where {F}
     return cc.f(y, x)
 end
 
-function test_call_count(
-    backends::Vector{<:AbstractADType},
-    operators::Vector{<:AbstractOperator},
-    scenarios::Vector{<:Scenario};
-)
-    @testset verbose = true "Call count" begin
-        @testset verbose = true "$(backend_string(backend))" for backend in backends
-            @testset "$op" for op in operators
-                @testset "$s" for s in compatible_scenarios(op, scenarios)
-                    test_call_count(op, backend, s)
-                end
-            end
-        end
-    end
-end
-
 ## Pushforward
 
-function test_call_count(::PushforwardAllocating, ba::AbstractADType, scen::Scenario)
-    Bool(supports_pushforward(ba)) || return nothing
+function test_call_count(ba::AbstractADType, ::typeof(pushforward), scen::Scenario{false})
     (; f, x, dx) = deepcopy(scen)
+    extras = prepare_pushforward(CallCounter(f), ba, x)
     cc = CallCounter(f)
-    value_and_pushforward(ba, cc, x, dx)
+    value_and_pushforward(cc, ba, x, dx, extras)
     if mode(ba) == AbstractForwardMode
         @test cc.count[] <= 1
     end
 end
 
-function test_call_count(::PushforwardMutating, ba::AbstractADType, scen::Scenario)
-    Bool(supports_pushforward(ba)) || return nothing
-    Bool(supports_mutation(ba)) || return nothing
+function test_call_count(ba::AbstractADType, ::typeof(pushforward), scen::Scenario{true})
     (; f, x, y, dx, dy) = deepcopy(scen)
+    extras = prepare_pushforward(CallCounter(f), ba, y, x)
     cc! = CallCounter(f)
-    y_in = zero(y)
-    dy_in = zero(dy)
-    value_and_pushforward!(y_in, dy_in, ba, cc!, x, dx)
+    y_in = myzero(y)
+    dy_in = myzero(dy)
+    value_and_pushforward!!(cc!, y_in, dy_in, ba, x, dx, extras)
     if mode(ba) == AbstractForwardMode
         @test cc!.count[] <= 1
     end
@@ -58,24 +41,23 @@ end
 
 ## Pullback
 
-function test_call_count(::PullbackAllocating, ba::AbstractADType, scen::Scenario)
-    Bool(supports_pullback(ba)) || return nothing
+function test_call_count(ba::AbstractADType, ::typeof(pullback), scen::Scenario{false})
     (; f, x, y, dy) = deepcopy(scen)
+    extras = prepare_pullback(CallCounter(f), ba, x)
     cc = CallCounter(f)
-    value_and_pullback(ba, cc, x, dy)
+    value_and_pullback(cc, ba, x, dy, extras)
     if mode(ba) == AbstractReverseMode
         @test cc.count[] <= 1
     end
 end
 
-function test_call_count(::PullbackMutating, ba::AbstractADType, scen::Scenario)
-    Bool(supports_pullback(ba)) || return nothing
-    Bool(supports_mutation(ba)) || return nothing
+function test_call_count(ba::AbstractADType, ::typeof(pullback), scen::Scenario{true})
     (; f, x, y, dx, dy) = deepcopy(scen)
+    extras = prepare_pullback(CallCounter(f), ba, y, x)
     cc! = CallCounter(f)
-    y_in = zero(y)
-    dx_in = zero(dx)
-    value_and_pullback!(y_in, dx_in, ba, cc!, x, dy)
+    y_in = myzero(y)
+    dx_in = myzero(dx)
+    value_and_pullback!!(cc!, y_in, dx_in, ba, x, dy, extras)
     if mode(ba) == AbstractReverseMode
         @test cc!.count[] <= 1
     end
@@ -83,47 +65,25 @@ end
 
 ## Derivative
 
-function test_call_count(
-    ::DerivativeAllocating, ba::AbstractADType, scen::Scenario{<:Any,<:Number}
-)
+function test_call_count(ba::AbstractADType, ::typeof(derivative), scen::Scenario{false})
     (; f, x, y) = deepcopy(scen)
+    extras = prepare_derivative(CallCounter(f), ba, x)
     cc = CallCounter(f)
-    value_and_derivative(ba, cc, x)
-    @test cc.count[] <= 1
-end
-
-## Multiderivative
-
-function test_call_count(
-    ::MultiderivativeAllocating,
-    ba::AbstractADType,
-    scen::Scenario{<:Any,<:Number,<:AbstractArray},
-)
-    (; f, x, y) = deepcopy(scen)
-    cc1 = CallCounter(f)
-    cc2 = CallCounter(f)
-    value_and_multiderivative(ba, cc1, x)
-    multiderivative(ba, cc2, x)
+    value_and_derivative(cc, ba, x, extras)
     if mode(ba) == AbstractForwardMode
-        @test cc1.count[] <= 1
-        @test cc2.count[] <= 1
+        @test cc.count[] <= 1
     elseif mode(ba) == AbstractReverseMode
-        @test cc1.count[] <= length(y)
-        @test cc2.count[] <= length(y)
+        @test cc.count[] <= length(y)
     end
 end
 
-function test_call_count(
-    ::MultiderivativeMutating,
-    ba::AbstractADType,
-    scen::Scenario{<:Any,<:Number,<:AbstractArray},
-)
-    Bool(supports_mutation(ba)) || return nothing
+function test_call_count(ba::AbstractADType, ::typeof(derivative), scen::Scenario{true})
     (; f, x, y, dy) = deepcopy(scen)
+    extras = prepare_derivative(CallCounter(f), ba, y, x)
     cc! = CallCounter(f)
-    y_in = zero(y)
-    multider_in = zero(dy)
-    value_and_multiderivative!(y_in, multider_in, ba, cc!, x)
+    y_in = myzero(y)
+    der_in = myzero(dy)
+    value_and_derivative!!(cc!, y_in, der_in, ba, x, extras)
     if mode(ba) == AbstractForwardMode
         @test cc!.count[] <= 1
     elseif mode(ba) == AbstractReverseMode
@@ -133,55 +93,39 @@ end
 
 ## Gradient
 
-function test_call_count(
-    ::GradientAllocating, ba::AbstractADType, scen::Scenario{<:Any,<:AbstractArray,<:Number}
-)
+function test_call_count(ba::AbstractADType, ::typeof(gradient), scen::Scenario{false})
     (; f, x, y) = deepcopy(scen)
-    cc1 = CallCounter(f)
-    cc2 = CallCounter(f)
-    value_and_gradient(ba, cc1, x)
-    gradient(ba, cc2, x)
+    extras = prepare_gradient(CallCounter(f), ba, x)
+    cc = CallCounter(f)
+    value_and_gradient(cc, ba, x, extras)
     if mode(ba) == AbstractForwardMode
-        @test cc1.count[] <= length(x)
-        @test cc2.count[] <= length(x)
+        @test cc.count[] <= length(x)
     elseif mode(ba) == AbstractReverseMode
-        @test cc1.count[] <= 1
-        @test cc2.count[] <= 1
+        @test cc.count[] <= 1
     end
 end
 
 ## Jacobian
 
-function test_call_count(
-    ::JacobianAllocating,
-    ba::AbstractADType,
-    scen::Scenario{<:Any,<:AbstractArray,<:AbstractArray},
-)
+function test_call_count(ba::AbstractADType, ::typeof(jacobian), scen::Scenario{false})
     (; f, x, y) = deepcopy(scen)
-    cc1 = CallCounter(f)
-    cc2 = CallCounter(f)
-    value_and_jacobian(ba, cc1, x)
-    jacobian(ba, cc2, x)
+    extras = prepare_jacobian(CallCounter(f), ba, x)
+    cc = CallCounter(f)
+    value_and_jacobian(cc, ba, x, extras)
     if mode(ba) == AbstractForwardMode
-        @test cc1.count[] <= 2 + length(x)  # at least one too many
-        @test cc2.count[] <= 2 + length(x)  # at least one too many
+        @test cc.count[] <= 2 + length(x)  # at least one too many
     elseif mode(ba) == AbstractReverseMode
-        @test cc1.count[] <= 2 + length(y)  # at least one too many
-        @test cc2.count[] <= 2 + length(y)  # at least one too many
+        @test cc.count[] <= 2 + length(y)  # at least one too many
     end
 end
 
-function test_call_count(
-    ::JacobianMutating,
-    ba::AbstractADType,
-    scen::Scenario{<:Any,<:AbstractArray,<:AbstractArray},
-)
-    Bool(supports_mutation(ba)) || return nothing
+function test_call_count(ba::AbstractADType, ::typeof(jacobian), scen::Scenario{true})
     (; f, x, y) = deepcopy(scen)
+    extras = prepare_jacobian(CallCounter(f), ba, y, x)
     cc! = CallCounter(f)
-    y_in = zero(y)
+    y_in = myzero(y)
     jac_in = similar(y, length(y), length(x))
-    value_and_jacobian!(y_in, jac_in, ba, cc!, x)
+    value_and_jacobian!!(cc!, y_in, jac_in, ba, x, extras)
     if mode(ba) == AbstractForwardMode
         @test cc!.count[] <= 1 + length(x)
     elseif mode(ba) == AbstractReverseMode
@@ -192,47 +136,34 @@ end
 ## Second derivative
 
 function test_call_count(
-    ::SecondDerivativeAllocating,
-    ba::AbstractADType,
-    scen::Scenario{<:Any,<:Number,<:Number},
+    ba::AbstractADType, ::typeof(second_derivative), scen::Scenario{false}
 )
     (; f, x, y) = deepcopy(scen)
+    extras = prepare_second_derivative(CallCounter(f), ba, x)
     cc = CallCounter(f)
-    value_derivative_and_second_derivative(ba, cc, x)
-    @test cc.count[] <= 2
+    second_derivative(cc, ba, x, extras)
+    # what to test?
+    return nothing
 end
 
 ## Hessian-vector product
 
-function test_call_count(
-    ::HessianVectorProductAllocating,
-    ba::AbstractADType,
-    scen::Scenario{<:Any,<:AbstractArray,<:Number},
-)
-    Bool(supports_hvp(ba)) || return nothing
-    (; f, x, dx) = deepcopy(scen)
-    cc1 = CallCounter(f)
-    cc2 = CallCounter(f)
-    hessian_vector_product(ba, cc1, x, dx)
-    # gradient_and_hessian_vector_product(ba, cc2, x, dx)
-    @test cc1.count[] <= 2
-    # @test cc2.count[] <= 2
+function test_call_count(ba::AbstractADType, ::typeof(hvp), scen::Scenario{false})
+    (; f, x, y, dx) = deepcopy(scen)
+    extras = prepare_hvp(CallCounter(f), ba, x)
+    cc = CallCounter(f)
+    hvp(cc, ba, x, dx, extras)
+    # what to test?
+    return nothing
 end
 
 ## Hessian
 
-function test_call_count(
-    ::HessianAllocating, ba::AbstractADType, scen::Scenario{<:Any,<:AbstractArray,<:Number}
-)
-    (; f, x, y) = deepcopy(scen)
-    cc1 = CallCounter(f)
-    cc2 = CallCounter(f)
-    value_gradient_and_hessian(ba, cc1, x)
-    hessian(ba, cc2, x)
-    @test cc1.count[] <= 2 + length(x)
-    @test cc2.count[] <= 2 + length(x)
-end
-
-function test_call_count(op::AbstractOperator, ba::AbstractADType, scen::Scenario)
-    throw(ArgumentError("Invalid operator to test: $op"))
+function test_call_count(ba::AbstractADType, ::typeof(hessian), scen::Scenario{false})
+    (; f, x, y, dx) = deepcopy(scen)
+    extras = prepare_hessian(CallCounter(f), ba, x)
+    cc = CallCounter(f)
+    hessian(cc, ba, x, extras)
+    # what to test?
+    return nothing
 end

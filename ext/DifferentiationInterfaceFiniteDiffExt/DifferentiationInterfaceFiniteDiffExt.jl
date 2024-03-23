@@ -2,7 +2,6 @@ module DifferentiationInterfaceFiniteDiffExt
 
 using ADTypes: AutoFiniteDiff
 import DifferentiationInterface as DI
-using DocStringExtensions
 using FiniteDiff:
     finite_difference_derivative,
     finite_difference_gradient,

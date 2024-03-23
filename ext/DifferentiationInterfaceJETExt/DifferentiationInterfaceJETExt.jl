@@ -1,286 +1,176 @@
 module DifferentiationInterfaceJETExt
 
-using ADTypes:
-    AbstractADType,
-    AbstractFiniteDifferencesMode,
-    AbstractForwardMode,
-    AbstractReverseMode,
-    AbstractSymbolicDifferentiationMode
+using ADTypes: AbstractADType
 using DifferentiationInterface
-using DifferentiationInterface:
-    inner,
-    mode,
-    outer,
-    supports_mutation,
-    supports_pushforward,
-    supports_pullback,
-    supports_hvp
-using DifferentiationInterface.DifferentiationTest
+using DifferentiationInterface.DifferentiationTest: Scenario
 import DifferentiationInterface.DifferentiationTest as DT
-using DifferentiationInterface.DifferentiationTest:
-    AbstractOperator,
-    PushforwardAllocating,
-    PushforwardMutating,
-    PullbackAllocating,
-    PullbackMutating,
-    MultiderivativeAllocating,
-    MultiderivativeMutating,
-    GradientAllocating,
-    JacobianAllocating,
-    JacobianMutating,
-    DerivativeAllocating,
-    SecondDerivativeAllocating,
-    HessianAllocating,
-    HessianVectorProductAllocating,
-    compatible_scenarios
 using JET: @test_call, @test_opt
 using LinearAlgebra: LinearAlgebra
-using Test
-
-## Selector
-
-function DT.test_type_stability(
-    backends::Vector{<:AbstractADType},
-    operators::Vector{<:AbstractOperator},
-    scenarios::Vector{<:Scenario};
-)
-    @testset verbose = true "Type stability" begin
-        @testset verbose = true "$(backend_string(backend))" for backend in backends
-            @testset "$op" for op in operators
-                @testset "$s" for s in compatible_scenarios(op, scenarios)
-                    test_type(op, backend, s)
-                end
-            end
-        end
-    end
-end
+using Test: @testset, @test
 
 ## Pushforward
 
-function test_type(::PushforwardAllocating, ba::AbstractADType, scen::Scenario)
-    Bool(supports_pushforward(ba)) || return nothing
+function DT.test_type_stability(
+    ba::AbstractADType, ::typeof(pushforward), scen::Scenario{false}
+)
     (; f, x, dx, dy) = deepcopy(scen)
+    extras = prepare_pushforward(f, ba, x)
     dy_in = zero(dy)
 
-    @test_call value_and_pushforward!(dy_in, ba, f, x, dx)
-    @test_opt value_and_pushforward!(dy_in, ba, f, x, dx)
+    @test_call value_and_pushforward!!(f, dy_in, ba, x, dx, extras)
+    @test_opt value_and_pushforward!!(f, dy_in, ba, x, dx, extras)
 
-    @test_call pushforward!(dy_in, ba, f, x, dx)
-    @test_opt pushforward!(dy_in, ba, f, x, dx)
-
-    @test_call value_and_pushforward(ba, f, x, dx)
-    @test_opt value_and_pushforward(ba, f, x, dx)
-
-    @test_call pushforward(ba, f, x, dx)
-    @test_opt pushforward(ba, f, x, dx)
+    @test_call value_and_pushforward(f, ba, x, dx, extras)
+    @test_opt value_and_pushforward(f, ba, x, dx, extras)
 end
 
-function test_type(::PushforwardMutating, ba::AbstractADType, scen::Scenario)
-    Bool(supports_pushforward(ba)) || return nothing
-    Bool(supports_mutation(ba)) || return nothing
+function DT.test_type_stability(
+    ba::AbstractADType, ::typeof(pushforward), scen::Scenario{true}
+)
     (; f, x, y, dx, dy) = deepcopy(scen)
     f! = f
+    extras = prepare_pushforward(f!, ba, y, x)
     y_in = zero(y)
     dy_in = zero(dy)
 
-    @test_call value_and_pushforward!(y_in, dy_in, ba, f!, x, dx)
-    @test_opt value_and_pushforward!(y_in, dy_in, ba, f!, x, dx)
+    @test_call value_and_pushforward!!(f!, y_in, dy_in, ba, x, dx, extras)
+    @test_opt value_and_pushforward!!(f!, y_in, dy_in, ba, x, dx, extras)
 end
 
 ## Pullback
 
-function test_type(::PullbackAllocating, ba::AbstractADType, scen::Scenario)
-    Bool(supports_pullback(ba)) || return nothing
+function DT.test_type_stability(
+    ba::AbstractADType, ::typeof(pullback), scen::Scenario{false}
+)
     (; f, x, dx, dy) = deepcopy(scen)
+    extras = prepare_pullback(f, ba, x)
     dx_in = zero(dx)
 
-    @test_call value_and_pullback!(dx_in, ba, f, x, dy)
-    @test_opt value_and_pullback!(dx_in, ba, f, x, dy)
+    @test_call value_and_pullback!!(f, dx_in, ba, x, dy, extras)
+    @test_opt value_and_pullback!!(f, dx_in, ba, x, dy, extras)
 
-    @test_call pullback!(dx_in, ba, f, x, dy)
-    @test_opt pullback!(dx_in, ba, f, x, dy)
-
-    @test_call value_and_pullback(ba, f, x, dy)
-    @test_opt value_and_pullback(ba, f, x, dy)
-
-    @test_call pullback(ba, f, x, dy)
-    @test_opt pullback(ba, f, x, dy)
+    @test_call value_and_pullback(f, ba, x, dy, extras)
+    @test_opt value_and_pullback(f, ba, x, dy, extras)
 end
 
-function test_type(::PullbackMutating, ba::AbstractADType, scen::Scenario)
-    Bool(supports_pullback(ba)) || return nothing
-    Bool(supports_mutation(ba)) || return nothing
+function DT.test_type_stability(
+    ba::AbstractADType, ::typeof(pullback), scen::Scenario{true}
+)
     (; f, x, y, dx, dy) = deepcopy(scen)
     f! = f
+    extras = prepare_pullback(f!, ba, y, x)
     y_in = zero(y)
     dx_in = zero(dx)
 
-    @test_call value_and_pullback!(y_in, dx_in, ba, f!, x, dy)
-    @test_opt value_and_pullback!(y_in, dx_in, ba, f!, x, dy)
+    @test_call value_and_pullback!!(f!, y_in, dx_in, ba, x, dy, extras)
+    @test_opt value_and_pullback!!(f!, y_in, dx_in, ba, x, dy, extras)
 end
 
 ## Derivative
 
-function test_type(::DerivativeAllocating, ba::AbstractADType, scen::Scenario)
-    (; f, x) = deepcopy(scen)
-
-    @test_call value_and_derivative(ba, f, x)
-    @test_opt value_and_derivative(ba, f, x)
-
-    @test_call derivative(ba, f, x)
-    @test_opt derivative(ba, f, x)
-end
-
-## Multiderivative
-
-function test_type(::MultiderivativeAllocating, ba::AbstractADType, scen::Scenario)
+function DT.test_type_stability(
+    ba::AbstractADType, ::typeof(derivative), scen::Scenario{false}
+)
     (; f, x, dy) = deepcopy(scen)
-    multider_in = zero(dy)
+    extras = prepare_derivative(f, ba, x)
+    der_in = zero(dy)
 
-    @test_call value_and_multiderivative!(multider_in, ba, f, x)
-    @test_opt value_and_multiderivative!(multider_in, ba, f, x)
+    @test_call value_and_derivative!!(f, der_in, ba, x, extras)
+    @test_opt value_and_derivative!!(f, der_in, ba, x, extras)
 
-    @test_call multiderivative!(multider_in, ba, f, x)
-    @test_opt multiderivative!(multider_in, ba, f, x)
-
-    @test_call value_and_multiderivative(ba, f, x)
-    @test_opt value_and_multiderivative(ba, f, x)
-
-    @test_call multiderivative(ba, f, x)
-    @test_opt multiderivative(ba, f, x)
+    @test_call value_and_derivative(f, ba, x, extras)
+    @test_opt value_and_derivative(f, ba, x, extras)
 end
 
-function test_type(::MultiderivativeMutating, ba::AbstractADType, scen::Scenario)
-    Bool(supports_mutation(ba)) || return nothing
+function DT.test_type_stability(
+    ba::AbstractADType, ::typeof(derivative), scen::Scenario{true}
+)
     (; f, x, y, dy) = deepcopy(scen)
     f! = f
+    extras = prepare_derivative(f!, ba, y, x)
     y_in = zero(y)
-    multider_in = zero(dy)
+    der_in = zero(dy)
 
-    @test_call value_and_multiderivative!(y_in, multider_in, ba, f!, x)
-    @test_opt value_and_multiderivative!(y_in, multider_in, ba, f!, x)
+    @test_call value_and_derivative!!(f!, y_in, der_in, ba, x, extras)
+    @test_opt value_and_derivative!!(f!, y_in, der_in, ba, x, extras)
 end
 
 ## Gradient
 
-function test_type(::GradientAllocating, ba::AbstractADType, scen::Scenario)
+function DT.test_type_stability(
+    ba::AbstractADType, ::typeof(gradient), scen::Scenario{false}
+)
     (; f, x, dx) = deepcopy(scen)
+    extras = prepare_gradient(f, ba, x)
     grad_in = zero(dx)
 
-    @test_call value_and_gradient!(grad_in, ba, f, x)
-    @test_opt value_and_gradient!(grad_in, ba, f, x)
+    @test_call value_and_gradient!!(f, grad_in, ba, x, extras)
+    @test_opt value_and_gradient!!(f, grad_in, ba, x, extras)
 
-    @test_call gradient!(grad_in, ba, f, x)
-    @test_opt gradient!(grad_in, ba, f, x)
-
-    @test_call value_and_gradient(ba, f, x)
-    @test_opt value_and_gradient(ba, f, x)
-
-    @test_call gradient(ba, f, x)
-    @test_opt gradient(ba, f, x)
+    @test_call value_and_gradient(f, ba, x, extras)
+    @test_opt value_and_gradient(f, ba, x, extras)
 end
 
 ## Jacobian
 
-function test_type(::JacobianAllocating, ba::AbstractADType, scen::Scenario)
+function DT.test_type_stability(
+    ba::AbstractADType, ::typeof(jacobian), scen::Scenario{false}
+)
     (; f, x, y) = deepcopy(scen)
+    extras = prepare_jacobian(f, ba, x)
     jac_in = zeros(eltype(y), length(y), length(x))
 
-    @test_call value_and_jacobian!(jac_in, ba, f, x)
-    @test_opt value_and_jacobian!(jac_in, ba, f, x)
+    @test_call value_and_jacobian!!(f, jac_in, ba, x, extras)
+    @test_opt value_and_jacobian!!(f, jac_in, ba, x, extras)
 
-    @test_call jacobian!(jac_in, ba, f, x)
-    @test_opt jacobian!(jac_in, ba, f, x)
-
-    @test_call value_and_jacobian(ba, f, x)
-    @test_opt value_and_jacobian(ba, f, x)
-
-    @test_call jacobian(ba, f, x)
-    @test_opt jacobian(ba, f, x)
+    @test_call value_and_jacobian(f, ba, x, extras)
+    @test_opt value_and_jacobian(f, ba, x, extras)
 end
 
-function test_type(::JacobianMutating, ba::AbstractADType, scen::Scenario)
-    Bool(supports_mutation(ba)) || return nothing
+function DT.test_type_stability(
+    ba::AbstractADType, ::typeof(jacobian), scen::Scenario{true}
+)
     (; f, x, y) = deepcopy(scen)
     f! = f
+    extras = prepare_jacobian(f!, ba, y, x)
     y_in = zero(y)
     jac_in = zeros(eltype(y), length(y), length(x))
 
-    @test_call value_and_jacobian!(y_in, jac_in, ba, f!, x)
-    @test_opt value_and_jacobian!(y_in, jac_in, ba, f!, x)
+    @test_call value_and_jacobian!!(f!, y_in, jac_in, ba, x, extras)
+    @test_opt value_and_jacobian!!(f!, y_in, jac_in, ba, x, extras)
 end
 
 ## Second derivative
 
-function test_type(::SecondDerivativeAllocating, ba::AbstractADType, scen::Scenario)
+function DT.test_type_stability(
+    ba::AbstractADType, ::typeof(second_derivative), scen::Scenario{false}
+)
     (; f, x) = deepcopy(scen)
+    extras = prepare_second_derivative(f, ba, x)
 
-    @test_call value_derivative_and_second_derivative(ba, f, x)
-    @test_opt value_derivative_and_second_derivative(ba, f, x)
-
-    @test_call second_derivative(ba, f, x)
-    @test_opt second_derivative(ba, f, x)
+    @test_call second_derivative(f, ba, x, extras)
 end
 
-## Hessian-vector product
+## HVP
 
-function test_type(::HessianVectorProductAllocating, ba::AbstractADType, scen::Scenario)
-    Bool(supports_hvp(ba)) || return nothing
+function DT.test_type_stability(ba::AbstractADType, ::typeof(hvp), scen::Scenario{false})
     (; f, x, dx) = deepcopy(scen)
-    grad_in = zero(dx)
-    hvp_in = zero(dx)
+    extras = prepare_hvp(f, ba, x)
 
-    @test_call ignored_modules = (LinearAlgebra,) hessian_vector_product!(
-        hvp_in, ba, f, x, dx
-    )
-    @test_opt ignored_modules = (LinearAlgebra,) hessian_vector_product!(
-        hvp_in, ba, f, x, dx
-    )
-
-    # @test_call ignored_modules = (LinearAlgebra,) hessian_vector_product(ba, f, x, dx)
-    # @test_opt ignored_modules = (LinearAlgebra,) hessian_vector_product(ba, f, x, dx)
-
-    # @test_call ignored_modules = (LinearAlgebra,) gradient_and_hessian_vector_product!(
-    #     grad_in, hvp_in, ba, f, x, dx
-    # )
-    # @test_opt ignored_modules = (LinearAlgebra,) gradient_and_hessian_vector_product!(
-    #     grad_in, hvp_in, ba, f, x, dx
-    # )
-
-    # @test_call ignored_modules = (LinearAlgebra,) gradient_and_hessian_vector_product(
-    #     ba, f, x, dx
-    # )
-    # @test_opt ignored_modules = (LinearAlgebra,) gradient_and_hessian_vector_product(
-    #     ba, f, x, dx
-    # )
+    @test_call hvp(f, ba, x, dx, extras)
+    @test_opt hvp(f, ba, x, dx, extras)
 end
 
 ## Hessian
 
-function test_type(::HessianAllocating, ba::AbstractADType, scen::Scenario)
-    (; f, x, dx) = deepcopy(scen)
-    grad_in = zero(dx)
-    hess_in = zeros(eltype(x), length(x), length(x))
+function DT.test_type_stability(
+    ba::AbstractADType, ::typeof(hessian), scen::Scenario{false}
+)
+    (; f, x) = deepcopy(scen)
+    extras = prepare_hessian(f, ba, x)
 
-    @test_call ignored_modules = (LinearAlgebra,) value_gradient_and_hessian!(
-        grad_in, hess_in, ba, f, x
-    )
-    @test_opt ignored_modules = (LinearAlgebra,) value_gradient_and_hessian!(
-        grad_in, hess_in, ba, f, x
-    )
-
-    @test_call ignored_modules = (LinearAlgebra,) hessian!(hess_in, ba, f, x)
-    @test_opt ignored_modules = (LinearAlgebra,) hessian!(hess_in, ba, f, x)
-
-    @test_call ignored_modules = (LinearAlgebra,) value_gradient_and_hessian(ba, f, x)
-    @test_opt ignored_modules = (LinearAlgebra,) value_gradient_and_hessian(ba, f, x)
-
-    @test_call ignored_modules = (LinearAlgebra,) hessian(ba, f, x)
-    @test_opt ignored_modules = (LinearAlgebra,) hessian(ba, f, x)
-end
-
-function test_type(op::AbstractOperator, ba::AbstractADType, scen::Scenario)
-    throw(ArgumentError("Invalid operator to test: $op"))
+    @test_call hessian(f, ba, x, extras)
+    @test_opt hessian(f, ba, x, extras)
 end
 
 end #module

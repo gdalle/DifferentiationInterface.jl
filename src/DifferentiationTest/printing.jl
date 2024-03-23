@@ -5,6 +5,7 @@ pretty(::AutoDiffractor) = "Diffractor"
 pretty(::AutoEnzyme) = "Enzyme"
 pretty(::AutoFastDifferentiation) = "FastDifferentiation"
 pretty(::AutoFiniteDiff) = "FiniteDiff"
+pretty(::AutoFiniteDifferences) = "FiniteDifferences"
 pretty(::AutoForwardDiff) = "ForwardDiff"
 pretty(::AutoPolyesterForwardDiff) = "PolyesterForwardDiff"
 pretty(b::AutoReverseDiff) = "ReverseDiff$(b.compile ? "{compiled}" : "")"
@@ -31,8 +32,4 @@ function backend_string(backend::AbstractADType)
     else
         error("Unknown mode")
     end
-end
-
-function backend_string(backend::SecondOrder)
-    return "$(backend_string(inner(backend))) + $(backend_string(outer(backend)))"
 end

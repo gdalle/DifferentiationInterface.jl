@@ -18,7 +18,6 @@ mode(::AbstractForwardMode) = AbstractForwardMode
 mode(::AbstractFiniteDifferencesMode) = AbstractFiniteDifferencesMode
 mode(::AbstractReverseMode) = AbstractReverseMode
 mode(::AbstractSymbolicDifferentiationMode) = AbstractSymbolicDifferentiationMode
-mode(backend::SecondOrder) = mode(inner(backend)), mode(outer(backend))
 
 ## Mutation
 
@@ -103,49 +102,52 @@ supports_pullback(::Type{AbstractFiniteDifferencesMode}) = PullbackNotSupported(
 supports_pullback(::Type{AbstractReverseMode}) = PullbackSupported()
 supports_pullback(::Type{AbstractSymbolicDifferentiationMode}) = PullbackSupported()
 
-## Hessian-vector product
+## HVP
 
-abstract type HVPBehavior end
-
-"""
-    HVPSupported
-
-Trait identifying backends that support efficient HVPs.
-"""
-struct HVPSupported <: HVPBehavior end
+abstract type HVPMode end
 
 """
-    HVPNotSupported
+    ForwardOverReverse
 
-Trait identifying backends that do not support efficient HVPs.
+Traits identifying second-order backends that compute HVPs in forward over reverse mode.
 """
-struct HVPNotSupported <: HVPBehavior end
+struct ForwardOverReverse end
 
 """
-    supports_hvp(backend)
+    ReverseOverForward
 
-Return [`HVPSupported`](@ref) or [`HVPNotSupported`](@ref) in a statically predictable way.
+Traits identifying second-order backends that compute HVPs in reverse over forward mode.
 """
-supports_hvp(backend::AbstractADType) = supports_hvp(SecondOrder(backend, backend))
+struct ReverseOverForward end
 
-function supports_hvp(backend::SecondOrder)
-    return supports_hvp(mode(inner(backend)), mode(outer(backend)))
-end
+"""
+    ReverseOverReverse
 
-function supports_hvp(::Type{<:AbstractMode}, ::Type{<:AbstractMode})
-    return HVPNotSupported()
-end
+Traits identifying second-order backends that compute HVPs in reverse over reverse mode.
+"""
+struct ReverseOverReverse end
 
-function supports_hvp(::Type{AbstractReverseMode}, ::Type{AbstractForwardMode})
-    return HVPSupported()
-end
+"""
+    ForwardOverForward
 
-function supports_hvp(::Type{AbstractReverseMode}, ::Type{AbstractReverseMode})
-    return HVPSupported()
-end
+Traits identifying second-order backends that compute HVPs in forward over forward mode (inefficient).
+"""
+struct ForwardOverForward end
 
-function supports_hvp(::Type{AbstractForwardMode}, ::Type{AbstractReverseMode})
-    return HVPSupported()
+hvp_mode(::AbstractADType) = error("HVP mode undefined for first order backend")
+
+function hvp_mode(ba::SecondOrder)
+    if Bool(supports_pushforward(outer(ba))) && Bool(supports_pullback(inner(ba)))
+        return ForwardOverReverse()
+    elseif Bool(supports_pullback(outer(ba))) && Bool(supports_pushforward(inner(ba)))
+        return ReverseOverForward()
+    elseif Bool(supports_pullback(outer(ba))) && Bool(supports_pullback(inner(ba)))
+        return ReverseOverReverse()
+    elseif Bool(supports_pushforward(outer(ba))) && Bool(supports_pushforward(inner(ba)))
+        return ForwardOverForward()
+    else
+        error("HVP mode unknown")
+    end
 end
 
 ## Conversions
@@ -158,6 +160,3 @@ Base.Bool(::PushforwardNotSupported) = false
 
 Base.Bool(::PullbackSupported) = true
 Base.Bool(::PullbackNotSupported) = false
-
-Base.Bool(::HVPSupported) = true
-Base.Bool(::HVPNotSupported) = false

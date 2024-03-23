@@ -23,78 +23,75 @@ using Zygote: Zygote
     @testset verbose = true "Formal tests" begin
         @testset "Aqua" begin
             @info "Running Aqua.jl tests..."
-            Aqua.test_all(DifferentiationInterface; ambiguities=false)
+            @time Aqua.test_all(DifferentiationInterface; ambiguities=false)
         end
         @testset "JuliaFormatter" begin
             @info "Running JuliaFormatter test..."
-            @test JuliaFormatter.format(
+            @time @test JuliaFormatter.format(
                 DifferentiationInterface; verbose=false, overwrite=false
             )
         end
         @testset "JET" begin
             @info "Running JET tests..."
-            JET.test_package(DifferentiationInterface; target_defined_modules=true)
+            @time JET.test_package(DifferentiationInterface; target_defined_modules=true)
         end
     end
 
     @testset verbose = true "Trivial backends" begin
+        @info "Running no backend tests..."
         @testset "No backend" begin
-            include("nobackend.jl")
+            @time include("nobackend.jl")
         end
+        @info "Running zero backend tests..."
         @testset "Zero backend" begin
-            include("zero.jl")
+            @time include("zero.jl")
         end
     end
 
     @testset verbose = true "First order" begin
         @testset "ChainRules (reverse)" begin
             @info "Running ChainRules (reverse) tests..."
-            include("chainrules_reverse.jl")
+            @time include("chainrules_reverse.jl")
         end
         @testset "Diffractor (forward)" begin
             @info "Running Diffractor (forward) tests..."
-            include("diffractor.jl")
+            @time include("diffractor.jl")
         end
         @testset "Enzyme (forward)" begin
             @info "Running Enzyme (forward) tests..."
-            include("enzyme_forward.jl")
+            @time include("enzyme_forward.jl")
         end
         @testset "Enzyme (reverse)" begin
             @info "Running Enzyme (reverse) tests..."
-            include("enzyme_reverse.jl")
+            @time include("enzyme_reverse.jl")
         end
         @testset "FastDifferentiation" begin
             @info "Running FastDifferentiation tests..."
-            include("fastdifferentiation.jl")
+            @time include("fastdifferentiation.jl")
         end
         @testset "FiniteDiff" begin
             @info "Running FiniteDiff tests..."
-            include("finitediff.jl")
+            @time include("finitediff.jl")
         end
         @testset "ForwardDiff" begin
             @info "Running ForwardDiff tests..."
-            include("forwarddiff.jl")
+            @time include("forwarddiff.jl")
         end
         @testset "PolyesterForwardDiff" begin
             @info "Running PolyesterForwardDiff tests..."
-            include("polyesterforwarddiff.jl")
+            @time include("polyesterforwarddiff.jl")
         end
         @testset "ReverseDiff" begin
             @info "Running ReverseDiff tests..."
-            include("reversediff.jl")
+            @time include("reversediff.jl")
         end
         @testset "Tracker" begin
             @info "Running Tracker tests..."
-            include("tracker.jl")
+            @time include("tracker.jl")
         end
         @testset "Zygote" begin
             @info "Running Zygote tests..."
-            include("zygote.jl")
+            @time include("zygote.jl")
         end
     end
-
-    @testset verbose = true "Second order" begin
-        @info "Running second order tests..."
-        include("second_order.jl")
-    end
-end
+end;

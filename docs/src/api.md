@@ -9,46 +9,39 @@ CollapsedDocStrings = true
 DifferentiationInterface
 ```
 
-## Scalar to scalar
+## Derivative
 
 ```@autodocs
 Modules = [DifferentiationInterface]
-Pages = ["src/derivative.jl", "src/second_derivative.jl"]
+Pages = ["src/derivative.jl"]
 ```
 
-## Scalar to array
+## Gradient
 
 ```@autodocs
 Modules = [DifferentiationInterface]
-Pages = ["multiderivative.jl"]
+Pages = ["gradient.jl"]
 ```
 
-## Array to scalar
-
-```@autodocs
-Modules = [DifferentiationInterface]
-Pages = ["gradient.jl", "hessian.jl", "hessian_vector_product.jl"]
-```
-
-## Array to array
+## Jacobian
 
 ```@autodocs
 Modules = [DifferentiationInterface]
 Pages = ["jacobian.jl"]
 ```
 
-## Lower-level operators
+## Second order
+
+```@autodocs
+Modules = [DifferentiationInterface]
+Pages = ["second_order.jl", "second_derivative.jl", "hessian.jl", "hvp.jl"]
+```
+
+## Primitives
 
 ```@autodocs
 Modules = [DifferentiationInterface]
 Pages = ["pushforward.jl", "pullback.jl"]
-```
-
-## Preparation
-
-```@autodocs
-Modules = [DifferentiationInterface]
-Pages = ["prepare.jl"]
 ```
 
 ## Backend queries
@@ -58,6 +51,20 @@ Modules = [DifferentiationInterface]
 Pages = ["backends.jl"]
 ```
 
+## Preparation
+
+```@autodocs
+Modules = [DifferentiationInterface]
+Pages = ["prepare.jl"]
+```
+
+## Testing & benchmarking
+
+```@autodocs
+Modules = [DifferentiationTest]
+Private = false
+```
+
 ## Internals
 
 This is not part of the public API.
@@ -65,12 +72,10 @@ This is not part of the public API.
 ```@autodocs
 Modules = [DifferentiationInterface]
 Public = false
+Order = [:function, :type]
 ```
-
-## Testing
-
-This is not part of the public API.
 
 ```@autodocs
 Modules = [DifferentiationTest]
+Public = false
 ```

@@ -91,6 +91,11 @@ function default_scenarios_mutating()
     return scenarios
 end
 
+"""
+    default_scenarios()
+
+Create a vector of [`Scenario`](@ref)s for testing differentiation. 
+"""
 function default_scenarios()
     return vcat(default_scenarios_allocating(), default_scenarios_mutating())
 end

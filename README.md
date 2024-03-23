@@ -11,12 +11,20 @@ An interface to various automatic differentiation backends in Julia.
 
 This package provides a backend-agnostic syntax to differentiate functions of the following types:
 
-- **Allocating**: `f(x) = y` where `x` and `y` can be real numbers or abstract arrays
-- **Mutating**: `f!(y, x) = nothing` where `y` is an abstract array and `x` can be a real number or an abstract array
+- **allocating**: `f(x) = y`
+- **mutating**: `f!(y, x) = nothing`
+
+## Features
+
+- First and second order operators
+- In-place and out-of-place differentiation
+- Preparation mechanism (e.g. to create a config or tape)
+- Cross-backend testing and benchmarking utilities
+- Thorough validation on standard inputs and outputs (scalars, vectors, matrices)
 
 ## Compatibility
 
-We support some of the backends defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl):
+We support most of the backends defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl):
 
 | Backend                                                                         | Object                                                       |
 | :------------------------------------------------------------------------------ | :----------------------------------------------------------- |
@@ -24,21 +32,20 @@ We support some of the backends defined by [ADTypes.jl](https://github.com/SciML
 | [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl)                     | `AutoDiffractor()`                                           |
 | [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl)                              | `AutoEnzyme(Enzyme.Forward)` or `AutoEnzyme(Enzyme.Reverse)` |
 | [FiniteDiff.jl](https://github.com/JuliaDiff/FiniteDiff.jl)                     | `AutoFiniteDiff()`                                           |
+| [FiniteDifferences.jl](https://github.com/JuliaDiff/FiniteDifferences.jl)       | `AutoFiniteDifferences(fdm)`                                 |
 | [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl)                   | `AutoForwardDiff()`                                          |
 | [PolyesterForwardDiff.jl](https://github.com/JuliaDiff/PolyesterForwardDiff.jl) | `AutoPolyesterForwardDiff(; chunksize)`                      |
 | [ReverseDiff.jl](https://github.com/JuliaDiff/ReverseDiff.jl)                   | `AutoReverseDiff()`                                          |
-| [Tracker.jl](https://github.com/FluxML/Tracker.jl)                   | `AutoTracker()`                                          |
+| [Tracker.jl](https://github.com/FluxML/Tracker.jl)                              | `AutoTracker()`                                              |
 | [Zygote.jl](https://github.com/FluxML/Zygote.jl)                                | `AutoZygote()`                                               |
 
-We also provide additional backends:
+We also provide one additional backend:
 
 | Backend                                                                          | Object                      |
 | :------------------------------------------------------------------------------- | :-------------------------- |
 | [FastDifferentiation.jl](https://github.com/brianguenter/FastDifferentiation.jl) | `AutoFastDifferentiation()` |
 
 ## Example
-
-Setup:
 
 ```jldoctest readme
 julia> import ADTypes, ForwardDiff
@@ -48,38 +55,12 @@ julia> using DifferentiationInterface
 julia> backend = ADTypes.AutoForwardDiff();
 
 julia> f(x) = sum(abs2, x);
-```
 
-Out-of-place gradient:
-
-```jldoctest readme
-julia> value_and_gradient(backend, f, [1., 2., 3.])
+julia> value_and_gradient(f, backend, [1., 2., 3.])
 (14.0, [2.0, 4.0, 6.0])
-```
-
-In-place gradient:
-
-```jldoctest readme
-julia> grad = zeros(3);
-
-julia> value_and_gradient!(grad, backend, f, [1., 2., 3.])
-(14.0, [2.0, 4.0, 6.0])
-
-julia> grad
-3-element Vector{Float64}:
- 2.0
- 4.0
- 6.0
 ```
 
 ## Related packages
 
 - [AbstractDifferentiation.jl](https://github.com/JuliaDiff/AbstractDifferentiation.jl) is the original inspiration for DifferentiationInterface.jl.
 - [AutoDiffOperators.jl](https://github.com/oschulz/AutoDiffOperators.jl) is an attempt to bridge ADTypes.jl with AbstractDifferentiation.jl.
-
-## Roadmap
-
-Goals for future releases:
-
-- optimize performance for each backend
-- define user-facing functions to test and benchmark backends against each other

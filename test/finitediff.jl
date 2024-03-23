@@ -9,7 +9,6 @@ using Test
 
 @test check_available(AutoFiniteDiff())
 @test check_mutation(AutoFiniteDiff())
-@test !check_hessian(AutoFiniteDiff())
+@test_broken check_hessian(AutoFiniteDiff())
 
-test_operators(AutoFiniteDiff(); second_order=false, excluded=[:jacobian_allocating]);
-test_operators(AutoFiniteDiff(), [:jacobian_allocating]; type_stability=false);
+test_operators(AutoFiniteDiff(); second_order=false, type_stability=false);

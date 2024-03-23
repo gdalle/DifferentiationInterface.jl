@@ -9,6 +9,6 @@ using Test
 
 @test check_available(AutoDiffractor())
 @test !check_mutation(AutoDiffractor())
-@test !check_hessian(AutoDiffractor())
+@test_broken check_hessian(AutoDiffractor())
 
 test_operators(AutoDiffractor(); second_order=false, type_stability=false);
