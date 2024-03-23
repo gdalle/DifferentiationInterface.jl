@@ -2,7 +2,7 @@ module DifferentiationInterfaceFastDifferentiationExt
 
 using ADTypes: ADTypes
 using DifferentiationInterface: AutoFastDifferentiation
-using DifferentiationInterface: myupdate!, myvec
+using DifferentiationInterface: myupdate!!, myvec
 import DifferentiationInterface as DI
 using FastDifferentiation:
     derivative,

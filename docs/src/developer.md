@@ -29,11 +29,11 @@ For simplicity, we remove `value_` in the operator names below.
 ```mermaid
 flowchart LR
     derivative --> pushforward
-    derivative! --> pushforward!
+    derivative!! --> pushforward!!
     gradient .-> |n|pushforward
-    gradient! .-> |n|pushforward!
+    gradient!! .-> |n|pushforward!!
     jacobian .-> |n|pushforward
-    jacobian! .-> |n|pushforward!
+    jacobian!! .-> |n|pushforward!!
 ```
 
 ### Reverse mode, allocating functions
@@ -41,9 +41,9 @@ flowchart LR
 ```mermaid
 flowchart LR
     derivative .-> |m|pullback
-    derivative! .-> |m|pullback!
+    derivative!! .-> |m|pullback!!
     gradient --> pullback
-    gradient! --> pullback!
+    gradient!! --> pullback!!
     jacobian .-> |m|pullback
-    jacobian! .-> |m|pullback!
+    jacobian!! .-> |m|pullback!!
 ```

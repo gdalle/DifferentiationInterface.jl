@@ -15,23 +15,31 @@ We choose the following terminology for the high-level operators we provide:
 
 They are all based on the following low-level operators:
 
-- pushforward, to propagate input tangents
-- pullback, to propagate output cotangents
+- pushforward (or JVP), to propagate input tangents
+- pullback (or VJP), to backpropagate output cotangents
 
 !!! tip
-    See the documentation of [ChainRules.jl](https://github.com/JuliaDiff/ChainRules.jl) for details on these concepts.
+    See the book [The Elements of Differentiable Programming](https://arxiv.org/abs/2403.14606) for details on these concepts.
 
 ## Variants
 
 Several variants of each operator are defined:
 
-| operator    | out-of-place                    | in-place                         |
-| :---------- | :------------------------------ | :------------------------------- |
-| derivative  | [`value_and_derivative`](@ref)  | [`value_and_derivative!`](@ref)  |
-| gradient    | [`value_and_gradient`](@ref)    | [`value_and_gradient!`](@ref)    |
-| Jacobian    | [`value_and_jacobian`](@ref)    | [`value_and_jacobian!`](@ref)    |
-| pushforward | [`value_and_pushforward`](@ref) | [`value_and_pushforward!`](@ref) |
-| pullback    | [`value_and_pullback`](@ref)    | [`value_and_pullback!`](@ref)    |
+| operator    | out-of-place                    | in-place (if possible)            |
+| :---------- | :------------------------------ | :-------------------------------- |
+| derivative  | [`value_and_derivative`](@ref)  | [`value_and_derivative!!`](@ref)  |
+| gradient    | [`value_and_gradient`](@ref)    | [`value_and_gradient!!`](@ref)    |
+| Jacobian    | [`value_and_jacobian`](@ref)    | [`value_and_jacobian!!`](@ref)    |
+| pushforward | [`value_and_pushforward`](@ref) | [`value_and_pushforward!!`](@ref) |
+| pullback    | [`value_and_pullback`](@ref)    | [`value_and_pullback!!`](@ref)    |
+
+!!! warning
+    The "bang-bang" syntactic convention `!!` signals that some of the arguments _can_ be mutated, but they do not _have to be_.
+    Users should not rely on mutation, but instead recover the function output and work from there.
+    ```julia
+        y, grad = value_and_gradient!!(f, grad, backend, x)  # good
+        value_and_gradient!!(f, grad, backend, x)  # bad
+    ```
 
 ## Multiple inputs/outputs
 

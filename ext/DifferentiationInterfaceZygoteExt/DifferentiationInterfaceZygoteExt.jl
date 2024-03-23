@@ -1,7 +1,7 @@
 module DifferentiationInterfaceZygoteExt
 
 using ADTypes: AutoZygote
-using DifferentiationInterface: myupdate!
+using DifferentiationInterface: myupdate!!
 import DifferentiationInterface as DI
 using DocStringExtensions
 using Zygote: ZygoteRuleConfig, gradient, jacobian, pullback, withgradient, withjacobian
@@ -16,9 +16,9 @@ function DI.value_and_pullback(f::F, ::AutoZygote, x, dy, extras::Nothing) where
     return y, dx
 end
 
-function DI.value_and_pullback!(f::F, dx, backend::AutoZygote, x, dy, extras) where {F}
+function DI.value_and_pullback!!(f::F, dx, backend::AutoZygote, x, dy, extras) where {F}
     y, new_dx = DI.value_and_pullback(f, backend, x, dy, extras)
-    return y, myupdate!(dx, new_dx)
+    return y, myupdate!!(dx, new_dx)
 end
 
 end

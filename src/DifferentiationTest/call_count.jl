@@ -37,7 +37,7 @@ function test_call_count(
     cc! = CallCounter(f)
     y_in = myzero(y)
     dy_in = myzero(dy)
-    value_and_pushforward!(cc!, y_in, dy_in, ba, x, dx, extras)
+    value_and_pushforward!!(cc!, y_in, dy_in, ba, x, dx, extras)
     if mode(ba) == AbstractForwardMode
         @test cc!.count[] <= 1
     end
@@ -65,7 +65,7 @@ function test_call_count(
     cc! = CallCounter(f)
     y_in = myzero(y)
     dx_in = myzero(dx)
-    value_and_pullback!(cc!, y_in, dx_in, ba, x, dy, extras)
+    value_and_pullback!!(cc!, y_in, dx_in, ba, x, dy, extras)
     if mode(ba) == AbstractReverseMode
         @test cc!.count[] <= 1
     end
@@ -95,7 +95,7 @@ function test_call_count(
     cc! = CallCounter(f)
     y_in = myzero(y)
     der_in = myzero(dy)
-    value_and_derivative!(cc!, y_in, der_in, ba, x, extras)
+    value_and_derivative!!(cc!, y_in, der_in, ba, x, extras)
     if mode(ba) == AbstractForwardMode
         @test cc!.count[] <= 1
     elseif mode(ba) == AbstractReverseMode
@@ -143,7 +143,7 @@ function test_call_count(
     cc! = CallCounter(f)
     y_in = myzero(y)
     jac_in = similar(y, length(y), length(x))
-    value_and_jacobian!(cc!, y_in, jac_in, ba, x, extras)
+    value_and_jacobian!!(cc!, y_in, jac_in, ba, x, extras)
     if mode(ba) == AbstractForwardMode
         @test cc!.count[] <= 1 + length(x)
     elseif mode(ba) == AbstractReverseMode

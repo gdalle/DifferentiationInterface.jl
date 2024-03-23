@@ -1,6 +1,6 @@
 ## Pushforward
 
-function DI.value_and_pushforward!(
+function DI.value_and_pushforward!!(
     f!::F,
     y::AbstractArray,
     dy::AbstractArray,

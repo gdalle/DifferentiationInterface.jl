@@ -27,7 +27,7 @@ Might take a while due to compilation time.
 """
 function check_mutation(backend::AbstractADType)
     try
-        y, jac = value_and_jacobian!(square!, [0.0], [0.0;;], backend, [3.0])
+        y, jac = value_and_jacobian!!(square!, [0.0], [0.0;;], backend, [3.0])
         return isapprox(y, [9.0]; rtol=1e-3) && isapprox(jac, [6.0;;]; rtol=1e-3)
     catch e
         return false

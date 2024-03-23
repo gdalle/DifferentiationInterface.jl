@@ -1,16 +1,16 @@
 """
-    value_and_derivative!(f, der, backend, x, [extras]) -> (y, der)
-    value_and_derivative!(f!, y, der, backend, x, [extras]) -> (y, der)
+    value_and_derivative!!(f, der, backend, x, [extras]) -> (y, der)
+    value_and_derivative!!(f!, y, der, backend, x, [extras]) -> (y, der)
 """
-function value_and_derivative!(
+function value_and_derivative!!(
     f::F, der, backend::AbstractADType, x::Number, extras=prepare_derivative(f, backend, x)
 ) where {F}
-    return value_and_derivative_aux!(
+    return value_and_derivative_aux!!(
         f, der, backend, x, extras, supports_pushforward(backend)
     )
 end
 
-function value_and_derivative!(
+function value_and_derivative!!(
     f!::F,
     y,
     der,
@@ -18,34 +18,34 @@ function value_and_derivative!(
     x::Number,
     extras=prepare_derivative(f!, backend, y, x),
 ) where {F}
-    return value_and_derivative_aux!(
+    return value_and_derivative_aux!!(
         f!, y, der, backend, x, extras, supports_pushforward(backend)
     )
 end
 
 ## Forward mode
 
-function value_and_derivative_aux!(
+function value_and_derivative_aux!!(
     f::F, der, backend, x, extras, ::PushforwardSupported
 ) where {F}
-    return value_and_pushforward!(f, der, backend, x, one(x), extras)
+    return value_and_pushforward!!(f, der, backend, x, one(x), extras)
 end
 
-function value_and_derivative_aux!(
+function value_and_derivative_aux!!(
     f!::F, y, der, backend, x, extras, ::PushforwardSupported
 ) where {F}
-    return value_and_pushforward!(f!, y, der, backend, x, one(x), extras)
+    return value_and_pushforward!!(f!, y, der, backend, x, one(x), extras)
 end
 
 ## Reverse mode
 
-function value_and_derivative_aux!(
+function value_and_derivative_aux!!(
     f::F, _der::Number, backend, x, extras, ::PushforwardNotSupported
 ) where {F}
     return value_and_gradient(f, backend, x, extras)
 end
 
-function value_and_derivative_aux!(
+function value_and_derivative_aux!!(
     f::F, der::AbstractArray, backend, x, extras, ::PushforwardNotSupported
 ) where {F}
     y = f(x)
@@ -56,7 +56,7 @@ function value_and_derivative_aux!(
     return y, der
 end
 
-function value_and_derivative_aux!(
+function value_and_derivative_aux!!(
     f!::F,
     y::AbstractArray,
     der::AbstractArray,
@@ -67,7 +67,7 @@ function value_and_derivative_aux!(
 ) where {F}
     for i in CartesianIndices(y)
         dy_i = basisarray(backend, y, i)
-        _, der[i] = value_and_pullback!(f!, y, der[i], backend, x, dy_i, extras)
+        _, der[i] = value_and_pullback!!(f!, y, der[i], backend, x, dy_i, extras)
     end
     return y, der
 end

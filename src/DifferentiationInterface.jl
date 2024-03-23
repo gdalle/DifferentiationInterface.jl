@@ -43,12 +43,12 @@ include("backends.jl")
 
 export AutoFastDifferentiation
 
-export value_and_pushforward!, value_and_pushforward
-export value_and_pullback!, value_and_pullback
+export value_and_pushforward!!, value_and_pushforward
+export value_and_pullback!!, value_and_pullback
 
-export value_and_derivative!, value_and_derivative
-export value_and_gradient!, value_and_gradient
-export value_and_jacobian!, value_and_jacobian
+export value_and_derivative!!, value_and_derivative
+export value_and_gradient!!, value_and_gradient
+export value_and_jacobian!!, value_and_jacobian
 
 export prepare_pushforward, prepare_pullback
 export prepare_derivative, prepare_gradient, prepare_jacobian

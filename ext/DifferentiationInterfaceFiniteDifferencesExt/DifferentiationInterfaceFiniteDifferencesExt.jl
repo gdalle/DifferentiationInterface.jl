@@ -1,7 +1,7 @@
 module DifferentiationInterfaceFiniteDifferencesExt
 
 using ADTypes: AutoFiniteDifferences
-using DifferentiationInterface: myupdate!
+using DifferentiationInterface: myupdate!!
 import DifferentiationInterface as DI
 using FillArrays: OneElement
 using FiniteDifferences: FiniteDifferences, jvp
@@ -20,11 +20,11 @@ function DI.value_and_pushforward(
     return y, jvp(backend.fdm, f, (x, dx))
 end
 
-function DI.value_and_pushforward!(
+function DI.value_and_pushforward!!(
     f::F, dy, backend::AutoFiniteDifferences, x, dx, extras
 ) where {F}
     y, new_dy = DI.value_and_pushforward(f, backend, x, dx, extras)
-    return y, myupdate!(dy, new_dy)
+    return y, myupdate!!(dy, new_dy)
 end
 
 end

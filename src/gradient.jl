@@ -1,25 +1,25 @@
 """
-    value_and_gradient!(f, grad, backend, x, [extras]) -> (y, grad)
+    value_and_gradient!!(f, grad, backend, x, [extras]) -> (y, grad)
 """
-function value_and_gradient!(
+function value_and_gradient!!(
     f::F, grad, backend::AbstractADType, x, extras=prepare_gradient(f, backend, x)
 ) where {F}
-    return value_and_gradient_aux!(f, grad, backend, x, extras, supports_pullback(backend))
+    return value_and_gradient_aux!!(f, grad, backend, x, extras, supports_pullback(backend))
 end
 
-function value_and_gradient_aux!(
+function value_and_gradient_aux!!(
     f::F, grad, backend, x, extras, ::PullbackSupported
 ) where {F}
-    return value_and_pullback!(f, grad, backend, x, one(myeltype(grad)), extras)
+    return value_and_pullback!!(f, grad, backend, x, one(myeltype(grad)), extras)
 end
 
-function value_and_gradient_aux!(
+function value_and_gradient_aux!!(
     f::F, grad, backend, x::Number, extras, ::PullbackNotSupported
 ) where {F}
     return value_and_derivative(f, backend, x, extras)
 end
 
-function value_and_gradient_aux!(
+function value_and_gradient_aux!!(
     f::F, grad, backend, x::AbstractArray, extras, ::PullbackNotSupported
 ) where {F}
     y = f(x)

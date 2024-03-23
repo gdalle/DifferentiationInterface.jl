@@ -1,6 +1,6 @@
 ## Pullback
 
-function DI.value_and_pullback!(
+function DI.value_and_pullback!!(
     f!::F,
     y::AbstractArray,
     dx::AbstractArray,

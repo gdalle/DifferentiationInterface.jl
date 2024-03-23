@@ -1,8 +1,18 @@
-function test_correctness end
-function test_type_stability end
-function run_benchmark! end
+function test_correctness(backend::AbstractADType, op::Function, scen::Scenario)
+    return error("Please load ForwardDiff.jl or check your method signature")
+end
 
-const FIRST_ORDER_OPERATORS = [
+function test_type_stability(backend::AbstractADType, op::Function, scen::Scenario)
+    return error("Please load JET.jl or check your method signature")
+end
+
+function run_benchmark!(
+    data::BenchmarkData, backend::AbstractADType, op::Function, scen::Scenario; allocations
+)
+    return error("Please load Chairmarks.jl or check your method signature")
+end
+
+FIRST_ORDER_OPERATORS = [
     value_and_pushforward,
     value_and_pullback,
     value_and_derivative,
@@ -10,7 +20,7 @@ const FIRST_ORDER_OPERATORS = [
     value_and_jacobian,
 ]
 
-const ALL_OPERATORS = vcat(FIRST_ORDER_OPERATORS)
+ALL_OPERATORS = vcat(FIRST_ORDER_OPERATORS)
 
 function filter_operators(
     operators::Vector{<:Function};

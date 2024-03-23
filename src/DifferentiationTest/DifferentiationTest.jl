@@ -18,7 +18,7 @@ using ..DifferentiationInterface:
     mode,
     mysimilar,
     myzero,
-    myzero!,
+    myzero!!,
     supports_mutation,
     supports_pushforward,
     supports_pullback

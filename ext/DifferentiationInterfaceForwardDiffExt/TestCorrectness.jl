@@ -27,7 +27,7 @@ function DT.test_correctness(
 
     y_out1, dy_out1 = value_and_pushforward(f, ba, x, dx)
     dy_in2 = zero(dy_out1)
-    y_out2, dy_out2 = value_and_pushforward!(f, dy_in2, ba, x, dx)
+    y_out2, dy_out2 = value_and_pushforward!!(f, dy_in2, ba, x, dx)
 
     @testset "Primal value" begin
         @test y_out1 ≈ y
@@ -54,7 +54,7 @@ function DT.test_correctness(
 
     y_in = zero(y)
     dy_in = zero(dy_true)
-    y_out, dy_out = value_and_pushforward!(f!, y_in, dy_in, ba, x, dx)
+    y_out, dy_out = value_and_pushforward!!(f!, y_in, dy_in, ba, x, dx)
 
     @testset "Primal value" begin
         @test y_out ≈ y
@@ -85,7 +85,7 @@ function DT.test_correctness(
 
     y_out1, dx_out1 = value_and_pullback(f, ba, x, dy)
     dx_in2 = zero(dx_out1)
-    y_out2, dx_out2 = value_and_pullback!(f, dx_in2, ba, x, dy)
+    y_out2, dx_out2 = value_and_pullback!!(f, dx_in2, ba, x, dy)
 
     @testset "Primal value" begin
         @test y_out1 ≈ y
@@ -112,7 +112,7 @@ function DT.test_correctness(
 
     y_in = zero(y)
     dx_in = zero(dx_true)
-    y_out, dx_out = value_and_pullback!(f!, y_in, dx_in, ba, x, dy)
+    y_out, dx_out = value_and_pullback!!(f!, y_in, dx_in, ba, x, dy)
 
     @testset "Primal value" begin
         @test y_out ≈ y
@@ -145,7 +145,7 @@ function DT.test_correctness(
 
     y_out1, der_out1 = value_and_derivative(f, ba, x)
     der_in2 = zero(der_out1)
-    y_out2, der_out2 = value_and_derivative!(f, der_in2, ba, x)
+    y_out2, der_out2 = value_and_derivative!!(f, der_in2, ba, x)
 
     @testset "Primal value" begin
         @test y_out1 ≈ y
@@ -172,7 +172,7 @@ function DT.test_correctness(
 
     y_in = zero(y)
     der_in = zero(der_true)
-    y_out, der_out = value_and_derivative!(f!, y_in, der_in, ba, x)
+    y_out, der_out = value_and_derivative!!(f!, y_in, der_in, ba, x)
 
     @testset "Primal value" begin
         @test y_out ≈ y
@@ -207,7 +207,7 @@ function DT.test_correctness(
 
     y_out1, grad_out1 = value_and_gradient(f, ba, x)
     grad_in2 = zero(grad_out1)
-    y_out2, grad_out2 = value_and_gradient!(f, grad_in2, ba, x)
+    y_out2, grad_out2 = value_and_gradient!!(f, grad_in2, ba, x)
 
     @testset "Primal value" begin
         @test y_out1 ≈ y
@@ -235,7 +235,7 @@ function DT.test_correctness(
 
     y_out1, jac_out1 = value_and_jacobian(f, ba, x)
     jac_in2 = zero(jac_out1)
-    y_out2, jac_out2 = value_and_jacobian!(f, jac_in2, ba, x)
+    y_out2, jac_out2 = value_and_jacobian!!(f, jac_in2, ba, x)
 
     @testset "Primal value" begin
         @test y_out1 ≈ y
@@ -260,7 +260,7 @@ function DT.test_correctness(
 
     y_in = zero(y)
     jac_in = similar(y, length(y), length(x))
-    y_out, jac_out = value_and_jacobian!(f!, y_in, jac_in, ba, x)
+    y_out, jac_out = value_and_jacobian!!(f!, y_in, jac_in, ba, x)
 
     @testset "Primal value" begin
         @test y_out ≈ y

@@ -1,7 +1,7 @@
 module DifferentiationInterfaceEnzymeExt
 
 using ADTypes: ADTypes, AutoEnzyme
-using DifferentiationInterface: myupdate!, mysimilar, myzero, myzero!
+using DifferentiationInterface: myupdate!!, mysimilar, myzero, myzero!!
 import DifferentiationInterface as DI
 using DocStringExtensions
 using Enzyme:

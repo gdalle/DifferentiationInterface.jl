@@ -1,6 +1,6 @@
 ## Pushforward
 
-function DI.value_and_pushforward!(
+function DI.value_and_pushforward!!(
     f::F, _dy::Number, ::AutoFiniteDiff{fdtype}, x, dx, extras::Nothing
 ) where {F,fdtype}
     y = f(x)
@@ -9,7 +9,7 @@ function DI.value_and_pushforward!(
     return y, new_dy
 end
 
-function DI.value_and_pushforward!(
+function DI.value_and_pushforward!!(
     f::F, dy::AbstractArray, ::AutoFiniteDiff{fdtype}, x, dx, extras::Nothing
 ) where {F,fdtype}
     y = f(x)

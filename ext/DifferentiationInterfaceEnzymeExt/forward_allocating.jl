@@ -8,9 +8,9 @@ function DI.value_and_pushforward(
     return y, new_dy
 end
 
-function DI.value_and_pushforward!(
+function DI.value_and_pushforward!!(
     f::F, dy, backend::AutoForwardEnzyme, x, dx, extras
 ) where {F}
     y, new_dy = DI.value_and_pushforward(f, backend, x, dx, extras)
-    return y, myupdate!(dy, new_dy)
+    return y, myupdate!!(dy, new_dy)
 end

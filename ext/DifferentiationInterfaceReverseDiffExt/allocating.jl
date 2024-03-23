@@ -1,6 +1,6 @@
 ## Pullback
 
-function DI.value_and_pullback!(
+function DI.value_and_pullback!!(
     f::F,
     dx::AbstractArray,
     ::AutoReverseDiff,
@@ -23,7 +23,7 @@ function DI.value_and_pullback(
     return y, dx
 end
 
-function DI.value_and_pullback!(
+function DI.value_and_pullback!!(
     f::F,
     dx::AbstractArray,
     ::AutoReverseDiff,

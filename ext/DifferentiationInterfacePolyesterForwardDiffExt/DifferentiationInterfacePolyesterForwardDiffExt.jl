@@ -10,18 +10,18 @@ using PolyesterForwardDiff: threaded_gradient!, threaded_jacobian!
 
 ## Pushforward
 
-function DI.value_and_pushforward!(
+function DI.value_and_pushforward!!(
     f::F, dy, ::AutoPolyesterForwardDiff{C}, x, dx, extras::Nothing
 ) where {F,C}
-    return DI.value_and_pushforward!(
+    return DI.value_and_pushforward!!(
         f, dy, AutoForwardDiff{C,Nothing}(nothing), x, dx, extras
     )
 end
 
-function DI.value_and_pushforward!(
+function DI.value_and_pushforward!!(
     f!::F, y, dy, ::AutoPolyesterForwardDiff{C}, x, dx, extras::Nothing
 ) where {F,C}
-    return DI.value_and_pushforward!(
+    return DI.value_and_pushforward!!(
         f!, y, dy, AutoForwardDiff{C,Nothing}(nothing), x, dx, extras
     )
 end
