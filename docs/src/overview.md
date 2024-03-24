@@ -25,7 +25,7 @@ They are all based on the following low-level operators:
 
 Several variants of each operator are defined:
 
-| out-of-place          | in-place (if possible)  | out-of-place + primal           | in-place (if possible) + primal   |
+| out-of-place          | in-place (or not)       | out-of-place + primal           | in-place (or not) + primal        |
 | :-------------------- | :---------------------- | :------------------------------ | :-------------------------------- |
 | [`derivative`](@ref)  | [`derivative!!`](@ref)  | [`value_and_derivative`](@ref)  | [`value_and_derivative!!`](@ref)  |
 | [`gradient`](@ref)    | [`gradient!!`](@ref)    | [`value_and_gradient`](@ref)    | [`value_and_gradient!!`](@ref)    |
@@ -38,7 +38,7 @@ Several variants of each operator are defined:
     Users should not rely on mutation, but instead recover the function output and work from there.
     ```julia
     grad = gradient!!(f, grad, backend, x)  # good
-    gradient!!(f, grad, backend, x)  # bad
+    gradient!!(f, grad, backend, x)  # bad, cause `grad` may not have changed
     ```
 
 ## Second order

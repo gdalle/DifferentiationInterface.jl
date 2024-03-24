@@ -12,6 +12,7 @@ using ADTypes:
     AbstractForwardMode,
     AbstractReverseMode,
     AbstractSymbolicDifferentiationMode
+using Base: get_extension
 using ..DifferentiationInterface
 import ..DifferentiationInterface as DI
 using ..DifferentiationInterface:
@@ -35,10 +36,10 @@ include("zero.jl")
 include("printing.jl")
 include("benchmark.jl")
 include("call_count.jl")
-include("test_operators.jl")
+include("test_differentiation.jl")
 
-export Scenario, default_scenarios
+export Scenario, default_scenarios, weird_array_scenarios
 export BenchmarkData, record!
-export test_operators
+export all_operators, test_differentiation
 
 end

@@ -14,4 +14,4 @@ using Test
 @test !check_mutation(AutoTaped())
 @test !check_hessian(AutoTaped())
 
-test_operators(AutoTaped(); second_order=false, type_stability=false, excluded=[jacobian]);
+test_differentiation(AutoTaped(); second_order=false, excluded=[jacobian]);

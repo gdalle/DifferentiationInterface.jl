@@ -9,9 +9,6 @@ DI.supports_mutation(::AutoTaped) = DI.MutationNotSupported()
 
 function DI.value_and_pullback(f::F, ::AutoTaped, x, dy, extras::Nothing) where {F}
     rrule = build_rrule(f, x)
-    # TODO: fix for https://github.com/withbayes/Taped.jl/issues/97
-    y = f(x)
-    # TODO: 
     dy_righttype = convert(typeof(y), dy)
     _, (_, dx) = value_and_pullback!!(rrule, dy_righttype, f, x)
     return y, dx

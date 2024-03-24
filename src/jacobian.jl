@@ -54,9 +54,8 @@ function value_and_jacobian_aux!!(
         dx_j = basisarray(backend, x, j)
         jac_col_j_old = reshape(view(jac, :, k), size(y))
         jac_col_j_new = pushforward!!(f, jac_col_j_old, backend, x, dx_j, extras)
-        @simd for i in eachindex(jac_col_j_old, jac_col_j_new)
-            @inbounds jac_col_j_old[i] = jac_col_j_new[i]
-        end
+        # this allocates
+        copyto!(jac_col_j_old, jac_col_j_new)
     end
     return y, jac
 end
@@ -69,9 +68,8 @@ function value_and_jacobian_aux!!(
         dy_i = basisarray(backend, y, i)
         jac_row_i_old = reshape(view(jac, k, :), size(x))
         jac_row_i_new = pullback!!(f, jac_row_i_old, backend, x, dy_i, extras)
-        @simd for j in eachindex(jac_row_i_old, jac_row_i_new)
-            @inbounds jac_row_i_old[j] = jac_row_i_new[j]
-        end
+        # this allocates
+        copyto!(jac_row_i_old, jac_row_i_new)
     end
     return y, jac
 end
@@ -126,9 +124,8 @@ function value_and_jacobian_aux!!(
         jac_col_j_new = last(
             value_and_pushforward!!(f!, y, jac_col_j_old, backend, x, dx_j, extras)
         )
-        @simd for i in eachindex(jac_col_j_old, jac_col_j_new)
-            @inbounds jac_col_j_old[i] = jac_col_j_new[i]
-        end
+        # this allocates
+        copyto!(jac_col_j_old, jac_col_j_new)
     end
     return y, jac
 end
@@ -143,9 +140,8 @@ function value_and_jacobian_aux!!(
         jac_row_i_new = last(
             value_and_pullback!!(f!, y, jac_row_i_old, backend, x, dy_i, extras)
         )
-        @simd for j in eachindex(jac_row_i_old, jac_row_i_new)
-            @inbounds jac_row_i_old[j] = jac_row_i_new[j]
-        end
+        # this allocates
+        copyto!(jac_row_i_old, jac_row_i_new)
     end
     return y, jac
 end

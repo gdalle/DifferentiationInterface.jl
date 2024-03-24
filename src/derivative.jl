@@ -21,7 +21,7 @@ function value_and_derivative_aux(
     y = f(x)
     if y isa Number
         return value_and_gradient(f, backend, x)
-    elseif y isa AbstractArray
+    else
         der = map(CartesianIndices(y)) do i
             dy_i = basisarray(backend, y, i)
             last(value_and_pullback(f, backend, x, dy_i, extras))
@@ -57,9 +57,9 @@ function value_and_derivative_aux!!(
     f::F, der::AbstractArray, backend, x, extras, ::PushforwardNotSupported
 ) where {F}
     y = f(x)
-    for i in CartesianIndices(y)
+    map!(der, CartesianIndices(y)) do i
         dy_i = basisarray(backend, y, i)
-        _, der[i] = value_and_pullback(f, backend, x, dy_i, extras)
+        pullback(f, backend, x, dy_i, extras)
     end
     return y, der
 end
@@ -115,9 +115,10 @@ function value_and_derivative_aux!!(
     extras,
     ::PushforwardNotSupported,
 ) where {F}
-    for i in CartesianIndices(y)
+    f!(y, x)
+    map!(der, CartesianIndices(y)) do i
         dy_i = basisarray(backend, y, i)
-        _, der[i] = value_and_pullback!!(f!, y, der[i], backend, x, dy_i, extras)
+        last(value_and_pullback!!(f!, y, der[i], backend, x, dy_i, extras))
     end
     return y, der
 end

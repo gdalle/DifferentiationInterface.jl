@@ -1,21 +1,34 @@
 ## Imports
 
-using Aqua: Aqua
-using ChainRulesCore: ChainRulesCore
-using Chairmarks: Chairmarks
-using DataFrames: DataFrames
 using DifferentiationInterface
 using DifferentiationInterface.DifferentiationTest
-using Enzyme: Enzyme
-using FiniteDiff: FiniteDiff
-using ForwardDiff: ForwardDiff
+
+using Aqua: Aqua
 using JET: JET
 using JuliaFormatter: JuliaFormatter
+using Test
+
+# used for testing
+using Chairmarks: Chairmarks
+using DataFrames: DataFrames
+using ForwardDiff: ForwardDiff
+using ComponentArrays
+using JLArrays
+using StaticArrays
+
+# backends
+#=
+using ChainRulesCore: ChainRulesCore
+using Diffractor: Diffractor
+using Enzyme: Enzyme
+using FastDifferentiation: FastDifferentiation
+using FiniteDiff: FiniteDiff
+using FiniteDifferences: FiniteDifferences
 using PolyesterForwardDiff: PolyesterForwardDiff
 using ReverseDiff: ReverseDiff
-using Random: Random
-using Test
+using Tracker: Tracker
 using Zygote: Zygote
+=#
 
 ## Main tests
 
