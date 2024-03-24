@@ -1,4 +1,3 @@
-using ADTypes: AutoDiffractor
 using Diffractor: Diffractor
 
 @test check_available(AutoDiffractor())

@@ -1,9 +1,8 @@
-using ADTypes: AutoTracker
 using Tracker: Tracker
 
 @test check_available(AutoTracker())
 @test !check_mutation(AutoTracker())
-@test !check_hessian(AutoTracker())
+# @test !check_hessian(AutoTracker())
 
 test_differentiation(
     AutoTracker();

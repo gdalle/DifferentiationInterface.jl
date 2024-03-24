@@ -1,5 +1,6 @@
 ## Imports
 
+using ADTypes
 using DifferentiationInterface
 using DifferentiationInterface.DifferentiationTest
 
@@ -98,7 +99,10 @@ using StaticArrays
         end
     end
 
-    @testset verbose = true "Second order" begin
-        include("second_order.jl")
+    include("second_order.jl")
+
+    @testset "Weird types" begin
+        @info "Testing nested objects..."
+        @time include("nested.jl")
     end
 end;

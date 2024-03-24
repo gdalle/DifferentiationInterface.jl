@@ -1,4 +1,3 @@
-using ADTypes: AutoFiniteDifferences
 using FiniteDifferences: FiniteDifferences, central_fdm
 
 @test check_available(AutoFiniteDifferences(central_fdm(5, 1)))

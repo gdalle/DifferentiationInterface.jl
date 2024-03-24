@@ -1,4 +1,3 @@
-using ADTypes: AutoEnzyme
 using Enzyme: Enzyme
 
 @test check_available(AutoEnzyme(Enzyme.Reverse))

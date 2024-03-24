@@ -1,4 +1,3 @@
-using ADTypes: AutoForwardDiff
 using ForwardDiff: ForwardDiff
 
 @test check_available(AutoForwardDiff())
