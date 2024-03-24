@@ -14,7 +14,7 @@ mysimilar_random(x::Number) = randn(typeof(x))
 
 function mysimilar_random(x::AbstractArray)
     y = similar(x)
-    return map!(y, mysimilar_random)
+    return map(mysimilar_random, y)
 end
 
 mysimilar_random(x) = fmap(mysimilar_random, x)
