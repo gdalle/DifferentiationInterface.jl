@@ -26,7 +26,7 @@ This package provides a backend-agnostic syntax to differentiate functions of th
 
 We support most of the backends defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl):
 
-| Backend                                                                         | Object                                                       |
+| backend                                                                         | object                                                       |
 | :------------------------------------------------------------------------------ | :----------------------------------------------------------- |
 | [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl)             | `AutoChainRules(ruleconfig)`                                 |
 | [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl)                     | `AutoDiffractor()`                                           |
@@ -41,7 +41,7 @@ We support most of the backends defined by [ADTypes.jl](https://github.com/SciML
 
 We also provide one additional backend:
 
-| Backend                                                                          | Object                      |
+| backend                                                                          | object                      |
 | :------------------------------------------------------------------------------- | :-------------------------- |
 | [FastDifferentiation.jl](https://github.com/brianguenter/FastDifferentiation.jl) | `AutoFastDifferentiation()` |
 

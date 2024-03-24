@@ -10,11 +10,12 @@ function check_available(backend::AbstractADType)
     try
         value_and_gradient(abs2, backend, 2.0)
         return true
-    catch e
-        if e isa MethodError
+    catch exception
+        # @warn "Backend $backend not available" exception
+        if exception isa MethodError
             return false
         else
-            throw(e)
+            throw(exception)
         end
     end
 end
@@ -33,7 +34,8 @@ function check_mutation(backend::AbstractADType)
     try
         y, jac = value_and_jacobian!!(square!, [0.0], [0.0;;], backend, [3.0])
         return isapprox(y, [9.0]; rtol=1e-3) && isapprox(jac, [6.0;;]; rtol=1e-3)
-    catch e
+    catch exception
+        # @warn "Backend $backend does not support mutation" exception
         return false
     end
 end
@@ -53,7 +55,8 @@ function check_hessian(backend::AbstractADType)
         x = [3.0]
         hess = hessian(sqnorm, backend, x)
         return isapprox(hess, [2.0;;]; rtol=1e-3)
-    catch e
+    catch exception
+        # @warn "Backend $backend does not support hessian" exception
         return false
     end
 end

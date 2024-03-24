@@ -1,3 +1,5 @@
+## Allocating
+
 """
     second_derivative(f, backend, x, [extras]) -> der2
 """
@@ -19,3 +21,5 @@ function second_derivative(
     der2 = derivative(derivative_closure, outer(backend), x, outer(extras))
     return der2
 end
+
+## Mutating

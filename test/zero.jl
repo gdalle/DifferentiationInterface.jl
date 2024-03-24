@@ -34,8 +34,9 @@ test_operators(
 
 test_operators(
     [AutoZeroForward(), AutoZeroReverse()];
+    allocating=false,
     correctness=false,
-    type_stability=false,
+    type_stability=true,
     allocations=true,
 );
 

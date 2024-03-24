@@ -1,23 +1,32 @@
-"""
-    value_and_pullback!!(f, dx, backend, x, dy, [extras]) -> (y, dx)
-    value_and_pullback!!(f!, y, dx, backend, x, dy, [extras]) -> (y, dx)
-"""
-function value_and_pullback!!(f::F, dx, backend::AbstractADType, x, dy) where {F}
-    extras = prepare_pullback(f, backend, x)
-    return value_and_pullback!!(f, dx, backend, x, dy, extras)
-end
-
-function value_and_pullback!!(f!::F, y, dx, backend::AbstractADType, x, dy) where {F}
-    extras = prepare_pullback(f!, backend, y, x)
-    return value_and_pullback!!(f!, y, dx, backend, x, dy, extras)
-end
+## Allocating
 
 """
     value_and_pullback(f, backend, x, dy, [extras]) -> (y, dx)
+
+!!! info
+    Required primitive for reverse mode backends to support allocating functions.
 """
 function value_and_pullback(f::F, backend::AbstractADType, x, dy) where {F}
     extras = prepare_pullback(f, backend, x)
     return value_and_pullback(f, backend, x, dy, extras)
+end
+
+"""
+    value_and_pullback!!(f, dx, backend, x, dy, [extras]) -> (y, dx)
+"""
+function value_and_pullback!!(
+    f::F, dx, backend::AbstractADType, x, dy, extras=prepare_pullback(f, backend, x)
+) where {F}
+    return value_and_pullback(f, backend, x, dy, extras)
+end
+
+"""
+    pullback(f, backend, x, dy, [extras]) -> dx
+"""
+function pullback(
+    f::F, backend::AbstractADType, x, dy, extras=prepare_pullback(f, backend, x)
+) where {F}
+    return last(value_and_pullback(f, backend, x, dy, extras))
 end
 
 """
@@ -29,11 +38,15 @@ function pullback!!(
     return last(value_and_pullback!!(f, dx, backend, x, dy, extras))
 end
 
+## Mutating
+
 """
-    pullback(f, backend, x, dy, [extras]) -> dx
+    value_and_pullback!!(f!, y, dx, backend, x, dy, [extras]) -> (y, dx)
+
+!!! info
+    Required primitive for reverse mode backends to support mutating functions.
 """
-function pullback(
-    f::F, backend::AbstractADType, x, dy, extras=prepare_pullback(f, backend, x)
-) where {F}
-    return last(value_and_pullback(f, backend, x, dy, extras))
+function value_and_pullback!!(f!::F, y, dx, backend::AbstractADType, x, dy) where {F}
+    extras = prepare_pullback(f!, backend, y, x)
+    return value_and_pullback!!(f!, y, dx, backend, x, dy, extras)
 end

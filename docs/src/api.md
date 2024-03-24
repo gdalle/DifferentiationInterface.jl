@@ -73,6 +73,7 @@ This is not part of the public API.
 Modules = [DifferentiationInterface]
 Public = false
 Order = [:function, :type]
+Filter = t -> !(t isa Type && t <: ADTypes.AbstractADType)
 ```
 
 ```@autodocs

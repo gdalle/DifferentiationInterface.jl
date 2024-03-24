@@ -59,6 +59,7 @@ We also provide a few of our own:
 
 ```@docs
 AutoFastDifferentiation
+AutoTaped
 ```
 
 ## Availability
@@ -111,5 +112,5 @@ Modules = [
     Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceTrackerExt),
     Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceZygoteExt)
 ]
-Filter = t -> !(t <: ADTypes.AbstractADType)
+Filter = t -> !(t isa Type && t <: ADTypes.AbstractADType)
 ```

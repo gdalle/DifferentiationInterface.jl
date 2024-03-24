@@ -15,6 +15,7 @@ using ADTypes:
 using ..DifferentiationInterface
 import ..DifferentiationInterface as DI
 using ..DifferentiationInterface:
+    AutoTaped,
     mode,
     mysimilar,
     myzero,

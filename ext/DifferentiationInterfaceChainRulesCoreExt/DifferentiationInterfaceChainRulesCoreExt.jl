@@ -3,7 +3,6 @@ module DifferentiationInterfaceChainRulesCoreExt
 using ADTypes: ADTypes, AutoChainRules
 using ChainRulesCore:
     HasForwardsMode, HasReverseMode, NoTangent, RuleConfig, frule_via_ad, rrule_via_ad
-using DifferentiationInterface: myupdate!!
 import DifferentiationInterface as DI
 
 ruleconfig(backend::AutoChainRules) = backend.ruleconfig
@@ -25,13 +24,6 @@ function DI.value_and_pushforward(
     return y, new_dy
 end
 
-function DI.value_and_pushforward!!(
-    f::F, dy, backend::AutoForwardChainRules, x, dx, extras
-) where {F}
-    y, new_dy = DI.value_and_pushforward(f, backend, x, dx, extras)
-    return y, myupdate!!(dy, new_dy)
-end
-
 function DI.value_and_pullback(
     f::F, backend::AutoReverseChainRules, x, dy, extras::Nothing
 ) where {F}
@@ -39,13 +31,6 @@ function DI.value_and_pullback(
     y, pullback = rrule_via_ad(rc, f, x)
     _, new_dx = pullback(dy)
     return y, new_dx
-end
-
-function DI.value_and_pullback!!(
-    f::F, dx, backend::AutoReverseChainRules, x, dy, extras
-) where {F}
-    y, new_dx = DI.value_and_pullback(f, backend, x, dy, extras)
-    return y, myupdate!!(dx, new_dx)
 end
 
 end
