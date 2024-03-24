@@ -1,8 +1,26 @@
+"""
+    all_operators()
+
+List all operators that can be tested with [`test_differentiation`](@ref).
+"""
+function all_operators()
+    return [
+        pushforward,
+        pullback,
+        derivative,
+        gradient,
+        jacobian,
+        second_derivative,
+        hvp,
+        hessian,
+    ]
+end
+
 function test_correctness(backend::AbstractADType, op::Function, scen::Scenario)
     return error("Please load ForwardDiff.jl or check your method signature")
 end
 
-function test_type_stability(backend::AbstractADType, op::Function, scen::Scenario)
+function test_jet(backend::AbstractADType, op::Function, scen::Scenario; call, opt)
     return error("Please load JET.jl or check your method signature")
 end
 
@@ -44,7 +62,7 @@ function filter_scenarios(
 end
 
 """
-    test_operators(backends, [operators, scenarios]; [kwargs...])
+    test_differentiation(backends, [operators, scenarios]; [kwargs...])
 
 Cross-test a list of `backends` for a list of `operators` on a list of `scenarios`, running a variety of different tests.
 
@@ -61,7 +79,8 @@ Cross-test a list of `backends` for a list of `operators` on a list of `scenario
 Testing:
 
 - `correctness=true`: whether to compare the differentiation results with those given by ForwardDiff.jl
-- `type_stability=true`: whether to check type stability with JET.jl
+- `error_free=false`: whether to run it once and see if it errors
+- `type_stability=false`: whether to check type stability with JET.jl (`@test_opt`)
 - `call_count=false`: whether to check that the function is called the right number of times
 - `benchmark=false`: whether to run and return a benchmark suite with Chairmarks.jl
 - `allocations=false`: whether to check that the benchmarks are allocation-free
@@ -77,22 +96,14 @@ Filtering:
 - `mutating=true`: consider operators for mutating functions
 - `excluded=Symbol[]`: list of excluded operators
 """
-function test_operators(
+function test_differentiation(
     backends::Vector{<:AbstractADType},
-    operators::Vector{<:Function}=[
-        pushforward,
-        pullback,
-        derivative,
-        gradient,
-        jacobian,
-        second_derivative,
-        hvp,
-        hessian,
-    ],
+    operators::Vector{<:Function}=all_operators(),
     scenarios::Vector{<:Scenario}=default_scenarios();
     # testing
     correctness::Bool=true,
-    type_stability::Bool=true,
+    error_free::Bool=false,
+    type_stability::Bool=false,
     call_count::Bool=false,
     benchmark::Bool=false,
     allocations::Bool=false,
@@ -114,6 +125,7 @@ function test_operators(
     title =
         "Differentiation tests -" *
         (correctness ? " correctness" : "") *
+        (error_free ? " errors" : "") *
         (type_stability ? " types" : "") *
         (call_count ? " calls" : "") *
         (benchmark ? " benchmark" : "") *
@@ -129,9 +141,14 @@ function test_operators(
                             test_correctness(backend, op, scen)
                         end
                     end
+                    if error_free
+                        @testset verbose = true "Error-free" begin
+                            test_jet(backend, op, scen; call=true, opt=false)
+                        end
+                    end
                     if type_stability
                         @testset verbose = true "Type stability" begin
-                            test_type_stability(backend, op, scen)
+                            test_jet(backend, op, scen; call=false, opt=true)
                         end
                     end
                     if call_count
@@ -163,6 +180,6 @@ $(TYPEDSIGNATURES)
 
 Shortcut for a single backend.
 """
-function test_operators(backend::AbstractADType, args...; kwargs...)
-    return test_operators([backend], args...; kwargs...)
+function test_differentiation(backend::AbstractADType, args...; kwargs...)
+    return test_differentiation([backend], args...; kwargs...)
 end

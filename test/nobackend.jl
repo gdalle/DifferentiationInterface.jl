@@ -1,6 +1,4 @@
-using ADTypes
-using DifferentiationInterface
-using Test
+using ADTypes: ADTypes
 
 struct AutoNothingForward <: ADTypes.AbstractForwardMode end
 struct AutoNothingReverse <: ADTypes.AbstractReverseMode end

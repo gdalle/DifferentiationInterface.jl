@@ -1,14 +1,8 @@
 using ADTypes: AutoFiniteDiff
-using DifferentiationInterface
-using DifferentiationInterface.DifferentiationTest
 using FiniteDiff: FiniteDiff
-
-using ForwardDiff: ForwardDiff
-using JET: JET
-using Test
 
 @test check_available(AutoFiniteDiff())
 @test check_mutation(AutoFiniteDiff())
 @test_broken check_hessian(AutoFiniteDiff())
 
-test_operators(AutoFiniteDiff(); second_order=false, type_stability=false);
+test_differentiation(AutoFiniteDiff(); second_order=false);

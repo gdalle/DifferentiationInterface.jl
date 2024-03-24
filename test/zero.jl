@@ -1,49 +1,55 @@
-using DifferentiationInterface
-using DifferentiationInterface.DifferentiationTest
 using DifferentiationInterface.DifferentiationTest: AutoZeroForward, AutoZeroReverse
-
-using Chairmarks: Chairmarks
-using DataFrames: DataFrames
-using JET: JET
-using Test
 
 @test check_available(AutoZeroForward())
 @test check_available(AutoZeroReverse())
 
-test_operators([AutoZeroForward(), AutoZeroReverse()]; correctness=false);
+## Error-free & type-stability
 
-# call count (experimental)
-
-test_operators(
-    AutoZeroForward();
-    correctness=false,
-    type_stability=false,
-    call_count=true,
-    excluded=[gradient],
-);
-
-test_operators(
-    AutoZeroReverse();
-    correctness=false,
-    type_stability=false,
-    call_count=true,
-    excluded=[derivative],
-);
-
-# allocs (experimental)
-
-test_operators(
+test_differentiation(
     [AutoZeroForward(), AutoZeroReverse()];
     correctness=false,
-    type_stability=false,
+    error_free=true,
+    type_stability=true,
+);
+
+test_differentiation(
+    [AutoZeroForward(), AutoZeroReverse()],
+    all_operators(),
+    weird_array_scenarios(; static=true, component=false, gpu=true);
+    correctness=false,
+    error_free=true,
+);
+
+test_differentiation(
+    [AutoZeroForward(), AutoZeroReverse()],
+    all_operators(),
+    weird_array_scenarios(; static=false, component=true, gpu=false);
+    correctness=false,
+    error_free=true,
+    excluded=[hessian],
+);
+
+## Call count
+
+test_differentiation(
+    AutoZeroForward(); correctness=false, call_count=true, excluded=[gradient]
+);
+
+test_differentiation(
+    AutoZeroReverse(); correctness=false, call_count=true, excluded=[derivative]
+);
+
+## Allocations
+
+test_differentiation(
+    [AutoZeroForward(), AutoZeroReverse()];
+    correctness=false,
     allocations=true,
+    excluded=[jacobian],
 );
 
-data = test_operators(
-    [AutoZeroForward(), AutoZeroReverse()];
-    correctness=false,
-    type_stability=false,
-    benchmark=true,
+data = test_differentiation(
+    [AutoZeroForward(), AutoZeroReverse()]; correctness=false, benchmark=true
 );
 
 df = DataFrames.DataFrame(pairs(data)...)

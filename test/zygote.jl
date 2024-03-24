@@ -1,14 +1,15 @@
 using ADTypes: AutoZygote
-using DifferentiationInterface
-using DifferentiationInterface.DifferentiationTest
 using Zygote: Zygote
-
-using ForwardDiff: ForwardDiff
-using JET: JET
-using Test
 
 @test check_available(AutoZygote())
 @test !check_mutation(AutoZygote())
 @test_broken !check_hessian(AutoZygote())
 
-test_operators(AutoZygote(); second_order=false, type_stability=false);
+test_differentiation(AutoZygote(); second_order=false);
+
+test_differentiation(
+    AutoZygote(),
+    all_operators(),
+    weird_array_scenarios(; static=true, component=true, gpu=false);
+    second_order=false,
+);

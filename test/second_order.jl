@@ -25,7 +25,7 @@ SECOND_ORDER_BACKENDS = Dict(
                                                      pairs(SECOND_ORDER_BACKENDS)
         @info "Testing $second_order_mode..."
         @time @testset "$(backend_string(backend))" for backend in backends
-            test_operators(backend; first_order=false, type_stability=false)
+            test_differentiation(backend; first_order=false, type_stability=false)
         end
     end
 end;

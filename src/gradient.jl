@@ -55,9 +55,9 @@ function value_and_gradient_aux!!(
     f::F, grad, backend, x::AbstractArray, extras, ::PullbackNotSupported
 ) where {F}
     y = f(x)
-    for j in CartesianIndices(x)
+    map!(grad, CartesianIndices(x)) do j
         dx_j = basisarray(backend, x, j)
-        _, grad[j] = value_and_pushforward(f, backend, x, dx_j, extras)
+        pushforward(f, backend, x, dx_j, extras)
     end
     return y, grad
 end
