@@ -11,7 +11,12 @@ mysimilar(x::AbstractArray) = similar(x)
 mysimilar(x) = fmap(mysimilar, x)
 
 mysimilar_random(x::Number) = randn(typeof(x))
-mysimilar_random(x::AbstractArray) = map(mysimilar_random, x)
+
+function mysimilar_random(x::AbstractArray)
+    y = similar(x)
+    return map!(y, mysimilar_random)
+end
+
 mysimilar_random(x) = fmap(mysimilar_random, x)
 
 myvec(x::Number) = [x]

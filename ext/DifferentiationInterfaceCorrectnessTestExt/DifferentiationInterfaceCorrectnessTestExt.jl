@@ -88,10 +88,10 @@ function test_correctness(ba::AbstractADType, ::typeof(pullback), scen::Scenario
         @test myisapprox(y_out2, y)
     end
     @testset "Cotangent value" begin
-        @test myisappeox(dx_out1, dx_true; rtol=1e-3)
-        @test myisappeox(dx_out2, dx_true; rtol=1e-3)
-        @test myisappeox(dx_out3, dx_true; rtol=1e-3)
-        @test myisappeox(dx_out4, dx_true; rtol=1e-3)
+        @test myisapprox(dx_out1, dx_true; rtol=1e-3)
+        @test myisapprox(dx_out2, dx_true; rtol=1e-3)
+        @test myisapprox(dx_out3, dx_true; rtol=1e-3)
+        @test myisapprox(dx_out4, dx_true; rtol=1e-3)
     end
     return test_scen_intact(new_scen, scen)
 end
