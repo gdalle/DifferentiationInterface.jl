@@ -28,6 +28,16 @@ Chooses [FastDifferentiation.jl](https://github.com/brianguenter/FastDifferentia
 """
 struct AutoFastDifferentiation <: AbstractSymbolicDifferentiationMode end
 
+"""
+    AutoTaped
+
+Chooses [Taped.jl](https://github.com/withbayes/Taped.jl).
+
+!!! danger
+    This backend is experimental, use at your own risk.
+"""
+struct AutoTaped <: AbstractReverseMode end
+
 include("second_order.jl")
 include("traits.jl")
 include("utils.jl")

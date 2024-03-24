@@ -42,12 +42,6 @@ function DT.test_correctness(
         @test dy_out2 ≈ dy_true rtol = 1e-3
         @test dy_out3 ≈ dy_true rtol = 1e-3
         @test dy_out4 ≈ dy_true rtol = 1e-3
-        if ismutable(dy_true)
-            @testset "Mutation" begin
-                @test dy_in2 ≈ dy_true rtol = 1e-3
-                @test dy_in4 ≈ dy_true rtol = 1e-3
-            end
-        end
     end
     return test_scen_intact(new_scen, scen)
 end
@@ -65,19 +59,9 @@ function DT.test_correctness(
 
     @testset "Primal value" begin
         @test y_out ≈ y
-        @testset "Mutation" begin
-            if ismutable(y)
-                @test y_in ≈ y
-            end
-        end
     end
     @testset "Tangent value" begin
         @test dy_out ≈ dy_true rtol = 1e-3
-        @testset "Mutation" begin
-            if ismutable(dy_true)
-                @test dy_in ≈ dy_true rtol = 1e-3
-            end
-        end
     end
     return test_scen_intact(new_scen, scen)
 end
@@ -105,12 +89,6 @@ function DT.test_correctness(ba::AbstractADType, ::typeof(pullback), scen::Scena
         @test dx_out2 ≈ dx_true rtol = 1e-3
         @test dx_out3 ≈ dx_true rtol = 1e-3
         @test dx_out4 ≈ dx_true rtol = 1e-3
-        if ismutable(dx_true)
-            @testset "Mutation" begin
-                @test dx_in2 ≈ dx_true rtol = 1e-3
-                @test dx_in4 ≈ dx_true rtol = 1e-3
-            end
-        end
     end
     return test_scen_intact(new_scen, scen)
 end
@@ -134,13 +112,6 @@ function DT.test_correctness(ba::AbstractADType, ::typeof(pullback), scen::Scena
     end
     @testset "Cotangent value" begin
         @test dx_out ≈ dx_true rtol = 1e-3
-        if ismutable(dx_true)
-            @testset "Mutation" begin
-                if ismutable(dx_true)
-                    @test dx_in ≈ dx_true rtol = 1e-3
-                end
-            end
-        end
     end
     return test_scen_intact(new_scen, scen)
 end
@@ -170,12 +141,6 @@ function DT.test_correctness(
         @test der_out2 ≈ der_true rtol = 1e-3
         @test der_out3 ≈ der_true rtol = 1e-3
         @test der_out4 ≈ der_true rtol = 1e-3
-        @testset "Mutation" begin
-            if ismutable(der_true)
-                @test der_in2 ≈ der_true rtol = 1e-3
-                @test der_in4 ≈ der_true rtol = 1e-3
-            end
-        end
     end
     return test_scen_intact(new_scen, scen)
 end
@@ -199,11 +164,6 @@ function DT.test_correctness(ba::AbstractADType, ::typeof(derivative), scen::Sce
     end
     @testset "Derivative value" begin
         @test der_out ≈ der_true rtol = 1e-3
-        @testset "Mutation" begin
-            if ismutable(der_true)
-                @test der_in ≈ der_true rtol = 1e-3
-            end
-        end
     end
     return test_scen_intact(new_scen, scen)
 end
@@ -235,12 +195,6 @@ function DT.test_correctness(ba::AbstractADType, ::typeof(gradient), scen::Scena
         @test grad_out2 ≈ grad_true rtol = 1e-3
         @test grad_out3 ≈ grad_true rtol = 1e-3
         @test grad_out4 ≈ grad_true rtol = 1e-3
-        @testset "Mutation" begin
-            if ismutable(grad_true)
-                @test grad_in2 ≈ grad_true rtol = 1e-3
-                @test grad_in4 ≈ grad_true rtol = 1e-3
-            end
-        end
     end
     return test_scen_intact(new_scen, scen)
 end

@@ -1,4 +1,4 @@
-# Getting started
+# Overview
 
 ## [Operators](@id operators)
 
@@ -53,6 +53,34 @@ Second-order differentiation is also supported, with the following operators:
 
 !!! danger
     This is an experimental functionality, use at your own risk.
+
+## Preparation
+
+In many cases, automatic differentiation can be accelerated if the function has been run at least once (e.g. to record a tape) and if some cache objects are provided.
+This is a backend-specific procedure, but we expose a common syntax to achieve it.
+
+| operator            | preparation function                |
+| :------------------ | :---------------------------------- |
+| `derivative`        | [`prepare_derivative`](@ref)        |
+| `gradient`          | [`prepare_gradient`](@ref)          |
+| `jacobian`          | [`prepare_jacobian`](@ref)          |
+| `second_derivative` | [`prepare_second_derivative`](@ref) |
+| `hessian`           | [`prepare_hessian`](@ref)           |
+| `pushforward`       | [`prepare_pushforward`](@ref)       |
+| `pullback`          | [`prepare_pullback`](@ref)          |
+| `hvp`               | [`prepare_hvp`](@ref)               |
+
+If you run `prepare_operator(backend, f, x)`, it will create an object called `extras` containing the necessary information to speed up `operator` and its variants.
+This information is specific to `backend` and `f`, as well as the _type and size_ of the input `x`, but it should work with different _values_ of `x`.
+
+You can then call `operator(backend, f, similar_x, extras)`, which should be faster than `operator(backend, f, similar_x)`.
+This is especially worth it if you plan to call `operator` several times in similar settings: you can think of it as a warm up.
+
+By default, all the preparation functions return `nothing`.
+We do not make any guarantees on their implementation for each backend, or on the performance gains that can be expected.
+
+!!! warning
+    We haven't fully figured out what must happen when an `extras` object is prepared for a specific operator but then given to a lower-level one (i.e. prepare it for `jacobian` but then give it to `pushforward` inside `jacobian`).
 
 ## Multiple inputs/outputs
 

@@ -1,3 +1,5 @@
+## Allocating
+
 """
     hessian(f, backend, x, [extras]) -> hess
 """

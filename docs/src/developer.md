@@ -28,6 +28,7 @@ For simplicity, we remove `value_` in the operator names below.
 
 ```mermaid
 flowchart LR
+    pushforward!! --> pushforward
     derivative --> pushforward
     derivative!! --> pushforward!!
     gradient .-> |n|pushforward
@@ -40,6 +41,7 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+    pullback!! --> pullback
     derivative .-> |m|pullback
     derivative!! .-> |m|pullback!!
     gradient --> pullback

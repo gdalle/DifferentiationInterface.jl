@@ -125,7 +125,7 @@ function test_operators(
                     compatible(backend, op, scen)
                 end
                     if correctness
-                        @testset verbose = true "Call count" begin
+                        @testset verbose = true "Correctness" begin
                             test_correctness(backend, op, scen)
                         end
                     end
