@@ -14,12 +14,6 @@ By order of preference:
     hvp(f, backend, x, v, [extras]) -> p
 """
 function hvp(
-    f::F, backend::AbstractADType, x::Number, v, extras=prepare_hvp(f, backend, x)
-) where {F}
-    return v * second_derivative(f, backend, x, extras)
-end
-
-function hvp(
     f::F, backend::AbstractADType, x, v, extras=prepare_hvp(f, backend, x)
 ) where {F}
     new_backend = SecondOrder(backend, backend)
@@ -27,7 +21,13 @@ function hvp(
     return hvp(f, new_backend, x, v, new_extras)
 end
 
-function hvp(f::F, backend::SecondOrder, x, v, extras=prepare_hvp(backend, f, x)) where {F}
+function hvp(
+    f::F, backend::SecondOrder, x::Number, v::Number, extras=prepare_hvp(f, backend, x)
+) where {F}
+    return v * second_derivative(f, backend, x, extras)
+end
+
+function hvp(f::F, backend::SecondOrder, x, v, extras=prepare_hvp(f, backend, x)) where {F}
     return hvp_aux(f, backend, x, v, extras, hvp_mode(backend))
 end
 
