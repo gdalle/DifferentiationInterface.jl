@@ -15,10 +15,10 @@ end
 
 function component_scenarios_allocating()
     return [
-        Scenario(scalar_to_componentvector, 2.0),
+        Scenario(scalar_to_componentvector; x=2.0),
         Scenario(
-            componentvector_to_scalar,
-            ComponentVector{Float64}(; a=collect(1:7), b=collect(8:12)),
+            componentvector_to_scalar;
+            x=ComponentVector{Float64}(; a=collect(1:7), b=collect(8:12)),
         ),
     ]
 end

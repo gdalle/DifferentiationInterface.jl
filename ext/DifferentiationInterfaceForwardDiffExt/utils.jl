@@ -2,7 +2,8 @@
 choose_chunk(::AutoForwardDiff{nothing}, x) = Chunk(x)
 choose_chunk(::AutoForwardDiff{C}, x) where {C} = Chunk{C}()
 
-tag_type(::F, x) where {F} = Tag{F,myeltype(x)}
+tag_type(::F, x::Number) where {F} = Tag{F,typeof(x)}
+tag_type(::F, x::AbstractArray) where {F} = Tag{F,eltype(x)}
 
 make_dual(::Type{T}, x::Number, dx::Number) where {T} = Dual{T}(x, dx)
 make_dual(::Type{T}, x, dx) where {T} = Dual{T}.(x, dx)

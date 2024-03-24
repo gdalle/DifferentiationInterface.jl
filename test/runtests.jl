@@ -1,5 +1,6 @@
 ## Imports
 
+using ADTypes
 using DifferentiationInterface
 using DifferentiationInterface.DifferentiationTest
 
@@ -15,20 +16,6 @@ using ForwardDiff: ForwardDiff
 using ComponentArrays
 using JLArrays
 using StaticArrays
-
-# backends
-#=
-using ChainRulesCore: ChainRulesCore
-using Diffractor: Diffractor
-using Enzyme: Enzyme
-using FastDifferentiation: FastDifferentiation
-using FiniteDiff: FiniteDiff
-using FiniteDifferences: FiniteDifferences
-using PolyesterForwardDiff: PolyesterForwardDiff
-using ReverseDiff: ReverseDiff
-using Tracker: Tracker
-using Zygote: Zygote
-=#
 
 ## Main tests
 
@@ -112,7 +99,10 @@ using Zygote: Zygote
         end
     end
 
-    @testset verbose = true "Second order" begin
-        include("second_order.jl")
+    include("second_order.jl")
+
+    @testset "Weird types" begin
+        @info "Testing nested objects..."
+        @time include("nested.jl")
     end
 end;

@@ -5,12 +5,11 @@ using Chairmarks: @be, Benchmark, Sample
 using DifferentiationInterface
 using DifferentiationInterface: myzero
 using DifferentiationInterface.DifferentiationTest: Scenario, BenchmarkData, record!
-import DifferentiationInterface.DifferentiationTest as DT
 using Test: @testset, @test
 
 ## Pushforward
 
-function DT.run_benchmark!(
+function run_benchmark!(
     data::BenchmarkData,
     ba::AbstractADType,
     op::typeof(pushforward),
@@ -27,7 +26,7 @@ function DT.run_benchmark!(
     return nothing
 end
 
-function DT.run_benchmark!(
+function run_benchmark!(
     data::BenchmarkData,
     ba::AbstractADType,
     op::typeof(pushforward),
@@ -49,7 +48,7 @@ end
 
 ## Pullback
 
-function DT.run_benchmark!(
+function run_benchmark!(
     data::BenchmarkData,
     ba::AbstractADType,
     op::typeof(pullback),
@@ -66,7 +65,7 @@ function DT.run_benchmark!(
     return nothing
 end
 
-function DT.run_benchmark!(
+function run_benchmark!(
     data::BenchmarkData,
     ba::AbstractADType,
     op::typeof(pullback),
@@ -88,7 +87,7 @@ end
 
 ## Derivative
 
-function DT.run_benchmark!(
+function run_benchmark!(
     data::BenchmarkData,
     ba::AbstractADType,
     op::typeof(derivative),
@@ -106,7 +105,7 @@ function DT.run_benchmark!(
     return nothing
 end
 
-function DT.run_benchmark!(
+function run_benchmark!(
     data::BenchmarkData,
     ba::AbstractADType,
     op::typeof(derivative),
@@ -128,7 +127,7 @@ end
 
 ## Gradient
 
-function DT.run_benchmark!(
+function run_benchmark!(
     data::BenchmarkData,
     ba::AbstractADType,
     op::typeof(gradient),
@@ -147,7 +146,7 @@ end
 
 ## Jacobian
 
-function DT.run_benchmark!(
+function run_benchmark!(
     data::BenchmarkData,
     ba::AbstractADType,
     op::typeof(jacobian),
@@ -163,7 +162,7 @@ function DT.run_benchmark!(
     return nothing
 end
 
-function DT.run_benchmark!(
+function run_benchmark!(
     data::BenchmarkData,
     ba::AbstractADType,
     op::typeof(jacobian),
@@ -186,7 +185,7 @@ end
 
 ## Second derivative
 
-function DT.run_benchmark!(
+function run_benchmark!(
     data::BenchmarkData,
     ba::AbstractADType,
     op::typeof(second_derivative),
@@ -206,7 +205,7 @@ end
 
 ## Hessian-vector product
 
-function DT.run_benchmark!(
+function run_benchmark!(
     data::BenchmarkData,
     ba::AbstractADType,
     op::typeof(hvp),
@@ -223,7 +222,7 @@ end
 
 ## Hessian
 
-function DT.run_benchmark!(
+function run_benchmark!(
     data::BenchmarkData,
     ba::AbstractADType,
     op::typeof(hessian),

@@ -23,14 +23,14 @@ end
 
 function gpu_scenarios_allocating()
     scenarios = [
-        Scenario(scalar_to_jlvector, 2.0),
-        Scenario(scalar_to_jlmatrix, 2.0),
-        Scenario(vector_to_scalar, jl(Vector{Float64}(1:12))),
-        Scenario(matrix_to_scalar, jl(Matrix{Float64}(reshape(1:12, 3, 4)))),
-        Scenario(vector_to_vector, jl(Vector{Float64}(1:12))),
-        Scenario(vector_to_matrix, jl(Vector{Float64}(1:12))),
-        Scenario(matrix_to_vector, jl(Matrix{Float64}(reshape(1:12, 3, 4)))),
-        Scenario(matrix_to_matrix, jl(Matrix{Float64}(reshape(1:12, 3, 4)))),
+        Scenario(scalar_to_jlvector; x=2.0),
+        Scenario(scalar_to_jlmatrix; x=2.0),
+        Scenario(vector_to_scalar; x=jl(Vector{Float64}(1:12))),
+        Scenario(matrix_to_scalar; x=jl(Matrix{Float64}(reshape(1:12, 3, 4)))),
+        Scenario(vector_to_vector; x=jl(Vector{Float64}(1:12))),
+        Scenario(vector_to_matrix; x=jl(Vector{Float64}(1:12))),
+        Scenario(matrix_to_vector; x=jl(Matrix{Float64}(reshape(1:12, 3, 4)))),
+        Scenario(matrix_to_matrix; x=jl(Matrix{Float64}(reshape(1:12, 3, 4)))),
     ]
     return scenarios
 end

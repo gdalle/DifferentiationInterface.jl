@@ -23,14 +23,14 @@ end
 
 function static_scenarios_allocating()
     scenarios = [
-        Scenario(scalar_to_svector, 2.0),
-        Scenario(scalar_to_smatrix, 2.0),
-        Scenario(vector_to_scalar, SVector{12,Float64}(1:12)),
-        Scenario(matrix_to_scalar, SMatrix{3,4,Float64}(reshape(1:12, 3, 4))),
-        Scenario(vector_to_vector, SVector{12,Float64}(1:12)),
-        Scenario(vector_to_matrix, SVector{12,Float64}(1:12)),
-        Scenario(matrix_to_vector, SMatrix{3,4,Float64}(reshape(1:12, 3, 4))),
-        Scenario(matrix_to_matrix, SMatrix{3,4,Float64}(reshape(1:12, 3, 4))),
+        Scenario(scalar_to_svector; x=2.0),
+        Scenario(scalar_to_smatrix; x=2.0),
+        Scenario(vector_to_scalar; x=SVector{12,Float64}(1:12)),
+        Scenario(matrix_to_scalar; x=SMatrix{3,4,Float64}(reshape(1:12, 3, 4))),
+        Scenario(vector_to_vector; x=SVector{12,Float64}(1:12)),
+        Scenario(vector_to_matrix; x=SVector{12,Float64}(1:12)),
+        Scenario(matrix_to_vector; x=SMatrix{3,4,Float64}(reshape(1:12, 3, 4))),
+        Scenario(matrix_to_matrix; x=SMatrix{3,4,Float64}(reshape(1:12, 3, 4))),
     ]
     return scenarios
 end

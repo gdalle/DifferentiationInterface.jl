@@ -1,4 +1,3 @@
-using ADTypes: AutoFiniteDiff
 using FiniteDiff: FiniteDiff
 
 @test check_available(AutoFiniteDiff())

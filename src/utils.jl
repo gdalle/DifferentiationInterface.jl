@@ -1,20 +1,33 @@
-myeltype(x) = eltype(x)
-
-mysimilar(x::Number) = zero(x)
-mysimilar(x::AbstractArray{T}) where {T} = similar(x, T, axes(x)) # strip structure (issue #35)
-mysimilar(x) = similar(x)
+myisapprox(x::Number, y::Number; kwargs...) = isapprox(x, y; kwargs...)
+myisapprox(x::AbstractArray, y::AbstractArray; kwargs...) = isapprox(x, y; kwargs...)
+myisapprox(x, y; kwargs...) = all(myisapprox(xi, yi; kwargs...) for (xi, yi) in zip(x, y))
 
 myupdate!!(_old::Number, new::Number) = new
-myupdate!!(old, new) = old .= new
+myupdate!!(old::AbstractArray, new) = old .= new
 myupdate!!(old, new::Nothing) = old
 
-myzero(x) = zero(x)
+mysimilar(x::Number) = zero(x)
+mysimilar(x::AbstractArray) = similar(x)
+mysimilar(x) = fmap(mysimilar, x)
 
-myzero!!(x::Number) = zero(x)
-myzero!!(x) = x .= zero(myeltype(x))
+mysimilar_random(x::Number) = randn(typeof(x))
+
+function mysimilar_random(x::AbstractArray)
+    y = similar(x)
+    return map(mysimilar_random, y)
+end
+
+mysimilar_random(x) = fmap(mysimilar_random, x)
 
 myvec(x::Number) = [x]
-myvec(x) = vec(x)
+myvec(x::AbstractArray) = vec(x)
+
+myzero(x::Number) = zero(x)
+myzero(x::AbstractArray) = zero(x)
+myzero(x) = fmap(myzero, x)
+
+myzero!!(x::Number) = zero(x)
+myzero!!(x::AbstractArray) = x .= zero(eltype(x))
 
 """
     basisarray(backend, a::AbstractArray, i::CartesianIndex)

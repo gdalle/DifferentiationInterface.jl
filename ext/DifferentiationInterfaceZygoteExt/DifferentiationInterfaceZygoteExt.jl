@@ -15,4 +15,25 @@ function DI.value_and_pullback(f::F, ::AutoZygote, x, dy, extras::Nothing) where
     return y, dx
 end
 
+## Gradient
+
+function DI.value_and_gradient(f::F, ::AutoZygote, x, extras::Nothing) where {F}
+    (; val, grad) = withgradient(f, x)
+    return val, only(grad)
+end
+
+function DI.gradient(f::F, ::AutoZygote, x, extras::Nothing) where {F}
+    return only(gradient(f, x))
+end
+
+function DI.value_and_gradient!!(
+    f::F, grad, backend::AutoZygote, x, extras::Nothing
+) where {F}
+    return DI.value_and_gradient(f, backend, x, extras)
+end
+
+function DI.gradient!!(f::F, grad, backend::AutoZygote, x, extras::Nothing) where {F}
+    return DI.gradient(f, backend, x, extras)
+end
+
 end

@@ -1,15 +1,9 @@
-using ADTypes
-using DifferentiationInterface
-using DifferentiationInterface.DifferentiationTest
 using DifferentiationInterface.DifferentiationTest: backend_string
 
 using FiniteDiff: FiniteDiff
 using ForwardDiff: ForwardDiff
 using Enzyme: Enzyme
 using Zygote: Zygote
-
-using JET: JET
-using Test
 
 SECOND_ORDER_BACKENDS = Dict(
     "forward/forward" => [
@@ -20,7 +14,7 @@ SECOND_ORDER_BACKENDS = Dict(
     "reverse/forward" => [],
 )
 
-@testset verbose = true "Cross backends" begin
+@testset verbose = true "Second order" begin
     @testset verbose = true "$second_order_mode" for (second_order_mode, backends) in
                                                      pairs(SECOND_ORDER_BACKENDS)
         @info "Testing $second_order_mode..."
