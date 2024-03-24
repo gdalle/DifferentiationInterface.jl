@@ -16,10 +16,12 @@ using ..DifferentiationInterface
 import ..DifferentiationInterface as DI
 using ..DifferentiationInterface:
     AutoTaped,
+    inner,
     mode,
     mysimilar,
     myzero,
     myzero!!,
+    outer,
     supports_mutation,
     supports_pushforward,
     supports_pullback

@@ -98,4 +98,8 @@ using Zygote: Zygote
             @time include("zygote.jl")
         end
     end
+
+    @testset verbose = true "Second order" begin
+        include("second_order.jl")
+    end
 end;
