@@ -15,7 +15,7 @@ myzero(x::Number) = zero(x)
 myzero(x::AbstractArray) = zero(x)
 
 myzero!!(x::Number) = zero(x)
-myzero!!(x::AbstractArray) = x .= zero(myeltype(x))
+myzero!!(x::AbstractArray) = x .= zero(eltype(x))
 
 """
     basisarray(backend, a::AbstractArray, i::CartesianIndex)
