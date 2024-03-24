@@ -24,9 +24,3 @@ function DI.value_and_pullback(
     dx = mysimilar(x)
     return DI.value_and_pullback!!(f, dx, backend, x, dy, extras)
 end
-
-## Gradient
-
-function DI.gradient(f::F, ::AutoReverseEnzyme, x, extras::Nothing) where {F}
-    return gradient(f, x)
-end
