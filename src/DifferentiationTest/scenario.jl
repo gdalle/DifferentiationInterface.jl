@@ -33,25 +33,24 @@ is_mutating(::Scenario{mutating}) where {mutating} = mutating
 
 ## Scenario constructors
 
-mysimilar_random(z::Number) = randn(eltype(z))
-
-function mysimilar_random(z::AbstractArray)
-    zz = mysimilar(z)
-    zz .= randn(eltype(zz), size(zz))
-    return zz
-end
-
-function Scenario(f, x::Union{Number,AbstractArray})
+function Scenario(f, x)
     y = f(x)
     dx = mysimilar_random(x)
     dy = mysimilar_random(y)
     return Scenario{false}(f, x, y, dx, dy)
 end
 
-function Scenario(f!, x::Union{Number,AbstractArray}, s::NTuple{N,<:Integer}) where {N}
-    y = zeros(eltype(x), s...)
+function Scenario(f!, y, x)
     f!(y, x)
     dx = mysimilar_random(x)
     dy = mysimilar_random(y)
     return Scenario{true}(f!, x, y, dx, dy)
+end
+
+function Scenario(f; x, y=nothing)
+    if isnothing(y)
+        return Scenario(f, x)
+    else
+        return Scenario(f, y, x)
+    end
 end

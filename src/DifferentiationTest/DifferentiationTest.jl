@@ -20,6 +20,7 @@ using ..DifferentiationInterface:
     inner,
     mode,
     mysimilar,
+    mysimilar_random,
     myzero,
     myzero!!,
     outer,
@@ -27,18 +28,22 @@ using ..DifferentiationInterface:
     supports_pushforward,
     supports_pullback
 using DocStringExtensions
+using Functors: fmap
 using Test: @testset, @test
 
 include("scenario.jl")
 include("compatibility.jl")
-include("default_scenarios.jl")
+include("scenarios_default.jl")
+include("scenarios_weird_arrays.jl")
+include("scenarios_nested.jl")
 include("zero.jl")
 include("printing.jl")
 include("benchmark.jl")
-include("call_count.jl")
+include("test_call_count.jl")
+include("test_error_free.jl")
 include("test_differentiation.jl")
 
-export Scenario, default_scenarios, weird_array_scenarios
+export Scenario, default_scenarios, weird_array_scenarios, nested_scenarios
 export BenchmarkData, record!
 export all_operators, test_differentiation
 

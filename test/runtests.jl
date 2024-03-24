@@ -16,20 +16,6 @@ using ComponentArrays
 using JLArrays
 using StaticArrays
 
-# backends
-#=
-using ChainRulesCore: ChainRulesCore
-using Diffractor: Diffractor
-using Enzyme: Enzyme
-using FastDifferentiation: FastDifferentiation
-using FiniteDiff: FiniteDiff
-using FiniteDifferences: FiniteDifferences
-using PolyesterForwardDiff: PolyesterForwardDiff
-using ReverseDiff: ReverseDiff
-using Tracker: Tracker
-using Zygote: Zygote
-=#
-
 ## Main tests
 
 @testset verbose = true "DifferentiationInterface.jl" begin

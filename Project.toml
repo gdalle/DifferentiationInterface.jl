@@ -7,6 +7,7 @@ version = "0.1.0"
 ADTypes = "47edcb42-4c32-4615-8424-f2b9edc5f35b"
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 FillArrays = "1a297f60-69ca-5386-bcde-b61e274b549b"
+Functors = "d9f16b24-f501-4c13-a1f2-28368ffc5196"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
@@ -36,25 +37,16 @@ Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 DifferentiationInterfaceChainRulesCoreExt = "ChainRulesCore"
 DifferentiationInterfaceChairmarksExt = ["Chairmarks"]
 DifferentiationInterfaceComponentArraysExt = ["ComponentArrays"]
-DifferentiationInterfaceDiffractorExt = [
-    "AbstractDifferentiation",
-    "Diffractor",
-]
+DifferentiationInterfaceCorrectnessTestExt = ["ForwardDiff", "Zygote"]
+DifferentiationInterfaceDiffractorExt = ["AbstractDifferentiation", "Diffractor"]
 DifferentiationInterfaceEnzymeExt = "Enzyme"
-DifferentiationInterfaceFastDifferentiationExt = [
-    "FastDifferentiation",
-    "RuntimeGeneratedFunctions",
-]
+DifferentiationInterfaceFastDifferentiationExt = ["FastDifferentiation", "RuntimeGeneratedFunctions"]
 DifferentiationInterfaceFiniteDiffExt = "FiniteDiff"
 DifferentiationInterfaceFiniteDifferencesExt = "FiniteDifferences"
 DifferentiationInterfaceForwardDiffExt = ["DiffResults", "ForwardDiff"]
 DifferentiationInterfaceJETExt = ["JET"]
 DifferentiationInterfaceJLArraysExt = ["JLArrays"]
-DifferentiationInterfacePolyesterForwardDiffExt = [
-    "PolyesterForwardDiff",
-    "ForwardDiff",
-    "DiffResults",
-]
+DifferentiationInterfacePolyesterForwardDiffExt = ["PolyesterForwardDiff", "ForwardDiff", "DiffResults"]
 DifferentiationInterfaceReverseDiffExt = ["DiffResults", "ReverseDiff"]
 DifferentiationInterfaceStaticArraysExt = ["StaticArrays"]
 DifferentiationInterfaceTapedExt = ["Taped"]
@@ -64,8 +56,8 @@ DifferentiationInterfaceZygoteExt = ["Zygote"]
 [compat]
 ADTypes = "0.2.7"
 AbstractDifferentiation = "0.6"
-Chairmarks = "1.2"
 ChainRulesCore = "1.19"
+Chairmarks = "1.2"
 ComponentArrays = "0.15"
 DiffResults = "1.1"
 Diffractor = "0.2"
@@ -76,6 +68,7 @@ FillArrays = "1"
 FiniteDiff = "2.22"
 FiniteDifferences = "0.12"
 ForwardDiff = "0.10"
+Functors = "0.4"
 JET = "0.8"
 JLArrays = "0.1"
 LinearAlgebra = "1"
@@ -83,8 +76,8 @@ PolyesterForwardDiff = "0.1"
 ReverseDiff = "1.15"
 RuntimeGeneratedFunctions = "0.5"
 StaticArrays = "1.9"
-Test = "1"
 Taped = "1"
+Test = "1"
 Tracker = "0.2"
 Zygote = "0.6"
 julia = "1.10"

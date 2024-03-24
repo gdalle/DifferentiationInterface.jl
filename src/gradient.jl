@@ -10,7 +10,7 @@ function value_and_gradient(
 end
 
 function value_and_gradient_aux(f::F, backend, x, extras, ::PullbackSupported) where {F}
-    return value_and_pullback(f, backend, x, one(myeltype(x)), extras)
+    return value_and_pullback(f, backend, x, true, extras)
 end
 
 function value_and_gradient_aux(
@@ -42,7 +42,7 @@ end
 function value_and_gradient_aux!!(
     f::F, grad, backend, x, extras, ::PullbackSupported
 ) where {F}
-    return value_and_pullback!!(f, grad, backend, x, one(myeltype(grad)), extras)
+    return value_and_pullback!!(f, grad, backend, x, true, extras)
 end
 
 function value_and_gradient_aux!!(

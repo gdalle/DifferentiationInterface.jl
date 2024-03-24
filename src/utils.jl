@@ -1,20 +1,21 @@
-myeltype(x) = eltype(x)
-
-mysimilar(x::Number) = zero(x)
-mysimilar(x::AbstractArray{T}) where {T} = similar(x, T, axes(x)) # strip structure (issue #35)
-mysimilar(x) = similar(x)
-
 myupdate!!(_old::Number, new::Number) = new
-myupdate!!(old, new) = old .= new
+myupdate!!(old::AbstractArray, new) = old .= new
 myupdate!!(old, new::Nothing) = old
 
-myzero(x) = zero(x)
+mysimilar(x::Number) = zero(x)
+mysimilar(x::AbstractArray) = similar(x)
 
-myzero!!(x::Number) = zero(x)
-myzero!!(x) = x .= zero(myeltype(x))
+mysimilar_random(x::Number) = randn(typeof(x))
+mysimilar_random(x::AbstractArray) = randn(eltype(x), size(x))
 
 myvec(x::Number) = [x]
-myvec(x) = vec(x)
+myvec(x::AbstractArray) = vec(x)
+
+myzero(x::Number) = zero(x)
+myzero(x::AbstractArray) = zero(x)
+
+myzero!!(x::Number) = zero(x)
+myzero!!(x::AbstractArray) = x .= zero(myeltype(x))
 
 """
     basisarray(backend, a::AbstractArray, i::CartesianIndex)

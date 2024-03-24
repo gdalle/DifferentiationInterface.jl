@@ -1,4 +1,4 @@
-module TestCorrectness
+module DifferentiationInterfaceCorrectnessTestExt
 
 using ADTypes: AbstractADType
 using DifferentiationInterface
@@ -7,6 +7,7 @@ import DifferentiationInterface.DifferentiationTest as DT
 using ForwardDiff: ForwardDiff
 using LinearAlgebra: dot
 using Test: @testset, @test
+using Zygote: Zygote
 
 function test_scen_intact(new_scen, scen)
     @testset "Scenario intact" begin
@@ -19,9 +20,7 @@ end
 
 ## Pushforward
 
-function DT.test_correctness(
-    ba::AbstractADType, ::typeof(pushforward), scen::Scenario{false}
-)
+function test_correctness(ba::AbstractADType, ::typeof(pushforward), scen::Scenario{false})
     (; f, x, y, dx) = new_scen = deepcopy(scen)
     dy_true = true_pushforward(f, x, y, dx; mutating=false)
 
@@ -46,9 +45,7 @@ function DT.test_correctness(
     return test_scen_intact(new_scen, scen)
 end
 
-function DT.test_correctness(
-    ba::AbstractADType, ::typeof(pushforward), scen::Scenario{true}
-)
+function test_correctness(ba::AbstractADType, ::typeof(pushforward), scen::Scenario{true})
     (; f, x, y, dx) = new_scen = deepcopy(scen)
     f! = f
     dy_true = true_pushforward(f!, x, y, dx; mutating=true)
@@ -68,7 +65,7 @@ end
 
 ## Pullback
 
-function DT.test_correctness(ba::AbstractADType, ::typeof(pullback), scen::Scenario{false})
+function test_correctness(ba::AbstractADType, ::typeof(pullback), scen::Scenario{false})
     (; f, x, y, dy) = new_scen = deepcopy(scen)
     dx_true = true_pullback(f, x, y, dy; mutating=false)
 
@@ -93,7 +90,7 @@ function DT.test_correctness(ba::AbstractADType, ::typeof(pullback), scen::Scena
     return test_scen_intact(new_scen, scen)
 end
 
-function DT.test_correctness(ba::AbstractADType, ::typeof(pullback), scen::Scenario{true})
+function test_correctness(ba::AbstractADType, ::typeof(pullback), scen::Scenario{true})
     (; f, x, y, dy) = new_scen = deepcopy(scen)
     f! = f
     dx_true = true_pullback(f, x, y, dy; mutating=true)
@@ -118,9 +115,7 @@ end
 
 ## Derivative
 
-function DT.test_correctness(
-    ba::AbstractADType, ::typeof(derivative), scen::Scenario{false}
-)
+function test_correctness(ba::AbstractADType, ::typeof(derivative), scen::Scenario{false})
     (; f, x, y) = new_scen = deepcopy(scen)
     der_true = ForwardDiff.derivative(f, x)
 
@@ -145,7 +140,7 @@ function DT.test_correctness(
     return test_scen_intact(new_scen, scen)
 end
 
-function DT.test_correctness(ba::AbstractADType, ::typeof(derivative), scen::Scenario{true})
+function test_correctness(ba::AbstractADType, ::typeof(derivative), scen::Scenario{true})
     (; f, x, y) = new_scen = deepcopy(scen)
     f! = f
     der_true = ForwardDiff.derivative(f!, y, x)
@@ -170,7 +165,7 @@ end
 
 ## Gradient
 
-function DT.test_correctness(ba::AbstractADType, ::typeof(gradient), scen::Scenario{false})
+function test_correctness(ba::AbstractADType, ::typeof(gradient), scen::Scenario{false})
     (; f, x, y) = new_scen = deepcopy(scen)
     grad_true = if x isa Number
         ForwardDiff.derivative(f, x)
@@ -201,7 +196,7 @@ end
 
 ## Jacobian
 
-function DT.test_correctness(ba::AbstractADType, ::typeof(jacobian), scen::Scenario{false})
+function test_correctness(ba::AbstractADType, ::typeof(jacobian), scen::Scenario{false})
     (; f, x, y) = new_scen = deepcopy(scen)
     jac_true = ForwardDiff.jacobian(f, x)
 
@@ -230,7 +225,7 @@ function DT.test_correctness(ba::AbstractADType, ::typeof(jacobian), scen::Scena
     return test_scen_intact(new_scen, scen)
 end
 
-function DT.test_correctness(ba::AbstractADType, ::typeof(jacobian), scen::Scenario{true})
+function test_correctness(ba::AbstractADType, ::typeof(jacobian), scen::Scenario{true})
     (; f, x, y) = new_scen = deepcopy(scen)
     f! = f
     jac_true = ForwardDiff.jacobian(f!, y, x)
@@ -256,9 +251,7 @@ end
 
 ## Second derivative
 
-function DT.test_correctness(
-    ba::AbstractADType, ::typeof(second_derivative), scen::Scenario
-)
+function test_correctness(ba::AbstractADType, ::typeof(second_derivative), scen::Scenario)
     (; f, x) = deepcopy(scen)
     der2_true = ForwardDiff.derivative(z -> ForwardDiff.derivative(f, z), x)
 
@@ -271,7 +264,7 @@ end
 
 ## Hessian-vector product
 
-function DT.test_correctness(ba::AbstractADType, ::typeof(hvp), scen::Scenario)
+function test_correctness(ba::AbstractADType, ::typeof(hvp), scen::Scenario)
     (; f, x, dx) = deepcopy(scen)
     hess_true = if x isa Number
         ForwardDiff.derivative(z -> ForwardDiff.derivative(f, z), x)
@@ -293,7 +286,7 @@ end
 
 ## Hessian
 
-function DT.test_correctness(ba::AbstractADType, ::typeof(hessian), scen::Scenario)
+function test_correctness(ba::AbstractADType, ::typeof(hessian), scen::Scenario)
     (; f, x, y) = deepcopy(scen)
     hess_true = ForwardDiff.hessian(f, x)
 

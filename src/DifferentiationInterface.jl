@@ -18,6 +18,7 @@ using ADTypes:
     AbstractSymbolicDifferentiationMode
 using DocStringExtensions
 using FillArrays: OneElement
+using Functors: fmap
 using LinearAlgebra: dot
 using Test: Test
 

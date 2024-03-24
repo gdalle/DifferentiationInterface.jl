@@ -12,7 +12,7 @@ end
 function value_and_derivative_aux(
     f::F, backend, x, extras, ::PushforwardSupported
 ) where {F}
-    return value_and_pushforward(f, backend, x, one(myeltype(x)), extras)
+    return value_and_pushforward(f, backend, x, one(x), extras)
 end
 
 function value_and_derivative_aux(

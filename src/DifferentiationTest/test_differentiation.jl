@@ -16,20 +16,6 @@ function all_operators()
     ]
 end
 
-function test_correctness(backend::AbstractADType, op::Function, scen::Scenario)
-    return error("Please load ForwardDiff.jl or check your method signature")
-end
-
-function test_jet(backend::AbstractADType, op::Function, scen::Scenario; call, opt)
-    return error("Please load JET.jl or check your method signature")
-end
-
-function run_benchmark!(
-    data::BenchmarkData, backend::AbstractADType, op::Function, scen::Scenario; allocations
-)
-    return error("Please load Chairmarks.jl or check your method signature")
-end
-
 function filter_operators(
     operators::Vector{<:Function};
     first_order::Bool,
@@ -47,7 +33,7 @@ function filter_operators(
 end
 
 function filter_scenarios(
-    scenarios::Vector{Scenario};
+    scenarios::Vector{<:Scenario};
     input_type::Type,
     output_type::Type,
     allocating::Bool,
@@ -80,8 +66,8 @@ Testing:
 
 - `correctness=true`: whether to compare the differentiation results with those given by ForwardDiff.jl
 - `error_free=false`: whether to run it once and see if it errors
-- `type_stability=false`: whether to check type stability with JET.jl (`@test_opt`)
 - `call_count=false`: whether to check that the function is called the right number of times
+- `type_stability=false`: whether to check type stability with JET.jl (`@test_opt`)
 - `benchmark=false`: whether to run and return a benchmark suite with Chairmarks.jl
 - `allocations=false`: whether to check that the benchmarks are allocation-free
 - `detailed=false`: whether to print a detailed test set (by scenario) or condensed test set (by operator)
@@ -126,10 +112,29 @@ function test_differentiation(
         "Differentiation tests -" *
         (correctness ? " correctness" : "") *
         (error_free ? " errors" : "") *
-        (type_stability ? " types" : "") *
         (call_count ? " calls" : "") *
+        (type_stability ? " types" : "") *
         (benchmark ? " benchmark" : "") *
         (allocations ? " allocations" : "")
+
+    correctness_ext = if correctness
+        get_extension(DifferentiationInterface, :DifferentiationInterfaceCorrectnessTestExt)
+    else
+        nothing
+    end
+
+    jet_ext = if type_stability
+        get_extension(DifferentiationInterface, :DifferentiationInterfaceJETExt)
+    else
+        nothing
+    end
+
+    chairmarks_ext = if allocations || benchmark
+        get_extension(DifferentiationInterface, :DifferentiationInterfaceChairmarksExt)
+    else
+        nothing
+    end
+
     test_set = @testset verbose = true "$title" begin
         @testset verbose = true "$(backend_string(backend))" for backend in backends
             @testset verbose = detailed "$op" for op in operators
@@ -138,17 +143,12 @@ function test_differentiation(
                 end
                     if correctness
                         @testset verbose = true "Correctness" begin
-                            test_correctness(backend, op, scen)
+                            correctness_ext.test_correctness(backend, op, scen)
                         end
                     end
                     if error_free
                         @testset verbose = true "Error-free" begin
-                            test_jet(backend, op, scen; call=true, opt=false)
-                        end
-                    end
-                    if type_stability
-                        @testset verbose = true "Type stability" begin
-                            test_jet(backend, op, scen; call=false, opt=true)
+                            test_error_free(backend, op, scen)
                         end
                     end
                     if call_count
@@ -156,9 +156,14 @@ function test_differentiation(
                             test_call_count(backend, op, scen)
                         end
                     end
+                    if type_stability
+                        @testset verbose = true "Type stability" begin
+                            jet_ext.test_jet(backend, op, scen)
+                        end
+                    end
                     if benchmark || allocations
                         @testset verbose = true "Allocations" begin
-                            run_benchmark!(
+                            chairmarks_ext.run_benchmark!(
                                 benchmark_data, backend, op, scen; allocations=allocations
                             )
                         end
