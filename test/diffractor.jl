@@ -1,3 +1,5 @@
+include("test_imports.jl")
+
 using Diffractor: Diffractor
 
 @test check_available(AutoDiffractor())

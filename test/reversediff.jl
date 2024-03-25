@@ -1,8 +1,9 @@
-using ADTypes: AutoReverseDiff
+include("test_imports.jl")
+
 using ReverseDiff: ReverseDiff
 
-@test_broken check_available(AutoReverseDiff())
+@test check_available(AutoReverseDiff())
 @test check_mutation(AutoReverseDiff())
 @test check_hessian(AutoReverseDiff())
 
-test_differentiation(AutoReverseDiff(); input_type=AbstractArray);
+test_differentiation(AutoReverseDiff());

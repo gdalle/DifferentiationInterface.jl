@@ -16,7 +16,7 @@ end
 function value_and_gradient_aux(
     f::F, backend, x::Number, extras, ::PullbackNotSupported
 ) where {F}
-    return value_and_derivative(f, backend, x, extras)
+    return value_and_pushforward(f, backend, x, one(x), extras)
 end
 
 function value_and_gradient_aux(
@@ -48,7 +48,7 @@ end
 function value_and_gradient_aux!!(
     f::F, grad, backend, x::Number, extras, ::PullbackNotSupported
 ) where {F}
-    return value_and_derivative(f, backend, x, extras)
+    return value_and_pushforward(f, backend, x, one(x), extras)
 end
 
 function value_and_gradient_aux!!(

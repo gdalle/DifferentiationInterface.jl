@@ -1,3 +1,5 @@
+include("test_imports.jl")
+
 using Tracker: Tracker
 
 @test check_available(AutoTracker())
@@ -5,8 +7,5 @@ using Tracker: Tracker
 # @test !check_hessian(AutoTracker())
 
 test_differentiation(
-    AutoTracker();
-    output_type=Union{Number,AbstractVector},
-    second_order=false,
-    mutating=false,
+    AutoTracker(); output_type=Union{Number,AbstractVector}, second_order=false
 );

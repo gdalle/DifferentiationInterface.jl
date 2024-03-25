@@ -1,3 +1,5 @@
+include("test_imports.jl")
+
 using FiniteDiff: FiniteDiff
 
 @test check_available(AutoFiniteDiff())

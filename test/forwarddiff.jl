@@ -1,3 +1,5 @@
+include("test_imports.jl")
+
 using ForwardDiff: ForwardDiff
 
 @test check_available(AutoForwardDiff())

@@ -1,3 +1,5 @@
+include("test_imports.jl")
+
 using Enzyme: Enzyme
 
 @test check_available(AutoEnzyme(Enzyme.Forward))
