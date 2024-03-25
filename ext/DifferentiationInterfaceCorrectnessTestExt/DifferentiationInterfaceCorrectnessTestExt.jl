@@ -26,11 +26,11 @@ function test_correctness(ba::AbstractADType, ::typeof(pushforward), scen::Scena
     dy_true = true_pushforward(f, x, y, dx; mutating=false)
 
     y_out1, dy_out1 = value_and_pushforward(f, ba, x, dx)
-    dy_in2 = myzero(dy_out1)
+    dy_in2 = myzero(y)
     y_out2, dy_out2 = value_and_pushforward!!(f, dy_in2, ba, x, dx)
 
     dy_out3 = pushforward(f, ba, x, dx)
-    dy_in4 = myzero(dy_out3)
+    dy_in4 = myzero(y)
     dy_out4 = pushforward!!(f, dy_in4, ba, x, dx)
 
     @testset "Primal value" begin
@@ -47,12 +47,12 @@ function test_correctness(ba::AbstractADType, ::typeof(pushforward), scen::Scena
 end
 
 function test_correctness(ba::AbstractADType, ::typeof(pushforward), scen::Scenario{true})
-    (; f, x, y, dx) = new_scen = deepcopy(scen)
+    (; f, x, y, dx, dy) = new_scen = deepcopy(scen)
     f! = f
     dy_true = true_pushforward(f!, x, y, dx; mutating=true)
 
     y_in = myzero(y)
-    dy_in = myzero(dy_true)
+    dy_in = myzero(y)
     y_out, dy_out = value_and_pushforward!!(f!, y_in, dy_in, ba, x, dx)
 
     @testset "Primal value" begin
@@ -76,11 +76,11 @@ function test_correctness(ba::AbstractADType, ::typeof(pullback), scen::Scenario
     dx_true = true_pullback(f, x, y, dy; mutating=false)
 
     y_out1, dx_out1 = value_and_pullback(f, ba, x, dy)
-    dx_in2 = myzero(dx_out1)
+    dx_in2 = myzero(x)
     y_out2, dx_out2 = value_and_pullback!!(f, dx_in2, ba, x, dy)
 
     dx_out3 = pullback(f, ba, x, dy)
-    dx_in4 = myzero(dx_out3)
+    dx_in4 = myzero(x)
     dx_out4 = pullback!!(f, dx_in4, ba, x, dy)
 
     @testset "Primal value" begin
@@ -102,7 +102,7 @@ function test_correctness(ba::AbstractADType, ::typeof(pullback), scen::Scenario
     dx_true = true_pullback(f, x, y, dy; mutating=true)
 
     y_in = myzero(y)
-    dx_in = myzero(dx_true)
+    dx_in = myzero(x)
     y_out, dx_out = value_and_pullback!!(f!, y_in, dx_in, ba, x, dy)
 
     @testset "Primal value" begin
@@ -126,11 +126,11 @@ function test_correctness(ba::AbstractADType, ::typeof(derivative), scen::Scenar
     der_true = ForwardDiff.derivative(f, x)
 
     y_out1, der_out1 = value_and_derivative(f, ba, x)
-    der_in2 = myzero(der_out1)
+    der_in2 = myzero(y)
     y_out2, der_out2 = value_and_derivative!!(f, der_in2, ba, x)
 
     der_out3 = derivative(f, ba, x)
-    der_in4 = myzero(der_out3)
+    der_in4 = myzero(y)
     der_out4 = derivative!!(f, der_in4, ba, x)
 
     @testset "Primal value" begin
@@ -152,7 +152,7 @@ function test_correctness(ba::AbstractADType, ::typeof(derivative), scen::Scenar
     der_true = ForwardDiff.derivative(f!, y, x)
 
     y_in = myzero(y)
-    der_in = myzero(der_true)
+    der_in = myzero(y)
     y_out, der_out = value_and_derivative!!(f!, y_in, der_in, ba, x)
 
     @testset "Primal value" begin
@@ -180,11 +180,11 @@ function test_correctness(ba::AbstractADType, ::typeof(gradient), scen::Scenario
     end
 
     y_out1, grad_out1 = value_and_gradient(f, ba, x)
-    grad_in2 = myzero(grad_out1)
+    grad_in2 = myzero(x)
     y_out2, grad_out2 = value_and_gradient!!(f, grad_in2, ba, x)
 
     grad_out3 = gradient(f, ba, x)
-    grad_in4 = myzero(grad_out3)
+    grad_in4 = myzero(x)
     grad_out4 = gradient!!(f, grad_in4, ba, x)
 
     @testset "Primal value" begin
@@ -207,11 +207,11 @@ function test_correctness(ba::AbstractADType, ::typeof(jacobian), scen::Scenario
     jac_true = ForwardDiff.jacobian(f, x)
 
     y_out1, jac_out1 = value_and_jacobian(f, ba, x)
-    jac_in2 = myzero(jac_out1)
+    jac_in2 = myzero(jac_true)
     y_out2, jac_out2 = value_and_jacobian!!(f, jac_in2, ba, x)
 
     jac_out3 = jacobian(f, ba, x)
-    jac_in4 = myzero(jac_out3)
+    jac_in4 = myzero(jac_true)
     jac_out4 = jacobian!!(f, jac_in4, ba, x)
 
     @testset "Primal value" begin
@@ -237,7 +237,7 @@ function test_correctness(ba::AbstractADType, ::typeof(jacobian), scen::Scenario
     jac_true = ForwardDiff.jacobian(f!, y, x)
 
     y_in = myzero(y)
-    jac_in = similar(y, length(y), length(x))
+    jac_in = myzero(jac_true)
     y_out, jac_out = value_and_jacobian!!(f!, y_in, jac_in, ba, x)
 
     @testset "Primal value" begin
