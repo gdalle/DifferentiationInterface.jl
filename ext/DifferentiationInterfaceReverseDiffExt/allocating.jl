@@ -45,3 +45,13 @@ function DI.value_and_pullback(
     dx = reshape(transpose(jac) * vec(dy), size(x))
     return y, dx
 end
+
+### Trick for unsupported scalar input
+
+function DI.value_and_pullback(
+    f::F, backend::AutoReverseDiff, x::Number, dy, extras::Nothing
+) where {F}
+    x_array = [x]
+    y, dx_array = DI.value_and_pullback(f ∘ only, backend, x_array, dy)
+    return y, only(dx_array)
+end

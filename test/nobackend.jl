@@ -1,3 +1,5 @@
+include("test_imports.jl")
+
 using ADTypes: ADTypes
 
 struct AutoNothingForward <: ADTypes.AbstractForwardMode end

@@ -20,7 +20,7 @@ function value_and_derivative_aux(
 ) where {F}
     y = f(x)
     if y isa Number
-        return value_and_gradient(f, backend, x)
+        return value_and_pullback(f, backend, x, one(y))
     else
         der = map(CartesianIndices(y)) do i
             dy_i = basisarray(backend, y, i)
@@ -50,7 +50,7 @@ end
 function value_and_derivative_aux!!(
     f::F, _der::Number, backend, x, extras, ::PushforwardNotSupported
 ) where {F}
-    return value_and_gradient(f, backend, x, extras)
+    return value_and_pullback(f, backend, x, one(x), extras)
 end
 
 function value_and_derivative_aux!!(

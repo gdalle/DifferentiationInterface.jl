@@ -1,3 +1,5 @@
+include("test_imports.jl")
+
 using Zygote: Zygote
 
 @test check_available(AutoZygote())

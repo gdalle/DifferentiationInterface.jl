@@ -6,6 +6,8 @@ function test_error_free(ba::AbstractADType, ::typeof(pushforward), scen::Scenar
 
     @test (value_and_pushforward!!(f, dy_in, ba, x, dx, extras); true)
     @test (value_and_pushforward(f, ba, x, dx, extras); true)
+    @test (pushforward!!(f, dy_in, ba, x, dx, extras); true)
+    @test (pushforward(f, ba, x, dx, extras); true)
     return nothing
 end
 
@@ -28,6 +30,8 @@ function test_error_free(ba::AbstractADType, ::typeof(pullback), scen::Scenario{
 
     @test (value_and_pullback!!(f, dx_in, ba, x, dy, extras); true)
     @test (value_and_pullback(f, ba, x, dy, extras); true)
+    @test (pullback!!(f, dx_in, ba, x, dy, extras); true)
+    @test (pullback(f, ba, x, dy, extras); true)
     return nothing
 end
 
@@ -51,6 +55,8 @@ function test_error_free(ba::AbstractADType, ::typeof(derivative), scen::Scenari
 
     @test (value_and_derivative!!(f, der_in, ba, x, extras); true)
     @test (value_and_derivative(f, ba, x, extras); true)
+    @test (derivative!!(f, der_in, ba, x, extras); true)
+    @test (derivative(f, ba, x, extras); true)
     return nothing
 end
 
@@ -74,6 +80,8 @@ function test_error_free(ba::AbstractADType, ::typeof(gradient), scen::Scenario{
 
     @test (value_and_gradient!!(f, grad_in, ba, x, extras); true)
     @test (value_and_gradient(f, ba, x, extras); true)
+    @test (gradient!!(f, grad_in, ba, x, extras); true)
+    @test (gradient(f, ba, x, extras); true)
     return nothing
 end
 
@@ -86,6 +94,8 @@ function test_error_free(ba::AbstractADType, ::typeof(jacobian), scen::Scenario{
 
     @test (value_and_jacobian!!(f, jac_in, ba, x, extras); true)
     @test (value_and_jacobian(f, ba, x, extras); true)
+    @test (jacobian!!(f, jac_in, ba, x, extras); true)
+    @test (jacobian(f, ba, x, extras); true)
     return nothing
 end
 

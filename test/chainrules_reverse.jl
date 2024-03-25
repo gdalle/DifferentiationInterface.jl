@@ -1,4 +1,5 @@
-using ADTypes: AutoChainRules
+include("test_imports.jl")
+
 using Zygote: ZygoteRuleConfig
 
 @test check_available(AutoChainRules(ZygoteRuleConfig()))

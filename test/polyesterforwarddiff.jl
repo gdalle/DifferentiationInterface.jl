@@ -1,4 +1,5 @@
-using ADTypes: AutoPolyesterForwardDiff
+include("test_imports.jl")
+
 using PolyesterForwardDiff: PolyesterForwardDiff
 
 @test check_available(AutoPolyesterForwardDiff(; chunksize=2))

@@ -1,3 +1,5 @@
+include("test_imports.jl")
+
 using Enzyme: Enzyme
 using Tracker: Tracker
 using Zygote: Zygote

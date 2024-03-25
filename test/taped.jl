@@ -1,14 +1,10 @@
 using Pkg
 Pkg.add(; url="https://github.com/withbayes/Taped.jl/")
 
-using DifferentiationInterface
-using DifferentiationInterface: AutoTaped
-using DifferentiationInterface.DifferentiationTest
-using Taped: Taped
+include("test_imports.jl")
 
-using ForwardDiff: ForwardDiff
-using JET: JET
-using Test
+using DifferentiationInterface: AutoTaped
+using Taped: Taped
 
 @test check_available(AutoTaped())
 @test !check_mutation(AutoTaped())

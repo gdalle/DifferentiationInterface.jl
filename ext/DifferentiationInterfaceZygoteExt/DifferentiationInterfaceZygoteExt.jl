@@ -26,14 +26,4 @@ function DI.gradient(f::F, ::AutoZygote, x, extras::Nothing) where {F}
     return only(gradient(f, x))
 end
 
-function DI.value_and_gradient!!(
-    f::F, grad, backend::AutoZygote, x, extras::Nothing
-) where {F}
-    return DI.value_and_gradient(f, backend, x, extras)
-end
-
-function DI.gradient!!(f::F, grad, backend::AutoZygote, x, extras::Nothing) where {F}
-    return DI.gradient(f, backend, x, extras)
-end
-
 end

@@ -1,3 +1,5 @@
+include("test_imports.jl")
+
 using DifferentiationInterface: AutoFastDifferentiation
 using FastDifferentiation: FastDifferentiation
 
