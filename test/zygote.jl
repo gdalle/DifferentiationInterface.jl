@@ -9,6 +9,6 @@ test_differentiation(AutoZygote(); second_order=false);
 test_differentiation(
     AutoZygote(),
     all_operators(),
-    weird_array_scenarios(; static=true, component=true, gpu=false);
+    weird_array_scenarios(; static=true, component=true, gpu=true);
     second_order=false,
 );

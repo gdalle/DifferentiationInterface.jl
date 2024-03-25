@@ -8,20 +8,15 @@ mymul!!(x, a) = fmap(Base.Fix2(mymul!!, a), x)
 
 myupdate!!(_old::Number, new::Number) = new
 myupdate!!(old::AbstractArray, new) = old .= new
-myupdate!!(old, new) = fmap(myupdate!!, old, new)
 myupdate!!(old, new::Nothing) = old
+myupdate!!(old, new) = fmap(myupdate!!, old, new)
 
 mysimilar(x::Number) = zero(x)
 mysimilar(x::AbstractArray) = similar(x)
 mysimilar(x) = fmap(mysimilar, x)
 
 mysimilar_random(x::Number) = randn(typeof(x))
-
-function mysimilar_random(x::AbstractArray)
-    y = similar(x)
-    return map(mysimilar_random, y)
-end
-
+mysimilar_random(x::AbstractArray) = map(mysimilar_random, similar(x))
 mysimilar_random(x) = fmap(mysimilar_random, x)
 
 myvec(x::Number) = [x]

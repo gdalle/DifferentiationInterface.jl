@@ -42,7 +42,7 @@ DI.mode(::AutoReverseEnzyme) = ADTypes.AbstractReverseMode
 
 # Enzyme's `Duplicated(x, dx)` expects both arguments to be of the same type
 function DI.basisarray(::AutoEnzyme, a::AbstractArray{T}, i::CartesianIndex) where {T}
-    b = myzero(a)
+    b = make_zero(a)
     b[i] = one(T)
     return b
 end
