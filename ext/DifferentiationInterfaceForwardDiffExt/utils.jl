@@ -20,7 +20,7 @@ myvalue!!(::Type{T}, y, ydual) where {T} = fmap(Base.Fix1(myvalue, T), y, ydual)
 
 myderivative(::Type{T}, ydual::Number) where {T} = extract_derivative(T, ydual)
 myderivative(::Type{T}, ydual::AbstractArray) where {T} = extract_derivative(T, ydual)
-myderivative(::Type{T}, ydual) where {T} = fmap(Base.Fix1(myvalue, T), ydual)
+myderivative(::Type{T}, ydual) where {T} = fmap(Base.Fix1(myderivative, T), ydual)
 
 function myderivative!!(::Type{T}, dy::Number, ydual::Number) where {T}
     return extract_derivative(T, ydual)
