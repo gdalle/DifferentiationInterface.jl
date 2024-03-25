@@ -1,6 +1,6 @@
 # Overview
 
-## [Operators](@id operators)
+## Operators
 
 Depending on the type of input and output, differentiation operators can have various names.
 Most backends have custom implementations, which we reuse if possible.
@@ -35,10 +35,15 @@ Several variants of each operator are defined:
 
 !!! warning
     The "bang-bang" syntactic convention `!!` signals that some of the arguments _can_ be mutated, but they do not _have to be_.
-    Users should not rely on mutation, but instead recover the function output and work from there.
+    Such arguments will always be part of the return, so that one can simply reuse the operator's output and forget its input.
+
+    In other words, this is good:
     ```julia
-    grad = gradient!!(f, grad, backend, x)  # good
-    gradient!!(f, grad, backend, x)  # bad, cause `grad` may not have changed
+    grad = gradient!!(f, grad, backend, x)  # do this
+    ```
+    On the other hand, this is bad, because if `grad` has not been mutated, you will get wrong results:
+    ```julia
+    gradient!!(f, grad, backend, x)  # don't do this
     ```
 
 ## Second order
