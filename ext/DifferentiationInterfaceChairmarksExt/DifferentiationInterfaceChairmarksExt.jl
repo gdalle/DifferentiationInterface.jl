@@ -3,7 +3,7 @@ module DifferentiationInterfaceChairmarksExt
 using ADTypes: AbstractADType
 using Chairmarks: @be, Benchmark, Sample
 using DifferentiationInterface
-using DifferentiationInterface: myzero
+using DifferentiationInterface: mysimilar
 using DifferentiationInterface.DifferentiationTest: Scenario, BenchmarkData, record!
 using Test: @testset, @test
 
@@ -18,7 +18,7 @@ function run_benchmark!(
 )
     (; f, x, dx, dy) = deepcopy(scen)
     extras = prepare_pushforward(f, ba, x)
-    bench1 = @be myzero(dy) value_and_pushforward!!(f, _, ba, x, dx, extras)
+    bench1 = @be mysimilar(dy) value_and_pushforward!!(f, _, ba, x, dx, extras)
     if allocations && dy isa Number
         @test 0 == minimum(bench1).allocs
     end
@@ -36,7 +36,7 @@ function run_benchmark!(
     (; f, x, y, dx, dy) = deepcopy(scen)
     f! = f
     extras = prepare_pushforward(f!, ba, y, x)
-    bench1 = @be (myzero(y), myzero(dy)) value_and_pushforward!!(
+    bench1 = @be (mysimilar(y), mysimilar(dy)) value_and_pushforward!!(
         f!, _[1], _[2], ba, x, dx, extras
     )
     if allocations
@@ -57,7 +57,7 @@ function run_benchmark!(
 )
     (; f, x, dx, dy) = deepcopy(scen)
     extras = prepare_pullback(f, ba, x)
-    bench1 = @be myzero(dx) value_and_pullback!!(f, _, ba, x, dy, extras)
+    bench1 = @be mysimilar(dx) value_and_pullback!!(f, _, ba, x, dy, extras)
     if allocations && dy isa Number
         @test 0 == minimum(bench1).allocs
     end
@@ -75,7 +75,7 @@ function run_benchmark!(
     (; f, x, y, dx, dy) = deepcopy(scen)
     f! = f
     extras = prepare_pullback(f!, ba, y, x)
-    bench1 = @be (myzero(y), myzero(dx)) value_and_pullback!!(
+    bench1 = @be (mysimilar(y), mysimilar(dx)) value_and_pullback!!(
         f!, _[1], _[2], ba, x, dy, extras
     )
     if allocations
@@ -96,7 +96,7 @@ function run_benchmark!(
 )
     (; f, x, y, dy) = deepcopy(scen)
     extras = prepare_derivative(f, ba, x)
-    bench1 = @be myzero(dy) value_and_derivative!!(f, _, ba, x, extras)
+    bench1 = @be mysimilar(dy) value_and_derivative!!(f, _, ba, x, extras)
     # only test allocations if the output is scalar
     if allocations && y isa Number
         @test 0 == minimum(bench1).allocs
@@ -115,7 +115,7 @@ function run_benchmark!(
     (; f, x, y, dy) = deepcopy(scen)
     f! = f
     extras = prepare_derivative(f!, ba, y, x)
-    bench1 = @be (myzero(y), myzero(dy)) value_and_derivative!!(
+    bench1 = @be (mysimilar(y), mysimilar(dy)) value_and_derivative!!(
         f!, _[1], _[2], ba, x, extras
     )
     if allocations
@@ -136,7 +136,7 @@ function run_benchmark!(
 )
     (; f, x, dx) = deepcopy(scen)
     extras = prepare_gradient(f, ba, x)
-    bench1 = @be myzero(dx) value_and_gradient!!(f, _, ba, x, extras)
+    bench1 = @be mysimilar(dx) value_and_gradient!!(f, _, ba, x, extras)
     if allocations
         @test 0 == minimum(bench1).allocs
     end
@@ -155,8 +155,8 @@ function run_benchmark!(
 )
     (; f, x, y) = deepcopy(scen)
     extras = prepare_jacobian(f, ba, x)
-    jac_template = zeros(eltype(y), length(y), length(x))
-    bench1 = @be myzero(jac_template) value_and_jacobian!!(f, _, ba, x, extras)
+    jac_template = similar(y, length(y), length(x))
+    bench1 = @be mysimilar(jac_template) value_and_jacobian!!(f, _, ba, x, extras)
     # never test allocations
     record!(data, ba, op, value_and_jacobian!!, scen, bench1)
     return nothing
@@ -172,8 +172,8 @@ function run_benchmark!(
     (; f, x, y) = deepcopy(scen)
     f! = f
     extras = prepare_jacobian(f!, ba, y, x)
-    jac_template = zeros(eltype(y), length(y), length(x))
-    bench1 = @be (myzero(y), myzero(jac_template)) value_and_jacobian!!(
+    jac_template = similar(y, length(y), length(x))
+    bench1 = @be (mysimilar(y), mysimilar(jac_template)) value_and_jacobian!!(
         f!, _[1], _[2], ba, x, extras
     )
     if allocations

@@ -14,7 +14,7 @@ function DI.value_and_pullback!!(
     dx_sametype = convert(typeof(x), dx)
     dx_sametype = myzero!!(dx_sametype)
     _, y = autodiff(ReverseWithPrimal, f, Active, Duplicated(x, dx_sametype))
-    dx_sametype .*= dy
+    dx_sametype = mymul!!(dx_sametype, dy)
     return y, myupdate!!(dx, dx_sametype)
 end
 
@@ -23,4 +23,24 @@ function DI.value_and_pullback(
 ) where {F}
     dx = mysimilar(x)
     return DI.value_and_pullback!!(f, dx, backend, x, dy, extras)
+end
+
+## Gradient
+
+function DI.gradient(f::F, backend::AutoReverseEnzyme, x, extras::Nothing) where {F}
+    return gradient(Reverse, f, x)
+end
+
+function DI.gradient!!(f::F, grad, backend::AutoReverseEnzyme, x, extras::Nothing) where {F}
+    return gradient!(Reverse, grad, f, x)
+end
+
+function DI.gradient(f::F, backend::AutoReverseEnzyme, x::Number, extras::Nothing) where {F}
+    return autodiff(Reverse, f, Active(x))
+end
+
+function DI.gradient!!(
+    f::F, grad, backend::AutoReverseEnzyme, x::Number, extras::Nothing
+) where {F}
+    return autodiff(Reverse, f, Active(x))
 end

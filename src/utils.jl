@@ -2,21 +2,21 @@ myisapprox(x::Number, y::Number; kwargs...) = isapprox(x, y; kwargs...)
 myisapprox(x::AbstractArray, y::AbstractArray; kwargs...) = isapprox(x, y; kwargs...)
 myisapprox(x, y; kwargs...) = all(myisapprox(xi, yi; kwargs...) for (xi, yi) in zip(x, y))
 
+mymul!!(x::Number, a) = x * a
+mymul!!(x::AbstractArray, a) = x .*= a
+mymul!!(x, a) = fmap(Base.Fix2(mymul!!, a), x)
+
 myupdate!!(_old::Number, new::Number) = new
 myupdate!!(old::AbstractArray, new) = old .= new
 myupdate!!(old, new::Nothing) = old
+myupdate!!(old, new) = fmap(myupdate!!, old, new)
 
 mysimilar(x::Number) = zero(x)
 mysimilar(x::AbstractArray) = similar(x)
 mysimilar(x) = fmap(mysimilar, x)
 
 mysimilar_random(x::Number) = randn(typeof(x))
-
-function mysimilar_random(x::AbstractArray)
-    y = similar(x)
-    return map(mysimilar_random, y)
-end
-
+mysimilar_random(x::AbstractArray) = map(mysimilar_random, similar(x))
 mysimilar_random(x) = fmap(mysimilar_random, x)
 
 myvec(x::Number) = [x]
@@ -24,10 +24,11 @@ myvec(x::AbstractArray) = vec(x)
 
 myzero(x::Number) = zero(x)
 myzero(x::AbstractArray) = zero(x)
-myzero(x) = fmap(myzero, x)
+myzero(x) = fmap(zero, x)
 
 myzero!!(x::Number) = zero(x)
 myzero!!(x::AbstractArray) = x .= zero(eltype(x))
+myzero!!(x) = fmap(myzero!!, x)
 
 """
     basisarray(backend, a::AbstractArray, i::CartesianIndex)

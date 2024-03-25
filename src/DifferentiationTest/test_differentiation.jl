@@ -118,19 +118,27 @@ function test_differentiation(
         (allocations ? " allocations" : "")
 
     correctness_ext = if correctness
-        get_extension(DifferentiationInterface, :DifferentiationInterfaceCorrectnessTestExt)
+        ext = get_extension(
+            DifferentiationInterface, :DifferentiationInterfaceCorrectnessTestExt
+        )
+        @assert !isnothing(ext)
+        ext
     else
         nothing
     end
 
     jet_ext = if type_stability
-        get_extension(DifferentiationInterface, :DifferentiationInterfaceJETExt)
+        ext = get_extension(DifferentiationInterface, :DifferentiationInterfaceJETExt)
+        @assert !isnothing(ext)
+        ext
     else
         nothing
     end
 
     chairmarks_ext = if allocations || benchmark
-        get_extension(DifferentiationInterface, :DifferentiationInterfaceChairmarksExt)
+        ext = get_extension(DifferentiationInterface, :DifferentiationInterfaceChairmarksExt)
+        @assert !isnothing(ext)
+        ext
     else
         nothing
     end

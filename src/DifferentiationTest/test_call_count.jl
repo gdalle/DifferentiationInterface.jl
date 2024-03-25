@@ -31,8 +31,8 @@ function test_call_count(ba::AbstractADType, ::typeof(pushforward), scen::Scenar
     (; f, x, y, dx, dy) = deepcopy(scen)
     extras = prepare_pushforward(CallCounter(f), ba, y, x)
     cc! = CallCounter(f)
-    y_in = myzero(y)
-    dy_in = myzero(dy)
+    y_in = mysimilar(y)
+    dy_in = mysimilar(dy)
     value_and_pushforward!!(cc!, y_in, dy_in, ba, x, dx, extras)
     if mode(ba) == AbstractForwardMode
         @test cc!.count[] <= 1
@@ -55,8 +55,8 @@ function test_call_count(ba::AbstractADType, ::typeof(pullback), scen::Scenario{
     (; f, x, y, dx, dy) = deepcopy(scen)
     extras = prepare_pullback(CallCounter(f), ba, y, x)
     cc! = CallCounter(f)
-    y_in = myzero(y)
-    dx_in = myzero(dx)
+    y_in = mysimilar(y)
+    dx_in = mysimilar(dx)
     value_and_pullback!!(cc!, y_in, dx_in, ba, x, dy, extras)
     if mode(ba) == AbstractReverseMode
         @test cc!.count[] <= 1
@@ -81,8 +81,8 @@ function test_call_count(ba::AbstractADType, ::typeof(derivative), scen::Scenari
     (; f, x, y, dy) = deepcopy(scen)
     extras = prepare_derivative(CallCounter(f), ba, y, x)
     cc! = CallCounter(f)
-    y_in = myzero(y)
-    der_in = myzero(dy)
+    y_in = mysimilar(y)
+    der_in = mysimilar(dy)
     value_and_derivative!!(cc!, y_in, der_in, ba, x, extras)
     if mode(ba) == AbstractForwardMode
         @test cc!.count[] <= 1
@@ -123,7 +123,7 @@ function test_call_count(ba::AbstractADType, ::typeof(jacobian), scen::Scenario{
     (; f, x, y) = deepcopy(scen)
     extras = prepare_jacobian(CallCounter(f), ba, y, x)
     cc! = CallCounter(f)
-    y_in = myzero(y)
+    y_in = mysimilar(y)
     jac_in = similar(y, length(y), length(x))
     value_and_jacobian!!(cc!, y_in, jac_in, ba, x, extras)
     if mode(ba) == AbstractForwardMode
