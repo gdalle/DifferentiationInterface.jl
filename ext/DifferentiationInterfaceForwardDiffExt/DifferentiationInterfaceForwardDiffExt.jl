@@ -2,7 +2,7 @@ module DifferentiationInterfaceForwardDiffExt
 
 using ADTypes: AbstractADType, AutoForwardDiff
 import DifferentiationInterface as DI
-using DiffResults: DiffResults
+using DiffResults: DiffResults, DiffResult, GradientResult
 using ForwardDiff:
     Chunk,
     Dual,

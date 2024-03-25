@@ -23,3 +23,10 @@ end
 function my_derivative!!(::Type{T}, dy, ydual) where {T}
     return extract_derivative!(T, dy, ydual)
 end
+
+struct ForwardDiffExtras{
+    C<:Union{DerivativeConfig,GradientConfig,JacobianConfig},R<:DiffResult
+}
+    config::C
+    result::R
+end

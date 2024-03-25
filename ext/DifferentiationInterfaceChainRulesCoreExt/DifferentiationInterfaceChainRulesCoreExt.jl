@@ -16,17 +16,13 @@ DI.mode(::AutoReverseChainRules) = ADTypes.AbstractReverseMode
 
 ## Primitives
 
-function DI.value_and_pushforward(
-    f::F, backend::AutoForwardChainRules, x, dx, extras::Nothing
-) where {F}
+function DI.value_and_pushforward(f, backend::AutoForwardChainRules, x, dx, extras::Nothing)
     rc = ruleconfig(backend)
     y, new_dy = frule_via_ad(rc, (NoTangent(), dx), f, x)
     return y, new_dy
 end
 
-function DI.value_and_pullback(
-    f::F, backend::AutoReverseChainRules, x, dy, extras::Nothing
-) where {F}
+function DI.value_and_pullback(f, backend::AutoReverseChainRules, x, dy, extras::Nothing)
     rc = ruleconfig(backend)
     y, pullback = rrule_via_ad(rc, f, x)
     _, new_dx = pullback(dy)

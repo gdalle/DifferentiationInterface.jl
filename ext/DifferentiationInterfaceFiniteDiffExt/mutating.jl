@@ -1,7 +1,7 @@
 ## Pushforward
 
 function DI.value_and_pushforward!!(
-    f!::F,
+    f!,
     y::AbstractArray,
     dy::AbstractArray,
     ::AutoFiniteDiff{fdtype},

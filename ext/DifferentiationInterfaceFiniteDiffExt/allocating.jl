@@ -1,7 +1,7 @@
 ## Pushforward
 
 function DI.value_and_pushforward!!(
-    f::F, _dy::Number, ::AutoFiniteDiff{fdtype}, x, dx, extras::Nothing
+    f, _dy::Number, ::AutoFiniteDiff{fdtype}, x, dx, extras::Nothing
 ) where {F,fdtype}
     y = f(x)
     step(t::Number)::Number = f(x .+ t .* dx)
@@ -10,7 +10,7 @@ function DI.value_and_pushforward!!(
 end
 
 function DI.value_and_pushforward!!(
-    f::F, dy::AbstractArray, ::AutoFiniteDiff{fdtype}, x, dx, extras::Nothing
+    f, dy::AbstractArray, ::AutoFiniteDiff{fdtype}, x, dx, extras::Nothing
 ) where {F,fdtype}
     y = f(x)
     step(t::Number)::AbstractArray = f(x .+ t .* dx)
@@ -21,7 +21,7 @@ function DI.value_and_pushforward!!(
 end
 
 function DI.value_and_pushforward(
-    f::F, ::AutoFiniteDiff{fdtype}, x, dx, extras::Nothing
+    f, ::AutoFiniteDiff{fdtype}, x, dx, extras::Nothing
 ) where {F,fdtype}
     y = f(x)
     step(t::Number) = f(x .+ t .* dx)

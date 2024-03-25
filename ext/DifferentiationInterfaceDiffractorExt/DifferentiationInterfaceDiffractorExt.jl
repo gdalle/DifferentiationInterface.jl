@@ -9,7 +9,7 @@ DI.supports_mutation(::AutoDiffractor) = DI.MutationNotSupported()
 DI.mode(::AutoDiffractor) = ADTypes.AbstractForwardMode
 DI.mode(::AutoChainRules{<:DiffractorRuleConfig}) = ADTypes.AbstractForwardMode
 
-function DI.value_and_pushforward(f::F, ::AutoDiffractor, x, dx, extras::Nothing) where {F}
+function DI.value_and_pushforward(f, ::AutoDiffractor, x, dx, extras::Nothing)
     vpff = AD.value_and_pushforward_function(DiffractorForwardBackend(), f, x)
     y, dy = vpff((dx,))
     return y, dy

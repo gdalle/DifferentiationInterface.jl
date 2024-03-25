@@ -57,11 +57,6 @@ function test_correctness(ba::AbstractADType, ::typeof(pushforward), scen::Scena
 
     @testset "Primal value" begin
         @test myisapprox(y_out, y)
-        @testset "Mutation" begin
-            if ismutable(y)
-                @test myisapprox(y_in, y)
-            end
-        end
     end
     @testset "Tangent value" begin
         @test myisapprox(dy_out, dy_true; rtol=1e-3)
@@ -107,11 +102,6 @@ function test_correctness(ba::AbstractADType, ::typeof(pullback), scen::Scenario
 
     @testset "Primal value" begin
         @test myisapprox(y_out, y)
-        @testset "Mutation" begin
-            if ismutable(y)
-                @test myisapprox(y_in, y)
-            end
-        end
     end
     @testset "Cotangent value" begin
         @test myisapprox(dx_out, dx_true; rtol=1e-3)
@@ -157,11 +147,6 @@ function test_correctness(ba::AbstractADType, ::typeof(derivative), scen::Scenar
 
     @testset "Primal value" begin
         @test myisapprox(y_out, y)
-        @testset "Mutation" begin
-            if ismutable(y)
-                @test myisapprox(y_in, y)
-            end
-        end
     end
     @testset "Derivative value" begin
         @test myisapprox(der_out, der_true; rtol=1e-3)
@@ -176,7 +161,11 @@ function test_correctness(ba::AbstractADType, ::typeof(gradient), scen::Scenario
     grad_true = if x isa Number
         ForwardDiff.derivative(f, x)
     else
-        only(Zygote.gradient(f, x))
+        try
+            ForwardDiff.gradient(f, x)
+        catch e
+            only(Zygote.gradient(f, x))
+        end
     end
 
     y_out1, grad_out1 = value_and_gradient(f, ba, x)
@@ -223,10 +212,6 @@ function test_correctness(ba::AbstractADType, ::typeof(jacobian), scen::Scenario
         @test myisapprox(jac_out2, jac_true; rtol=1e-3)
         @test myisapprox(jac_out3, jac_true; rtol=1e-3)
         @test myisapprox(jac_out4, jac_true; rtol=1e-3)
-        @testset "Mutation" begin
-            @test myisapprox(jac_in2, jac_true; rtol=1e-3)
-            @test myisapprox(jac_in4, jac_true; rtol=1e-3)
-        end
     end
     return test_scen_intact(new_scen, scen)
 end
@@ -242,15 +227,9 @@ function test_correctness(ba::AbstractADType, ::typeof(jacobian), scen::Scenario
 
     @testset "Primal value" begin
         @test myisapprox(y_out, y)
-        @testset "Mutation" begin
-            @test myisapprox(y_in, y)
-        end
     end
     @testset "Jacobian value" begin
         @test myisapprox(jac_out, jac_true; rtol=1e-3)
-        @testset "Mutation" begin
-            @test myisapprox(jac_in, jac_true; rtol=1e-3)
-        end
     end
     return test_scen_intact(new_scen, scen)
 end

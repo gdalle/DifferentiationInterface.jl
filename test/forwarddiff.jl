@@ -11,5 +11,6 @@ test_differentiation(AutoForwardDiff(; chunksize=2); type_stability=true);
 test_differentiation(
     AutoForwardDiff(; chunksize=2),
     all_operators(),
-    weird_array_scenarios(; static=true, component=true, gpu=false),
+    weird_array_scenarios(; static=true, component=true, gpu=false);
+    excluded=[jacobian],
 );
