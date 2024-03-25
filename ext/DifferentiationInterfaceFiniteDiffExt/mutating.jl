@@ -8,7 +8,7 @@ function DI.value_and_pushforward!!(
     x,
     dx,
     extras::Nothing,
-) where {F,fdtype}
+) where {fdtype}
     function step(t::Number)::AbstractArray
         new_y = similar(y)
         f!(new_y, x .+ t .* dx)
