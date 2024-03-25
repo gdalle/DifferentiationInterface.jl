@@ -28,7 +28,8 @@ using ..DifferentiationInterface:
     supports_pushforward,
     supports_pullback
 using DocStringExtensions
-using Functors: fmap
+using Functors: @functor, fleaves, fmap
+using LinearAlgebra: dot
 using Test: @testset, @test
 
 include("scenario.jl")
