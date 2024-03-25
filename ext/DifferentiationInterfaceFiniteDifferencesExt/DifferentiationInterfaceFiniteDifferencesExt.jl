@@ -13,8 +13,8 @@ function FiniteDifferences.to_vec(a::OneElement)  # TODO: remove type piracy (ht
 end
 
 function DI.value_and_pushforward(
-    f::F, backend::AutoFiniteDifferences{fdm}, x, dx, extras::Nothing
-) where {F,fdm}
+    f, backend::AutoFiniteDifferences{fdm}, x, dx, extras::Nothing
+) where {fdm}
     y = f(x)
     return y, jvp(backend.fdm, f, (x, dx))
 end

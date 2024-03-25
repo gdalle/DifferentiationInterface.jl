@@ -150,27 +150,27 @@ function test_differentiation(
                     compatible(backend, op, scen)
                 end
                     if correctness
-                        @testset verbose = true "Correctness" begin
+                        @testset "Correctness" begin
                             correctness_ext.test_correctness(backend, op, scen)
                         end
                     end
                     if error_free
-                        @testset verbose = true "Error-free" begin
+                        @testset "Error-free" begin
                             test_error_free(backend, op, scen)
                         end
                     end
                     if call_count
-                        @testset verbose = true "Call count" begin
+                        @testset "Call count" begin
                             test_call_count(backend, op, scen)
                         end
                     end
                     if type_stability
-                        @testset verbose = true "Type stability" begin
+                        @testset "Type stability" begin
                             jet_ext.test_jet(backend, op, scen)
                         end
                     end
                     if benchmark || allocations
-                        @testset verbose = true "Allocations" begin
+                        @testset "Allocations" begin
                             chairmarks_ext.run_benchmark!(
                                 benchmark_data, backend, op, scen; allocations=allocations
                             )

@@ -1,6 +1,7 @@
 module DifferentiationInterfacePolyesterForwardDiffExt
 
 using ADTypes: AutoPolyesterForwardDiff, AutoForwardDiff
+using DifferentiationInterface: mysimilar
 import DifferentiationInterface as DI
 using DiffResults: DiffResults
 using DocStringExtensions
@@ -8,20 +9,7 @@ using ForwardDiff: Chunk
 using LinearAlgebra: mul!
 using PolyesterForwardDiff: threaded_gradient!, threaded_jacobian!
 
-## Pushforward
-
-function DI.value_and_pushforward(
-    f::F, ::AutoPolyesterForwardDiff{C}, x, dx, extras::Nothing
-) where {F,C}
-    return DI.value_and_pushforward(f, AutoForwardDiff{C,Nothing}(nothing), x, dx, extras)
-end
-
-function DI.value_and_pushforward!!(
-    f!::F, y, dy, ::AutoPolyesterForwardDiff{C}, x, dx, extras::Nothing
-) where {F,C}
-    return DI.value_and_pushforward!!(
-        f!, y, dy, AutoForwardDiff{C,Nothing}(nothing), x, dx, extras
-    )
-end
+include("allocating.jl")
+include("mutating.jl")
 
 end # module

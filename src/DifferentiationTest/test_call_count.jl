@@ -5,12 +5,12 @@ end
 
 CallCounter(f::F) where {F} = CallCounter{F}(f, Ref(0))
 
-function (cc::CallCounter{F})(x) where {F}
+function (cc::CallCounter)(x)
     cc.count[] += 1
     return cc.f(x)
 end
 
-function (cc::CallCounter{F})(y, x) where {F}
+function (cc::CallCounter)(y, x)
     cc.count[] += 1
     return cc.f(y, x)
 end

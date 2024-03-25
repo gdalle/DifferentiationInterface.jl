@@ -6,7 +6,7 @@
 !!! info
     Required primitive for reverse mode backends to support allocating functions.
 """
-function value_and_pullback(f::F, backend::AbstractADType, x, dy) where {F}
+function value_and_pullback(f, backend::AbstractADType, x, dy)
     extras = prepare_pullback(f, backend, x)
     return value_and_pullback(f, backend, x, dy, extras)
 end
@@ -15,17 +15,15 @@ end
     value_and_pullback!!(f, dx, backend, x, dy, [extras]) -> (y, dx)
 """
 function value_and_pullback!!(
-    f::F, dx, backend::AbstractADType, x, dy, extras=prepare_pullback(f, backend, x)
-) where {F}
+    f, dx, backend::AbstractADType, x, dy, extras=prepare_pullback(f, backend, x)
+)
     return value_and_pullback(f, backend, x, dy, extras)
 end
 
 """
     pullback(f, backend, x, dy, [extras]) -> dx
 """
-function pullback(
-    f::F, backend::AbstractADType, x, dy, extras=prepare_pullback(f, backend, x)
-) where {F}
+function pullback(f, backend::AbstractADType, x, dy, extras=prepare_pullback(f, backend, x))
     return last(value_and_pullback(f, backend, x, dy, extras))
 end
 
@@ -33,8 +31,8 @@ end
     pullback!!(f, dx, backend, x, dy, [extras]) -> dx
 """
 function pullback!!(
-    f::F, dx, backend::AbstractADType, x, dy, extras=prepare_pullback(f, backend, x)
-) where {F}
+    f, dx, backend::AbstractADType, x, dy, extras=prepare_pullback(f, backend, x)
+)
     return last(value_and_pullback!!(f, dx, backend, x, dy, extras))
 end
 
@@ -46,7 +44,7 @@ end
 !!! info
     Required primitive for reverse mode backends to support mutating functions.
 """
-function value_and_pullback!!(f!::F, y, dx, backend::AbstractADType, x, dy) where {F}
+function value_and_pullback!!(f!, y, dx, backend::AbstractADType, x, dy)
     extras = prepare_pullback(f!, backend, y, x)
     return value_and_pullback!!(f!, y, dx, backend, x, dy, extras)
 end

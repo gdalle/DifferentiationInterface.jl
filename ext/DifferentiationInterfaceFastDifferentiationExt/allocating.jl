@@ -1,6 +1,6 @@
 ## Pushforward
 
-function DI.prepare_pushforward(f::F, ::AutoFastDifferentiation, x) where {F}
+function DI.prepare_pushforward(f, ::AutoFastDifferentiation, x)
     x_var = if x isa Number
         only(make_variables(:x))
     else
@@ -16,8 +16,8 @@ function DI.prepare_pushforward(f::F, ::AutoFastDifferentiation, x) where {F}
 end
 
 function DI.value_and_pushforward(
-    f::F, ::AutoFastDifferentiation, x, dx, jvp_exe::RuntimeGeneratedFunction
-) where {F}
+    f, ::AutoFastDifferentiation, x, dx, jvp_exe::RuntimeGeneratedFunction
+)
     y = f(x)
     v_vec = vcat(myvec(x), myvec(dx))
     jv_vec = jvp_exe(v_vec)
@@ -29,15 +29,13 @@ function DI.value_and_pushforward(
 end
 
 function DI.value_and_pushforward(
-    f::F, backend::AutoFastDifferentiation, x, dx, extras::Nothing
-) where {F}
+    f, backend::AutoFastDifferentiation, x, dx, extras::Nothing
+)
     jvp_exe = DI.prepare_pushforward(f, backend, x)
     return DI.value_and_pushforward(f, backend, x, dx, jvp_exe)
 end
 
-function DI.value_and_pushforward!!(
-    f::F, dy, backend::AutoFastDifferentiation, x, dx, extras
-) where {F}
+function DI.value_and_pushforward!!(f, dy, backend::AutoFastDifferentiation, x, dx, extras)
     y, new_dy = DI.value_and_pushforward(f, backend, x, dx, extras)
     return y, myupdate!!(dy, new_dy)
 end

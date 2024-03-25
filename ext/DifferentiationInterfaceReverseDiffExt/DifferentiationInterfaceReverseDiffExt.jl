@@ -2,7 +2,7 @@ module DifferentiationInterfaceReverseDiffExt
 
 using ADTypes: AutoReverseDiff
 import DifferentiationInterface as DI
-using DiffResults: DiffResults
+using DiffResults: DiffResults, DiffResult, GradientResult
 using DocStringExtensions
 using LinearAlgebra: mul!
 using ReverseDiff:

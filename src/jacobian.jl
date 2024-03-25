@@ -4,14 +4,14 @@
     value_and_jacobian(f, backend, x, [extras]) -> (y, jac)
 """
 function value_and_jacobian(
-    f::F, backend::AbstractADType, x, extras=prepare_jacobian(f, backend, x)
-) where {F}
+    f, backend::AbstractADType, x, extras=prepare_jacobian(f, backend, x)
+)
     return value_and_jacobian_aux(f, backend, x, extras, supports_pushforward(backend))
 end
 
 function value_and_jacobian_aux(
-    f::F, backend, x::AbstractArray, extras, ::PushforwardSupported
-) where {F}
+    f, backend, x::AbstractArray, extras, ::PushforwardSupported
+)
     y = f(x)
     jac = stack(CartesianIndices(x); dims=2) do j
         dx_j = basisarray(backend, x, j)
@@ -22,8 +22,8 @@ function value_and_jacobian_aux(
 end
 
 function value_and_jacobian_aux(
-    f::F, backend, x::AbstractArray, extras, ::PushforwardNotSupported
-) where {F}
+    f, backend, x::AbstractArray, extras, ::PushforwardNotSupported
+)
     y = f(x)
     jac = stack(CartesianIndices(y); dims=1) do i
         dy_i = basisarray(backend, y, i)
@@ -37,20 +37,20 @@ end
     value_and_jacobian!!(f, jac, backend, x, [extras]) -> (y, jac)
 """
 function value_and_jacobian!!(
-    f::F,
+    f,
     jac::AbstractMatrix,
     backend::AbstractADType,
     x,
     extras=prepare_jacobian(f, backend, x),
-) where {F}
+)
     return value_and_jacobian_aux!!(
         f, jac, backend, x, extras, supports_pushforward(backend)
     )
 end
 
 function value_and_jacobian_aux!!(
-    f::F, jac, backend, x::AbstractArray, extras, ::PushforwardSupported
-) where {F}
+    f, jac, backend, x::AbstractArray, extras, ::PushforwardSupported
+)
     y = f(x)
     for (k, j) in enumerate(CartesianIndices(x))
         dx_j = basisarray(backend, x, j)
@@ -63,8 +63,8 @@ function value_and_jacobian_aux!!(
 end
 
 function value_and_jacobian_aux!!(
-    f::F, jac, backend, x::AbstractArray, extras, ::PushforwardNotSupported
-) where {F}
+    f, jac, backend, x::AbstractArray, extras, ::PushforwardNotSupported
+)
     y = f(x)
     for (k, i) in enumerate(CartesianIndices(y))
         dy_i = basisarray(backend, y, i)
@@ -79,9 +79,7 @@ end
 """
     jacobian(f, backend, x, [extras]) -> jac
 """
-function jacobian(
-    f::F, backend::AbstractADType, x, extras=prepare_jacobian(f, backend, x)
-) where {F}
+function jacobian(f, backend::AbstractADType, x, extras=prepare_jacobian(f, backend, x))
     return last(value_and_jacobian(f, backend, x, extras))
 end
 
@@ -89,12 +87,12 @@ end
     jacobian!!(f, jac, backend, x, [extras]) -> jac
 """
 function jacobian!!(
-    f::F,
+    f,
     jac::AbstractMatrix,
     backend::AbstractADType,
     x,
     extras=prepare_jacobian(f, backend, x),
-) where {F}
+)
     return last(value_and_jacobian!!(f, jac, backend, x, extras))
 end
 
@@ -104,21 +102,19 @@ end
     value_and_jacobian!!(f!, y, jac, backend, x, [extras]) -> (y, jac)
 """
 function value_and_jacobian!!(
-    f!::F,
+    f!,
     y::AbstractArray,
     jac::AbstractMatrix,
     backend::AbstractADType,
     x::AbstractArray,
     extras=prepare_jacobian(f!, backend, y, x),
-) where {F}
+)
     return value_and_jacobian_aux!!(
         f!, y, jac, backend, x, extras, supports_pushforward(backend)
     )
 end
 
-function value_and_jacobian_aux!!(
-    f!::F, y, jac, backend, x, extras, ::PushforwardSupported
-) where {F}
+function value_and_jacobian_aux!!(f!, y, jac, backend, x, extras, ::PushforwardSupported)
     f!(y, x)
     for (k, j) in enumerate(CartesianIndices(x))
         dx_j = basisarray(backend, x, j)
@@ -132,9 +128,7 @@ function value_and_jacobian_aux!!(
     return y, jac
 end
 
-function value_and_jacobian_aux!!(
-    f!::F, y, jac, backend, x, extras, ::PushforwardNotSupported
-) where {F}
+function value_and_jacobian_aux!!(f!, y, jac, backend, x, extras, ::PushforwardNotSupported)
     f!(y, x)
     for (k, i) in enumerate(CartesianIndices(y))
         dy_i = basisarray(backend, y, i)
