@@ -43,7 +43,7 @@ myvec(x) = mapreduce(myvec, vcat, fleaves(x))
 
 myzero(x::Number) = zero(x)
 myzero(x::AbstractArray) = zero(x)
-myzero(x::Nothing) = zero(x)
+myzero(x::Nothing) = nothing
 myzero(x) = fmap(myzero, x)
 
 myzero!!(x::Number) = zero(x)
