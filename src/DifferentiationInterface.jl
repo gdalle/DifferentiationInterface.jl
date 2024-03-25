@@ -18,9 +18,9 @@ using ADTypes:
     AbstractSymbolicDifferentiationMode
 using DocStringExtensions
 using FillArrays: OneElement
-using Functors: fmap
+using Functors: fleaves, fmap
 using LinearAlgebra: dot
-using Test: Test
+using Test: Test, @test
 
 """
     AutoFastDifferentiation

@@ -26,6 +26,14 @@ function DI.gradient(f, ::AutoZygote, x, extras::Nothing)
     return only(gradient(f, x))
 end
 
+function DI.value_and_gradient!!(f, grad, backend::AutoZygote, x, extras::Nothing)
+    return DI.value_and_gradient(f, backend, x, extras)
+end
+
+function DI.gradient!!(f, grad, backend::AutoZygote, x, extras::Nothing)
+    return DI.gradient(f, backend, x, extras)
+end
+
 ## Jacobian
 
 function DI.value_and_jacobian(f, ::AutoZygote, x::AbstractArray, extras::Nothing)

@@ -15,19 +15,24 @@ end
 
 ## Gradient
 
-function DI.gradient(f, ::AutoTracker, x, extras::Nothing)
-    grad = gradient(f, x)
-    return data(only(grad))
-end
-
 function DI.value_and_gradient(f, ::AutoTracker, x, extras::Nothing)
     (; val, grad) = withgradient(f, x)
     return val, data(only(grad))
 end
 
-function DI.value_and_gradient(f, backend::AutoTracker, x::Number, extras::Nothing)
+function DI.gradient(f, ::AutoTracker, x, extras::Nothing)
+    (; grad) = withgradient(f, x)
+    return data(only(grad))
+end
+
+function DI.value_and_gradient(f, ::AutoTracker, x::Number, extras::Nothing)
     # fix for https://github.com/FluxML/Tracker.jl/issues/165
-    return f(x), DI.gradient(f, backend, x, extras)
+    return f(x), data(only(gradient(f, x)))
+end
+
+function DI.gradient(f, ::AutoTracker, x::Number, extras::Nothing)
+    # fix for https://github.com/FluxML/Tracker.jl/issues/165
+    return data(only(gradient(f, x)))
 end
 
 function DI.value_and_gradient!!(f, grad, backend::AutoTracker, x, extras::Nothing)

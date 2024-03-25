@@ -4,8 +4,8 @@ function DI.value_and_pushforward(f, ::AutoForwardDiff, x, dx, extras::Nothing)
     T = tag_type(f, x)
     xdual = make_dual(T, x, dx)
     ydual = f(xdual)
-    y = my_value(T, ydual)
-    new_dy = my_derivative(T, ydual)
+    y = myvalue(T, ydual)
+    new_dy = myderivative(T, ydual)
     return y, new_dy
 end
 
