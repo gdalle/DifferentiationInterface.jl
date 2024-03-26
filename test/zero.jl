@@ -1,5 +1,3 @@
-include("test_imports.jl")
-
 using DifferentiationInterfaceTest: AutoZeroForward, AutoZeroReverse
 
 @test check_available(AutoZeroForward())

@@ -1,5 +1,3 @@
-## Imports
-
 using Pkg
 
 Pkg.develop(
@@ -7,6 +5,8 @@ Pkg.develop(
         path=joinpath(dirname(@__DIR__), "lib", "DifferentiationInterfaceTest")
     ),
 )
+
+##
 
 using ADTypes
 using DifferentiationInterface
@@ -20,6 +20,3 @@ using Test
 
 using Chairmarks: Chairmarks
 using DataFrames: DataFrames
-
-using ForwardDiff: ForwardDiff
-using Zygote: Zygote
