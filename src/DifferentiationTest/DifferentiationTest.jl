@@ -50,7 +50,7 @@ include("tests/test.jl")
 
 export Scenario
 export default_scenarios
-export weird_array_scenarios
+export weird_array_scenarios, nested_scenarios
 export BenchmarkData, record!
 export all_operators, test_differentiation
 
