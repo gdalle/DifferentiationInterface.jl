@@ -17,7 +17,7 @@ include("test_imports.jl")
         end
     end
 
-    doctest(DifferentiationInterface)
+    Documenter.doctest(DifferentiationInterface)
 
     @testset "Zero backend" begin
         include("zero.jl")
