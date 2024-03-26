@@ -34,10 +34,10 @@ include("test_imports.jl")
     # Bonus tests
 
     @testset "Weird arrays" begin
-        @time include("weird_arrays.jl")
+        include("weird_arrays.jl")
     end
 
     @testset "Nested types" begin
-        @time include("nested.jl")
+        include("nested.jl")
     end
 end;
