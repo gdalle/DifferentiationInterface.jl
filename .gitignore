@@ -8,7 +8,6 @@
 /docs/build/
 /docs/src/index.md
 
-/Manifest.toml
-/lib/DifferentiationInterfaceTest/Manifest.toml
+Manifest.toml
 
 *.csv
