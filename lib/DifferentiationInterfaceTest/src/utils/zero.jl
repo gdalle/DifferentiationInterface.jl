@@ -1,3 +1,9 @@
+myzero(x::Number) = zero(x)
+myzero(x::AbstractArray) = zero(x)
+
+myzero!!(x::Number) = zero(x)
+myzero!!(x::AbstractArray) = x .= zero(eltype(x))
+
 """
     AutoZeroForward <: ADTypes.AbstractForwardMode
 

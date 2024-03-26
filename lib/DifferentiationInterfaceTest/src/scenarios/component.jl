@@ -1,10 +1,3 @@
-module DifferentiationInterfaceComponentArraysExt
-
-using ComponentArrays: ComponentVector
-using DifferentiationInterface.DifferentiationTest:
-    Scenario, Reference, make_scalar_to_array, make_scalar_to_array!, scalar_to_array_ref
-using LinearAlgebra: dot
-
 ## Vector to scalar
 
 function componentvector_to_scalar(x::ComponentVector)::Number
@@ -59,6 +52,4 @@ end
 
 function component_scenarios()
     return vcat(component_scenarios_allocating(), component_scenarios_mutating())
-end
-
 end

@@ -1,22 +1,3 @@
-module DifferentiationInterfaceJLArraysExt
-
-using DifferentiationInterface.DifferentiationTest:
-    Scenario,
-    Reference,
-    make_scalar_to_array,
-    scalar_to_array_ref,
-    array_to_scalar,
-    array_to_scalar_ref,
-    vector_to_vector,
-    vector_to_vector_ref,
-    vector_to_matrix,
-    vector_to_matrix_ref,
-    matrix_to_vector,
-    matrix_to_vector_ref,
-    matrix_to_matrix,
-    matrix_to_matrix_ref
-using JLArrays
-
 const SCALING_JLVEC = jl(Vector(1:12))
 const SCALING_JLMAT = jl(Matrix((1:3) .* transpose(1:4)))
 
@@ -48,5 +29,3 @@ function gpu_scenarios_allocating()
 end
 
 gpu_scenarios() = gpu_scenarios_allocating()
-
-end

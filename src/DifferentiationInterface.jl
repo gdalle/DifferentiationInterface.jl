@@ -18,7 +18,6 @@ using ADTypes:
     AbstractSymbolicDifferentiationMode
 using DocStringExtensions
 using FillArrays: OneElement
-using Functors: fleaves, fmap
 using LinearAlgebra: dot
 using Test: Test, @test
 
@@ -83,9 +82,6 @@ export prepare_derivative, prepare_gradient, prepare_jacobian
 export prepare_second_derivative, prepare_hvp, prepare_hessian
 
 export check_available, check_mutation, check_hessian
-
-# submodules
-include("DifferentiationTest/DifferentiationTest.jl")
 
 function __init__()
     Base.Experimental.register_error_hint(MethodError) do io, exc, argtypes, kwargs

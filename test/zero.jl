@@ -1,6 +1,6 @@
 include("test_imports.jl")
 
-using DifferentiationInterface.DifferentiationTest: AutoZeroForward, AutoZeroReverse
+using DifferentiationInterfaceTest: AutoZeroForward, AutoZeroReverse
 
 @test check_available(AutoZeroForward())
 @test check_available(AutoZeroReverse())
@@ -59,14 +59,12 @@ df = DataFrames.DataFrame(pairs(data)...)
 ## Weird arrays
 
 for backend in [AutoZeroForward(), AutoZeroReverse()]
-    test_differentiation(
-        backend, all_operators(), weird_array_scenarios(; gpu=true); correctness=backend
-    )
+    test_differentiation(backend, all_operators(), gpu_scenarios(); correctness=backend)
     # copyto!(col, col) fails on static arrays
     test_differentiation(
         backend,
         all_operators(),
-        weird_array_scenarios(; static=true);
+        static_scenarios();
         correctness=backend,
         excluded=[jacobian],
     )
@@ -74,7 +72,7 @@ for backend in [AutoZeroForward(), AutoZeroReverse()]
     test_differentiation(
         backend,
         all_operators(),
-        weird_array_scenarios(; component=true);
+        component_scenarios();
         correctness=backend,
         excluded=[hessian],
     )

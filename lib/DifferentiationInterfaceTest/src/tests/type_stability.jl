@@ -1,13 +1,3 @@
-module DifferentiationInterfaceJETExt
-
-using ADTypes: AbstractADType
-using DifferentiationInterface
-using DifferentiationInterface: mysimilar
-using DifferentiationInterface.DifferentiationTest: Scenario
-using JET: @test_call, @test_opt
-using LinearAlgebra: LinearAlgebra
-using Test: @testset, @test
-
 ## Pushforward
 
 function test_jet(ba::AbstractADType, ::typeof(pushforward), scen::Scenario{false};)
@@ -141,5 +131,3 @@ function test_jet(ba::AbstractADType, ::typeof(hessian), scen::Scenario{false};)
     @test_opt hessian(f, ba, x, extras)
     return nothing
 end
-
-end #module

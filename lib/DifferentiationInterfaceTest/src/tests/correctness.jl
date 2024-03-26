@@ -1,20 +1,22 @@
 ## No overwrite
 
 function test_scen_intact(new_scen, scen)
-    let (≈)(x, y) = myisapprox(x, y; rtol=0)
-        @testset "Scenario intact" begin
-            @test new_scen.x ≈ scen.x
-            @test new_scen.y ≈ scen.y
-            @test new_scen.dx ≈ scen.dx
-            @test new_scen.dy ≈ scen.dy
-        end
+    @testset "Scenario intact" begin
+        @test new_scen.x == scen.x
+        @test new_scen.y == scen.y
+        @test new_scen.dx == scen.dx
+        @test new_scen.dy == scen.dy
     end
 end
 
 ## Pushforward
 
 function test_correctness(
-    ba::AbstractADType, ::typeof(pushforward), scen::Scenario{false}; rtol
+    ba::AbstractADType,
+    ::typeof(pushforward),
+    scen::Scenario{false};
+    isapprox::Function,
+    rtol,
 )
     (; f, x, y, dx, dy, ref) = new_scen = deepcopy(scen)
     dy_true = if ref isa AbstractADType
@@ -29,7 +31,7 @@ function test_correctness(
     dy3 = pushforward(f, ba, x, dx)
     dy4 = pushforward!!(f, mysimilar(dy), ba, x, dx)
 
-    let (≈)(x, y) = myisapprox(x, y; rtol)
+    let (≈)(x, y) = isapprox(x, y; rtol)
         @testset "Primal value" begin
             @test y1 ≈ y
             @test y2 ≈ y
@@ -46,7 +48,11 @@ function test_correctness(
 end
 
 function test_correctness(
-    ba::AbstractADType, ::typeof(pushforward), scen::Scenario{true}; rtol
+    ba::AbstractADType,
+    ::typeof(pushforward),
+    scen::Scenario{true};
+    isapprox::Function,
+    rtol,
 )
     (; f, x, y, dx, dy, ref) = new_scen = deepcopy(scen)
     f! = f
@@ -59,7 +65,7 @@ function test_correctness(
     y10 = mysimilar(y)
     y1, dy1 = value_and_pushforward!!(f!, y10, mysimilar(dy), ba, x, dx)
 
-    let (≈)(x, y) = myisapprox(x, y; rtol)
+    let (≈)(x, y) = isapprox(x, y; rtol)
         @testset "Primal value" begin
             @test y10 ≈ y
             @test y1 ≈ y
@@ -75,7 +81,7 @@ end
 ## Pullback
 
 function test_correctness(
-    ba::AbstractADType, ::typeof(pullback), scen::Scenario{false}; rtol
+    ba::AbstractADType, ::typeof(pullback), scen::Scenario{false}; isapprox::Function, rtol
 )
     (; f, x, y, dx, dy, ref) = new_scen = deepcopy(scen)
     dx_true = if ref isa AbstractADType
@@ -90,7 +96,7 @@ function test_correctness(
     dx3 = pullback(f, ba, x, dy)
     dx4 = pullback!!(f, mysimilar(dx), ba, x, dy)
 
-    let (≈)(x, y) = myisapprox(x, y; rtol)
+    let (≈)(x, y) = isapprox(x, y; rtol)
         @testset "Primal value" begin
             @test y1 ≈ y
             @test y2 ≈ y
@@ -107,7 +113,7 @@ function test_correctness(
 end
 
 function test_correctness(
-    ba::AbstractADType, ::typeof(pullback), scen::Scenario{true}; rtol
+    ba::AbstractADType, ::typeof(pullback), scen::Scenario{true}; isapprox::Function, rtol
 )
     (; f, x, y, dx, dy, ref) = new_scen = deepcopy(scen)
     f! = f
@@ -120,7 +126,7 @@ function test_correctness(
     y10 = mysimilar(y)
     y1, dx1 = value_and_pullback!!(f!, y10, mysimilar(dx), ba, x, dy)
 
-    let (≈)(x, y) = myisapprox(x, y; rtol)
+    let (≈)(x, y) = isapprox(x, y; rtol)
         @testset "Primal value" begin
             @test y10 ≈ y
             @test y1 ≈ y
@@ -136,7 +142,11 @@ end
 ## Derivative
 
 function test_correctness(
-    ba::AbstractADType, ::typeof(derivative), scen::Scenario{false}; rtol
+    ba::AbstractADType,
+    ::typeof(derivative),
+    scen::Scenario{false};
+    isapprox::Function,
+    rtol,
 )
     (; f, x, y, dx, dy, ref) = new_scen = deepcopy(scen)
     der_true = if ref isa AbstractADType
@@ -151,7 +161,7 @@ function test_correctness(
     der3 = derivative(f, ba, x)
     der4 = derivative!!(f, mysimilar(dy), ba, x)
 
-    let (≈)(x, y) = myisapprox(x, y; rtol)
+    let (≈)(x, y) = isapprox(x, y; rtol)
         @testset "Primal value" begin
             @test y1 ≈ y
             @test y2 ≈ y
@@ -168,7 +178,7 @@ function test_correctness(
 end
 
 function test_correctness(
-    ba::AbstractADType, ::typeof(derivative), scen::Scenario{true}; rtol
+    ba::AbstractADType, ::typeof(derivative), scen::Scenario{true}; isapprox::Function, rtol
 )
     (; f, x, y, dx, dy, ref) = new_scen = deepcopy(scen)
     f! = f
@@ -181,7 +191,7 @@ function test_correctness(
     y10 = mysimilar(y)
     y1, der1 = value_and_derivative!!(f!, y10, mysimilar(dy), ba, x)
 
-    let (≈)(x, y) = myisapprox(x, y; rtol)
+    let (≈)(x, y) = isapprox(x, y; rtol)
         @testset "Primal value" begin
             @test y10 ≈ y
             @test y1 ≈ y
@@ -197,7 +207,7 @@ end
 ## Gradient
 
 function test_correctness(
-    ba::AbstractADType, ::typeof(gradient), scen::Scenario{false}; rtol
+    ba::AbstractADType, ::typeof(gradient), scen::Scenario{false}; isapprox::Function, rtol
 )
     (; f, x, y, dx, dy, ref) = new_scen = deepcopy(scen)
     grad_true = if ref isa AbstractADType
@@ -212,7 +222,7 @@ function test_correctness(
     grad3 = gradient(f, ba, x)
     grad4 = gradient!!(f, mysimilar(dx), ba, x)
 
-    let (≈)(x, y) = myisapprox(x, y; rtol)
+    let (≈)(x, y) = isapprox(x, y; rtol)
         @testset "Primal value" begin
             @test y1 ≈ y
             @test y2 ≈ y
@@ -231,7 +241,7 @@ end
 ## Jacobian
 
 function test_correctness(
-    ba::AbstractADType, ::typeof(jacobian), scen::Scenario{false}; rtol
+    ba::AbstractADType, ::typeof(jacobian), scen::Scenario{false}; isapprox::Function, rtol
 )
     (; f, x, y, ref) = new_scen = deepcopy(scen)
     jac_true = if ref isa AbstractADType
@@ -246,7 +256,7 @@ function test_correctness(
     jac3 = jacobian(f, ba, x)
     jac4 = jacobian!!(f, mysimilar(jac_true), ba, x)
 
-    let (≈)(x, y) = myisapprox(x, y; rtol)
+    let (≈)(x, y) = isapprox(x, y; rtol)
         @testset "Primal value" begin
             @test y1 ≈ y
             @test y2 ≈ y
@@ -263,7 +273,7 @@ function test_correctness(
 end
 
 function test_correctness(
-    ba::AbstractADType, ::typeof(jacobian), scen::Scenario{true}; rtol
+    ba::AbstractADType, ::typeof(jacobian), scen::Scenario{true}; isapprox::Function, rtol
 )
     (; f, x, y, dy, ref) = new_scen = deepcopy(scen)
     f! = f
@@ -277,7 +287,7 @@ function test_correctness(
     y10 = mysimilar(y)
     y1, jac1 = value_and_jacobian!!(f!, y10, mysimilar(jac_true), ba, x)
 
-    let (≈)(x, y) = myisapprox(x, y; rtol)
+    let (≈)(x, y) = isapprox(x, y; rtol)
         @testset "Primal value" begin
             @test y10 ≈ y
             @test y1 ≈ y
@@ -293,7 +303,11 @@ end
 ## Second derivative
 
 function test_correctness(
-    ba::AbstractADType, ::typeof(second_derivative), scen::Scenario; rtol
+    ba::AbstractADType,
+    ::typeof(second_derivative),
+    scen::Scenario;
+    isapprox::Function,
+    rtol,
 )
     (; f, x, ref) = new_scen = deepcopy(scen)
     der2_true = if ref isa AbstractADType
@@ -304,7 +318,7 @@ function test_correctness(
 
     der21 = second_derivative(f, ba, x)
 
-    let (≈)(x, y) = myisapprox(x, y; rtol)
+    let (≈)(x, y) = isapprox(x, y; rtol)
         @testset "Second derivative value" begin
             @test der21 ≈ der2_true
         end
@@ -315,7 +329,9 @@ end
 
 ## Hessian-vector product
 
-function test_correctness(ba::AbstractADType, ::typeof(hvp), scen::Scenario; rtol)
+function test_correctness(
+    ba::AbstractADType, ::typeof(hvp), scen::Scenario; isapprox::Function, rtol
+)
     (; f, x, dx, ref) = new_scen = deepcopy(scen)
     hvp_true = if ref isa AbstractADType
         hvp(f, ref, x, dx)
@@ -325,7 +341,7 @@ function test_correctness(ba::AbstractADType, ::typeof(hvp), scen::Scenario; rto
 
     hvp1 = hvp(f, ba, x, dx)
 
-    let (≈)(x, y) = myisapprox(x, y; rtol)
+    let (≈)(x, y) = isapprox(x, y; rtol)
         @testset "HVP value" begin
             @test hvp1 ≈ hvp_true
         end
@@ -336,7 +352,9 @@ end
 
 ## Hessian
 
-function test_correctness(ba::AbstractADType, ::typeof(hessian), scen::Scenario; rtol)
+function test_correctness(
+    ba::AbstractADType, ::typeof(hessian), scen::Scenario; isapprox::Function, rtol
+)
     (; f, x, y, ref) = new_scen = deepcopy(scen)
     hess_true = if ref isa AbstractADType
         hessian(f, ref, x)
@@ -346,7 +364,7 @@ function test_correctness(ba::AbstractADType, ::typeof(hessian), scen::Scenario;
 
     hess1 = hessian(f, ba, x)
 
-    let (≈)(x, y) = myisapprox(x, y; rtol)
+    let (≈)(x, y) = isapprox(x, y; rtol)
         @testset "Hessian value" begin
             @test hess1 ≈ hess_true
         end

@@ -1,7 +1,7 @@
 module DifferentiationInterfaceEnzymeExt
 
 using ADTypes: ADTypes, AutoEnzyme
-using DifferentiationInterface: mymul!!, myupdate!!, mysimilar, myzero, myzero!!
+using DifferentiationInterface: myupdate!!
 import DifferentiationInterface as DI
 using DocStringExtensions
 using Enzyme:
@@ -44,7 +44,7 @@ DI.mode(::AutoReverseEnzyme) = ADTypes.AbstractReverseMode
 
 # Enzyme's `Duplicated(x, dx)` expects both arguments to be of the same type
 function DI.basisarray(::AutoEnzyme, a::AbstractArray{T}, i::CartesianIndex) where {T}
-    b = myzero(a)
+    b = zero(a)
     b[i] = one(T)
     return b
 end

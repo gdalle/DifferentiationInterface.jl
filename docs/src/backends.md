@@ -1,10 +1,11 @@
 ```@meta
+CurrentModule = Main
 CollapsedDocStrings = true
 ```
 
 ```@setup backends
 using ADTypes, DifferentiationInterface
-using DifferentiationInterface.DifferentiationTest: backend_string
+using DifferentiationInterfaceTest: backend_string
 import Markdown
 import Enzyme, FastDifferentiation, FiniteDiff, FiniteDifferences, ForwardDiff, PolyesterForwardDiff, ReverseDiff, Tracker, Zygote
 
