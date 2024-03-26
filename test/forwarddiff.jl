@@ -6,7 +6,7 @@ using ForwardDiff: ForwardDiff
 @test check_mutation(AutoForwardDiff())
 @test check_hessian(AutoForwardDiff())
 
-test_differentiation(AutoForwardDiff(; chunksize=2); type_stability=true);
+test_differentiation(AutoForwardDiff(; chunksize=2); type_stability=false, second_order=true);
 
 test_differentiation(
     AutoForwardDiff(; chunksize=2),

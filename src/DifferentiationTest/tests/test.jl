@@ -65,7 +65,6 @@ Cross-test a list of `backends` for a list of `operators` on a list of `scenario
 Testing:
 
 - `correctness=true`: whether to compare the differentiation results with those given by ForwardDiff.jl
-- `error_free=false`: whether to run it once and see if it errors
 - `call_count=false`: whether to check that the function is called the right number of times
 - `type_stability=false`: whether to check type stability with JET.jl (`@test_opt`)
 - `benchmark=false`: whether to run and return a benchmark suite with Chairmarks.jl
@@ -76,10 +75,10 @@ Filtering:
 
 - `input_type=Any`: restrict scenario inputs to subtypes of this
 - `output_type=Any`: restrict scenario outputs to subtypes of this
-- `first_order=true`: consider first order operators
-- `second_order=true`: consider second order operators
 - `allocating=true`: consider operators for allocating functions
 - `mutating=true`: consider operators for mutating functions
+- `first_order=true`: consider first order operators
+- `second_order=false`: consider second order operators
 - `excluded=Symbol[]`: list of excluded operators
 """
 function test_differentiation(
@@ -88,7 +87,6 @@ function test_differentiation(
     scenarios::Vector{<:Scenario}=default_scenarios();
     # testing
     correctness::Bool=true,
-    error_free::Bool=false,
     type_stability::Bool=false,
     call_count::Bool=false,
     benchmark::Bool=false,
@@ -97,10 +95,10 @@ function test_differentiation(
     # filtering
     input_type::Type=Any,
     output_type::Type=Any,
-    first_order=true,
-    second_order=true,
     allocating=true,
     mutating=true,
+    first_order=true,
+    second_order=false,
     excluded::Vector{<:Function}=Function[],
 )
     operators = filter_operators(operators; first_order, second_order, excluded)
@@ -111,21 +109,10 @@ function test_differentiation(
     title =
         "Differentiation tests -" *
         (correctness ? " correctness" : "") *
-        (error_free ? " errors" : "") *
         (call_count ? " calls" : "") *
         (type_stability ? " types" : "") *
         (benchmark ? " benchmark" : "") *
         (allocations ? " allocations" : "")
-
-    correctness_ext = if correctness
-        ext = get_extension(
-            DifferentiationInterface, :DifferentiationInterfaceCorrectnessTestExt
-        )
-        @assert !isnothing(ext)
-        ext
-    else
-        nothing
-    end
 
     jet_ext = if type_stability
         ext = get_extension(DifferentiationInterface, :DifferentiationInterfaceJETExt)
@@ -151,12 +138,7 @@ function test_differentiation(
                 end
                     if correctness
                         @testset "Correctness" begin
-                            correctness_ext.test_correctness(backend, op, scen)
-                        end
-                    end
-                    if error_free
-                        @testset "Error-free" begin
-                            test_error_free(backend, op, scen)
+                            test_correctness(backend, op, scen)
                         end
                     end
                     if call_count

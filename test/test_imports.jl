@@ -15,4 +15,3 @@ using ForwardDiff: ForwardDiff
 using ComponentArrays
 using JLArrays
 using StaticArrays
-using Zygote: Zygote

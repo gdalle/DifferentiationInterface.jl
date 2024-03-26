@@ -19,6 +19,7 @@ using ..DifferentiationInterface:
     AutoTaped,
     inner,
     mode,
+    myisapprox,
     mysimilar,
     mysimilar_random,
     myzero,
@@ -29,20 +30,22 @@ using ..DifferentiationInterface:
     supports_pullback
 using DocStringExtensions
 using Functors: @functor, fleaves, fmap
-using LinearAlgebra: dot
+using LinearAlgebra: Diagonal, dot
 using Test: @testset, @test
 
-include("scenario.jl")
-include("compatibility.jl")
-include("scenarios_default.jl")
-include("scenarios_weird_arrays.jl")
-include("scenarios_nested.jl")
-include("zero.jl")
-include("printing.jl")
-include("benchmark.jl")
-include("test_call_count.jl")
-include("test_error_free.jl")
-include("test_differentiation.jl")
+include("scenarios/scenario.jl")
+include("scenarios/default.jl")
+include("scenarios/weird_arrays.jl")
+include("scenarios/nested.jl")
+
+include("utils/zero.jl")
+include("utils/compatibility.jl")
+include("utils/printing.jl")
+
+include("tests/correctness.jl")
+include("tests/call_count.jl")
+include("tests/benchmark.jl")
+include("tests/test.jl")
 
 export Scenario, default_scenarios, weird_array_scenarios, nested_scenarios
 export BenchmarkData, record!
