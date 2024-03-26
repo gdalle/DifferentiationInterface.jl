@@ -22,7 +22,7 @@ scalar_to_scalar(x::Number)::Number = sin(x)
 scalar_to_scalar_derivative(x) = cos(x)
 scalar_to_scalar_second_derivative(x) = -sin(x)
 scalar_to_scalar_pushforward(x, dx) = scalar_to_scalar_derivative(x) * dx
-scalar_to_scalar_pullback(x, dx) = scalar_to_scalar_derivative(x) * dy
+scalar_to_scalar_pullback(x, dy) = scalar_to_scalar_derivative(x) * dy
 scalar_to_scalar_gradient(x) = scalar_to_scalar_derivative(x)
 scalar_to_scalar_hvp(x, v) = scalar_to_scalar_second_derivative(x) * v
 
@@ -39,52 +39,34 @@ end
 
 ## Scalar to array
 
-const SCALING_VEC = Vector(1:12)
-const SCALING_MAT = Matrix((1:3) .* transpose(1:4))
+_scalar_to_array(x::Number, scaling::AbstractArray)::AbstractArray = sin.(scaling .* x)
 
-function scalar_to_vector(x::Number)::AbstractVector
-    return sin.(SCALING_VEC .* x) # output size 12
-end
-
-function scalar_to_vector!(y::AbstractVector, x::Number)
-    y .= sin.(SCALING_VEC .* x)
+function _scalar_to_array!(y::AbstractArray, x::Number, scaling::AbstractArray)::Nothing
+    y .= sin.(scaling .* x)
     return nothing
 end
 
-scalar_to_vector_derivative(x) = SCALING_VEC .* cos.(SCALING_VEC .* x)
-scalar_to_vector_second_derivative(x) = -(SCALING_VEC .^ 2) .* sin.(SCALING_VEC .* x)
-scalar_to_vector_pushforward(x, dx) = scalar_to_vector_derivative(x) .* dx
-scalar_to_vector_pullback(x, dy) = dot(scalar_to_vector_derivative(x), dy)
+function make_scalar_to_array(scaling::AbstractArray)
+    scalar_to_array(x::Number) = _scalar_to_array(x, scaling)
+    return scalar_to_array
+end
 
-function scalar_to_vector_ref()
+function make_scalar_to_array!(scaling::AbstractArray)
+    scalar_to_array!(y::AbstractArray, x::Number) = _scalar_to_array!(y, x, scaling)
+    return scalar_to_array!
+end
+
+scalar_to_array_derivative(x, scaling) = scaling .* cos.(scaling .* x)
+scalar_to_array_second_derivative(x, scaling) = -(scaling .^ 2) .* sin.(scaling .* x)
+scalar_to_array_pushforward(x, dx, scaling) = scalar_to_array_derivative(x, scaling) .* dx
+scalar_to_array_pullback(x, dy, scaling) = dot(scalar_to_array_derivative(x, scaling), dy)
+
+function scalar_to_array_ref(scaling)
     return Reference(;
-        pushforward=scalar_to_vector_pushforward,
-        pullback=scalar_to_vector_pullback,
-        derivative=scalar_to_vector_derivative,
-        second_derivative=scalar_to_vector_second_derivative,
-    )
-end
-
-function scalar_to_matrix(x::Number)::AbstractMatrix
-    return sin.(SCALING_MAT .* x)  # output size (3, 4)
-end
-
-function scalar_to_matrix!(y::AbstractMatrix, x::Number)
-    y .= sin.(SCALING_MAT .* x)
-    return nothing
-end
-
-scalar_to_matrix_derivative(x) = SCALING_MAT .* cos.(SCALING_MAT .* x)
-scalar_to_matrix_second_derivative(x) = -(SCALING_MAT .^ 2) .* sin.(SCALING_MAT .* x)
-scalar_to_matrix_pushforward(x, dx) = scalar_to_matrix_derivative(x) .* dx
-scalar_to_matrix_pullback(x, dy) = dot(scalar_to_matrix_derivative(x), dy)
-
-function scalar_to_matrix_ref()
-    return Reference(;
-        pushforward=scalar_to_matrix_pushforward,
-        pullback=scalar_to_matrix_pullback,
-        derivative=scalar_to_matrix_derivative,
-        second_derivative=scalar_to_matrix_second_derivative,
+        pushforward=(args...) -> scalar_to_array_pushforward(args..., scaling),
+        pullback=(args...) -> scalar_to_array_pullback(args..., scaling),
+        derivative=(args...) -> scalar_to_array_derivative(args..., scaling),
+        second_derivative=(args...) -> scalar_to_array_second_derivative(args..., scaling),
     )
 end
 
@@ -160,7 +142,10 @@ function matrix_to_vector!(y::AbstractVector, x::AbstractMatrix)
 end
 
 matrix_to_vector_pushforward(x, dx) = vcat(vec(cos.(x) .* dx), vec(-sin.(x) .* dx))
-matrix_to_vector_pullback(x, dy) = cos.(x) .* first_half(dy) .- sin.(x) .* second_half(dy)
+function matrix_to_vector_pullback(x, dy)
+    return cos.(x) .* reshape(first_half(dy), size(x)) .-
+           sin.(x) .* reshape(second_half(dy), size(x))
+end
 matrix_to_vector_jacobian(x) = vcat(Diagonal(vec(cos.(x))), Diagonal(vec(-sin.(x))))
 
 function matrix_to_vector_ref()
@@ -181,7 +166,9 @@ function matrix_to_matrix!(y::AbstractMatrix, x::AbstractMatrix)
 end
 
 matrix_to_matrix_pushforward(x, dx) = hcat(vec(cos.(x) .* dx), vec(-sin.(x) .* dx))
-matrix_to_matrix_pullback(x, dy) = cos.(x) .* dy[:, 1] .- sin.(x) .* dy[:, 2]
+function matrix_to_matrix_pullback(x, dy)
+    return cos.(x) .* reshape(dy[:, 1], size(x)) .- sin.(x) .* reshape(dy[:, 2], size(x))
+end
 matrix_to_matrix_jacobian(x) = vcat(Diagonal(vec(cos.(x))), Diagonal(vec(-sin.(x))))
 
 function matrix_to_matrix_ref()
@@ -194,11 +181,18 @@ end
 
 ## Gather
 
+const SCALING_VEC = Vector(1:12)
+const SCALING_MAT = Matrix((1:3) .* transpose(1:4))
+
 function default_scenarios_allocating()
     return [
         Scenario(scalar_to_scalar; x=2.0, ref=scalar_to_scalar_ref()),
-        Scenario(scalar_to_vector; x=2.0, ref=scalar_to_vector_ref()),
-        Scenario(scalar_to_matrix; x=2.0, ref=scalar_to_matrix_ref()),
+        Scenario(
+            make_scalar_to_array(SCALING_VEC); x=2.0, ref=scalar_to_array_ref(SCALING_VEC)
+        ),
+        Scenario(
+            make_scalar_to_array(SCALING_MAT); x=2.0, ref=scalar_to_array_ref(SCALING_MAT)
+        ),
         Scenario(array_to_scalar; x=float.(1:12), ref=array_to_scalar_ref()),
         Scenario(array_to_scalar; x=float.(reshape(1:12, 3, 4)), ref=array_to_scalar_ref()),
         Scenario(vector_to_vector; x=float.(1:12), ref=vector_to_vector_ref()),
@@ -214,8 +208,18 @@ end
 
 function default_scenarios_mutating()
     return [
-        Scenario(scalar_to_vector!; x=2.0, y=zeros(12), ref=scalar_to_vector_ref()),
-        Scenario(scalar_to_matrix!; x=2.0, y=zeros(3, 4), ref=scalar_to_matrix_ref()),
+        Scenario(
+            make_scalar_to_array!(SCALING_VEC);
+            x=2.0,
+            y=zeros(12),
+            ref=scalar_to_array_ref(SCALING_VEC),
+        ),
+        Scenario(
+            make_scalar_to_array!(SCALING_MAT);
+            x=2.0,
+            y=zeros(3, 4),
+            ref=scalar_to_array_ref(SCALING_MAT),
+        ),
         Scenario(
             vector_to_vector!; x=float.(1:12), y=zeros(24), ref=vector_to_vector_ref()
         ),

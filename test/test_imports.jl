@@ -3,8 +3,10 @@
 using ADTypes
 using DifferentiationInterface
 using DifferentiationInterface.DifferentiationTest
+using DifferentiationInterface.DifferentiationTest: backend_string
 
 using Aqua: Aqua
+using Documenter: Documenter
 using JET: JET
 using JuliaFormatter: JuliaFormatter
 using Test

@@ -37,7 +37,7 @@ include("scenarios/scenario.jl")
 include("scenarios/default.jl")
 include("scenarios/weird_arrays.jl")
 include("scenarios/nested.jl")
-include("scenarios/layer.jl")
+# include("scenarios/layer.jl")
 
 include("utils/zero.jl")
 include("utils/compatibility.jl")
@@ -50,7 +50,7 @@ include("tests/test.jl")
 
 export Scenario
 export default_scenarios
-export weird_array_scenarios, nested_scenarios
+export weird_array_scenarios
 export BenchmarkData, record!
 export all_operators, test_differentiation
 

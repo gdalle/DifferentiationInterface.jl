@@ -2,36 +2,51 @@ module DifferentiationInterfaceJLArraysExt
 
 using DifferentiationInterface.DifferentiationTest:
     Scenario,
+    Reference,
+    make_scalar_to_array,
+    scalar_to_array_ref,
     array_to_scalar,
+    array_to_scalar_ref,
     vector_to_vector,
+    vector_to_vector_ref,
     vector_to_matrix,
+    vector_to_matrix_ref,
     matrix_to_vector,
-    matrix_to_matrix
+    matrix_to_vector_ref,
+    matrix_to_matrix,
+    matrix_to_matrix_ref
 using JLArrays
 
 const SCALING_JLVEC = jl(Vector(1:12))
 const SCALING_JLMAT = jl(Matrix((1:3) .* transpose(1:4)))
 
-function scalar_to_jlvector(x::Number)::JLArray{<:Any,1}
-    return sin.(SCALING_JLVEC .* x) # output size 12
-end
-
-function scalar_to_jlmatrix(x::Number)::JLArray{<:Any,2}
-    return sin.(SCALING_JLMAT .* x)  # output size (3, 4)
-end
-
 function gpu_scenarios_allocating()
-    scenarios = [
-        Scenario(scalar_to_jlvector; x=2.0),
-        Scenario(scalar_to_jlmatrix; x=2.0),
-        Scenario(array_to_scalar; x=jl(Vector{Float64}(1:12))),
-        Scenario(array_to_scalar; x=jl(Matrix{Float64}(reshape(1:12, 3, 4)))),
-        Scenario(vector_to_vector; x=jl(Vector{Float64}(1:12))),
-        Scenario(vector_to_matrix; x=jl(Vector{Float64}(1:12))),
-        Scenario(matrix_to_vector; x=jl(Matrix{Float64}(reshape(1:12, 3, 4)))),
-        Scenario(matrix_to_matrix; x=jl(Matrix{Float64}(reshape(1:12, 3, 4)))),
+    return [
+        Scenario(
+            make_scalar_to_array(SCALING_JLVEC);
+            x=2.0,
+            ref=scalar_to_array_ref(SCALING_JLVEC),
+        ),
+        Scenario(
+            make_scalar_to_array(SCALING_JLMAT);
+            x=2.0,
+            ref=scalar_to_array_ref(SCALING_JLMAT),
+        ),
+        Scenario(array_to_scalar; x=jl(float.(1:12)), ref=array_to_scalar_ref()),
+        Scenario(
+            array_to_scalar; x=jl(float.(reshape(1:12, 3, 4))), ref=array_to_scalar_ref()
+        ),
+        Scenario(vector_to_vector; x=jl(float.(1:12)), ref=vector_to_vector_ref()),
+        Scenario(vector_to_matrix; x=jl(float.(1:12)), ref=vector_to_matrix_ref()),
+        Scenario(
+            matrix_to_vector; x=jl(float.(reshape(1:12, 3, 4))), ref=matrix_to_vector_ref()
+        ),
+        Scenario(
+            matrix_to_matrix; x=jl(float.(reshape(1:12, 3, 4))), ref=matrix_to_matrix_ref()
+        ),
     ]
-    return scenarios
 end
+
+gpu_scenarios() = gpu_scenarios_allocating()
 
 end

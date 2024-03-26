@@ -52,8 +52,8 @@ end
 
 Cross-test a list of `backends` for a list of `operators` on a list of `scenarios`, running a variety of different tests.
 
-- If `benchmark` is `false`, this returns a `TestSet` object.
-- If `benchmark` is `true`, this returns a [`BenchmarkData`](@ref) object, which is easy to turn into a `DataFrame`.
+- If `benchmark` is `false`, this runs the tests and returns `nothing`.
+- If `benchmark` is `true`, this runs the tests and returns a [`BenchmarkData`](@ref) object, which is easy to turn into a `DataFrame`.
 
 # Default arguments
 
@@ -136,33 +136,31 @@ function test_differentiation(
         nothing
     end
 
-    test_set = @testset verbose = true "$title" begin
-        @testset verbose = detailed "$(backend_string(backend))" for backend in backends
-            @testset verbose = detailed "$op" for op in operators
-                @testset "$scen" for scen in filter(scenarios) do scen
-                    compatible(backend, op, scen)
+    @testset verbose = detailed "$(backend_string(backend))" for backend in backends
+        @testset verbose = detailed "$op" for op in operators
+            @testset "$scen" for scen in filter(scenarios) do scen
+                compatible(backend, op, scen)
+            end
+                if correctness
+                    @testset "Correctness" begin
+                        test_correctness(backend, op, scen; rtol)
+                    end
                 end
-                    if correctness
-                        @testset "Correctness" begin
-                            test_correctness(backend, op, scen; rtol)
-                        end
+                if call_count
+                    @testset "Call count" begin
+                        test_call_count(backend, op, scen)
                     end
-                    if call_count
-                        @testset "Call count" begin
-                            test_call_count(backend, op, scen)
-                        end
+                end
+                if type_stability
+                    @testset "Type stability" begin
+                        jet_ext.test_jet(backend, op, scen)
                     end
-                    if type_stability
-                        @testset "Type stability" begin
-                            jet_ext.test_jet(backend, op, scen)
-                        end
-                    end
-                    if benchmark || allocations
-                        @testset "Allocations" begin
-                            chairmarks_ext.run_benchmark!(
-                                benchmark_data, backend, op, scen; allocations=allocations
-                            )
-                        end
+                end
+                if benchmark || allocations
+                    @testset "Allocations" begin
+                        chairmarks_ext.run_benchmark!(
+                            benchmark_data, backend, op, scen; allocations=allocations
+                        )
                     end
                 end
             end
@@ -172,7 +170,7 @@ function test_differentiation(
     if benchmark
         return benchmark_data
     else
-        return test_set
+        return nothing
     end
 end
 

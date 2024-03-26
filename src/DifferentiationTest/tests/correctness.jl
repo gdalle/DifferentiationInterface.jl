@@ -51,7 +51,7 @@ function test_correctness(
     (; f, x, y, dx, dy, ref) = new_scen = deepcopy(scen)
     f! = f
     dy_true = if ref isa AbstractADType
-        last(value_and_pushforward!!(f!, mysimilar(y), mysimilar(dy)), ref, x, dx)
+        last(value_and_pushforward!!(f!, mysimilar(y), mysimilar(dy), ref, x, dx))
     else
         ref.pushforward(x, dx)
     end
@@ -112,7 +112,7 @@ function test_correctness(
     (; f, x, y, dx, dy, ref) = new_scen = deepcopy(scen)
     f! = f
     dx_true = if ref isa AbstractADType
-        last(value_and_pullback!!(f, mysimilar(y), mysimilar(dx)), ref, x, dy)
+        last(value_and_pullback!!(f, mysimilar(y), mysimilar(dx), ref, x, dy))
     else
         ref.pullback(x, dy)
     end
@@ -265,10 +265,11 @@ end
 function test_correctness(
     ba::AbstractADType, ::typeof(jacobian), scen::Scenario{true}; rtol
 )
-    (; f, x, y, ref) = new_scen = deepcopy(scen)
+    (; f, x, y, dy, ref) = new_scen = deepcopy(scen)
     f! = f
+    jac_shape = Matrix{eltype(y)}(undef, length(y), length(x))
     jac_true = if ref isa AbstractADType
-        last(value_and_jacobian!!(f!, mysimilar(y), mysimilar(dy), ref, x))
+        last(value_and_jacobian!!(f!, mysimilar(y), mysimilar(jac_shape), ref, x))
     else
         ref.jacobian(x)
     end

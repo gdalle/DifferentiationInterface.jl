@@ -1,35 +1,41 @@
 include("test_imports.jl")
 
-using DifferentiationInterface.DifferentiationTest: AutoZeroForward, AutoZeroReverse
+using DifferentiationInterface.DifferentiationTest:
+    AutoZeroForward, AutoZeroReverse, change_ref
 
 @test check_available(AutoZeroForward())
 @test check_available(AutoZeroReverse())
 
-## Error-free & type-stability
+function test_differentiation_selfref(
+    backend::ADTypes.AbstractADType,
+    operators::Vector{Function},
+    scenarios::Vector{<:Scenario};
+    kwargs...,
+)
+    new_ref_scenarios = change_ref.(scenarios, Ref(backend))
+    return test_differentiation(backend, operators, new_ref_scenarios; kwargs...)
+end
 
-test_differentiation(
-    [AutoZeroForward(), AutoZeroReverse()];
-    correctness=false,
-    error_free=true,
-    type_stability=true,
-);
+## Correctness (vs oneself) + type-stability
 
-test_differentiation(
-    [AutoZeroForward(), AutoZeroReverse()],
-    all_operators(),
-    weird_array_scenarios(; static=true, component=false, gpu=true);
-    correctness=false,
-    error_free=true,
-);
+for backend in [AutoZeroForward(), AutoZeroReverse()]
+    test_differentiation_selfref(
+        backend, all_operators(), default_scenarios(); type_stability=true
+    )
+end
 
-test_differentiation(
-    [AutoZeroForward(), AutoZeroReverse()],
-    all_operators(),
-    weird_array_scenarios(; static=false, component=true, gpu=false);
-    correctness=false,
-    error_free=true,
-    excluded=[hessian],
-);
+for backend in [
+    SecondOrder(AutoZeroForward(), AutoZeroReverse()),
+    SecondOrder(AutoZeroReverse(), AutoZeroForward()),
+]
+    test_differentiation_selfref(
+        backend,
+        all_operators(),
+        default_scenarios();
+        first_order=false,
+        type_stability=true,
+    )
+end
 
 ## Call count
 
@@ -55,3 +61,22 @@ data = test_differentiation(
 );
 
 df = DataFrames.DataFrame(pairs(data)...)
+
+## Weird arrays
+
+for backend in [AutoZeroForward(), AutoZeroReverse()]
+    test_differentiation_selfref(
+        backend, all_operators(), weird_array_scenarios(; gpu=true);
+    )
+    # copyto!(col, col) fails on static arrays
+    test_differentiation_selfref(
+        backend, all_operators(), weird_array_scenarios(; static=true); excluded=[jacobian]
+    )
+    # stack fails on component vectors
+    test_differentiation_selfref(
+        backend,
+        all_operators(),
+        weird_array_scenarios(; component=true);
+        excluded=[hessian],
+    )
+end

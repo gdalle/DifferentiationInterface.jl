@@ -8,8 +8,8 @@ function DI.prepare_pushforward(f, ::AutoFastDifferentiation, x)
     end
     y_var = f(x_var)
 
-    x_vec_var = x_var isa Number ? [x_var] : x_var
-    y_vec_var = y_var isa Number ? [y_var] : y_var
+    x_vec_var = x_var isa Number ? [x_var] : vec(x_var)
+    y_vec_var = y_var isa Number ? [y_var] : vec(y_var)
     jv_vec_var, v_vec_var = jacobian_times_v(y_vec_var, x_vec_var)
     jvp_exe = make_function(jv_vec_var, [x_vec_var; v_vec_var]; in_place=false)
     return jvp_exe
@@ -24,7 +24,7 @@ function DI.value_and_pushforward(
     if y isa Number
         return y, only(jv_vec)
     else
-        return y, jv_vec
+        return y, reshape(jv_vec, size(y))
     end
 end
 

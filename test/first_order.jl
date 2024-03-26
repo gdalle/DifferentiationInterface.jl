@@ -19,8 +19,9 @@ all_backends = [
     AutoDiffractor(),
     AutoEnzyme(Enzyme.Forward),
     AutoEnzyme(Enzyme.Reverse),
+    AutoFastDifferentiation(),
     AutoFiniteDiff(),
-    AutoFiniteDifferences(FiniteDifferences.central_fdm(5, 1)),
+    AutoFiniteDifferences(FiniteDifferences.central_fdm(3, 1)),
     AutoForwardDiff(),
     AutoPolyesterForwardDiff(; chunksize=2),
     AutoReverseDiff(),
@@ -32,4 +33,6 @@ for backend in all_backends
     @test check_available(backend)
 end
 
-test_differentiation(all_backends)
+@testset verbose = true "All" begin
+    test_differentiation(all_backends; second_order=false)
+end;
