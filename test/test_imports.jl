@@ -20,3 +20,6 @@ using Test
 
 using Chairmarks: Chairmarks
 using DataFrames: DataFrames
+
+using ForwardDiff: ForwardDiff
+using Zygote: Zygote
