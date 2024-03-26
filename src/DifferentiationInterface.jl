@@ -19,7 +19,6 @@ using ADTypes:
 using DocStringExtensions
 using FillArrays: OneElement
 using LinearAlgebra: dot
-using Test: Test, @test
 
 """
     AutoFastDifferentiation
