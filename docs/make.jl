@@ -4,7 +4,6 @@ using DifferentiationInterfaceTest
 import DifferentiationInterface as DI
 using Documenter
 using DocumenterMermaid
-using JET
 using Random
 using Test
 
