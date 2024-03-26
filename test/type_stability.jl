@@ -1,5 +1,3 @@
-include("test_imports.jl")
-
 using Enzyme: Enzyme
 using ForwardDiff: ForwardDiff
 

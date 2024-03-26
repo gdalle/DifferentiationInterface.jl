@@ -1,6 +1,5 @@
-include("test_imports.jl")
+##
 
-using ChainRulesCore: ChainRulesCore
 using Diffractor: Diffractor
 using Enzyme: Enzyme
 using FastDifferentiation: FastDifferentiation

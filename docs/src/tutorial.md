@@ -1,3 +1,7 @@
+```@meta
+CurrentModule = Main
+```
+
 # Tutorial
 
 We present a typical workflow with DifferentiationInterface.jl and showcase its potential performance benefits.
@@ -132,10 +136,10 @@ You didn't need to look at the docs of either ForwardDiff.jl or Enzyme.jl to ach
 ## Testing and benchmarking
 
 DifferentiationInterface.jl also provides some utilities for more involved comparison between backends.
-They are gathered in a submodule.
+They are gathered in a submodule called [`DifferentiationInterfaceTest`](https://github.com/gdalle/DifferentiationInterface.jl/tree/main/lib/DifferentiationInterfaceTest).
 
 ```@repl tuto
-using DifferentiationInterface.DifferentiationTest
+using DifferentiationInterfaceTest
 ```
 
 The main entry point is [`test_differentiation`](@ref), which is used as follows:

@@ -52,8 +52,7 @@ end
 
 Cross-test a list of `backends` for a list of `operators` on a list of `scenarios`, running a variety of different tests.
 
-- If `benchmark` is `false`, this runs the tests and returns `nothing`.
-- If `benchmark` is `true`, this runs the tests and returns a [`BenchmarkData`](@ref) object, which is easy to turn into a `DataFrame`.
+If `benchmark=true`, return a [`BenchmarkData`](@ref) object, otherwise return `nothing`.
 
 # Default arguments
 
@@ -83,6 +82,7 @@ Filtering:
 
 Options:
 
+- `isapprox=isapprox`: function used to compare objects, only needs to be set for complicated cases beyond arrays / scalars
 - `rtol=1e-3`: precision for correctness testing (when comparing to the reference outputs)
 """
 function test_differentiation(
@@ -105,6 +105,7 @@ function test_differentiation(
     second_order=true,
     excluded::Vector{<:Function}=Function[],
     # options
+    isapprox=isapprox,
     rtol=1e-3,
 )
     operators = filter_operators(operators; first_order, second_order, excluded)
@@ -120,22 +121,6 @@ function test_differentiation(
         (benchmark ? " benchmark" : "") *
         (allocations ? " allocations" : "")
 
-    jet_ext = if type_stability
-        ext = get_extension(DifferentiationInterface, :DifferentiationInterfaceJETExt)
-        @assert !isnothing(ext)
-        ext
-    else
-        nothing
-    end
-
-    chairmarks_ext = if allocations || benchmark
-        ext = get_extension(DifferentiationInterface, :DifferentiationInterfaceChairmarksExt)
-        @assert !isnothing(ext)
-        ext
-    else
-        nothing
-    end
-
     @testset verbose = detailed "$(backend_string(backend))" for backend in backends
         @testset verbose = detailed "$op" for op in operators
             @testset "$scen" for scen in filter(scenarios) do scen
@@ -145,10 +130,10 @@ function test_differentiation(
                     @testset "Correctness" begin
                         if correctness isa AbstractADType
                             test_correctness(
-                                backend, op, change_ref(scen, correctness); rtol
+                                backend, op, change_ref(scen, correctness); isapprox, rtol
                             )
                         else
-                            test_correctness(backend, op, scen; rtol)
+                            test_correctness(backend, op, scen; isapprox, rtol)
                         end
                     end
                 end
@@ -159,12 +144,12 @@ function test_differentiation(
                 end
                 if type_stability
                     @testset "Type stability" begin
-                        jet_ext.test_jet(backend, op, scen)
+                        test_jet(backend, op, scen)
                     end
                 end
                 if benchmark || allocations
                     @testset "Allocations" begin
-                        chairmarks_ext.run_benchmark!(
+                        run_benchmark!(
                             benchmark_data, backend, op, scen; allocations=allocations
                         )
                     end

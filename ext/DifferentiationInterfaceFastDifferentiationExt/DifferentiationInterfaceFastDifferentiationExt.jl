@@ -2,7 +2,6 @@ module DifferentiationInterfaceFastDifferentiationExt
 
 using ADTypes: ADTypes
 using DifferentiationInterface: AutoFastDifferentiation
-using DifferentiationInterface: myupdate!!, myvec
 import DifferentiationInterface as DI
 using FastDifferentiation:
     derivative,
@@ -12,11 +11,14 @@ using FastDifferentiation:
     make_function,
     make_variables
 using LinearAlgebra: dot
-using RuntimeGeneratedFunctions: RuntimeGeneratedFunction
+using FastDifferentiation.RuntimeGeneratedFunctions: RuntimeGeneratedFunction
 
 DI.mode(::AutoFastDifferentiation) = ADTypes.AbstractSymbolicDifferentiationMode
 DI.supports_mutation(::AutoFastDifferentiation) = DI.MutationNotSupported()
 DI.supports_pullback(::AutoFastDifferentiation) = DI.PullbackNotSupported()
+
+myvec(x::Number) = [x]
+myvec(x::AbstractArray) = vec(x)
 
 include("allocating.jl")
 

@@ -1,5 +1,5 @@
 ```@meta
-CurrentModule = DifferentiationInterface
+CurrentModule = Main
 CollapsedDocStrings = true
 ```
 
@@ -61,7 +61,7 @@ Pages = ["prepare.jl"]
 ## Testing & benchmarking
 
 ```@autodocs
-Modules = [DifferentiationTest]
+Modules = [DifferentiationInterfaceTest]
 Private = false
 ```
 
@@ -77,6 +77,6 @@ Filter = t -> !(t isa Type && t <: ADTypes.AbstractADType)
 ```
 
 ```@autodocs
-Modules = [DifferentiationTest]
+Modules = [DifferentiationInterfaceTest]
 Public = false
 ```

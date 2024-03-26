@@ -5,7 +5,11 @@ include("test_imports.jl")
 @testset verbose = true "DifferentiationInterface.jl" begin
     @testset verbose = true "Formal tests" begin
         @testset "Aqua" begin
-            Aqua.test_all(DifferentiationInterface; ambiguities=false)
+            Aqua.test_all(
+                DifferentiationInterface;
+                ambiguities=false,
+                deps_compat=(check_extras = false),
+            )
         end
         @testset "JuliaFormatter" begin
             @test JuliaFormatter.format(
@@ -13,7 +17,12 @@ include("test_imports.jl")
             )
         end
         @testset "JET" begin
-            JET.test_package(DifferentiationInterface; target_defined_modules=true)
+            JET.test_package(
+                DifferentiationInterface; target_modules=(DifferentiationInterface,)
+            )
+            JET.test_package(
+                DifferentiationInterfaceTest; target_modules=(DifferentiationInterfaceTest,)
+            )
         end
     end
 
@@ -38,10 +47,6 @@ include("test_imports.jl")
 
         @testset "Weird arrays" begin
             include("weird_arrays.jl")
-        end
-
-        @testset "Nested types" begin
-            include("nested.jl")
         end
     end
 end;

@@ -1,22 +1,3 @@
-module DifferentiationInterfaceStaticArraysExt
-
-using DifferentiationInterface.DifferentiationTest:
-    Scenario,
-    Reference,
-    make_scalar_to_array,
-    scalar_to_array_ref,
-    array_to_scalar,
-    array_to_scalar_ref,
-    vector_to_vector,
-    vector_to_vector_ref,
-    vector_to_matrix,
-    vector_to_matrix_ref,
-    matrix_to_vector,
-    matrix_to_vector_ref,
-    matrix_to_matrix,
-    matrix_to_matrix_ref
-using StaticArrays
-
 const SCALING_SVEC = SVector{12}(1:12)
 const SCALING_SMAT = SMatrix{3,4}((1:3) .* transpose(1:4))
 
@@ -50,5 +31,3 @@ function static_scenarios_allocating()
 end
 
 static_scenarios() = static_scenarios_allocating()
-
-end

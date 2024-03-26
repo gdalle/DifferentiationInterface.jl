@@ -42,13 +42,13 @@ end
 function DI.value_and_gradient(
     f, backend::AutoPolyesterForwardDiff, x::AbstractVector, extras::Nothing
 )
-    return DI.value_and_gradient!!(f, mysimilar(x), backend, x, extras)
+    return DI.value_and_gradient!!(f, similar(x), backend, x, extras)
 end
 
 function DI.gradient(
     f, backend::AutoPolyesterForwardDiff, x::AbstractVector, extras::Nothing
 )
-    return DI.gradient!!(f, mysimilar(x), backend, x, extras)
+    return DI.gradient!!(f, similar(x), backend, x, extras)
 end
 
 ## Jacobian

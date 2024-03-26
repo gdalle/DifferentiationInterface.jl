@@ -1,9 +1,16 @@
-## Imports
+using Pkg
+
+Pkg.develop(
+    Pkg.PackageSpec(;
+        path=joinpath(dirname(@__DIR__), "lib", "DifferentiationInterfaceTest")
+    ),
+)
+
+##
 
 using ADTypes
 using DifferentiationInterface
-using DifferentiationInterface.DifferentiationTest
-using DifferentiationInterface.DifferentiationTest: backend_string
+using DifferentiationInterfaceTest
 
 using Aqua: Aqua
 using Documenter: Documenter
@@ -13,7 +20,3 @@ using Test
 
 using Chairmarks: Chairmarks
 using DataFrames: DataFrames
-using ForwardDiff: ForwardDiff
-using ComponentArrays
-using JLArrays
-using StaticArrays
