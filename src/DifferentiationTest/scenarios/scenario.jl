@@ -75,7 +75,7 @@ function Scenario(f; x, y=nothing, ref=nothing)
         dy = mysimilar_random(y)
         return Scenario{false}(f, x, y, dx, dy, ref)
     else
-        f = f!
+        f! = f
         f!(y, x)
         dx = mysimilar_random(x)
         dy = mysimilar_random(y)
