@@ -18,27 +18,35 @@ end
 ## Gradient
 
 function DI.value_and_gradient!!(
-    f, grad::AbstractArray, ::AutoPolyesterForwardDiff{C}, x::AbstractArray, extras::Nothing
+    f,
+    grad::AbstractVector,
+    ::AutoPolyesterForwardDiff{C},
+    x::AbstractVector,
+    extras::Nothing,
 ) where {C}
     threaded_gradient!(f, grad, x, Chunk{C}())
     return f(x), grad
 end
 
 function DI.gradient!!(
-    f, grad::AbstractArray, ::AutoPolyesterForwardDiff{C}, x::AbstractArray, extras::Nothing
+    f,
+    grad::AbstractVector,
+    ::AutoPolyesterForwardDiff{C},
+    x::AbstractVector,
+    extras::Nothing,
 ) where {C}
     threaded_gradient!(f, grad, x, Chunk{C}())
     return grad
 end
 
 function DI.value_and_gradient(
-    f, backend::AutoPolyesterForwardDiff, x::AbstractArray, extras::Nothing
+    f, backend::AutoPolyesterForwardDiff, x::AbstractVector, extras::Nothing
 )
     return DI.value_and_gradient!!(f, mysimilar(x), backend, x, extras)
 end
 
 function DI.gradient(
-    f, backend::AutoPolyesterForwardDiff, x::AbstractArray, extras::Nothing
+    f, backend::AutoPolyesterForwardDiff, x::AbstractVector, extras::Nothing
 )
     return DI.gradient!!(f, mysimilar(x), backend, x, extras)
 end

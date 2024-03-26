@@ -3,23 +3,26 @@
 
 Create a vector of [`Scenario`](@ref)s involving weird types for testing differentiation.
 """
-function weird_array_scenarios(; static=true, component=true, gpu=true)
+function weird_array_scenarios(; static=false, component=false, gpu=false)
     scenarios = Scenario[]
     if static
         ext = get_extension(
             DifferentiationInterface, :DifferentiationInterfaceStaticArraysExt
         )
-        append!(scenarios, ext.static_scenarios_allocating())
+        @assert !isnothing(ext)
+        append!(scenarios, ext.static_scenarios())
     end
     if component
         ext = get_extension(
             DifferentiationInterface, :DifferentiationInterfaceComponentArraysExt
         )
-        append!(scenarios, ext.component_scenarios_allocating())
+        @assert !isnothing(ext)
+        append!(scenarios, ext.component_scenarios())
     end
     if gpu
         ext = get_extension(DifferentiationInterface, :DifferentiationInterfaceJLArraysExt)
-        append!(scenarios, ext.gpu_scenarios_allocating())
+        @assert !isnothing(ext)
+        append!(scenarios, ext.gpu_scenarios())
     end
     return scenarios
 end

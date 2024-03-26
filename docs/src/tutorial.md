@@ -129,25 +129,31 @@ It's blazingly fast.
 And you know what's even better?
 You didn't need to look at the docs of either ForwardDiff.jl or Enzyme.jl to achieve top performance with both, or to compare them.
 
-## Benchmarking
+## Testing and benchmarking
 
-DifferentiationInterface.jl also provides some benchmarking utilities, for more involved comparison between backends.
+DifferentiationInterface.jl also provides some utilities for more involved comparison between backends.
 They are gathered in a submodule.
 
 ```@repl tuto
 using DifferentiationInterface.DifferentiationTest
 ```
 
-We can now use [`test_differentiation`](@ref) in benchmarking mode, and convert its output to a `DataFrame` from [DataFrames.jl](https://github.com/JuliaData/DataFrames.jl) (disregard the test logging):
+The main entry point is [`test_differentiation`](@ref), which is used as follows:
 
 ```@repl tuto
 data = test_differentiation(
     [AutoForwardDiff(), AutoEnzyme(Enzyme.Reverse)],  # backends to compare
     [gradient],  # operators to try
     [Scenario(f; x=x)];  # test scenario
-    correctness=false,  # we don't care about checking the result
-    benchmark=true,  # we care about measuring
+    correctness=AutoZygote(),  # compare results to a "ground truth" from Zygote
+    benchmark=true,  # measure runtime and allocations too
+    detailed=true,  # print detailed test set
 );
+```
+
+The output of `test_differentiation` when `benchmark=true` can be converted to a `DataFrame` from [DataFrames.jl](https://github.com/JuliaData/DataFrames.jl):
+
+```@repl tuto
 df = DataFrames.DataFrame(pairs(data)...)
 ```
 

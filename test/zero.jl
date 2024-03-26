@@ -5,31 +5,31 @@ using DifferentiationInterface.DifferentiationTest: AutoZeroForward, AutoZeroRev
 @test check_available(AutoZeroForward())
 @test check_available(AutoZeroReverse())
 
-## Error-free & type-stability
+## Correctness (vs oneself) + type-stability
 
-test_differentiation(
-    [AutoZeroForward(), AutoZeroReverse()];
-    correctness=false,
-    error_free=true,
-    type_stability=true,
-);
+for backend in [AutoZeroForward(), AutoZeroReverse()]
+    test_differentiation(
+        backend,
+        all_operators(),
+        default_scenarios();
+        correctness=backend,
+        type_stability=true,
+    )
+end
 
-test_differentiation(
-    [AutoZeroForward(), AutoZeroReverse()],
-    all_operators(),
-    weird_array_scenarios(; static=true, component=false, gpu=true);
-    correctness=false,
-    error_free=true,
-);
-
-test_differentiation(
-    [AutoZeroForward(), AutoZeroReverse()],
-    all_operators(),
-    weird_array_scenarios(; static=false, component=true, gpu=false);
-    correctness=false,
-    error_free=true,
-    excluded=[hessian],
-);
+for backend in [
+    SecondOrder(AutoZeroForward(), AutoZeroReverse()),
+    SecondOrder(AutoZeroReverse(), AutoZeroForward()),
+]
+    test_differentiation(
+        backend,
+        all_operators(),
+        default_scenarios();
+        correctness=backend,
+        type_stability=true,
+        first_order=false,
+    )
+end
 
 ## Call count
 
@@ -55,3 +55,27 @@ data = test_differentiation(
 );
 
 df = DataFrames.DataFrame(pairs(data)...)
+
+## Weird arrays
+
+for backend in [AutoZeroForward(), AutoZeroReverse()]
+    test_differentiation(
+        backend, all_operators(), weird_array_scenarios(; gpu=true); correctness=backend
+    )
+    # copyto!(col, col) fails on static arrays
+    test_differentiation(
+        backend,
+        all_operators(),
+        weird_array_scenarios(; static=true);
+        correctness=backend,
+        excluded=[jacobian],
+    )
+    # stack fails on component vectors
+    test_differentiation(
+        backend,
+        all_operators(),
+        weird_array_scenarios(; component=true);
+        correctness=backend,
+        excluded=[hessian],
+    )
+end

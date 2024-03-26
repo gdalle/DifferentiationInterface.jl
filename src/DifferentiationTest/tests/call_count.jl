@@ -124,7 +124,7 @@ function test_call_count(ba::AbstractADType, ::typeof(jacobian), scen::Scenario{
     extras = prepare_jacobian(CallCounter(f), ba, y, x)
     cc! = CallCounter(f)
     y_in = mysimilar(y)
-    jac_in = similar(y, length(y), length(x))
+    jac_in = Matrix{eltype(y)}(undef, length(y), length(x))
     value_and_jacobian!!(cc!, y_in, jac_in, ba, x, extras)
     if mode(ba) == AbstractForwardMode
         @test cc!.count[] <= 1 + length(x)

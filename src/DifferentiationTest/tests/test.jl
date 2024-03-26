@@ -52,8 +52,8 @@ end
 
 Cross-test a list of `backends` for a list of `operators` on a list of `scenarios`, running a variety of different tests.
 
-- If `benchmark` is `false`, this returns a `TestSet` object.
-- If `benchmark` is `true`, this returns a [`BenchmarkData`](@ref) object, which is easy to turn into a `DataFrame`.
+- If `benchmark` is `false`, this runs the tests and returns `nothing`.
+- If `benchmark` is `true`, this runs the tests and returns a [`BenchmarkData`](@ref) object, which is easy to turn into a `DataFrame`.
 
 # Default arguments
 
@@ -64,10 +64,9 @@ Cross-test a list of `backends` for a list of `operators` on a list of `scenario
 
 Testing:
 
-- `correctness=true`: whether to compare the differentiation results with those given by ForwardDiff.jl
-- `error_free=false`: whether to run it once and see if it errors
+- `correctness=true`: whether to compare the differentiation results with the theoretical values specified in each scenario. If a backend object like `correctness=AutoForwardDiff()` is passed instead of a boolean, the results will be compared using that reference backend as the ground truth. 
 - `call_count=false`: whether to check that the function is called the right number of times
-- `type_stability=false`: whether to check type stability with JET.jl (`@test_opt`)
+- `type_stability=false`: whether to check type stability with JET.jl (thanks to `@test_opt`)
 - `benchmark=false`: whether to run and return a benchmark suite with Chairmarks.jl
 - `allocations=false`: whether to check that the benchmarks are allocation-free
 - `detailed=false`: whether to print a detailed test set (by scenario) or condensed test set (by operator)
@@ -76,19 +75,22 @@ Filtering:
 
 - `input_type=Any`: restrict scenario inputs to subtypes of this
 - `output_type=Any`: restrict scenario outputs to subtypes of this
-- `first_order=true`: consider first order operators
-- `second_order=true`: consider second order operators
 - `allocating=true`: consider operators for allocating functions
 - `mutating=true`: consider operators for mutating functions
+- `first_order=true`: consider first order operators
+- `second_order=true`: consider second order operators
 - `excluded=Symbol[]`: list of excluded operators
+
+Options:
+
+- `rtol=1e-3`: precision for correctness testing (when comparing to the reference outputs)
 """
 function test_differentiation(
     backends::Vector{<:AbstractADType},
     operators::Vector{<:Function}=all_operators(),
     scenarios::Vector{<:Scenario}=default_scenarios();
     # testing
-    correctness::Bool=true,
-    error_free::Bool=false,
+    correctness::Union{Bool,AbstractADType}=true,
     type_stability::Bool=false,
     call_count::Bool=false,
     benchmark::Bool=false,
@@ -97,11 +99,13 @@ function test_differentiation(
     # filtering
     input_type::Type=Any,
     output_type::Type=Any,
-    first_order=true,
-    second_order=true,
     allocating=true,
     mutating=true,
+    first_order=true,
+    second_order=true,
     excluded::Vector{<:Function}=Function[],
+    # options
+    rtol=1e-3,
 )
     operators = filter_operators(operators; first_order, second_order, excluded)
     scenarios = filter_scenarios(scenarios; input_type, output_type, allocating, mutating)
@@ -110,22 +114,11 @@ function test_differentiation(
 
     title =
         "Differentiation tests -" *
-        (correctness ? " correctness" : "") *
-        (error_free ? " errors" : "") *
+        (correctness != false ? " correctness" : "") *
         (call_count ? " calls" : "") *
         (type_stability ? " types" : "") *
         (benchmark ? " benchmark" : "") *
         (allocations ? " allocations" : "")
-
-    correctness_ext = if correctness
-        ext = get_extension(
-            DifferentiationInterface, :DifferentiationInterfaceCorrectnessTestExt
-        )
-        @assert !isnothing(ext)
-        ext
-    else
-        nothing
-    end
 
     jet_ext = if type_stability
         ext = get_extension(DifferentiationInterface, :DifferentiationInterfaceJETExt)
@@ -143,38 +136,37 @@ function test_differentiation(
         nothing
     end
 
-    test_set = @testset verbose = true "$title" begin
-        @testset verbose = true "$(backend_string(backend))" for backend in backends
-            @testset verbose = detailed "$op" for op in operators
-                @testset "$scen" for scen in filter(scenarios) do scen
-                    compatible(backend, op, scen)
-                end
-                    if correctness
-                        @testset "Correctness" begin
-                            correctness_ext.test_correctness(backend, op, scen)
-                        end
-                    end
-                    if error_free
-                        @testset "Error-free" begin
-                            test_error_free(backend, op, scen)
-                        end
-                    end
-                    if call_count
-                        @testset "Call count" begin
-                            test_call_count(backend, op, scen)
-                        end
-                    end
-                    if type_stability
-                        @testset "Type stability" begin
-                            jet_ext.test_jet(backend, op, scen)
-                        end
-                    end
-                    if benchmark || allocations
-                        @testset "Allocations" begin
-                            chairmarks_ext.run_benchmark!(
-                                benchmark_data, backend, op, scen; allocations=allocations
+    @testset verbose = detailed "$(backend_string(backend))" for backend in backends
+        @testset verbose = detailed "$op" for op in operators
+            @testset "$scen" for scen in filter(scenarios) do scen
+                compatible(backend, op, scen)
+            end
+                if correctness != false
+                    @testset "Correctness" begin
+                        if correctness isa AbstractADType
+                            test_correctness(
+                                backend, op, change_ref(scen, correctness); rtol
                             )
+                        else
+                            test_correctness(backend, op, scen; rtol)
                         end
+                    end
+                end
+                if call_count
+                    @testset "Call count" begin
+                        test_call_count(backend, op, scen)
+                    end
+                end
+                if type_stability
+                    @testset "Type stability" begin
+                        jet_ext.test_jet(backend, op, scen)
+                    end
+                end
+                if benchmark || allocations
+                    @testset "Allocations" begin
+                        chairmarks_ext.run_benchmark!(
+                            benchmark_data, backend, op, scen; allocations=allocations
+                        )
                     end
                 end
             end
@@ -184,7 +176,7 @@ function test_differentiation(
     if benchmark
         return benchmark_data
     else
-        return test_set
+        return nothing
     end
 end
 

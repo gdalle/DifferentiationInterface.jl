@@ -155,7 +155,7 @@ function run_benchmark!(
 )
     (; f, x, y) = deepcopy(scen)
     extras = prepare_jacobian(f, ba, x)
-    jac_template = similar(y, length(y), length(x))
+    jac_template = Matrix{eltype(y)}(undef, length(y), length(x))
     bench1 = @be mysimilar(jac_template) value_and_jacobian!!(f, _, ba, x, extras)
     # never test allocations
     record!(data, ba, op, value_and_jacobian!!, scen, bench1)
@@ -172,7 +172,7 @@ function run_benchmark!(
     (; f, x, y) = deepcopy(scen)
     f! = f
     extras = prepare_jacobian(f!, ba, y, x)
-    jac_template = similar(y, length(y), length(x))
+    jac_template = Matrix{eltype(y)}(undef, length(y), length(x))
     bench1 = @be (mysimilar(y), mysimilar(jac_template)) value_and_jacobian!!(
         f!, _[1], _[2], ba, x, extras
     )

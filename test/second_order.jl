@@ -1,25 +1,20 @@
-using DifferentiationInterface.DifferentiationTest: backend_string
+include("test_imports.jl")
 
-using FiniteDiff: FiniteDiff
-using ForwardDiff: ForwardDiff
 using Enzyme: Enzyme
-using Zygote: Zygote
+using ForwardDiff: ForwardDiff
+using ReverseDiff: ReverseDiff
 
-SECOND_ORDER_BACKENDS = Dict(
-    "forward/forward" => [
-        SecondOrder(AutoEnzyme(Enzyme.Forward), AutoForwardDiff()),
-        SecondOrder(AutoForwardDiff(), AutoEnzyme(Enzyme.Forward)),
-    ],
-    "forward/reverse" => [SecondOrder(AutoForwardDiff(), AutoZygote())],
-    "reverse/forward" => [],
-)
+second_order_backends = [AutoForwardDiff(), AutoReverseDiff()]
 
-@testset verbose = true "Second order" begin
-    @testset verbose = true "$second_order_mode" for (second_order_mode, backends) in
-                                                     pairs(SECOND_ORDER_BACKENDS)
-        @info "Testing $second_order_mode..."
-        @time @testset "$(backend_string(backend))" for backend in backends
-            test_differentiation(backend; first_order=false, type_stability=false)
-        end
-    end
-end;
+second_order_mixed_backends = [
+    SecondOrder(AutoEnzyme(Enzyme.Forward), AutoForwardDiff()),
+    SecondOrder(AutoForwardDiff(), AutoEnzyme(Enzyme.Forward)),
+    SecondOrder(AutoForwardDiff(), AutoZygote()),
+]
+
+for backend in vcat(second_order_backends, second_order_mixed_backends)
+    @test check_hessian(backend)
+end
+
+test_differentiation(second_order_backends; first_order=false, second_order=true);
+test_differentiation(second_order_mixed_backends; first_order=false, second_order=true);

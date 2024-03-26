@@ -94,7 +94,7 @@ end
 function test_jet(ba::AbstractADType, ::typeof(jacobian), scen::Scenario{false};)
     (; f, x, y) = deepcopy(scen)
     extras = prepare_jacobian(f, ba, x)
-    jac_in = similar(x, length(y), length(x))
+    jac_in = Matrix{eltype(y)}(undef, length(y), length(x))
 
     @test_opt value_and_jacobian!!(f, jac_in, ba, x, extras)
     @test_opt value_and_jacobian(f, ba, x, extras)
@@ -106,7 +106,7 @@ function test_jet(ba::AbstractADType, ::typeof(jacobian), scen::Scenario{true};)
     f! = f
     extras = prepare_jacobian(f!, ba, y, x)
     y_in = mysimilar(y)
-    jac_in = similar(x, length(y), length(x))
+    jac_in = Matrix{eltype(y)}(undef, length(y), length(x))
 
     @test_opt value_and_jacobian!!(f!, y_in, jac_in, ba, x, extras)
     return nothing
