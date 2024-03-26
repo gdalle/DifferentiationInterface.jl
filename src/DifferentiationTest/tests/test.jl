@@ -78,8 +78,12 @@ Filtering:
 - `allocating=true`: consider operators for allocating functions
 - `mutating=true`: consider operators for mutating functions
 - `first_order=true`: consider first order operators
-- `second_order=false`: consider second order operators
+- `second_order=true`: consider second order operators
 - `excluded=Symbol[]`: list of excluded operators
+
+Options:
+
+- `rtol=1e-3`: precision for correctness testing (when comparing to the reference outputs)
 """
 function test_differentiation(
     backends::Vector{<:AbstractADType},
@@ -98,8 +102,10 @@ function test_differentiation(
     allocating=true,
     mutating=true,
     first_order=true,
-    second_order=false,
+    second_order=true,
     excluded::Vector{<:Function}=Function[],
+    # options
+    rtol=1e-3,
 )
     operators = filter_operators(operators; first_order, second_order, excluded)
     scenarios = filter_scenarios(scenarios; input_type, output_type, allocating, mutating)
@@ -131,14 +137,14 @@ function test_differentiation(
     end
 
     test_set = @testset verbose = true "$title" begin
-        @testset verbose = true "$(backend_string(backend))" for backend in backends
+        @testset verbose = detailed "$(backend_string(backend))" for backend in backends
             @testset verbose = detailed "$op" for op in operators
                 @testset "$scen" for scen in filter(scenarios) do scen
                     compatible(backend, op, scen)
                 end
                     if correctness
                         @testset "Correctness" begin
-                            test_correctness(backend, op, scen)
+                            test_correctness(backend, op, scen; rtol)
                         end
                     end
                     if call_count

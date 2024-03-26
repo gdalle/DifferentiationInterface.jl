@@ -1,12 +1,12 @@
 @kwdef struct Reference
-    pushforward=nothing
-    pullback=nothing
-    derivative=nothing
-    gradient=nothing
-    jacobian=nothing
-    second_derivative=nothing
-    hvp=nothing
-    hessian=nothing
+    pushforward = nothing
+    pullback = nothing
+    derivative = nothing
+    gradient = nothing
+    jacobian = nothing
+    second_derivative = nothing
+    hvp = nothing
+    hessian = nothing
 end
 
 """
@@ -65,7 +65,7 @@ function Scenario(f!, y, x, ref)
     return Scenario{true}(f!, x, y, dx, dy, ref)
 end
 
-function Scenario(f; x, y=nothing, ref=AutoForwardDiff())
+function Scenario(f; x, ref, y=nothing)
     if isnothing(y)
         return Scenario(f, x, ref)
     else

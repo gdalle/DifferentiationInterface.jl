@@ -2,8 +2,7 @@ module DifferentiationInterfaceJLArraysExt
 
 using DifferentiationInterface.DifferentiationTest:
     Scenario,
-    vector_to_scalar,
-    matrix_to_scalar,
+    array_to_scalar,
     vector_to_vector,
     vector_to_matrix,
     matrix_to_vector,
@@ -25,8 +24,8 @@ function gpu_scenarios_allocating()
     scenarios = [
         Scenario(scalar_to_jlvector; x=2.0),
         Scenario(scalar_to_jlmatrix; x=2.0),
-        Scenario(vector_to_scalar; x=jl(Vector{Float64}(1:12))),
-        Scenario(matrix_to_scalar; x=jl(Matrix{Float64}(reshape(1:12, 3, 4)))),
+        Scenario(array_to_scalar; x=jl(Vector{Float64}(1:12))),
+        Scenario(array_to_scalar; x=jl(Matrix{Float64}(reshape(1:12, 3, 4)))),
         Scenario(vector_to_vector; x=jl(Vector{Float64}(1:12))),
         Scenario(vector_to_matrix; x=jl(Vector{Float64}(1:12))),
         Scenario(matrix_to_vector; x=jl(Matrix{Float64}(reshape(1:12, 3, 4)))),
