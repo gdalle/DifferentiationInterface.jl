@@ -68,24 +68,17 @@ end
 
 ## Scenario constructors
 
-function Scenario(f, x, ref)
-    y = f(x)
-    dx = mysimilar_random(x)
-    dy = mysimilar_random(y)
-    return Scenario{false}(f, x, y, dx, dy, ref)
-end
-
-function Scenario(f!, y, x, ref)
-    f!(y, x)
-    dx = mysimilar_random(x)
-    dy = mysimilar_random(y)
-    return Scenario{true}(f!, x, y, dx, dy, ref)
-end
-
-function Scenario(f; x, ref, y=nothing)
+function Scenario(f; x, y=nothing, ref=nothing)
     if isnothing(y)
-        return Scenario(f, x, ref)
+        y = f(x)
+        dx = mysimilar_random(x)
+        dy = mysimilar_random(y)
+        return Scenario{false}(f, x, y, dx, dy, ref)
     else
-        return Scenario(f, y, x, ref)
+        f = f!
+        f!(y, x)
+        dx = mysimilar_random(x)
+        dy = mysimilar_random(y)
+        return Scenario{true}(f!, x, y, dx, dy, ref)
     end
 end

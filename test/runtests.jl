@@ -31,13 +31,17 @@ include("test_imports.jl")
         include("second_order.jl")
     end
 
-    # Bonus tests
+    @testset verbose = true "Bonus round" begin
+        @testset "Type stability" begin
+            include("type_stability.jl")
+        end
 
-    @testset "Weird arrays" begin
-        include("weird_arrays.jl")
-    end
+        @testset "Weird arrays" begin
+            include("weird_arrays.jl")
+        end
 
-    @testset "Nested types" begin
-        include("nested.jl")
+        @testset "Nested types" begin
+            include("nested.jl")
+        end
     end
 end;
