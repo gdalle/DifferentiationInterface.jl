@@ -1,11 +1,28 @@
+"""
+    Reference
+
+Store the ground truth operators for a [`Scenario`](@ref).
+
+# Fields
+
+$(TYPEDFIELDS)
+"""
 @kwdef struct Reference
+    "function `(x, dx) -> pf`"
     pushforward = nothing
+    "function `(x, dy) -> pb`"
     pullback = nothing
+    "function `x -> der`"
     derivative = nothing
+    "function `x -> grad`"
     gradient = nothing
+    "function `x -> jac`"
     jacobian = nothing
+    "function `x -> der2`"
     second_derivative = nothing
+    "function `(x, v) -> p`"
     hvp = nothing
+    "function `x -> hess`"
     hessian = nothing
 end
 
@@ -29,7 +46,7 @@ struct Scenario{mutating,F,X,Y,DX,DY,R}
     dx::DX
     "pullback seed"
     dy::DY
-    "reference to compare against"
+    "reference to compare against. It can be either an `ADTypes.AbstractADTypes` object or a [`Reference`](@ref) containing the correct operators associated with `f`"
     ref::R
 end
 

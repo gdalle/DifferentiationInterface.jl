@@ -64,9 +64,9 @@ Cross-test a list of `backends` for a list of `operators` on a list of `scenario
 
 Testing:
 
-- `correctness=true`: whether to compare the differentiation results with those given by ForwardDiff.jl
+- `correctness=true`: whether to compare the differentiation results with the theoretical values specified in each scenario. If a backend object like `correctness=AutoForwardDiff()` is passed instead of a boolean, the results will be compared using that reference backend as the ground truth. 
 - `call_count=false`: whether to check that the function is called the right number of times
-- `type_stability=false`: whether to check type stability with JET.jl (`@test_opt`)
+- `type_stability=false`: whether to check type stability with JET.jl (thanks to `@test_opt`)
 - `benchmark=false`: whether to run and return a benchmark suite with Chairmarks.jl
 - `allocations=false`: whether to check that the benchmarks are allocation-free
 - `detailed=false`: whether to print a detailed test set (by scenario) or condensed test set (by operator)
@@ -90,7 +90,7 @@ function test_differentiation(
     operators::Vector{<:Function}=all_operators(),
     scenarios::Vector{<:Scenario}=default_scenarios();
     # testing
-    correctness::Bool=true,
+    correctness::Union{Bool,AbstractADType}=true,
     type_stability::Bool=false,
     call_count::Bool=false,
     benchmark::Bool=false,
@@ -114,7 +114,7 @@ function test_differentiation(
 
     title =
         "Differentiation tests -" *
-        (correctness ? " correctness" : "") *
+        (correctness != false ? " correctness" : "") *
         (call_count ? " calls" : "") *
         (type_stability ? " types" : "") *
         (benchmark ? " benchmark" : "") *
@@ -141,9 +141,15 @@ function test_differentiation(
             @testset "$scen" for scen in filter(scenarios) do scen
                 compatible(backend, op, scen)
             end
-                if correctness
+                if correctness != false
                     @testset "Correctness" begin
-                        test_correctness(backend, op, scen; rtol)
+                        if correctness isa AbstractADType
+                            test_correctness(
+                                backend, op, change_ref(scen, correctness); rtol
+                            )
+                        else
+                            test_correctness(backend, op, scen; rtol)
+                        end
                     end
                 end
                 if call_count

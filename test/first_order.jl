@@ -33,6 +33,4 @@ for backend in all_backends
     @test check_available(backend)
 end
 
-@testset verbose = true "All" begin
-    test_differentiation(all_backends; second_order=false)
-end;
+test_differentiation(all_backends; second_order=false);

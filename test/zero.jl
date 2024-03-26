@@ -1,26 +1,19 @@
 include("test_imports.jl")
 
-using DifferentiationInterface.DifferentiationTest:
-    AutoZeroForward, AutoZeroReverse, change_ref
+using DifferentiationInterface.DifferentiationTest: AutoZeroForward, AutoZeroReverse
 
 @test check_available(AutoZeroForward())
 @test check_available(AutoZeroReverse())
 
-function test_differentiation_selfref(
-    backend::ADTypes.AbstractADType,
-    operators::Vector{Function},
-    scenarios::Vector{<:Scenario};
-    kwargs...,
-)
-    new_ref_scenarios = change_ref.(scenarios, Ref(backend))
-    return test_differentiation(backend, operators, new_ref_scenarios; kwargs...)
-end
-
 ## Correctness (vs oneself) + type-stability
 
 for backend in [AutoZeroForward(), AutoZeroReverse()]
-    test_differentiation_selfref(
-        backend, all_operators(), default_scenarios(); type_stability=true
+    test_differentiation(
+        backend,
+        all_operators(),
+        default_scenarios();
+        correctness=backend,
+        type_stability=true,
     )
 end
 
@@ -28,12 +21,13 @@ for backend in [
     SecondOrder(AutoZeroForward(), AutoZeroReverse()),
     SecondOrder(AutoZeroReverse(), AutoZeroForward()),
 ]
-    test_differentiation_selfref(
+    test_differentiation(
         backend,
         all_operators(),
         default_scenarios();
-        first_order=false,
+        correctness=backend,
         type_stability=true,
+        first_order=false,
     )
 end
 
@@ -65,18 +59,23 @@ df = DataFrames.DataFrame(pairs(data)...)
 ## Weird arrays
 
 for backend in [AutoZeroForward(), AutoZeroReverse()]
-    test_differentiation_selfref(
-        backend, all_operators(), weird_array_scenarios(; gpu=true);
+    test_differentiation(
+        backend, all_operators(), weird_array_scenarios(; gpu=true); correctness=backend
     )
     # copyto!(col, col) fails on static arrays
-    test_differentiation_selfref(
-        backend, all_operators(), weird_array_scenarios(; static=true); excluded=[jacobian]
+    test_differentiation(
+        backend,
+        all_operators(),
+        weird_array_scenarios(; static=true);
+        correctness=backend,
+        excluded=[jacobian],
     )
     # stack fails on component vectors
-    test_differentiation_selfref(
+    test_differentiation(
         backend,
         all_operators(),
         weird_array_scenarios(; component=true);
+        correctness=backend,
         excluded=[hessian],
     )
 end
