@@ -190,6 +190,36 @@ deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
 version = "1.1.0+0"
 
+[[deps.ComponentArrays]]
+deps = ["ArrayInterface", "ChainRulesCore", "ForwardDiff", "Functors", "LinearAlgebra", "PackageExtensionCompat", "StaticArrayInterface", "StaticArraysCore"]
+git-tree-sha1 = "dded0a186977e5a4a12b1f1224f73956e4e8e90a"
+uuid = "b0b7db55-cfe3-40fc-9ded-d10e2dbeff66"
+version = "0.15.11"
+
+    [deps.ComponentArrays.extensions]
+    ComponentArraysAdaptExt = "Adapt"
+    ComponentArraysConstructionBaseExt = "ConstructionBase"
+    ComponentArraysGPUArraysExt = "GPUArrays"
+    ComponentArraysOptimisersExt = "Optimisers"
+    ComponentArraysRecursiveArrayToolsExt = "RecursiveArrayTools"
+    ComponentArraysReverseDiffExt = "ReverseDiff"
+    ComponentArraysSciMLBaseExt = "SciMLBase"
+    ComponentArraysTrackerExt = "Tracker"
+    ComponentArraysTruncatedStacktracesExt = "TruncatedStacktraces"
+    ComponentArraysZygoteExt = "Zygote"
+
+    [deps.ComponentArrays.weakdeps]
+    Adapt = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
+    ConstructionBase = "187b0558-2788-49d3-abe0-74a17ed4e7c9"
+    GPUArrays = "0c68f7d7-f131-5f86-a1c3-88cf8149b2d7"
+    Optimisers = "3bd65402-5787-11e9-1adc-39752487f4e2"
+    RecursiveArrayTools = "731186ca-8d62-57ce-b412-fbd966d074cd"
+    ReverseDiff = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
+    SciMLBase = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
+    Tracker = "9f7883ad-71c0-57eb-9f7f-b5c9e6d3789c"
+    TruncatedStacktraces = "781d530d-4396-4725-bb49-402e4bee1e77"
+    Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
+
 [[deps.ConstructionBase]]
 deps = ["LinearAlgebra"]
 git-tree-sha1 = "260fd2400ed2dab602a7c15cf10c1933c59930a2"
@@ -267,18 +297,19 @@ version = "0.1.0"
 
     [deps.DifferentiationInterface.extensions]
     DifferentiationInterfaceChainRulesCoreExt = "ChainRulesCore"
-    DifferentiationInterfaceDiffractorExt = ["Diffractor"]
+    DifferentiationInterfaceDiffractorExt = ["AbstractDifferentiation", "Diffractor"]
     DifferentiationInterfaceEnzymeExt = "Enzyme"
-    DifferentiationInterfaceFastDifferentiationExt = ["FastDifferentiation"]
+    DifferentiationInterfaceFastDifferentiationExt = "FastDifferentiation"
     DifferentiationInterfaceFiniteDiffExt = "FiniteDiff"
     DifferentiationInterfaceFiniteDifferencesExt = "FiniteDifferences"
-    DifferentiationInterfaceForwardDiffExt = ["ForwardDiff"]
-    DifferentiationInterfacePolyesterForwardDiffExt = ["PolyesterForwardDiff"]
-    DifferentiationInterfaceReverseDiffExt = ["ReverseDiff"]
-    DifferentiationInterfaceTrackerExt = ["Tracker"]
-    DifferentiationInterfaceZygoteExt = ["Zygote"]
+    DifferentiationInterfaceForwardDiffExt = "ForwardDiff"
+    DifferentiationInterfacePolyesterForwardDiffExt = "PolyesterForwardDiff"
+    DifferentiationInterfaceReverseDiffExt = "ReverseDiff"
+    DifferentiationInterfaceTrackerExt = "Tracker"
+    DifferentiationInterfaceZygoteExt = "Zygote"
 
     [deps.DifferentiationInterface.weakdeps]
+    AbstractDifferentiation = "c29ec348-61ec-40c8-8164-b8c60e9d9f3d"
     ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
     Diffractor = "9f5e2b26-1114-432f-b630-d3fe2085c51c"
     Enzyme = "7da242da-08ed-463a-9acd-ee780be4f1d9"
@@ -293,20 +324,10 @@ version = "0.1.0"
     Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [[deps.DifferentiationInterfaceTest]]
-deps = ["ADTypes", "Chairmarks", "DifferentiationInterface", "DocStringExtensions", "JET", "LinearAlgebra", "Test"]
+deps = ["ADTypes", "Chairmarks", "ComponentArrays", "DifferentiationInterface", "DocStringExtensions", "JET", "JLArrays", "LinearAlgebra", "StaticArrays", "Test"]
 path = "../lib/DifferentiationInterfaceTest"
 uuid = "a82114a7-5aa3-49a8-9643-716bb13727a3"
 version = "0.1.0"
-
-    [deps.DifferentiationInterfaceTest.extensions]
-    DifferentiationInterfaceTestComponentArraysExt = ["ComponentArrays"]
-    DifferentiationInterfaceTestJLArraysExt = ["JLArrays"]
-    DifferentiationInterfaceTestStaticArraysExt = ["StaticArrays"]
-
-    [deps.DifferentiationInterfaceTest.weakdeps]
-    ComponentArrays = "b0b7db55-cfe3-40fc-9ded-d10e2dbeff66"
-    JLArrays = "27aeb0d3-9eb9-45fb-866b-73c2ecf80fcb"
-    StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [[deps.Diffractor]]
 deps = ["AbstractDifferentiation", "ChainRules", "ChainRulesCore", "Combinatorics", "Cthulhu", "InteractiveUtils", "OffsetArrays", "PrecompileTools", "StaticArrays", "StructArrays"]
@@ -538,6 +559,12 @@ deps = ["InteractiveUtils", "JuliaInterpreter", "LoweredCodeUtils", "MacroTools"
 git-tree-sha1 = "6ff76fc594051832ce91078686bc0d3def6d42c5"
 uuid = "c3a54625-cd67-489e-a8e7-0a5a0ff4e31b"
 version = "0.8.29"
+
+[[deps.JLArrays]]
+deps = ["Adapt", "GPUArrays", "Random"]
+git-tree-sha1 = "da39df839e87a2b595004645021a9809c75ad403"
+uuid = "27aeb0d3-9eb9-45fb-866b-73c2ecf80fcb"
+version = "0.1.4"
 
 [[deps.JLLWrappers]]
 deps = ["Artifacts", "Preferences"]
@@ -791,6 +818,12 @@ version = "1.6.3"
 deps = ["Artifacts", "Libdl"]
 uuid = "efcefdf7-47ab-520b-bdef-62a2eaa19f15"
 version = "10.42.0+1"
+
+[[deps.PackageExtensionCompat]]
+git-tree-sha1 = "fb28e33b8a95c4cee25ce296c817d89cc2e53518"
+uuid = "65ce6f38-6b18-4e1d-a461-8949797d7930"
+version = "1.0.2"
+weakdeps = ["Requires", "TOML"]
 
 [[deps.Parsers]]
 deps = ["Dates", "PrecompileTools", "UUIDs"]
