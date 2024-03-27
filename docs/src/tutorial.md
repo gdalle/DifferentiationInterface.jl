@@ -71,7 +71,8 @@ Note the double exclamation mark, which is a convention telling you that `grad` 
 @btime gradient!!($f, _grad, $backend, $x) evals=1 setup=(_grad=similar($x));
 ```
 
-For some reason the in-place version is slower than our first attempt, but as you can see it has one less allocation, corresponding to the gradient vector.
+For some reason the in-place version is not much better than our first attempt.
+However, as you can see, it has one less allocation: it corresponds to the gradient vector we provided.
 Don't worry, we're not done yet.
 
 ## Preparing for multiple gradients
@@ -133,36 +134,48 @@ It's blazingly fast.
 And you know what's even better?
 You didn't need to look at the docs of either ForwardDiff.jl or Enzyme.jl to achieve top performance with both, or to compare them.
 
-## Testing and benchmarking
+## Testing
 
 DifferentiationInterface.jl also provides some utilities for more involved comparison between backends.
-They are gathered in a submodule called [`DifferentiationInterfaceTest`](https://github.com/gdalle/DifferentiationInterface.jl/tree/main/lib/DifferentiationInterfaceTest).
+They are gathered in a submodule called `DifferentiationInterfaceTest`, located [here](https://github.com/gdalle/DifferentiationInterface.jl/tree/main/lib/DifferentiationInterfaceTest) in the repo.
 
 ```@repl tuto
 using DifferentiationInterfaceTest
 ```
 
-The main entry point is [`test_differentiation`](@ref), which is used as follows:
+For testing, you can use [`test_differentiation`](@ref) as follows:
 
 ```@repl tuto
-data = test_differentiation(
+test_differentiation(
     [AutoForwardDiff(), AutoEnzyme(Enzyme.Reverse)],  # backends to compare
-    [gradient],  # operators to try
-    [Scenario(f; x=x)];  # test scenario
+    [gradient, pullback],  # operators to try
+    [Scenario(f; x=rand(3)), Scenario(f; x=rand(3,3))];  # test scenarios
     correctness=AutoZygote(),  # compare results to a "ground truth" from Zygote
-    benchmark=true,  # measure runtime and allocations too
     detailed=true,  # print detailed test set
 );
 ```
 
-The output of `test_differentiation` when `benchmark=true` can be converted to a `DataFrame` from [DataFrames.jl](https://github.com/JuliaData/DataFrames.jl):
+## Benchmarking
+
+Once you have ascertained correctness, performance will be your next concern.
+The interface of [`benchmark_differentiation`](@ref) is very similar to the one we've just seen, but this time it returns a data object.
+
+```@repl tuto
+data = benchmark_differentiation(
+    [AutoForwardDiff(), AutoEnzyme(Enzyme.Reverse)],
+    [gradient, pullback],
+    [Scenario(f; x=rand(3)), Scenario(f; x=rand(3,3))];
+);
+```
+
+The `BenchmarkData` object is just a struct of vectors, and you can easily convert to a `DataFrame` from [DataFrames.jl](https://github.com/JuliaData/DataFrames.jl):
 
 ```@repl tuto
 df = DataFrames.DataFrame(pairs(data)...)
 ```
 
 Here's what the resulting `DataFrame` looks like with all its columns.
-Note that the results may be slightly different from the ones presented above (we use [Chairmarks.jl](https://github.com/LilithHafner/Chairmarks.jl) internally instead of BenchmarkTools.jl, and measure slightly different operators).
+Note that the results may vary from the ones presented above (we use [Chairmarks.jl](https://github.com/LilithHafner/Chairmarks.jl) internally instead of BenchmarkTools.jl, and measure slightly different operators).
 
 ```@example tuto
 import Markdown, PrettyTables  # hide

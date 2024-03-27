@@ -46,61 +46,61 @@ supports_mutation(::AbstractADType) = MutationSupported()
 
 ## Pushforward
 
-abstract type PushforwardBehavior end
+abstract type PushforwardPerformance end
 
 """
-    PushforwardSupported
+    PushforwardFast
 
 Trait identifying backends that support efficient pushforwards.
 """
-struct PushforwardSupported <: PushforwardBehavior end
+struct PushforwardFast <: PushforwardPerformance end
 
 """
-    PushforwardNotSupported
+    PushforwardSlow
 
 Trait identifying backends that do not support efficient pushforwards.
 """
-struct PushforwardNotSupported <: PushforwardBehavior end
+struct PushforwardSlow <: PushforwardPerformance end
 
 """
-    supports_pushforward(backend)
+    pushforward_performance(backend)
 
-Return [`PushforwardSupported`](@ref) or [`PushforwardNotSupported`](@ref) in a statically predictable way.
+Return [`PushforwardFast`](@ref) or [`PushforwardSlow`](@ref) in a statically predictable way.
 """
-supports_pushforward(backend::AbstractADType) = supports_pushforward(mode(backend))
-supports_pushforward(::Type{AbstractForwardMode}) = PushforwardSupported()
-supports_pushforward(::Type{AbstractFiniteDifferencesMode}) = PushforwardSupported()
-supports_pushforward(::Type{AbstractReverseMode}) = PushforwardNotSupported()
-supports_pushforward(::Type{AbstractSymbolicDifferentiationMode}) = PushforwardSupported()
+pushforward_performance(backend::AbstractADType) = pushforward_performance(mode(backend))
+pushforward_performance(::Type{AbstractForwardMode}) = PushforwardFast()
+pushforward_performance(::Type{AbstractFiniteDifferencesMode}) = PushforwardFast()
+pushforward_performance(::Type{AbstractReverseMode}) = PushforwardSlow()
+pushforward_performance(::Type{AbstractSymbolicDifferentiationMode}) = PushforwardFast()
 
 ## Pullback
 
-abstract type PullbackBehavior end
+abstract type PullbackPerformance end
 
 """
-    PullbackSupported
+    PullbackFast
 
 Trait identifying backends that support efficient pullbacks.
 """
-struct PullbackSupported <: PullbackBehavior end
+struct PullbackFast <: PullbackPerformance end
 
 """
-    PullbackNotSupported
+    PullbackSlow
 
 Trait identifying backends that do not support efficient pullbacks.
 """
-struct PullbackNotSupported <: PullbackBehavior end
+struct PullbackSlow <: PullbackPerformance end
 
 """
-    supports_pullback(backend)
+    pullback_performance(backend)
 
-Return [`PullbackSupported`](@ref) or [`PullbackNotSupported`](@ref) in a statically predictable way.
+Return [`PullbackFast`](@ref) or [`PullbackSlow`](@ref) in a statically predictable way.
 """
-supports_pullback(backend::AbstractADType) = supports_pullback(mode(backend))
-supports_pullback(::Type{<:AbstractForwardMode}) = PullbackNotSupported()
-supports_pullback(::Type{AbstractFiniteDifferencesMode}) = PullbackNotSupported()
-supports_pullback(::Type{AbstractReverseMode}) = PullbackSupported()
-supports_pullback(::Type{AbstractSymbolicDifferentiationMode}) = PullbackSupported()
+pullback_performance(backend::AbstractADType) = pullback_performance(mode(backend))
+pullback_performance(::Type{<:AbstractForwardMode}) = PullbackSlow()
+pullback_performance(::Type{AbstractFiniteDifferencesMode}) = PullbackSlow()
+pullback_performance(::Type{AbstractReverseMode}) = PullbackFast()
+pullback_performance(::Type{AbstractSymbolicDifferentiationMode}) = PullbackFast()
 
 ## HVP
 
@@ -137,13 +137,14 @@ struct ForwardOverForward <: HVPMode end
 hvp_mode(::AbstractADType) = error("HVP mode undefined for first order backend")
 
 function hvp_mode(ba::SecondOrder)
-    if Bool(supports_pushforward(outer(ba))) && Bool(supports_pullback(inner(ba)))
+    if Bool(pushforward_performance(outer(ba))) && Bool(pullback_performance(inner(ba)))
         return ForwardOverReverse()
-    elseif Bool(supports_pullback(outer(ba))) && Bool(supports_pushforward(inner(ba)))
+    elseif Bool(pullback_performance(outer(ba))) && Bool(pushforward_performance(inner(ba)))
         return ReverseOverForward()
-    elseif Bool(supports_pullback(outer(ba))) && Bool(supports_pullback(inner(ba)))
+    elseif Bool(pullback_performance(outer(ba))) && Bool(pullback_performance(inner(ba)))
         return ReverseOverReverse()
-    elseif Bool(supports_pushforward(outer(ba))) && Bool(supports_pushforward(inner(ba)))
+    elseif Bool(pushforward_performance(outer(ba))) &&
+        Bool(pushforward_performance(inner(ba)))
         return ForwardOverForward()
     else
         error("HVP mode unknown")
@@ -155,8 +156,8 @@ end
 Base.Bool(::MutationSupported) = true
 Base.Bool(::MutationNotSupported) = false
 
-Base.Bool(::PushforwardSupported) = true
-Base.Bool(::PushforwardNotSupported) = false
+Base.Bool(::PushforwardFast) = true
+Base.Bool(::PushforwardSlow) = false
 
-Base.Bool(::PullbackSupported) = true
-Base.Bool(::PullbackNotSupported) = false
+Base.Bool(::PullbackFast) = true
+Base.Bool(::PullbackSlow) = false

@@ -4,14 +4,6 @@ function compatible(::AbstractADType, ::Function)
     return true
 end
 
-function compatible(backend::AbstractADType, ::typeof(pushforward))
-    return Bool(supports_pushforward(backend))
-end
-
-function compatible(backend::AbstractADType, ::typeof(pullback))
-    return Bool(supports_pullback(backend))
-end
-
 ## Backend-scenario
 
 function compatible(::AbstractADType, ::Scenario{false})

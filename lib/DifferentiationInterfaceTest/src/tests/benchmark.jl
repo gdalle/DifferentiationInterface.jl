@@ -39,6 +39,49 @@ function Base.pairs(data::BenchmarkData)
     return ns .=> getfield.(Ref(data), ns)
 end
 
+"""
+    benchmark_differentiation(backends, [operators, scenarios]; [kwargs...])
+
+Benchmark a list of `backends` for a list of `operators` on a list of `scenarios`.
+
+# Keyword arguments
+
+- filtering: same as [`test_differentiation`](@ref) for the filtering part.
+- `logging=true`: whether to log progress
+"""
+function benchmark_differentiation(
+    backends::Vector{<:AbstractADType},
+    operators::Vector{<:Function}=all_operators(),
+    scenarios::Vector{<:Scenario}=default_scenarios();
+    # filtering
+    input_type::Type=Any,
+    output_type::Type=Any,
+    allocating=true,
+    mutating=true,
+    first_order=true,
+    second_order=true,
+    excluded::Vector{<:Function}=Function[],
+    # options
+    logging=false,
+)
+    operators = filter_operators(operators; first_order, second_order, excluded)
+    scenarios = filter_scenarios(scenarios; input_type, output_type, allocating, mutating)
+
+    benchmark_data = BenchmarkData()
+    for backend in backends
+        for op in operators
+            for scen in filter(scenarios) do scen
+                compatible(backend, op, scen)
+            end
+                logging &&
+                    @info "Benchmarking: $(backend_string(backend)) - $op - $(string(scen))"
+                run_benchmark!(benchmark_data, backend, op, scen; allocations=false)
+            end
+        end
+    end
+    return benchmark_data
+end
+
 function record!(data, tup::NamedTuple)
     for n in fieldnames(typeof(tup))
         push!(getfield(data, n), getfield(tup, n))

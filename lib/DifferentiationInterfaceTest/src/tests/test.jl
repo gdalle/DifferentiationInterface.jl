@@ -1,58 +1,7 @@
 """
-    all_operators()
-
-List all operators that can be tested with [`test_differentiation`](@ref).
-"""
-function all_operators()
-    return [
-        pushforward,
-        pullback,
-        derivative,
-        gradient,
-        jacobian,
-        second_derivative,
-        hvp,
-        hessian,
-    ]
-end
-
-function filter_operators(
-    operators::Vector{<:Function};
-    first_order::Bool,
-    second_order::Bool,
-    excluded::Vector{<:Function},
-)
-    !first_order && (
-        operators = filter(
-            !in([pushforward, pullback, derivative, gradient, jacobian]), operators
-        )
-    )
-    !second_order && (operators = filter(!in([second_derivative, hvp, hessian]), operators))
-    operators = filter(!in(excluded), operators)
-    return operators
-end
-
-function filter_scenarios(
-    scenarios::Vector{<:Scenario};
-    input_type::Type,
-    output_type::Type,
-    allocating::Bool,
-    mutating::Bool,
-)
-    scenarios = filter(scenarios) do scen
-        typeof(scen.x) <: input_type && typeof(scen.y) <: output_type
-    end
-    !allocating && (scenarios = filter(is_mutating, scenarios))
-    !mutating && (scenarios = filter(!is_mutating, scenarios))
-    return scenarios
-end
-
-"""
     test_differentiation(backends, [operators, scenarios]; [kwargs...])
 
-Cross-test a list of `backends` for a list of `operators` on a list of `scenarios`, running a variety of different tests.
-
-If `benchmark=true`, return a [`BenchmarkData`](@ref) object, otherwise return `nothing`.
+Test a list of `backends` for a list of `operators` on a list of `scenarios`.
 
 # Default arguments
 
@@ -66,9 +15,7 @@ Testing:
 - `correctness=true`: whether to compare the differentiation results with the theoretical values specified in each scenario. If a backend object like `correctness=AutoForwardDiff()` is passed instead of a boolean, the results will be compared using that reference backend as the ground truth. 
 - `call_count=false`: whether to check that the function is called the right number of times
 - `type_stability=false`: whether to check type stability with JET.jl (thanks to `@test_opt`)
-- `benchmark=false`: whether to run and return a benchmark suite with Chairmarks.jl
-- `allocations=false`: whether to check that the benchmarks are allocation-free
-- `detailed=false`: whether to print a detailed test set (by scenario) or condensed test set (by operator)
+- `detailed=false`: whether to print a detailed or condensed test log
 
 Filtering:
 
@@ -82,6 +29,7 @@ Filtering:
 
 Options:
 
+- `logging=true`: whether to log progress
 - `isapprox=isapprox`: function used to compare objects, only needs to be set for complicated cases beyond arrays / scalars
 - `rtol=1e-3`: precision for correctness testing (when comparing to the reference outputs)
 """
@@ -93,8 +41,6 @@ function test_differentiation(
     correctness::Union{Bool,AbstractADType}=true,
     type_stability::Bool=false,
     call_count::Bool=false,
-    benchmark::Bool=false,
-    allocations::Bool=false,
     detailed=false,
     # filtering
     input_type::Type=Any,
@@ -105,64 +51,45 @@ function test_differentiation(
     second_order=true,
     excluded::Vector{<:Function}=Function[],
     # options
+    logging=false,
     isapprox=isapprox,
     rtol=1e-3,
 )
     operators = filter_operators(operators; first_order, second_order, excluded)
     scenarios = filter_scenarios(scenarios; input_type, output_type, allocating, mutating)
 
-    benchmark_data = BenchmarkData()
+    if correctness isa AbstractADType
+        scenarios = change_ref.(scenarios, Ref(correctness))
+    end
 
     title =
         "Differentiation tests -" *
         (correctness != false ? " correctness" : "") *
         (call_count ? " calls" : "") *
-        (type_stability ? " types" : "") *
-        (benchmark ? " benchmark" : "") *
-        (allocations ? " allocations" : "")
+        (type_stability ? " types" : "")
 
-    @testset verbose = detailed "$(backend_string(backend))" for backend in backends
-        @testset verbose = detailed "$op" for op in operators
-            @testset "$scen" for scen in filter(scenarios) do scen
-                compatible(backend, op, scen)
-            end
-                if correctness != false
-                    @testset "Correctness" begin
-                        if correctness isa AbstractADType
-                            test_correctness(
-                                backend, op, change_ref(scen, correctness); isapprox, rtol
-                            )
-                        else
-                            test_correctness(backend, op, scen; isapprox, rtol)
-                        end
-                    end
+    @testset verbose = true "$title" begin
+        @testset verbose = detailed "$(backend_string(backend))" for backend in backends
+            @testset verbose = detailed "$op" for op in operators
+                @testset "$scen" for scen in filter(scenarios) do scen
+                    compatible(backend, op, scen)
                 end
-                if call_count
-                    @testset "Call count" begin
+                    logging &&
+                        @info "Testing: $(backend_string(backend)) - $op - $(string(scen))"
+                    correctness != false && @testset "Correctness" begin
+                        test_correctness(backend, op, scen; isapprox, rtol)
+                    end
+                    call_count && @testset "Call count" begin
                         test_call_count(backend, op, scen)
                     end
-                end
-                if type_stability
-                    @testset "Type stability" begin
+                    type_stability && @testset "Type stability" begin
                         test_jet(backend, op, scen)
-                    end
-                end
-                if benchmark || allocations
-                    @testset "Allocations" begin
-                        run_benchmark!(
-                            benchmark_data, backend, op, scen; allocations=allocations
-                        )
                     end
                 end
             end
         end
     end
-
-    if benchmark
-        return benchmark_data
-    else
-        return nothing
-    end
+    return nothing
 end
 
 """
