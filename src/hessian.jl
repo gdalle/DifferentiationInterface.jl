@@ -10,8 +10,9 @@ function hessian(f, backend::AbstractADType, x, extras=prepare_hessian(f, backen
 end
 
 function hessian(f, backend::SecondOrder, x, extras=prepare_hessian(f, backend, x))
-    # suboptimal for reverse-over-forward
-    gradient_closure(z) = gradient(f, inner(backend), z, inner(extras))
-    hess = jacobian(gradient_closure, outer(backend), x, outer(extras))
-    return hess
+    hess = stack(vec(CartesianIndices(x))) do j
+        hess_col_j = hvp(f, backend, x, basis(backend, x, j), extras)
+        vec(hess_col_j)
+    end
+    return Symmetric(hess)
 end
