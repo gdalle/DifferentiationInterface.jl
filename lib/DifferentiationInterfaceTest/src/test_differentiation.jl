@@ -56,7 +56,7 @@ If `benchmark=true`, return a [`BenchmarkData`](@ref) object, otherwise return `
 
 # Default arguments
 
-- `operators::Vector{Function}`: the list `[pushforward, pullback,derivative, gradient, jacobian, second_derivative, hvp, hessian]`
+- `operators::Vector{Function}`: the list `[pushforward, pullback, derivative, gradient, jacobian, second_derivative, hvp, hessian]`
 - `scenarios::Vector{Scenario}`: the output of [`default_scenarios()`](@ref)
 
 # Keyword arguments
