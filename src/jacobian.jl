@@ -6,27 +6,23 @@
 function value_and_jacobian(
     f, backend::AbstractADType, x, extras=prepare_jacobian(f, backend, x)
 )
-    return value_and_jacobian_aux(f, backend, x, extras, supports_pushforward(backend))
+    return value_and_jacobian_aux(f, backend, x, extras, pushforward_performance(backend))
 end
 
-function value_and_jacobian_aux(
-    f, backend, x::AbstractArray, extras, ::PushforwardSupported
-)
+function value_and_jacobian_aux(f, backend, x::AbstractArray, extras, ::PushforwardFast)
     y = f(x)
     jac = stack(CartesianIndices(x); dims=2) do j
-        dx_j = basisarray(backend, x, j)
+        dx_j = basis(backend, x, j)
         jac_col_j = last(value_and_pushforward(f, backend, x, dx_j, extras))
         vec(jac_col_j)
     end
     return y, jac
 end
 
-function value_and_jacobian_aux(
-    f, backend, x::AbstractArray, extras, ::PushforwardNotSupported
-)
+function value_and_jacobian_aux(f, backend, x::AbstractArray, extras, ::PushforwardSlow)
     y = f(x)
     jac = stack(CartesianIndices(y); dims=1) do i
-        dy_i = basisarray(backend, y, i)
+        dy_i = basis(backend, y, i)
         jac_row_i = last(value_and_pullback(f, backend, x, dy_i, extras))
         vec(jac_row_i)
     end
@@ -44,16 +40,16 @@ function value_and_jacobian!!(
     extras=prepare_jacobian(f, backend, x),
 )
     return value_and_jacobian_aux!!(
-        f, jac, backend, x, extras, supports_pushforward(backend)
+        f, jac, backend, x, extras, pushforward_performance(backend)
     )
 end
 
 function value_and_jacobian_aux!!(
-    f, jac, backend, x::AbstractArray, extras, ::PushforwardSupported
+    f, jac, backend, x::AbstractArray, extras, ::PushforwardFast
 )
     y = f(x)
     for (k, j) in enumerate(CartesianIndices(x))
-        dx_j = basisarray(backend, x, j)
+        dx_j = basis(backend, x, j)
         jac_col_j_old = reshape(view(jac, :, k), size(y))
         jac_col_j_new = pushforward!!(f, jac_col_j_old, backend, x, dx_j, extras)
         # this allocates
@@ -63,11 +59,11 @@ function value_and_jacobian_aux!!(
 end
 
 function value_and_jacobian_aux!!(
-    f, jac, backend, x::AbstractArray, extras, ::PushforwardNotSupported
+    f, jac, backend, x::AbstractArray, extras, ::PushforwardSlow
 )
     y = f(x)
     for (k, i) in enumerate(CartesianIndices(y))
-        dy_i = basisarray(backend, y, i)
+        dy_i = basis(backend, y, i)
         jac_row_i_old = reshape(view(jac, k, :), size(x))
         jac_row_i_new = pullback!!(f, jac_row_i_old, backend, x, dy_i, extras)
         # this allocates
@@ -80,7 +76,7 @@ end
     jacobian(f, backend, x, [extras]) -> jac
 """
 function jacobian(f, backend::AbstractADType, x, extras=prepare_jacobian(f, backend, x))
-    return last(value_and_jacobian(f, backend, x, extras))
+    return value_and_jacobian(f, backend, x, extras)[2]
 end
 
 """
@@ -93,7 +89,7 @@ function jacobian!!(
     x,
     extras=prepare_jacobian(f, backend, x),
 )
-    return last(value_and_jacobian!!(f, jac, backend, x, extras))
+    return value_and_jacobian!!(f, jac, backend, x, extras)[2]
 end
 
 ## Mutating
@@ -110,14 +106,14 @@ function value_and_jacobian!!(
     extras=prepare_jacobian(f!, backend, y, x),
 )
     return value_and_jacobian_aux!!(
-        f!, y, jac, backend, x, extras, supports_pushforward(backend)
+        f!, y, jac, backend, x, extras, pushforward_performance(backend)
     )
 end
 
-function value_and_jacobian_aux!!(f!, y, jac, backend, x, extras, ::PushforwardSupported)
+function value_and_jacobian_aux!!(f!, y, jac, backend, x, extras, ::PushforwardFast)
     f!(y, x)
     for (k, j) in enumerate(CartesianIndices(x))
-        dx_j = basisarray(backend, x, j)
+        dx_j = basis(backend, x, j)
         jac_col_j_old = reshape(view(jac, :, k), size(y))
         jac_col_j_new = last(
             value_and_pushforward!!(f!, y, jac_col_j_old, backend, x, dx_j, extras)
@@ -128,10 +124,10 @@ function value_and_jacobian_aux!!(f!, y, jac, backend, x, extras, ::PushforwardS
     return y, jac
 end
 
-function value_and_jacobian_aux!!(f!, y, jac, backend, x, extras, ::PushforwardNotSupported)
+function value_and_jacobian_aux!!(f!, y, jac, backend, x, extras, ::PushforwardSlow)
     f!(y, x)
     for (k, i) in enumerate(CartesianIndices(y))
-        dy_i = basisarray(backend, y, i)
+        dy_i = basis(backend, y, i)
         jac_row_i_old = reshape(view(jac, k, :), size(x))
         jac_row_i_new = last(
             value_and_pullback!!(f!, y, jac_row_i_old, backend, x, dy_i, extras)

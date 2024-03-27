@@ -15,7 +15,7 @@ using FastDifferentiation.RuntimeGeneratedFunctions: RuntimeGeneratedFunction
 
 DI.mode(::AutoFastDifferentiation) = ADTypes.AbstractSymbolicDifferentiationMode
 DI.supports_mutation(::AutoFastDifferentiation) = DI.MutationNotSupported()
-DI.supports_pullback(::AutoFastDifferentiation) = DI.PullbackNotSupported()
+DI.pullback_performance(::AutoFastDifferentiation) = DI.PullbackSlow()
 
 myvec(x::Number) = [x]
 myvec(x::AbstractArray) = vec(x)

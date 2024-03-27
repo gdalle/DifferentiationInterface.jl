@@ -32,4 +32,4 @@ for backend in all_backends
     @test check_available(backend)
 end
 
-test_differentiation(all_backends; second_order=false);
+test_differentiation(all_backends; second_order=false, logging=true);

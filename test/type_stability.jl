@@ -6,5 +6,9 @@ type_stable_backends = [
 ]
 
 test_differentiation(
-    type_stable_backends; correctness=false, type_stability=true, second_order=false
+    type_stable_backends;
+    correctness=false,
+    type_stability=true,
+    second_order=false,
+    logging=true,
 );

@@ -3,16 +3,10 @@ using DifferentiationInterfaceTest: AutoZeroForward, AutoZeroReverse
 @test check_available(AutoZeroForward())
 @test check_available(AutoZeroReverse())
 
-## Correctness (vs oneself) + type-stability
+## Correctness (vs oneself)
 
 for backend in [AutoZeroForward(), AutoZeroReverse()]
-    test_differentiation(
-        backend,
-        all_operators(),
-        default_scenarios();
-        correctness=backend,
-        type_stability=true,
-    )
+    test_differentiation(backend, all_operators(), default_scenarios(); correctness=backend)
 end
 
 for backend in [
@@ -24,33 +18,44 @@ for backend in [
         all_operators(),
         default_scenarios();
         correctness=backend,
-        type_stability=true,
         first_order=false,
     )
 end
 
+## Type stability
+
+test_differentiation(
+    AutoZeroForward(); correctness=false, type_stability=true, excluded=[pullback]
+)
+test_differentiation(
+    AutoZeroReverse(); correctness=false, type_stability=true, excluded=[pushforward]
+)
+test_differentiation(
+    [
+        SecondOrder(AutoZeroForward(), AutoZeroReverse()),
+        SecondOrder(AutoZeroReverse(), AutoZeroForward()),
+    ];
+    correctness=false,
+    type_stability=true,
+    first_order=false,
+)
+
 ## Call count
 
 test_differentiation(
-    AutoZeroForward(); correctness=false, call_count=true, excluded=[gradient]
+    AutoZeroForward(); correctness=false, call_count=true, excluded=[gradient, pullback]
 );
 
 test_differentiation(
-    AutoZeroReverse(); correctness=false, call_count=true, excluded=[derivative]
-);
-
-## Allocations
-
-test_differentiation(
-    [AutoZeroForward(), AutoZeroReverse()];
+    AutoZeroReverse();
     correctness=false,
-    allocations=true,
-    excluded=[jacobian],
+    call_count=true,
+    excluded=[derivative, pushforward],
 );
 
-data = test_differentiation(
-    [AutoZeroForward(), AutoZeroReverse()]; correctness=false, benchmark=true
-);
+## Benchmark
+
+data = benchmark_differentiation([AutoZeroForward(), AutoZeroReverse()]);
 
 df = DataFrames.DataFrame(pairs(data)...)
 
