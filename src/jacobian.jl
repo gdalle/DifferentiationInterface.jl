@@ -33,11 +33,7 @@ end
     value_and_jacobian!!(f, jac, backend, x, [extras]) -> (y, jac)
 """
 function value_and_jacobian!!(
-    f,
-    jac::AbstractMatrix,
-    backend::AbstractADType,
-    x,
-    extras=prepare_jacobian(f, backend, x),
+    f, jac, backend::AbstractADType, x, extras=prepare_jacobian(f, backend, x)
 )
     return value_and_jacobian_aux!!(
         f, jac, backend, x, extras, pushforward_performance(backend)
@@ -45,7 +41,7 @@ function value_and_jacobian!!(
 end
 
 function value_and_jacobian_aux!!(
-    f, jac, backend, x::AbstractArray, extras, ::PushforwardFast
+    f, jac::AbstractMatrix, backend, x::AbstractArray, extras, ::PushforwardFast
 )
     y = f(x)
     for (k, j) in enumerate(CartesianIndices(x))
@@ -59,7 +55,7 @@ function value_and_jacobian_aux!!(
 end
 
 function value_and_jacobian_aux!!(
-    f, jac, backend, x::AbstractArray, extras, ::PushforwardSlow
+    f, jac::AbstractMatrix, backend, x::AbstractArray, extras, ::PushforwardSlow
 )
     y = f(x)
     for (k, i) in enumerate(CartesianIndices(y))
@@ -83,11 +79,7 @@ end
     jacobian!!(f, jac, backend, x, [extras]) -> jac
 """
 function jacobian!!(
-    f,
-    jac::AbstractMatrix,
-    backend::AbstractADType,
-    x,
-    extras=prepare_jacobian(f, backend, x),
+    f, jac, backend::AbstractADType, x, extras=prepare_jacobian(f, backend, x)
 )
     return value_and_jacobian!!(f, jac, backend, x, extras)[2]
 end
@@ -98,19 +90,22 @@ end
     value_and_jacobian!!(f!, y, jac, backend, x, [extras]) -> (y, jac)
 """
 function value_and_jacobian!!(
-    f!,
-    y::AbstractArray,
-    jac::AbstractMatrix,
-    backend::AbstractADType,
-    x::AbstractArray,
-    extras=prepare_jacobian(f!, backend, y, x),
+    f!, y, jac, backend::AbstractADType, x, extras=prepare_jacobian(f!, backend, y, x)
 )
     return value_and_jacobian_aux!!(
         f!, y, jac, backend, x, extras, pushforward_performance(backend)
     )
 end
 
-function value_and_jacobian_aux!!(f!, y, jac, backend, x, extras, ::PushforwardFast)
+function value_and_jacobian_aux!!(
+    f!,
+    y::AbstractArray,
+    jac::AbstractMatrix,
+    backend,
+    x::AbstractArray,
+    extras,
+    ::PushforwardFast,
+)
     f!(y, x)
     for (k, j) in enumerate(CartesianIndices(x))
         dx_j = basis(backend, x, j)
@@ -124,7 +119,15 @@ function value_and_jacobian_aux!!(f!, y, jac, backend, x, extras, ::PushforwardF
     return y, jac
 end
 
-function value_and_jacobian_aux!!(f!, y, jac, backend, x, extras, ::PushforwardSlow)
+function value_and_jacobian_aux!!(
+    f!,
+    y::AbstractArray,
+    jac::AbstractMatrix,
+    backend,
+    x::AbstractArray,
+    extras,
+    ::PushforwardSlow,
+)
     f!(y, x)
     for (k, i) in enumerate(CartesianIndices(y))
         dy_i = basis(backend, y, i)

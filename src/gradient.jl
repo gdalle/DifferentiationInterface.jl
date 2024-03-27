@@ -6,7 +6,7 @@
 function value_and_gradient(
     f, backend::AbstractADType, x, extras=prepare_gradient(f, backend, x)
 )
-    return value_and_pullback(f, backend, x, true, extras)
+    return value_and_pullback(f, backend, x, one(eltype(x)), extras)
 end
 
 """
@@ -15,7 +15,7 @@ end
 function value_and_gradient!!(
     f, grad, backend::AbstractADType, x, extras=prepare_gradient(f, backend, x)
 )
-    return value_and_pullback!!(f, grad, backend, x, true, extras)
+    return value_and_pullback!!(f, grad, backend, x, one(eltype(x)), extras)
 end
 
 """
