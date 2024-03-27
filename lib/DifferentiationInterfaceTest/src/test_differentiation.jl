@@ -123,9 +123,7 @@ function test_differentiation(
 
     @testset verbose = detailed "$(backend_string(backend))" for backend in backends
         @testset verbose = detailed "$op" for op in operators
-            @testset "$scen" for scen in filter(scenarios) do scen
-                compatible(backend, op, scen)
-            end
+            @testset "$scen" for scen in filter(s -> compatible(backend, op, s), scenarios)
                 if correctness != false
                     @testset "Correctness" begin
                         if correctness isa AbstractADType
