@@ -12,7 +12,6 @@ function check_available(backend::AbstractADType)
         return true
     catch exception
         @warn "Backend $backend not available" exception
-        throw(exception)
         if exception isa MethodError
             return false
         else
