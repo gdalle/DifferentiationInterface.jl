@@ -29,7 +29,7 @@ function hvp(f, backend::SecondOrder, x, v, extras=prepare_hvp(f, backend, x))
     return hvp_aux(f, backend, x, v, extras, hvp_mode(backend))
 end
 
-function hvp_aux(f, backend, x, v, extras, orwardOverReverse)
+function hvp_aux(f, backend, x, v, extras, ::ForwardOverReverse)
     # JVP of the gradient
     gradient_closure(z) = gradient(f, inner(backend), z, inner(extras))
     p = pushforward(gradient_closure, outer(backend), x, v, outer(extras))

@@ -18,7 +18,7 @@ using ADTypes:
     AbstractSymbolicDifferentiationMode
 using DocStringExtensions
 using FillArrays: OneElement
-using LinearAlgebra: dot
+using LinearAlgebra: Symmetric, dot
 
 """
     AutoFastDifferentiation
