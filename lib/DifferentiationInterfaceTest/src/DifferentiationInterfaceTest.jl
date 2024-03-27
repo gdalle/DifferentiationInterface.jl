@@ -38,7 +38,7 @@ include("scenarios/static.jl")
 include("scenarios/component.jl")
 include("scenarios/gpu.jl")
 
-include("utils/zero.jl")
+include("utils/zero_backends.jl")
 include("utils/compatibility.jl")
 include("utils/printing.jl")
 include("utils/misc.jl")
@@ -47,7 +47,7 @@ include("tests/correctness.jl")
 include("tests/type_stability.jl")
 include("tests/call_count.jl")
 include("tests/benchmark.jl")
-include("tests/test.jl")
+include("test_differentiation.jl")
 
 export Scenario
 export default_scenarios

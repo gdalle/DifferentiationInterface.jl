@@ -28,8 +28,8 @@ include("test_imports.jl")
 
     Documenter.doctest(DifferentiationInterface)
 
-    @testset "Zero backend" begin
-        include("zero.jl")
+    @testset "Zero backends" begin
+        include("zero_backends.jl")
     end
 
     @testset verbose = true "First order" begin
