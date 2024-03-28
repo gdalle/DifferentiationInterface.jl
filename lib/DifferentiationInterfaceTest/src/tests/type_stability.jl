@@ -1,6 +1,6 @@
 ## Pushforward
 
-function test_jet(ba::AbstractADType, ::typeof(pushforward), scen::Scenario{false};)
+function test_jet(ba::AbstractADType, scen::PushforwardScenario{false};)
     (; f, x, dx, dy) = deepcopy(scen)
     extras = prepare_pushforward(f, ba, x)
     dy_in = mysimilar(dy)
@@ -10,7 +10,7 @@ function test_jet(ba::AbstractADType, ::typeof(pushforward), scen::Scenario{fals
     return nothing
 end
 
-function test_jet(ba::AbstractADType, ::typeof(pushforward), scen::Scenario{true};)
+function test_jet(ba::AbstractADType, scen::PushforwardScenario{true};)
     (; f, x, y, dx, dy) = deepcopy(scen)
     f! = f
     extras = prepare_pushforward(f!, ba, y, x)
@@ -23,7 +23,7 @@ end
 
 ## Pullback
 
-function test_jet(ba::AbstractADType, ::typeof(pullback), scen::Scenario{false};)
+function test_jet(ba::AbstractADType, scen::PullbackScenario{false};)
     (; f, x, dx, dy) = deepcopy(scen)
     extras = prepare_pullback(f, ba, x)
     dx_in = mysimilar(dx)
@@ -33,7 +33,7 @@ function test_jet(ba::AbstractADType, ::typeof(pullback), scen::Scenario{false};
     return nothing
 end
 
-function test_jet(ba::AbstractADType, ::typeof(pullback), scen::Scenario{true};)
+function test_jet(ba::AbstractADType, scen::PullbackScenario{true};)
     (; f, x, y, dx, dy) = deepcopy(scen)
     f! = f
     extras = prepare_pullback(f!, ba, y, x)
@@ -46,7 +46,7 @@ end
 
 ## Derivative
 
-function test_jet(ba::AbstractADType, ::typeof(derivative), scen::Scenario{false};)
+function test_jet(ba::AbstractADType, scen::DerivativeScenario{false};)
     (; f, x, dy) = deepcopy(scen)
     extras = prepare_derivative(f, ba, x)
     der_in = mysimilar(dy)
@@ -56,7 +56,7 @@ function test_jet(ba::AbstractADType, ::typeof(derivative), scen::Scenario{false
     return nothing
 end
 
-function test_jet(ba::AbstractADType, ::typeof(derivative), scen::Scenario{true};)
+function test_jet(ba::AbstractADType, scen::DerivativeScenario{true};)
     (; f, x, y, dy) = deepcopy(scen)
     f! = f
     extras = prepare_derivative(f!, ba, y, x)
@@ -69,7 +69,7 @@ end
 
 ## Gradient
 
-function test_jet(ba::AbstractADType, ::typeof(gradient), scen::Scenario{false};)
+function test_jet(ba::AbstractADType, scen::GradientScenario{false};)
     (; f, x, dx) = deepcopy(scen)
     extras = prepare_gradient(f, ba, x)
     grad_in = mysimilar(dx)
@@ -81,7 +81,7 @@ end
 
 ## Jacobian
 
-function test_jet(ba::AbstractADType, ::typeof(jacobian), scen::Scenario{false};)
+function test_jet(ba::AbstractADType, scen::JacobianScenario{false};)
     (; f, x, y) = deepcopy(scen)
     extras = prepare_jacobian(f, ba, x)
     jac_in = Matrix{eltype(y)}(undef, length(y), length(x))
@@ -91,7 +91,7 @@ function test_jet(ba::AbstractADType, ::typeof(jacobian), scen::Scenario{false};
     return nothing
 end
 
-function test_jet(ba::AbstractADType, ::typeof(jacobian), scen::Scenario{true};)
+function test_jet(ba::AbstractADType, scen::JacobianScenario{true};)
     (; f, x, y) = deepcopy(scen)
     f! = f
     extras = prepare_jacobian(f!, ba, y, x)
@@ -104,7 +104,7 @@ end
 
 ## Second derivative
 
-function test_jet(ba::AbstractADType, ::typeof(second_derivative), scen::Scenario{false};)
+function test_jet(ba::AbstractADType, scen::SecondDerivativeScenario{false};)
     (; f, x) = deepcopy(scen)
     extras = prepare_second_derivative(f, ba, x)
 
@@ -114,7 +114,7 @@ end
 
 ## HVP
 
-function test_jet(ba::AbstractADType, ::typeof(hvp), scen::Scenario{false};)
+function test_jet(ba::AbstractADType, scen::HVPScenario{false};)
     (; f, x, dx) = deepcopy(scen)
     extras = prepare_hvp(f, ba, x)
 
@@ -124,7 +124,7 @@ end
 
 ## Hessian
 
-function test_jet(ba::AbstractADType, ::typeof(hessian), scen::Scenario{false};)
+function test_jet(ba::AbstractADType, scen::HessianScenario{false};)
     (; f, x) = deepcopy(scen)
     extras = prepare_hessian(f, ba, x)
 

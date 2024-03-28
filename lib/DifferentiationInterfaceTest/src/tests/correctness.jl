@@ -12,11 +12,7 @@ end
 ## Pushforward
 
 function test_correctness(
-    ba::AbstractADType,
-    ::typeof(pushforward),
-    scen::Scenario{false};
-    isapprox::Function,
-    rtol,
+    ba::AbstractADType, scen::PushforwardScenario{false}; isapprox::Function, rtol
 )
     (; f, x, y, dx, dy, ref) = new_scen = deepcopy(scen)
     dy_true = if ref isa AbstractADType
@@ -48,11 +44,7 @@ function test_correctness(
 end
 
 function test_correctness(
-    ba::AbstractADType,
-    ::typeof(pushforward),
-    scen::Scenario{true};
-    isapprox::Function,
-    rtol,
+    ba::AbstractADType, scen::PushforwardScenario{true}; isapprox::Function, rtol
 )
     (; f, x, y, dx, dy, ref) = new_scen = deepcopy(scen)
     f! = f
@@ -81,7 +73,7 @@ end
 ## Pullback
 
 function test_correctness(
-    ba::AbstractADType, ::typeof(pullback), scen::Scenario{false}; isapprox::Function, rtol
+    ba::AbstractADType, scen::PullbackScenario{false}; isapprox::Function, rtol
 )
     (; f, x, y, dx, dy, ref) = new_scen = deepcopy(scen)
     dx_true = if ref isa AbstractADType
@@ -113,7 +105,7 @@ function test_correctness(
 end
 
 function test_correctness(
-    ba::AbstractADType, ::typeof(pullback), scen::Scenario{true}; isapprox::Function, rtol
+    ba::AbstractADType, scen::PullbackScenario{true}; isapprox::Function, rtol
 )
     (; f, x, y, dx, dy, ref) = new_scen = deepcopy(scen)
     f! = f
@@ -142,11 +134,7 @@ end
 ## Derivative
 
 function test_correctness(
-    ba::AbstractADType,
-    ::typeof(derivative),
-    scen::Scenario{false};
-    isapprox::Function,
-    rtol,
+    ba::AbstractADType, scen::DerivativeScenario{false}; isapprox::Function, rtol
 )
     (; f, x, y, dx, dy, ref) = new_scen = deepcopy(scen)
     der_true = if ref isa AbstractADType
@@ -178,7 +166,7 @@ function test_correctness(
 end
 
 function test_correctness(
-    ba::AbstractADType, ::typeof(derivative), scen::Scenario{true}; isapprox::Function, rtol
+    ba::AbstractADType, scen::DerivativeScenario{true}; isapprox::Function, rtol
 )
     (; f, x, y, dx, dy, ref) = new_scen = deepcopy(scen)
     f! = f
@@ -207,7 +195,7 @@ end
 ## Gradient
 
 function test_correctness(
-    ba::AbstractADType, ::typeof(gradient), scen::Scenario{false}; isapprox::Function, rtol
+    ba::AbstractADType, scen::GradientScenario{false}; isapprox::Function, rtol
 )
     (; f, x, y, dx, dy, ref) = new_scen = deepcopy(scen)
     grad_true = if ref isa AbstractADType
@@ -241,7 +229,7 @@ end
 ## Jacobian
 
 function test_correctness(
-    ba::AbstractADType, ::typeof(jacobian), scen::Scenario{false}; isapprox::Function, rtol
+    ba::AbstractADType, scen::JacobianScenario{false}; isapprox::Function, rtol
 )
     (; f, x, y, ref) = new_scen = deepcopy(scen)
     jac_true = if ref isa AbstractADType
@@ -273,7 +261,7 @@ function test_correctness(
 end
 
 function test_correctness(
-    ba::AbstractADType, ::typeof(jacobian), scen::Scenario{true}; isapprox::Function, rtol
+    ba::AbstractADType, scen::JacobianScenario{true}; isapprox::Function, rtol
 )
     (; f, x, y, dy, ref) = new_scen = deepcopy(scen)
     f! = f
@@ -303,11 +291,7 @@ end
 ## Second derivative
 
 function test_correctness(
-    ba::AbstractADType,
-    ::typeof(second_derivative),
-    scen::Scenario;
-    isapprox::Function,
-    rtol,
+    ba::AbstractADType, scen::SecondDerivativeScenario; isapprox::Function, rtol
 )
     (; f, x, ref) = new_scen = deepcopy(scen)
     der2_true = if ref isa AbstractADType
@@ -329,9 +313,7 @@ end
 
 ## Hessian-vector product
 
-function test_correctness(
-    ba::AbstractADType, ::typeof(hvp), scen::Scenario; isapprox::Function, rtol
-)
+function test_correctness(ba::AbstractADType, scen::HVPScenario; isapprox::Function, rtol)
     (; f, x, dx, ref) = new_scen = deepcopy(scen)
     hvp_true = if ref isa AbstractADType
         hvp(f, ref, x, dx)
@@ -353,7 +335,7 @@ end
 ## Hessian
 
 function test_correctness(
-    ba::AbstractADType, ::typeof(hessian), scen::Scenario; isapprox::Function, rtol
+    ba::AbstractADType, scen::HessianScenario; isapprox::Function, rtol
 )
     (; f, x, y, ref) = new_scen = deepcopy(scen)
     hess_true = if ref isa AbstractADType

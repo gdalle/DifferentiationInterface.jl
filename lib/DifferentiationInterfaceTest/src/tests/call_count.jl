@@ -65,7 +65,7 @@ end
 
 ## Derivative
 
-function test_call_count(ba::AbstractADType, ::typeof(derivative), scen::Scenario{false})
+function test_call_count(ba::AbstractADType, scen::DerivativeScenario{false})
     (; f, x, y) = deepcopy(scen)
     extras = prepare_derivative(CallCounter(f), ba, x)
     cc = CallCounter(f)
@@ -77,7 +77,7 @@ function test_call_count(ba::AbstractADType, ::typeof(derivative), scen::Scenari
     end
 end
 
-function test_call_count(ba::AbstractADType, ::typeof(derivative), scen::Scenario{true})
+function test_call_count(ba::AbstractADType, scen::DerivativeScenario{true})
     (; f, x, y, dy) = deepcopy(scen)
     extras = prepare_derivative(CallCounter(f), ba, y, x)
     cc! = CallCounter(f)
@@ -93,7 +93,7 @@ end
 
 ## Gradient
 
-function test_call_count(ba::AbstractADType, ::typeof(gradient), scen::Scenario{false})
+function test_call_count(ba::AbstractADType, scen::GradientScenario{false})
     (; f, x, y) = deepcopy(scen)
     extras = prepare_gradient(CallCounter(f), ba, x)
     cc = CallCounter(f)
@@ -107,7 +107,7 @@ end
 
 ## Jacobian
 
-function test_call_count(ba::AbstractADType, ::typeof(jacobian), scen::Scenario{false})
+function test_call_count(ba::AbstractADType, scen::JacobianScenario{false})
     (; f, x, y) = deepcopy(scen)
     extras = prepare_jacobian(CallCounter(f), ba, x)
     cc = CallCounter(f)
@@ -119,7 +119,7 @@ function test_call_count(ba::AbstractADType, ::typeof(jacobian), scen::Scenario{
     end
 end
 
-function test_call_count(ba::AbstractADType, ::typeof(jacobian), scen::Scenario{true})
+function test_call_count(ba::AbstractADType, scen::JacobianScenario{true})
     (; f, x, y) = deepcopy(scen)
     extras = prepare_jacobian(CallCounter(f), ba, y, x)
     cc! = CallCounter(f)
@@ -135,9 +135,7 @@ end
 
 ## Second derivative
 
-function test_call_count(
-    ba::AbstractADType, ::typeof(second_derivative), scen::Scenario{false}
-)
+function test_call_count(ba::AbstractADType, scen::SecondDerivativeScenario{false})
     (; f, x, y) = deepcopy(scen)
     extras = prepare_second_derivative(CallCounter(f), ba, x)
     cc = CallCounter(f)
@@ -148,7 +146,7 @@ end
 
 ## Hessian-vector product
 
-function test_call_count(ba::AbstractADType, ::typeof(hvp), scen::Scenario{false})
+function test_call_count(ba::AbstractADType, scen::HVPScenario{false})
     (; f, x, y, dx) = deepcopy(scen)
     extras = prepare_hvp(CallCounter(f), ba, x)
     cc = CallCounter(f)
@@ -159,7 +157,7 @@ end
 
 ## Hessian
 
-function test_call_count(ba::AbstractADType, ::typeof(hessian), scen::Scenario{false})
+function test_call_count(ba::AbstractADType, scen::HessianScenario{false})
     (; f, x, y, dx) = deepcopy(scen)
     extras = prepare_hessian(CallCounter(f), ba, x)
     cc = CallCounter(f)
