@@ -19,15 +19,15 @@ function filter_scenarios(
 end
 
 """
-    test_differentiation(backends, [operators, scenarios]; [kwargs...])
+    test_differentiation(backends, [scenarios]; [kwargs...])
 
-Cross-test a list of `backends` for a list of `operators` on a list of `scenarios`, running a variety of different tests.
+Cross-test a list of `backends` on a list of `scenarios`, running a variety of different tests.
 
 If `benchmark=true`, return a [`BenchmarkData`](@ref) object, otherwise return `nothing`.
 
 # Default arguments
 
-- `scenarios::Vector{Scenario}`: the output of [`default_scenarios()`](@ref)
+- `scenarios::Vector{<:AbstractScenario}`: the output of [`default_scenarios()`](@ref)
 
 # Keyword arguments
 
@@ -48,7 +48,6 @@ Filtering:
 - `mutating=true`: consider operators for mutating functions
 - `first_order=true`: consider first order operators
 - `second_order=true`: consider second order operators
-- `excluded=Symbol[]`: list of excluded operators
 
 Options:
 
@@ -72,7 +71,6 @@ function test_differentiation(
     mutating=true,
     first_order=true,
     second_order=true,
-    excluded::Vector{<:Function}=Function[],
     # options
     isapprox=isapprox,
     rtol=1e-3,
