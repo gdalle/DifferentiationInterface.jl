@@ -7,14 +7,19 @@ using DocStringExtensions
 using LinearAlgebra: mul!
 using ReverseDiff:
     CompiledGradient,
+    CompiledHessian,
     CompiledJacobian,
     GradientConfig,
     GradientTape,
+    HessianConfig,
+    HessianTape,
     JacobianConfig,
     JacobianTape,
     compile,
     gradient,
     gradient!,
+    hessian,
+    hessian!,
     jacobian,
     jacobian!
 

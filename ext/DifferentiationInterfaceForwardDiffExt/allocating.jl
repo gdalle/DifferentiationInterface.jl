@@ -70,3 +70,19 @@ end
 function DI.jacobian(f, ::AutoForwardDiff, x::AbstractArray, config::JacobianConfig)
     return jacobian(f, x, config)
 end
+
+## Hessian
+
+function DI.prepare_hessian(f, backend::AutoForwardDiff, x::AbstractArray)
+    return HessianConfig(f, x, choose_chunk(backend, x))
+end
+
+function DI.hessian!!(
+    f, hess::AbstractMatrix, ::AutoForwardDiff, x::AbstractArray, config::HessianConfig
+)
+    return hessian!(hess, f, x, config)
+end
+
+function DI.hessian(f, ::AutoForwardDiff, x::AbstractArray, config::HessianConfig)
+    return hessian(f, x, config)
+end
