@@ -17,7 +17,7 @@ end
 
 ## Pushforward
 
-function test_call_count(ba::AbstractADType, ::typeof(pushforward), scen::Scenario{false})
+function test_call_count(ba::AbstractADType, scen::PushforwardScenario{false})
     (; f, x, dx) = deepcopy(scen)
     extras = prepare_pushforward(CallCounter(f), ba, x)
     cc = CallCounter(f)
@@ -27,7 +27,7 @@ function test_call_count(ba::AbstractADType, ::typeof(pushforward), scen::Scenar
     end
 end
 
-function test_call_count(ba::AbstractADType, ::typeof(pushforward), scen::Scenario{true})
+function test_call_count(ba::AbstractADType, scen::PushforwardScenario{true})
     (; f, x, y, dx, dy) = deepcopy(scen)
     extras = prepare_pushforward(CallCounter(f), ba, y, x)
     cc! = CallCounter(f)
@@ -41,7 +41,7 @@ end
 
 ## Pullback
 
-function test_call_count(ba::AbstractADType, ::typeof(pullback), scen::Scenario{false})
+function test_call_count(ba::AbstractADType, scen::PullbackScenario{false})
     (; f, x, y, dy) = deepcopy(scen)
     extras = prepare_pullback(CallCounter(f), ba, x)
     cc = CallCounter(f)
@@ -51,7 +51,7 @@ function test_call_count(ba::AbstractADType, ::typeof(pullback), scen::Scenario{
     end
 end
 
-function test_call_count(ba::AbstractADType, ::typeof(pullback), scen::Scenario{true})
+function test_call_count(ba::AbstractADType, scen::PullbackScenario{true})
     (; f, x, y, dx, dy) = deepcopy(scen)
     extras = prepare_pullback(CallCounter(f), ba, y, x)
     cc! = CallCounter(f)
