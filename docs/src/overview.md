@@ -56,6 +56,14 @@ Second-order differentiation is also supported, with the following operators:
 | [`hvp`](@ref)               | `Any`           | `Number`     | same as `x`      | `size(x)`                |
 | [`hessian`](@ref)           | `AbstractArray` | `Number`     | `AbstractMatrix` | `(length(x), length(x))` |
 
+We only define two variants for now:
+
+| out-of-place                | in-place (or not)             |
+| --------------------------- | ----------------------------- |
+| [`second_derivative`](@ref) | [`second_derivative!!`](@ref) |
+| [`hvp`](@ref)               | [`hvp!!`](@ref)               |
+| [`hessian`](@ref)           | [`hessian!!`](@ref)           |
+
 !!! danger
     This is an experimental functionality, use at your own risk.
 

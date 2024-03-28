@@ -57,3 +57,46 @@ function hvp_aux(f, backend, x, v, extras, ::ForwardOverForward)
     p = pushforward(gradient_closure, outer(backend), x, v, outer(extras))
     return p
 end
+
+"""
+    hvp!!(f, p, backend, x, v, [extras]) -> p
+"""
+function hvp!!(f, p, backend::AbstractADType, x, v, extras=prepare_hvp(f, backend, x))
+    new_backend = SecondOrder(backend, backend)
+    new_extras = prepare_hvp(f, new_backend, x)
+    return hvp!!(f, p, new_backend, x, v, new_extras)
+end
+
+function hvp!!(
+    f, p, backend::SecondOrder, x::Number, v::Number, extras=prepare_hvp(f, backend, x)
+)
+    return v * second_derivative(f, backend, x, extras)
+end
+
+function hvp!!(f, p, backend::SecondOrder, x, v, extras=prepare_hvp(f, backend, x))
+    return hvp_aux!!(f, p, backend, x, v, extras, hvp_mode(backend))
+end
+
+function hvp_aux!!(f, p, backend, x, v, extras, ::ForwardOverReverse)
+    gradient_closure(z) = gradient(f, inner(backend), z, inner(extras))
+    p = pushforward!!(gradient_closure, p, outer(backend), x, v, outer(extras))
+    return p
+end
+
+function hvp_aux!!(f, p, backend, x, v, extras, ::ReverseOverForward)
+    jvp_closure(z) = pushforward(f, inner(backend), z, v, inner(extras))
+    p = gradient!!(jvp_closure, p, outer(backend), x, outer(extras))
+    return p
+end
+
+function hvp_aux!!(f, p, backend, x, v, extras, ::ReverseOverReverse)
+    gradient_closure(z) = gradient(f, inner(backend), z, inner(extras))
+    p = pullback!!(gradient_closure, p, outer(backend), x, v, outer(extras))
+    return p
+end
+
+function hvp_aux!!(f, p, backend, x, v, extras, ::ForwardOverForward)
+    gradient_closure(z) = gradient(f, inner(backend), z, inner(extras))
+    p = pushforward!!(gradient_closure, p, outer(backend), x, v, outer(extras))
+    return p
+end

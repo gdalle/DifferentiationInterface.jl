@@ -306,7 +306,7 @@ function run_benchmark!(
 )
     (; f, x, y, dy) = deepcopy(scen)
     extras = prepare_second_derivative(f, ba, x)
-    bench1 = @be second_derivative(f, ba, x, extras)
+    bench1 = @be mysimilar(dy) second_derivative!!(f, _, ba, x, extras)
     # only test allocations if the output is scalar
     if allocations && y isa Number
         @test 0 == minimum(bench1).allocs
@@ -326,7 +326,7 @@ function run_benchmark!(
 )
     (; f, x, y, dx) = deepcopy(scen)
     extras = prepare_hvp(f, ba, x)
-    bench1 = @be hvp(f, ba, x, dx, extras)
+    bench1 = @be mysimilar(dx) hvp!!(f, _, ba, x, dx, extras)
     # no test for now
     record!(data, ba, op, hvp, scen, bench1)
     return nothing
@@ -343,7 +343,8 @@ function run_benchmark!(
 )
     (; f, x, y) = deepcopy(scen)
     extras = prepare_hessian(f, ba, x)
-    bench1 = @be hessian(f, ba, x, extras)
+    hess_template = Matrix{typeof(y)}(undef, length(x), length(x))
+    bench1 = @be similar(hess_template) hessian!!(f, _, ba, x, extras)
     # no test for now
     record!(data, ba, op, hessian, scen, bench1)
     return nothing

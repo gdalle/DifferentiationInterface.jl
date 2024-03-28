@@ -11,8 +11,8 @@ An interface to various automatic differentiation backends in Julia.
 
 This package provides a backend-agnostic syntax to differentiate functions of the following types:
 
-- **allocating**: `f(x) = y`
-- **mutating**: `f!(y, x) = nothing`
+- _allocating_: `f(x) = y`
+- _mutating_: `f!(y, x) = nothing`
 
 ## Features
 

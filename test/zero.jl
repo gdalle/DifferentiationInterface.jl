@@ -69,7 +69,7 @@ for backend in [AutoZeroForward(), AutoZeroReverse()]
         all_operators(),
         static_scenarios();
         correctness=backend,
-        excluded=[jacobian],
+        excluded=[jacobian, hessian],
     )
     # stack fails on component vectors
     test_differentiation(
