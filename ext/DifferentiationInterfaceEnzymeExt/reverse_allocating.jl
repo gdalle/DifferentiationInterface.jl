@@ -1,5 +1,7 @@
 ## Pullback
 
+### Out-of-place
+
 function DI.value_and_pullback(
     f, ::AutoReverseEnzyme, x::Number, dy::Number, extras::Nothing
 )
@@ -20,28 +22,28 @@ function DI.value_and_pullback(
     return y, new_dx
 end
 
+### In-place
+
 function DI.value_and_pullback!!(
     f, dx, ::AutoReverseEnzyme, x::AbstractArray, dy::Number, extras::Nothing
 )
-    dx_sametype = convert(typeof(x), dx)
-    dx_sametype .= zero(eltype(dx_sametype))
+    dx_sametype = zero_sametype!!(dx, x)
     _, y = autodiff(ReverseWithPrimal, f, Active, Duplicated(x, dx_sametype))
     dx_sametype .*= dy
-    return y, myupdate!!(dx, dx_sametype)
+    return y, dx_sametype
 end
 
 function DI.value_and_pullback!!(
     f, dx, ::AutoReverseEnzyme, x::AbstractArray, dy::AbstractArray, extras::Nothing
 )
-    dx_sametype = convert(typeof(x), dx)
-    dx_sametype .= zero(eltype(dx_sametype))
+    dx_sametype = zero_sametype!!(dx, x)
     forw, rev = autodiff_thunk(
         ReverseSplitWithPrimal, Const{typeof(f)}, Duplicated, Duplicated{typeof(x)}
     )
     tape, y, new_dy = forw(Const(f), Duplicated(x, dx_sametype))
     new_dy .= dy
     rev(Const(f), Duplicated(x, dx_sametype), tape)
-    return y, myupdate!!(dx, dx_sametype)
+    return y, dx_sametype
 end
 
 function DI.value_and_pullback(f, backend::AutoReverseEnzyme, x::AbstractArray, dy, extras)
@@ -58,6 +60,5 @@ end
 function DI.gradient!!(f, grad, ::AutoReverseEnzyme, x::AbstractArray, extras::Nothing)
     grad_sametype = convert(typeof(x), grad)
     gradient!(Reverse, grad_sametype, f, x)
-    grad .= grad_sametype
-    return grad
+    return grad_sametype
 end

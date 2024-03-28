@@ -9,6 +9,7 @@ using ForwardDiff:
     DerivativeConfig,
     ForwardDiff,
     GradientConfig,
+    HessianConfig,
     JacobianConfig,
     Tag,
     derivative,
@@ -17,6 +18,8 @@ using ForwardDiff:
     extract_derivative!,
     gradient,
     gradient!,
+    hessian,
+    hessian!,
     jacobian,
     jacobian!,
     value

@@ -36,15 +36,19 @@ Several variants of each operator are defined:
 !!! warning
     The "bang-bang" syntactic convention `!!` signals that some of the arguments _can_ be mutated, but they do not _have to be_.
     Such arguments will always be part of the return, so that one can simply reuse the operator's output and forget its input.
-
     In other words, this is good:
     ```julia
-    grad = gradient!!(f, grad, backend, x)  # do this
+    # work with grad_in
+    grad_out = gradient!!(f, grad_in, backend, x)
+    # work with grad_out
     ```
-    On the other hand, this is bad, because if `grad` has not been mutated, you will get wrong results:
+    On the other hand, this is bad, because if `grad_in` has not been mutated, you will forget the results:
     ```julia
-    gradient!!(f, grad, backend, x)  # don't do this
+    # work with grad_in
+    gradient!!(f, grad_in, backend, x)
+    # mistakenly keep working with grad_in
     ```
+    Note that we don't guarantee `grad_out` will have the same type as `grad_in`.
 
 ## Second order
 

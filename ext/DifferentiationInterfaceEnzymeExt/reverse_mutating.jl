@@ -11,9 +11,8 @@ end
 function DI.value_and_pullback!!(
     f!, y, dx, ::AutoReverseEnzyme, x::AbstractArray, dy, extras::Nothing
 )
-    dx_sametype = convert(typeof(x), dx)
-    dx_sametype .= zero(eltype(dx_sametype))
-    dy_sametype = convert(typeof(y), copy(dy))  # TODO: how to get rid of copy?
+    dx_sametype = zero_sametype!!(dx, x)
+    dy_sametype = convert(typeof(y), copy(dy))
     autodiff(Reverse, f!, Const, Duplicated(y, dy_sametype), Duplicated(x, dx_sametype))
-    return y, myupdate!!(dx, dx_sametype)
+    return y, dx_sametype
 end

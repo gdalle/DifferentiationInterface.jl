@@ -141,3 +141,29 @@ function DI.jacobian(
 )
     return jacobian!(tape, x)
 end
+
+## Hessian
+
+function DI.prepare_hessian(f, backend::AutoReverseDiff, x::AbstractArray)
+    tape = HessianTape(f, x)
+    if backend.compile
+        tape = compile(tape)
+    end
+    return tape
+end
+
+function DI.hessian!!(
+    _f,
+    hess::AbstractMatrix,
+    ::AutoReverseDiff,
+    x::AbstractArray,
+    tape::Union{HessianTape,CompiledHessian},
+)
+    return hessian!(hess, tape, x)
+end
+
+function DI.hessian(
+    _f, ::AutoReverseDiff, x::AbstractArray, tape::Union{HessianTape,CompiledHessian}
+)
+    return hessian!(tape, x)
+end

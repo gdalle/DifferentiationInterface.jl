@@ -1,9 +1,3 @@
-mymul!!(x::Number, a) = x * a
-mymul!!(x::AbstractArray, a) = x .*= a
-
-myupdate!!(_old::Number, new::Number) = new
-myupdate!!(old::AbstractArray, new) = old .= new
-
 """
     basis(backend, a::AbstractArray, i::CartesianIndex)
 

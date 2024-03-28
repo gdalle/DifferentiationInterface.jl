@@ -1,7 +1,7 @@
 module DifferentiationInterfaceTapedExt
 
 using ADTypes: ADTypes
-using DifferentiationInterface: AutoTaped, myupdate!!
+using DifferentiationInterface: AutoTaped
 import DifferentiationInterface as DI
 using Taped: build_rrule, value_and_pullback!!
 
