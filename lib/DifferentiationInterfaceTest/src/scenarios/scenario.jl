@@ -226,7 +226,7 @@ for S in (
     :HessianScenario,
 )
     @eval begin
-        is_mutating(::($S){mutating}) where {mutating} = mutating
+        ismutating(::($S){mutating}) where {mutating} = mutating
 
         function Base.string(scen::($S){mutating,F,X,Y}) where {mutating,F,X,Y}
             return "$S on $(string(scen.f)): $X -> $Y"
