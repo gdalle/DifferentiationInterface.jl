@@ -1,49 +1,20 @@
-"""
-    all_operators()
-
-List all operators that can be tested with [`test_differentiation`](@ref).
-"""
-function all_operators()
-    return [
-        pushforward,
-        pullback,
-        derivative,
-        gradient,
-        jacobian,
-        second_derivative,
-        hvp,
-        hessian,
-    ]
-end
-
-function filter_operators(
-    operators::Vector{<:Function};
+function filter_scenarios(
+    scenarios::Vector{<:AbstractScenario};
     first_order::Bool,
     second_order::Bool,
-    excluded::Vector{<:Function},
-)
-    !first_order && (
-        operators = filter(
-            !in([pushforward, pullback, derivative, gradient, jacobian]), operators
-        )
-    )
-    !second_order && (operators = filter(!in([second_derivative, hvp, hessian]), operators))
-    operators = filter(!in(excluded), operators)
-    return operators
-end
-
-function filter_scenarios(
-    scenarios::Vector{<:Scenario};
     input_type::Type,
     output_type::Type,
     allocating::Bool,
     mutating::Bool,
 )
+    !first_order && (scenarios = filter(s -> isa(s, AbstractFirstOrderScenario), scenarios))
+    !second_order &&
+        (scenarios = filter(s -> isa(s, AbstractSecondOrderScenario), scenarios))
     scenarios = filter(scenarios) do scen
         typeof(scen.x) <: input_type && typeof(scen.y) <: output_type
     end
-    !allocating && (scenarios = filter(is_mutating, scenarios))
-    !mutating && (scenarios = filter(!is_mutating, scenarios))
+    !allocating && (scenarios = filter(ismutating, scenarios))
+    !mutating && (scenarios = filter(!ismutating, scenarios))
     return scenarios
 end
 
@@ -56,7 +27,6 @@ If `benchmark=true`, return a [`BenchmarkData`](@ref) object, otherwise return `
 
 # Default arguments
 
-- `operators::Vector{Function}`: the list `[pushforward, pullback, derivative, gradient, jacobian, second_derivative, hvp, hessian]`
 - `scenarios::Vector{Scenario}`: the output of [`default_scenarios()`](@ref)
 
 # Keyword arguments
@@ -87,8 +57,7 @@ Options:
 """
 function test_differentiation(
     backends::Vector{<:AbstractADType},
-    operators::Vector{<:Function}=all_operators(),
-    scenarios::Vector{<:Scenario}=default_scenarios();
+    scenarios::Vector{<:AbstractScenario}=default_scenarios();
     # testing
     correctness::Union{Bool,AbstractADType}=true,
     type_stability::Bool=false,
@@ -108,8 +77,9 @@ function test_differentiation(
     isapprox=isapprox,
     rtol=1e-3,
 )
-    operators = filter_operators(operators; first_order, second_order, excluded)
-    scenarios = filter_scenarios(scenarios; input_type, output_type, allocating, mutating)
+    scenarios = filter_scenarios(
+        scenarios; first_order, second_order, input_type, output_type, allocating, mutating
+    )
 
     benchmark_data = BenchmarkData()
 
@@ -122,35 +92,31 @@ function test_differentiation(
         (allocations ? " allocations" : "")
 
     @testset verbose = detailed "$(backend_string(backend))" for backend in backends
-        @testset verbose = detailed "$op" for op in operators
-            @testset "$scen" for scen in filter(s -> compatible(backend, op, s), scenarios)
-                if correctness != false
-                    @testset "Correctness" begin
-                        if correctness isa AbstractADType
-                            test_correctness(
-                                backend, op, change_ref(scen, correctness); isapprox, rtol
-                            )
-                        else
-                            test_correctness(backend, op, scen; isapprox, rtol)
-                        end
-                    end
-                end
-                if call_count
-                    @testset "Call count" begin
-                        test_call_count(backend, op, scen)
-                    end
-                end
-                if type_stability
-                    @testset "Type stability" begin
-                        test_jet(backend, op, scen)
-                    end
-                end
-                if benchmark || allocations
-                    @testset "Allocations" begin
-                        run_benchmark!(
-                            benchmark_data, backend, op, scen; allocations=allocations
+        @testset "$scen" for scen in filter(s -> compatible(backend, s), scenarios)
+            if correctness != false
+                @testset "Correctness" begin
+                    if correctness isa AbstractADType
+                        test_correctness(
+                            backend, change_ref(scen, correctness); isapprox, rtol
                         )
+                    else
+                        test_correctness(backend, scen; isapprox, rtol)
                     end
+                end
+            end
+            if call_count
+                @testset "Call count" begin
+                    test_call_count(backend, scen)
+                end
+            end
+            if type_stability
+                @testset "Type stability" begin
+                    test_jet(backend, scen)
+                end
+            end
+            if benchmark || allocations
+                @testset "Allocations" begin
+                    run_benchmark!(benchmark_data, backend, scen; allocations=allocations)
                 end
             end
         end

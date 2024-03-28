@@ -1,6 +1,9 @@
 abstract type AbstractScenario end
 # Subtypes are expected to be parametric types `MyScenario{mutating, F, X, Y, Result, ...}`
 
+abstract type AbstractFirstOrderScenario <: AbstractScenario end
+abstract type AbstractSecondOrderScenario <: AbstractScenario end
+
 """
     PushforwardScenario{mutating}
 
@@ -10,7 +13,7 @@ Store a testing scenario composed of a function and its input + primal output + 
 
 $(TYPEDFIELDS)
 """
-struct PushforwardScenario{mutating,F,X,Y,R,DX} <: AbstractScenario
+struct PushforwardScenario{mutating,F,X,Y,R,DX} <: AbstractFirstOrderScenario
     "function"
     f::F
     "input"
@@ -38,7 +41,7 @@ Store a testing scenario composed of a function and its input + primal output + 
 
 $(TYPEDFIELDS)
 """
-struct PullbackScenario{mutating,F,X,Y,R,DY} <: AbstractScenario
+struct PullbackScenario{mutating,F,X,Y,R,DY} <: AbstractFirstOrderScenario
     "function"
     f::F
     "input"
@@ -66,7 +69,7 @@ Store a testing scenario composed of a function and its input + primal output + 
 
 $(TYPEDFIELDS)
 """
-struct DerivativeScenario{mutating,F,X,Y,R} <: AbstractScenario
+struct DerivativeScenario{mutating,F,X,Y,R} <: AbstractFirstOrderScenario
     "function"
     f::F
     "input"
@@ -92,7 +95,7 @@ Store a testing scenario composed of a function and its input + primal output + 
 
 $(TYPEDFIELDS)
 """
-struct GradientScenario{mutating,F,X,Y,R} <: AbstractScenario
+struct GradientScenario{mutating,F,X,Y,R} <: AbstractFirstOrderScenario
     "function"
     f::F
     "input"
@@ -118,7 +121,7 @@ Store a testing scenario composed of a function and its input + primal output + 
 
 $(TYPEDFIELDS)
 """
-struct JacobianScenario{mutating,F,X<:AbstractArray,Y,R} <: AbstractScenario
+struct JacobianScenario{mutating,F,X<:AbstractArray,Y,R} <: AbstractFirstOrderScenario
     "function"
     f::F
     "input"
@@ -144,7 +147,7 @@ Store a testing scenario composed of a function and its input + primal output + 
 
 $(TYPEDFIELDS)
 """
-struct SecondDerivativeScenario{mutating,F,X,Y,R} <: AbstractScenario
+struct SecondDerivativeScenario{mutating,F,X,Y,R} <: AbstractSecondOrderScenario
     "function"
     f::F
     "input"
@@ -170,7 +173,7 @@ Store a testing scenario composed of a function and its input + primal output + 
 
 $(TYPEDFIELDS)
 """
-struct HVPScenario{mutating,F,X,Y,R} <: AbstractScenario
+struct HVPScenario{mutating,F,X,Y,R} <: AbstractSecondOrderScenario
     "function"
     f::F
     "input"
@@ -196,7 +199,7 @@ Store a testing scenario composed of a function and its input + primal output + 
 
 $(TYPEDFIELDS)
 """
-struct HessianScenario{mutating,F,X<:AbstractArray,Y,R} <: AbstractScenario
+struct HessianScenario{mutating,F,X<:AbstractArray,Y,R} <: AbstractSecondOrderScenario
     "function"
     f::F
     "input"
