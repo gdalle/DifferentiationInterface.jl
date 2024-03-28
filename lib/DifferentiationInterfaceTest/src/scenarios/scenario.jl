@@ -1,4 +1,5 @@
 abstract type AbstractScenario end
+# Subtypes are expected to be parametric types `MyScenario{mutating, F, X, Y, Result, ...}`
 
 """
     PushforwardScenario{mutating}
@@ -9,7 +10,7 @@ Store a testing scenario composed of a function and its input + primal output + 
 
 $(TYPEDFIELDS)
 """
-struct PushforwardScenario{mutating,F,X,Y,DX,DY} <: AbstractScenario
+struct PushforwardScenario{mutating,F,X,Y,R,DX} <: AbstractScenario
     "function"
     f::F
     "input"
@@ -19,13 +20,13 @@ struct PushforwardScenario{mutating,F,X,Y,DX,DY} <: AbstractScenario
     "pushforward seed"
     dx::DX
     "Reference pushforward to compare against"
-    pushforward::DY
+    pushforward::R
 end
 
 function PushforwardScenario{mutating}(
-    f::F, x::X, y::Y, dx::DX, pushforward::DY
-) where {mutating,F,X,Y,DX,DY}
-    return PushforwardScenario{mutating,F,X,Y,DX,DY}(f, x, y, dx, pushforward)
+    f::F, x::X; y::Y=nothing, dx::DX=nothing, pushforward::R=nothing
+) where {mutating,F,X,Y,DX,R}
+    return PushforwardScenario{mutating,F,X,Y,R,DX}(f, x, y, dx, pushforward)
 end
 
 """
@@ -37,7 +38,7 @@ Store a testing scenario composed of a function and its input + primal output + 
 
 $(TYPEDFIELDS)
 """
-struct PullbackScenario{mutating,F,X,Y,DX,DY} <: AbstractScenario
+struct PullbackScenario{mutating,F,X,Y,R,DY} <: AbstractScenario
     "function"
     f::F
     "input"
@@ -47,13 +48,13 @@ struct PullbackScenario{mutating,F,X,Y,DX,DY} <: AbstractScenario
     "pullback seed"
     dy::DY
     "Reference pullback to compare against"
-    pullback::DX
+    pullback::R
 end
 
 function PullbackScenario{mutating}(
-    f::F, x::X, y::Y, dy::DY, pullback::DX
-) where {mutating,F,X,Y,DX,DY}
-    return PullbackScenario{mutating,F,X,Y,DX,DY}(f, x, y, dy, pullback)
+    f::F, x::X; y::Y=nothing, dy::DY=nothing, pullback::R=nothing
+) where {mutating,F,X,Y,DX,R}
+    return PullbackScenario{mutating,F,X,Y,R,DX}(f, x, y, dy, pullback)
 end
 
 """
@@ -65,7 +66,7 @@ Store a testing scenario composed of a function and its input + primal output + 
 
 $(TYPEDFIELDS)
 """
-struct DerivativeScenario{mutating,F,X<:Number,Y} <: AbstractScenario
+struct DerivativeScenario{mutating,F,X,Y,R} <: AbstractScenario
     "function"
     f::F
     "input"
@@ -73,13 +74,13 @@ struct DerivativeScenario{mutating,F,X<:Number,Y} <: AbstractScenario
     "output"
     y::Y
     "Reference derivative to compare against."
-    derivative::Y
+    derivative::R
 end
 
 function DerivativeScenario{mutating}(
-    f::F, x::X, y::Y, derivative::Y
-) where {mutating,F,X,Y}
-    return DerivativeScenario{mutating,F,X,Y}(f, x, y, derivative)
+    f::F, x::X; y::Y=nothing, derivative::R=nothing
+) where {mutating,F,X,Y,R}
+    return DerivativeScenario{mutating,F,X,Y,R}(f, x, y, derivative)
 end
 
 """
@@ -91,7 +92,7 @@ Store a testing scenario composed of a function and its input + primal output + 
 
 $(TYPEDFIELDS)
 """
-struct GradientScenario{mutating,F,X,Y<:Number} <: AbstractScenario
+struct GradientScenario{mutating,F,X,Y,R} <: AbstractScenario
     "function"
     f::F
     "input"
@@ -99,11 +100,13 @@ struct GradientScenario{mutating,F,X,Y<:Number} <: AbstractScenario
     "output"
     y::Y
     "Reference gradient to compare against."
-    gradient::X
+    gradient::R
 end
 
-function GradientScenario{mutating}(f::F, x::X, y::Y, gradient::X) where {mutating,F,X,Y}
-    return GradientScenario{mutating,F,X,Y}(f, x, y, gradient)
+function GradientScenario{mutating}(
+    f::F, x::X; y::Y=nothing, gradient::R=nothing
+) where {mutating,F,X,Y,R}
+    return GradientScenario{mutating,F,X,Y,R}(f, x, y, gradient)
 end
 
 """
@@ -115,8 +118,7 @@ Store a testing scenario composed of a function and its input + primal output + 
 
 $(TYPEDFIELDS)
 """
-struct JacobianScenario{mutating,F,X<:AbstractArray,Y<:AbstractArray,J<:AbstractMatrix} <:
-       AbstractScenario
+struct JacobianScenario{mutating,F,X<:AbstractArray,Y,R} <: AbstractScenario
     "function"
     f::F
     "input"
@@ -124,10 +126,12 @@ struct JacobianScenario{mutating,F,X<:AbstractArray,Y<:AbstractArray,J<:Abstract
     "output"
     y::Y
     "Reference Jacobian to compare against."
-    jacobian::J
+    jacobian::R
 end
 
-function JacobianScenario{mutating}(f::F, x::X, y::Y, jacobian::J) where {mutating,F,X,Y,J}
+function JacobianScenario{mutating}(
+    f::F, x::X; y::Y=nothing, jacobian::R=nothing
+) where {mutating,F,X,Y,R}
     return JacobianScenario{mutating,F,X,Y,J}(f, x, y, jacobian)
 end
 
@@ -140,7 +144,7 @@ Store a testing scenario composed of a function and its input + primal output + 
 
 $(TYPEDFIELDS)
 """
-struct SecondDerivativeScenario{mutating,F,X,Y} <: AbstractScenario
+struct SecondDerivativeScenario{mutating,F,X,Y,R} <: AbstractScenario
     "function"
     f::F
     "input"
@@ -148,13 +152,13 @@ struct SecondDerivativeScenario{mutating,F,X,Y} <: AbstractScenario
     "output"
     y::Y
     "Reference second-derivative to compare against."
-    second_derivative::Y
+    second_derivative::R
 end
 
 function SecondDerivativeScenario{mutating}(
-    f::F, x::X, y::Y, second_derivative::Y
-) where {mutating,F,X,Y}
-    return SecondDerivativeScenario{mutating,F,X,Y}(f, x, y, second_derivative)
+    f::F, x::X; y::Y=nothing, second_derivative::R=nothing
+) where {mutating,F,X,Y,R}
+    return SecondDerivativeScenario{mutating,F,X,Y,R}(f, x, y, second_derivative)
 end
 
 """
@@ -166,7 +170,7 @@ Store a testing scenario composed of a function and its input + primal output + 
 
 $(TYPEDFIELDS)
 """
-struct HVPScenario{mutating,F,X,Y<:Number} <: AbstractScenario
+struct HVPScenario{mutating,F,X,Y,R} <: AbstractScenario
     "function"
     f::F
     "input"
@@ -174,11 +178,13 @@ struct HVPScenario{mutating,F,X,Y<:Number} <: AbstractScenario
     "output"
     y::Y
     "Reference Hessian-vector product to compare against."
-    hvp::X
+    hvp::R
 end
 
-function HVPScenario{mutating}(f::F, x::X, y::Y, hvp::X) where {mutating,F,X,Y}
-    return HVPScenario{mutating,F,X,Y}(f, x, y, hvp)
+function HVPScenario{mutating}(
+    f::F, x::X; y::Y=nothing, hvp::R=nothing
+) where {mutating,F,X,Y,R}
+    return HVPScenario{mutating,F,X,Y,R}(f, x, y, hvp)
 end
 
 """
@@ -190,8 +196,7 @@ Store a testing scenario composed of a function and its input + primal output + 
 
 $(TYPEDFIELDS)
 """
-struct HessianScenario{mutating,F,X<:AbstractArray,Y<:Number,H<:AbstractMatrix} <:
-       AbstractScenario
+struct HessianScenario{mutating,F,X<:AbstractArray,Y,R} <: AbstractScenario
     "function"
     f::F
     "input"
@@ -199,10 +204,12 @@ struct HessianScenario{mutating,F,X<:AbstractArray,Y<:Number,H<:AbstractMatrix} 
     "output"
     y::Y
     "Reference Hessian to compare against."
-    hessian::H
+    hessian::R
 end
 
-function HessianScenario{mutating}(f::F, x::X, y::Y, hessian::H) where {mutating,F,X,Y,H}
+function HessianScenario{mutating}(
+    f::F, x::X; y::Y=nothing, hessian::H=nothing
+) where {mutating,F,X,Y,H}
     return HessianScenario{mutating,F,X,Y,H}(f, x, y, hessian)
 end
 
@@ -226,22 +233,3 @@ for S in (
         end
     end
 end
-
-# function change_ref(scen::Scenario{mutating}, new_ref::AbstractADType) where {mutating}
-#     return Scenario{mutating}(scen.f, scen.x, scen.y, scen.dx, scen.dy, new_ref)
-# end
-
-# function PushforwardScenario(f; x, y=nothing, pushforward=nothing)
-#     if isnothing(y)
-#         y = f(x)
-#         dx = mysimilar_random(x)
-#         dy = mysimilar_random(y)
-#         return PushforwardScenario{false}(f, x, y, dx, dy, ref)
-#     else
-#         f! = f
-#         f!(y, x)
-#         dx = mysimilar_random(x)
-#         dy = mysimilar_random(y)
-#         return PushforwardScenario{true}(f!, x, y, dx, dy, ref)
-#     end
-# end
