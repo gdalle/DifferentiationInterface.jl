@@ -233,3 +233,13 @@ for S in (
         end
     end
 end
+
+# TODO: remove, this currently only exists for benchmark suite compatibility 
+operator(::PushforwardScenario) = pushforward
+operator(::PullbackScenario) = pullback
+operator(::DerivativeScenario) = derivative
+operator(::GradientScenario) = gradient
+operator(::JacobianScenario) = jacobian
+operator(::SecondDerivativeScenario) = second_derivative
+operator(::HVPScenario) = hvp
+operator(::HessianScenario) = hessian

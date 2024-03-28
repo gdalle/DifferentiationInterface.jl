@@ -48,11 +48,11 @@ end
 function record!(
     data::BenchmarkData,
     backend::AbstractADType,
-    operator::Function,
     variant::Function,
-    scenario::Scenario,
+    scenario::AbstractScenario,
     bench,
 )
+    operator = operator(scenario)
     bench_min = minimum(bench)
     tup = (;
         backend=backend_string(backend),
@@ -81,8 +81,7 @@ end
 function run_benchmark!(
     data::BenchmarkData,
     ba::AbstractADType,
-    op::typeof(pushforward),
-    scen::Scenario{false};
+    scen::PushforwardScenario{false};
     allocations::Bool,
 )
     (; f, x, dx, dy) = deepcopy(scen)
@@ -91,15 +90,14 @@ function run_benchmark!(
     if allocations && dy isa Number
         @test 0 == minimum(bench1).allocs
     end
-    record!(data, ba, op, value_and_pushforward!!, scen, bench1)
+    record!(data, ba, value_and_pushforward!!, scen, bench1)
     return nothing
 end
 
 function run_benchmark!(
     data::BenchmarkData,
     ba::AbstractADType,
-    op::typeof(pushforward),
-    scen::Scenario{true};
+    scen::PushforwardScenario{true};
     allocations::Bool,
 )
     (; f, x, y, dx, dy) = deepcopy(scen)
@@ -111,7 +109,7 @@ function run_benchmark!(
     if allocations
         @test 0 == minimum(bench1).allocs
     end
-    record!(data, ba, op, value_and_pushforward!!, scen, bench1)
+    record!(data, ba, value_and_pushforward!!, scen, bench1)
     return nothing
 end
 
@@ -120,8 +118,7 @@ end
 function run_benchmark!(
     data::BenchmarkData,
     ba::AbstractADType,
-    op::typeof(pullback),
-    scen::Scenario{false};
+    scen::PullbackScenario{false};
     allocations::Bool,
 )
     (; f, x, dx, dy) = deepcopy(scen)
@@ -130,16 +127,12 @@ function run_benchmark!(
     if allocations && dy isa Number
         @test 0 == minimum(bench1).allocs
     end
-    record!(data, ba, op, value_and_pullback!!, scen, bench1)
+    record!(data, ba, value_and_pullback!!, scen, bench1)
     return nothing
 end
 
 function run_benchmark!(
-    data::BenchmarkData,
-    ba::AbstractADType,
-    op::typeof(pullback),
-    scen::Scenario{true};
-    allocations::Bool,
+    data::BenchmarkData, ba::AbstractADType, scen::PullbackScenario{true}; allocations::Bool
 )
     (; f, x, y, dx, dy) = deepcopy(scen)
     f! = f
@@ -150,7 +143,7 @@ function run_benchmark!(
     if allocations
         @test 0 == minimum(bench1).allocs
     end
-    record!(data, ba, op, value_and_pullback!!, scen, bench1)
+    record!(data, ba, value_and_pullback!!, scen, bench1)
     return nothing
 end
 
@@ -159,8 +152,7 @@ end
 function run_benchmark!(
     data::BenchmarkData,
     ba::AbstractADType,
-    op::typeof(derivative),
-    scen::Scenario{false};
+    scen::DerivativeScenario{false};
     allocations::Bool,
 )
     (; f, x, y, dy) = deepcopy(scen)
@@ -170,15 +162,14 @@ function run_benchmark!(
     if allocations && y isa Number
         @test 0 == minimum(bench1).allocs
     end
-    record!(data, ba, op, value_and_derivative!!, scen, bench1)
+    record!(data, ba, value_and_derivative!!, scen, bench1)
     return nothing
 end
 
 function run_benchmark!(
     data::BenchmarkData,
     ba::AbstractADType,
-    op::typeof(derivative),
-    scen::Scenario{true};
+    scen::DerivativeScenario{true};
     allocations::Bool,
 )
     (; f, x, y, dy) = deepcopy(scen)
@@ -190,7 +181,7 @@ function run_benchmark!(
     if allocations
         @test 0 == minimum(bench1).allocs
     end
-    record!(data, ba, op, value_and_derivative!!, scen, bench1)
+    record!(data, ba, value_and_derivative!!, scen, bench1)
     return nothing
 end
 
@@ -199,8 +190,7 @@ end
 function run_benchmark!(
     data::BenchmarkData,
     ba::AbstractADType,
-    op::typeof(gradient),
-    scen::Scenario{false};
+    scen::GradientScenario{false};
     allocations::Bool,
 )
     (; f, x, dx) = deepcopy(scen)
@@ -209,7 +199,7 @@ function run_benchmark!(
     if allocations
         @test 0 == minimum(bench1).allocs
     end
-    record!(data, ba, op, value_and_gradient!!, scen, bench1)
+    record!(data, ba, value_and_gradient!!, scen, bench1)
     return nothing
 end
 
@@ -218,8 +208,7 @@ end
 function run_benchmark!(
     data::BenchmarkData,
     ba::AbstractADType,
-    op::typeof(jacobian),
-    scen::Scenario{false};
+    scen::JacobianScenario{false};
     allocations::Bool,
 )
     (; f, x, y) = deepcopy(scen)
@@ -227,16 +216,12 @@ function run_benchmark!(
     jac_template = Matrix{eltype(y)}(undef, length(y), length(x))
     bench1 = @be mysimilar(jac_template) value_and_jacobian!!(f, _, ba, x, extras)
     # never test allocations
-    record!(data, ba, op, value_and_jacobian!!, scen, bench1)
+    record!(data, ba, value_and_jacobian!!, scen, bench1)
     return nothing
 end
 
 function run_benchmark!(
-    data::BenchmarkData,
-    ba::AbstractADType,
-    op::typeof(jacobian),
-    scen::Scenario{true};
-    allocations::Bool,
+    data::BenchmarkData, ba::AbstractADType, scen::JacobianScenario{true}; allocations::Bool
 )
     (; f, x, y) = deepcopy(scen)
     f! = f
@@ -248,7 +233,7 @@ function run_benchmark!(
     if allocations
         @test 0 == minimum(bench1).allocs
     end
-    record!(data, ba, op, value_and_jacobian!!, scen, bench1)
+    record!(data, ba, value_and_jacobian!!, scen, bench1)
     return nothing
 end
 
@@ -257,8 +242,7 @@ end
 function run_benchmark!(
     data::BenchmarkData,
     ba::AbstractADType,
-    op::typeof(second_derivative),
-    scen::Scenario{false};
+    scen::SecondDerivativeScenario{false};
     allocations::Bool,
 )
     (; f, x, y, dy) = deepcopy(scen)
@@ -268,40 +252,32 @@ function run_benchmark!(
     if allocations && y isa Number
         @test 0 == minimum(bench1).allocs
     end
-    record!(data, ba, op, second_derivative, scen, bench1)
+    record!(data, ba, second_derivative, scen, bench1)
     return nothing
 end
 
 ## Hessian-vector product
 
 function run_benchmark!(
-    data::BenchmarkData,
-    ba::AbstractADType,
-    op::typeof(hvp),
-    scen::Scenario{false};
-    allocations::Bool,
+    data::BenchmarkData, ba::AbstractADType, scen::HVPScenario{false}; allocations::Bool
 )
     (; f, x, y, dx) = deepcopy(scen)
     extras = prepare_hvp(f, ba, x)
     bench1 = @be hvp(f, ba, x, dx, extras)
     # no test for now
-    record!(data, ba, op, hvp, scen, bench1)
+    record!(data, ba, hvp, scen, bench1)
     return nothing
 end
 
 ## Hessian
 
 function run_benchmark!(
-    data::BenchmarkData,
-    ba::AbstractADType,
-    op::typeof(hessian),
-    scen::Scenario{false};
-    allocations::Bool,
+    data::BenchmarkData, ba::AbstractADType, scen::HessianScenario{false}; allocations::Bool
 )
     (; f, x, y) = deepcopy(scen)
     extras = prepare_hessian(f, ba, x)
     bench1 = @be hessian(f, ba, x, extras)
     # no test for now
-    record!(data, ba, op, hessian, scen, bench1)
+    record!(data, ba, hessian, scen, bench1)
     return nothing
 end
