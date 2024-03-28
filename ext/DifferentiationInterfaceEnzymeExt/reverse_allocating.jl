@@ -56,5 +56,8 @@ function DI.gradient(f, ::AutoReverseEnzyme, x::AbstractArray, extras::Nothing)
 end
 
 function DI.gradient!!(f, grad, ::AutoReverseEnzyme, x::AbstractArray, extras::Nothing)
-    return gradient!(Reverse, grad, f, x)
+    grad_sametype = convert(typeof(x), grad)
+    gradient!(Reverse, grad_sametype, f, x)
+    grad .= grad_sametype
+    return grad
 end

@@ -67,10 +67,10 @@ AutoFastDifferentiation
 You can use [`check_available`](@ref) to verify whether a given backend is loaded, like we did below:
 
 ```@example backends
-header = "| Backend | available |"  # hide
+header = "| backend | available |"  # hide
 subheader = "|---|---|"  # hide
 rows = map(all_backends()) do backend  # hide
-    "| `$(backend_string(backend))` | $(check_available(backend) ? '✓' : '✗') |"  # hide
+    "| `$(backend_string(backend))` | $(check_available(backend) ? '✅' : '❌') |"  # hide
 end  # hide
 Markdown.parse(join(vcat(header, subheader, rows...), "\n"))  # hide
 ```
@@ -82,10 +82,10 @@ Only some are compatible with mutating functions `f!(y, x) = nothing`.
 You can use [`check_mutation`](@ref) to check that feature, like we did below:
 
 ```@example backends
-header = "| Backend | mutation |"  # hide
+header = "| backend | mutation |"  # hide
 subheader = "|---|---|"  # hide
 rows = map(all_backends()) do backend  # hide
-    "| `$(backend_string(backend))` | $(check_mutation(backend) ? '✓' : '✗') |"  # hide
+    "| `$(backend_string(backend))` | $(check_mutation(backend) ? '✅' : '❌') |"  # hide
 end  # hide
 Markdown.parse(join(vcat(header, subheader, rows...), "\n"))  # hide
 ```

@@ -72,9 +72,9 @@ export derivative!!, derivative
 export gradient!!, gradient
 export jacobian!!, jacobian
 
-export second_derivative
-export hvp
-export hessian
+export second_derivative!!, second_derivative
+export hvp!!, hvp
+export hessian!!, hessian
 
 export prepare_pushforward, prepare_pullback
 export prepare_derivative, prepare_gradient, prepare_jacobian

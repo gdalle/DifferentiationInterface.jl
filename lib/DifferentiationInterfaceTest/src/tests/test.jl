@@ -30,8 +30,9 @@ Filtering:
 Options:
 
 - `logging=true`: whether to log progress
-- `isapprox=isapprox`: function used to compare objects, only needs to be set for complicated cases beyond arrays / scalars
-- `rtol=1e-3`: precision for correctness testing (when comparing to the reference outputs)
+- `isapprox=isapprox`: function used to compare objects, with the standard signature `isapprox(x, y; atol, rtol)`
+- `atol=0`: absolute precision for correctness testing (when comparing to the reference outputs)
+- `rtol=1e-3`: relative precision for correctness testing (when comparing to the reference outputs)
 """
 function test_differentiation(
     backends::Vector{<:AbstractADType},
@@ -53,6 +54,7 @@ function test_differentiation(
     # options
     logging=false,
     isapprox=isapprox,
+    atol=0,
     rtol=1e-3,
 )
     operators = filter_operators(operators; first_order, second_order, excluded)
@@ -77,7 +79,7 @@ function test_differentiation(
                     logging &&
                         @info "Testing: $(backend_string(backend)) - $op - $(string(scen))"
                     correctness != false && @testset "Correctness" begin
-                        test_correctness(backend, op, scen; isapprox, rtol)
+                        test_correctness(backend, op, scen; isapprox, atol, rtol)
                     end
                     call_count && @testset "Call count" begin
                         test_call_count(backend, op, scen)
