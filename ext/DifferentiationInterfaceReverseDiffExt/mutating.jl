@@ -4,7 +4,7 @@ function DI.value_and_pullback!!(
     f!,
     y::AbstractArray,
     dx::AbstractArray,
-    ::AutoReverseDiff,
+    ::AllAutoReverseDiff,
     x::AbstractArray,
     dy::AbstractArray,
     extras::Nothing,
@@ -20,7 +20,7 @@ function DI.value_and_pullback!!(
     f!,
     y::AbstractArray,
     _dx::Number,
-    backend::AutoReverseDiff,
+    backend::AllAutoReverseDiff,
     x::Number,
     dy::AbstractArray,
     extras::Nothing,
@@ -35,7 +35,7 @@ end
 ## Jacobian
 
 function DI.prepare_jacobian(
-    f!, backend::AutoReverseDiff, y::AbstractArray, x::AbstractArray
+    f!, backend::AllAutoReverseDiff, y::AbstractArray, x::AbstractArray
 )
     tape = JacobianTape(f!, y, x)
     if backend.compile
@@ -48,7 +48,7 @@ function DI.value_and_jacobian!!(
     _f!,
     y::AbstractArray,
     jac::AbstractMatrix,
-    ::AutoReverseDiff,
+    ::AllAutoReverseDiff,
     x::AbstractArray,
     tape::Union{JacobianTape,CompiledJacobian},
 )

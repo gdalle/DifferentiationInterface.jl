@@ -39,7 +39,7 @@ We support most of the backends defined by [ADTypes.jl](https://github.com/SciML
 | [Tracker.jl](https://github.com/FluxML/Tracker.jl)                              | `AutoTracker()`                                              |
 | [Zygote.jl](https://github.com/FluxML/Zygote.jl)                                | `AutoZygote()`                                               |
 
-We also provide one additional backend:
+We also provide one more (experimental) backends:
 
 | backend                                                                          | object                      |
 | :------------------------------------------------------------------------------- | :-------------------------- |

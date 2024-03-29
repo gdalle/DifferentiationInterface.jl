@@ -1,0 +1,8 @@
+module DifferentiationInterfaceSparseDiffToolsExt
+
+using ADTypes
+import DifferentiationInterface as DI
+using SparseDiffTools: JacPrototypeSparsityDetection, SymbolicsSparsityDetection
+using Symbolics: Symbolics
+
+end
