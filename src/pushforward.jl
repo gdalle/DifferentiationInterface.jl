@@ -9,18 +9,19 @@
 function value_and_pushforward(
     f, backend::AbstractADType, x, dx, extras=prepare_pushforward(f, backend, x)
 )
+    new_extras = prepare_pullback(extras, f, backend, x)
     y = f(x)
     dy = if x isa Number && y isa Number
-        dx * pullback(f, backend, x, one(y))
+        dx * pullback(f, backend, x, one(y), new_extras)
     elseif x isa AbstractArray && y isa Number
-        dot(dx, pullback(f, backend, x, one(y)))
+        dot(dx, pullback(f, backend, x, one(y), new_extras))
     elseif x isa Number && y isa AbstractArray
         map(CartesianIndices(y)) do i
-            dx * pullback(f, backend, x, basis(backend, y, i))
+            dx * pullback(f, backend, x, basis(backend, y, i), new_extras)
         end
     elseif x isa AbstractArray && y isa AbstractArray
         map(CartesianIndices(y)) do i
-            dot(dx, pullback(f, backend, x, basis(backend, y, i)))
+            dot(dx, pullback(f, backend, x, basis(backend, y, i), new_extras))
         end
     end
     return y, dy

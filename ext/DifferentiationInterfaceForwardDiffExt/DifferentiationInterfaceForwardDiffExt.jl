@@ -1,6 +1,6 @@
 module DifferentiationInterfaceForwardDiffExt
 
-using ADTypes: AbstractADType, AutoForwardDiff
+using ADTypes: AbstractADType, AutoForwardDiff, AutoSparseForwardDiff
 import DifferentiationInterface as DI
 using ForwardDiff.DiffResults: DiffResults, DiffResult, GradientResult
 using ForwardDiff:
@@ -24,6 +24,8 @@ using ForwardDiff:
     jacobian!,
     value
 using LinearAlgebra: dot, mul!
+
+const AnyAutoForwardDiff{C,T} = Union{AutoForwardDiff{C,T},AutoSparseForwardDiff{C,T}}
 
 include("utils.jl")
 include("allocating.jl")

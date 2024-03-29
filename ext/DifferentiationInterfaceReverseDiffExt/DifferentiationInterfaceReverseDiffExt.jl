@@ -1,6 +1,6 @@
 module DifferentiationInterfaceReverseDiffExt
 
-using ADTypes: AutoReverseDiff
+using ADTypes: AutoReverseDiff, AutoSparseReverseDiff
 import DifferentiationInterface as DI
 using ReverseDiff.DiffResults: DiffResults, DiffResult, GradientResult
 using DocStringExtensions
@@ -22,6 +22,8 @@ using ReverseDiff:
     hessian!,
     jacobian,
     jacobian!
+
+const AnyAutoReverseDiff = Union{AutoReverseDiff,AutoSparseReverseDiff}
 
 include("allocating.jl")
 include("mutating.jl")

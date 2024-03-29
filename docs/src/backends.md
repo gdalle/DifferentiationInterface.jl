@@ -16,7 +16,7 @@ function all_backends()
         AutoEnzyme(Enzyme.Reverse),
         AutoFastDifferentiation(),
         AutoFiniteDiff(),
-        AutoFiniteDifferences(FiniteDifferences.central_fdm(5, 1)),
+        AutoFiniteDifferences(FiniteDifferences.central_fdm(3, 1)),
         AutoForwardDiff(),
         AutoPolyesterForwardDiff(; chunksize=2),
         AutoReverseDiff(),
@@ -60,6 +60,8 @@ We also provide a few of our own:
 
 ```@docs
 AutoFastDifferentiation
+AutoSparseFastDifferentiation
+AutoTapir
 ```
 
 ## Availability

@@ -10,8 +10,9 @@ function hessian(f, backend::AbstractADType, x, extras=prepare_hessian(f, backen
 end
 
 function hessian(f, backend::SecondOrder, x, extras=prepare_hessian(f, backend, x))
+    new_extras = prepare_hvp(extras, f, backend, x)
     hess = stack(vec(CartesianIndices(x))) do j
-        hess_col_j = hvp(f, backend, x, basis(backend, x, j), extras)
+        hess_col_j = hvp(f, backend, x, basis(backend, x, j), new_extras)
         vec(hess_col_j)
     end
     return hess
@@ -29,9 +30,12 @@ function hessian!!(
 end
 
 function hessian!!(f, hess, backend::SecondOrder, x, extras=prepare_hessian(f, backend, x))
+    new_extras = prepare_hvp(extras, f, backend, x)
     for (k, j) in enumerate(CartesianIndices(x))
         hess_col_j_old = reshape(view(hess, :, k), size(x))
-        hess_col_j_new = hvp!!(f, hess_col_j_old, backend, x, basis(backend, x, j), extras)
+        hess_col_j_new = hvp!!(
+            f, hess_col_j_old, backend, x, basis(backend, x, j), new_extras
+        )
         # this allocates
         copyto!(hess_col_j_old, hess_col_j_new)
     end

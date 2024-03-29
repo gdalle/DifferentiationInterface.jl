@@ -63,3 +63,21 @@ prepare_hvp(f, ::AbstractADType, x) = nothing
 Create an `extras` object that can be given to Hessian operators.
 """
 prepare_hessian(f, ::AbstractADType, x) = nothing
+
+## Overloads for translating extras from other operators
+
+for op in [
+    :pushforward,
+    :pullback,
+    :derivative,
+    :gradient,
+    :jacobian,
+    :second_derivative,
+    :hvp,
+    :hessian,
+]
+    prep_op = Symbol(:prepare_, op)
+    @eval function $prep_op(extras, f_or_f!, backend::AbstractADType, args...)
+        return $prep_op(f_or_f!, backend, args...)
+    end
+end

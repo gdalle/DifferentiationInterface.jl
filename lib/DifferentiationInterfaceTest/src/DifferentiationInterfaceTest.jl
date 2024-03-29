@@ -17,7 +17,7 @@ using Chairmarks: @be, Benchmark, Sample
 using ComponentArrays: ComponentVector
 using DifferentiationInterface
 using DifferentiationInterface:
-    AutoTaped,
+    AutoTapir,
     inner,
     mode,
     outer,

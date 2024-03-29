@@ -8,6 +8,9 @@ using FiniteDifferences: FiniteDifferences
 using ForwardDiff: ForwardDiff
 using PolyesterForwardDiff: PolyesterForwardDiff
 using ReverseDiff: ReverseDiff
+using SparseDiffTools: SparseDiffTools
+using Symbolics: Symbolics
+using Tapir: Tapir
 using Tracker: Tracker
 using Zygote: Zygote
 
@@ -20,13 +23,18 @@ all_backends = [
     AutoEnzyme(Enzyme.Reverse),
     AutoFastDifferentiation(),
     AutoFiniteDiff(),
+    AutoSparseFiniteDiff(),
     AutoFiniteDifferences(FiniteDifferences.central_fdm(3, 1)),
     AutoForwardDiff(),
+    AutoSparseForwardDiff(),
     AutoPolyesterForwardDiff(; chunksize=2),
     AutoReverseDiff(),
+    AutoTapir(),
     AutoTracker(),
     AutoZygote(),
 ]
+
+##
 
 for backend in all_backends
     @test check_available(backend)

@@ -6,6 +6,8 @@ Pkg.develop(
     ),
 )
 
+Pkg.add(; url="https://github.com/withbayes/Tapir.jl")
+
 ##
 
 using ADTypes

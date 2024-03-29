@@ -14,8 +14,10 @@ end
 function second_derivative(
     f, backend::SecondOrder, x::Number, extras=prepare_second_derivative(f, backend, x)
 )
-    derivative_closure(z) = derivative(f, inner(backend), z, inner(extras))
-    der2 = derivative(derivative_closure, outer(backend), x, outer(extras))
+    inner_extras = prepare_derivative(extras, f, inner(backend), x)
+    derivative_closure(z) = derivative(f, inner(backend), z, inner_extras)
+    outer_extras = prepare_derivative(extras, derivative_closure, outer(backend), x)
+    der2 = derivative(derivative_closure, outer(backend), x, outer_extras)
     return der2
 end
 
@@ -41,8 +43,10 @@ function second_derivative!!(
     x::Number,
     extras=prepare_second_derivative(f, backend, x),
 )
-    derivative_closure(z) = derivative(f, inner(backend), z, inner(extras))
-    der2 = derivative!!(derivative_closure, der2, outer(backend), x, outer(extras))
+    inner_extras = prepare_derivative(extras, f, inner(backend), x)
+    derivative_closure(z) = derivative(f, inner(backend), z, inner_extras)
+    outer_extras = prepare_derivative(extras, derivative_closure, outer(backend), x)
+    der2 = derivative!!(derivative_closure, der2, outer(backend), x, outer_extras)
     return der2
 end
 

@@ -1,18 +1,22 @@
 ## Pushforward
 
 function DI.value_and_pushforward!!(
-    f!, y, dy, ::AutoPolyesterForwardDiff{C}, x, dx, extras::Nothing
-) where {C}
-    return DI.value_and_pushforward!!(
-        f!, y, dy, AutoForwardDiff{C,Nothing}(nothing), x, dx, extras
-    )
+    f!, y, dy, backend::AnyAutoPolyForwardDiff, x, dx, extras::Nothing
+)
+    return DI.value_and_pushforward!!(f!, y, dy, single_threaded(backend), x, dx, extras)
+end
+
+function DI.value_and_derivative!!(
+    f!, y, der, backend::AnyAutoPolyForwardDiff, x, extras::Nothing
+)
+    return DI.value_and_derivative!!(f!, y, der, single_threaded(backend), x, extras)
 end
 
 function DI.value_and_jacobian!!(
     f!,
     y::AbstractArray,
     jac::AbstractMatrix,
-    ::AutoPolyesterForwardDiff{C},
+    ::AnyAutoPolyForwardDiff{C},
     x::AbstractArray,
     extras::Nothing,
 ) where {C}
