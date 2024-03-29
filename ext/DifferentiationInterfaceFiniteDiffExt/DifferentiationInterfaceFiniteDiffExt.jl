@@ -12,7 +12,7 @@ using FiniteDiff:
     finite_difference_jacobian!
 using LinearAlgebra: dot, mul!
 
-const AllAutoFiniteDiff = Union{AutoFiniteDiff,AutoSparseFiniteDiff}
+const AnyAutoFiniteDiff = Union{AutoFiniteDiff,AutoSparseFiniteDiff}
 
 # see https://github.com/SciML/ADTypes.jl/issues/33
 

@@ -23,7 +23,7 @@ using ReverseDiff:
     jacobian,
     jacobian!
 
-const AllAutoReverseDiff = Union{AutoReverseDiff,AutoSparseReverseDiff}
+const AnyAutoReverseDiff = Union{AutoReverseDiff,AutoSparseReverseDiff}
 
 include("allocating.jl")
 include("mutating.jl")

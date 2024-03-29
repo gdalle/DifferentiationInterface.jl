@@ -4,7 +4,7 @@ function DI.value_and_pushforward!!(
     f!,
     y::AbstractArray,
     dy::AbstractArray,
-    backend::AllAutoFiniteDiff,
+    backend::AnyAutoFiniteDiff,
     x,
     dx,
     extras::Nothing,
@@ -24,7 +24,7 @@ end
 ## Derivative
 
 function DI.value_and_derivative!!(
-    f!, y::AbstractArray, der::AbstractArray, backend::AllAutoFiniteDiff, x, extras::Nothing
+    f!, y::AbstractArray, der::AbstractArray, backend::AnyAutoFiniteDiff, x, extras::Nothing
 )
     f!(y, x)
     finite_difference_gradient!(der, f!, x, fdtype(backend), eltype(y), FUNCTION_INPLACE, y)
@@ -37,7 +37,7 @@ function DI.value_and_jacobian!!(
     f!,
     y::AbstractArray,
     jac::AbstractMatrix,
-    backend::AllAutoFiniteDiff,
+    backend::AnyAutoFiniteDiff,
     x,
     extras::Nothing,
 )

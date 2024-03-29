@@ -1,10 +1,11 @@
 module DifferentiationInterfaceFastDifferentiationExt
 
 using ADTypes: ADTypes
-using DifferentiationInterface: AutoFastDifferentiation
+using DifferentiationInterface: AutoFastDifferentiation, AutoSparseFastDifferentiation
 import DifferentiationInterface as DI
 using FastDifferentiation:
     derivative,
+    hessian,
     jacobian,
     jacobian_times_v,
     jacobian_transpose_v,
@@ -13,9 +14,12 @@ using FastDifferentiation:
 using LinearAlgebra: dot
 using FastDifferentiation.RuntimeGeneratedFunctions: RuntimeGeneratedFunction
 
-DI.mode(::AutoFastDifferentiation) = ADTypes.AbstractSymbolicDifferentiationMode
-DI.supports_mutation(::AutoFastDifferentiation) = DI.MutationNotSupported()
-DI.pullback_performance(::AutoFastDifferentiation) = DI.PullbackSlow()
+const AnyAutoFastDifferentiation = Union{
+    AutoFastDifferentiation,AutoSparseFastDifferentiation
+}
+
+DI.mode(::AnyAutoFastDifferentiation) = ADTypes.AbstractSymbolicDifferentiationMode
+DI.supports_mutation(::AnyAutoFastDifferentiation) = DI.MutationNotSupported()
 
 myvec(x::Number) = [x]
 myvec(x::AbstractArray) = vec(x)

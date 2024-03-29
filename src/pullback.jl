@@ -9,18 +9,19 @@
 function value_and_pullback(
     f, backend::AbstractADType, x, dy, extras=prepare_pullback(f, backend, x)
 )
+    new_extras = prepare_pushforward(extras, f, backend, x)
     y = f(x)
     dx = if x isa Number && y isa Number
-        dy * pushforward(f, backend, x, one(x))
+        dy * pushforward(f, backend, x, one(x), new_extras)
     elseif x isa Number && y isa AbstractArray
-        dot(dy, pushforward(f, backend, x, one(x)))
+        dot(dy, pushforward(f, backend, x, one(x), new_extras))
     elseif x isa AbstractArray && y isa Number
         map(CartesianIndices(x)) do j
-            dy * pushforward(f, backend, x, basis(backend, x, j))
+            dy * pushforward(f, backend, x, basis(backend, x, j), new_extras)
         end
     elseif x isa AbstractArray && y isa AbstractArray
         map(CartesianIndices(x)) do j
-            dot(dy, pushforward(f, backend, x, basis(backend, x, j)))
+            dot(dy, pushforward(f, backend, x, basis(backend, x, j), new_extras))
         end
     end
     return y, dx

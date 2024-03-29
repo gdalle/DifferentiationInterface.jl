@@ -3,7 +3,7 @@
 function DI.value_and_pullback!!(
     f,
     dx::AbstractArray,
-    ::AllAutoReverseDiff,
+    ::AnyAutoReverseDiff,
     x::AbstractArray,
     dy::Number,
     extras::Nothing,
@@ -15,7 +15,7 @@ function DI.value_and_pullback!!(
 end
 
 function DI.value_and_pullback(
-    f, ::AllAutoReverseDiff, x::AbstractArray, dy::Number, extras::Nothing
+    f, ::AnyAutoReverseDiff, x::AbstractArray, dy::Number, extras::Nothing
 )
     y = f(x)
     dx = gradient(f, x)
@@ -26,7 +26,7 @@ end
 function DI.value_and_pullback!!(
     f,
     dx::AbstractArray,
-    ::AllAutoReverseDiff,
+    ::AnyAutoReverseDiff,
     x::AbstractArray,
     dy::AbstractArray,
     extras::Nothing,
@@ -38,7 +38,7 @@ function DI.value_and_pullback!!(
 end
 
 function DI.value_and_pullback(
-    f, ::AllAutoReverseDiff, x::AbstractArray, dy::AbstractArray, extras::Nothing
+    f, ::AnyAutoReverseDiff, x::AbstractArray, dy::AbstractArray, extras::Nothing
 )
     y = f(x)
     jac = jacobian(f, x)  # allocates
@@ -49,7 +49,7 @@ end
 ### Trick for unsupported scalar input
 
 function DI.value_and_pullback(
-    f, backend::AllAutoReverseDiff, x::Number, dy, extras::Nothing
+    f, backend::AnyAutoReverseDiff, x::Number, dy, extras::Nothing
 )
     x_array = [x]
     y, dx_array = DI.value_and_pullback(f ∘ only, backend, x_array, dy)
@@ -58,7 +58,7 @@ end
 
 ## Gradient
 
-function DI.prepare_gradient(f, backend::AllAutoReverseDiff, x::AbstractArray)
+function DI.prepare_gradient(f, backend::AnyAutoReverseDiff, x::AbstractArray)
     tape = GradientTape(f, x)
     if backend.compile
         tape = compile(tape)
@@ -69,7 +69,7 @@ end
 function DI.value_and_gradient!!(
     _f,
     grad::AbstractArray,
-    ::AllAutoReverseDiff,
+    ::AnyAutoReverseDiff,
     x::AbstractArray,
     tape::Union{GradientTape,CompiledGradient},
 )
@@ -80,7 +80,7 @@ end
 
 function DI.value_and_gradient(
     f,
-    backend::AllAutoReverseDiff,
+    backend::AnyAutoReverseDiff,
     x::AbstractArray,
     tape::Union{GradientTape,CompiledGradient},
 )
@@ -91,7 +91,7 @@ end
 function DI.gradient!!(
     _f,
     grad::AbstractArray,
-    ::AllAutoReverseDiff,
+    ::AnyAutoReverseDiff,
     x::AbstractArray,
     tape::Union{GradientTape,CompiledGradient},
 )
@@ -99,14 +99,14 @@ function DI.gradient!!(
 end
 
 function DI.gradient(
-    _f, ::AllAutoReverseDiff, x::AbstractArray, tape::Union{GradientTape,CompiledGradient}
+    _f, ::AnyAutoReverseDiff, x::AbstractArray, tape::Union{GradientTape,CompiledGradient}
 )
     return gradient!(tape, x)
 end
 
 ## Jacobian
 
-function DI.prepare_jacobian(f, backend::AllAutoReverseDiff, x::AbstractArray)
+function DI.prepare_jacobian(f, backend::AnyAutoReverseDiff, x::AbstractArray)
     tape = JacobianTape(f, x)
     if backend.compile
         tape = compile(tape)
@@ -117,7 +117,7 @@ end
 function DI.value_and_jacobian!!(
     f,
     jac::AbstractMatrix,
-    ::AllAutoReverseDiff,
+    ::AnyAutoReverseDiff,
     x::AbstractArray,
     tape::Union{JacobianTape,CompiledJacobian},
 )
@@ -128,7 +128,7 @@ function DI.value_and_jacobian!!(
 end
 
 function DI.value_and_jacobian(
-    f, ::AllAutoReverseDiff, x::AbstractArray, tape::Union{JacobianTape,CompiledJacobian}
+    f, ::AnyAutoReverseDiff, x::AbstractArray, tape::Union{JacobianTape,CompiledJacobian}
 )
     return f(x), jacobian!(tape, x)
 end
@@ -136,7 +136,7 @@ end
 function DI.jacobian!!(
     _f,
     jac::AbstractMatrix,
-    ::AllAutoReverseDiff,
+    ::AnyAutoReverseDiff,
     x::AbstractArray,
     tape::Union{JacobianTape,CompiledJacobian},
 )
@@ -144,14 +144,14 @@ function DI.jacobian!!(
 end
 
 function DI.jacobian(
-    f, ::AllAutoReverseDiff, x::AbstractArray, tape::Union{JacobianTape,CompiledJacobian}
+    f, ::AnyAutoReverseDiff, x::AbstractArray, tape::Union{JacobianTape,CompiledJacobian}
 )
     return jacobian!(tape, x)
 end
 
 ## Hessian
 
-function DI.prepare_hessian(f, backend::AllAutoReverseDiff, x::AbstractArray)
+function DI.prepare_hessian(f, backend::AnyAutoReverseDiff, x::AbstractArray)
     tape = HessianTape(f, x)
     if backend.compile
         tape = compile(tape)
@@ -162,7 +162,7 @@ end
 function DI.hessian!!(
     _f,
     hess::AbstractMatrix,
-    ::AllAutoReverseDiff,
+    ::AnyAutoReverseDiff,
     x::AbstractArray,
     tape::Union{HessianTape,CompiledHessian},
 )
@@ -170,7 +170,7 @@ function DI.hessian!!(
 end
 
 function DI.hessian(
-    _f, ::AllAutoReverseDiff, x::AbstractArray, tape::Union{HessianTape,CompiledHessian}
+    _f, ::AnyAutoReverseDiff, x::AbstractArray, tape::Union{HessianTape,CompiledHessian}
 )
     return hessian!(tape, x)
 end

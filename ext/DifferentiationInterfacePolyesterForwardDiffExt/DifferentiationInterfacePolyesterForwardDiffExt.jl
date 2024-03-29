@@ -12,7 +12,7 @@ using PolyesterForwardDiff: threaded_gradient!, threaded_jacobian!
 using PolyesterForwardDiff.ForwardDiff: Chunk
 using PolyesterForwardDiff.ForwardDiff.DiffResults: DiffResults
 
-const AllAutoPolyForwardDiff{C} = Union{
+const AnyAutoPolyForwardDiff{C} = Union{
     AutoPolyesterForwardDiff{C},AutoSparsePolyesterForwardDiff{C}
 }
 

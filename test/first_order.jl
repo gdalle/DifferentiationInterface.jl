@@ -28,13 +28,10 @@ all_backends = [
     AutoForwardDiff(),
     AutoSparseForwardDiff(),
     AutoPolyesterForwardDiff(; chunksize=2),
-    # AutoSparsePolyesterForwardDiff(; chunksize=2),
     AutoReverseDiff(),
-    # AutoSparseReverseDiff(),
-    # AutoTapir(),
+    AutoTapir(),
     AutoTracker(),
     AutoZygote(),
-    # AutoSparseZygote(),
 ]
 
 ##

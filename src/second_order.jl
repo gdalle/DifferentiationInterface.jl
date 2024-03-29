@@ -20,14 +20,3 @@ outer(backend::SecondOrder) = backend.outer
 function Base.show(io::IO, backend::SecondOrder)
     return print(io, "SecondOrder($(outer(backend)) / $(inner(backend)))")
 end
-
-struct SecondOrderExtras{E1,E2}
-    outer::E1
-    inner::E2
-end
-
-inner(extras::SecondOrderExtras) = extras.inner
-outer(extras::SecondOrderExtras) = extras.outer
-
-inner(::Nothing) = nothing
-outer(::Nothing) = nothing

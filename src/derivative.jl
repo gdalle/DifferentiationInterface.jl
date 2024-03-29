@@ -6,7 +6,8 @@
 function value_and_derivative(
     f, backend::AbstractADType, x, extras=prepare_derivative(f, backend, x)
 )
-    return value_and_pushforward(f, backend, x, one(x), extras)
+    new_extras = prepare_pushforward(extras, f, backend, x)
+    return value_and_pushforward(f, backend, x, one(x), new_extras)
 end
 
 """
@@ -15,7 +16,8 @@ end
 function value_and_derivative!!(
     f, der, backend::AbstractADType, x, extras=prepare_derivative(f, backend, x)
 )
-    return value_and_pushforward!!(f, der, backend, x, one(x), extras)
+    new_extras = prepare_pushforward(extras, f, backend, x)
+    return value_and_pushforward!!(f, der, backend, x, one(x), new_extras)
 end
 
 """
@@ -42,5 +44,6 @@ end
 function value_and_derivative!!(
     f!, y, der, backend::AbstractADType, x, extras=prepare_derivative(f!, backend, y, x)
 )
-    return value_and_pushforward!!(f!, y, der, backend, x, one(x), extras)
+    new_extras = prepare_pushforward(extras, f!, backend, y, x)
+    return value_and_pushforward!!(f!, y, der, backend, x, one(x), new_extras)
 end

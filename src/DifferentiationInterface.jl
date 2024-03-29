@@ -31,6 +31,16 @@ Chooses [FastDifferentiation.jl](https://github.com/brianguenter/FastDifferentia
 struct AutoFastDifferentiation <: AbstractSymbolicDifferentiationMode end
 
 """
+    AutoSparseFastDifferentiation
+
+Chooses [FastDifferentiation.jl](https://github.com/brianguenter/FastDifferentiation.jl) leveraging sparsity.
+
+!!! danger
+    This backend is experimental, use at your own risk.
+"""
+struct AutoSparseFastDifferentiation <: AbstractSymbolicDifferentiationMode end
+
+"""
     AutoTapir
 
 Chooses [Tapir.jl](https://github.com/withbayes/Tapir.jl).
@@ -58,7 +68,7 @@ include("hessian.jl")
 
 include("backends.jl")
 
-export AutoFastDifferentiation, AutoTapir
+export AutoFastDifferentiation, AutoSparseFastDifferentiation, AutoTapir
 export SecondOrder
 
 export value_and_pushforward!!, value_and_pushforward

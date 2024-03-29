@@ -1,4 +1,4 @@
-function DI.value_and_pushforward!!(f!, y, dy, ::AllAutoForwardDiff, x, dx, extras::Nothing)
+function DI.value_and_pushforward!!(f!, y, dy, ::AnyAutoForwardDiff, x, dx, extras::Nothing)
     T = tag_type(f!, x)
     xdual = make_dual(T, x, dx)
     ydual = make_dual(T, y, dy)
@@ -10,7 +10,7 @@ end
 
 ## Derivative
 
-function DI.prepare_derivative(f!, ::AllAutoForwardDiff, y::AbstractArray, x::Number)
+function DI.prepare_derivative(f!, ::AnyAutoForwardDiff, y::AbstractArray, x::Number)
     return DerivativeConfig(f!, y, x)
 end
 
@@ -18,7 +18,7 @@ function DI.value_and_derivative!!(
     f!,
     y::AbstractArray,
     der::AbstractArray,
-    ::AllAutoForwardDiff,
+    ::AnyAutoForwardDiff,
     x::Number,
     config::DerivativeConfig,
 )
@@ -30,7 +30,7 @@ end
 ## Jacobian
 
 function DI.prepare_jacobian(
-    f!, backend::AllAutoForwardDiff, y::AbstractArray, x::AbstractArray
+    f!, backend::AnyAutoForwardDiff, y::AbstractArray, x::AbstractArray
 )
     return JacobianConfig(f!, y, x, choose_chunk(backend, x))
 end
@@ -39,7 +39,7 @@ function DI.value_and_jacobian!!(
     f!,
     y::AbstractArray,
     jac::AbstractMatrix,
-    ::AllAutoForwardDiff,
+    ::AnyAutoForwardDiff,
     x::AbstractArray,
     config::JacobianConfig,
 )

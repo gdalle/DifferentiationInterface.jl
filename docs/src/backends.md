@@ -60,6 +60,7 @@ We also provide a few of our own:
 
 ```@docs
 AutoFastDifferentiation
+AutoSparseFastDifferentiation
 AutoTapir
 ```
 
