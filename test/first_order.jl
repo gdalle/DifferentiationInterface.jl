@@ -22,6 +22,7 @@ all_backends = [
     AutoEnzyme(Enzyme.Forward),
     AutoEnzyme(Enzyme.Reverse),
     AutoFastDifferentiation(),
+    AutoSparseFastDifferentiation(),
     AutoFiniteDiff(),
     AutoSparseFiniteDiff(),
     AutoFiniteDifferences(FiniteDifferences.central_fdm(3, 1)),

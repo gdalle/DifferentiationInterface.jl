@@ -14,6 +14,8 @@ struct SecondOrder{AD1<:AbstractADType,AD2<:AbstractADType} <: AbstractADType
     inner::AD2
 end
 
+SecondOrder(backend::AbstractADType) = SecondOrder(backend, backend)
+
 inner(backend::SecondOrder) = backend.inner
 outer(backend::SecondOrder) = backend.outer
 
