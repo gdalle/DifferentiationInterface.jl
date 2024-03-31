@@ -8,6 +8,17 @@ By order of preference:
 - forward on forward
 =#
 
+"""
+    prepare_hvp([other_extras], f, backend, x) -> extras
+
+Create an `extras` object that can be given to Hessian-vector product operators.
+"""
+function prepare_hvp(extras, f_or_f!, backend::AbstractADType, args...)
+    return prepare_hvp(f_or_f!, backend, args...)
+end
+
+prepare_hvp(f, ::AbstractADType, x) = nothing
+
 ## Allocating
 
 """

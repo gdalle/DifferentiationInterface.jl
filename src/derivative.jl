@@ -1,3 +1,21 @@
+"""
+    prepare_derivative([other_extras], f, backend, x) -> extras
+    prepare_derivative([other_extras], f!, backend, y, x) -> extras
+
+Create an `extras` object that can be given to derivative operators.
+"""
+function prepare_derivative(extras, f_or_f!, backend::AbstractADType, args...)
+    return prepare_derivative(f_or_f!, backend, args...)
+end
+
+function prepare_derivative(f, backend::AbstractADType, x)
+    return prepare_pushforward(f, backend, x)
+end
+
+function prepare_derivative(f!, backend::AbstractADType, y, x)
+    return prepare_pushforward(f!, backend, y, x)
+end
+
 ## Allocating
 
 """

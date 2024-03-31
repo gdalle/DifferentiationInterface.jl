@@ -1,3 +1,37 @@
+"""
+    prepare_jacobian([other_extras], f, backend, x) -> extras
+    prepare_jacobian([other_extras], f!, backend, y, x) -> extras
+
+Create an `extras` object that can be given to Jacobian operators.
+"""
+function prepare_jacobian(extras, f_or_f!, backend::AbstractADType, args...)
+    return prepare_jacobian(f_or_f!, backend, args...)
+end
+
+function prepare_jacobian(f, backend::AbstractADType, x)
+    return prepare_jacobian_aux(f, backend, x, pushforward_performance(backend))
+end
+
+function prepare_jacobian(f!, backend::AbstractADType, y, x)
+    return prepare_jacobian_aux(f!, backend, y, x, pushforward_performance(backend))
+end
+
+function prepare_jacobian_aux(f, backend, x, ::PushforwardFast)
+    return prepare_pushforward(f, backend, x)
+end
+
+function prepare_jacobian_aux(f!, backend, y, x, ::PushforwardFast)
+    return prepare_pushforward(f!, backend, y, x)
+end
+
+function prepare_jacobian_aux(f, backend, x, ::PushforwardSlow)
+    return prepare_pullback(f, backend, x)
+end
+
+function prepare_jacobian_aux(f!, backend, y, x, ::PushforwardSlow)
+    return prepare_pullback(f!, backend, y, x)
+end
+
 ## Allocating
 
 """

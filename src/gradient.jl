@@ -1,3 +1,14 @@
+"""
+    prepare_gradient([other_extras], f, backend, x) -> extras
+
+Create an `extras` object that can be given to gradient operators.
+"""
+function prepare_gradient(extras, f_or_f!, backend::AbstractADType, args...)
+    return prepare_gradient(f_or_f!, backend, args...)
+end
+
+prepare_gradient(f, backend::AbstractADType, x) = prepare_pullback(f, backend, x)
+
 ## Allocating
 
 """
