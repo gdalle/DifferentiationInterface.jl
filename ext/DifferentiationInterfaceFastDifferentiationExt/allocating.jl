@@ -111,15 +111,15 @@ function DI.jacobian(
     return jac_exe(vec(x))
 end
 
-function DI.value_and_jacobian(f, backend, x, jac_exe)
+function DI.value_and_jacobian(f, backend::AnyAutoFastDifferentiation, x, jac_exe)
     return f(x), DI.jacobian(f, backend, x, jac_exe)
 end
 
-function DI.jacobian!!(f, backend::AnyAutoFastDifferentiation, x, jac_exe)
+function DI.jacobian!!(f, jac, backend::AnyAutoFastDifferentiation, x, jac_exe)
     return DI.jacobian(f, backend, x, jac_exe)
 end
 
-function DI.value_and_jacobian!!(f, backend::AnyAutoFastDifferentiation, x, jac_exe)
+function DI.value_and_jacobian!!(f, jac, backend::AnyAutoFastDifferentiation, x, jac_exe)
     return DI.value_and_jacobian(f, backend, x, jac_exe)
 end
 
@@ -176,7 +176,7 @@ function DI.hvp(f, ::AnyAutoFastDifferentiation, x, v, hvp_exe::RuntimeGenerated
     end
 end
 
-function DI.hvp!!(f, backend::AnyAutoFastDifferentiation, x, v, hvp_exe)
+function DI.hvp!!(f, p, backend::AnyAutoFastDifferentiation, x, v, hvp_exe)
     return DI.hvp(f, backend, x, v, hvp_exe)
 end
 
@@ -200,6 +200,6 @@ function DI.hessian(
     return hess_exe(vec(x))
 end
 
-function DI.hessian!!(f, backend::AnyAutoFastDifferentiation, x, hess_exe)
+function DI.hessian!!(f, hess, backend::AnyAutoFastDifferentiation, x, hess_exe)
     return DI.hessian(f, backend, x, hess_exe)
 end
