@@ -15,6 +15,7 @@ Testing:
 - `correctness=true`: whether to compare the differentiation results with the theoretical values specified in each scenario. If a backend object like `correctness=AutoForwardDiff()` is passed instead of a boolean, the results will be compared using that reference backend as the ground truth. 
 - `call_count=false`: whether to check that the function is called the right number of times
 - `type_stability=false`: whether to check type stability with JET.jl (thanks to `@test_opt`)
+- `sparsity`: whether to check sparsity of the jacobian / hessian
 - `detailed=false`: whether to print a detailed or condensed test log
 
 Filtering:
@@ -42,6 +43,7 @@ function test_differentiation(
     correctness::Union{Bool,AbstractADType}=true,
     type_stability::Bool=false,
     call_count::Bool=false,
+    sparsity::Bool=false,
     detailed=false,
     # filtering
     input_type::Type=Any,
@@ -68,7 +70,8 @@ function test_differentiation(
         "Differentiation tests -" *
         (correctness != false ? " correctness" : "") *
         (call_count ? " calls" : "") *
-        (type_stability ? " types" : "")
+        (type_stability ? " types" : "") *
+        (sparsity ? " sparsity" : "")
 
     @testset verbose = true "$title" begin
         @testset verbose = detailed "$(backend_string(backend))" for backend in backends
@@ -77,7 +80,7 @@ function test_differentiation(
                     compatible(backend, op, scen)
                 end
                     logging &&
-                        @info "Testing: $(backend_string(backend)) - $op - $(string(scen))"
+                        @info "$title: $(backend_string(backend)) - $op - $(string(scen))"
                     correctness != false && @testset "Correctness" begin
                         test_correctness(backend, op, scen; isapprox, atol, rtol)
                     end
@@ -86,6 +89,9 @@ function test_differentiation(
                     end
                     type_stability && @testset "Type stability" begin
                         test_jet(backend, op, scen)
+                    end
+                    sparsity && @testset "Sparsity" begin
+                        test_sparsity(backend, op, scen)
                     end
                 end
             end

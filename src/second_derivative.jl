@@ -1,3 +1,16 @@
+"""
+    prepare_second_derivative([other_extras], f, backend, x) -> extras
+    prepare_second_derivative([other_extras], f!, backend, y, x) -> extras
+
+Create an `extras` object that can be given to second derivative operators.
+"""
+function prepare_second_derivative(extras, f_or_f!, backend::AbstractADType, args...)
+    return prepare_second_derivative(f_or_f!, backend, args...)
+end
+
+prepare_second_derivative(f, ::AbstractADType, x) = nothing
+prepare_second_derivative(f!, ::AbstractADType, y, x) = nothing
+
 ## Allocating
 
 """

@@ -29,6 +29,7 @@ import DifferentiationInterface as DI
 using JET: @test_call, @test_opt
 using JLArrays: jl
 using LinearAlgebra: Diagonal, dot
+using SparseArrays: SparseArrays, nnz, SparseMatrixCSC
 using StaticArrays: SVector, SMatrix
 using Test: @testset, @test
 
@@ -47,6 +48,7 @@ include("utils/filter.jl")
 include("tests/correctness.jl")
 include("tests/type_stability.jl")
 include("tests/call_count.jl")
+include("tests/sparsity.jl")
 include("tests/benchmark.jl")
 include("tests/test.jl")
 

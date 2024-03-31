@@ -1,3 +1,14 @@
+"""
+    prepare_hessian([other_extras], f, backend, x) -> extras
+
+Create an `extras` object that can be given to Hessian operators.
+"""
+function prepare_hessian(extras, f_or_f!, backend::AbstractADType, args...)
+    return prepare_hessian(f_or_f!, backend, args...)
+end
+
+prepare_hessian(f, ::AbstractADType, x) = nothing
+
 ## Allocating
 
 """

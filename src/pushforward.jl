@@ -1,3 +1,16 @@
+"""
+    prepare_pushforward([other_extras], f, backend, x) -> extras
+    prepare_pushforward([other_extras], f!, backend, y, x) -> extras
+
+Create an `extras` object that can be given to pushforward operators.
+"""
+function prepare_pushforward(extras, f_or_f!, backend::AbstractADType, args...)
+    return prepare_pushforward(f_or_f!, backend, args...)
+end
+
+prepare_pushforward(f, ::AbstractADType, x) = nothing
+prepare_pushforward(f!, ::AbstractADType, y, x) = nothing
+
 ## Allocating
 
 """

@@ -1,3 +1,16 @@
+"""
+    prepare_pullback([other_extras], f, backend, x) -> extras
+    prepare_pullback([other_extras], f!, backend, y, x) -> extras
+
+Create an `extras` object that can be given to pullback operators.
+"""
+function prepare_pullback(extras, f_or_f!, backend::AbstractADType, args...)
+    return prepare_pullback(f_or_f!, backend, args...)
+end
+
+prepare_pullback(f, ::AbstractADType, x) = nothing
+prepare_pullback(f!, ::AbstractADType, y, x) = nothing
+
 ## Allocating
 
 """
