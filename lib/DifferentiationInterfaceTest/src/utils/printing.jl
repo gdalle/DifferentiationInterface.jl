@@ -16,6 +16,7 @@ pretty(::AutoTapir) = "Tapir"
 pretty(::AutoTracker) = "Tracker"
 pretty(::AutoZygote) = "Zygote"
 
+pretty(::AutoSparseFastDifferentiation) = "FastDifferentiation sparse"
 pretty(::AutoSparseFiniteDiff) = "FiniteDiff sparse"
 pretty(::AutoSparseForwardDiff) = "ForwardDiff sparse"
 pretty(::AutoSparsePolyesterForwardDiff) = "PolyesterForwardDiff sparse"

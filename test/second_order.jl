@@ -9,7 +9,12 @@ using Zygote: Zygote
 
 ##
 
-second_order_backends = [AutoForwardDiff(), AutoFastDifferentiation()]
+second_order_backends = [
+    AutoForwardDiff(),  #
+    AutoFastDifferentiation(),
+    AutoSparseFastDifferentiation(),
+    AutoReverseDiff(),
+]
 
 second_order_mixed_backends = [
     # forward over forward

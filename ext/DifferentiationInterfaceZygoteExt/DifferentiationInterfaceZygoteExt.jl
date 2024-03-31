@@ -61,4 +61,8 @@ function DI.hessian(f, ::AnyAutoZygote, x, extras::Nothing)
     return hessian(f, x)
 end
 
+function DI.hessian!!(f, hess, backend::AnyAutoZygote, x, extras::Nothing)
+    return DI.hessian(f, backend, x, extras)
+end
+
 end
