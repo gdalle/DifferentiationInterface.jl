@@ -3,6 +3,10 @@
 
 Combination of two backends for second-order differentiation.
 
+# Constructor
+
+    SecondOrder(outer, inner)
+
 # Fields
 
 $(TYPEDFIELDS)

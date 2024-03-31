@@ -20,6 +20,7 @@ function all_backends()
         AutoForwardDiff(),
         AutoPolyesterForwardDiff(; chunksize=2),
         AutoReverseDiff(),
+        AutoTapir(),
         AutoTracker(),
         AutoZygote(),
     ]
@@ -36,15 +37,18 @@ end
 
 ## Types
 
-Most backend choices are defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl).
+We support (and re-export) most backend choices from [ADTypes.jl](https://github.com/SciML/ADTypes.jl), and we provide a few more of our own.
 
 !!! warning
-    Only the backends listed here are supported by DifferentiationInterface.jl, even though ADTypes.jl defines more.
+    Only the backends listed below are supported by DifferentiationInterface.jl, even though ADTypes.jl defines more.
+
+### Dense
 
 ```@docs
 AutoChainRules
 AutoDiffractor
 AutoEnzyme
+AutoFastDifferentiation
 AutoForwardDiff
 AutoForwardDiff()
 AutoFiniteDiff
@@ -52,16 +56,24 @@ AutoFiniteDifferences
 AutoPolyesterForwardDiff
 AutoPolyesterForwardDiff()
 AutoReverseDiff
+AutoTapir
 AutoTracker
 AutoZygote
 ```
 
-We also provide a few of our own:
+### Sparse
+
+!!! danger
+    Sparsity support is still experimental, use at your own risk.
 
 ```@docs
-AutoFastDifferentiation
 AutoSparseFastDifferentiation
-AutoTapir
+AutoSparseFiniteDiff
+AutoSparseForwardDiff
+AutoSparseForwardDiff()
+AutoSparsePolyesterForwardDiff
+AutoSparseReverseDiff
+AutoSparseZygote
 ```
 
 ## Availability
@@ -111,6 +123,8 @@ Modules = [
     Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceForwardDiffExt),
     Base.get_extension(DifferentiationInterface, :DifferentiationInterfacePolyesterForwardDiffExt),
     Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceReverseDiffExt),
+    Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceSparseDiffToolsExt),
+    Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceTapirExt),
     Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceTrackerExt),
     Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceZygoteExt)
 ]
