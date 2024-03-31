@@ -7,13 +7,14 @@ CurrentModule = Main
 We present a typical workflow with DifferentiationInterface.jl and showcase its potential performance benefits.
 
 ```@repl tuto
-using ADTypes, BenchmarkTools, DifferentiationInterface
+using DifferentiationInterface
+using BenchmarkTools
 import ForwardDiff, Enzyme, DataFrames
 ```
 
 ## Computing a gradient
 
-A common use case of Automatic Differentiation (AD) is optimizing real-valued functions with first- or second-order methods.
+A common use case of AD is optimizing real-valued functions with first- or second-order methods.
 Let's define a simple objective
 
 ```@repl tuto
@@ -28,7 +29,7 @@ x = [1.0, 2.0, 3.0]
 
 To compute its gradient, we need to choose a "backend", i.e. an AD package that DifferentiationInterface.jl will call under the hood.
 [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl) is very efficient for low-dimensional inputs, so we'll go with that one.
-Backend types are defined and exported by [ADTypes.jl](https://github.com/SciML/ADTypes.jl):
+Most backend types are defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl) and re-exported by DifferentiationInterface.jl:
 
 ```@repl tuto
 backend = AutoForwardDiff()

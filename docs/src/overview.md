@@ -69,11 +69,11 @@ We only define two variants for now:
 | [`hessian`](@ref)           | [`hessian!!`](@ref)           |
 
 !!! danger
-    This is an experimental functionality, use at your own risk.
+    Second-order differentiation is still experimental, use at your own risk.
 
 ## Preparation
 
-In many cases, automatic differentiation can be accelerated if the function has been run at least once (e.g. to record a tape) and if some cache objects are provided.
+In many cases, AD can be accelerated if the function has been run at least once (e.g. to record a tape) and if some cache objects are provided.
 This is a backend-specific procedure, but we expose a common syntax to achieve it.
 
 | operator            | preparation function                |

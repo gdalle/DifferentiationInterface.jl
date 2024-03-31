@@ -16,6 +16,22 @@ using ADTypes:
     AbstractFiniteDifferencesMode,
     AbstractReverseMode,
     AbstractSymbolicDifferentiationMode
+using ADTypes:
+    AutoChainRules,
+    AutoDiffractor,
+    AutoEnzyme,
+    AutoFiniteDiff,
+    AutoFiniteDifferences,
+    AutoForwardDiff,
+    AutoPolyesterForwardDiff,
+    AutoReverseDiff,
+    AutoSparseFiniteDiff,
+    AutoSparseForwardDiff,
+    AutoSparsePolyesterForwardDiff,
+    AutoSparseReverseDiff,
+    AutoSparseZygote,
+    AutoTracker,
+    AutoZygote
 using DocStringExtensions
 using FillArrays: OneElement
 using LinearAlgebra: Symmetric, dot
@@ -66,6 +82,22 @@ include("hvp.jl")
 include("hessian.jl")
 
 include("backends.jl")
+
+export AutoChainRules,
+    AutoDiffractor,
+    AutoEnzyme,
+    AutoFiniteDiff,
+    AutoFiniteDifferences,
+    AutoForwardDiff,
+    AutoPolyesterForwardDiff,
+    AutoReverseDiff,
+    AutoSparseFiniteDiff,
+    AutoSparseForwardDiff,
+    AutoSparsePolyesterForwardDiff,
+    AutoSparseReverseDiff,
+    AutoSparseZygote,
+    AutoTracker,
+    AutoZygote
 
 export AutoFastDifferentiation, AutoSparseFastDifferentiation, AutoTapir
 export SecondOrder

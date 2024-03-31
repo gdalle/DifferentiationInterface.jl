@@ -22,30 +22,31 @@ For simplicity, we remove `value_` in the operator names below.
 !!! note "Edge labels"
 
     Full edges in the following graphs require a single call to the destination.
-    Dotted edges require multiple calls to the destination, the number is indicated above.
+    Dotted edges require multiple calls to the destination, the number is indicated on the edge.
 
-### Forward mode, allocating functions
-
-```mermaid
-flowchart LR
-    pushforward!! --> pushforward
-    derivative --> pushforward
-    derivative!! --> pushforward!!
-    gradient .-> |n|pushforward
-    gradient!! .-> |n|pushforward!!
-    jacobian .-> |n|pushforward
-    jacobian!! .-> |n|pushforward!!
-```
-
-### Reverse mode, allocating functions
+### First order
 
 ```mermaid
 flowchart LR
-    pullback!! --> pullback
-    derivative .-> |m|pullback
-    derivative!! .-> |m|pullback!!
-    gradient --> pullback
-    gradient!! --> pullback!!
-    jacobian .-> |m|pullback
-    jacobian!! .-> |m|pullback!!
+    direction LR
+    subgraph Out-of-place
+        pushforward
+        pullback
+        derivative --> pushforward
+        gradient --> pullback
+        jacobian .-> |n|pushforward
+        jacobian .-> |m|pullback
+    end
+
+    subgraph In-place
+        pushforward!! --> pushforward
+        pullback!! --> pullback
+        derivative!! --> pushforward!!
+        gradient!! --> pullback!!
+        jacobian!! .-> |n|pushforward!!
+        jacobian!! .-> |m|pullback!!
+    end
+
+    pushforward .-> |m|pullback
+    pullback .-> |n|pushforward
 ```
