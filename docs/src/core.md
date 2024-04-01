@@ -51,13 +51,6 @@ Modules = [DifferentiationInterface]
 Pages = ["backends.jl"]
 ```
 
-## Preparation
-
-```@autodocs
-Modules = [DifferentiationInterface]
-Pages = ["prepare.jl"]
-```
-
 ## Internals
 
 This is not part of the public API.

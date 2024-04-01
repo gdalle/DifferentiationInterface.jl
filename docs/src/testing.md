@@ -16,6 +16,15 @@ test_differentiation
 benchmark_differentiation
 ```
 
+## Pre-made scenario lists
+
+```@docs
+default_scenarios
+component_scenarios
+gpu_scenarios
+static_scenarios
+```
+
 ## Scenario types
 
 ```@docs
@@ -28,15 +37,6 @@ JacobianScenario
 SecondDerivativeScenario
 HVPScenario
 HessianScenario
-```
-
-## Scenario lists
-
-```@docs
-default_scenarios
-component_scenarios
-gpu_scenarios
-static_scenarios
 ```
 
 ## Internals

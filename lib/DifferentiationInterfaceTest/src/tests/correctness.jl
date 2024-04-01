@@ -4,7 +4,7 @@ function test_scen_intact(new_scen, scen)
     @testset "Scenario intact" begin
         @test new_scen.x == scen.x
         @test new_scen.y == scen.y
-        if scen isa PushforwardScenario
+        if scen isa PushforwardScenario || scen isa HVPScenario
             @test new_scen.dx == scen.dx
         elseif scen isa PullbackScenario
             @test new_scen.dy == scen.dy
