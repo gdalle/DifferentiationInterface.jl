@@ -7,7 +7,8 @@ end
 comp_to_num_gradient(x) = ComponentVector(; a=cos.(x.a), b=-sin.(x.b))
 
 function comp_to_num_pushforward(x, dx)
-    return dot(comp_to_num_gradient(x), dx)
+    g = comp_to_num_gradient(x)
+    return dot(g.a, dx.a) + dot(g.b, dx.b)
 end
 
 function comp_to_num_pullback(x, dy)
@@ -16,9 +17,9 @@ end
 
 function comp_to_num_scenarios_allocating(x::ComponentVector)
     return [
-        PushforwardScenario(arr_to_num; x=x, ref=comp_to_num_pushforward),
-        PullbackScenario(arr_to_num; x=x, ref=comp_to_num_pullback),
-        GradientScenario(arr_to_num; x=x, ref=comp_to_num_gradient),
+        PushforwardScenario(comp_to_num; x=x, ref=comp_to_num_pushforward),
+        PullbackScenario(comp_to_num; x=x, ref=comp_to_num_pullback),
+        GradientScenario(comp_to_num; x=x, ref=comp_to_num_gradient),
     ]
 end
 
