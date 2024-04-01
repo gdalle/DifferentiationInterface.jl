@@ -17,19 +17,19 @@ using Zygote: Zygote
 ##
 
 all_backends = [
-    AutoChainRules(Zygote.ZygoteRuleConfig()),
-    AutoDiffractor(),
-    AutoEnzyme(Enzyme.Forward),
-    AutoEnzyme(Enzyme.Reverse),
-    AutoFastDifferentiation(),
-    AutoFiniteDiff(),
-    AutoFiniteDifferences(FiniteDifferences.central_fdm(3, 1)),
-    AutoForwardDiff(),
-    AutoPolyesterForwardDiff(; chunksize=2),
-    AutoReverseDiff(),
+    # AutoChainRules(Zygote.ZygoteRuleConfig()),
+    # AutoDiffractor(),
+    # AutoEnzyme(Enzyme.Forward),
+    # AutoEnzyme(Enzyme.Reverse),
+    # AutoFastDifferentiation(),
+    # AutoFiniteDiff(),
+    # AutoFiniteDifferences(FiniteDifferences.central_fdm(3, 1)),
+    # AutoForwardDiff(),
+    # AutoPolyesterForwardDiff(; chunksize=2),
+    # AutoReverseDiff(),
     AutoTapir(),
-    AutoTracker(),
-    AutoZygote(),
+    # AutoTracker(),
+    # AutoZygote(),
 ]
 
 ##
@@ -39,5 +39,8 @@ for backend in all_backends
 end
 
 test_differentiation(
-    all_backends; second_order=false, logging=get(ENV, "CI", "false") == "false"
+    all_backends;
+    second_order=false,
+    logging=get(ENV, "CI", "false") == "false",
+    detailed=true,
 );

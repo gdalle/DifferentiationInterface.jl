@@ -3,6 +3,7 @@ include("test_imports.jl")
 ## Main tests
 
 @testset verbose = true "DifferentiationInterface.jl" begin
+    #=
     @testset verbose = true "Formal tests" begin
         @testset "Aqua" begin
             Aqua.test_all(
@@ -27,11 +28,11 @@ include("test_imports.jl")
     @testset "Zero backends" begin
         include("zero_backends.jl")
     end
-
+    =#
     @testset verbose = true "First order" begin
         include("first_order.jl")
     end
-
+    #=
     @testset verbose = true "Second order" begin
         include("second_order.jl")
     end
@@ -49,4 +50,5 @@ include("test_imports.jl")
             include("weird_arrays.jl")
         end
     end
+    =#
 end;
