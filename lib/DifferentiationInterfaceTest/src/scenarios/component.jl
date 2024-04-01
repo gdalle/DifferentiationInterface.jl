@@ -35,7 +35,7 @@ function component_scenarios()
     return vcat(
         # allocating
         num_to_arr_scenarios_allocating(randn(), CVEC),
-        arr_to_num_scenarios_allocating(ComponentVector(; a=randn(4), b=randn(2))),
+        comp_to_num_scenarios_allocating(ComponentVector(; a=randn(4), b=randn(2))),
         # mutating
         num_to_arr_scenarios_mutating(randn(), CVEC),
     )
