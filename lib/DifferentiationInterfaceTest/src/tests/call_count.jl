@@ -136,10 +136,11 @@ end
 ## Second derivative
 
 function test_call_count(ba::AbstractADType, scen::SecondDerivativeScenario{false})
-    (; f, x, y) = deepcopy(scen)
+    (; f, x, y, dy) = deepcopy(scen)
     extras = prepare_second_derivative(CallCounter(f), ba, x)
     cc = CallCounter(f)
-    second_derivative(cc, ba, x, extras)
+    der2_in = mysimilar(dy)
+    second_derivative!!(cc, der2_in, ba, x, extras)
     # what to test?
     return nothing
 end
@@ -150,7 +151,8 @@ function test_call_count(ba::AbstractADType, scen::HVPScenario{false})
     (; f, x, y, dx) = deepcopy(scen)
     extras = prepare_hvp(CallCounter(f), ba, x)
     cc = CallCounter(f)
-    hvp(cc, ba, x, dx, extras)
+    p_in = mysimilar(dx)
+    hvp!!(cc, p_in, ba, x, dx, extras)
     # what to test?
     return nothing
 end
@@ -161,7 +163,8 @@ function test_call_count(ba::AbstractADType, scen::HessianScenario{false})
     (; f, x, y, dx) = deepcopy(scen)
     extras = prepare_hessian(CallCounter(f), ba, x)
     cc = CallCounter(f)
-    hessian(cc, ba, x, extras)
+    hess_in = Matrix{typeof(y)}(undef, length(x), length(x))
+    hessian!!(cc, hess_in, ba, x, extras)
     # what to test?
     return nothing
 end

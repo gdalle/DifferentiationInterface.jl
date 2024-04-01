@@ -1,30 +1,90 @@
 ## Pushforward
 
-function DI.value_and_pushforward!!(
-    f, _dy::Number, ::AutoFiniteDiff{fdtype}, x, dx, extras::Nothing
-) where {fdtype}
-    y = f(x)
-    step(t::Number)::Number = f(x .+ t .* dx)
-    new_dy = finite_difference_derivative(step, zero(eltype(dx)), fdtype, eltype(y), y)
-    return y, new_dy
+function DI.pushforward(f, backend::AnyAutoFiniteDiff, x, dx, extras::Nothing)
+    step(t::Number) = f(x .+ t .* dx)
+    new_dy = finite_difference_derivative(step, zero(eltype(x)), fdtype(backend))
+    return new_dy
 end
 
-function DI.value_and_pushforward!!(
-    f, dy::AbstractArray, ::AutoFiniteDiff{fdtype}, x, dx, extras::Nothing
-) where {fdtype}
-    y = f(x)
-    step(t::Number)::AbstractArray = f(x .+ t .* dx)
-    finite_difference_gradient!(
-        dy, step, zero(eltype(dx)), fdtype, eltype(y), FUNCTION_NOT_INPLACE, y
-    )
-    return y, dy
-end
-
-function DI.value_and_pushforward(
-    f, ::AutoFiniteDiff{fdtype}, x, dx, extras::Nothing
-) where {fdtype}
+function DI.value_and_pushforward(f, backend::AnyAutoFiniteDiff, x, dx, extras::Nothing)
     y = f(x)
     step(t::Number) = f(x .+ t .* dx)
-    new_dy = finite_difference_derivative(step, zero(eltype(dx)), fdtype, eltype(y), y)
+    new_dy = finite_difference_derivative(
+        step, zero(eltype(x)), fdtype(backend), eltype(y), y
+    )
     return y, new_dy
+end
+
+## Derivative
+
+function DI.derivative(f, backend::AnyAutoFiniteDiff, x, extras::Nothing)
+    return finite_difference_derivative(f, x, fdtype(backend))
+end
+
+function DI.value_and_derivative(f, backend::AnyAutoFiniteDiff, x, extras::Nothing)
+    y = f(x)
+    return y, finite_difference_derivative(f, x, fdtype(backend), eltype(y), y)
+end
+
+## Gradient
+
+function DI.gradient(f, backend::AnyAutoFiniteDiff, x::Number, extras::Nothing)
+    return DI.derivative(f, backend, x, extras)
+end
+
+function DI.value_and_gradient(f, backend::AnyAutoFiniteDiff, x::Number, extras::Nothing)
+    return DI.value_and_derivative(f, backend, x, extras)
+end
+
+function DI.gradient(f, backend::AnyAutoFiniteDiff, x::AbstractArray, extras::Nothing)
+    return finite_difference_gradient(f, x, fdtype(backend))
+end
+
+function DI.value_and_gradient(
+    f, backend::AnyAutoFiniteDiff, x::AbstractArray, extras::Nothing
+)
+    y = f(x)
+    return y, finite_difference_gradient(f, x, fdtype(backend), typeof(y), y)
+end
+
+function DI.gradient!!(
+    f, grad, backend::AnyAutoFiniteDiff, x::AbstractArray, extras::Nothing
+)
+    return finite_difference_gradient!(grad, f, x, fdtype(backend))
+end
+
+function DI.value_and_gradient!!(
+    f, grad, backend::AnyAutoFiniteDiff, x::AbstractArray, extras::Nothing
+)
+    y = f(x)
+    return y, finite_difference_gradient!(grad, f, x, fdtype(backend), typeof(y), y)
+end
+
+## Jacobian
+
+function DI.jacobian(f, backend::AnyAutoFiniteDiff, x, extras::Nothing)
+    return finite_difference_jacobian(f, x, fdjtype(backend))
+end
+
+function DI.value_and_jacobian(f, backend::AnyAutoFiniteDiff, x, extras::Nothing)
+    y = f(x)
+    return y, finite_difference_jacobian(f, x, fdjtype(backend), eltype(y), y)
+end
+
+function DI.jacobian!!(f, jac, backend::AnyAutoFiniteDiff, x, extras::Nothing)
+    return DI.jacobian(f, backend, x, extras)
+end
+
+function DI.value_and_jacobian!!(f, jac, backend::AnyAutoFiniteDiff, x, extras::Nothing)
+    return DI.value_and_jacobian(f, backend, x, extras)
+end
+
+## Hessian
+
+function DI.hessian(f, backend::AnyAutoFiniteDiff, x, extras::Nothing)
+    return finite_difference_hessian(f, x, fdhtype(backend))
+end
+
+function DI.hessian!!(f, hess, backend::AnyAutoFiniteDiff, x, extras::Nothing)
+    return finite_difference_hessian!(hess, f, x, fdhtype(backend))
 end

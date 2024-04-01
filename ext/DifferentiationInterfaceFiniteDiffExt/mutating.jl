@@ -4,19 +4,44 @@ function DI.value_and_pushforward!!(
     f!,
     y::AbstractArray,
     dy::AbstractArray,
-    ::AutoFiniteDiff{fdtype},
+    backend::AnyAutoFiniteDiff,
     x,
     dx,
     extras::Nothing,
-) where {fdtype}
+)
     function step(t::Number)::AbstractArray
         new_y = similar(y)
         f!(new_y, x .+ t .* dx)
         return new_y
     end
-    finite_difference_gradient!(
-        dy, step, zero(eltype(dx)), fdtype, eltype(y), FUNCTION_NOT_INPLACE, y
-    )
     f!(y, x)
-    return y, dy
+    new_dy = finite_difference_derivative(
+        step, zero(eltype(x)), fdtype(backend), eltype(y), y
+    )
+    return y, new_dy
+end
+
+## Derivative
+
+function DI.value_and_derivative!!(
+    f!, y::AbstractArray, der::AbstractArray, backend::AnyAutoFiniteDiff, x, extras::Nothing
+)
+    f!(y, x)
+    finite_difference_gradient!(der, f!, x, fdtype(backend), eltype(y), FUNCTION_INPLACE, y)
+    return y, der
+end
+
+## Jacobian
+
+function DI.value_and_jacobian!!(
+    f!,
+    y::AbstractArray,
+    jac::AbstractMatrix,
+    backend::AnyAutoFiniteDiff,
+    x,
+    extras::Nothing,
+)
+    f!(y, x)
+    finite_difference_jacobian!(jac, f!, x, fdjtype(backend), eltype(y), y)
+    return y, jac
 end

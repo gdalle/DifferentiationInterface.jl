@@ -17,18 +17,19 @@ using Chairmarks: @be, Benchmark, Sample
 using ComponentArrays: ComponentVector
 using DifferentiationInterface
 using DifferentiationInterface:
-    AutoTaped,
+    AutoTapir,
     inner,
     mode,
     outer,
     supports_mutation,
-    supports_pushforward,
-    supports_pullback
+    pushforward_performance,
+    pullback_performance
 using DocStringExtensions
 import DifferentiationInterface as DI
 using JET: @test_call, @test_opt
 using JLArrays: jl
 using LinearAlgebra: Diagonal, dot
+using SparseArrays: SparseArrays, nnz, SparseMatrixCSC
 using StaticArrays: SVector, SMatrix
 using Test: @testset, @test
 
@@ -42,17 +43,20 @@ include("utils/zero_backends.jl")
 include("utils/compatibility.jl")
 include("utils/printing.jl")
 include("utils/misc.jl")
+include("utils/filter.jl")
 
 include("tests/correctness.jl")
 include("tests/type_stability.jl")
 include("tests/call_count.jl")
+include("tests/sparsity.jl")
 include("tests/benchmark.jl")
 include("test_differentiation.jl")
 
+export all_operators
 export Scenario
 export default_scenarios
 export static_scenarios, component_scenarios, gpu_scenarios
-export BenchmarkData, record!
-export all_operators, test_differentiation
+export BenchmarkData
+export test_differentiation, benchmark_differentiation
 
 end

@@ -36,15 +36,19 @@ Several variants of each operator are defined:
 !!! warning
     The "bang-bang" syntactic convention `!!` signals that some of the arguments _can_ be mutated, but they do not _have to be_.
     Such arguments will always be part of the return, so that one can simply reuse the operator's output and forget its input.
-
     In other words, this is good:
     ```julia
-    grad = gradient!!(f, grad, backend, x)  # do this
+    # work with grad_in
+    grad_out = gradient!!(f, grad_in, backend, x)
+    # work with grad_out
     ```
-    On the other hand, this is bad, because if `grad` has not been mutated, you will get wrong results:
+    On the other hand, this is bad, because if `grad_in` has not been mutated, you will forget the results:
     ```julia
-    gradient!!(f, grad, backend, x)  # don't do this
+    # work with grad_in
+    gradient!!(f, grad_in, backend, x)
+    # mistakenly keep working with grad_in
     ```
+    Note that we don't guarantee `grad_out` will have the same type as `grad_in`.
 
 ## Second order
 
@@ -56,12 +60,20 @@ Second-order differentiation is also supported, with the following operators:
 | [`hvp`](@ref)               | `Any`           | `Number`     | same as `x`      | `size(x)`                |
 | [`hessian`](@ref)           | `AbstractArray` | `Number`     | `AbstractMatrix` | `(length(x), length(x))` |
 
+We only define two variants for now:
+
+| out-of-place                | in-place (or not)             |
+| --------------------------- | ----------------------------- |
+| [`second_derivative`](@ref) | [`second_derivative!!`](@ref) |
+| [`hvp`](@ref)               | [`hvp!!`](@ref)               |
+| [`hessian`](@ref)           | [`hessian!!`](@ref)           |
+
 !!! danger
-    This is an experimental functionality, use at your own risk.
+    Second-order differentiation is still experimental, use at your own risk.
 
 ## Preparation
 
-In many cases, automatic differentiation can be accelerated if the function has been run at least once (e.g. to record a tape) and if some cache objects are provided.
+In many cases, AD can be accelerated if the function has been run at least once (e.g. to record a tape) and if some cache objects are provided.
 This is a backend-specific procedure, but we expose a common syntax to achieve it.
 
 | operator            | preparation function                |

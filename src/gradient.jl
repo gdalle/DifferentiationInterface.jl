@@ -1,3 +1,14 @@
+"""
+    prepare_gradient([other_extras], f, backend, x) -> extras
+
+Create an `extras` object that can be given to gradient operators.
+"""
+function prepare_gradient(extras, f_or_f!, backend::AbstractADType, args...)
+    return prepare_gradient(f_or_f!, backend, args...)
+end
+
+prepare_gradient(f, backend::AbstractADType, x) = prepare_pullback(f, backend, x)
+
 ## Allocating
 
 """
@@ -6,26 +17,8 @@
 function value_and_gradient(
     f, backend::AbstractADType, x, extras=prepare_gradient(f, backend, x)
 )
-    return value_and_gradient_aux(f, backend, x, extras, supports_pullback(backend))
-end
-
-function value_and_gradient_aux(f, backend, x, extras, ::PullbackSupported)
-    return value_and_pullback(f, backend, x, true, extras)
-end
-
-function value_and_gradient_aux(f, backend, x::Number, extras, ::PullbackNotSupported)
-    return value_and_pushforward(f, backend, x, one(x), extras)
-end
-
-function value_and_gradient_aux(
-    f, backend, x::AbstractArray, extras, ::PullbackNotSupported
-)
-    y = f(x)
-    grad = map(CartesianIndices(x)) do j
-        dx_j = basisarray(backend, x, j)
-        last(value_and_pushforward(f, backend, x, dx_j, extras))
-    end
-    return y, grad
+    new_extras = prepare_pullback(extras, f, backend, x)
+    return value_and_pullback(f, backend, x, one(eltype(x)), new_extras)
 end
 
 """
@@ -34,35 +27,15 @@ end
 function value_and_gradient!!(
     f, grad, backend::AbstractADType, x, extras=prepare_gradient(f, backend, x)
 )
-    return value_and_gradient_aux!!(f, grad, backend, x, extras, supports_pullback(backend))
-end
-
-function value_and_gradient_aux!!(f, grad, backend, x, extras, ::PullbackSupported)
-    return value_and_pullback!!(f, grad, backend, x, true, extras)
-end
-
-function value_and_gradient_aux!!(
-    f, grad, backend, x::Number, extras, ::PullbackNotSupported
-)
-    return value_and_pushforward(f, backend, x, one(x), extras)
-end
-
-function value_and_gradient_aux!!(
-    f, grad, backend, x::AbstractArray, extras, ::PullbackNotSupported
-)
-    y = f(x)
-    map!(grad, CartesianIndices(x)) do j
-        dx_j = basisarray(backend, x, j)
-        pushforward(f, backend, x, dx_j, extras)
-    end
-    return y, grad
+    new_extras = prepare_pullback(extras, f, backend, x)
+    return value_and_pullback!!(f, grad, backend, x, one(eltype(x)), new_extras)
 end
 
 """
     gradient(f, backend, x, [extras]) -> grad
 """
 function gradient(f, backend::AbstractADType, x, extras=prepare_gradient(f, backend, x))
-    return last(value_and_gradient(f, backend, x, extras))
+    return value_and_gradient(f, backend, x, extras)[2]
 end
 
 """
@@ -71,5 +44,5 @@ end
 function gradient!!(
     f, grad, backend::AbstractADType, x, extras=prepare_gradient(f, backend, x)
 )
-    return last(value_and_gradient!!(f, grad, backend, x, extras))
+    return value_and_gradient!!(f, grad, backend, x, extras)[2]
 end

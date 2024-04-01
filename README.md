@@ -5,14 +5,14 @@
 [![Coverage](https://codecov.io/gh/gdalle/DifferentiationInterface.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/gdalle/DifferentiationInterface.jl)
 [![Code Style: Blue](https://img.shields.io/badge/code%20style-blue-4495d1.svg)](https://github.com/invenia/BlueStyle)
 
-An interface to various automatic differentiation backends in Julia.
+An interface to various automatic differentiation (AD) backends in Julia.
 
 ## Goal
 
 This package provides a backend-agnostic syntax to differentiate functions of the following types:
 
-- **allocating**: `f(x) = y`
-- **mutating**: `f!(y, x) = nothing`
+- _allocating_: `f(x) = y`
+- _mutating_: `f!(y, x) = nothing`
 
 ## Features
 
@@ -39,20 +39,21 @@ We support most of the backends defined by [ADTypes.jl](https://github.com/SciML
 | [Tracker.jl](https://github.com/FluxML/Tracker.jl)                              | `AutoTracker()`                                              |
 | [Zygote.jl](https://github.com/FluxML/Zygote.jl)                                | `AutoZygote()`                                               |
 
-We also provide one additional backend:
+We also support additional (experimental) backends:
 
 | backend                                                                          | object                      |
 | :------------------------------------------------------------------------------- | :-------------------------- |
 | [FastDifferentiation.jl](https://github.com/brianguenter/FastDifferentiation.jl) | `AutoFastDifferentiation()` |
+| [Tapir.jl](https://github.com/withbayes/Tapir.jl)                                | `AutoTapir()`               |
 
 ## Example
 
 ```jldoctest readme
-julia> import ADTypes, ForwardDiff
+julia> import ForwardDiff
 
 julia> using DifferentiationInterface
 
-julia> backend = ADTypes.AutoForwardDiff();
+julia> backend = AutoForwardDiff();
 
 julia> f(x) = sum(abs2, x);
 

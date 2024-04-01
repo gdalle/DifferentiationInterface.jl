@@ -1,5 +1,8 @@
+pretty(b::AbstractADType) = string(b)
+
 pretty(::AutoZeroForward) = "ZeroForward"
 pretty(::AutoZeroReverse) = "ZeroReverse"
+
 pretty(::AutoChainRules) = "ChainRules"
 pretty(::AutoDiffractor) = "Diffractor"
 pretty(::AutoEnzyme) = "Enzyme"
@@ -9,10 +12,16 @@ pretty(::AutoFiniteDifferences) = "FiniteDifferences"
 pretty(::AutoForwardDiff) = "ForwardDiff"
 pretty(::AutoPolyesterForwardDiff) = "PolyesterForwardDiff"
 pretty(b::AutoReverseDiff) = "ReverseDiff$(b.compile ? "{compiled}" : "")"
-pretty(::AutoTaped) = "Taped"
+pretty(::AutoTapir) = "Tapir"
 pretty(::AutoTracker) = "Tracker"
 pretty(::AutoZygote) = "Zygote"
-pretty(b::AbstractADType) = string(b)
+
+pretty(::AutoSparseFastDifferentiation) = "FastDifferentiation sparse"
+pretty(::AutoSparseFiniteDiff) = "FiniteDiff sparse"
+pretty(::AutoSparseForwardDiff) = "ForwardDiff sparse"
+pretty(::AutoSparsePolyesterForwardDiff) = "PolyesterForwardDiff sparse"
+pretty(::AutoSparseReverseDiff) = "ReverseDiff sparse"
+pretty(::AutoSparseZygote) = "Zygote sparse"
 
 """
     backend_string(backend)

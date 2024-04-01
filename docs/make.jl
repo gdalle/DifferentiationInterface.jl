@@ -18,6 +18,9 @@ using FiniteDifferences: FiniteDifferences
 using ForwardDiff: ForwardDiff
 using PolyesterForwardDiff: PolyesterForwardDiff
 using ReverseDiff: ReverseDiff
+using Symbolics: Symbolics
+using SparseDiffTools: SparseDiffTools
+using Tapir: Tapir
 using Tracker: Tracker
 using Zygote: Zygote
 
@@ -49,6 +52,8 @@ makedocs(;
         get_extension(DI, :DifferentiationInterfaceForwardDiffExt),
         get_extension(DI, :DifferentiationInterfacePolyesterForwardDiffExt),
         get_extension(DI, :DifferentiationInterfaceReverseDiffExt),
+        get_extension(DI, :DifferentiationInterfaceSparseDiffToolsExt),
+        get_extension(DI, :DifferentiationInterfaceTapirExt),
         get_extension(DI, :DifferentiationInterfaceTrackerExt),
         get_extension(DI, :DifferentiationInterfaceZygoteExt),
     ],

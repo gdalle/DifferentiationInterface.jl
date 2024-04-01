@@ -105,9 +105,11 @@ end
 ## Second derivative
 
 function test_jet(ba::AbstractADType, scen::SecondDerivativeScenario{false};)
-    (; f, x) = deepcopy(scen)
+    (; f, x, dy) = deepcopy(scen)
     extras = prepare_second_derivative(f, ba, x)
+    der2_in = mysimilar(dy)
 
+    @test_opt second_derivative!!(f, der2_in, ba, x, extras)
     @test_opt second_derivative(f, ba, x, extras)
     return nothing
 end
@@ -117,7 +119,9 @@ end
 function test_jet(ba::AbstractADType, scen::HVPScenario{false};)
     (; f, x, dx) = deepcopy(scen)
     extras = prepare_hvp(f, ba, x)
+    p_in = mysimilar(dx)
 
+    @test_opt hvp!!(f, p_in, ba, x, dx, extras)
     @test_opt hvp(f, ba, x, dx, extras)
     return nothing
 end
@@ -125,9 +129,11 @@ end
 ## Hessian
 
 function test_jet(ba::AbstractADType, scen::HessianScenario{false};)
-    (; f, x) = deepcopy(scen)
+    (; f, x, y) = deepcopy(scen)
     extras = prepare_hessian(f, ba, x)
+    hess_in = Matrix{typeof(y)}(undef, length(x), length(x))
 
+    @test_opt hessian!!(f, hess_in, ba, x, extras)
     @test_opt hessian(f, ba, x, extras)
     return nothing
 end

@@ -16,10 +16,11 @@ function all_backends()
         AutoEnzyme(Enzyme.Reverse),
         AutoFastDifferentiation(),
         AutoFiniteDiff(),
-        AutoFiniteDifferences(FiniteDifferences.central_fdm(5, 1)),
+        AutoFiniteDifferences(FiniteDifferences.central_fdm(3, 1)),
         AutoForwardDiff(),
         AutoPolyesterForwardDiff(; chunksize=2),
         AutoReverseDiff(),
+        AutoTapir(),
         AutoTracker(),
         AutoZygote(),
     ]
@@ -36,15 +37,18 @@ end
 
 ## Types
 
-Most backend choices are defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl).
+We support (and re-export) most backend choices from [ADTypes.jl](https://github.com/SciML/ADTypes.jl), and we provide a few more of our own.
 
 !!! warning
-    Only the backends listed here are supported by DifferentiationInterface.jl, even though ADTypes.jl defines more.
+    Only the backends listed below are supported by DifferentiationInterface.jl, even though ADTypes.jl defines more.
+
+### Dense
 
 ```@docs
 AutoChainRules
 AutoDiffractor
 AutoEnzyme
+AutoFastDifferentiation
 AutoForwardDiff
 AutoForwardDiff()
 AutoFiniteDiff
@@ -52,14 +56,24 @@ AutoFiniteDifferences
 AutoPolyesterForwardDiff
 AutoPolyesterForwardDiff()
 AutoReverseDiff
+AutoTapir
 AutoTracker
 AutoZygote
 ```
 
-We also provide a few of our own:
+### Sparse
+
+!!! danger
+    Sparsity support is still experimental, use at your own risk.
 
 ```@docs
-AutoFastDifferentiation
+AutoSparseFastDifferentiation
+AutoSparseFiniteDiff
+AutoSparseForwardDiff
+AutoSparseForwardDiff()
+AutoSparsePolyesterForwardDiff
+AutoSparseReverseDiff
+AutoSparseZygote
 ```
 
 ## Availability
@@ -67,10 +81,10 @@ AutoFastDifferentiation
 You can use [`check_available`](@ref) to verify whether a given backend is loaded, like we did below:
 
 ```@example backends
-header = "| Backend | available |"  # hide
+header = "| backend | available |"  # hide
 subheader = "|---|---|"  # hide
 rows = map(all_backends()) do backend  # hide
-    "| `$(backend_string(backend))` | $(check_available(backend) ? '✓' : '✗') |"  # hide
+    "| `$(backend_string(backend))` | $(check_available(backend) ? '✅' : '❌') |"  # hide
 end  # hide
 Markdown.parse(join(vcat(header, subheader, rows...), "\n"))  # hide
 ```
@@ -82,10 +96,10 @@ Only some are compatible with mutating functions `f!(y, x) = nothing`.
 You can use [`check_mutation`](@ref) to check that feature, like we did below:
 
 ```@example backends
-header = "| Backend | mutation |"  # hide
+header = "| backend | mutation |"  # hide
 subheader = "|---|---|"  # hide
 rows = map(all_backends()) do backend  # hide
-    "| `$(backend_string(backend))` | $(check_mutation(backend) ? '✓' : '✗') |"  # hide
+    "| `$(backend_string(backend))` | $(check_mutation(backend) ? '✅' : '❌') |"  # hide
 end  # hide
 Markdown.parse(join(vcat(header, subheader, rows...), "\n"))  # hide
 ```
@@ -109,6 +123,8 @@ Modules = [
     Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceForwardDiffExt),
     Base.get_extension(DifferentiationInterface, :DifferentiationInterfacePolyesterForwardDiffExt),
     Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceReverseDiffExt),
+    Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceSparseDiffToolsExt),
+    Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceTapirExt),
     Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceTrackerExt),
     Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceZygoteExt)
 ]

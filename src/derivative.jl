@@ -1,79 +1,57 @@
+"""
+    prepare_derivative([other_extras], f, backend, x) -> extras
+    prepare_derivative([other_extras], f!, backend, y, x) -> extras
+
+Create an `extras` object that can be given to derivative operators.
+"""
+function prepare_derivative(extras, f_or_f!, backend::AbstractADType, args...)
+    return prepare_derivative(f_or_f!, backend, args...)
+end
+
+function prepare_derivative(f, backend::AbstractADType, x)
+    return prepare_pushforward(f, backend, x)
+end
+
+function prepare_derivative(f!, backend::AbstractADType, y, x)
+    return prepare_pushforward(f!, backend, y, x)
+end
+
 ## Allocating
 
 """
     value_and_derivative(f, backend, x, [extras]) -> (y, der)
 """
 function value_and_derivative(
-    f, backend::AbstractADType, x::Number, extras=prepare_derivative(f, backend, x)
+    f, backend::AbstractADType, x, extras=prepare_derivative(f, backend, x)
 )
-    return value_and_derivative_aux(f, backend, x, extras, supports_pushforward(backend))
-end
-
-function value_and_derivative_aux(f, backend, x, extras, ::PushforwardSupported)
-    return value_and_pushforward(f, backend, x, one(x), extras)
-end
-
-function value_and_derivative_aux(f, backend, x, extras, ::PushforwardNotSupported)
-    y = f(x)
-    if y isa Number
-        return value_and_pullback(f, backend, x, one(y))
-    else
-        der = map(CartesianIndices(y)) do i
-            dy_i = basisarray(backend, y, i)
-            last(value_and_pullback(f, backend, x, dy_i, extras))
-        end
-        return y, der
-    end
+    new_extras = prepare_pushforward(extras, f, backend, x)
+    return value_and_pushforward(f, backend, x, one(x), new_extras)
 end
 
 """
     value_and_derivative!!(f, der, backend, x, [extras]) -> (y, der)
 """
 function value_and_derivative!!(
-    f, der, backend::AbstractADType, x::Number, extras=prepare_derivative(f, backend, x)
+    f, der, backend::AbstractADType, x, extras=prepare_derivative(f, backend, x)
 )
-    return value_and_derivative_aux!!(
-        f, der, backend, x, extras, supports_pushforward(backend)
-    )
-end
-
-function value_and_derivative_aux!!(f, der, backend, x, extras, ::PushforwardSupported)
-    return value_and_pushforward!!(f, der, backend, x, one(x), extras)
-end
-
-function value_and_derivative_aux!!(
-    f, _der::Number, backend, x, extras, ::PushforwardNotSupported
-)
-    return value_and_pullback(f, backend, x, one(x), extras)
-end
-
-function value_and_derivative_aux!!(
-    f, der::AbstractArray, backend, x, extras, ::PushforwardNotSupported
-)
-    y = f(x)
-    map!(der, CartesianIndices(y)) do i
-        dy_i = basisarray(backend, y, i)
-        pullback(f, backend, x, dy_i, extras)
-    end
-    return y, der
+    new_extras = prepare_pushforward(extras, f, backend, x)
+    return value_and_pushforward!!(f, der, backend, x, one(x), new_extras)
 end
 
 """
     derivative(f, backend, x, [extras]) -> der
 """
-function derivative(
-    f, backend::AbstractADType, x::Number, extras=prepare_derivative(f, backend, x)
-)
-    return last(value_and_derivative(f, backend, x, extras))
+function derivative(f, backend::AbstractADType, x, extras=prepare_derivative(f, backend, x))
+    return value_and_derivative(f, backend, x, extras)[2]
 end
 
 """
     derivative!!(f, der, backend, x, [extras]) -> der
 """
 function derivative!!(
-    f, der, backend::AbstractADType, x::Number, extras=prepare_derivative(f, backend, x)
+    f, der, backend::AbstractADType, x, extras=prepare_derivative(f, backend, x)
 )
-    return last(value_and_derivative!!(f, der, backend, x, extras))
+    return value_and_derivative!!(f, der, backend, x, extras)[2]
 end
 
 ## Mutating
@@ -82,29 +60,8 @@ end
     value_and_derivative!!(f!, y, der, backend, x, [extras]) -> (y, der)
 """
 function value_and_derivative!!(
-    f!,
-    y,
-    der,
-    backend::AbstractADType,
-    x::Number,
-    extras=prepare_derivative(f!, backend, y, x),
+    f!, y, der, backend::AbstractADType, x, extras=prepare_derivative(f!, backend, y, x)
 )
-    return value_and_derivative_aux!!(
-        f!, y, der, backend, x, extras, supports_pushforward(backend)
-    )
-end
-
-function value_and_derivative_aux!!(f!, y, der, backend, x, extras, ::PushforwardSupported)
-    return value_and_pushforward!!(f!, y, der, backend, x, one(x), extras)
-end
-
-function value_and_derivative_aux!!(
-    f!, y::AbstractArray, der::AbstractArray, backend, x, extras, ::PushforwardNotSupported
-)
-    f!(y, x)
-    map!(der, CartesianIndices(y)) do i
-        dy_i = basisarray(backend, y, i)
-        last(value_and_pullback!!(f!, y, der[i], backend, x, dy_i, extras))
-    end
-    return y, der
+    new_extras = prepare_pushforward(extras, f!, backend, y, x)
+    return value_and_pushforward!!(f!, y, der, backend, x, one(x), new_extras)
 end

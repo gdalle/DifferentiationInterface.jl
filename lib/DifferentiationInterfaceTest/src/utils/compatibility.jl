@@ -6,19 +6,3 @@ function compatible(backend::AbstractADType, scen::AbstractScenario)
     end
     return true
 end
-
-function compatible(
-    backend::AbstractADType, ::PushforwardScenario{mutating}
-) where {mutating}
-    if mutating
-        return Bool(supports_mutation(backend)) && Bool(supports_pushforward(backend))
-    end
-    return Bool(supports_pushforward(backend))
-end
-
-function compatible(backend::AbstractADType, ::PullbackScenario{mutating}) where {mutating}
-    if mutating
-        return Bool(supports_mutation(backend)) && Bool(supports_pullback(backend))
-    end
-    return Bool(supports_pullback(backend))
-end

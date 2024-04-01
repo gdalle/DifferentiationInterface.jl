@@ -8,6 +8,9 @@ using FiniteDifferences: FiniteDifferences
 using ForwardDiff: ForwardDiff
 using PolyesterForwardDiff: PolyesterForwardDiff
 using ReverseDiff: ReverseDiff
+using SparseDiffTools: SparseDiffTools
+using Symbolics: Symbolics
+using Tapir: Tapir
 using Tracker: Tracker
 using Zygote: Zygote
 
@@ -24,12 +27,15 @@ all_backends = [
     AutoForwardDiff(),
     AutoPolyesterForwardDiff(; chunksize=2),
     AutoReverseDiff(),
+    AutoTapir(),
     AutoTracker(),
     AutoZygote(),
 ]
+
+##
 
 for backend in all_backends
     @test check_available(backend)
 end
 
-test_differentiation(all_backends; second_order=false);
+test_differentiation(all_backends; second_order=false, logging=true);

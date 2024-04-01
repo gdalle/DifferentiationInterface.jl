@@ -9,6 +9,7 @@ test_differentiation(
     # jacobian is super slow for some reason
     excluded=[jacobian],
     second_order=false,
+    logging=true,
 );
 
 test_differentiation(
@@ -16,4 +17,5 @@ test_differentiation(
     all_operators(),
     vcat(component_scenarios(), gpu_scenarios(), static_scenarios());
     second_order=false,
+    logging=true,
 );

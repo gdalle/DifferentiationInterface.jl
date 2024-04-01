@@ -16,31 +16,59 @@ using ADTypes:
     AbstractFiniteDifferencesMode,
     AbstractReverseMode,
     AbstractSymbolicDifferentiationMode
+using ADTypes:
+    AutoChainRules,
+    AutoDiffractor,
+    AutoEnzyme,
+    AutoFiniteDiff,
+    AutoFiniteDifferences,
+    AutoForwardDiff,
+    AutoPolyesterForwardDiff,
+    AutoReverseDiff,
+    AutoSparseFiniteDiff,
+    AutoSparseForwardDiff,
+    AutoSparsePolyesterForwardDiff,
+    AutoSparseReverseDiff,
+    AutoSparseZygote,
+    AutoTracker,
+    AutoZygote
 using DocStringExtensions
 using FillArrays: OneElement
-using LinearAlgebra: dot
+using LinearAlgebra: Symmetric, dot
 
 """
     AutoFastDifferentiation
 
 Chooses [FastDifferentiation.jl](https://github.com/brianguenter/FastDifferentiation.jl).
-"""
-struct AutoFastDifferentiation <: AbstractSymbolicDifferentiationMode end
-
-"""
-    AutoTaped
-
-Chooses [Taped.jl](https://github.com/withbayes/Taped.jl).
 
 !!! danger
     This backend is experimental, use at your own risk.
 """
-struct AutoTaped <: AbstractReverseMode end
+struct AutoFastDifferentiation <: AbstractSymbolicDifferentiationMode end
+
+"""
+    AutoSparseFastDifferentiation
+
+Chooses [FastDifferentiation.jl](https://github.com/brianguenter/FastDifferentiation.jl) leveraging sparsity.
+
+!!! danger
+    This backend is experimental, use at your own risk.
+"""
+struct AutoSparseFastDifferentiation <: AbstractSymbolicDifferentiationMode end
+
+"""
+    AutoTapir
+
+Chooses [Tapir.jl](https://github.com/withbayes/Tapir.jl).
+
+!!! danger
+    This backend is experimental, use at your own risk.
+"""
+struct AutoTapir <: AbstractReverseMode end
 
 include("second_order.jl")
 include("traits.jl")
 include("utils.jl")
-include("prepare.jl")
 
 include("pushforward.jl")
 include("pullback.jl")
@@ -55,7 +83,23 @@ include("hessian.jl")
 
 include("backends.jl")
 
-export AutoFastDifferentiation
+export AutoChainRules,
+    AutoDiffractor,
+    AutoEnzyme,
+    AutoFiniteDiff,
+    AutoFiniteDifferences,
+    AutoForwardDiff,
+    AutoPolyesterForwardDiff,
+    AutoReverseDiff,
+    AutoSparseFiniteDiff,
+    AutoSparseForwardDiff,
+    AutoSparsePolyesterForwardDiff,
+    AutoSparseReverseDiff,
+    AutoSparseZygote,
+    AutoTracker,
+    AutoZygote
+
+export AutoFastDifferentiation, AutoSparseFastDifferentiation, AutoTapir
 export SecondOrder
 
 export value_and_pushforward!!, value_and_pushforward
@@ -72,9 +116,9 @@ export derivative!!, derivative
 export gradient!!, gradient
 export jacobian!!, jacobian
 
-export second_derivative
-export hvp
-export hessian
+export second_derivative!!, second_derivative
+export hvp!!, hvp
+export hessian!!, hessian
 
 export prepare_pushforward, prepare_pullback
 export prepare_derivative, prepare_gradient, prepare_jacobian
@@ -83,7 +127,7 @@ export prepare_second_derivative, prepare_hvp, prepare_hessian
 export check_available, check_mutation, check_hessian
 
 function __init__()
-    Base.Experimental.register_error_hint(MethodError) do io, exc, argtypes, kwargs
+    Base.Experimental.register_error_hint(StackOverflowError) do io, exc, argtypes, kwargs
         f_name = string(exc.f)
         if (
             f_name == "mode" ||
@@ -100,7 +144,8 @@ function __init__()
                     print(
                         io,
                         """\n
-                        HINT: One of DifferentiationInterface's functions is missing a method. Some possible fixes:
+                        HINT: One of DifferentiationInterface's functions is missing a method, which causes an endless loop of `pullback` calling `pushforward` and vice-versa.
+                        Some possible fixes:
                         - switch to another backend
                         - if you don't want to switch, load the package extension corresponding to backend `$T`
                         - if the package is already loaded, define the method `$f_name` for the right combination of argument types

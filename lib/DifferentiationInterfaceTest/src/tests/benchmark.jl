@@ -39,6 +39,49 @@ function Base.pairs(data::BenchmarkData)
     return ns .=> getfield.(Ref(data), ns)
 end
 
+"""
+    benchmark_differentiation(backends, [operators, scenarios]; [kwargs...])
+
+Benchmark a list of `backends` for a list of `operators` on a list of `scenarios`.
+
+# Keyword arguments
+
+- filtering: same as [`test_differentiation`](@ref) for the filtering part.
+- `logging=true`: whether to log progress
+"""
+function benchmark_differentiation(
+    backends::Vector{<:AbstractADType},
+    operators::Vector{<:Function}=all_operators(),
+    scenarios::Vector{<:Scenario}=default_scenarios();
+    # filtering
+    input_type::Type=Any,
+    output_type::Type=Any,
+    allocating=true,
+    mutating=true,
+    first_order=true,
+    second_order=true,
+    excluded::Vector{<:Function}=Function[],
+    # options
+    logging=false,
+)
+    operators = filter_operators(operators; first_order, second_order, excluded)
+    scenarios = filter_scenarios(scenarios; input_type, output_type, allocating, mutating)
+
+    benchmark_data = BenchmarkData()
+    for backend in backends
+        for op in operators
+            for scen in filter(scenarios) do scen
+                compatible(backend, op, scen)
+            end
+                logging &&
+                    @info "Benchmarking: $(backend_string(backend)) - $op - $(string(scen))"
+                run_benchmark!(benchmark_data, backend, op, scen; allocations=false)
+            end
+        end
+    end
+    return benchmark_data
+end
+
 function record!(data, tup::NamedTuple)
     for n in fieldnames(typeof(tup))
         push!(getfield(data, n), getfield(tup, n))
@@ -247,7 +290,7 @@ function run_benchmark!(
 )
     (; f, x, y, dy) = deepcopy(scen)
     extras = prepare_second_derivative(f, ba, x)
-    bench1 = @be second_derivative(f, ba, x, extras)
+    bench1 = @be mysimilar(dy) second_derivative!!(f, _, ba, x, extras)
     # only test allocations if the output is scalar
     if allocations && y isa Number
         @test 0 == minimum(bench1).allocs
@@ -263,7 +306,7 @@ function run_benchmark!(
 )
     (; f, x, y, dx) = deepcopy(scen)
     extras = prepare_hvp(f, ba, x)
-    bench1 = @be hvp(f, ba, x, dx, extras)
+    bench1 = @be mysimilar(dx) hvp!!(f, _, ba, x, dx, extras)
     # no test for now
     record!(data, ba, hvp, scen, bench1)
     return nothing
@@ -276,7 +319,8 @@ function run_benchmark!(
 )
     (; f, x, y) = deepcopy(scen)
     extras = prepare_hessian(f, ba, x)
-    bench1 = @be hessian(f, ba, x, extras)
+    hess_template = Matrix{typeof(y)}(undef, length(x), length(x))
+    bench1 = @be similar(hess_template) hessian!!(f, _, ba, x, extras)
     # no test for now
     record!(data, ba, hessian, scen, bench1)
     return nothing
