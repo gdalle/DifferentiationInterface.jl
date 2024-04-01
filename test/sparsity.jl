@@ -38,5 +38,5 @@ test_differentiation(
         ),
     ];
     sparsity=true,
-    logging=true,
+    logging=get(ENV, "CI", "false") == "false",
 )

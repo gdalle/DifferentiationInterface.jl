@@ -8,5 +8,5 @@ test_differentiation(
     correctness=false,
     type_stability=true,
     second_order=false,
-    logging=true,
+    logging=get(ENV, "CI", "false") == "false",
 );

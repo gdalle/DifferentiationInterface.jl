@@ -37,5 +37,5 @@ test_differentiation(
     vcat(second_order_backends, second_order_mixed_backends);
     first_order=false,
     second_order=true,
-    logging=true,
+    logging=get(ENV, "CI", "false") == "false",
 );
