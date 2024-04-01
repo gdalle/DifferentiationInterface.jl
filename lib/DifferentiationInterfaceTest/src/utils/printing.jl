@@ -23,12 +23,6 @@ pretty(::AutoSparsePolyesterForwardDiff) = "PolyesterForwardDiff sparse"
 pretty(::AutoSparseReverseDiff) = "ReverseDiff sparse"
 pretty(::AutoSparseZygote) = "Zygote sparse"
 
-"""
-    backend_string(backend)
-
-Return a shorter string than the full object printing from ADTypes.jl.
-Might be ambiguous.
-"""
 function backend_string(backend::AbstractADType)
     bs = pretty(backend)
     if mode(backend) == AbstractFiniteDifferencesMode

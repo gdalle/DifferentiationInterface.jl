@@ -31,20 +31,12 @@ end
 
 test_differentiation(
     sparse_backends,
-    [jacobian],
     [
-        Scenario(
-            abs2diff;
-            x=rand(5),
-            ref=DifferentiationInterfaceTest.Reference(; jacobian=abs2diff_jacobian),
-        ),
-        Scenario(
-            abs2diff!;
-            x   = rand(5),
-            y   = zeros(4),
-            ref = DifferentiationInterfaceTest.Reference(; jacobian=abs2diff_jacobian),
+        JacobianScenario(abs2diff; x=rand(5), ref=abs2diff_jacobian),
+        JacobianScenario(
+            abs2diff!; x=rand(5), y=zeros(4), ref=jacobian = abs2diff_jacobian
         ),
     ];
     sparsity=true,
-    logging=true,
+    logging=get(ENV, "CI", "false") == "false",
 )

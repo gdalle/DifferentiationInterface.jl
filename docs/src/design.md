@@ -1,4 +1,4 @@
-# For AD developers
+# Package design
 
 ## Backend requirements
 

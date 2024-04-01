@@ -17,20 +17,15 @@ using Chairmarks: @be, Benchmark, Sample
 using ComponentArrays: ComponentVector
 using DifferentiationInterface
 using DifferentiationInterface:
-    AutoTapir,
-    inner,
-    mode,
-    outer,
-    supports_mutation,
-    pushforward_performance,
-    pullback_performance
+    inner, mode, outer, supports_mutation, pushforward_performance, pullback_performance
 using DocStringExtensions
 import DifferentiationInterface as DI
 using JET: @test_call, @test_opt
 using JLArrays: jl
 using LinearAlgebra: Diagonal, dot
+using ProgressMeter: ProgressUnknown, next!
 using SparseArrays: SparseArrays, nnz, SparseMatrixCSC
-using StaticArrays: SVector, SMatrix
+using StaticArrays: MMatrix, MVector, SMatrix, SVector
 using Test: @testset, @test
 
 include("scenarios/scenario.jl")
@@ -39,7 +34,7 @@ include("scenarios/static.jl")
 include("scenarios/component.jl")
 include("scenarios/gpu.jl")
 
-include("utils/zero.jl")
+include("utils/zero_backends.jl")
 include("utils/compatibility.jl")
 include("utils/printing.jl")
 include("utils/misc.jl")
@@ -50,13 +45,19 @@ include("tests/type_stability.jl")
 include("tests/call_count.jl")
 include("tests/sparsity.jl")
 include("tests/benchmark.jl")
-include("tests/test.jl")
+include("test_differentiation.jl")
 
-export all_operators
-export Scenario
+export AbstractScenario
+export PushforwardScenario,
+    PullbackScenario,
+    DerivativeScenario,
+    GradientScenario,
+    JacobianScenario,
+    SecondDerivativeScenario,
+    HVPScenario,
+    HessianScenario
 export default_scenarios
 export static_scenarios, component_scenarios, gpu_scenarios
-export BenchmarkData
 export test_differentiation, benchmark_differentiation
 
 end

@@ -7,7 +7,10 @@ using DifferentiationInterfaceTest: AutoZeroForward, AutoZeroReverse
 
 for backend in [AutoZeroForward(), AutoZeroReverse()]
     test_differentiation(
-        backend, all_operators(), default_scenarios(); correctness=backend, logging=true
+        backend,
+        default_scenarios();
+        correctness=backend,
+        logging=get(ENV, "CI", "false") == "false",
     )
 end
 
@@ -17,30 +20,22 @@ for backend in [
 ]
     test_differentiation(
         backend,
-        all_operators(),
         default_scenarios();
         correctness=backend,
         first_order=false,
-        logging=true,
+        logging=get(ENV, "CI", "false") == "false",
     )
 end
 
 ## Type stability
 
 test_differentiation(
-    AutoZeroForward();
+    [AutoZeroForward(), AutoZeroReverse()];
     correctness=false,
     type_stability=true,
-    excluded=[pullback],
-    logging=true,
+    logging=get(ENV, "CI", "false") == "false",
 )
-test_differentiation(
-    AutoZeroReverse();
-    correctness=false,
-    type_stability=true,
-    excluded=[pushforward],
-    logging=true,
-)
+
 test_differentiation(
     [
         SecondOrder(AutoZeroForward(), AutoZeroReverse()),
@@ -49,7 +44,7 @@ test_differentiation(
     correctness=false,
     type_stability=true,
     first_order=false,
-    logging=true,
+    logging=get(ENV, "CI", "false") == "false",
 )
 
 ## Call count
@@ -58,46 +53,49 @@ test_differentiation(
     AutoZeroForward();
     correctness=false,
     call_count=true,
-    excluded=[gradient, pullback],
-    logging=true,
+    logging=get(ENV, "CI", "false") == "false",
+    excluded=[GradientScenario],
 );
 
 test_differentiation(
     AutoZeroReverse();
     correctness=false,
     call_count=true,
-    excluded=[derivative, pushforward],
-    logging=true,
+    logging=get(ENV, "CI", "false") == "false",
+    excluded=[DerivativeScenario],
 );
 
 ## Benchmark
 
-data = benchmark_differentiation([AutoZeroForward(), AutoZeroReverse()]; logging=true);
+data = benchmark_differentiation(
+    [AutoZeroForward(), AutoZeroReverse()]; logging=get(ENV, "CI", "false") == "false"
+);
 
-df = DataFrames.DataFrame(pairs(data)...)
+df = DataFrames.DataFrame(data)
 
 ## Weird arrays
 
 for backend in [AutoZeroForward(), AutoZeroReverse()]
     test_differentiation(
-        backend, all_operators(), gpu_scenarios(); correctness=backend, logging=true
+        backend,
+        gpu_scenarios();
+        correctness=backend,
+        logging=get(ENV, "CI", "false") == "false",
     )
     # copyto!(col, col) fails on static arrays
     test_differentiation(
         backend,
-        all_operators(),
         static_scenarios();
         correctness=backend,
-        excluded=[jacobian, hessian],
-        logging=true,
+        excluded=[JacobianScenario, HessianScenario],
+        logging=get(ENV, "CI", "false") == "false",
     )
     # stack fails on component vectors
     test_differentiation(
         backend,
-        all_operators(),
         component_scenarios();
         correctness=backend,
-        excluded=[hessian],
-        logging=true,
+        excluded=[HessianScenario],
+        logging=get(ENV, "CI", "false") == "false",
     )
 end
