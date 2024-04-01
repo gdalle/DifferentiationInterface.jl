@@ -33,10 +33,11 @@ const CVEC = ComponentVector(; a=collect(1:4), b=collect(5:6))
 Create a vector of [`AbstractScenario`](@ref)s with component array types from [ComponentArrays.jl](https://github.com/jonniedie/ComponentArrays.jl).
 """
 function component_scenarios()
+    x = ComponentVector(; a=randn(4), b=randn(2))
     return vcat(
         # allocating
         num_to_arr_scenarios_allocating(randn(), CVEC),
-        comp_to_num_scenarios_allocating(ComponentVector(; a=randn(4), b=randn(2))),
+        comp_to_num_scenarios_allocating(x::ComponentVector),
         # mutating
         num_to_arr_scenarios_mutating(randn(), CVEC),
     )
