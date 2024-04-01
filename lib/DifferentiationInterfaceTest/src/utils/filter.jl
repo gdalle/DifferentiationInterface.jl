@@ -1,48 +1,24 @@
-"""
-    all_operators()
-
-List all operators that can be tested with [`test_differentiation`](@ref).
-"""
-function all_operators()
-    return [
-        pushforward,
-        pullback,
-        derivative,
-        gradient,
-        jacobian,
-        second_derivative,
-        hvp,
-        hessian,
-    ]
-end
-
-function filter_operators(
-    operators::Vector{<:Function};
-    first_order::Bool,
-    second_order::Bool,
-    excluded::Vector{<:Function},
-)
-    !first_order && (
-        operators = filter(
-            !in([pushforward, pullback, derivative, gradient, jacobian]), operators
-        )
-    )
-    !second_order && (operators = filter(!in([second_derivative, hvp, hessian]), operators))
-    operators = filter(!in(excluded), operators)
-    return operators
-end
-
 function filter_scenarios(
-    scenarios::Vector{<:Scenario};
+    scenarios::Vector{<:AbstractScenario};
     input_type::Type,
     output_type::Type,
+    first_order::Bool,
+    second_order::Bool,
     allocating::Bool,
     mutating::Bool,
+    excluded::Vector,
 )
-    scenarios = filter(scenarios) do scen
-        typeof(scen.x) <: input_type && typeof(scen.y) <: output_type
+    scenarios = filter(s -> (s.x isa input_type && s.y isa output_type), scenarios)
+    !first_order &&
+        (scenarios = filter(s -> isa(s, AbstractSecondOrderScenario), scenarios))
+    !second_order &&
+        (scenarios = filter(s -> isa(s, AbstractFirstOrderScenario), scenarios))
+    !allocating && (scenarios = filter(ismutating, scenarios))
+    !mutating && (scenarios = filter(!ismutating, scenarios))
+    for T in excluded
+        scenarios = filter(s -> !isa(s, T), scenarios)
     end
-    !allocating && (scenarios = filter(is_mutating, scenarios))
-    !mutating && (scenarios = filter(!is_mutating, scenarios))
+    # sort for nice printing
+    scenarios = sort(scenarios; by=s -> (string(typeof(s).name.name), string(s.f)))
     return scenarios
 end

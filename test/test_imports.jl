@@ -8,7 +8,6 @@ Pkg.develop(
 
 ##
 
-using ADTypes
 using DifferentiationInterface
 using DifferentiationInterfaceTest
 

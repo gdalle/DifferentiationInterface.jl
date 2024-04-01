@@ -17,12 +17,8 @@ include("test_imports.jl")
             )
         end
         @testset "JET" begin
-            JET.test_package(
-                DifferentiationInterface; target_modules=(DifferentiationInterface,)
-            )
-            JET.test_package(
-                DifferentiationInterfaceTest; target_modules=(DifferentiationInterfaceTest,)
-            )
+            JET.test_package(DifferentiationInterface; target_defined_modules=true)
+            JET.test_package(DifferentiationInterfaceTest; target_defined_modules=true)
         end
     end
 

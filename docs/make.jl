@@ -66,11 +66,9 @@ makedocs(;
     ),
     pages=[
         "Home" => "index.md", #
-        "tutorial.md", #
-        "overview.md", #
-        "api.md", #
-        "backends.md", #
-        "developer.md",
+        "Start here" => ["tutorial.md", "overview.md", "backends.md"],
+        "Reference" => ["core.md", "testing.md"],
+        "Advanced" => ["design.md", "extensions.md"],
     ],
     warnonly=:missing_docs,  # missing docs for ADTypes.jl are normal
 )

@@ -4,29 +4,37 @@ function test_scen_intact(new_scen, scen)
     @testset "Scenario intact" begin
         @test new_scen.x == scen.x
         @test new_scen.y == scen.y
-        @test new_scen.dx == scen.dx
-        @test new_scen.dy == scen.dy
+        if scen isa PushforwardScenario
+            @test new_scen.dx == scen.dx
+        elseif scen isa PullbackScenario
+            @test new_scen.dy == scen.dy
+        end
     end
 end
 
 ## Pushforward
 
 function test_correctness(
-    ba::AbstractADType, scen::PushforwardScenario{false}; isapprox::Function, atol, rtol
+    ba::AbstractADType,
+    scen::PushforwardScenario{false};
+    isapprox::Function,
+    atol,
+    rtol,
+    ref_backend,
 )
-    (; f, x, y, dx, dy, ref) = new_scen = deepcopy(scen)
+    (; f, x, y, dx) = new_scen = deepcopy(scen)
     extras = prepare_pushforward(f, ba, x)
-    dy_true = if ref isa AbstractADType
-        pushforward(f, ref, x, dx)
+    dy_true = if ref_backend isa AbstractADType
+        pushforward(f, ref_backend, x, dx)
     else
-        ref.pushforward(x, dx)
+        new_scen.ref(x, dx)
     end
 
     y1, dy1 = value_and_pushforward(f, ba, x, dx, extras)
-    y2, dy2 = value_and_pushforward!!(f, mysimilar(dy), ba, x, dx, extras)
+    y2, dy2 = value_and_pushforward!!(f, mysimilar(y), ba, x, dx, extras)
 
     dy3 = pushforward(f, ba, x, dx, extras)
-    dy4 = pushforward!!(f, mysimilar(dy), ba, x, dx, extras)
+    dy4 = pushforward!!(f, mysimilar(y), ba, x, dx, extras)
 
     let (≈)(x, y) = isapprox(x, y; atol, rtol)
         @testset "Primal value" begin
@@ -45,19 +53,24 @@ function test_correctness(
 end
 
 function test_correctness(
-    ba::AbstractADType, scen::PushforwardScenario{true}; isapprox::Function, atol, rtol
+    ba::AbstractADType,
+    scen::PushforwardScenario{true};
+    isapprox::Function,
+    atol,
+    rtol,
+    ref_backend,
 )
-    (; f, x, y, dx, dy, ref) = new_scen = deepcopy(scen)
+    (; f, x, y, dx) = new_scen = deepcopy(scen)
     f! = f
     extras = prepare_pushforward(f!, ba, y, x)
-    dy_true = if ref isa AbstractADType
-        last(value_and_pushforward!!(f!, mysimilar(y), mysimilar(dy), ref, x, dx))
+    dy_true = if ref_backend isa AbstractADType
+        last(value_and_pushforward!!(f!, mysimilar(y), mysimilar(y), ref_backend, x, dx))
     else
-        ref.pushforward(x, dx)
+        new_scen.ref(x, dx)
     end
 
     y10 = mysimilar(y)
-    y1, dy1 = value_and_pushforward!!(f!, y10, mysimilar(dy), ba, x, dx, extras)
+    y1, dy1 = value_and_pushforward!!(f!, y10, mysimilar(y), ba, x, dx, extras)
 
     let (≈)(x, y) = isapprox(x, y; atol, rtol)
         @testset "Primal value" begin
@@ -75,21 +88,26 @@ end
 ## Pullback
 
 function test_correctness(
-    ba::AbstractADType, scen::PullbackScenario{false}; isapprox::Function, atol, rtol
+    ba::AbstractADType,
+    scen::PullbackScenario{false};
+    isapprox::Function,
+    atol,
+    rtol,
+    ref_backend,
 )
-    (; f, x, y, dx, dy, ref) = new_scen = deepcopy(scen)
+    (; f, x, y, dy) = new_scen = deepcopy(scen)
     extras = prepare_pullback(f, ba, x)
-    dx_true = if ref isa AbstractADType
-        pullback(f, ref, x, dy)
+    dx_true = if ref_backend isa AbstractADType
+        pullback(f, ref_backend, x, dy)
     else
-        ref.pullback(x, dy)
+        new_scen.ref(x, dy)
     end
 
     y1, dx1 = value_and_pullback(f, ba, x, dy, extras)
-    y2, dx2 = value_and_pullback!!(f, mysimilar(dx), ba, x, dy, extras)
+    y2, dx2 = value_and_pullback!!(f, mysimilar(x), ba, x, dy, extras)
 
     dx3 = pullback(f, ba, x, dy, extras)
-    dx4 = pullback!!(f, mysimilar(dx), ba, x, dy, extras)
+    dx4 = pullback!!(f, mysimilar(x), ba, x, dy, extras)
 
     let (≈)(x, y) = isapprox(x, y; atol, rtol)
         @testset "Primal value" begin
@@ -108,19 +126,24 @@ function test_correctness(
 end
 
 function test_correctness(
-    ba::AbstractADType, scen::PullbackScenario{true}; isapprox::Function, atol, rtol
+    ba::AbstractADType,
+    scen::PullbackScenario{true};
+    isapprox::Function,
+    atol,
+    rtol,
+    ref_backend,
 )
-    (; f, x, y, dx, dy, ref) = new_scen = deepcopy(scen)
+    (; f, x, y, dy) = new_scen = deepcopy(scen)
     f! = f
     extras = prepare_pullback(f!, ba, y, x)
-    dx_true = if ref isa AbstractADType
-        last(value_and_pullback!!(f, mysimilar(y), mysimilar(dx), ref, x, dy))
+    dx_true = if ref_backend isa AbstractADType
+        last(value_and_pullback!!(f, mysimilar(y), mysimilar(x), ref_backend, x, dy))
     else
-        ref.pullback(x, dy)
+        new_scen.ref(x, dy)
     end
 
     y10 = mysimilar(y)
-    y1, dx1 = value_and_pullback!!(f!, y10, mysimilar(dx), ba, x, dy, extras)
+    y1, dx1 = value_and_pullback!!(f!, y10, mysimilar(x), ba, x, dy, extras)
 
     let (≈)(x, y) = isapprox(x, y; atol, rtol)
         @testset "Primal value" begin
@@ -138,21 +161,26 @@ end
 ## Derivative
 
 function test_correctness(
-    ba::AbstractADType, scen::DerivativeScenario{false}; isapprox::Function, atol, rtol
+    ba::AbstractADType,
+    scen::DerivativeScenario{false};
+    isapprox::Function,
+    atol,
+    rtol,
+    ref_backend,
 )
-    (; f, x, y, dx, dy, ref) = new_scen = deepcopy(scen)
+    (; f, x, y) = new_scen = deepcopy(scen)
     extras = prepare_derivative(f, ba, x)
-    der_true = if ref isa AbstractADType
-        derivative(f, ref, x)
+    der_true = if ref_backend isa AbstractADType
+        derivative(f, ref_backend, x)
     else
-        ref.derivative(x)
+        new_scen.ref(x)
     end
 
     y1, der1 = value_and_derivative(f, ba, x, extras)
-    y2, der2 = value_and_derivative!!(f, mysimilar(dy), ba, x, extras)
+    y2, der2 = value_and_derivative!!(f, mysimilar(y), ba, x, extras)
 
     der3 = derivative(f, ba, x, extras)
-    der4 = derivative!!(f, mysimilar(dy), ba, x, extras)
+    der4 = derivative!!(f, mysimilar(y), ba, x, extras)
 
     let (≈)(x, y) = isapprox(x, y; atol, rtol)
         @testset "Primal value" begin
@@ -171,19 +199,24 @@ function test_correctness(
 end
 
 function test_correctness(
-    ba::AbstractADType, scen::DerivativeScenario{true}; isapprox::Function, atol, rtol
+    ba::AbstractADType,
+    scen::DerivativeScenario{true};
+    isapprox::Function,
+    atol,
+    rtol,
+    ref_backend,
 )
-    (; f, x, y, dx, dy, ref) = new_scen = deepcopy(scen)
+    (; f, x, y) = new_scen = deepcopy(scen)
     f! = f
     extras = prepare_derivative(f!, ba, y, x)
-    der_true = if ref isa AbstractADType
-        last(value_and_derivative!!(f!, mysimilar(y), mysimilar(dy), ref, x))
+    der_true = if ref_backend isa AbstractADType
+        last(value_and_derivative!!(f!, mysimilar(y), mysimilar(y), ref_backend, x))
     else
-        ref.derivative(x)
+        new_scen.ref(x)
     end
 
     y10 = mysimilar(y)
-    y1, der1 = value_and_derivative!!(f!, y10, mysimilar(dy), ba, x, extras)
+    y1, der1 = value_and_derivative!!(f!, y10, mysimilar(y), ba, x, extras)
 
     let (≈)(x, y) = isapprox(x, y; atol, rtol)
         @testset "Primal value" begin
@@ -201,21 +234,26 @@ end
 ## Gradient
 
 function test_correctness(
-    ba::AbstractADType, scen::GradientScenario{false}; isapprox::Function, atol, rtol
+    ba::AbstractADType,
+    scen::GradientScenario{false};
+    isapprox::Function,
+    atol,
+    rtol,
+    ref_backend,
 )
-    (; f, x, y, dx, dy, ref) = new_scen = deepcopy(scen)
+    (; f, x, y) = new_scen = deepcopy(scen)
     extras = prepare_gradient(f, ba, x)
-    grad_true = if ref isa AbstractADType
-        gradient(f, ref, x)
+    grad_true = if ref_backend isa AbstractADType
+        gradient(f, ref_backend, x)
     else
-        ref.gradient(x)
+        new_scen.ref(x)
     end
 
     y1, grad1 = value_and_gradient(f, ba, x, extras)
-    y2, grad2 = value_and_gradient!!(f, mysimilar(dx), ba, x, extras)
+    y2, grad2 = value_and_gradient!!(f, mysimilar(x), ba, x, extras)
 
     grad3 = gradient(f, ba, x, extras)
-    grad4 = gradient!!(f, mysimilar(dx), ba, x, extras)
+    grad4 = gradient!!(f, mysimilar(x), ba, x, extras)
 
     let (≈)(x, y) = isapprox(x, y; atol, rtol)
         @testset "Primal value" begin
@@ -236,14 +274,19 @@ end
 ## Jacobian
 
 function test_correctness(
-    ba::AbstractADType, scen::JacobianScenario{false}; isapprox::Function, atol, rtol
+    ba::AbstractADType,
+    scen::JacobianScenario{false};
+    isapprox::Function,
+    atol,
+    rtol,
+    ref_backend,
 )
-    (; f, x, y, ref) = new_scen = deepcopy(scen)
+    (; f, x, y) = new_scen = deepcopy(scen)
     extras = prepare_jacobian(f, ba, x)
-    jac_true = if ref isa AbstractADType
-        jacobian(f, ref, x)
+    jac_true = if ref_backend isa AbstractADType
+        jacobian(f, ref_backend, x)
     else
-        ref.jacobian(x)
+        new_scen.ref(x)
     end
 
     y1, jac1 = value_and_jacobian(f, ba, x, extras)
@@ -269,16 +312,21 @@ function test_correctness(
 end
 
 function test_correctness(
-    ba::AbstractADType, scen::JacobianScenario{true}; isapprox::Function, atol, rtol
+    ba::AbstractADType,
+    scen::JacobianScenario{true};
+    isapprox::Function,
+    atol,
+    rtol,
+    ref_backend,
 )
-    (; f, x, y, dy, ref) = new_scen = deepcopy(scen)
+    (; f, x, y) = new_scen = deepcopy(scen)
     f! = f
     extras = prepare_jacobian(f!, ba, y, x)
     jac_shape = Matrix{eltype(y)}(undef, length(y), length(x))
-    jac_true = if ref isa AbstractADType
-        last(value_and_jacobian!!(f!, mysimilar(y), mysimilar(jac_shape), ref, x))
+    jac_true = if ref_backend isa AbstractADType
+        last(value_and_jacobian!!(f!, mysimilar(y), mysimilar(jac_shape), ref_backend, x))
     else
-        ref.jacobian(x)
+        new_scen.ref(x)
     end
 
     y10 = mysimilar(y)
@@ -300,18 +348,23 @@ end
 ## Second derivative
 
 function test_correctness(
-    ba::AbstractADType, scen::SecondDerivativeScenario; isapprox::Function, atol, rtol
+    ba::AbstractADType,
+    scen::SecondDerivativeScenario{false};
+    isapprox::Function,
+    atol,
+    rtol,
+    ref_backend,
 )
-    (; f, x, dy, ref) = new_scen = deepcopy(scen)
+    (; f, x, y) = new_scen = deepcopy(scen)
     extras = prepare_second_derivative(f, ba, x)
-    der2_true = if ref isa AbstractADType
-        second_derivative(f, ref, x)
+    der2_true = if ref_backend isa AbstractADType
+        second_derivative(f, ref_backend, x)
     else
-        ref.second_derivative(x)
+        new_scen.ref(x)
     end
 
     der21 = second_derivative(f, ba, x, extras)
-    der22 = second_derivative!!(f, mysimilar(dy), ba, x, extras)
+    der22 = second_derivative!!(f, mysimilar(y), ba, x, extras)
 
     let (≈)(x, y) = isapprox(x, y; atol, rtol)
         @testset "Second derivative value" begin
@@ -326,18 +379,23 @@ end
 ## Hessian-vector product
 
 function test_correctness(
-    ba::AbstractADType, scen::HVPScenario; isapprox::Function, atol, rtol
+    ba::AbstractADType,
+    scen::HVPScenario{false};
+    isapprox::Function,
+    atol,
+    rtol,
+    ref_backend,
 )
-    (; f, x, dx, ref) = new_scen = deepcopy(scen)
+    (; f, x, dx) = new_scen = deepcopy(scen)
     extras = prepare_hvp(f, ba, x)
-    hvp_true = if ref isa AbstractADType
-        hvp(f, ref, x, dx)
+    hvp_true = if ref_backend isa AbstractADType
+        hvp(f, ref_backend, x, dx)
     else
-        ref.hvp(x, dx)
+        new_scen.ref(x, dx)
     end
 
     hvp1 = hvp(f, ba, x, dx, extras)
-    hvp2 = hvp!!(f, mysimilar(dx), ba, x, dx, extras)
+    hvp2 = hvp!!(f, mysimilar(x), ba, x, dx, extras)
 
     let (≈)(x, y) = isapprox(x, y; atol, rtol)
         @testset "HVP value" begin
@@ -352,14 +410,19 @@ end
 ## Hessian
 
 function test_correctness(
-    ba::AbstractADType, scen::HessianScenario; isapprox::Function, atol, rtol
+    ba::AbstractADType,
+    scen::HessianScenario{false};
+    isapprox::Function,
+    atol,
+    rtol,
+    ref_backend,
 )
-    (; f, x, y, ref) = new_scen = deepcopy(scen)
+    (; f, x, y) = new_scen = deepcopy(scen)
     extras = prepare_hessian(f, ba, x)
-    hess_true = if ref isa AbstractADType
-        hessian(f, ref, x)
+    hess_true = if ref_backend isa AbstractADType
+        hessian(f, ref_backend, x)
     else
-        ref.hessian(x)
+        new_scen.ref(x)
     end
 
     hess1 = hessian(f, ba, x, extras)

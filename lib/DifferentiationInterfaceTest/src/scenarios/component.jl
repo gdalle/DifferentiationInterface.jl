@@ -1,55 +1,42 @@
 ## Vector to scalar
 
-function componentvector_to_scalar(x::ComponentVector)::Number
+function comp_to_num(x::ComponentVector)::Number
     return sum(sin, x.a) + sum(cos, x.b)
 end
 
-componentvector_to_scalar_gradient(x) = ComponentVector(; a=cos.(x.a), b=-sin.(x.b))
+comp_to_num_gradient(x) = ComponentVector(; a=cos.(x.a), b=-sin.(x.b))
 
-function componentvector_to_scalar_pushforward(x, dx)
-    return dot(componentvector_to_scalar_gradient(x), dx)
+function comp_to_num_pushforward(x, dx)
+    return dot(comp_to_num_gradient(x), dx)
 end
 
-function componentvector_to_scalar_pullback(x, dy)
-    return componentvector_to_scalar_gradient(x) .* dy
+function comp_to_num_pullback(x, dy)
+    return comp_to_num_gradient(x) .* dy
 end
 
-function componentvector_to_scalar_ref()
-    return Reference(;
-        pushforward=componentvector_to_scalar_pushforward,
-        pullback=componentvector_to_scalar_pullback,
-        gradient=componentvector_to_scalar_gradient,
-    )
+function comp_to_num_scenarios_allocating(x::ComponentVector)
+    return [
+        PushforwardScenario(arr_to_num; x=x, ref=comp_to_num_pushforward),
+        PullbackScenario(arr_to_num; x=x, ref=comp_to_num_pullback),
+        GradientScenario(arr_to_num; x=x, ref=comp_to_num_gradient),
+    ]
 end
 
 ## Gather
 
-const SCALING_CVEC = ComponentVector(; a=collect(1:7), b=collect(8:12))
+const CVEC = ComponentVector(; a=collect(1:4), b=collect(5:6))
 
-function component_scenarios_allocating()
-    return [
-        Scenario(
-            make_scalar_to_array(SCALING_CVEC); x=2.0, ref=scalar_to_array_ref(SCALING_CVEC)
-        ),
-        Scenario(
-            componentvector_to_scalar;
-            x=ComponentVector{Float64}(; a=collect(1:7), b=collect(8:12)),
-            ref=componentvector_to_scalar_ref(),
-        ),
-    ]
-end
+"""
+    component_scenarios()
 
-function component_scenarios_mutating()
-    return [
-        Scenario(
-            make_scalar_to_array!(SCALING_CVEC);
-            x=2.0,
-            y=float.(SCALING_CVEC),
-            ref=scalar_to_array_ref(SCALING_CVEC),
-        ),
-    ]
-end
-
+Create a vector of [`AbstractScenario`](@ref)s with component array types from [ComponentArrays.jl](https://github.com/jonniedie/ComponentArrays.jl).
+"""
 function component_scenarios()
-    return vcat(component_scenarios_allocating(), component_scenarios_mutating())
+    return vcat(
+        # allocating
+        num_to_arr_scenarios_allocating(randn(), CVEC),
+        arr_to_num_scenarios_allocating(ComponentVector(; a=randn(4), b=randn(2))),
+        # mutating
+        num_to_arr_scenarios_mutating(randn(), CVEC),
+    )
 end

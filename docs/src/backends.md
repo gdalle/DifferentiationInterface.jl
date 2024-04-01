@@ -103,30 +103,3 @@ rows = map(all_backends()) do backend  # hide
 end  # hide
 Markdown.parse(join(vcat(header, subheader, rows...), "\n"))  # hide
 ```
-
-## Package extensions
-
-```@meta
-CurrentModule = DifferentiationInterface
-```
-
-Backend-specific extension content is not part of the public API.
-
-```@autodocs
-Modules = [
-    Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceChainRulesCoreExt),
-    Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceDiffractorExt),
-    Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceEnzymeExt),
-    Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceFastDifferentiationExt),
-    Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceFiniteDiffExt),
-    Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceFiniteDifferencesExt),
-    Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceForwardDiffExt),
-    Base.get_extension(DifferentiationInterface, :DifferentiationInterfacePolyesterForwardDiffExt),
-    Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceReverseDiffExt),
-    Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceSparseDiffToolsExt),
-    Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceTapirExt),
-    Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceTrackerExt),
-    Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceZygoteExt)
-]
-Filter = t -> !(t isa Type && t <: ADTypes.AbstractADType)
-```

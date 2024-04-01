@@ -3,7 +3,7 @@ CurrentModule = Main
 CollapsedDocStrings = true
 ```
 
-# API reference
+# Core API
 
 ```@docs
 DifferentiationInterface
@@ -58,13 +58,6 @@ Modules = [DifferentiationInterface]
 Pages = ["prepare.jl"]
 ```
 
-## Testing & benchmarking
-
-```@autodocs
-Modules = [DifferentiationInterfaceTest]
-Private = false
-```
-
 ## Internals
 
 This is not part of the public API.
@@ -74,9 +67,4 @@ Modules = [DifferentiationInterface]
 Public = false
 Order = [:function, :type]
 Filter = t -> !(t isa Type && t <: ADTypes.AbstractADType)
-```
-
-```@autodocs
-Modules = [DifferentiationInterfaceTest]
-Public = false
 ```

@@ -1,33 +1,28 @@
-const SCALING_SVEC = SVector{12}(1:12)
-const SCALING_SMAT = SMatrix{3,4}((1:3) .* transpose(1:4))
+const SVEC = SVector{length(IVEC)}(IVEC)
+const SMAT = SMatrix{size(IMAT, 1),size(IMAT, 2)}(IMAT)
 
-function static_scenarios_allocating()
-    return [
-        Scenario(
-            make_scalar_to_array(SCALING_SVEC); x=2.0, ref=scalar_to_array_ref(SCALING_SVEC)
-        ),
-        Scenario(
-            make_scalar_to_array(SCALING_SMAT); x=2.0, ref=scalar_to_array_ref(SCALING_SMAT)
-        ),
-        Scenario(array_to_scalar; x=SVector{12,Float64}(1:12), ref=array_to_scalar_ref()),
-        Scenario(
-            array_to_scalar;
-            x=SMatrix{3,4,Float64}(reshape(1:12, 3, 4)),
-            ref=array_to_scalar_ref(),
-        ),
-        Scenario(vector_to_vector; x=SVector{12,Float64}(1:12), ref=vector_to_vector_ref()),
-        Scenario(vector_to_matrix; x=SVector{12,Float64}(1:12), ref=vector_to_matrix_ref()),
-        Scenario(
-            matrix_to_vector;
-            x=SMatrix{3,4,Float64}(reshape(1:12, 3, 4)),
-            ref=matrix_to_vector_ref(),
-        ),
-        Scenario(
-            matrix_to_matrix;
-            x=SMatrix{3,4,Float64}(reshape(1:12, 3, 4)),
-            ref=matrix_to_matrix_ref(),
-        ),
-    ]
+"""
+    static_scenarios()
+
+Create a vector of [`AbstractScenario`](@ref)s with static array types from [StaticArrays.jl](https://github.com/JuliaArrays/StaticArrays.jl).
+"""
+function static_scenarios()
+    return vcat(
+        # allocating
+        num_to_arr_scenarios_allocating(randn(), SVEC),
+        num_to_arr_scenarios_allocating(randn(), SMAT),
+        arr_to_num_scenarios_allocating(SVector{6}(randn(6))),
+        arr_to_num_scenarios_allocating(SMatrix{2,3}(randn(2, 3))),
+        vec_to_vec_scenarios_allocating(SVector{6}(randn(6))),
+        vec_to_mat_scenarios_allocating(SVector{6}(randn(6))),
+        mat_to_vec_scenarios_allocating(SMatrix{2,3}(randn(2, 3))),
+        mat_to_mat_scenarios_allocating(SMatrix{2,3}(randn(2, 3))),
+        # mutating
+        num_to_arr_scenarios_mutating(randn(), SVEC),
+        num_to_arr_scenarios_mutating(randn(), SMAT),
+        vec_to_vec_scenarios_mutating(MVector{6}(randn(6))),
+        vec_to_mat_scenarios_mutating(MVector{6}(randn(6))),
+        mat_to_vec_scenarios_mutating(MMatrix{2,3}(randn(2, 3))),
+        mat_to_mat_scenarios_mutating(MMatrix{2,3}(randn(2, 3))),
+    )
 end
-
-static_scenarios() = static_scenarios_allocating()

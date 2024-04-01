@@ -1,10 +1,10 @@
-function test_sparsity(ba::AbstractADType, ::typeof(jacobian), scen::Scenario{false};)
-    (; f, x, y, ref) = new_scen = deepcopy(scen)
+function test_sparsity(ba::AbstractADType, scen::JacobianScenario{false}; ref_backend)
+    (; f, x, y) = new_scen = deepcopy(scen)
     extras = prepare_jacobian(f, ba, x)
-    jac_true = if ref isa AbstractADType
-        jacobian(f, ref, x)
+    jac_true = if ref_backend isa AbstractADType
+        jacobian(f, ref_backend, x)
     else
-        ref.jacobian(x)
+        new_scen.ref(x)
     end
 
     _, jac1 = value_and_jacobian(f, ba, x, extras)
@@ -28,15 +28,15 @@ function test_sparsity(ba::AbstractADType, ::typeof(jacobian), scen::Scenario{fa
     return nothing
 end
 
-function test_sparsity(ba::AbstractADType, ::typeof(jacobian), scen::Scenario{true};)
-    (; f, x, y, dy, ref) = new_scen = deepcopy(scen)
+function test_sparsity(ba::AbstractADType, scen::JacobianScenario{true}; ref_backend)
+    (; f, x, y) = new_scen = deepcopy(scen)
     f! = f
     extras = prepare_jacobian(f!, ba, y, x)
     jac_shape = Matrix{eltype(y)}(undef, length(y), length(x))
-    jac_true = if ref isa AbstractADType
-        last(value_and_jacobian!!(f!, mysimilar(y), mysimilar(jac_shape), ref, x))
+    jac_true = if ref_backend isa AbstractADType
+        last(value_and_jacobian!!(f!, mysimilar(y), mysimilar(jac_shape), ref_backend, x))
     else
-        ref.jacobian(x)
+        new_scen.ref(x)
     end
 
     y10 = mysimilar(y)

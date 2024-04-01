@@ -149,10 +149,9 @@ For testing, you can use [`test_differentiation`](@ref) as follows:
 ```@repl tuto
 test_differentiation(
     [AutoForwardDiff(), AutoEnzyme(Enzyme.Reverse)],  # backends to compare
-    [gradient, pullback],  # operators to try
-    [Scenario(f; x=rand(3)), Scenario(f; x=rand(3,3))];  # test scenarios
+    [GradientScenario(f; x=rand(3)), GradientScenario(f; x=rand(3,3))];  # test scenarios
     correctness=AutoZygote(),  # compare results to a "ground truth" from Zygote
-    detailed=true,  # print detailed test set
+    detailed=true,  # print detailed test log
 );
 ```
 
@@ -164,15 +163,14 @@ The interface of [`benchmark_differentiation`](@ref) is very similar to the one 
 ```@repl tuto
 data = benchmark_differentiation(
     [AutoForwardDiff(), AutoEnzyme(Enzyme.Reverse)],
-    [gradient, pullback],
-    [Scenario(f; x=rand(3)), Scenario(f; x=rand(3,3))];
+    [GradientScenario(f; x=rand(3)), GradientScenario(f; x=rand(3,3))];
 );
 ```
 
-The `BenchmarkData` object is just a struct of vectors, and you can easily convert to a `DataFrame` from [DataFrames.jl](https://github.com/JuliaData/DataFrames.jl):
+The resulting object is just a vector of structs, and you can easily convert to a `DataFrame` from [DataFrames.jl](https://github.com/JuliaData/DataFrames.jl):
 
 ```@repl tuto
-df = DataFrames.DataFrame(pairs(data)...)
+df = DataFrames.DataFrame(data)
 ```
 
 Here's what the resulting `DataFrame` looks like with all its columns.

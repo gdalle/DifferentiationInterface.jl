@@ -1,31 +1,28 @@
-const SCALING_JLVEC = jl(Vector(1:12))
-const SCALING_JLMAT = jl(Matrix((1:3) .* transpose(1:4)))
+const JLVEC = jl(IVEC)
+const JLMAT = jl(IMAT)
 
-function gpu_scenarios_allocating()
-    return [
-        Scenario(
-            make_scalar_to_array(SCALING_JLVEC);
-            x=2.0,
-            ref=scalar_to_array_ref(SCALING_JLVEC),
-        ),
-        Scenario(
-            make_scalar_to_array(SCALING_JLMAT);
-            x=2.0,
-            ref=scalar_to_array_ref(SCALING_JLMAT),
-        ),
-        Scenario(array_to_scalar; x=jl(float.(1:12)), ref=array_to_scalar_ref()),
-        Scenario(
-            array_to_scalar; x=jl(float.(reshape(1:12, 3, 4))), ref=array_to_scalar_ref()
-        ),
-        Scenario(vector_to_vector; x=jl(float.(1:12)), ref=vector_to_vector_ref()),
-        Scenario(vector_to_matrix; x=jl(float.(1:12)), ref=vector_to_matrix_ref()),
-        Scenario(
-            matrix_to_vector; x=jl(float.(reshape(1:12, 3, 4))), ref=matrix_to_vector_ref()
-        ),
-        Scenario(
-            matrix_to_matrix; x=jl(float.(reshape(1:12, 3, 4))), ref=matrix_to_matrix_ref()
-        ),
-    ]
+"""
+    gpu_scenarios()
+
+Create a vector of [`AbstractScenario`](@ref)s with GPU array types from [JLArrays.jl](https://github.com/JuliaGPU/GPUArrays.jl/tree/master/lib/JLArrays).
+"""
+function gpu_scenarios()
+    return vcat(
+        # allocating
+        num_to_arr_scenarios_allocating(randn(), JLVEC),
+        num_to_arr_scenarios_allocating(randn(), JLMAT),
+        arr_to_num_scenarios_allocating(jl(randn(6))),
+        arr_to_num_scenarios_allocating(jl(randn(2, 3))),
+        vec_to_vec_scenarios_allocating(jl(randn(6))),
+        vec_to_mat_scenarios_allocating(jl(randn(6))),
+        mat_to_vec_scenarios_allocating(jl(randn(2, 3))),
+        mat_to_mat_scenarios_allocating(jl(randn(2, 3))),
+        # mutating
+        num_to_arr_scenarios_mutating(randn(), JLVEC),
+        num_to_arr_scenarios_mutating(randn(), JLMAT),
+        vec_to_vec_scenarios_mutating(jl(randn(6))),
+        vec_to_mat_scenarios_mutating(jl(randn(6))),
+        mat_to_vec_scenarios_mutating(jl(randn(2, 3))),
+        mat_to_mat_scenarios_mutating(jl(randn(2, 3))),
+    )
 end
-
-gpu_scenarios() = gpu_scenarios_allocating()
