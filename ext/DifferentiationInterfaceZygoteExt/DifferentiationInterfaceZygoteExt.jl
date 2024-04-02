@@ -75,7 +75,7 @@ function DI.hessian(f, ::AnyAutoZygote, x, ::NoHessianExtras)
     return hessian(f, x)
 end
 
-function DI.hessian!!(f, hess, backend::AnyAutoZygote, x, ::NoHessianExtras)
+function DI.hessian!!(f, hess, backend::AnyAutoZygote, x, extras::NoHessianExtras)
     return DI.hessian(f, backend, x, extras)
 end
 

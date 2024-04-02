@@ -17,8 +17,6 @@ num_to_num_derivative(x) = cos(x)
 num_to_num_second_derivative(x) = -sin(x)
 num_to_num_pushforward(x, dx) = num_to_num_derivative(x) * dx
 num_to_num_pullback(x, dy) = num_to_num_derivative(x) * dy
-num_to_num_gradient(x) = num_to_num_derivative(x)
-num_to_num_hvp(x, v) = num_to_num_second_derivative(x) * v
 
 function num_to_num_scenarios_allocating(x::Number)
     return [
@@ -95,7 +93,7 @@ arr_to_num_gradient(x) = cos.(x)
 arr_to_num_hvp(x, v) = -sin.(x) .* v
 arr_to_num_pushforward(x, dx) = dot(arr_to_num_gradient(x), dx)
 arr_to_num_pullback(x, dy) = arr_to_num_gradient(x) .* dy
-arr_to_num_hessian(x) = Diagonal(-sin.(vec(x)))
+arr_to_num_hessian(x) = Matrix(Diagonal(-sin.(vec(x))))
 
 function arr_to_num_scenarios_allocating(x::AbstractArray)
     return [

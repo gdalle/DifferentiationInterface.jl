@@ -8,8 +8,8 @@ We present a typical workflow with DifferentiationInterface.jl and showcase its 
 
 ```@repl tuto
 using DifferentiationInterface
-using BenchmarkTools
-import ForwardDiff, Enzyme, DataFrames
+import ForwardDiff, Enzyme
+using BenchmarkTools, DataFrames
 ```
 
 ## Computing a gradient

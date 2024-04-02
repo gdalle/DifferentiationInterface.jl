@@ -57,7 +57,7 @@ end
 
 ## Gradient
 
-DI.prepare_gradient(f, ::AutoReverseEnzyme) = NoGradientExtras()
+DI.prepare_gradient(f, ::AutoReverseEnzyme, x) = NoGradientExtras()
 
 function DI.gradient(f, ::AutoReverseEnzyme, x::AbstractArray, ::NoGradientExtras)
     return gradient(Reverse, f, x)
