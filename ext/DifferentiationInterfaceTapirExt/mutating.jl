@@ -1,10 +1,23 @@
-function DI.value_and_pullback!!(f!, y, dx, ::AutoTapir, x, dy, extras::Nothing)
-    rrule = build_rrule(f!, y, x)
-    dy_righttype = convert(typeof(y), dy)
-    dx_righttype = zero_sametype!!(dx, x)
-    dz = nothing  # f!(y, x) = nothing
-    _, (_, _, new_dx) = value_and_pullback!!(
-        rrule, dz, zero_codual(f!), CoDual(y, dy_righttype), CoDual(x, dx_righttype)
+struct TapirMutatingPullbackExtras{R} <: PullbackExtras
+    rrule::R
+end
+
+function DI.prepare_pullback(f!, ::AutoTapir, y, x)
+    return TapirMutatingPullbackExtras(build_rrule(f!, y, x))
+end
+
+function DI.value_and_pullback!!(
+    f!, y, dx, ::AutoTapir, x, dy, extras::TapirMutatingPullbackExtras
+)
+    dy_righttype = convert(tangent_type(typeof(y)), dy)
+    dx_righttype = convert(tangent_type(typeof(x)), dx)
+    dx_righttype = zero!!(dx_righttype)
+    new_y, (new_df!, new_dy, new_dx) = value_and_pullback!!(
+        extras.rrule,
+        NoTangent(),
+        zero_codual(f!),
+        CoDual(y, dy_righttype),
+        CoDual(x, dx_righttype),
     )
     return y, new_dx
 end

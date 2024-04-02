@@ -1,26 +1,25 @@
-function DI.value_and_pullback(f, ::AutoTapir, x, dy, rrule)
-    y = f(x)  # TODO: one call too many, just for the conversion
-    dy_righttype = convert(typeof(y), dy)
-    _, (_, dx) = value_and_pullback!!(rrule, dy_righttype, f, x)
-    return y, dx
+struct TapirAllocatingPullbackExtras{R} <: PullbackExtras
+    rrule::R
 end
 
-function DI.value_and_pullback!!(f, dx, ::AutoTapir, x, dy, rrule)
+DI.prepare_pullback(f, ::AutoTapir, x) = TapirAllocatingPullbackExtras(build_rrule(f, x))
+
+function DI.value_and_pullback(f, ::AutoTapir, x, dy, extras::TapirAllocatingPullbackExtras)
     y = f(x)  # TODO: one call too many, just for the conversion
-    dy_righttype = convert(typeof(y), dy)
-    dx_righttype = zero_sametype!!(dx, x)
-    new_y, (_, new_dx) = value_and_pullback!!(
-        rrule, dy_righttype, zero_codual(f), CoDual(x, dx_righttype)
-    )
+    dy_righttype = convert(tangent_type(typeof(y)), dy)
+    new_y, (new_df, new_dx) = value_and_pullback!!(extras.rrule, dy_righttype, f, x)
     return new_y, new_dx
 end
 
-for op in [:pushforward, :pullback, :derivative, :gradient, :jacobian]
-    prep_op = Symbol(:prepare_, op)
-    @eval function DI.$prep_op(f, ::AutoTapir, x)
-        return build_rrule(f, x)
-    end
-    @eval function DI.$prep_op(rrule, f, ::AutoTapir, x)
-        return rrule
-    end
+function DI.value_and_pullback!!(
+    f, dx, ::AutoTapir, x, dy, extras::TapirAllocatingPullbackExtras
+)
+    y = f(x)  # TODO: one call too many, just for the conversion
+    dy_righttype = convert(tangent_type(typeof(y)), dy)
+    dx_righttype = convert(tangent_type(typeof(x)), dx)
+    dx_righttype = zero!!(dx_righttype)
+    new_y, (new_df, new_dx) = value_and_pullback!!(
+        extras.rrule, dy_righttype, zero_codual(f), CoDual(x, dx_righttype)
+    )
+    return new_y, new_dx
 end
