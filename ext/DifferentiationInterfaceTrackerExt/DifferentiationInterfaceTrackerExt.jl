@@ -30,16 +30,6 @@ function DI.gradient(f, ::AutoTracker, x, ::NoGradientExtras)
     return data(only(grad))
 end
 
-function DI.value_and_gradient(f, ::AutoTracker, x::Number, ::NoGradientExtras)
-    # fix for https://github.com/FluxML/Tracker.jl/issues/165
-    return f(x), data(only(gradient(f, x)))
-end
-
-function DI.gradient(f, ::AutoTracker, x::Number, ::NoGradientExtras)
-    # fix for https://github.com/FluxML/Tracker.jl/issues/165
-    return data(only(gradient(f, x)))
-end
-
 function DI.value_and_gradient!!(f, grad, backend::AutoTracker, x, extras::NoGradientExtras)
     return DI.value_and_gradient(f, backend, x, extras)
 end

@@ -8,7 +8,7 @@ all_backends = [
     AutoFiniteDifferences(FiniteDifferences.central_fdm(3, 1)),
     AutoForwardDiff(),
     AutoPolyesterForwardDiff(; chunksize=2),
-    AutoReverseDiff(),
+    AutoReverseDiff(; compile=true),
     AutoTapir(),
     AutoTracker(),
     AutoZygote(),

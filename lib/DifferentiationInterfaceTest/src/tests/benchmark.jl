@@ -72,7 +72,9 @@ function run_benchmark!(
     (; f, x, y, dx) = deepcopy(scen)
     extras = prepare_pushforward(f, ba, x)
     bench1 = @be mysimilar(y) value_and_pushforward!!(f, _, ba, x, dx, extras)
+    bench2 = @be mysimilar(y) pushforward!!(f, _, ba, x, dx, extras)
     record!(data, ba, value_and_pushforward!!, scen, bench1)
+    record!(data, ba, pushforward!!, scen, bench2)
     return nothing
 end
 
@@ -97,7 +99,9 @@ function run_benchmark!(
     (; f, x, y, dy) = deepcopy(scen)
     extras = prepare_pullback(f, ba, x)
     bench1 = @be mysimilar(x) value_and_pullback!!(f, _, ba, x, dy, extras)
+    bench2 = @be mysimilar(x) pullback!!(f, _, ba, x, dy, extras)
     record!(data, ba, value_and_pullback!!, scen, bench1)
+    record!(data, ba, pullback!!, scen, bench2)
     return nothing
 end
 
@@ -122,7 +126,9 @@ function run_benchmark!(
     (; f, x, y) = deepcopy(scen)
     extras = prepare_derivative(f, ba, x)
     bench1 = @be mysimilar(y) value_and_derivative!!(f, _, ba, x, extras)
+    bench2 = @be mysimilar(y) derivative!!(f, _, ba, x, extras)
     record!(data, ba, value_and_derivative!!, scen, bench1)
+    record!(data, ba, derivative!!, scen, bench2)
     return nothing
 end
 
@@ -147,7 +153,9 @@ function run_benchmark!(
     (; f, x) = deepcopy(scen)
     extras = prepare_gradient(f, ba, x)
     bench1 = @be mysimilar(x) value_and_gradient!!(f, _, ba, x, extras)
+    bench2 = @be mysimilar(x) gradient!!(f, _, ba, x, extras)
     record!(data, ba, value_and_gradient!!, scen, bench1)
+    record!(data, ba, gradient!!, scen, bench2)
     return nothing
 end
 
@@ -160,7 +168,9 @@ function run_benchmark!(
     extras = prepare_jacobian(f, ba, x)
     jac_template = Matrix{eltype(y)}(undef, length(y), length(x))
     bench1 = @be mysimilar(jac_template) value_and_jacobian!!(f, _, ba, x, extras)
+    bench2 = @be mysimilar(jac_template) jacobian!!(f, _, ba, x, extras)
     record!(data, ba, value_and_jacobian!!, scen, bench1)
+    record!(data, ba, jacobian!!, scen, bench2)
     return nothing
 end
 
