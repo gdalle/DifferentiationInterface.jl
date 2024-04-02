@@ -66,6 +66,8 @@ Chooses [Tapir.jl](https://github.com/withbayes/Tapir.jl).
 """
 struct AutoTapir <: AbstractReverseMode end
 
+abstract type Extras end
+
 include("second_order.jl")
 include("traits.jl")
 include("utils.jl")

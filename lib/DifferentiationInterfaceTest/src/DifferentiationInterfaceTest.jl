@@ -18,6 +18,7 @@ using ComponentArrays: ComponentVector
 using DifferentiationInterface
 using DifferentiationInterface:
     inner, mode, outer, supports_mutation, pushforward_performance, pullback_performance
+using DifferentiationInterface: NoPullbackExtras, NoPushforwardExtras
 using DocStringExtensions
 import DifferentiationInterface as DI
 using JET: @test_call, @test_opt

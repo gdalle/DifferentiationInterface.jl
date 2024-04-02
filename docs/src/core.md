@@ -14,6 +14,7 @@ DifferentiationInterface
 ```@autodocs
 Modules = [DifferentiationInterface]
 Pages = ["src/derivative.jl"]
+Private = false
 ```
 
 ## Gradient
@@ -21,6 +22,7 @@ Pages = ["src/derivative.jl"]
 ```@autodocs
 Modules = [DifferentiationInterface]
 Pages = ["gradient.jl"]
+Private = false
 ```
 
 ## Jacobian
@@ -28,6 +30,7 @@ Pages = ["gradient.jl"]
 ```@autodocs
 Modules = [DifferentiationInterface]
 Pages = ["jacobian.jl"]
+Private = false
 ```
 
 ## Second order
@@ -35,6 +38,7 @@ Pages = ["jacobian.jl"]
 ```@autodocs
 Modules = [DifferentiationInterface]
 Pages = ["second_order.jl", "second_derivative.jl", "hessian.jl", "hvp.jl"]
+Private = false
 ```
 
 ## Primitives
@@ -42,6 +46,7 @@ Pages = ["second_order.jl", "second_derivative.jl", "hessian.jl", "hvp.jl"]
 ```@autodocs
 Modules = [DifferentiationInterface]
 Pages = ["pushforward.jl", "pullback.jl"]
+Private = false
 ```
 
 ## Backend queries
@@ -49,6 +54,7 @@ Pages = ["pushforward.jl", "pullback.jl"]
 ```@autodocs
 Modules = [DifferentiationInterface]
 Pages = ["backends.jl"]
+Private = false
 ```
 
 ## Internals
@@ -58,6 +64,4 @@ This is not part of the public API.
 ```@autodocs
 Modules = [DifferentiationInterface]
 Public = false
-Order = [:function, :type]
-Filter = t -> !(t isa Type && t <: ADTypes.AbstractADType)
 ```

@@ -1,15 +1,26 @@
+## Preparation
+
+"""
+    PushforwardExtras
+
+Abstract type for additional information needed by pushforward operators.
+"""
+abstract type PushforwardExtras <: Extras end
+
+struct NoPushforwardExtras <: PushforwardExtras end
+
 """
     prepare_pushforward([other_extras], f, backend, x) -> extras
     prepare_pushforward([other_extras], f!, backend, y, x) -> extras
 
-Create an `extras` object that can be given to pushforward operators.
+Create an `extras` object subtyping [`PushforwardExtras`](@ref) that can be given to pushforward operators.
 """
-function prepare_pushforward(extras, f_or_f!, backend::AbstractADType, args...)
+function prepare_pushforward(::Extras, f_or_f!, backend::AbstractADType, args...)
     return prepare_pushforward(f_or_f!, backend, args...)
 end
 
-prepare_pushforward(f, ::AbstractADType, x) = nothing
-prepare_pushforward(f!, ::AbstractADType, y, x) = nothing
+prepare_pushforward(f, ::AbstractADType, x) = NoPushforwardExtras()
+prepare_pushforward(f!, ::AbstractADType, y, x) = NoPushforwardExtras()
 
 ## Allocating
 
@@ -20,7 +31,11 @@ prepare_pushforward(f!, ::AbstractADType, y, x) = nothing
     Required primitive for forward mode backends to support allocating functions.
 """
 function value_and_pushforward(
-    f, backend::AbstractADType, x, dx, extras=prepare_pushforward(f, backend, x)
+    f,
+    backend::AbstractADType,
+    x,
+    dx,
+    extras::PushforwardExtras=prepare_pushforward(f, backend, x),
 )
     new_extras = prepare_pullback(extras, f, backend, x)
     y = f(x)
@@ -44,7 +59,12 @@ end
     value_and_pushforward!!(f, dy, backend, x, dx, [extras]) -> (y, dy)
 """
 function value_and_pushforward!!(
-    f, dy, backend::AbstractADType, x, dx, extras=prepare_pushforward(f, backend, x)
+    f,
+    dy,
+    backend::AbstractADType,
+    x,
+    dx,
+    extras::PushforwardExtras=prepare_pushforward(f, backend, x),
 )
     return value_and_pushforward(f, backend, x, dx, extras)
 end
@@ -53,7 +73,11 @@ end
     pushforward(f, backend, x, dx, [extras]) -> (y, dy)
 """
 function pushforward(
-    f, backend::AbstractADType, x, dx, extras=prepare_pushforward(f, backend, x)
+    f,
+    backend::AbstractADType,
+    x,
+    dx,
+    extras::PushforwardExtras=prepare_pushforward(f, backend, x),
 )
     return value_and_pushforward(f, backend, x, dx, extras)[2]
 end
@@ -62,7 +86,12 @@ end
     pushforward!!(f, dy, backend, x, dx, [extras]) -> (y, dy)
 """
 function pushforward!!(
-    f, dy, backend::AbstractADType, x, dx, extras=prepare_pushforward(f, backend, x)
+    f,
+    dy,
+    backend::AbstractADType,
+    x,
+    dx,
+    extras::PushforwardExtras=prepare_pushforward(f, backend, x),
 )
     return value_and_pushforward!!(f, dy, backend, x, dx, extras)[2]
 end
@@ -76,17 +105,28 @@ end
     Required primitive for forward mode backends to support mutating functions.
 """
 function value_and_pushforward!!(
-    f!, y, dy, backend::AbstractADType, x, dx, extras=prepare_pushforward(f!, backend, y, x)
+    f!,
+    y,
+    dy,
+    backend::AbstractADType,
+    x,
+    dx,
+    extras::PushforwardExtras=prepare_pushforward(f!, backend, y, x),
 )
+    new_extras = prepare_pullback(extras, f!, backend, y, x)
     dy = if x isa Number && y isa AbstractArray
         map(CartesianIndices(y)) do i
-            dx * value_and_pullback!!(f!, y, zero(x), backend, x, basis(backend, y, i))[2]
+            dx * value_and_pullback!!(
+                f!, y, zero(x), backend, x, basis(backend, y, i), new_extras
+            )[2]
         end
     elseif x isa AbstractArray && y isa AbstractArray
         map(CartesianIndices(y)) do i
             dot(
                 dx,
-                value_and_pullback!!(f!, y, similar(x), backend, x, basis(backend, y, i))[2],
+                value_and_pullback!!(
+                    f!, y, similar(x), backend, x, basis(backend, y, i), new_extras
+                )[2],
             )
         end
     end

@@ -8,36 +8,40 @@ By order of preference:
 - forward on forward
 =#
 
+## Preparation
+
+"""
+    HVPExtras
+
+Abstract type for additional information needed by Hessian-vector product operators.
+"""
+abstract type HVPExtras <: Extras end
+
+struct NoHVPExtras <: HVPExtras end
+
 """
     prepare_hvp([other_extras], f, backend, x) -> extras
 
-Create an `extras` object that can be given to Hessian-vector product operators.
+Create an `extras` object subtyping [`HVPExtras`](@ref) that can be given to Hessian-vector product operators.
 """
-function prepare_hvp(extras, f_or_f!, backend::AbstractADType, args...)
+function prepare_hvp(::Extras, f_or_f!, backend::AbstractADType, args...)
     return prepare_hvp(f_or_f!, backend, args...)
 end
 
-prepare_hvp(f, ::AbstractADType, x) = nothing
+prepare_hvp(f, ::AbstractADType, x) = NoHVPExtras()
 
 ## Allocating
 
 """
     hvp(f, backend, x, v, [extras]) -> p
 """
-function hvp(f, backend::AbstractADType, x, v, extras=prepare_hvp(f, backend, x))
+function hvp(f, backend::AbstractADType, x, v, extras::HVPExtras=prepare_hvp(f, backend, x))
     new_backend = SecondOrder(backend)
     new_extras = prepare_hvp(f, new_backend, x)
     return hvp(f, new_backend, x, v, new_extras)
 end
 
-function hvp(
-    f, backend::SecondOrder, x::Number, v::Number, extras=prepare_hvp(f, backend, x)
-)
-    new_extras = prepare_second_derivative(extras, f, backend, x)
-    return v * second_derivative(f, backend, x, new_extras)
-end
-
-function hvp(f, backend::SecondOrder, x, v, extras=prepare_hvp(f, backend, x))
+function hvp(f, backend::SecondOrder, x, v, extras::HVPExtras=prepare_hvp(f, backend, x))
     return hvp_aux(f, backend, x, v, extras, hvp_mode(backend))
 end
 
@@ -89,19 +93,17 @@ end
 """
     hvp!!(f, p, backend, x, v, [extras]) -> p
 """
-function hvp!!(f, p, backend::AbstractADType, x, v, extras=prepare_hvp(f, backend, x))
+function hvp!!(
+    f, p, backend::AbstractADType, x, v, extras::HVPExtras=prepare_hvp(f, backend, x)
+)
     new_backend = SecondOrder(backend)
     new_extras = prepare_hvp(f, new_backend, x)
     return hvp!!(f, p, new_backend, x, v, new_extras)
 end
 
 function hvp!!(
-    f, p, backend::SecondOrder, x::Number, v::Number, extras=prepare_hvp(f, backend, x)
+    f, p, backend::SecondOrder, x, v, extras::HVPExtras=prepare_hvp(f, backend, x)
 )
-    return v * second_derivative(f, backend, x, extras)
-end
-
-function hvp!!(f, p, backend::SecondOrder, x, v, extras=prepare_hvp(f, backend, x))
     return hvp_aux!!(f, p, backend, x, v, extras, hvp_mode(backend))
 end
 

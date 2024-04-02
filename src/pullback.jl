@@ -1,15 +1,26 @@
+## Preparation
+
+"""
+    PullbackExtras
+
+Abstract type for additional information needed by pullback operators.
+"""
+abstract type PullbackExtras <: Extras end
+
+struct NoPullbackExtras <: PullbackExtras end
+
 """
     prepare_pullback([other_extras], f, backend, x) -> extras
     prepare_pullback([other_extras], f!, backend, y, x) -> extras
 
-Create an `extras` object that can be given to pullback operators.
+Create an `extras` object subtyping [`PullbackExtras`](@ref) that can be given to pullback operators.
 """
-function prepare_pullback(extras, f_or_f!, backend::AbstractADType, args...)
+function prepare_pullback(::Extras, f_or_f!, backend::AbstractADType, args...)
     return prepare_pullback(f_or_f!, backend, args...)
 end
 
-prepare_pullback(f, ::AbstractADType, x) = nothing
-prepare_pullback(f!, ::AbstractADType, y, x) = nothing
+prepare_pullback(f, ::AbstractADType, x) = NoPullbackExtras()
+prepare_pullback(f!, ::AbstractADType, y, x) = NoPullbackExtras()
 
 ## Allocating
 
@@ -20,7 +31,11 @@ prepare_pullback(f!, ::AbstractADType, y, x) = nothing
     Required primitive for reverse mode backends to support allocating functions.
 """
 function value_and_pullback(
-    f, backend::AbstractADType, x, dy, extras=prepare_pullback(f, backend, x)
+    f,
+    backend::AbstractADType,
+    x,
+    dy,
+    extras::PullbackExtras=prepare_pullback(f, backend, x),
 )
     new_extras = prepare_pushforward(extras, f, backend, x)
     y = f(x)
@@ -44,7 +59,12 @@ end
     value_and_pullback!!(f, dx, backend, x, dy, [extras]) -> (y, dx)
 """
 function value_and_pullback!!(
-    f, dx, backend::AbstractADType, x, dy, extras=prepare_pullback(f, backend, x)
+    f,
+    dx,
+    backend::AbstractADType,
+    x,
+    dy,
+    extras::PullbackExtras=prepare_pullback(f, backend, x),
 )
     return value_and_pullback(f, backend, x, dy, extras)
 end
@@ -52,7 +72,13 @@ end
 """
     pullback(f, backend, x, dy, [extras]) -> dx
 """
-function pullback(f, backend::AbstractADType, x, dy, extras=prepare_pullback(f, backend, x))
+function pullback(
+    f,
+    backend::AbstractADType,
+    x,
+    dy,
+    extras::PullbackExtras=prepare_pullback(f, backend, x),
+)
     return value_and_pullback(f, backend, x, dy, extras)[2]
 end
 
@@ -60,7 +86,12 @@ end
     pullback!!(f, dx, backend, x, dy, [extras]) -> dx
 """
 function pullback!!(
-    f, dx, backend::AbstractADType, x, dy, extras=prepare_pullback(f, backend, x)
+    f,
+    dx,
+    backend::AbstractADType,
+    x,
+    dy,
+    extras::PullbackExtras=prepare_pullback(f, backend, x),
 )
     return value_and_pullback!!(f, dx, backend, x, dy, extras)[2]
 end
@@ -74,16 +105,23 @@ end
     Required primitive for reverse mode backends to support mutating functions.
 """
 function value_and_pullback!!(
-    f!, y, dx, backend::AbstractADType, x, dy, extras=prepare_pullback(f!, backend, y, x)
+    f!,
+    y,
+    dx,
+    backend::AbstractADType,
+    x,
+    dy,
+    extras::PullbackExtras=prepare_pullback(f!, backend, y, x),
 )
+    new_extras = prepare_pushforward(extras, f!, backend, y, x)
     dx = if x isa Number && y isa AbstractArray
-        dot(dy, value_and_pushforward!!(f!, y, similar(y), backend, x, one(x))[2])
+        dot(dy, value_and_pushforward!!(f!, y, similar(y), backend, x, one(x), new_extras)[2])
     elseif x isa AbstractArray && y isa AbstractArray
         map(CartesianIndices(x)) do j
             dot(
                 dy,
                 value_and_pushforward!!(
-                    f!, y, similar(y), backend, x, basis(backend, x, j)
+                    f!, y, similar(y), backend, x, basis(backend, x, j), new_extras
                 )[2],
             )
         end
