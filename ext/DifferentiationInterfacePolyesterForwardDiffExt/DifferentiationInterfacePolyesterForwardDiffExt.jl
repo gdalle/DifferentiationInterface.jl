@@ -6,6 +6,14 @@ using ADTypes:
     AutoSparseForwardDiff,
     AutoSparsePolyesterForwardDiff
 import DifferentiationInterface as DI
+using DifferentiationInterface:
+    DerivativeExtras,
+    GradientExtras,
+    HessianExtras,
+    JacobianExtras,
+    NoGradientExtras,
+    NoJacobianExtras,
+    PushforwardExtras
 using DocStringExtensions
 using LinearAlgebra: mul!
 using PolyesterForwardDiff: threaded_gradient!, threaded_jacobian!

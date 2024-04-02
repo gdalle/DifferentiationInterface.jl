@@ -1,21 +1,9 @@
-##
-
-using Enzyme: Enzyme
-using FastDifferentiation: FastDifferentiation
-using FiniteDiff: FiniteDiff
-using ForwardDiff: ForwardDiff
-using SparseDiffTools: SparseDiffTools, AutoSparseEnzyme
-using Symbolics: Symbolics
-using Zygote: Zygote
-
-##
-
 sparse_backends = [
     AutoSparseFastDifferentiation(),
     AutoSparseForwardDiff(),
     AutoSparseFiniteDiff(),
     AutoSparseZygote(),
-    AutoSparseEnzyme(),
+    SparseDiffTools.AutoSparseEnzyme(),
 ]
 
 ##

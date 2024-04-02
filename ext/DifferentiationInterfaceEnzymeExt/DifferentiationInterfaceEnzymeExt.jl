@@ -2,6 +2,12 @@ module DifferentiationInterfaceEnzymeExt
 
 using ADTypes: ADTypes, AutoEnzyme
 import DifferentiationInterface as DI
+using DifferentiationInterface:
+    NoDerivativeExtras,
+    NoGradientExtras,
+    NoJacobianExtras,
+    NoPullbackExtras,
+    NoPushforwardExtras
 using DocStringExtensions
 using Enzyme:
     Active,

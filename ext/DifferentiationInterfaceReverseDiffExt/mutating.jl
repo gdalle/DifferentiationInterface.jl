@@ -1,5 +1,7 @@
 ## Pullback
 
+DI.prepare_pullback(f!, ::AnyAutoReverseDiff, y, x) = NoPullbackExtras()
+
 function DI.value_and_pullback!!(
     f!,
     y::AbstractArray,
@@ -7,7 +9,7 @@ function DI.value_and_pullback!!(
     ::AnyAutoReverseDiff,
     x::AbstractArray,
     dy::AbstractArray,
-    extras::Nothing,
+    ::NoPullbackExtras,
 )
     jac = jacobian(f!, y, x)
     mul!(vec(dx), transpose(jac), vec(dy))
@@ -23,16 +25,23 @@ function DI.value_and_pullback!!(
     backend::AnyAutoReverseDiff,
     x::Number,
     dy::AbstractArray,
-    extras::Nothing,
+    ::NoPullbackExtras,
 )
     x_array = [x]
     dx_array = similar(x_array)
-    f!_only(_y::AbstractArray, _x_array) = f!(_y, only(_x_array))
-    y, dx_array = DI.value_and_pullback!!(f!_only, y, dx_array, backend, x_array, dy)
+    f!_array(_y::AbstractArray, _x_array) = f!(_y, only(_x_array))
+    new_extras = DI.prepare_pullback(f!_array, backend, y, x_array)
+    y, dx_array = DI.value_and_pullback!!(
+        f!_array, y, dx_array, backend, x_array, dy, new_extras
+    )
     return y, only(dx_array)
 end
 
 ## Jacobian
+
+struct ReverseDiffMutatingJacobianExtras{T} <: JacobianExtras
+    tape::T
+end
 
 function DI.prepare_jacobian(
     f!, backend::AnyAutoReverseDiff, y::AbstractArray, x::AbstractArray
@@ -41,7 +50,7 @@ function DI.prepare_jacobian(
     if backend.compile
         tape = compile(tape)
     end
-    return tape
+    return ReverseDiffMutatingJacobianExtras(tape)
 end
 
 function DI.value_and_jacobian!!(
@@ -50,9 +59,9 @@ function DI.value_and_jacobian!!(
     jac::AbstractMatrix,
     ::AnyAutoReverseDiff,
     x::AbstractArray,
-    tape::Union{JacobianTape,CompiledJacobian},
+    extras::ReverseDiffMutatingJacobianExtras,
 )
     result = DiffResults.DiffResult(y, jac)
-    result = jacobian!(result, tape, x)
+    result = jacobian!(result, extras.tape, x)
     return DiffResults.value(result), DiffResults.derivative(result)
 end

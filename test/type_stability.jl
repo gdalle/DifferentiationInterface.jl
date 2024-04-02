@@ -1,6 +1,3 @@
-using Enzyme: Enzyme
-using ForwardDiff: ForwardDiff
-
 type_stable_backends = [AutoForwardDiff(), AutoEnzyme(Enzyme.Reverse)]
 
 test_differentiation(

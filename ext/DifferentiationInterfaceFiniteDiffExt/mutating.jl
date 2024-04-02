@@ -1,5 +1,7 @@
 ## Pushforward
 
+DI.prepare_pushforward(f!, ::AnyAutoFiniteDiff, y, x) = NoPushforwardExtras()
+
 function DI.value_and_pushforward!!(
     f!,
     y::AbstractArray,
@@ -7,7 +9,7 @@ function DI.value_and_pushforward!!(
     backend::AnyAutoFiniteDiff,
     x,
     dx,
-    extras::Nothing,
+    ::NoPushforwardExtras,
 )
     function step(t::Number)::AbstractArray
         new_y = similar(y)
@@ -23,8 +25,15 @@ end
 
 ## Derivative
 
+DI.prepare_derivative(f!, ::AnyAutoFiniteDiff, y, x) = NoDerivativeExtras()
+
 function DI.value_and_derivative!!(
-    f!, y::AbstractArray, der::AbstractArray, backend::AnyAutoFiniteDiff, x, extras::Nothing
+    f!,
+    y::AbstractArray,
+    der::AbstractArray,
+    backend::AnyAutoFiniteDiff,
+    x,
+    ::NoDerivativeExtras,
 )
     f!(y, x)
     finite_difference_gradient!(der, f!, x, fdtype(backend), eltype(y), FUNCTION_INPLACE, y)
@@ -33,13 +42,15 @@ end
 
 ## Jacobian
 
+DI.prepare_jacobian(f!, ::AnyAutoFiniteDiff, y, x) = NoJacobianExtras()
+
 function DI.value_and_jacobian!!(
     f!,
     y::AbstractArray,
     jac::AbstractMatrix,
     backend::AnyAutoFiniteDiff,
     x,
-    extras::Nothing,
+    ::NoJacobianExtras,
 )
     f!(y, x)
     finite_difference_jacobian!(jac, f!, x, fdjtype(backend), eltype(y), y)

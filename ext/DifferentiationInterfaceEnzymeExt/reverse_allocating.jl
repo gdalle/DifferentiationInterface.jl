@@ -1,9 +1,11 @@
 ## Pullback
 
+DI.prepare_pullback(f, ::AutoReverseEnzyme, x) = NoPullbackExtras()
+
 ### Out-of-place
 
 function DI.value_and_pullback(
-    f, ::AutoReverseEnzyme, x::Number, dy::Number, extras::Nothing
+    f, ::AutoReverseEnzyme, x::Number, dy::Number, ::NoPullbackExtras
 )
     der, y = autodiff(ReverseWithPrimal, f, Active, Active(x))
     new_dx = dy * only(der)
@@ -11,7 +13,7 @@ function DI.value_and_pullback(
 end
 
 function DI.value_and_pullback(
-    f, ::AutoReverseEnzyme, x::Number, dy::AbstractArray, extras::Nothing
+    f, ::AutoReverseEnzyme, x::Number, dy::AbstractArray, ::NoPullbackExtras
 )
     forw, rev = autodiff_thunk(
         ReverseSplitWithPrimal, Const{typeof(f)}, Duplicated, Active{typeof(x)}
@@ -25,7 +27,7 @@ end
 ### In-place
 
 function DI.value_and_pullback!!(
-    f, dx, ::AutoReverseEnzyme, x::AbstractArray, dy::Number, extras::Nothing
+    f, dx, ::AutoReverseEnzyme, x::AbstractArray, dy::Number, ::NoPullbackExtras
 )
     dx_sametype = zero_sametype!!(dx, x)
     _, y = autodiff(ReverseWithPrimal, f, Active, Duplicated(x, dx_sametype))
@@ -34,7 +36,7 @@ function DI.value_and_pullback!!(
 end
 
 function DI.value_and_pullback!!(
-    f, dx, ::AutoReverseEnzyme, x::AbstractArray, dy::AbstractArray, extras::Nothing
+    f, dx, ::AutoReverseEnzyme, x::AbstractArray, dy::AbstractArray, ::NoPullbackExtras
 )
     dx_sametype = zero_sametype!!(dx, x)
     forw, rev = autodiff_thunk(
@@ -46,18 +48,22 @@ function DI.value_and_pullback!!(
     return y, dx_sametype
 end
 
-function DI.value_and_pullback(f, backend::AutoReverseEnzyme, x::AbstractArray, dy, extras)
+function DI.value_and_pullback(
+    f, backend::AutoReverseEnzyme, x::AbstractArray, dy, extras::NoPullbackExtras
+)
     dx = similar(x)
     return DI.value_and_pullback!!(f, dx, backend, x, dy, extras)
 end
 
 ## Gradient
 
-function DI.gradient(f, ::AutoReverseEnzyme, x::AbstractArray, extras::Nothing)
+DI.prepare_gradient(f, ::AutoReverseEnzyme) = NoGradientExtras()
+
+function DI.gradient(f, ::AutoReverseEnzyme, x::AbstractArray, ::NoGradientExtras)
     return gradient(Reverse, f, x)
 end
 
-function DI.gradient!!(f, grad, ::AutoReverseEnzyme, x::AbstractArray, extras::Nothing)
+function DI.gradient!!(f, grad, ::AutoReverseEnzyme, x::AbstractArray, ::NoGradientExtras)
     grad_sametype = convert(typeof(x), grad)
     gradient!(Reverse, grad_sametype, f, x)
     return grad_sametype

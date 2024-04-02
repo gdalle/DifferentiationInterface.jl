@@ -1,7 +1,9 @@
 ## Pushforward
 
+DI.prepare_pushforward(f!, ::AutoForwardEnzyme, y, x) = NoPushforwardExtras()
+
 function DI.value_and_pushforward!!(
-    f!, y, dy, backend::AutoForwardEnzyme, x, dx, extras::Nothing
+    f!, y, dy, backend::AutoForwardEnzyme, x, dx, ::NoPushforwardExtras
 )
     dx_sametype = convert(typeof(x), dx)
     dy_sametype = zero_sametype!!(dy, y)

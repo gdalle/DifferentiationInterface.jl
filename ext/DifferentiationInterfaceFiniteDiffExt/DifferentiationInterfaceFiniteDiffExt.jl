@@ -2,6 +2,13 @@ module DifferentiationInterfaceFiniteDiffExt
 
 using ADTypes: AutoFiniteDiff, AutoSparseFiniteDiff
 import DifferentiationInterface as DI
+using DifferentiationInterface:
+    NoDerivativeExtras,
+    NoGradientExtras,
+    NoHessianExtras,
+    NoJacobianExtras,
+    NoPullbackExtras,
+    NoPushforwardExtras
 using FiniteDiff:
     finite_difference_derivative,
     finite_difference_gradient,
