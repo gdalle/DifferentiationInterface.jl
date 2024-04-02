@@ -63,9 +63,6 @@ AutoZygote
 
 ### Sparse
 
-!!! danger
-    Sparsity support is still experimental, use at your own risk.
-
 ```@docs
 AutoSparseFastDifferentiation
 AutoSparseFiniteDiff
@@ -103,3 +100,22 @@ rows = map(all_backends()) do backend  # hide
 end  # hide
 Markdown.parse(join(vcat(header, subheader, rows...), "\n"))  # hide
 ```
+
+## Hessian support
+
+Only some backends are able to compute Hessians.
+You can use [`check_hessian`](@ref) to check that feature, like we did below:
+
+```@example backends
+header = "| backend | Hessian |"  # hide
+subheader = "|---|---|"  # hide
+rows = map(all_backends()) do backend  # hide
+    "| `$(backend_string(backend))` | $(check_hessian(backend) ? '✅' : '❌') |"  # hide
+end  # hide
+Markdown.parse(join(vcat(header, subheader, rows...), "\n"))  # hide
+```
+
+!!! warning
+    Second-order operators can also be used with a combination of backends inside the [`SecondOrder`](@ref) struct.
+    There are many possible combinations, a lot of which will fail.
+    Due to compilation overhead, we do not currently test them all to display the working ones in the documentation, but we might if users deem it relevant.

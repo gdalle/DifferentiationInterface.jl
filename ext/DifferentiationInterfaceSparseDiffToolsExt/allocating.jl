@@ -39,5 +39,21 @@ for AutoSparse in SPARSE_BACKENDS
         )
             return sparse_jacobian(backend, extras.cache, f, x)
         end
+
+        ## Hessian
+
+        DI.prepare_hessian(f, ::SecondOrder{<:$AutoSparse}, x) = NoHessianExtras()
+
+        function DI.hessian(f, backend::SecondOrder{<:$AutoSparse}, x, ::NoHessianExtras)
+            gradient_closure(z) = DI.gradient(f, inner(backend), z)
+            return DI.jacobian(gradient_closure, outer(backend), x)
+        end
+
+        function DI.hessian!!(
+            f, hess, backend::SecondOrder{<:$AutoSparse}, x, ::NoHessianExtras
+        )
+            gradient_closure(z) = DI.gradient(f, inner(backend), z)
+            return DI.jacobian!!(gradient_closure, hess, outer(backend), x)
+        end
     end
 end

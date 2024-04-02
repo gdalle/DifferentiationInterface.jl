@@ -49,10 +49,14 @@ Several variants of each operator are defined:
     # mistakenly keep working with grad_in: NOT OK
     ```
     Note that we don't guarantee `grad_out` will have the same type as `grad_in`.
+    Its type can even depend on the choice of backend.
 
 ## Second order
 
-Second-order differentiation is also supported, with the following operators:
+Second-order differentiation is also supported.
+You can either pick a single backend to do all the work, or combine an "outer" backend with an "inner" backend using the [`SecondOrder`](@ref) struct, like so: `SecondOrder(outer, inner)`.
+
+The available operators are similar to first-order ones:
 
 | operator                    | input  `x`      | output   `y` | result type      | result shape             |
 | --------------------------- | --------------- | ------------ | ---------------- | ------------------------ |
@@ -97,9 +101,24 @@ By default, all the preparation functions return `nothing`.
 We do not make any guarantees on their implementation for each backend, or on the performance gains that can be expected.
 
 !!! warning
-    We haven't fully figured out what must happen when an `extras` object is prepared for a specific operator but then given to a lower-level one (i.e. prepare it for `jacobian` but then give it to `pushforward` inside `jacobian`).
+    We haven't yet figured out how to deal with extras for second-order operators, because closures make our life rather complicated.
+    For now, consider that preparation doesn't work there in general, although some individual backends may be okay already.
 
-## Multiple inputs/outputs
+## FAQ
+
+### Multiple inputs/outputs
 
 Restricting the API to one input and one output has many coding advantages, but it is not very flexible.
 If you need more than that, use [ComponentArrays.jl](https://github.com/jonniedie/ComponentArrays.jl) to wrap several objects inside a single `ComponentVector`.
+
+### Sparsity
+
+If you need to work with sparse Jacobians, you can pick one of the [sparse backends](@ref Sparse) from [ADTypes.jl](https://github.com/SciML/ADTypes.jl).
+The sparsity pattern is computed automatically with [Symbolics.jl](https://github.com/JuliaSymbolics/Symbolics.jl) during the preparation step.
+
+If you need to work with sparse Hessians, you can use a sparse backend as the _outer_ backend of a `SecondOrder`.
+This means the Hessian is obtained as the sparse Jacobian of the gradient.
+Since preparation does not yet work for second order, the sparsity pattern is currently recomputed every time, so you may not gain much time as things stand.
+
+!!! danger
+    Sparsity support is still experimental, use at your own risk.

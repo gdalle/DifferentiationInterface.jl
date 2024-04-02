@@ -1,3 +1,5 @@
+## Jacobian
+
 function test_sparsity(ba::AbstractADType, scen::JacobianScenario{false}; ref_backend)
     (; f, x, y) = new_scen = deepcopy(scen)
     extras = prepare_jacobian(f, ba, x)
@@ -47,6 +49,31 @@ function test_sparsity(ba::AbstractADType, scen::JacobianScenario{true}; ref_bac
     end
     @testset "Sparsity pattern" begin
         @test nnz(jac1) < length(jac_true)
+    end
+    return nothing
+end
+
+## Hessian
+
+function test_sparsity(ba::AbstractADType, scen::HessianScenario{false}; ref_backend)
+    (; f, x, y) = new_scen = deepcopy(scen)
+    extras = prepare_hessian(f, ba, x)
+    hess_true = if ref_backend isa AbstractADType
+        hessian(f, ref_backend, x)
+    else
+        new_scen.ref(x)
+    end
+
+    hess1 = hessian(f, ba, x, extras)
+    hess2 = hessian!!(f, mysimilar(hess_true), ba, x, extras)
+
+    @testset "Sparse type" begin
+        @test hess1 isa SparseMatrixCSC
+        @test hess2 isa SparseMatrixCSC
+    end
+    @testset "Sparsity pattern" begin
+        @test nnz(hess1) < length(hess_true)
+        @test nnz(hess2) < length(hess_true)
     end
     return nothing
 end
