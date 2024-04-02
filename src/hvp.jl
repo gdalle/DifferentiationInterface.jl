@@ -47,46 +47,30 @@ end
 
 function hvp_aux(f, backend, x, v, extras, ::ForwardOverReverse)
     # JVP of the gradient
-    function gradient_closure(z)
-        inner_extras = prepare_gradient(extras, f, inner(backend), z)
-        return gradient(f, inner(backend), z, inner_extras)
-    end
-    outer_extras = prepare_pushforward(extras, gradient_closure, outer(backend), x)
-    p = pushforward(gradient_closure, outer(backend), x, v, outer_extras)
+    gradient_closure(z) = gradient(f, inner(backend), z)
+    p = pushforward(gradient_closure, outer(backend), x, v)
     return p
 end
 
 function hvp_aux(f, backend, x, v, extras, ::ReverseOverForward)
     # gradient of the JVP
-    function jvp_closure(z)
-        inner_extras = prepare_pushforward(extras, f, inner(backend), z)
-        return pushforward(f, inner(backend), z, v, inner_extras)
-    end
-    outer_extras = prepare_gradient(extras, jvp_closure, outer(backend), x)
-    p = gradient(jvp_closure, outer(backend), x, outer_extras)
+    pushforward_closure(z) = pushforward(f, inner(backend), z, v)
+    p = gradient(pushforward_closure, outer(backend), x)
     return p
 end
 
 function hvp_aux(f, backend, x, v, extras, ::ReverseOverReverse)
     # VJP of the gradient
-    function gradient_closure(z)
-        inner_extras = prepare_gradient(extras, f, inner(backend), z)
-        return gradient(f, inner(backend), z, inner_extras)
-    end
-    outer_extras = prepare_pullback(extras, gradient_closure, outer(backend), x)
-    p = pullback(gradient_closure, outer(backend), x, v, outer_extras)
+    gradient_closure(z) = gradient(f, inner(backend), z)
+    p = pullback(gradient_closure, outer(backend), x, v)
     return p
 end
 
 function hvp_aux(f, backend, x, v, extras, ::ForwardOverForward)
     # JVPs of JVPs in theory
     # also pushforward of gradient in practice
-    function gradient_closure(z)
-        inner_extras = prepare_gradient(extras, f, inner(backend), z)
-        return gradient(f, inner(backend), z, inner_extras)
-    end
-    outer_extras = prepare_pushforward(extras, gradient_closure, outer(backend), x)
-    p = pushforward(gradient_closure, outer(backend), x, v, outer_extras)
+    gradient_closure(z) = gradient(f, inner(backend), z)
+    p = pushforward(gradient_closure, outer(backend), x, v)
     return p
 end
 
@@ -108,41 +92,25 @@ function hvp!!(
 end
 
 function hvp_aux!!(f, p, backend, x, v, extras, ::ForwardOverReverse)
-    function gradient_closure(z)
-        inner_extras = prepare_gradient(extras, f, inner(backend), z)
-        return gradient(f, inner(backend), z, inner_extras)
-    end
-    outer_extras = prepare_pushforward(extras, gradient_closure, outer(backend), x)
-    p = pushforward!!(gradient_closure, p, outer(backend), x, v, outer_extras)
+    gradient_closure(z) = gradient(f, inner(backend), z)
+    p = pushforward!!(gradient_closure, p, outer(backend), x, v)
     return p
 end
 
 function hvp_aux!!(f, p, backend, x, v, extras, ::ReverseOverForward)
-    function jvp_closure(z)
-        inner_extras = prepare_pushforward(extras, f, inner(backend), z)
-        return pushforward(f, inner(backend), z, v, inner_extras)
-    end
-    outer_extras = prepare_gradient(extras, jvp_closure, outer(backend), x)
-    p = gradient!!(jvp_closure, p, outer(backend), x, outer_extras)
+    pushforward_closure(z) = pushforward(f, inner(backend), z, v)
+    p = gradient!!(pushforward_closure, p, outer(backend), x)
     return p
 end
 
 function hvp_aux!!(f, p, backend, x, v, extras, ::ReverseOverReverse)
-    function gradient_closure(z)
-        inner_extras = prepare_gradient(extras, f, inner(backend), z)
-        return gradient(f, inner(backend), z, inner_extras)
-    end
-    outer_extras = prepare_pullback(extras, gradient_closure, outer(backend), x)
-    p = pullback!!(gradient_closure, p, outer(backend), x, v, outer_extras)
+    gradient_closure(z) = gradient(f, inner(backend), z)
+    p = pullback!!(gradient_closure, p, outer(backend), x, v)
     return p
 end
 
 function hvp_aux!!(f, p, backend, x, v, extras, ::ForwardOverForward)
-    function gradient_closure(z)
-        inner_extras = prepare_gradient(extras, f, inner(backend), z)
-        return gradient(f, inner(backend), z, inner_extras)
-    end
-    outer_extras = prepare_pushforward(extras, gradient_closure, outer(backend), x)
-    p = pushforward!!(gradient_closure, p, outer(backend), x, v, outer_extras)
+    gradient_closure(z) = gradient(f, inner(backend), z)
+    p = pushforward!!(gradient_closure, p, outer(backend), x, v)
     return p
 end

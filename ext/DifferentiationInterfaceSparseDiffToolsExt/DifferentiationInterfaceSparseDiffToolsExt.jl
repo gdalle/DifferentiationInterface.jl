@@ -2,7 +2,7 @@ module DifferentiationInterfaceSparseDiffToolsExt
 
 using ADTypes
 import DifferentiationInterface as DI
-using DifferentiationInterface: JacobianExtras
+using DifferentiationInterface: JacobianExtras, NoHessianExtras
 using SparseDiffTools:
     AutoSparseEnzyme,
     JacPrototypeSparsityDetection,
