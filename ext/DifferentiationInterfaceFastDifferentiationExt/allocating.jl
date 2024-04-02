@@ -40,8 +40,6 @@ end
 
 # TODO: this only fails for scalar -> matrix, not sure why
 
-#=
-
 struct FastDifferentiationAllocatingPullbackExtras{E} <: PullbackExtras
     vjp_exe::E
 end
@@ -77,8 +75,6 @@ function DI.value_and_pullback(
         return y, reshape(vj_vec, size(x))
     end
 end
-
-=#
 
 ## Derivative
 
