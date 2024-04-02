@@ -1,5 +1,3 @@
-using DifferentiationInterfaceTest: AutoZeroForward, AutoZeroReverse
-
 @test check_available(AutoZeroForward())
 @test check_available(AutoZeroReverse())
 

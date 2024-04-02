@@ -1,12 +1,14 @@
 ## Pullback
 
+DI.prepare_pullback(f, ::AnyAutoReverseDiff, x) = NoPullbackExtras()
+
 function DI.value_and_pullback!!(
     f,
     dx::AbstractArray,
     ::AnyAutoReverseDiff,
     x::AbstractArray,
     dy::Number,
-    extras::Nothing,
+    ::NoPullbackExtras,
 )
     y = f(x)
     gradient!(dx, f, x)
@@ -15,7 +17,7 @@ function DI.value_and_pullback!!(
 end
 
 function DI.value_and_pullback(
-    f, ::AnyAutoReverseDiff, x::AbstractArray, dy::Number, extras::Nothing
+    f, ::AnyAutoReverseDiff, x::AbstractArray, dy::Number, ::NoPullbackExtras
 )
     y = f(x)
     dx = gradient(f, x)
@@ -29,7 +31,7 @@ function DI.value_and_pullback!!(
     ::AnyAutoReverseDiff,
     x::AbstractArray,
     dy::AbstractArray,
-    extras::Nothing,
+    ::NoPullbackExtras,
 )
     y = f(x)
     jac = jacobian(f, x)  # allocates
@@ -38,7 +40,7 @@ function DI.value_and_pullback!!(
 end
 
 function DI.value_and_pullback(
-    f, ::AnyAutoReverseDiff, x::AbstractArray, dy::AbstractArray, extras::Nothing
+    f, ::AnyAutoReverseDiff, x::AbstractArray, dy::AbstractArray, ::NoPullbackExtras
 )
     y = f(x)
     jac = jacobian(f, x)  # allocates
@@ -49,21 +51,27 @@ end
 ### Trick for unsupported scalar input
 
 function DI.value_and_pullback(
-    f, backend::AnyAutoReverseDiff, x::Number, dy, extras::Nothing
+    f, backend::AnyAutoReverseDiff, x::Number, dy, ::NoPullbackExtras
 )
     x_array = [x]
-    y, dx_array = DI.value_and_pullback(f ∘ only, backend, x_array, dy)
+    f_array = f ∘ only
+    new_extras = DI.prepare_pullback(f_array, backend, x_array)
+    y, dx_array = DI.value_and_pullback(f_array, backend, x_array, dy, new_extras)
     return y, only(dx_array)
 end
 
 ## Gradient
+
+struct ReverseDiffGradientExtras{T} <: GradientExtras
+    tape::T
+end
 
 function DI.prepare_gradient(f, backend::AnyAutoReverseDiff, x::AbstractArray)
     tape = GradientTape(f, x)
     if backend.compile
         tape = compile(tape)
     end
-    return tape
+    return ReverseDiffGradientExtras(tape)
 end
 
 function DI.value_and_gradient!!(
@@ -71,21 +79,18 @@ function DI.value_and_gradient!!(
     grad::AbstractArray,
     ::AnyAutoReverseDiff,
     x::AbstractArray,
-    tape::Union{GradientTape,CompiledGradient},
+    extras::ReverseDiffGradientExtras,
 )
     result = DiffResult(zero(eltype(x)), grad)
-    result = gradient!(result, tape, x)
+    result = gradient!(result, extras.tape, x)
     return DiffResults.value(result), DiffResults.derivative(result)
 end
 
 function DI.value_and_gradient(
-    f,
-    backend::AnyAutoReverseDiff,
-    x::AbstractArray,
-    tape::Union{GradientTape,CompiledGradient},
+    f, backend::AnyAutoReverseDiff, x::AbstractArray, extras::ReverseDiffGradientExtras
 )
     grad = similar(x)
-    return DI.value_and_gradient!!(f, grad, backend, x, tape)
+    return DI.value_and_gradient!!(f, grad, backend, x, extras)
 end
 
 function DI.gradient!!(
@@ -93,25 +98,29 @@ function DI.gradient!!(
     grad::AbstractArray,
     ::AnyAutoReverseDiff,
     x::AbstractArray,
-    tape::Union{GradientTape,CompiledGradient},
+    extras::ReverseDiffGradientExtras,
 )
-    return gradient!(grad, tape, x)
+    return gradient!(grad, extras.tape, x)
 end
 
 function DI.gradient(
-    _f, ::AnyAutoReverseDiff, x::AbstractArray, tape::Union{GradientTape,CompiledGradient}
+    _f, ::AnyAutoReverseDiff, x::AbstractArray, extras::ReverseDiffGradientExtras
 )
-    return gradient!(tape, x)
+    return gradient!(extras.tape, x)
 end
 
 ## Jacobian
+
+struct ReverseDiffAllocatingJacobianExtras{T} <: JacobianExtras
+    tape::T
+end
 
 function DI.prepare_jacobian(f, backend::AnyAutoReverseDiff, x::AbstractArray)
     tape = JacobianTape(f, x)
     if backend.compile
         tape = compile(tape)
     end
-    return tape
+    return ReverseDiffAllocatingJacobianExtras(tape)
 end
 
 function DI.value_and_jacobian!!(
@@ -119,18 +128,18 @@ function DI.value_and_jacobian!!(
     jac::AbstractMatrix,
     ::AnyAutoReverseDiff,
     x::AbstractArray,
-    tape::Union{JacobianTape,CompiledJacobian},
+    extras::ReverseDiffAllocatingJacobianExtras,
 )
     y = f(x)
     result = DiffResult(y, jac)
-    result = jacobian!(result, tape, x)
+    result = jacobian!(result, extras.tape, x)
     return DiffResults.value(result), DiffResults.derivative(result)
 end
 
 function DI.value_and_jacobian(
-    f, ::AnyAutoReverseDiff, x::AbstractArray, tape::Union{JacobianTape,CompiledJacobian}
+    f, ::AnyAutoReverseDiff, x::AbstractArray, extras::ReverseDiffAllocatingJacobianExtras
 )
-    return f(x), jacobian!(tape, x)
+    return f(x), jacobian!(extras.tape, x)
 end
 
 function DI.jacobian!!(
@@ -138,25 +147,29 @@ function DI.jacobian!!(
     jac::AbstractMatrix,
     ::AnyAutoReverseDiff,
     x::AbstractArray,
-    tape::Union{JacobianTape,CompiledJacobian},
+    extras::ReverseDiffAllocatingJacobianExtras,
 )
-    return jacobian!(jac, tape, x)
+    return jacobian!(jac, extras.tape, x)
 end
 
 function DI.jacobian(
-    f, ::AnyAutoReverseDiff, x::AbstractArray, tape::Union{JacobianTape,CompiledJacobian}
+    f, ::AnyAutoReverseDiff, x::AbstractArray, extras::ReverseDiffAllocatingJacobianExtras
 )
-    return jacobian!(tape, x)
+    return jacobian!(extras.tape, x)
 end
 
 ## Hessian
+
+struct ReverseDiffHessianExtras{T} <: HessianExtras
+    tape::T
+end
 
 function DI.prepare_hessian(f, backend::AnyAutoReverseDiff, x::AbstractArray)
     tape = HessianTape(f, x)
     if backend.compile
         tape = compile(tape)
     end
-    return tape
+    return ReverseDiffHessianExtras(tape)
 end
 
 function DI.hessian!!(
@@ -164,13 +177,13 @@ function DI.hessian!!(
     hess::AbstractMatrix,
     ::AnyAutoReverseDiff,
     x::AbstractArray,
-    tape::Union{HessianTape,CompiledHessian},
+    extras::ReverseDiffHessianExtras,
 )
-    return hessian!(hess, tape, x)
+    return hessian!(hess, extras.tape, x)
 end
 
 function DI.hessian(
-    _f, ::AnyAutoReverseDiff, x::AbstractArray, tape::Union{HessianTape,CompiledHessian}
+    _f, ::AnyAutoReverseDiff, x::AbstractArray, extras::ReverseDiffHessianExtras
 )
-    return hessian!(tape, x)
+    return hessian!(extras.tape, x)
 end

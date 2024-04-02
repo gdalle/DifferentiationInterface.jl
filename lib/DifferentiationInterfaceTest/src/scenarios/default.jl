@@ -25,9 +25,7 @@ function num_to_num_scenarios_allocating(x::Number)
         PushforwardScenario(num_to_num; x=x, ref=num_to_num_pushforward),
         PullbackScenario(num_to_num; x=x, ref=num_to_num_pullback),
         DerivativeScenario(num_to_num; x=x, ref=num_to_num_derivative),
-        GradientScenario(num_to_num; x=x, ref=num_to_num_gradient),
         SecondDerivativeScenario(num_to_num; x=x, ref=num_to_num_second_derivative),
-        HVPScenario(num_to_num; x=x, ref=num_to_num_hvp),
     ]
 end
 

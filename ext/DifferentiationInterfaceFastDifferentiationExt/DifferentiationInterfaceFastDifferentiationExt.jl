@@ -1,8 +1,16 @@
 module DifferentiationInterfaceFastDifferentiationExt
 
 using ADTypes: ADTypes
-using DifferentiationInterface: AutoFastDifferentiation, AutoSparseFastDifferentiation
 import DifferentiationInterface as DI
+using DifferentiationInterface: AutoFastDifferentiation, AutoSparseFastDifferentiation
+using DifferentiationInterface:
+    DerivativeExtras,
+    GradientExtras,
+    HessianExtras,
+    HVPExtras,
+    JacobianExtras,
+    PullbackExtras,
+    PushforwardExtras
 using FastDifferentiation:
     derivative,
     hessian,

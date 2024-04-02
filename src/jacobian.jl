@@ -1,10 +1,29 @@
+## Preparation
+
+"""
+    JacobianExtras
+
+Abstract type for additional information needed by Jacobian operators.
+"""
+abstract type JacobianExtras <: Extras end
+
+struct NoJacobianExtras <: JacobianExtras end
+
+struct PushforwardJacobianExtras{E<:PushforwardExtras} <: JacobianExtras
+    pushforward_extras::E
+end
+
+struct PullbackJacobianExtras{E<:PullbackExtras} <: JacobianExtras
+    pullback_extras::E
+end
+
 """
     prepare_jacobian([other_extras], f, backend, x) -> extras
     prepare_jacobian([other_extras], f!, backend, y, x) -> extras
 
-Create an `extras` object that can be given to Jacobian operators.
+Create an `extras` object subtyping [`JacobianExtras`](@ref) that can be given to Jacobian operators.
 """
-function prepare_jacobian(extras, f_or_f!, backend::AbstractADType, args...)
+function prepare_jacobian(extras::Extras, f_or_f!, backend::AbstractADType, args...)
     return prepare_jacobian(f_or_f!, backend, args...)
 end
 
@@ -17,19 +36,31 @@ function prepare_jacobian(f!, backend::AbstractADType, y, x)
 end
 
 function prepare_jacobian_aux(f, backend, x, ::PushforwardFast)
-    return prepare_pushforward(f, backend, x)
+    return PushforwardJacobianExtras(prepare_pushforward(f, backend, x))
 end
 
 function prepare_jacobian_aux(f!, backend, y, x, ::PushforwardFast)
-    return prepare_pushforward(f!, backend, y, x)
+    return PushforwardJacobianExtras(prepare_pushforward(f!, backend, y, x))
 end
 
 function prepare_jacobian_aux(f, backend, x, ::PushforwardSlow)
-    return prepare_pullback(f, backend, x)
+    return PullbackJacobianExtras(prepare_pullback(f, backend, x))
 end
 
 function prepare_jacobian_aux(f!, backend, y, x, ::PushforwardSlow)
-    return prepare_pullback(f!, backend, y, x)
+    return PullbackJacobianExtras(prepare_pullback(f!, backend, y, x))
+end
+
+function prepare_pushforward(
+    extras::PushforwardJacobianExtras, f_or_f!, backend::AbstractADType, args...
+)
+    return extras.pushforward_extras
+end
+
+function prepare_pullback(
+    extras::PullbackJacobianExtras, f_or_f!, backend::AbstractADType, args...
+)
+    return extras.pullback_extras
 end
 
 ## Allocating
@@ -38,7 +69,7 @@ end
     value_and_jacobian(f, backend, x, [extras]) -> (y, jac)
 """
 function value_and_jacobian(
-    f, backend::AbstractADType, x, extras=prepare_jacobian(f, backend, x)
+    f, backend::AbstractADType, x, extras::JacobianExtras=prepare_jacobian(f, backend, x)
 )
     return value_and_jacobian_aux(f, backend, x, extras, pushforward_performance(backend))
 end
@@ -69,7 +100,11 @@ end
     value_and_jacobian!!(f, jac, backend, x, [extras]) -> (y, jac)
 """
 function value_and_jacobian!!(
-    f, jac, backend::AbstractADType, x, extras=prepare_jacobian(f, backend, x)
+    f,
+    jac,
+    backend::AbstractADType,
+    x,
+    extras::JacobianExtras=prepare_jacobian(f, backend, x),
 )
     return value_and_jacobian_aux!!(
         f, jac, backend, x, extras, pushforward_performance(backend)
@@ -109,7 +144,9 @@ end
 """
     jacobian(f, backend, x, [extras]) -> jac
 """
-function jacobian(f, backend::AbstractADType, x, extras=prepare_jacobian(f, backend, x))
+function jacobian(
+    f, backend::AbstractADType, x, extras::JacobianExtras=prepare_jacobian(f, backend, x)
+)
     return value_and_jacobian(f, backend, x, extras)[2]
 end
 
@@ -117,7 +154,11 @@ end
     jacobian!!(f, jac, backend, x, [extras]) -> jac
 """
 function jacobian!!(
-    f, jac, backend::AbstractADType, x, extras=prepare_jacobian(f, backend, x)
+    f,
+    jac,
+    backend::AbstractADType,
+    x,
+    extras::JacobianExtras=prepare_jacobian(f, backend, x),
 )
     return value_and_jacobian!!(f, jac, backend, x, extras)[2]
 end
@@ -128,7 +169,12 @@ end
     value_and_jacobian!!(f!, y, jac, backend, x, [extras]) -> (y, jac)
 """
 function value_and_jacobian!!(
-    f!, y, jac, backend::AbstractADType, x, extras=prepare_jacobian(f!, backend, y, x)
+    f!,
+    y,
+    jac,
+    backend::AbstractADType,
+    x,
+    extras::JacobianExtras=prepare_jacobian(f!, backend, y, x),
 )
     return value_and_jacobian_aux!!(
         f!, y, jac, backend, x, extras, pushforward_performance(backend)

@@ -16,8 +16,11 @@ include("test_imports.jl")
             @test JuliaFormatter.format(
                 DifferentiationInterface; verbose=false, overwrite=false
             )
+            @test JuliaFormatter.format(
+                DifferentiationInterfaceTest; verbose=false, overwrite=false
+            )
         end
-        @testset "JET" begin
+        @testset verbose = true "JET" begin
             JET.test_package(DifferentiationInterface; target_defined_modules=true)
             JET.test_package(DifferentiationInterfaceTest; target_defined_modules=true)
         end

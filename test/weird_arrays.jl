@@ -1,6 +1,3 @@
-using ForwardDiff: ForwardDiff
-using Zygote: Zygote
-
 test_differentiation(
     AutoForwardDiff(; chunksize=2),
     # ForwardDiff access individual indices
