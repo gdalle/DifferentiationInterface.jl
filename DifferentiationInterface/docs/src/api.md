@@ -3,7 +3,7 @@ CurrentModule = Main
 CollapsedDocStrings = true
 ```
 
-# Core API
+# API reference
 
 ```@docs
 DifferentiationInterface

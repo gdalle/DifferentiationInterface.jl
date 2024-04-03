@@ -134,3 +134,49 @@ Have you seen this?
 It's blazingly fast.
 And you know what's even better?
 You didn't need to look at the docs of either ForwardDiff.jl or Enzyme.jl to achieve top performance with both, or to compare them.
+
+## Testing
+
+DifferentiationInterface.jl also provides some utilities for more involved comparison between backends.
+They are gathered in a submodule called `DifferentiationInterfaceTest`, located [here](https://github.com/gdalle/DifferentiationInterface.jl/tree/main/lib/DifferentiationInterfaceTest) in the repo.
+
+```@repl tuto
+using DifferentiationInterfaceTest
+```
+
+For testing, you can use [`test_differentiation`](@ref) as follows:
+
+```@repl tuto
+test_differentiation(
+    [AutoForwardDiff(), AutoEnzyme(Enzyme.Reverse)],  # backends to compare
+    [GradientScenario(f; x=rand(3)), GradientScenario(f; x=rand(3,3))];  # test scenarios
+    correctness=AutoZygote(),  # compare results to a "ground truth" from Zygote
+    detailed=true,  # print detailed test log
+);
+```
+
+## Benchmarking
+
+Once you have ascertained correctness, performance will be your next concern.
+The interface of [`benchmark_differentiation`](@ref) is very similar to the one we've just seen, but this time it returns a data object.
+
+```@repl tuto
+data = benchmark_differentiation(
+    [AutoForwardDiff(), AutoEnzyme(Enzyme.Reverse)],
+    [GradientScenario(f; x=rand(3)), GradientScenario(f; x=rand(3,3))];
+);
+```
+
+The resulting object is just a vector of structs, and you can easily convert to a `DataFrame` from [DataFrames.jl](https://github.com/JuliaData/DataFrames.jl):
+
+```@repl tuto
+df = DataFrames.DataFrame(data)
+```
+
+Here's what the resulting `DataFrame` looks like with all its columns.
+Note that the results may vary from the ones presented above (we use [Chairmarks.jl](https://github.com/LilithHafner/Chairmarks.jl) internally instead of BenchmarkTools.jl, and measure slightly different operators).
+
+```@example tuto
+import Markdown, PrettyTables  # hide
+Markdown.parse(PrettyTables.pretty_table(String, df; backend=Val(:markdown), header=names(df)))  # hide
+```

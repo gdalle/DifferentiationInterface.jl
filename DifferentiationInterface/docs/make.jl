@@ -24,19 +24,11 @@ using Tapir: Tapir
 using Tracker: Tracker
 using Zygote: Zygote
 
-open(joinpath(@__DIR__, "src", "index.md"), "w") do io
-    println(
-        io,
-        """
-        ```@meta
-        EditURL = "https://github.com/gdalle/DifferentiationInterface.jl/blob/main/README.md"
-        ```
-        """,
-    )
-    for line in eachline(joinpath(dirname(@__DIR__), "README.md"))
-        println(io, line)
-    end
-end
+cp(
+    joinpath(@__DIR__, "..", "..", "README.md"),
+    joinpath(@__DIR__, "src", "index.md");
+    force=true,
+)
 
 makedocs(;
     modules=[
