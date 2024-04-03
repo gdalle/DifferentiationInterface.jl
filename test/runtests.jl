@@ -1,4 +1,3 @@
-#=
 include("test_imports.jl")
 
 ## Main tests
@@ -54,4 +53,3 @@ include("test_imports.jl")
         end
     end
 end;
-=#

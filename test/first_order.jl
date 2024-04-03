@@ -21,8 +21,5 @@ for backend in all_backends
 end
 
 test_differentiation(
-    all_backends;
-    second_order=false,
-    logging=get(ENV, "CI", "false") == "false",
-    detailed=true,
+    all_backends; second_order=false, logging=get(ENV, "CI", "false") == "false"
 );
