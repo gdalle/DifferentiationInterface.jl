@@ -59,38 +59,44 @@ end
 
 ## Gradient
 
-DI.prepare_gradient(f, ::AnyAutoPolyForwardDiff, x) = NoGradientExtras()
+function DI.prepare_gradient(f, backend::AnyAutoPolyForwardDiff, x)
+    return DI.prepare_gradient(f, single_threaded(backend), x)
+end
 
 function DI.value_and_gradient!!(
-    f,
-    grad::AbstractVector,
-    ::AnyAutoPolyForwardDiff{C},
-    x::AbstractVector,
-    ::NoGradientExtras,
+    f, grad, ::AnyAutoPolyForwardDiff{C}, x::AbstractVector, ::GradientExtras
 ) where {C}
     threaded_gradient!(f, grad, x, Chunk{C}())
     return f(x), grad
 end
 
 function DI.gradient!!(
-    f,
-    grad::AbstractVector,
-    ::AnyAutoPolyForwardDiff{C},
-    x::AbstractVector,
-    ::NoGradientExtras,
+    f, grad, ::AnyAutoPolyForwardDiff{C}, x::AbstractVector, ::GradientExtras
 ) where {C}
     threaded_gradient!(f, grad, x, Chunk{C}())
     return grad
 end
 
+function DI.value_and_gradient!!(
+    f, grad, backend::AnyAutoPolyForwardDiff{C}, x::AbstractArray, extras::GradientExtras
+) where {C}
+    return DI.value_and_gradient!!(f, grad, single_threaded(backend), x, extras)
+end
+
+function DI.gradient!!(
+    f, grad, backend::AnyAutoPolyForwardDiff{C}, x::AbstractArray, extras::GradientExtras
+) where {C}
+    return DI.gradient!!(f, grad, single_threaded(backend), x, extras)
+end
+
 function DI.value_and_gradient(
-    f, backend::AnyAutoPolyForwardDiff, x::AbstractVector, extras::NoGradientExtras
+    f, backend::AnyAutoPolyForwardDiff, x::AbstractArray, extras::GradientExtras
 )
     return DI.value_and_gradient!!(f, similar(x), backend, x, extras)
 end
 
 function DI.gradient(
-    f, backend::AnyAutoPolyForwardDiff, x::AbstractVector, extras::NoGradientExtras
+    f, backend::AnyAutoPolyForwardDiff, x::AbstractArray, extras::GradientExtras
 )
     return DI.gradient!!(f, similar(x), backend, x, extras)
 end

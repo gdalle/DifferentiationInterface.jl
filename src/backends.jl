@@ -1,14 +1,14 @@
 """
     check_available(backend)
 
-Check whether `backend` is available by trying a scalar-to-scalar derivative.
+Check whether `backend` is available by trying a gradient.
 
 !!! warning
     Might take a while due to compilation time.
 """
 function check_available(backend::AbstractADType)
     try
-        value_and_gradient(abs2, backend, 2.0)
+        value_and_gradient(sum, backend, [1.0])
         return true
     catch exception
         @warn "Backend $backend not available" exception

@@ -2,6 +2,11 @@ struct SparseDiffToolsAllocatingJacobianExtras{C} <: JacobianExtras
     cache::C
 end
 
+struct SparseDiffToolsHessianExtras{C,E} <: HessianExtras
+    inner_gradient_closure::C
+    outer_jacobian_extras::E
+end
+
 for AutoSparse in SPARSE_BACKENDS
     @eval begin
 
@@ -42,18 +47,41 @@ for AutoSparse in SPARSE_BACKENDS
 
         ## Hessian
 
-        DI.prepare_hessian(f, ::SecondOrder{<:$AutoSparse}, x) = NoHessianExtras()
+        function DI.prepare_hessian(f, backend::SecondOrder{<:$AutoSparse}, x)
+            inner_gradient_closure(z) = DI.gradient(f, inner(backend), z)
+            outer_jacobian_extras = DI.prepare_jacobian(
+                inner_gradient_closure, outer(backend), x
+            )
+            return SparseDiffToolsHessianExtras(
+                inner_gradient_closure, outer_jacobian_extras
+            )
+        end
 
-        function DI.hessian(f, backend::SecondOrder{<:$AutoSparse}, x, ::NoHessianExtras)
-            gradient_closure(z) = DI.gradient(f, inner(backend), z)
-            return DI.jacobian(gradient_closure, outer(backend), x)
+        function DI.hessian(
+            f, backend::SecondOrder{<:$AutoSparse}, x, extras::SparseDiffToolsHessianExtras
+        )
+            return DI.jacobian(
+                extras.inner_gradient_closure,
+                outer(backend),
+                x,
+                extras.outer_jacobian_extras,
+            )
         end
 
         function DI.hessian!!(
-            f, hess, backend::SecondOrder{<:$AutoSparse}, x, ::NoHessianExtras
+            f,
+            hess,
+            backend::SecondOrder{<:$AutoSparse},
+            x,
+            extras::SparseDiffToolsHessianExtras,
         )
-            gradient_closure(z) = DI.gradient(f, inner(backend), z)
-            return DI.jacobian!!(gradient_closure, hess, outer(backend), x)
+            return DI.jacobian!!(
+                extras.inner_gradient_closure,
+                hess,
+                outer(backend),
+                x,
+                extras.outer_jacobian_extras,
+            )
         end
     end
 end

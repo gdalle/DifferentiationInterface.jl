@@ -11,7 +11,9 @@ using DifferentiationInterface:
     GradientExtras,
     HessianExtras,
     JacobianExtras,
+    NoDerivativeExtras,
     NoGradientExtras,
+    NoHessianExtras,
     NoJacobianExtras,
     PushforwardExtras
 using DocStringExtensions

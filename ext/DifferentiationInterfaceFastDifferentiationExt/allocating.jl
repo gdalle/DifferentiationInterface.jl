@@ -122,6 +122,25 @@ function DI.value_and_derivative!!(
     return DI.value_and_derivative(f, backend, x, extras)
 end
 
+function DI.derivative(
+    f,
+    backend::AnyAutoFastDifferentiation,
+    x,
+    extras::FastDifferentiationAllocatingDerivativeExtras,
+)
+    return DI.value_and_derivative(f, backend, x, extras)[2]
+end
+
+function DI.derivative!!(
+    f,
+    der,
+    backend::AnyAutoFastDifferentiation,
+    x,
+    extras::FastDifferentiationAllocatingDerivativeExtras,
+)
+    return DI.derivative(f, backend, x, extras)
+end
+
 ## Jacobian
 
 struct FastDifferentiationAllocatingJacobianExtras{E} <: JacobianExtras
@@ -226,7 +245,7 @@ struct FastDifferentiationHVPExtras{E} <: HVPExtras
     hvp_exe::E
 end
 
-function DI.prepare_hvp(f, ::AnyAutoFastDifferentiation, x)
+function DI.prepare_hvp(f, ::AnyAutoFastDifferentiation, x, v)
     x_var = if x isa Number
         only(make_variables(:x))
     else

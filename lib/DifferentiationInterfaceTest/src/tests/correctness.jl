@@ -387,7 +387,7 @@ function test_correctness(
     ref_backend,
 )
     (; f, x, dx) = new_scen = deepcopy(scen)
-    extras = prepare_hvp(f, ba, x)
+    extras = prepare_hvp(f, ba, x, dx)
     hvp_true = if ref_backend isa AbstractADType
         hvp(f, ref_backend, x, dx)
     else

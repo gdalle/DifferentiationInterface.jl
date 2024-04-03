@@ -3,7 +3,12 @@ module DifferentiationInterfaceForwardDiffExt
 using ADTypes: AbstractADType, AutoForwardDiff, AutoSparseForwardDiff
 import DifferentiationInterface as DI
 using DifferentiationInterface:
-    DerivativeExtras, GradientExtras, HessianExtras, JacobianExtras, NoPushforwardExtras
+    DerivativeExtras,
+    GradientExtras,
+    HessianExtras,
+    JacobianExtras,
+    NoDerivativeExtras,
+    NoPushforwardExtras
 using ForwardDiff.DiffResults: DiffResults, DiffResult, GradientResult
 using ForwardDiff:
     Chunk,

@@ -208,7 +208,7 @@ function run_benchmark!(
     data::Vector{BenchmarkDataRow}, ba::AbstractADType, scen::HVPScenario{false}
 )
     (; f, x, y, dx) = deepcopy(scen)
-    extras = prepare_hvp(f, ba, x)
+    extras = prepare_hvp(f, ba, x, dx)
     bench1 = @be mysimilar(x) hvp!!(f, _, ba, x, dx, extras)
     record!(data, ba, hvp, scen, bench1)
     return nothing

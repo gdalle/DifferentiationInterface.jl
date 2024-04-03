@@ -126,7 +126,7 @@ end
 
 function test_jet(ba::AbstractADType, scen::HVPScenario{false};)
     (; f, x, dx) = deepcopy(scen)
-    extras = prepare_hvp(f, ba, x)
+    extras = prepare_hvp(f, ba, x, dx)
     p_in = mysimilar(x)
 
     @test_opt hvp!!(f, p_in, ba, x, dx, extras)
