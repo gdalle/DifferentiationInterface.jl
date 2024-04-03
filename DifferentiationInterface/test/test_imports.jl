@@ -1,9 +1,7 @@
 using Pkg
 
 Pkg.develop(
-    Pkg.PackageSpec(;
-        path=joinpath(dirname(@__DIR__), "lib", "DifferentiationInterfaceTest")
-    ),
+    Pkg.PackageSpec(; path=joinpath(@__DIR__, "..", "..", "DifferentiationInterfaceTest"))
 )
 
 ##

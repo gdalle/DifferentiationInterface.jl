@@ -28,7 +28,10 @@ Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [extensions]
 DifferentiationInterfaceChainRulesCoreExt = "ChainRulesCore"
-DifferentiationInterfaceDiffractorExt = ["AbstractDifferentiation", "Diffractor"]
+DifferentiationInterfaceDiffractorExt = [
+    "AbstractDifferentiation",
+    "Diffractor",
+]
 DifferentiationInterfaceEnzymeExt = "Enzyme"
 DifferentiationInterfaceFastDifferentiationExt = "FastDifferentiation"
 DifferentiationInterfaceFiniteDiffExt = "FiniteDiff"
@@ -90,4 +93,28 @@ Tracker = "9f7883ad-71c0-57eb-9f7f-b5c9e6d3789c"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [targets]
-test = ["ADTypes", "Aqua", "Chairmarks", "DataFrames", "Diffractor", "Documenter", "Enzyme", "FastDifferentiation", "FiniteDiff", "FiniteDifferences", "ForwardDiff", "JET", "JuliaFormatter", "Pkg", "PolyesterForwardDiff", "ReverseDiff", "SparseArrays", "SparseDiffTools", "Symbolics", "Tapir", "Test", "Tracker", "Zygote"]
+test = [
+    "ADTypes",
+    "Aqua",
+    "Chairmarks",
+    "DataFrames",
+    "Diffractor",
+    "Documenter",
+    "Enzyme",
+    "FastDifferentiation",
+    "FiniteDiff",
+    "FiniteDifferences",
+    "ForwardDiff",
+    "JET",
+    "JuliaFormatter",
+    "Pkg",
+    "PolyesterForwardDiff",
+    "ReverseDiff",
+    "SparseArrays",
+    "SparseDiffTools",
+    "Symbolics",
+    "Tapir",
+    "Test",
+    "Tracker",
+    "Zygote",
+]

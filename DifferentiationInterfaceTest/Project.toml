@@ -28,3 +28,30 @@ LinearAlgebra = "1"
 StaticArrays = "1.9"
 Test = "1"
 julia = "1.10"
+
+
+[extras]
+ADTypes = "47edcb42-4c32-4615-8424-f2b9edc5f35b"
+Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
+Chairmarks = "0ca39b1e-fe0b-4e98-acfc-b1656634c4de"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+JET = "c3a54625-cd67-489e-a8e7-0a5a0ff4e31b"
+JuliaFormatter = "98e50ef6-434e-11e9-1051-2b60c6c9e899"
+Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
+SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = [
+    "ADTypes",
+    "Aqua",
+    "Chairmarks",
+    "DataFrames",
+    "ForwardDiff",
+    "JET",
+    "JuliaFormatter",
+    "Pkg",
+    "SparseArrays",
+    "Test",
+]

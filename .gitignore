@@ -5,9 +5,10 @@
 /.benchmarkci
 /benchmark/*.json
 
-/docs/build/
-/docs/src/index.md
+**/docs/build/
+**/docs/src/index.md
 
-Manifest.toml
+DifferentiationInterface/Manifest.toml
+DifferentiationInterface/docs/Manifest.toml
 
 *.csv
