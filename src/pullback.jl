@@ -10,15 +10,11 @@ abstract type PullbackExtras <: Extras end
 struct NoPullbackExtras <: PullbackExtras end
 
 """
-    prepare_pullback([other_extras], f, backend, x) -> extras
-    prepare_pullback([other_extras], f!, backend, y, x) -> extras
+    prepare_pullback(f, backend, x) -> extras
+    prepare_pullback(f!, backend, y, x) -> extras
 
 Create an `extras` object subtyping [`PullbackExtras`](@ref) that can be given to pullback operators.
 """
-function prepare_pullback(::Extras, f_or_f!, backend::AbstractADType, args...)
-    return prepare_pullback(f_or_f!, backend, args...)
-end
-
 prepare_pullback(f, ::AbstractADType, x) = NoPullbackExtras()
 prepare_pullback(f!, ::AbstractADType, y, x) = NoPullbackExtras()
 
@@ -37,7 +33,7 @@ function value_and_pullback(
     dy,
     extras::PullbackExtras=prepare_pullback(f, backend, x),
 )
-    new_extras = prepare_pushforward(extras, f, backend, x)
+    new_extras = prepare_pushforward(f, backend, x)
     y = f(x)
     dx = if x isa Number && y isa Number
         dy * pushforward(f, backend, x, one(x), new_extras)
@@ -113,7 +109,7 @@ function value_and_pullback!!(
     dy,
     extras::PullbackExtras=prepare_pullback(f!, backend, y, x),
 )
-    new_extras = prepare_pushforward(extras, f!, backend, y, x)
+    new_extras = prepare_pushforward(f!, backend, y, x)
     dx = if x isa Number && y isa AbstractArray
         dot(dy, value_and_pushforward!!(f!, y, similar(y), backend, x, one(x), new_extras)[2])
     elseif x isa AbstractArray && y isa AbstractArray

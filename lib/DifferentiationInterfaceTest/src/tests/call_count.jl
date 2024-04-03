@@ -141,7 +141,7 @@ end
 
 function test_call_count(ba::AbstractADType, scen::HVPScenario{false})
     (; f, x, y, dx) = deepcopy(scen)
-    extras = prepare_hvp(CallCounter(f), ba, x)
+    extras = prepare_hvp(CallCounter(f), ba, x, dx)
     cc = CallCounter(f)
     p_in = mysimilar(x)
     hvp!!(cc, p_in, ba, x, dx, extras)

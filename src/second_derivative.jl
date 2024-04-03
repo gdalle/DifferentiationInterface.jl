@@ -9,16 +9,25 @@ abstract type SecondDerivativeExtras <: Extras end
 
 struct NoSecondDerivativeExtras <: SecondDerivativeExtras end
 
+struct ClosureSecondDerivativeExtras{C,E} <: SecondDerivativeExtras
+    inner_derivative_closure::C
+    outer_derivative_extras::E
+end
+
 """
-    prepare_second_derivative([other_extras], f, backend, x) -> extras
+    prepare_second_derivative(f, backend, x) -> extras
 
 Create an `extras` object subtyping [`SecondDerivativeExtras`](@ref) that can be given to second derivative operators.
 """
-function prepare_second_derivative(::Extras, f_or_f!, backend::AbstractADType, args...)
-    return prepare_second_derivative(f_or_f!, backend, args...)
-end
+prepare_second_derivative(f, backend::AbstractADType, x) = NoSecondDerivativeExtras()
 
-prepare_second_derivative(f, ::AbstractADType, x) = NoSecondDerivativeExtras()
+function prepare_second_derivative(f, backend::SecondOrder, x)
+    inner_derivative_closure(z) = derivative(f, inner(backend), z)
+    outer_derivative_extras = prepare_derivative(
+        inner_derivative_closure, outer(backend), x
+    )
+    return ClosureSecondDerivativeExtras(inner_derivative_closure, outer_derivative_extras)
+end
 
 ## Allocating
 
@@ -40,11 +49,11 @@ function second_derivative(
     f,
     backend::SecondOrder,
     x,
-    extras::SecondDerivativeExtras=prepare_second_derivative(f, backend, x),
+    extras::ClosureSecondDerivativeExtras=prepare_second_derivative(f, backend, x),
 )
-    derivative_closure(z) = derivative(f, inner(backend), z)
-    der2 = derivative(derivative_closure, outer(backend), x)
-    return der2
+    return derivative(
+        extras.inner_derivative_closure, outer(backend), x, extras.outer_derivative_extras
+    )
 end
 
 """
@@ -69,9 +78,11 @@ function second_derivative!!(
     x,
     extras::SecondDerivativeExtras=prepare_second_derivative(f, backend, x),
 )
-    derivative_closure(z) = derivative(f, inner(backend), z)
-    der2 = derivative!!(derivative_closure, der2, outer(backend), x)
-    return der2
+    return derivative!!(
+        extras.inner_derivative_closure,
+        der2,
+        outer(backend),
+        x,
+        extras.outer_derivative_extras,
+    )
 end
-
-## Mutating

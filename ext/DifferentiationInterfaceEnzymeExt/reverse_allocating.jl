@@ -68,3 +68,15 @@ function DI.gradient!!(f, grad, ::AutoReverseEnzyme, x::AbstractArray, ::NoGradi
     gradient!(Reverse, grad_sametype, f, x)
     return grad_sametype
 end
+
+function DI.value_and_gradient(
+    f, backend::AutoReverseEnzyme, x::AbstractArray, ::NoGradientExtras
+)
+    return DI.value_and_pullback(f, backend, x, one(eltype(x)), NoPullbackExtras())
+end
+
+function DI.value_and_gradient!!(
+    f, grad, backend::AutoReverseEnzyme, x::AbstractArray, ::NoGradientExtras
+)
+    return DI.value_and_pullback!!(f, grad, backend, x, one(eltype(x)), NoPullbackExtras())
+end

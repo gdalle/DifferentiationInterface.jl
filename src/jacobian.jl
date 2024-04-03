@@ -18,15 +18,11 @@ struct PullbackJacobianExtras{E<:PullbackExtras} <: JacobianExtras
 end
 
 """
-    prepare_jacobian([other_extras], f, backend, x) -> extras
-    prepare_jacobian([other_extras], f!, backend, y, x) -> extras
+    prepare_jacobian(f, backend, x) -> extras
+    prepare_jacobian(f!, backend, y, x) -> extras
 
 Create an `extras` object subtyping [`JacobianExtras`](@ref) that can be given to Jacobian operators.
 """
-function prepare_jacobian(extras::Extras, f_or_f!, backend::AbstractADType, args...)
-    return prepare_jacobian(f_or_f!, backend, args...)
-end
-
 function prepare_jacobian(f, backend::AbstractADType, x)
     return prepare_jacobian_aux(f, backend, x, pushforward_performance(backend))
 end
@@ -51,18 +47,6 @@ function prepare_jacobian_aux(f!, backend, y, x, ::PushforwardSlow)
     return PullbackJacobianExtras(prepare_pullback(f!, backend, y, x))
 end
 
-function prepare_pushforward(
-    extras::PushforwardJacobianExtras, f_or_f!, backend::AbstractADType, args...
-)
-    return extras.pushforward_extras
-end
-
-function prepare_pullback(
-    extras::PullbackJacobianExtras, f_or_f!, backend::AbstractADType, args...
-)
-    return extras.pullback_extras
-end
-
 ## Allocating
 
 """
@@ -71,26 +55,30 @@ end
 function value_and_jacobian(
     f, backend::AbstractADType, x, extras::JacobianExtras=prepare_jacobian(f, backend, x)
 )
-    return value_and_jacobian_aux(f, backend, x, extras, pushforward_performance(backend))
+    return value_and_jacobian_aux(f, backend, x, extras)
 end
 
-function value_and_jacobian_aux(f, backend, x::AbstractArray, extras, ::PushforwardFast)
-    new_extras = prepare_pushforward(extras, f, backend, x)
+function value_and_jacobian_aux(
+    f, backend, x::AbstractArray, extras::PushforwardJacobianExtras
+)
     y = f(x)
     jac = stack(CartesianIndices(x); dims=2) do j
         dx_j = basis(backend, x, j)
-        jac_col_j = last(value_and_pushforward(f, backend, x, dx_j, new_extras))
+        jac_col_j = last(
+            value_and_pushforward(f, backend, x, dx_j, extras.pushforward_extras)
+        )
         vec(jac_col_j)
     end
     return y, jac
 end
 
-function value_and_jacobian_aux(f, backend, x::AbstractArray, extras, ::PushforwardSlow)
-    new_extras = prepare_pullback(extras, f, backend, x)
+function value_and_jacobian_aux(
+    f, backend, x::AbstractArray, extras::PullbackJacobianExtras
+)
     y = f(x)
     jac = stack(CartesianIndices(y); dims=1) do i
         dy_i = basis(backend, y, i)
-        jac_row_i = last(value_and_pullback(f, backend, x, dy_i, new_extras))
+        jac_row_i = last(value_and_pullback(f, backend, x, dy_i, extras.pullback_extras))
         vec(jac_row_i)
     end
     return y, jac
@@ -106,20 +94,19 @@ function value_and_jacobian!!(
     x,
     extras::JacobianExtras=prepare_jacobian(f, backend, x),
 )
-    return value_and_jacobian_aux!!(
-        f, jac, backend, x, extras, pushforward_performance(backend)
-    )
+    return value_and_jacobian_aux!!(f, jac, backend, x, extras)
 end
 
 function value_and_jacobian_aux!!(
-    f, jac::AbstractMatrix, backend, x::AbstractArray, extras, ::PushforwardFast
+    f, jac::AbstractMatrix, backend, x::AbstractArray, extras::PushforwardJacobianExtras
 )
-    new_extras = prepare_pushforward(extras, f, backend, x)
     y = f(x)
     for (k, j) in enumerate(CartesianIndices(x))
         dx_j = basis(backend, x, j)
         jac_col_j_old = reshape(view(jac, :, k), size(y))
-        jac_col_j_new = pushforward!!(f, jac_col_j_old, backend, x, dx_j, new_extras)
+        jac_col_j_new = pushforward!!(
+            f, jac_col_j_old, backend, x, dx_j, extras.pushforward_extras
+        )
         # this allocates
         copyto!(jac_col_j_old, jac_col_j_new)
     end
@@ -127,14 +114,15 @@ function value_and_jacobian_aux!!(
 end
 
 function value_and_jacobian_aux!!(
-    f, jac::AbstractMatrix, backend, x::AbstractArray, extras, ::PushforwardSlow
+    f, jac::AbstractMatrix, backend, x::AbstractArray, extras::PullbackJacobianExtras
 )
-    new_extras = prepare_pullback(extras, f, backend, x)
     y = f(x)
     for (k, i) in enumerate(CartesianIndices(y))
         dy_i = basis(backend, y, i)
         jac_row_i_old = reshape(view(jac, k, :), size(x))
-        jac_row_i_new = pullback!!(f, jac_row_i_old, backend, x, dy_i, new_extras)
+        jac_row_i_new = pullback!!(
+            f, jac_row_i_old, backend, x, dy_i, extras.pullback_extras
+        )
         # this allocates
         copyto!(jac_row_i_old, jac_row_i_new)
     end
@@ -176,9 +164,7 @@ function value_and_jacobian!!(
     x,
     extras::JacobianExtras=prepare_jacobian(f!, backend, y, x),
 )
-    return value_and_jacobian_aux!!(
-        f!, y, jac, backend, x, extras, pushforward_performance(backend)
-    )
+    return value_and_jacobian_aux!!(f!, y, jac, backend, x, extras)
 end
 
 function value_and_jacobian_aux!!(
@@ -187,16 +173,16 @@ function value_and_jacobian_aux!!(
     jac::AbstractMatrix,
     backend,
     x::AbstractArray,
-    extras,
-    ::PushforwardFast,
+    extras::PushforwardJacobianExtras,
 )
-    new_extras = prepare_pushforward(extras, f!, backend, y, x)
     f!(y, x)
     for (k, j) in enumerate(CartesianIndices(x))
         dx_j = basis(backend, x, j)
         jac_col_j_old = reshape(view(jac, :, k), size(y))
         jac_col_j_new = last(
-            value_and_pushforward!!(f!, y, jac_col_j_old, backend, x, dx_j, new_extras)
+            value_and_pushforward!!(
+                f!, y, jac_col_j_old, backend, x, dx_j, extras.pushforward_extras
+            ),
         )
         # this allocates
         copyto!(jac_col_j_old, jac_col_j_new)
@@ -210,16 +196,16 @@ function value_and_jacobian_aux!!(
     jac::AbstractMatrix,
     backend,
     x::AbstractArray,
-    extras,
-    ::PushforwardSlow,
+    extras::PullbackJacobianExtras,
 )
-    new_extras = prepare_pullback(extras, f!, backend, y, x)
     f!(y, x)
     for (k, i) in enumerate(CartesianIndices(y))
         dy_i = basis(backend, y, i)
         jac_row_i_old = reshape(view(jac, k, :), size(x))
         jac_row_i_new = last(
-            value_and_pullback!!(f!, y, jac_row_i_old, backend, x, dy_i, new_extras)
+            value_and_pullback!!(
+                f!, y, jac_row_i_old, backend, x, dy_i, extras.pullback_extras
+            ),
         )
         # this allocates
         copyto!(jac_row_i_old, jac_row_i_new)

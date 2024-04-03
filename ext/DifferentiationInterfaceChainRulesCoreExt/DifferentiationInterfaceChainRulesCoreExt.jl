@@ -15,8 +15,9 @@ DI.supports_mutation(::AutoChainRules) = DI.MutationNotSupported()
 DI.mode(::AutoForwardChainRules) = ADTypes.AbstractForwardMode
 DI.mode(::AutoReverseChainRules) = ADTypes.AbstractReverseMode
 
-## Pushforward
+## Pushforward (unused)
 
+#=
 DI.prepare_pushforward(f, ::AutoForwardChainRules, x) = NoPushforwardExtras()
 
 function DI.value_and_pushforward(
@@ -26,6 +27,7 @@ function DI.value_and_pushforward(
     y, new_dy = frule_via_ad(rc, (NoTangent(), dx), f, x)
     return y, new_dy
 end
+=#
 
 ## Pullback
 

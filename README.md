@@ -40,12 +40,12 @@ We support most of the backends defined by [ADTypes.jl](https://github.com/SciML
 | [Tracker.jl](https://github.com/FluxML/Tracker.jl)                              | `AutoTracker()`                                            |
 | [Zygote.jl](https://github.com/FluxML/Zygote.jl)                                | `AutoZygote()`                                             |
 
-We also support additional (experimental) backends:
+We also provide some experimental backends ourselves:
 
-| backend                                                                          | object                      |
-| :------------------------------------------------------------------------------- | :-------------------------- |
-| [FastDifferentiation.jl](https://github.com/brianguenter/FastDifferentiation.jl) | `AutoFastDifferentiation()` |
-| [Tapir.jl](https://github.com/withbayes/Tapir.jl)                                | `AutoTapir()`               |
+| backend                                                                          | object                                                         |
+| :------------------------------------------------------------------------------- | :------------------------------------------------------------- |
+| [FastDifferentiation.jl](https://github.com/brianguenter/FastDifferentiation.jl) | `AutoFastDifferentiation()`, `AutoSparseFastDifferentiation()` |
+| [Tapir.jl](https://github.com/withbayes/Tapir.jl)                                | `AutoTapir()`                                                  |
 
 ## Example
 

@@ -101,8 +101,7 @@ By default, all the preparation functions return `nothing`.
 We do not make any guarantees on their implementation for each backend, or on the performance gains that can be expected.
 
 !!! warning
-    We haven't yet figured out how to deal with extras for second-order operators, because closures make our life rather complicated.
-    For now, consider that preparation doesn't work there in general, although some individual backends may be okay already.
+    For `SecondOrder` backends, the inner differentiation cannot be prepared at the moment, only the outer one is.
 
 ## FAQ
 
@@ -118,7 +117,6 @@ The sparsity pattern is computed automatically with [Symbolics.jl](https://githu
 
 If you need to work with sparse Hessians, you can use a sparse backend as the _outer_ backend of a `SecondOrder`.
 This means the Hessian is obtained as the sparse Jacobian of the gradient.
-Since preparation does not yet work for second order, the sparsity pattern is currently recomputed every time, so you may not gain much time as things stand.
 
 !!! danger
     Sparsity support is still experimental, use at your own risk.

@@ -10,15 +10,11 @@ abstract type PushforwardExtras <: Extras end
 struct NoPushforwardExtras <: PushforwardExtras end
 
 """
-    prepare_pushforward([other_extras], f, backend, x) -> extras
-    prepare_pushforward([other_extras], f!, backend, y, x) -> extras
+    prepare_pushforward(f, backend, x) -> extras
+    prepare_pushforward(f!, backend, y, x) -> extras
 
 Create an `extras` object subtyping [`PushforwardExtras`](@ref) that can be given to pushforward operators.
 """
-function prepare_pushforward(::Extras, f_or_f!, backend::AbstractADType, args...)
-    return prepare_pushforward(f_or_f!, backend, args...)
-end
-
 prepare_pushforward(f, ::AbstractADType, x) = NoPushforwardExtras()
 prepare_pushforward(f!, ::AbstractADType, y, x) = NoPushforwardExtras()
 
@@ -37,7 +33,7 @@ function value_and_pushforward(
     dx,
     extras::PushforwardExtras=prepare_pushforward(f, backend, x),
 )
-    new_extras = prepare_pullback(extras, f, backend, x)
+    new_extras = prepare_pullback(f, backend, x)
     y = f(x)
     dy = if x isa Number && y isa Number
         dx * pullback(f, backend, x, one(y), new_extras)
@@ -113,7 +109,7 @@ function value_and_pushforward!!(
     dx,
     extras::PushforwardExtras=prepare_pushforward(f!, backend, y, x),
 )
-    new_extras = prepare_pullback(extras, f!, backend, y, x)
+    new_extras = prepare_pullback(f!, backend, y, x)
     dy = if x isa Number && y isa AbstractArray
         map(CartesianIndices(y)) do i
             dx * value_and_pullback!!(

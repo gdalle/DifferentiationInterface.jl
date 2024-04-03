@@ -14,27 +14,17 @@ struct PushforwardDerivativeExtras{E<:PushforwardExtras} <: DerivativeExtras
 end
 
 """
-    prepare_derivative([other_extras], f, backend, x) -> extras
-    prepare_derivative([other_extras], f!, backend, y, x) -> extras
+    prepare_derivative(f, backend, x) -> extras
+    prepare_derivative(f!, backend, y, x) -> extras
 
 Create an `extras` object subtyping [`DerivativeExtras`](@ref) that can be given to derivative operators.
 """
-function prepare_derivative(::Extras, f_or_f!, backend::AbstractADType, args...)
-    return prepare_derivative(f_or_f!, backend, args...)
-end
-
 function prepare_derivative(f, backend::AbstractADType, x)
     return PushforwardDerivativeExtras(prepare_pushforward(f, backend, x))
 end
 
 function prepare_derivative(f!, backend::AbstractADType, y, x)
     return PushforwardDerivativeExtras(prepare_pushforward(f!, backend, y, x))
-end
-
-function prepare_pushforward(
-    extras::PushforwardDerivativeExtras, f_or_f!, backend::AbstractADType, args...
-)
-    return extras.pushforward_extras
 end
 
 ## Allocating
@@ -48,8 +38,7 @@ function value_and_derivative(
     x,
     extras::DerivativeExtras=prepare_derivative(f, backend, x),
 )
-    new_extras = prepare_pushforward(extras, f, backend, x)
-    return value_and_pushforward(f, backend, x, one(x), new_extras)
+    return value_and_pushforward(f, backend, x, one(x), extras.pushforward_extras)
 end
 
 """
@@ -62,8 +51,7 @@ function value_and_derivative!!(
     x,
     extras::DerivativeExtras=prepare_derivative(f, backend, x),
 )
-    new_extras = prepare_pushforward(extras, f, backend, x)
-    return value_and_pushforward!!(f, der, backend, x, one(x), new_extras)
+    return value_and_pushforward!!(f, der, backend, x, one(x), extras.pushforward_extras)
 end
 
 """
@@ -75,7 +63,7 @@ function derivative(
     x,
     extras::DerivativeExtras=prepare_derivative(f, backend, x),
 )
-    return value_and_derivative(f, backend, x, extras)[2]
+    return pushforward(f, backend, x, one(x), extras.pushforward_extras)
 end
 
 """
@@ -88,7 +76,7 @@ function derivative!!(
     x,
     extras::DerivativeExtras=prepare_derivative(f, backend, x),
 )
-    return value_and_derivative!!(f, der, backend, x, extras)[2]
+    return pushforward!!(f, der, backend, x, one(x), extras.pushforward_extras)
 end
 
 ## Mutating
@@ -104,6 +92,7 @@ function value_and_derivative!!(
     x,
     extras::DerivativeExtras=prepare_derivative(f!, backend, y, x),
 )
-    new_extras = prepare_pushforward(extras, f!, backend, y, x)
-    return value_and_pushforward!!(f!, y, der, backend, x, one(x), new_extras)
+    return value_and_pushforward!!(
+        f!, y, der, backend, x, one(x), extras.pushforward_extras
+    )
 end

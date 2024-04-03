@@ -22,10 +22,10 @@ function test_sparsity(ba::AbstractADType, scen::JacobianScenario{false}; ref_ba
         @test jac4 isa SparseMatrixCSC
     end
     @testset "Sparsity pattern" begin
-        @test nnz(jac1) < length(jac_true)
-        @test nnz(jac2) < length(jac_true)
-        @test nnz(jac3) < length(jac_true)
-        @test nnz(jac4) < length(jac_true)
+        @test nnz(jac1) == nnz(jac_true)
+        @test nnz(jac2) == nnz(jac_true)
+        @test nnz(jac3) == nnz(jac_true)
+        @test nnz(jac4) == nnz(jac_true)
     end
     return nothing
 end
@@ -48,7 +48,7 @@ function test_sparsity(ba::AbstractADType, scen::JacobianScenario{true}; ref_bac
         @test jac1 isa SparseMatrixCSC
     end
     @testset "Sparsity pattern" begin
-        @test nnz(jac1) < length(jac_true)
+        @test nnz(jac1) == nnz(jac_true)
     end
     return nothing
 end
@@ -72,8 +72,8 @@ function test_sparsity(ba::AbstractADType, scen::HessianScenario{false}; ref_bac
         @test hess2 isa SparseMatrixCSC
     end
     @testset "Sparsity pattern" begin
-        @test nnz(hess1) < length(hess_true)
-        @test nnz(hess2) < length(hess_true)
+        @test nnz(hess1) == nnz(hess_true)
+        @test nnz(hess2) == nnz(hess_true)
     end
     return nothing
 end
