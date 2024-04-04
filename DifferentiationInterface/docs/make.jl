@@ -41,7 +41,7 @@ makedocs(;
     modules=[ADTypes, DifferentiationInterface, extensions...],
     authors="Guillaume Dalle, Adrian Hill",
     sitename="DifferentiationInterface.jl",
-    format=Documenter.HTML(; prettyurls=get(ENV, "CI", "false") == "true"),
+    format=Documenter.HTML(),
     pages=[
         "Home" => "index.md", #
         "Start here" => ["tutorial.md", "overview.md", "backends.md"],
@@ -56,4 +56,5 @@ deploydocs(;
     devbranch="main",
     dirname="DifferentiationInterface",
     tag_prefix="DI-",
+    push_preview=true,
 )

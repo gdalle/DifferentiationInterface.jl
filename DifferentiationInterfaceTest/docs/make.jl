@@ -12,12 +12,11 @@ makedocs(;
     modules=[DifferentiationInterfaceTest],
     authors="Guillaume Dalle, Adrian Hill",
     sitename="DifferentiationInterfaceTest.jl",
-    format=Documenter.HTML(; prettyurls=get(ENV, "CI", "false") == "true"),
+    format=Documenter.HTML(),
     pages=[
         "Home" => "index.md", #
         "API reference" => "api.md",
     ],
-    warnonly=:missing_docs,  # missing docs for ADTypes.jl are normal
 )
 
 deploydocs(;
@@ -25,4 +24,5 @@ deploydocs(;
     devbranch="main",
     dirname="DifferentiationInterfaceTest",
     tag_prefix="DIT-",
+    push_preview=true,
 )
