@@ -2,8 +2,6 @@ include("test_imports.jl")
 
 ## Main tests
 
-@test true
-
 @testset verbose = true "DifferentiationInterface.jl" begin
     @testset verbose = true "Formal tests" begin
         @testset "Aqua" begin
