@@ -5,7 +5,7 @@
 **/docs/build/
 **/docs/src/index.md
 
-DifferentiationInterface/Manifest.toml
-DifferentiationInterface/docs/Manifest.toml
+**/Manifest.toml
+**/docs/Manifest.toml
 
 *.csv
