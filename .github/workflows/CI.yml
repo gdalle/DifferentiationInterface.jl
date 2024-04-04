@@ -17,7 +17,7 @@ concurrency:
 jobs:
   
   test:
-    name: ${{ matrix.pkg.name }} - Julia ${{ matrix.version }}
+    name: Test - ${{ matrix.pkg.name }} - Julia ${{ matrix.version }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     permissions: # needed to allow julia-actions/cache to proactively delete old caches that it has created
@@ -61,7 +61,7 @@ jobs:
           fail_ci_if_error: true
 
   docs:
-    name: ${{ matrix.pkg.name }}
+    name: Docs - ${{ matrix.pkg.name }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
