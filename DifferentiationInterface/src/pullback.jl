@@ -124,3 +124,60 @@ function value_and_pullback!!(
     end
     return y, dx
 end
+
+## Closure
+
+"""
+    value_and_pullback_split(f, backend, x, [extras])
+
+Apply split reverse mode autodiff.
+
+Returns a tuple `(y, pullbackfunc)` where the second element is a function (closure) with the following signature:
+
+    pullbackfunc(dy) -> dx
+"""
+function value_and_pullback_split(
+    f, backend::AbstractADType, x, extras::PullbackExtras=prepare_pullback(f, backend, x)
+)
+    pullbackfunc(dy) = pullback(f, backend, x, dy, extras)
+    return f(x), pullbackfunc
+end
+
+"""
+    value_and_pullback!!_split(f, backend, x, [extras])
+
+Apply split reverse mode autodiff.
+
+Returns a tuple `(y, pullbackfunc!!)` where the second element is a function (closure) with the following signature:
+
+    pullbackfunc!!(dx, dy) -> dx
+"""
+function value_and_pullback!!_split(
+    f, backend::AbstractADType, x, extras::PullbackExtras=prepare_pullback(f, backend, x)
+)
+    pullbackfunc!!(dx, dy) = pullback!!(f, dx, backend, x, dy, extras)
+    return f(x), pullbackfunc!!
+end
+
+"""
+    value_and_pullback!!_split(f!, y, backend, x, [extras])
+
+Apply split reverse mode autodiff.
+
+Returns a tuple `(y, pullbackfunc!!)` where the second element is a function (closure) with the following signature:
+
+    pullbackfunc!!(y, dx, dy) -> dx
+"""
+function value_and_pullback!!_split(
+    f!,
+    y,
+    backend::AbstractADType,
+    x,
+    extras::PullbackExtras=prepare_pullback(f!, backend, y, x),
+)
+    function pullbackfunc!!(y, dx, dy)
+        return value_and_pullback!!(f!, y, dx, backend, x, dy, extras)[2]
+    end
+    f!(y, x)
+    return y, pullbackfunc!!
+end

@@ -107,6 +107,7 @@ export SecondOrder
 
 export value_and_pushforward!!, value_and_pushforward
 export value_and_pullback!!, value_and_pullback
+export value_and_pullback!!_split, value_and_pullback_split
 
 export value_and_derivative!!, value_and_derivative
 export value_and_gradient!!, value_and_gradient
@@ -130,34 +131,18 @@ export prepare_second_derivative, prepare_hvp, prepare_hessian
 export check_available, check_mutation, check_hessian
 
 function __init__()
-    Base.Experimental.register_error_hint(StackOverflowError) do io, exc, argtypes, kwargs
-        f_name = string(exc.f)
-        if (
-            f_name == "mode" ||
-            contains(f_name, "pushforward") ||
-            contains(f_name, "pullback") ||
-            contains(f_name, "derivative") ||
-            contains(f_name, "gradient") ||
-            contains(f_name, "jacobian") ||
-            contains(f_name, "hvp") ||
-            contains(f_name, "hessian")
+    Base.Experimental.register_error_hint(StackOverflowError) do io, exc
+        print(
+            io,
+            """\n
+            HINT: One of DifferentiationInterface's functions might be missing a method, which would trigger an endless loop of `pullback` calling `pushforward` and vice-versa.
+            Some possible fixes:
+            - switch to another backend
+            - if you don't want to switch, load the package extension corresponding to your backend
+            - if your backend is already loaded, define the primitive operator for the right combination of argument types
+            """,
         )
-            for T in argtypes
-                if T <: AbstractADType
-                    print(
-                        io,
-                        """\n
-                        HINT: One of DifferentiationInterface's functions is missing a method, which causes an endless loop of `pullback` calling `pushforward` and vice-versa.
-                        Some possible fixes:
-                        - switch to another backend
-                        - if you don't want to switch, load the package extension corresponding to backend `$T`
-                        - if the package is already loaded, define the method `$f_name` for the right combination of argument types
-                        """,
-                    )
-                    return nothing
-                end
-            end
-        end
+        return nothing
     end
 end
 

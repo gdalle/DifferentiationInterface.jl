@@ -22,6 +22,18 @@ function DI.value_and_pullback(f, ::AnyAutoZygote, x, dy, ::NoPullbackExtras)
     return y, dx
 end
 
+function DI.value_and_pullback_split(f, ::AnyAutoZygote, x, ::NoPullbackExtras)
+    y, back = pullback(f, x)
+    pullbackfunc(dy) = only(back(dy))
+    return y, pullbackfunc
+end
+
+function DI.value_and_pullback!!_split(f, ::AnyAutoZygote, x, ::NoPullbackExtras)
+    y, back = pullback(f, x)
+    pullbackfunc!!(_dx, dy) = only(back(dy))
+    return y, pullbackfunc!!
+end
+
 ## Gradient
 
 DI.prepare_gradient(f, ::AnyAutoZygote, x) = NoGradientExtras()
