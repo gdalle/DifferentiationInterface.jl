@@ -27,9 +27,9 @@ jobs:
       fail-fast: false
       matrix:
         pkg:
-          - name: DifferentiationInterface.jl
+          - name: DifferentiationInterface
             dir: './DifferentiationInterface'
-          - name: DifferentiationInterfaceTest.jl
+          - name: DifferentiationInterfaceTest
             dir: './DifferentiationInterfaceTest'
         version:
           - '1.10'
@@ -52,8 +52,8 @@ jobs:
         with:
           project: ${{ matrix.pkg.dir }}
       - uses: julia-actions/julia-processcoverage@v1
-        # with:
-        #   directories: src,ext,lib
+        with:
+          directories: ${{ matrix.pkg.dir }}/src,${{ matrix.pkg.dir }}/ext
       - uses: codecov/codecov-action@v4
         with:
           files: lcov.info
