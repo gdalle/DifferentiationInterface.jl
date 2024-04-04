@@ -1,7 +1,11 @@
 """
     DifferentiationInterfaceTest
 
-Testing utilities for [`DifferentiationInterface`](@ref).
+Testing and benchmarking utilities for automatic differentiation in Julia.
+
+# Exports
+
+$(EXPORTS)
 """
 module DifferentiationInterfaceTest
 
@@ -17,7 +21,13 @@ using Chairmarks: @be, Benchmark, Sample
 using ComponentArrays: ComponentVector
 using DifferentiationInterface
 using DifferentiationInterface:
-    inner, mode, outer, supports_mutation, pushforward_performance, pullback_performance
+    backend_string,
+    inner,
+    mode,
+    outer,
+    supports_mutation,
+    pushforward_performance,
+    pullback_performance
 using DifferentiationInterface: NoPullbackExtras, NoPushforwardExtras
 using DocStringExtensions
 import DifferentiationInterface as DI
@@ -37,7 +47,6 @@ include("scenarios/gpu.jl")
 
 include("utils/zero_backends.jl")
 include("utils/compatibility.jl")
-include("utils/printing.jl")
 include("utils/misc.jl")
 include("utils/filter.jl")
 

@@ -4,8 +4,8 @@ CollapsedDocStrings = true
 ```
 
 ```@setup backends
-using ADTypes, DifferentiationInterface
-using DifferentiationInterfaceTest: backend_string
+using DifferentiationInterface
+using DifferentiationInterface: backend_string
 import Markdown
 import Enzyme, FastDifferentiation, FiniteDiff, FiniteDifferences, ForwardDiff, PolyesterForwardDiff, ReverseDiff, Tracker, Zygote
 

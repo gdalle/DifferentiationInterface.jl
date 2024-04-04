@@ -4,8 +4,6 @@ include("test_imports.jl")
 
 @test true
 
-#=
-
 @testset verbose = true "DifferentiationInterface.jl" begin
     @testset verbose = true "Formal tests" begin
         @testset "Aqua" begin
@@ -27,27 +25,25 @@ include("test_imports.jl")
 
     Documenter.doctest(DifferentiationInterface)
 
-    @testset verbose = true "First order" begin
-        include("first_order.jl")
-    end
+    # @testset verbose = true "First order" begin
+    #     include("first_order.jl")
+    # end
 
-    @testset verbose = true "Second order" begin
-        include("second_order.jl")
-    end
+    # @testset verbose = true "Second order" begin
+    #     include("second_order.jl")
+    # end
 
-    @testset verbose = true "Sparsity" begin
-        include("sparsity.jl")
-    end
+    # @testset verbose = true "Sparsity" begin
+    #     include("sparsity.jl")
+    # end
 
-    @testset verbose = true "Bonus round" begin
-        @testset "Type stability" begin
-            include("type_stability.jl")
-        end
+    # @testset verbose = true "Bonus round" begin
+    #     @testset "Type stability" begin
+    #         include("type_stability.jl")
+    #     end
 
-        @testset "Weird arrays" begin
-            include("weird_arrays.jl")
-        end
-    end
+    #     @testset "Weird arrays" begin
+    #         include("weird_arrays.jl")
+    #     end
+    # end
 end;
-
-=#

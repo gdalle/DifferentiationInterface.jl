@@ -2,9 +2,6 @@
 *.jl.cov
 *.jl.mem
 
-/.benchmarkci
-/benchmark/*.json
-
 **/docs/build/
 **/docs/src/index.md
 

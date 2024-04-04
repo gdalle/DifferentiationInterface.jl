@@ -71,6 +71,7 @@ abstract type Extras end
 include("second_order.jl")
 include("traits.jl")
 include("utils.jl")
+include("printing.jl")
 
 include("pushforward.jl")
 include("pullback.jl")
