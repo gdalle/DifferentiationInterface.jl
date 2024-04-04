@@ -83,9 +83,9 @@ jobs:
       - uses: julia-actions/cache@v1
       - name: Install dependencies
         run: julia --project=${{ matrix.pkg.dir}}/docs/ -e '
-          using Pkg
-          Pkg.develop(PackageSpec(path="./DifferentiationInterface"))
-          Pkg.develop(PackageSpec(path="{{ matrix.pkg.dir}}"))
+          using Pkg;
+          Pkg.develop(PackageSpec(path="./DifferentiationInterface"));
+          Pkg.develop(PackageSpec(path="{{ matrix.pkg.dir}}"));
           Pkg.instantiate()'
       - name: Build and deploy
         env:
