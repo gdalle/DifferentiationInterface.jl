@@ -1,5 +1,9 @@
 # DifferentiationInterface
 
+[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterface/dev/)
+[![Build Status](https://github.com/gdalle/DifferentiationInterface.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/gdalle/DifferentiationInterface.jl/actions/workflows/CI.yml?query=branch%3Amain)
+[![Code Style: Blue](https://img.shields.io/badge/code%20style-blue-4495d1.svg)](https://github.com/invenia/BlueStyle)
+
 An interface to various automatic differentiation (AD) backends in Julia.
 
 ## Goal
@@ -14,8 +18,8 @@ This package provides a backend-agnostic syntax to differentiate functions of th
 - First and second order operators
 - In-place and out-of-place differentiation
 - Preparation mechanism (e.g. to create a config or tape)
-- Cross-backend testing and benchmarking utilities
 - Thorough validation on standard inputs and outputs (scalars, vectors, matrices)
+- Testing and benchmarking utilities accessible to users with DifferentiationInterfaceTest.jl
 
 ## Compatibility
 

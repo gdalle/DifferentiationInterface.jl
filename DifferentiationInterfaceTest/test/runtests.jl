@@ -21,7 +21,11 @@ include("test_imports.jl")
         end
     end
 
-    # @testset verbose = true "Zero backends" begin
-    #     include("zero_backends.jl")
-    # end
+    @testset verbose = false "Zero backends" begin
+        include("zero_backends.jl")
+    end
+
+    @testset verbose = false "ForwardDiff" begin
+        test_differentiation(AutoForwardDiff(); logging=get(ENV, "CI", "false") == "false")
+    end
 end;
