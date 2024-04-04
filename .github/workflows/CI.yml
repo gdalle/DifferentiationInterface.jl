@@ -1,4 +1,5 @@
 name: CI
+
 on:
   push:
     branches:
@@ -6,14 +7,17 @@ on:
     tags: ['*']
   pull_request:
   workflow_dispatch:
+
 concurrency:
   # Skip intermediate builds: always.
   # Cancel intermediate builds: only if it is a pull request build.
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
+
 jobs:
+  
   test:
-    name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }}
+    name: Test - ${{ matrix.pkg.name }} - Julia ${{ matrix.version }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     permissions: # needed to allow julia-actions/cache to proactively delete old caches that it has created
@@ -22,12 +26,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        pkg:
+          - name: DifferentiationInterface
+            dir: './DifferentiationInterface'
+          - name: DifferentiationInterfaceTest
+            dir: './DifferentiationInterfaceTest'
         version:
           - '1.10'
         os:
           - ubuntu-latest
         arch:
           - x64
+    
     steps:
       - uses: actions/checkout@v4
       - uses: julia-actions/setup-julia@v1
@@ -35,46 +45,57 @@ jobs:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
       - uses: julia-actions/cache@v1
-      - uses: julia-actions/julia-buildpkg@v1
+      - name: Install dependencies (replaces buildpkg)
+        run: julia --project=${{ matrix.pkg.dir}}/ -e '
+          using Pkg;
+          if "${{ matrix.pkg.name}}" == "DifferentiationInterfaceTest";
+              Pkg.develop(PackageSpec(path="./DifferentiationInterface"));
+          end;
+          Pkg.instantiate();'
       - uses: julia-actions/julia-runtest@v1
+        with:
+          project: ${{ matrix.pkg.dir }}
       - uses: julia-actions/julia-processcoverage@v1
         with:
-          directories: src,ext,lib
+          directories: ${{ matrix.pkg.dir }}/src,${{ matrix.pkg.dir }}/ext
       - uses: codecov/codecov-action@v4
         with:
           files: lcov.info
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
+
   docs:
-    name: Documentation
+    name: Docs - ${{ matrix.pkg.name }}
     runs-on: ubuntu-latest
     permissions:
-      actions: write # needed to allow julia-actions/cache to proactively delete old caches that it has created
       contents: write
       statuses: write
+    strategy:
+      fail-fast: false
+      matrix:
+        pkg:
+          - name: DifferentiationInterface
+            dir: './DifferentiationInterface'
+          - name: DifferentiationInterfaceTest
+            dir: './DifferentiationInterfaceTest'
+    
     steps:
       - uses: actions/checkout@v4
       - uses: julia-actions/setup-julia@v1
         with:
           version: '1'
       - uses: julia-actions/cache@v1
-      - name: Configure doc environment
-        shell: julia --project=docs --color=yes {0}
-        run: |
-          using Pkg
-          Pkg.Registry.update()  # TODO: remove? useful for fresh releases
-          Pkg.develop(PackageSpec(path=pwd()))
-          Pkg.develop(PackageSpec(path=joinpath(pwd(), "lib", "DifferentiationInterfaceTest")))
-          Pkg.instantiate()
-      - uses: julia-actions/julia-buildpkg@v1
-      - uses: julia-actions/julia-docdeploy@v1
+      - name: Install dependencies
+        run: julia --project=${{ matrix.pkg.dir}}/docs/ -e '
+          using Pkg;
+          if "${{ matrix.pkg.name}}" == "DifferentiationInterface";
+              Pkg.develop(PackageSpec(path="./DifferentiationInterface"));
+          else;
+              Pkg.develop([PackageSpec(path="./DifferentiationInterface"), PackageSpec(path="${{ matrix.pkg.dir}}")]);
+          end;
+          Pkg.instantiate();'
+      - name: Build and deploy
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
-      - name: Run doctests
-        shell: julia --project=docs --color=yes {0}
-        run: |
-          using Documenter: DocMeta, doctest
-          using DifferentiationInterface
-          DocMeta.setdocmeta!(DifferentiationInterface, :DocTestSetup, :(using DifferentiationInterface); recursive=true)
-          doctest(DifferentiationInterface)
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # If authenticating with GitHub Actions token
+          DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }} # If authenticating with SSH deploy key
+        run: julia --project=${{ matrix.pkg.dir}}/docs/ ${{ matrix.pkg.dir}}/docs/make.jl

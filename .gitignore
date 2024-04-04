@@ -2,12 +2,10 @@
 *.jl.cov
 *.jl.mem
 
-/.benchmarkci
-/benchmark/*.json
+**/docs/build/
+**/docs/src/index.md
 
-/docs/build/
-/docs/src/index.md
-
-Manifest.toml
+**/Manifest.toml
+**/docs/Manifest.toml
 
 *.csv

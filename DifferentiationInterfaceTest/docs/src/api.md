@@ -3,7 +3,7 @@ CurrentModule = Main
 CollapsedDocStrings = true
 ```
 
-# Testing API
+# API reference
 
 ```@docs
 DifferentiationInterfaceTest
