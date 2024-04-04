@@ -55,6 +55,6 @@ deploydocs(;
     repo="github.com/gdalle/DifferentiationInterface.jl",
     devbranch="main",
     dirname="DifferentiationInterface",
-    tag_prefix="DI-",
+    tag_prefix="DifferentiationInterface-",
     push_preview=true,
 )

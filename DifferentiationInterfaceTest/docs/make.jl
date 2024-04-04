@@ -23,6 +23,6 @@ deploydocs(;
     repo="github.com/gdalle/DifferentiationInterface.jl",
     devbranch="main",
     dirname="DifferentiationInterfaceTest",
-    tag_prefix="DIT-",
+    tag_prefix="DifferentiationInterfaceTest-",
     push_preview=true,
 )
