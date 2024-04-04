@@ -84,7 +84,7 @@ jobs:
       - name: Install dependencies
         run: julia --project=${{ matrix.pkg.dir}}/docs/ -e '
           using Pkg;
-          Pkg.develop([PackageSpec(path="./DifferentiationInterface", PackageSpec(path="${{ matrix.pkg.dir}}")]);
+          Pkg.develop([PackageSpec(path="./DifferentiationInterface"), PackageSpec(path="${{ matrix.pkg.dir}}")]);
           Pkg.instantiate()'
       - name: Build and deploy
         env:
