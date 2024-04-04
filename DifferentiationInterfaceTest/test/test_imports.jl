@@ -1,9 +1,3 @@
-using Pkg
-
-Pkg.develop(
-    Pkg.PackageSpec(; path=joinpath(@__DIR__, "..", "..", "DifferentiationInterface"))
-)
-
 using DifferentiationInterface
 using DifferentiationInterfaceTest
 using DifferentiationInterfaceTest: AutoZeroForward, AutoZeroReverse
