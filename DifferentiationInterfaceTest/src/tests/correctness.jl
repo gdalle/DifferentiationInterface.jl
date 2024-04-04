@@ -109,16 +109,25 @@ function test_correctness(
     dx3 = pullback(f, ba, x, dy, extras)
     dx4 = pullback!!(f, mysimilar(x), ba, x, dy, extras)
 
+    y5, pullbackfunc = value_and_pullback_split(f, ba, x, extras)
+    dx5 = pullbackfunc(dy)
+    y6, pullbackfunc!! = value_and_pullback!!_split(f, ba, x, extras)
+    dx6 = pullbackfunc!!(mysimilar(x), dy)
+
     let (≈)(x, y) = isapprox(x, y; atol, rtol)
         @testset "Primal value" begin
             @test y1 ≈ y
             @test y2 ≈ y
+            @test y5 ≈ y
+            @test y6 ≈ y
         end
         @testset "Cotangent value" begin
             @test dx1 ≈ dx_true
             @test dx2 ≈ dx_true
             @test dx3 ≈ dx_true
             @test dx4 ≈ dx_true
+            @test dx5 ≈ dx_true
+            @test dx6 ≈ dx_true
         end
     end
     test_scen_intact(new_scen, scen)
@@ -145,13 +154,20 @@ function test_correctness(
     y10 = mysimilar(y)
     y1, dx1 = value_and_pullback!!(f!, y10, mysimilar(x), ba, x, dy, extras)
 
+    y20 = mysimilar(y)
+    y2, pullbackfunc!! = value_and_pullback!!_split(f!, y20, ba, x, extras)
+    dx2 = pullbackfunc!!(y20, mysimilar(x), dy)
+
     let (≈)(x, y) = isapprox(x, y; atol, rtol)
         @testset "Primal value" begin
             @test y10 ≈ y
+            @test y20 ≈ y
             @test y1 ≈ y
+            @test y2 ≈ y
         end
         @testset "Cotangent value" begin
             @test dx1 ≈ dx_true
+            @test dx2 ≈ dx_true
         end
     end
     test_scen_intact(new_scen, scen)
