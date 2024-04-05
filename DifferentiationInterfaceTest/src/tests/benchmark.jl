@@ -114,13 +114,10 @@ function run_benchmark!(
     (; f, x, y, dy) = deepcopy(scen)
     f! = f
     extras = prepare_pullback(f!, ba, y, x)
-    _, pullbackfunc!! = value_and_pullback!!_split(f!, y, ba, x, extras)
     bench1 = @be (mysimilar(y), mysimilar(x)) value_and_pullback!!(
         f!, _[1], _[2], ba, x, dy, extras
     )
-    bench2 = @be (mysimilar(y), mysimilar(x)) pullbackfunc!!(_[1], _[2], dy)
     record!(data, ba, value_and_pullback!!, scen, bench1)
-    record!(data, ba, pullbackfunc!!, scen, bench2)
     return nothing
 end
 
