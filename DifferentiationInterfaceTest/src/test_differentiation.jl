@@ -69,12 +69,12 @@ function test_differentiation(
         excluded,
     )
 
-    title =
-        "Testing" *
-        (correctness != false ? " correctness" : "") *
-        (call_count ? " calls" : "") *
-        (type_stability ? " types" : "") *
-        (sparsity ? " sparsity" : "")
+    title_additions =
+        (correctness != false ? " + correctness" : "") *
+        (call_count ? " + calls" : "") *
+        (type_stability ? " + types" : "") *
+        (sparsity ? " + sparsity" : "")
+    title = "Testing" * title_additions[3:end]
 
     prog = ProgressUnknown(; desc="$title", spinner=true, enabled=logging)
 
