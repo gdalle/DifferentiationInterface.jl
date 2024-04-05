@@ -11,21 +11,10 @@ DI.supports_mutation(::AutoTracker) = DI.MutationNotSupported()
 
 DI.prepare_pullback(f, ::AutoTracker, x) = NoPullbackExtras()
 
-function DI.value_and_pullback(f, ::AutoTracker, x, dy, ::NoPullbackExtras)
-    y, back = forward(f, x)
-    return y, data(only(back(dy)))
-end
-
 function DI.value_and_pullback_split(f, ::AutoTracker, x, ::NoPullbackExtras)
     y, back = forward(f, x)
     pullbackfunc(dy) = data(only(back(dy)))
     return y, pullbackfunc
-end
-
-function DI.value_and_pullback!!_split(f, ::AutoTracker, x, ::NoPullbackExtras)
-    y, back = forward(f, x)
-    pullbackfunc!!(_dx, dy) = data(only(back(dy)))
-    return y, pullbackfunc!!
 end
 
 ## Gradient

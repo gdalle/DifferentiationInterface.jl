@@ -130,20 +130,4 @@ export prepare_second_derivative, prepare_hvp, prepare_hessian
 
 export check_available, check_mutation, check_hessian
 
-function __init__()
-    Base.Experimental.register_error_hint(StackOverflowError) do io, exc
-        print(
-            io,
-            """\n
-            HINT: One of DifferentiationInterface's functions might be missing a method, which would trigger an endless loop of `pullback` calling `pushforward` and vice-versa.
-            Some possible fixes:
-            - switch to another backend
-            - if you don't want to switch, load the package extension corresponding to your backend
-            - if your backend is already loaded, define the primitive operator for the right combination of argument types
-            """,
-        )
-        return nothing
-    end
-end
-
 end # module

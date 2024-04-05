@@ -9,6 +9,7 @@ using Tapir:
     NoTangent,
     build_rrule,
     increment!!,
+    primal,
     set_to_zero!!,
     tangent,
     tangent_type,

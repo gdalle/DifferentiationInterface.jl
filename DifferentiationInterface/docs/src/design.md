@@ -24,29 +24,5 @@ For simplicity, we remove `value_` in the operator names below.
     Full edges in the following graphs require a single call to the destination.
     Dotted edges require multiple calls to the destination, the number is indicated on the edge.
 
-### First order
-
-```mermaid
-flowchart LR
-    direction LR
-    subgraph Out-of-place
-        pushforward
-        pullback
-        derivative --> pushforward
-        gradient --> pullback
-        jacobian .-> |n|pushforward
-        jacobian .-> |m|pullback
-    end
-
-    subgraph In-place
-        pushforward!! --> pushforward
-        pullback!! --> pullback
-        derivative!! --> pushforward!!
-        gradient!! --> pullback!!
-        jacobian!! .-> |n|pushforward!!
-        jacobian!! .-> |m|pullback!!
-    end
-
-    pushforward .-> |m|pullback
-    pullback .-> |n|pushforward
-```
+!!! warning
+    This is still in flux, come back later!
