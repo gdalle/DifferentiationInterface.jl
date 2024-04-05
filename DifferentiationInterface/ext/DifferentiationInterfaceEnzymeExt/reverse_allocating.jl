@@ -24,7 +24,24 @@ function DI.value_and_pullback(
     return y, new_dx
 end
 
+function DI.value_and_pullback(
+    f, backend::AutoReverseEnzyme, x::AbstractArray, dy, extras::NoPullbackExtras
+)
+    dx = similar(x)
+    return DI.value_and_pullback!!(f, dx, backend, x, dy, extras)
+end
+
+function DI.pullback(f, backend::AutoReverseEnzyme, x, dy, extras::NoPullbackExtras)
+    return DI.value_and_pullback(f, backend, x, dy, extras)[2]
+end
+
 ### In-place
+
+function DI.value_and_pullback!!(
+    f, _dx, backend::AutoReverseEnzyme, x::Number, dy, extras::NoPullbackExtras
+)
+    return DI.value_and_pullback(f, backend, x, dy, extras)
+end
 
 function DI.value_and_pullback!!(
     f, dx, ::AutoReverseEnzyme, x::AbstractArray, dy::Number, ::NoPullbackExtras
@@ -48,11 +65,26 @@ function DI.value_and_pullback!!(
     return y, dx_sametype
 end
 
-function DI.value_and_pullback(
-    f, backend::AutoReverseEnzyme, x::AbstractArray, dy, extras::NoPullbackExtras
+function DI.pullback!!(f, dx, backend::AutoReverseEnzyme, x, dy, extras::NoPullbackExtras)
+    return DI.value_and_pullback!!(f, dx, backend, x, dy, extras)[2]
+end
+
+### Closure
+
+function DI.value_and_pullback_split(
+    f, backend::AutoReverseEnzyme, x, extras::NoPullbackExtras
 )
-    dx = similar(x)
-    return DI.value_and_pullback!!(f, dx, backend, x, dy, extras)
+    y = f(x)
+    pullbackfunc(dy) = DI.pullback(f, backend, x, dy, extras)
+    return y, pullbackfunc
+end
+
+function DI.value_and_pullback!!_split(
+    f, backend::AutoReverseEnzyme, x, extras::NoPullbackExtras
+)
+    y = f(x)
+    pullbackfunc!!(dx, dy) = DI.pullback!!(f, dx, backend, x, dy, extras)
+    return y, pullbackfunc!!
 end
 
 ## Gradient

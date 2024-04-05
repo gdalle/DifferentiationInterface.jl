@@ -19,6 +19,12 @@ DI.supports_mutation(::AutoZeroForward) = DI.MutationSupported()
 DI.prepare_pushforward(f, ::AutoZeroForward, x) = NoPushforwardExtras()
 DI.prepare_pushforward(f!, ::AutoZeroForward, y, x) = NoPushforwardExtras()
 
+function DI.value_and_pushforward(f, ::AutoZeroForward, x, dx, ::NoPushforwardExtras)
+    y = f(x)
+    dy = myzero(y)
+    return y, dy
+end
+
 function DI.value_and_pushforward!!(f, dy, ::AutoZeroForward, x, dx, ::NoPushforwardExtras)
     y = f(x)
     dy = myzero!!(dy)
@@ -30,12 +36,6 @@ function DI.value_and_pushforward!!(
 )
     f!(y, x)
     dy = myzero!!(dy)
-    return y, dy
-end
-
-function DI.value_and_pushforward(f, ::AutoZeroForward, x, dx, ::NoPushforwardExtras)
-    y = f(x)
-    dy = myzero(y)
     return y, dy
 end
 
@@ -54,20 +54,25 @@ DI.supports_mutation(::AutoZeroReverse) = DI.MutationSupported()
 DI.prepare_pullback(f, ::AutoZeroReverse, x) = NoPullbackExtras()
 DI.prepare_pullback(f!, ::AutoZeroReverse, y, x) = NoPullbackExtras()
 
-function DI.value_and_pullback!!(f, dx, ::AutoZeroReverse, x, dy, ::NoPullbackExtras)
+struct ZeroPullbackFunc{X}
+    x::X
+end
+
+(zpf::ZeroPullbackFunc)(_dy) = myzero(zpf.x)
+
+function DI.value_and_pullback_split(f, ::AutoZeroReverse, x, ::NoPullbackExtras)
     y = f(x)
-    dx = myzero!!(dx)
-    return y, dx
+    return y, ZeroPullbackFunc(x)
+end
+
+function DI.value_and_pullback!!_split(f, dx, ::AutoZeroReverse, x, ::NoPullbackExtras)
+    y = f(x)
+    pullbackfunc!!(dx, dy) = myzero!!(dx)
+    return y, pullbackfunc!!
 end
 
 function DI.value_and_pullback!!(f!, y, dx, ::AutoZeroReverse, x, dy, ::NoPullbackExtras)
     f!(y, x)
     dx = myzero!!(dx)
-    return y, dx
-end
-
-function DI.value_and_pullback(f, ::AutoZeroReverse, x, dy, ::NoPullbackExtras)
-    y = f(x)
-    dx = myzero(x)
     return y, dx
 end

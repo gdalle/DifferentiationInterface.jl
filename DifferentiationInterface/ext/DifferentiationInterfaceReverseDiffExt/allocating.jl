@@ -2,79 +2,40 @@
 
 DI.prepare_pullback(f, ::AnyAutoReverseDiff, x) = NoPullbackExtras()
 
-function DI.value_and_pullback!!(
-    f,
-    dx::AbstractArray,
-    backend::AnyAutoReverseDiff,
-    x::AbstractArray,
-    dy,
-    extras::NoPullbackExtras,
+function DI.value_and_pullback_split(
+    f, ::AnyAutoReverseDiff, x::AbstractArray, ::NoPullbackExtras
 )
-    return f(x), DI.pullback!!(f, dx, backend, x, dy, extras)
+    y = f(x)
+    pullbackfunc = if y isa Number
+        dy -> dy .* gradient(f, x)
+    elseif y isa AbstractArray
+        dy -> gradient(z -> dot(f(z), dy), x)
+    end
+    return y, pullbackfunc
 end
 
-function DI.value_and_pullback(
-    f, backend::AnyAutoReverseDiff, x::AbstractArray, dy, extras::NoPullbackExtras
+function DI.value_and_pullback!!_split(
+    f, ::AnyAutoReverseDiff, x::AbstractArray, ::NoPullbackExtras
 )
-    return f(x), DI.pullback(f, backend, x, dy, extras)
+    y = f(x)
+    pullbackfunc!! = if y isa Number
+        (dx, dy) -> begin
+            dx = gradient!(dx, f, x)
+            dx .*= dy
+        end
+    elseif y isa AbstractArray
+        (dx, dy) -> gradient!(dx, z -> dot(f(z), dy), x)
+    end
+    return y, pullbackfunc!!
 end
 
-### Number out
-
-function DI.pullback!!(
-    f,
-    dx::AbstractArray,
-    ::AnyAutoReverseDiff,
-    x::AbstractArray,
-    dy::Number,
-    ::NoPullbackExtras,
-)
-    dx = gradient!(dx, f, x)
-    dx .*= dy
-    return dx
-end
-
-function DI.pullback(
-    f, ::AnyAutoReverseDiff, x::AbstractArray, dy::Number, ::NoPullbackExtras
-)
-    dx = gradient(f, x)
-    dx .*= dy
-    return dx
-end
-
-### Array out
-
-function DI.pullback!!(
-    f,
-    dx::AbstractArray,
-    ::AnyAutoReverseDiff,
-    x::AbstractArray,
-    dy::AbstractArray,
-    ::NoPullbackExtras,
-)
-    dotproduct_closure(x) = dot(f(x), dy)
-    dx = gradient!(dx, dotproduct_closure, x)
-    return dx
-end
-
-function DI.pullback(
-    f, ::AnyAutoReverseDiff, x::AbstractArray, dy::AbstractArray, extras::NoPullbackExtras
-)
-    dotproduct_closure(x) = dot(f(x), dy)
-    dx = gradient(dotproduct_closure, x)
-    return dx
-end
-
-### Number in, not supported
-
-function DI.value_and_pullback(
-    f, backend::AnyAutoReverseDiff, x::Number, dy, ::NoPullbackExtras
+function DI.value_and_pullback_split(
+    f, backend::AnyAutoReverseDiff, x::Number, ::NoPullbackExtras
 )
     x_array = [x]
     f_array = f ∘ only
-    new_extras = DI.prepare_pullback(f_array, backend, x_array)
-    y, dx_array = DI.value_and_pullback(f_array, backend, x_array, dy, new_extras)
-    return y, only(dx_array)
+    y, pullbackfunc = DI.value_and_pullback_split(f_array, backend, x_array)
+    return y, only ∘ pullbackfunc
 end
 
 ## Gradient

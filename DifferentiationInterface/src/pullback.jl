@@ -18,13 +18,53 @@ Create an `extras` object subtyping [`PullbackExtras`](@ref) that can be given t
 prepare_pullback(f, ::AbstractADType, x) = NoPullbackExtras()
 prepare_pullback(f!, ::AbstractADType, y, x) = NoPullbackExtras()
 
+## Closure
+
+"""
+    value_and_pullback_split(f, backend, x, [extras]) -> (y, pullbackfunc(dy) -> dx)
+
+!!! info
+    Required primitive for reverse mode backends to support allocating functions.
+"""
+function value_and_pullback_split(
+    f, backend::AbstractADType, x, extras::PullbackExtras=prepare_pullback(f, backend, x)
+)
+    if !Bool(pushforward_performance(backend))
+        error("Pushforward not available for backend $backend")
+    end
+    pushforward_extras = prepare_pushforward(f, backend, x)
+    y = f(x)
+    pullbackfunc = if x isa Number && y isa Number
+        dy -> dy * pushforward(f, backend, x, one(x), pushforward_extras)
+    elseif x isa Number && y isa AbstractArray
+        dy -> dot(dy, pushforward(f, backend, x, one(x), pushforward_extras))
+    elseif x isa AbstractArray && y isa Number
+        dy -> map(CartesianIndices(x)) do j
+            dy * pushforward(f, backend, x, basis(backend, x, j), pushforward_extras)
+        end
+    elseif x isa AbstractArray && y isa AbstractArray
+        dy -> map(CartesianIndices(x)) do j
+            dot(dy, pushforward(f, backend, x, basis(backend, x, j), pushforward_extras))
+        end
+    end
+    return y, pullbackfunc
+end
+
+"""
+    value_and_pullback!!_split(f, backend, x, [extras]) -> (y, pullbackfunc!!(dx, dy) -> dx)
+"""
+function value_and_pullback!!_split(
+    f, backend::AbstractADType, x, extras::PullbackExtras=prepare_pullback(f, backend, x)
+)
+    y, pullbackfunc = value_and_pullback_split(f, backend, x, extras)
+    pullbackfunc!!(_dx, dy) = pullbackfunc(dy)
+    return y, pullbackfunc!!
+end
+
 ## Allocating
 
 """
     value_and_pullback(f, backend, x, dy, [extras]) -> (y, dx)
-
-!!! info
-    Required primitive for reverse mode backends to support allocating functions.
 """
 function value_and_pullback(
     f,
@@ -33,22 +73,8 @@ function value_and_pullback(
     dy,
     extras::PullbackExtras=prepare_pullback(f, backend, x),
 )
-    new_extras = prepare_pushforward(f, backend, x)
-    y = f(x)
-    dx = if x isa Number && y isa Number
-        dy * pushforward(f, backend, x, one(x), new_extras)
-    elseif x isa Number && y isa AbstractArray
-        dot(dy, pushforward(f, backend, x, one(x), new_extras))
-    elseif x isa AbstractArray && y isa Number
-        map(CartesianIndices(x)) do j
-            dy * pushforward(f, backend, x, basis(backend, x, j), new_extras)
-        end
-    elseif x isa AbstractArray && y isa AbstractArray
-        map(CartesianIndices(x)) do j
-            dot(dy, pushforward(f, backend, x, basis(backend, x, j), new_extras))
-        end
-    end
-    return y, dx
+    y, pullbackfunc = value_and_pullback_split(f, backend, x, extras)
+    return y, pullbackfunc(dy)
 end
 
 """
@@ -62,7 +88,8 @@ function value_and_pullback!!(
     dy,
     extras::PullbackExtras=prepare_pullback(f, backend, x),
 )
-    return value_and_pullback(f, backend, x, dy, extras)
+    y, pullbackfunc!! = value_and_pullback!!_split(f, backend, x, extras)
+    return y, pullbackfunc!!(dx, dy)
 end
 
 """
@@ -75,7 +102,8 @@ function pullback(
     dy,
     extras::PullbackExtras=prepare_pullback(f, backend, x),
 )
-    return value_and_pullback(f, backend, x, dy, extras)[2]
+    _, pullbackfunc = value_and_pullback_split(f, backend, x, extras)
+    return pullbackfunc(dy)
 end
 
 """
@@ -89,7 +117,8 @@ function pullback!!(
     dy,
     extras::PullbackExtras=prepare_pullback(f, backend, x),
 )
-    return value_and_pullback!!(f, dx, backend, x, dy, extras)[2]
+    _, pullbackfunc!! = value_and_pullback!!_split(f, backend, x, extras)
+    return pullbackfunc!!(dx, dy)
 end
 
 ## Mutating
@@ -123,38 +152,4 @@ function value_and_pullback!!(
         end
     end
     return y, dx
-end
-
-## Closure
-
-"""
-    value_and_pullback_split(f, backend, x, [extras])
-
-Apply split reverse mode autodiff.
-
-Returns a tuple `(y, pullbackfunc)` where the second element is a function (closure) with the following signature:
-
-    pullbackfunc(dy) -> dx
-"""
-function value_and_pullback_split(
-    f, backend::AbstractADType, x, extras::PullbackExtras=prepare_pullback(f, backend, x)
-)
-    pullbackfunc(dy) = pullback(f, backend, x, dy, extras)
-    return f(x), pullbackfunc
-end
-
-"""
-    value_and_pullback!!_split(f, backend, x, [extras])
-
-Apply split reverse mode autodiff.
-
-Returns a tuple `(y, pullbackfunc!!)` where the second element is a function (closure) with the following signature:
-
-    pullbackfunc!!(dx, dy) -> dx
-"""
-function value_and_pullback!!_split(
-    f, backend::AbstractADType, x, extras::PullbackExtras=prepare_pullback(f, backend, x)
-)
-    pullbackfunc!!(dx, dy) = pullback!!(f, dx, backend, x, dy, extras)
-    return f(x), pullbackfunc!!
 end
