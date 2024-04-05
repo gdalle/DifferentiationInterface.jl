@@ -10,7 +10,8 @@ using DifferentiationInterface:
     HVPExtras,
     JacobianExtras,
     PullbackExtras,
-    PushforwardExtras
+    PushforwardExtras,
+    SecondDerivativeExtras
 using FastDifferentiation:
     derivative,
     hessian,
@@ -30,7 +31,6 @@ const AnyAutoFastDifferentiation = Union{
 }
 
 DI.mode(::AnyAutoFastDifferentiation) = ADTypes.AbstractSymbolicDifferentiationMode
-DI.supports_mutation(::AnyAutoFastDifferentiation) = DI.MutationNotSupported()
 
 myvec(x::Number) = [x]
 myvec(x::AbstractArray) = vec(x)
@@ -39,5 +39,6 @@ issparse(::AutoFastDifferentiation) = false
 issparse(::AutoSparseFastDifferentiation) = true
 
 include("allocating.jl")
+include("mutating.jl")
 
 end

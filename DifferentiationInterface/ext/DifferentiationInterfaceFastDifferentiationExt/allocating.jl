@@ -1,10 +1,12 @@
 ## Pushforward
 
-struct FastDifferentiationAllocatingPushforwardExtras{E} <: PushforwardExtras
+struct FastDifferentiationAllocatingPushforwardExtras{Y,E} <: PushforwardExtras
+    y_prototype::Y
     jvp_exe::E
 end
 
 function DI.prepare_pushforward(f, ::AnyAutoFastDifferentiation, x)
+    y_prototype = f(x)
     x_var = if x isa Number
         only(make_variables(:x))
     else
@@ -16,7 +18,7 @@ function DI.prepare_pushforward(f, ::AnyAutoFastDifferentiation, x)
     y_vec_var = y_var isa Number ? [y_var] : vec(y_var)
     jv_vec_var, v_vec_var = jacobian_times_v(y_vec_var, x_vec_var)
     jvp_exe = make_function(jv_vec_var, [x_vec_var; v_vec_var]; in_place=false)
-    return FastDifferentiationAllocatingPushforwardExtras(jvp_exe)
+    return FastDifferentiationAllocatingPushforwardExtras(y_prototype, jvp_exe)
 end
 
 function DI.value_and_pushforward(
@@ -33,6 +35,22 @@ function DI.value_and_pushforward(
         return y, only(jv_vec)
     else
         return y, reshape(jv_vec, size(y))
+    end
+end
+
+function DI.pushforward(
+    f,
+    ::AnyAutoFastDifferentiation,
+    x,
+    dx,
+    extras::FastDifferentiationAllocatingPushforwardExtras,
+)
+    v_vec = vcat(myvec(x), myvec(dx))
+    jv_vec = extras.jvp_exe(v_vec)
+    if extras.y_prototype isa Number
+        return only(jv_vec)
+    else
+        return reshape(jv_vec, size(extras.y_prototype))
     end
 end
 
@@ -82,11 +100,13 @@ end
 
 ## Derivative
 
-struct FastDifferentiationAllocatingDerivativeExtras{E} <: DerivativeExtras
+struct FastDifferentiationAllocatingDerivativeExtras{Y,E} <: DerivativeExtras
+    y_prototype::Y
     der_exe::E
 end
 
 function DI.prepare_derivative(f, ::AnyAutoFastDifferentiation, x)
+    y_prototype = f(x)
     x_var = only(make_variables(:x))
     y_var = f(x_var)
 
@@ -94,7 +114,7 @@ function DI.prepare_derivative(f, ::AnyAutoFastDifferentiation, x)
     y_vec_var = y_var isa Number ? [y_var] : vec(y_var)
     der_vec_var = derivative(y_vec_var, x_var)
     der_exe = make_function(der_vec_var, x_vec_var; in_place=false)
-    return FastDifferentiationAllocatingDerivativeExtras(der_exe)
+    return FastDifferentiationAllocatingDerivativeExtras(y_prototype, der_exe)
 end
 
 function DI.value_and_derivative(
@@ -128,7 +148,12 @@ function DI.derivative(
     x,
     extras::FastDifferentiationAllocatingDerivativeExtras,
 )
-    return DI.value_and_derivative(f, backend, x, extras)[2]
+    der_vec = extras.der_exe([x])
+    if extras.y_prototype isa Number
+        return only(der_vec)
+    else
+        return reshape(der_vec, size(extras.y_prototype))
+    end
 end
 
 function DI.derivative!!(
@@ -143,20 +168,25 @@ end
 
 ## Jacobian
 
-struct FastDifferentiationAllocatingJacobianExtras{E} <: JacobianExtras
+struct FastDifferentiationAllocatingJacobianExtras{Y,E} <: JacobianExtras
+    y_prototype::Y
     jac_exe::E
 end
 
 function DI.prepare_jacobian(f, backend::AnyAutoFastDifferentiation, x)
-    x_vec_var = make_variables(:x, size(x)...)
-    y_vec_var = f(x_vec_var)
+    y_prototype = f(x)
+    x_var = make_variables(:x, size(x)...)
+    y_var = f(x_var)
+
+    x_vec_var = vec(x_var)
+    y_vec_var = vec(y_var)
     if issparse(backend)
-        jac_var = sparse_jacobian(vec(y_vec_var), vec(x_vec_var))
+        jac_var = sparse_jacobian(y_vec_var, x_vec_var)
     else
-        jac_var = jacobian(vec(y_vec_var), vec(x_vec_var))
+        jac_var = jacobian(y_vec_var, x_vec_var)
     end
-    jac_exe = make_function(jac_var, vec(x_vec_var); in_place=false)
-    return FastDifferentiationAllocatingJacobianExtras(jac_exe)
+    jac_exe = make_function(jac_var, x_vec_var; in_place=false)
+    return FastDifferentiationAllocatingJacobianExtras(y_prototype, jac_exe)
 end
 
 function DI.jacobian(
@@ -199,11 +229,13 @@ end
 
 ## Second derivative
 
-struct FastDifferentiationAllocatingSecondDerivativeExtras{E} <: DerivativeExtras
+struct FastDifferentiationAllocatingSecondDerivativeExtras{Y,E} <: SecondDerivativeExtras
+    y_prototype::Y
     der2_exe::E
 end
 
 function DI.prepare_second_derivative(f, ::AnyAutoFastDifferentiation, x)
+    y_prototype = f(x)
     x_var = only(make_variables(:x))
     y_var = f(x_var)
 
@@ -211,7 +243,7 @@ function DI.prepare_second_derivative(f, ::AnyAutoFastDifferentiation, x)
     y_vec_var = y_var isa Number ? [y_var] : vec(y_var)
     der2_vec_var = derivative(y_vec_var, x_var, x_var)
     der2_exe = make_function(der2_vec_var, x_vec_var; in_place=false)
-    return FastDifferentiationAllocatingSecondDerivativeExtras(der2_exe)
+    return FastDifferentiationAllocatingSecondDerivativeExtras(y_prototype, der2_exe)
 end
 
 function DI.second_derivative(
@@ -220,12 +252,11 @@ function DI.second_derivative(
     x,
     extras::FastDifferentiationAllocatingSecondDerivativeExtras,
 )
-    y = f(x)
     der2_vec = extras.der2_exe([x])
-    if y isa Number
+    if extras.y_prototype isa Number
         return only(der2_vec)
     else
-        return reshape(der2_vec, size(y))
+        return reshape(der2_vec, size(extras.y_prototype))
     end
 end
 
@@ -253,7 +284,7 @@ function DI.prepare_hvp(f, ::AnyAutoFastDifferentiation, x, v)
     end
     y_var = f(x_var)
 
-    x_vec_var = x_var isa Number ? [x_var] : vec(x_var)
+    x_vec_var = vec(x_var)
     hv_vec_var, v_vec_var = hessian_times_v(y_var, x_vec_var)
     hvp_exe = make_function(hv_vec_var, [x_vec_var; v_vec_var]; in_place=false)
     return FastDifferentiationHVPExtras(hvp_exe)
@@ -262,11 +293,7 @@ end
 function DI.hvp(f, ::AnyAutoFastDifferentiation, x, v, extras::FastDifferentiationHVPExtras)
     v_vec = vcat(myvec(x), myvec(v))
     hv_vec = extras.hvp_exe(v_vec)
-    if x isa Number
-        return only(hv_vec)
-    else
-        return reshape(hv_vec, size(x))
-    end
+    return reshape(hv_vec, size(x))
 end
 
 function DI.hvp!!(
