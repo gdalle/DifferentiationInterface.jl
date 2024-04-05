@@ -13,7 +13,8 @@ using Tapir:
     tangent,
     tangent_type,
     value_and_pullback!!,
-    zero_codual
+    zero_codual,
+    zero_tangent
 
 include("allocating.jl")
 include("mutating.jl")
