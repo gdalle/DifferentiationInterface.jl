@@ -26,9 +26,12 @@ function DI.value_and_pullback!!(
     # Mutate a copy of `y`, so that we can run the reverse-pass later on.
     y_copy = copy(y)
 
+    # In case `f!` is a closure
+    df! = zero_tangent(f!)
+
     # Run the forwards-pass.
     out, pb!! = extras.rrule(
-        zero_codual(f!), CoDual(y_copy, dy_righttype), CoDual(x, dx_righttype)
+        CoDual(f!, df!), CoDual(y_copy, dy_righttype), CoDual(x, dx_righttype)
     )
 
     # Verify that the output is non-differentiable.
@@ -41,7 +44,7 @@ function DI.value_and_pullback!!(
     y = copy!(y, y_copy)
 
     # Run the reverse-pass.
-    _, _, new_dx = pb!!(NoTangent(), NoTangent(), dy_righttype, dx_righttype)
+    _, _, new_dx = pb!!(NoTangent(), df!, dy_righttype, dx_righttype)
 
     return y, new_dx
 end
