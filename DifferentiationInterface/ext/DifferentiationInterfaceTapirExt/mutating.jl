@@ -11,7 +11,7 @@ end
 function DI.value_and_pullback!!(
     f!, y, dx, ::AutoTapir, x, dy, extras::TapirMutatingPullbackExtras
 )
-    dy_righttype = convert(tangent_type(typeof(y)), dy)
+    dy_righttype = convert(tangent_type(typeof(y)), copy(dy))
     dx_righttype = convert(tangent_type(typeof(x)), dx)
 
     # We want the VJP, not VJP + dx, so I'm going to zero-out `dx`. `set_to_zero!!` has the advantage
