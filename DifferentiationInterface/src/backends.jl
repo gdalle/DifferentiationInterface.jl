@@ -20,7 +20,10 @@ function check_available(backend::AbstractADType)
     end
 end
 
-square!(y, x) = y .= x .^ 2
+function square!(y, x)
+    y .= x .^ 2
+    return nothing
+end
 
 """
     check_mutation(backend)

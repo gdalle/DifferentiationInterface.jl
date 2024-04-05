@@ -7,7 +7,7 @@ CollapsedDocStrings = true
 using DifferentiationInterface
 using DifferentiationInterface: backend_string
 import Markdown
-import Enzyme, FastDifferentiation, FiniteDiff, FiniteDifferences, ForwardDiff, PolyesterForwardDiff, ReverseDiff, Tracker, Zygote
+import Diffractor, Enzyme, FastDifferentiation, FiniteDiff, FiniteDifferences, ForwardDiff, PolyesterForwardDiff, ReverseDiff, Tapir, Tracker, Zygote
 
 function all_backends()
     return [
