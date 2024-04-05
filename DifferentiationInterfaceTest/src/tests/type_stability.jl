@@ -51,11 +51,8 @@ function test_jet(ba::AbstractADType, scen::PullbackScenario{true};)
     y_in = mysimilar(y)
     dx_in = mysimilar(x)
 
-    _, pullbackfunc!! = value_and_pullback!!_split(f!, y, ba, x, extras)
-
     if Bool(pullback_performance(ba))
         @test_opt value_and_pullback!!(f!, y_in, dx_in, ba, x, dy, extras)
-        @test_opt pullbackfunc!!(y_in, dx_in, dy)
     end
     return nothing
 end

@@ -124,7 +124,7 @@ This means the Hessian is obtained as the sparse Jacobian of the gradient.
 ### Split reverse mode
 
 Many reverse mode AD backends expose a "split" option, which runs only the forward sweep, and encapsulates the reverse sweep in a closure.
-We make this available for everyone with the following operators:
+We make this available for allocating functions only, with the following operators:
 
 | out-of-place                       | in-place (or not)                    |
 | ---------------------------------- | ------------------------------------ |
