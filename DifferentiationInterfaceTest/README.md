@@ -21,3 +21,13 @@ Make it easy to know, for a given function:
 - Count calls to the function
 - Benchmark runtime and allocations
 - Weird array types (GPU, static, components)
+
+## Installation
+
+In a Julia REPL, run
+
+```julia
+julia> using Pkg
+
+julia> Pkg.add(url="https://github.com/gdalle/DifferentiationInterface.jl", subdir="DifferentiationInterfaceTest")
+```

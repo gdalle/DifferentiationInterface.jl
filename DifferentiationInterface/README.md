@@ -46,6 +46,16 @@ We also provide some experimental backends ourselves:
 | [FastDifferentiation.jl](https://github.com/brianguenter/FastDifferentiation.jl) | `AutoFastDifferentiation()`, `AutoSparseFastDifferentiation()` |
 | [Tapir.jl](https://github.com/withbayes/Tapir.jl)                                | `AutoTapir()`                                                  |
 
+## Installation
+
+In a Julia REPL, run
+
+```julia
+julia> using Pkg
+
+julia> Pkg.add(url="https://github.com/gdalle/DifferentiationInterface.jl", subdir="DifferentiationInterface")
+```
+
 ## Example
 
 ```jldoctest readme
