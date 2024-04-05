@@ -6,7 +6,7 @@ using DifferentiationInterface:
     DerivativeExtras, GradientExtras, HessianExtras, JacobianExtras, NoPullbackExtras
 using ReverseDiff.DiffResults: DiffResults, DiffResult, GradientResult
 using DocStringExtensions
-using LinearAlgebra: mul!
+using LinearAlgebra: dot, mul!
 using ReverseDiff:
     CompiledGradient,
     CompiledHessian,

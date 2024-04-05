@@ -5,27 +5,46 @@ DI.prepare_pullback(f, ::AnyAutoReverseDiff, x) = NoPullbackExtras()
 function DI.value_and_pullback!!(
     f,
     dx::AbstractArray,
+    backend::AnyAutoReverseDiff,
+    x::AbstractArray,
+    dy,
+    extras::NoPullbackExtras,
+)
+    return f(x), DI.pullback!!(f, dx, backend, x, dy, extras)
+end
+
+function DI.value_and_pullback(
+    f, backend::AnyAutoReverseDiff, x::AbstractArray, dy, extras::NoPullbackExtras
+)
+    return f(x), DI.pullback(f, backend, x, dy, extras)
+end
+
+### Number out
+
+function DI.pullback!!(
+    f,
+    dx::AbstractArray,
     ::AnyAutoReverseDiff,
     x::AbstractArray,
     dy::Number,
     ::NoPullbackExtras,
 )
-    y = f(x)
-    gradient!(dx, f, x)
+    dx = gradient!(dx, f, x)
     dx .*= dy
-    return y, dx
+    return dx
 end
 
-function DI.value_and_pullback(
+function DI.pullback(
     f, ::AnyAutoReverseDiff, x::AbstractArray, dy::Number, ::NoPullbackExtras
 )
-    y = f(x)
     dx = gradient(f, x)
     dx .*= dy
-    return y, dx
+    return dx
 end
 
-function DI.value_and_pullback!!(
+### Array out
+
+function DI.pullback!!(
     f,
     dx::AbstractArray,
     ::AnyAutoReverseDiff,
@@ -33,22 +52,20 @@ function DI.value_and_pullback!!(
     dy::AbstractArray,
     ::NoPullbackExtras,
 )
-    y = f(x)
-    jac = jacobian(f, x)  # allocates
-    mul!(vec(dx), transpose(jac), vec(dy))
-    return y, dx
+    dotproduct_closure(x) = dot(f(x), dy)
+    dx = gradient!(dx, dotproduct_closure, x)
+    return dx
 end
 
-function DI.value_and_pullback(
-    f, ::AnyAutoReverseDiff, x::AbstractArray, dy::AbstractArray, ::NoPullbackExtras
+function DI.pullback(
+    f, ::AnyAutoReverseDiff, x::AbstractArray, dy::AbstractArray, extras::NoPullbackExtras
 )
-    y = f(x)
-    jac = jacobian(f, x)  # allocates
-    dx = reshape(transpose(jac) * vec(dy), size(x))
-    return y, dx
+    dotproduct_closure(x) = dot(f(x), dy)
+    dx = gradient(dotproduct_closure, x)
+    return dx
 end
 
-### Trick for unsupported scalar input
+### Number in, not supported
 
 function DI.value_and_pullback(
     f, backend::AnyAutoReverseDiff, x::Number, dy, ::NoPullbackExtras
