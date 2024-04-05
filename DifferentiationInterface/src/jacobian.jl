@@ -193,13 +193,14 @@ function value_and_jacobian_aux!!(
     x::AbstractArray,
     extras::PullbackJacobianExtras,
 )
-    y, pullbackfunc!! = value_and_pullback!!_split(
-        f!, y, backend, x, extras.pullback_extras
-    )
     for (k, i) in enumerate(CartesianIndices(y))
         dy_i = basis(backend, y, i)
         jac_row_i_old = reshape(view(jac, k, :), size(x))
-        jac_row_i_new = pullbackfunc!!(y, jac_row_i_old, dy_i)
+        jac_row_i_new = last(
+            value_and_pullback!!(
+                f!, y, jac_row_i_old, backend, x, dy_i, extras.pullback_extras
+            ),
+        )
         # this allocates
         copyto!(jac_row_i_old, jac_row_i_new)
     end
