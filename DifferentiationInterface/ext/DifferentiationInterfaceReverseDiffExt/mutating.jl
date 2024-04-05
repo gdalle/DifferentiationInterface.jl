@@ -2,6 +2,8 @@
 
 DI.prepare_pullback(f!, ::AnyAutoReverseDiff, y, x) = NoPullbackExtras()
 
+### Array in
+
 function DI.value_and_pullback!!(
     f!,
     y::AbstractArray,
@@ -11,12 +13,17 @@ function DI.value_and_pullback!!(
     dy::AbstractArray,
     ::NoPullbackExtras,
 )
-    jac = jacobian(f!, y, x)
-    mul!(vec(dx), transpose(jac), vec(dy))
+    function dotproduct_closure(x)
+        y_copy = similar(y, eltype(x))
+        f!(y_copy, x)
+        return dot(y_copy, dy)
+    end
+    dx = gradient!(dx, dotproduct_closure, x)
+    f!(y, x)
     return y, dx
 end
 
-### Trick for unsupported scalar input
+### Number in, not supported
 
 function DI.value_and_pullback!!(
     f!,
