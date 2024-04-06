@@ -106,9 +106,6 @@ function test_differentiation(
                         )
                     end
                 end
-                call_count && @testset "Call count" begin
-                    test_call_count(backend, scen)
-                end
                 type_stability && @testset "Type stability" begin
                     test_jet(backend, scen)
                 end

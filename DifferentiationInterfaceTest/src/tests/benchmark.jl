@@ -262,9 +262,9 @@ function run_benchmark!(
     cc = CallCounter(f)
     extras = prepare_gradient(cc, ba, x)
     calls0 = reset_count!(cc)
-    value_and_gradient!!(f, mysimilar(x), ba, x, extras)
+    value_and_gradient!!(cc, mysimilar(x), ba, x, extras)
     calls1 = reset_count!(cc)
-    gradient!!(f, mysimilar(x), ba, x, extras)
+    gradient!!(cc, mysimilar(x), ba, x, extras)
     calls2 = reset_count!(cc)
     # record
     record!(data, ba, scen, prepare_gradient, bench0, calls0)
