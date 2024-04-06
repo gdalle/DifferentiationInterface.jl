@@ -25,34 +25,85 @@ struct FiniteDiffAllocatingDerivativeExtras{C}
     cache::C
 end
 
-function DI.prepare_derivative(f, ::AnyAutoFiniteDiff, x)
-    cache = nothing
+function DI.prepare_derivative(f, backend::AnyAutoFiniteDiff, x)
+    y = f(x)
+    cache = if y isa Number
+        nothing
+    elseif y isa AbstractArray
+        df = similar(y)
+        cache = GradientCache(df, x, fdtype(backend), eltype(y), FUNCTION_NOT_INPLACE)
+    end
     return FiniteDiffAllocatingDerivativeExtras(cache)
 end
 
+### Scalar to scalar
+
 function DI.derivative(
-    f, backend::AnyAutoFiniteDiff, x, ::FiniteDiffAllocatingDerivativeExtras
+    f, backend::AnyAutoFiniteDiff, x, ::FiniteDiffAllocatingDerivativeExtras{Nothing}
 )
     return finite_difference_derivative(f, x, fdtype(backend))
 end
 
+function DI.derivative!!(
+    f,
+    _der,
+    backend::AnyAutoFiniteDiff,
+    x,
+    extras::FiniteDiffAllocatingDerivativeExtras{Nothing},
+)
+    return DI.derivative(f, backend, x, extras)
+end
+
 function DI.value_and_derivative(
-    f, backend::AnyAutoFiniteDiff, x, ::FiniteDiffAllocatingDerivativeExtras
+    f, backend::AnyAutoFiniteDiff, x, ::FiniteDiffAllocatingDerivativeExtras{Nothing}
 )
     y = f(x)
     return y, finite_difference_derivative(f, x, fdtype(backend), eltype(y), y)
 end
 
-function DI.derivative!!(
-    f, der, backend::AnyAutoFiniteDiff, x, extras::FiniteDiffAllocatingDerivativeExtras
+function DI.value_and_derivative!!(
+    f,
+    _der,
+    backend::AnyAutoFiniteDiff,
+    x,
+    extras::FiniteDiffAllocatingDerivativeExtras{Nothing},
 )
-    return DI.derivative(f, backend, x, extras)
+    return DI.value_and_derivative(f, backend, x, extras)
+end
+
+### Scalar to array
+
+function DI.derivative(
+    f, ::AnyAutoFiniteDiff, x, extras::FiniteDiffAllocatingDerivativeExtras{<:GradientCache}
+)
+    return finite_difference_gradient(f, x, extras.cache)
+end
+
+function DI.derivative!!(
+    f,
+    der,
+    ::AnyAutoFiniteDiff,
+    x,
+    extras::FiniteDiffAllocatingDerivativeExtras{<:GradientCache},
+)
+    return finite_difference_gradient!(der, f, x, extras.cache)
+end
+
+function DI.value_and_derivative(
+    f, ::AnyAutoFiniteDiff, x, extras::FiniteDiffAllocatingDerivativeExtras{<:GradientCache}
+)
+    y = f(x)
+    return y, finite_difference_gradient(f, x, extras.cache)
 end
 
 function DI.value_and_derivative!!(
-    f, der, backend::AnyAutoFiniteDiff, x, extras::FiniteDiffAllocatingDerivativeExtras
+    f,
+    der,
+    ::AnyAutoFiniteDiff,
+    x,
+    extras::FiniteDiffAllocatingDerivativeExtras{<:GradientCache},
 )
-    return DI.value_and_derivative(f, backend, x, extras)
+    return f(x), finite_difference_gradient!(der, f, x, extras.cache)
 end
 
 ## Gradient
@@ -138,7 +189,7 @@ struct FiniteDiffHessianExtras{C}
 end
 
 function DI.prepare_hessian(f, backend::AnyAutoFiniteDiff, x)
-    cache = HessianCache(x, fdtype(backend))
+    cache = HessianCache(x, fdhtype(backend))
     return FiniteDiffHessianExtras(cache)
 end
 
