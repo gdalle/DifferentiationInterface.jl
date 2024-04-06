@@ -10,7 +10,6 @@ FillArrays = "1a297f60-69ca-5386-bcde-b61e274b549b"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 
 [weakdeps]
-AbstractDifferentiation = "c29ec348-61ec-40c8-8164-b8c60e9d9f3d"
 ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
 Diffractor = "9f5e2b26-1114-432f-b630-d3fe2085c51c"
 Enzyme = "7da242da-08ed-463a-9acd-ee780be4f1d9"
@@ -28,10 +27,7 @@ Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [extensions]
 DifferentiationInterfaceChainRulesCoreExt = "ChainRulesCore"
-DifferentiationInterfaceDiffractorExt = [
-    "AbstractDifferentiation",
-    "Diffractor",
-]
+DifferentiationInterfaceDiffractorExt = "Diffractor"
 DifferentiationInterfaceEnzymeExt = "Enzyme"
 DifferentiationInterfaceFastDifferentiationExt = "FastDifferentiation"
 DifferentiationInterfaceFiniteDiffExt = "FiniteDiff"
@@ -46,7 +42,6 @@ DifferentiationInterfaceZygoteExt = "Zygote"
 
 [compat]
 ADTypes = "0.2.7"
-AbstractDifferentiation = "0.6.2"
 ChainRulesCore = "1.23.0"
 Diffractor = "0.2.6"
 DocStringExtensions = "0.9.3"
