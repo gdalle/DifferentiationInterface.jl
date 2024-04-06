@@ -8,7 +8,6 @@ Pkg.develop(
 
 using DifferentiationInterface
 using DifferentiationInterfaceTest
-using DifferentiationInterfaceTest: AutoZeroForward, AutoZeroReverse
 
 using Aqua: Aqua
 using Documenter: Documenter
