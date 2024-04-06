@@ -25,7 +25,14 @@ end
 
 ## Derivative
 
-DI.prepare_derivative(f!, ::AnyAutoFiniteDiff, y, x) = NoDerivativeExtras()
+struct FiniteDiffMutatingDerivativeExtras{C}
+    cache::C
+end
+
+function DI.prepare_derivative(f!, ::AnyAutoFiniteDiff, y, x)
+    cache = nothing
+    return FiniteDiffMutatingDerivativeExtras(cache)
+end
 
 function DI.value_and_derivative!!(
     f!,
@@ -33,7 +40,7 @@ function DI.value_and_derivative!!(
     der::AbstractArray,
     backend::AnyAutoFiniteDiff,
     x,
-    ::NoDerivativeExtras,
+    ::FiniteDiffMutatingDerivativeExtras,
 )
     f!(y, x)
     finite_difference_gradient!(der, f!, x, fdtype(backend), eltype(y), FUNCTION_INPLACE, y)
@@ -42,17 +49,27 @@ end
 
 ## Jacobian
 
-DI.prepare_jacobian(f!, ::AnyAutoFiniteDiff, y, x) = NoJacobianExtras()
+struct FiniteDiffMutatingJacobianExtras{C}
+    cache::C
+end
+
+function DI.prepare_jacobian(f!, backend::AnyAutoFiniteDiff, y, x)
+    x1 = similar(x)
+    fx = similar(y)
+    fx1 = similar(y)
+    cache = JacobianCache(x1, fx, fx1, fdjtype(backend))
+    return FiniteDiffMutatingJacobianExtras(cache)
+end
 
 function DI.value_and_jacobian!!(
     f!,
     y::AbstractArray,
     jac::AbstractMatrix,
-    backend::AnyAutoFiniteDiff,
+    ::AnyAutoFiniteDiff,
     x,
-    ::NoJacobianExtras,
+    extras::FiniteDiffMutatingJacobianExtras,
 )
+    finite_difference_jacobian!(jac, f!, x, extras.cache)
     f!(y, x)
-    finite_difference_jacobian!(jac, f!, x, fdjtype(backend), eltype(y), y)
     return y, jac
 end
