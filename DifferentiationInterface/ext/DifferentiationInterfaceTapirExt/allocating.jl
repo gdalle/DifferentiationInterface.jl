@@ -1,21 +1,26 @@
-struct TapirAllocatingPullbackExtras{R} <: PullbackExtras
+struct TapirAllocatingPullbackExtras{Y,R} <: PullbackExtras
+    y_prototype::Y
     rrule::R
 end
 
-DI.prepare_pullback(f, ::AutoTapir, x) = TapirAllocatingPullbackExtras(build_rrule(f, x))
+function DI.prepare_pullback(f, ::AutoTapir, x)
+    y = f(x)
+    rrule = build_rrule(f, x)
+    return TapirAllocatingPullbackExtras(y, rrule)
+end
 
-function DI.value_and_pullback(f, ::AutoTapir, x, dy, extras::TapirAllocatingPullbackExtras)
-    y = f(x)  # TODO: one call too many, just for the conversion
-    dy_righttype = convert(tangent_type(typeof(y)), dy)
+function DI.value_and_pullback(
+    f, ::AutoTapir, x, dy, extras::TapirAllocatingPullbackExtras{Y}
+) where {Y}
+    dy_righttype = convert(tangent_type(Y), dy)
     new_y, (new_df, new_dx) = value_and_pullback!!(extras.rrule, dy_righttype, f, x)
     return new_y, new_dx
 end
 
 function DI.value_and_pullback!!(
-    f, dx, ::AutoTapir, x, dy, extras::TapirAllocatingPullbackExtras
-)
-    y = f(x)  # TODO: one call too many, just for the conversion
-    dy_righttype = convert(tangent_type(typeof(y)), dy)
+    f, dx, ::AutoTapir, x, dy, extras::TapirAllocatingPullbackExtras{Y}
+) where {Y}
+    dy_righttype = convert(tangent_type(Y), dy)
     dx_righttype = convert(tangent_type(typeof(x)), dx)
     dx_righttype = set_to_zero!!(dx_righttype)
     new_y, (new_df, new_dx) = value_and_pullback!!(
