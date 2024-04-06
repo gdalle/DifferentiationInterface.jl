@@ -23,6 +23,7 @@ using FastDifferentiation:
     make_variables,
     sparse_hessian,
     sparse_jacobian
+using FillArrays: Fill
 using LinearAlgebra: dot
 using FastDifferentiation.RuntimeGeneratedFunctions: RuntimeGeneratedFunction
 
@@ -34,7 +35,9 @@ DI.mode(::AnyAutoFastDifferentiation) = ADTypes.AbstractSymbolicDifferentiationM
 DI.pushforward_performance(::AnyAutoFastDifferentiation) = DI.PushforwardFast()
 DI.pullback_performance(::AnyAutoFastDifferentiation) = DI.PullbackSlow()
 
-myvec(x::Number) = [x]
+monovec(x::Number) = Fill(x, 1)
+
+myvec(x::Number) = monovec(x)
 myvec(x::AbstractArray) = vec(x)
 
 issparse(::AutoFastDifferentiation) = false

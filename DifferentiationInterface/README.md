@@ -1,12 +1,13 @@
 # DifferentiationInterface
 
 [![Build Status](https://github.com/gdalle/DifferentiationInterface.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/gdalle/DifferentiationInterface.jl/actions/workflows/CI.yml?query=branch%3Amain)
+[![Coverage](https://codecov.io/gh/gdalle/DifferentiationInterface.jl/branch/main/graph/badge.svg)](https://app.codecov.io/gh/gdalle/DifferentiationInterface.jl)
 [![Code Style: Blue](https://img.shields.io/badge/code%20style-blue-4495d1.svg)](https://github.com/invenia/BlueStyle)
 
-| Package                      | Documentation                              |
-|:-----------------------------|:------------------------------------------:|
-| DifferentiationInterface     | [![Dev][docs-dev-badge]][docs-dev-url-DI]  |
-| DifferentiationInterfaceTest | [![Dev][docs-dev-badge]][docs-dev-url-DIT] |
+| package                      | docs                                                                                                                                             |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| DifferentiationInterface     | [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterface/dev/)     |
+| DifferentiationInterfaceTest | [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterfaceTest/dev/) |
 
 An interface to various automatic differentiation (AD) backends in Julia.
 
@@ -23,7 +24,7 @@ This package provides a backend-agnostic syntax to differentiate functions of th
 - In-place and out-of-place differentiation
 - Preparation mechanism (e.g. to create a config or tape)
 - Thorough validation on standard inputs and outputs (scalars, vectors, matrices)
-- Testing and benchmarking utilities accessible to users with [DifferentiationInterfaceTest](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterfaceTest/)
+- Testing and benchmarking utilities accessible to users with [DifferentiationInterfaceTest](https://github.com/gdalle/DifferentiationInterface.jl/tree/main/DifferentiationInterfaceTest)
 
 ## Compatibility
 
@@ -82,8 +83,3 @@ julia> value_and_gradient(f, backend, [1., 2., 3.])
 
 - [AbstractDifferentiation.jl](https://github.com/JuliaDiff/AbstractDifferentiation.jl) is the original inspiration for DifferentiationInterface.jl.
 - [AutoDiffOperators.jl](https://github.com/oschulz/AutoDiffOperators.jl) is an attempt to bridge ADTypes.jl with AbstractDifferentiation.jl.
-
-[docs-dev-badge]: https://img.shields.io/badge/docs-dev-blue.svg
-[docs-dev-url-DI]:  https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterface/dev/
-[docs-dev-url-DIT]: https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterfaceTest/dev/
-
