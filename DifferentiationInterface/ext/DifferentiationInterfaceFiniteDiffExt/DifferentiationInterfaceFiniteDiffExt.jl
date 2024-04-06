@@ -10,6 +10,10 @@ using DifferentiationInterface:
     NoPullbackExtras,
     NoPushforwardExtras
 using FiniteDiff:
+    DerivativeCache,
+    GradientCache,
+    HessianCache,
+    JacobianCache,
     finite_difference_derivative,
     finite_difference_gradient,
     finite_difference_gradient!,
