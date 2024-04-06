@@ -11,7 +11,7 @@ second_order_mixed_backends = [
     # forward over reverse
     SecondOrder(AutoForwardDiff(), AutoZygote()),
     # reverse over forward
-    SecondOrder(AutoZygote(), AutoFiniteDiff()),
+    SecondOrder(AutoEnzyme(Enzyme.Reverse), AutoForwardDiff()),
     # reverse over reverse
     SecondOrder(AutoReverseDiff(), AutoZygote()),
 ]

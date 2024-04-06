@@ -34,25 +34,6 @@ function DI.pullback!!(
     return DI.value_and_pullback!!(f, dx, backend, x, dy, extras)[2]
 end
 
-#=
-# First try
-
-function DI.value_and_pullback_split(f, ::AutoTapir, x, extras::TapirAllocatingPullbackExtras)
-    tf = zero_tangent(f)
-    tx = zero_tangent(x)
-    out, pb!! = extras.rrule(CoDual(f, tf), CoDual(x, tx))
-    y = copy(primal(out))
-    function pullbackfunc(dy)
-        dy_righttype = convert(tangent_type(typeof(y)), copy(dy))
-        ty = increment!!(tangent(out), dy_righttype)
-        res = pb!!(ty, tf, tx)
-        extras.rrule(CoDual(f, tf), CoDual(x, tx))
-        return last(res)
-    end
-    return y, pullbackfunc
-end
-=#
-
 function DI.value_and_pullback_split(
     f, backend::AutoTapir, x, extras::TapirAllocatingPullbackExtras
 )
