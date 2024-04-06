@@ -52,7 +52,6 @@ include("utils/filter.jl")
 
 include("tests/correctness.jl")
 include("tests/type_stability.jl")
-include("tests/call_count.jl")
 include("tests/sparsity.jl")
 include("tests/benchmark.jl")
 include("test_differentiation.jl")

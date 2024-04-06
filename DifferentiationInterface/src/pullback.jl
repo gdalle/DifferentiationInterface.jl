@@ -29,9 +29,12 @@ prepare_pullback(f!, ::AbstractADType, y, x) = NoPullbackExtras()
 function value_and_pullback_split(
     f, backend::AbstractADType, x, extras::PullbackExtras=prepare_pullback(f, backend, x)
 )
-    if !Bool(pushforward_performance(backend))
-        error("Pushforward not available for backend $backend")
-    end
+    return value_and_pullback_split_aux(
+        f, backend, x, extras, pullback_performance(backend)
+    )
+end
+
+function value_and_pullback_split_aux(f, backend, x, extras, ::PullbackSlow)
     pushforward_extras = prepare_pushforward(f, backend, x)
     y = f(x)
     pullbackfunc = if x isa Number && y isa Number

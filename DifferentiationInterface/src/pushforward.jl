@@ -33,9 +33,12 @@ function value_and_pushforward(
     dx,
     extras::PushforwardExtras=prepare_pushforward(f, backend, x),
 )
-    if !Bool(pullback_performance(backend))
-        error("Pullback not available for backend $backend")
-    end
+    return value_and_pushforward_aux(
+        f, backend, x, dx, extras, pushforward_performance(backend)
+    )
+end
+
+function value_and_pushforward_aux(f, backend, x, dx, extras, ::PushforwardSlow)
     pullback_extras = prepare_pullback(f, backend, x)
     y, pullbackfunc = value_and_pullback_split(f, backend, x, pullback_extras)
     dy = if x isa Number && y isa Number

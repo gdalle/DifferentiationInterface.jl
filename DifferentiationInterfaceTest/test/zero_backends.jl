@@ -45,24 +45,6 @@ test_differentiation(
     logging=get(ENV, "CI", "false") == "false",
 )
 
-## Call count
-
-test_differentiation(
-    AutoZeroForward();
-    correctness=false,
-    call_count=true,
-    logging=get(ENV, "CI", "false") == "false",
-    excluded=[GradientScenario],
-);
-
-test_differentiation(
-    AutoZeroReverse();
-    correctness=false,
-    call_count=true,
-    logging=get(ENV, "CI", "false") == "false",
-    excluded=[DerivativeScenario],
-);
-
 ## Benchmark
 
 data = benchmark_differentiation(
