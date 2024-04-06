@@ -110,8 +110,10 @@ function test_correctness(
     dx4 = pullback!!(f, mysimilar(x), ba, x, dy, extras)
 
     y5, pullbackfunc = value_and_pullback_split(f, ba, x, extras)
+    pullbackfunc(dy)  # call once in case the second errors
     dx5 = pullbackfunc(dy)
     y6, pullbackfunc!! = value_and_pullback!!_split(f, ba, x, extras)
+    pullbackfunc!!(mysimilar(x), dy)  # call once in case the second errors
     dx6 = pullbackfunc!!(mysimilar(x), dy)
 
     let (≈)(x, y) = isapprox(x, y; atol, rtol)

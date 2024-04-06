@@ -14,7 +14,6 @@ Testing:
 - `correctness=true`: whether to compare the differentiation results with the theoretical values specified in each scenario
     - If a backend object like `correctness=AutoForwardDiff()` is passed instead of a boolean, the results will be compared using that reference backend as the ground truth.
     - Otherwise, the scenario-specific reference operator will be used as the ground truth instead, see [`AbstractScenario`](@ref) for details.
-- `call_count=false`: whether to check that the function is called the right number of times
 - `type_stability=false`: whether to check type stability with JET.jl (thanks to `@test_opt`)
 - `sparsity`: whether to check sparsity of the jacobian / hessian
 - `detailed=false`: whether to print a detailed or condensed test log
@@ -79,13 +78,18 @@ function test_differentiation(
     prog = ProgressUnknown(; desc="$title", spinner=true, enabled=logging)
 
     @testset verbose = true "$title" begin
-        @testset verbose = detailed "$(backend_string(backend))" for backend in backends
-            @testset "$scen" for scen in filter(s -> compatible(backend, s), scenarios)
+        @testset verbose = detailed "$(backend_string(backend))" for (i, backend) in
+                                                                     enumerate(backends)
+            filtered_scenarios = filter(s -> compatible(backend, s), scenarios)
+            @testset "$scen" for (j, scen) in enumerate(filtered_scenarios)
                 next!(
                     prog;
                     showvalues=[
-                        (:backend, backend_string(backend)),
-                        (:scenario, typeof(scen).name.name),
+                        (:backend, "$(backend_string(backend)) - $i/$(length(backends))"),
+                        (
+                            :scenario,
+                            "$(typeof(scen).name.name) - $j/$(length(filtered_scenarios))",
+                        ),
                         (:function, scen.f),
                         (:input, typeof(scen.x)),
                         (:output, typeof(scen.y)),
@@ -101,9 +105,6 @@ function test_differentiation(
                             backend, scen; isapprox, atol, rtol, ref_backend=nothing
                         )
                     end
-                end
-                call_count && @testset "Call count" begin
-                    test_call_count(backend, scen)
                 end
                 type_stability && @testset "Type stability" begin
                     test_jet(backend, scen)
@@ -163,13 +164,17 @@ function benchmark_differentiation(
 
     benchmark_data = BenchmarkDataRow[]
     prog = ProgressUnknown(; desc="Benchmarking", spinner=true, enabled=logging)
-    for backend in backends
-        for scen in filter(s -> compatible(backend, s), scenarios)
+    for (i, backend) in enumerate(backends)
+        filtered_scenarios = filter(s -> compatible(backend, s), scenarios)
+        for (j, scen) in enumerate(filtered_scenarios)
             next!(
                 prog;
                 showvalues=[
-                    (:backend, backend_string(backend)),
-                    (:scenario, typeof(scen).name.name),
+                    (:backend, "$(backend_string(backend)) - $i/$(length(backends))"),
+                    (
+                        :scenario,
+                        "$(typeof(scen).name.name) - $j/$(length(filtered_scenarios))",
+                    ),
                     (:function, scen.f),
                     (:input, typeof(scen.x)),
                     (:output, typeof(scen.y)),

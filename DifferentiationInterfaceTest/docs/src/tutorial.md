@@ -45,7 +45,6 @@ Let us experiment with various input types and sizes:
 scenarios = [
     GradientScenario(f; x=rand(Float64, 3), ref=∇f),
     GradientScenario(f; x=rand(Float32, 3, 4), ref=∇f),
-    GradientScenario(f; x=rand(Float16, 3, 4, 5), ref=∇f),
 ];
 ```
 

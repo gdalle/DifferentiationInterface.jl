@@ -1,3 +1,26 @@
+struct CallCounter{F}
+    f::F
+    count::Base.RefValue{Int}
+end
+
+CallCounter(f::F) where {F} = CallCounter{F}(f, Ref(0))
+
+function (cc::CallCounter)(x)
+    cc.count[] += 1
+    return cc.f(x)
+end
+
+function (cc::CallCounter)(y, x)
+    cc.count[] += 1
+    return cc.f(y, x)
+end
+
+function reset_count!(cc::CallCounter)
+    count = cc.count[]
+    cc.count[] = 0
+    return count
+end
+
 """
     BenchmarkDataRow
 
@@ -25,6 +48,7 @@ $(TYPEDFIELDS)
     output_type::Type
     input_size::Tuple
     output_size::Tuple
+    calls::Int
     samples::Int
     time::Float64
     bytes::Float64
@@ -37,9 +61,10 @@ end
 function record!(
     data::Vector{BenchmarkDataRow},
     backend::AbstractADType,
-    operator,
     scenario::AbstractScenario,
-    bench,
+    operator,
+    bench::Benchmark,
+    calls::Integer,
 )
     bench_min = minimum(bench)
     row = BenchmarkDataRow(;
@@ -53,6 +78,7 @@ function record!(
         output_type=typeof(scenario.y),
         input_size=size(scenario.x),
         output_size=size(scenario.y),
+        calls=calls,
         samples=length(bench.samples),
         time=bench_min.time,
         bytes=bench_min.bytes,
@@ -70,11 +96,23 @@ function run_benchmark!(
     data::Vector{BenchmarkDataRow}, ba::AbstractADType, scen::PushforwardScenario{false};
 )
     (; f, x, y, dx) = deepcopy(scen)
+    # benchmark
     extras = prepare_pushforward(f, ba, x)
+    bench0 = @be prepare_pushforward(f, ba, x) evals = 1 samples = 2
     bench1 = @be mysimilar(y) value_and_pushforward!!(f, _, ba, x, dx, extras)
     bench2 = @be mysimilar(y) pushforward!!(f, _, ba, x, dx, extras)
-    record!(data, ba, value_and_pushforward!!, scen, bench1)
-    record!(data, ba, pushforward!!, scen, bench2)
+    # count
+    cc = CallCounter(f)
+    extras = prepare_pushforward(cc, ba, x)
+    calls0 = reset_count!(cc)
+    value_and_pushforward!!(cc, mysimilar(y), ba, x, dx, extras)
+    calls1 = reset_count!(cc)
+    pushforward!!(cc, mysimilar(y), ba, x, dx, extras)
+    calls2 = reset_count!(cc)
+    # record
+    record!(data, ba, scen, prepare_pushforward, bench0, calls0)
+    record!(data, ba, scen, value_and_pushforward!!, bench1, calls1)
+    record!(data, ba, scen, pushforward!!, bench2, calls2)
     return nothing
 end
 
@@ -83,11 +121,21 @@ function run_benchmark!(
 )
     (; f, x, y, dx) = deepcopy(scen)
     f! = f
+    # benchmark
     extras = prepare_pushforward(f!, ba, y, x)
+    bench0 = @be prepare_pushforward(f!, ba, y, x) evals = 1 samples = 2
     bench1 = @be (mysimilar(y), mysimilar(y)) value_and_pushforward!!(
         f!, _[1], _[2], ba, x, dx, extras
     )
-    record!(data, ba, value_and_pushforward!!, scen, bench1)
+    # count
+    cc! = CallCounter(f!)
+    extras = prepare_pushforward(cc!, ba, y, x)
+    calls0 = reset_count!(cc!)
+    value_and_pushforward!!(cc!, mysimilar(y), mysimilar(y), ba, x, dx, extras)
+    calls1 = reset_count!(cc!)
+    # record
+    record!(data, ba, scen, prepare_pushforward, bench0, calls0)
+    record!(data, ba, scen, value_and_pushforward!!, bench1, calls1)
     return nothing
 end
 
@@ -97,14 +145,33 @@ function run_benchmark!(
     data::Vector{BenchmarkDataRow}, ba::AbstractADType, scen::PullbackScenario{false};
 )
     (; f, x, y, dy) = deepcopy(scen)
+    # benchmark
     extras = prepare_pullback(f, ba, x)
-    _, pullbackfunc!! = value_and_pullback!!_split(f, ba, x, extras)
+    bench0 = @be prepare_pullback(f, ba, x) evals = 1 samples = 2
     bench1 = @be mysimilar(x) value_and_pullback!!(f, _, ba, x, dy, extras)
     bench2 = @be mysimilar(x) pullback!!(f, _, ba, x, dy, extras)
-    bench3 = @be mysimilar(x) pullbackfunc!!(_, dy)
-    record!(data, ba, value_and_pullback!!, scen, bench1)
-    record!(data, ba, pullback!!, scen, bench2)
-    record!(data, ba, pullbackfunc!!, scen, bench3)
+    bench3 = @be value_and_pullback!!_split(f, ba, x, extras)
+    bench4 = @be (mysimilar(x), last(value_and_pullback!!_split(f, ba, x, extras))) _[2](
+        _[1], dy
+    )
+    # count
+    cc = CallCounter(f)
+    extras = prepare_pullback(cc, ba, x)
+    calls0 = reset_count!(cc)
+    value_and_pullback!!(cc, mysimilar(x), ba, x, dy, extras)
+    calls1 = reset_count!(cc)
+    pullback!!(cc, mysimilar(x), ba, x, dy, extras)
+    calls2 = reset_count!(cc)
+    _, pullbackfunc!! = value_and_pullback!!_split(cc, ba, x, extras)
+    calls3 = reset_count!(cc)
+    pullbackfunc!!(mysimilar(x), dy)
+    calls4 = reset_count!(cc)
+    # record
+    record!(data, ba, scen, prepare_pullback, bench0, calls0)
+    record!(data, ba, scen, value_and_pullback!!, bench1, calls1)
+    record!(data, ba, scen, pullback!!, bench2, calls2)
+    record!(data, ba, scen, value_and_pullback!!_split, bench3, calls3)
+    record!(data, ba, scen, pullbackfunc!!, bench4, calls4)
     return nothing
 end
 
@@ -113,11 +180,21 @@ function run_benchmark!(
 )
     (; f, x, y, dy) = deepcopy(scen)
     f! = f
+    # benchmark
     extras = prepare_pullback(f!, ba, y, x)
+    bench0 = @be prepare_pullback(f!, ba, y, x) evals = 1 samples = 2
     bench1 = @be (mysimilar(y), mysimilar(x)) value_and_pullback!!(
         f!, _[1], _[2], ba, x, dy, extras
     )
-    record!(data, ba, value_and_pullback!!, scen, bench1)
+    # count
+    cc! = CallCounter(f!)
+    extras = prepare_pullback(cc!, ba, y, x)
+    calls0 = reset_count!(cc!)
+    value_and_pullback!!(cc!, mysimilar(y), mysimilar(x), ba, x, dy, extras)
+    calls1 = reset_count!(cc!)
+    # record
+    record!(data, ba, scen, prepare_pullback, bench0, calls0)
+    record!(data, ba, scen, value_and_pullback!!, bench1, calls1)
     return nothing
 end
 
@@ -127,11 +204,23 @@ function run_benchmark!(
     data::Vector{BenchmarkDataRow}, ba::AbstractADType, scen::DerivativeScenario{false};
 )
     (; f, x, y) = deepcopy(scen)
+    # benchmark
     extras = prepare_derivative(f, ba, x)
+    bench0 = @be prepare_derivative(f, ba, x) evals = 1 samples = 2
     bench1 = @be mysimilar(y) value_and_derivative!!(f, _, ba, x, extras)
     bench2 = @be mysimilar(y) derivative!!(f, _, ba, x, extras)
-    record!(data, ba, value_and_derivative!!, scen, bench1)
-    record!(data, ba, derivative!!, scen, bench2)
+    # count
+    cc = CallCounter(f)
+    extras = prepare_derivative(cc, ba, x)
+    calls0 = reset_count!(cc)
+    value_and_derivative!!(cc, mysimilar(y), ba, x, extras)
+    calls1 = reset_count!(cc)
+    derivative!!(cc, mysimilar(y), ba, x, extras)
+    calls2 = reset_count!(cc)
+    # record
+    record!(data, ba, scen, prepare_derivative, bench0, calls0)
+    record!(data, ba, scen, value_and_derivative!!, bench1, calls1)
+    record!(data, ba, scen, derivative!!, bench2, calls2)
     return nothing
 end
 
@@ -140,11 +229,21 @@ function run_benchmark!(
 )
     (; f, x, y) = deepcopy(scen)
     f! = f
+    # benchmark
     extras = prepare_derivative(f!, ba, y, x)
+    bench0 = @be prepare_derivative(f!, ba, y, x) evals = 1 samples = 2
     bench1 = @be (mysimilar(y), mysimilar(y)) value_and_derivative!!(
         f!, _[1], _[2], ba, x, extras
     )
-    record!(data, ba, value_and_derivative!!, scen, bench1)
+    # count
+    cc! = CallCounter(f!)
+    extras = prepare_derivative(cc!, ba, y, x)
+    calls0 = reset_count!(cc!)
+    value_and_derivative!!(cc!, mysimilar(y), mysimilar(y), ba, x, extras)
+    calls1 = reset_count!(cc!)
+    # record
+    record!(data, ba, scen, prepare_derivative, bench0, calls0)
+    record!(data, ba, scen, value_and_derivative!!, bench1, calls1)
     return nothing
 end
 
@@ -154,11 +253,23 @@ function run_benchmark!(
     data::Vector{BenchmarkDataRow}, ba::AbstractADType, scen::GradientScenario{false};
 )
     (; f, x) = deepcopy(scen)
+    # benchmark
     extras = prepare_gradient(f, ba, x)
+    bench0 = @be prepare_gradient(f, ba, x) evals = 1 samples = 2
     bench1 = @be mysimilar(x) value_and_gradient!!(f, _, ba, x, extras)
     bench2 = @be mysimilar(x) gradient!!(f, _, ba, x, extras)
-    record!(data, ba, value_and_gradient!!, scen, bench1)
-    record!(data, ba, gradient!!, scen, bench2)
+    # count
+    cc = CallCounter(f)
+    extras = prepare_gradient(cc, ba, x)
+    calls0 = reset_count!(cc)
+    value_and_gradient!!(cc, mysimilar(x), ba, x, extras)
+    calls1 = reset_count!(cc)
+    gradient!!(cc, mysimilar(x), ba, x, extras)
+    calls2 = reset_count!(cc)
+    # record
+    record!(data, ba, scen, prepare_gradient, bench0, calls0)
+    record!(data, ba, scen, value_and_gradient!!, bench1, calls1)
+    record!(data, ba, scen, gradient!!, bench2, calls2)
     return nothing
 end
 
@@ -168,12 +279,24 @@ function run_benchmark!(
     data::Vector{BenchmarkDataRow}, ba::AbstractADType, scen::JacobianScenario{false};
 )
     (; f, x, y) = deepcopy(scen)
-    extras = prepare_jacobian(f, ba, x)
     jac_template = Matrix{eltype(y)}(undef, length(y), length(x))
+    # benchmark
+    extras = prepare_jacobian(f, ba, x)
+    bench0 = @be prepare_jacobian(f, ba, x) evals = 1 samples = 2
     bench1 = @be mysimilar(jac_template) value_and_jacobian!!(f, _, ba, x, extras)
     bench2 = @be mysimilar(jac_template) jacobian!!(f, _, ba, x, extras)
-    record!(data, ba, value_and_jacobian!!, scen, bench1)
-    record!(data, ba, jacobian!!, scen, bench2)
+    # count
+    cc = CallCounter(f)
+    extras = prepare_jacobian(cc, ba, x)
+    calls0 = reset_count!(cc)
+    value_and_jacobian!!(cc, mysimilar(jac_template), ba, x, extras)
+    calls1 = reset_count!(cc)
+    jacobian!!(cc, mysimilar(jac_template), ba, x, extras)
+    calls2 = reset_count!(cc)
+    # record
+    record!(data, ba, scen, prepare_jacobian, bench0, calls0)
+    record!(data, ba, scen, value_and_jacobian!!, bench1, calls1)
+    record!(data, ba, scen, jacobian!!, bench2, calls2)
     return nothing
 end
 
@@ -182,12 +305,22 @@ function run_benchmark!(
 )
     (; f, x, y) = deepcopy(scen)
     f! = f
-    extras = prepare_jacobian(f!, ba, y, x)
     jac_template = Matrix{eltype(y)}(undef, length(y), length(x))
+    # benchmark
+    extras = prepare_jacobian(f!, ba, y, x)
+    bench0 = @be prepare_jacobian(f!, ba, y, x) evals = 1 samples = 2
     bench1 = @be (mysimilar(y), mysimilar(jac_template)) value_and_jacobian!!(
         f!, _[1], _[2], ba, x, extras
     )
-    record!(data, ba, value_and_jacobian!!, scen, bench1)
+    # count
+    cc! = CallCounter(f!)
+    extras = prepare_jacobian(cc!, ba, y, x)
+    calls0 = reset_count!(cc!)
+    value_and_jacobian!!(cc!, mysimilar(y), mysimilar(jac_template), ba, x, extras)
+    calls1 = reset_count!(cc!)
+    # record
+    record!(data, ba, scen, prepare_jacobian, bench0, calls0)
+    record!(data, ba, scen, value_and_jacobian!!, bench1, calls1)
     return nothing
 end
 
@@ -199,9 +332,19 @@ function run_benchmark!(
     scen::SecondDerivativeScenario{false};
 )
     (; f, x, y) = deepcopy(scen)
+    # benchmark
     extras = prepare_second_derivative(f, ba, x)
+    bench0 = @be prepare_second_derivative(f, ba, x) evals = 1 samples = 2
     bench1 = @be mysimilar(y) second_derivative!!(f, _, ba, x, extras)
-    record!(data, ba, second_derivative, scen, bench1)
+    # count
+    cc = CallCounter(f)
+    extras = prepare_second_derivative(cc, ba, x)
+    calls0 = reset_count!(cc)
+    second_derivative!!(cc, mysimilar(y), ba, x, extras)
+    calls1 = reset_count!(cc)
+    # record
+    record!(data, ba, scen, prepare_second_derivative, bench0, calls0)
+    record!(data, ba, scen, second_derivative, bench1, calls1)
     return nothing
 end
 
@@ -211,9 +354,19 @@ function run_benchmark!(
     data::Vector{BenchmarkDataRow}, ba::AbstractADType, scen::HVPScenario{false}
 )
     (; f, x, y, dx) = deepcopy(scen)
+    # benchmark
     extras = prepare_hvp(f, ba, x, dx)
+    bench0 = @be prepare_hvp(f, ba, x, dx) evals = 1 samples = 2
     bench1 = @be mysimilar(x) hvp!!(f, _, ba, x, dx, extras)
-    record!(data, ba, hvp, scen, bench1)
+    # count
+    cc = CallCounter(f)
+    extras = prepare_hvp(cc, ba, x, dx)
+    calls0 = reset_count!(cc)
+    hvp!!(cc, mysimilar(x), ba, x, dx, extras)
+    calls1 = reset_count!(cc)
+    # record
+    record!(data, ba, scen, prepare_hvp, bench0, calls0)
+    record!(data, ba, scen, hvp, bench1, calls1)
     return nothing
 end
 
@@ -223,9 +376,19 @@ function run_benchmark!(
     data::Vector{BenchmarkDataRow}, ba::AbstractADType, scen::HessianScenario{false}
 )
     (; f, x, y) = deepcopy(scen)
-    extras = prepare_hessian(f, ba, x)
     hess_template = Matrix{typeof(y)}(undef, length(x), length(x))
-    bench1 = @be similar(hess_template) hessian!!(f, _, ba, x, extras)
-    record!(data, ba, hessian, scen, bench1)
+    # benchmark
+    extras = prepare_hessian(f, ba, x)
+    bench0 = @be prepare_hessian(f, ba, x) evals = 1 samples = 2
+    bench1 = @be mysimilar(hess_template) hessian!!(f, _, ba, x, extras)
+    # count
+    cc = CallCounter(f)
+    extras = prepare_hessian(cc, ba, x)
+    calls0 = reset_count!(cc)
+    hessian!!(cc, mysimilar(hess_template), ba, x, extras)
+    calls1 = reset_count!(cc)
+    # record
+    record!(data, ba, scen, prepare_hessian, bench0, calls0)
+    record!(data, ba, scen, hessian, bench1, calls1)
     return nothing
 end
