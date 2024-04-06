@@ -57,7 +57,10 @@ In a Julia REPL, run
 ```julia
 julia> using Pkg
 
-julia> Pkg.add(url="https://github.com/gdalle/DifferentiationInterface.jl", subdir="DifferentiationInterface")
+julia> Pkg.add(
+        url="https://github.com/gdalle/DifferentiationInterface.jl",
+        subdir="DifferentiationInterface"
+    )
 ```
 
 ## Example
