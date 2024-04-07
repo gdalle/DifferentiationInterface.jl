@@ -69,24 +69,6 @@ function DI.pullback!!(f, dx, backend::AutoReverseEnzyme, x, dy, extras::NoPullb
     return DI.value_and_pullback!!(f, dx, backend, x, dy, extras)[2]
 end
 
-### Closure
-
-function DI.value_and_pullback_split(
-    f, backend::AutoReverseEnzyme, x, extras::NoPullbackExtras
-)
-    y = f(x)
-    pullbackfunc(dy) = DI.pullback(f, backend, x, dy, extras)
-    return y, pullbackfunc
-end
-
-function DI.value_and_pullback!!_split(
-    f, backend::AutoReverseEnzyme, x, extras::NoPullbackExtras
-)
-    y = f(x)
-    pullbackfunc!!(dx, dy) = DI.pullback!!(f, dx, backend, x, dy, extras)
-    return y, pullbackfunc!!
-end
-
 ## Gradient
 
 DI.prepare_gradient(f, ::AutoReverseEnzyme, x) = NoGradientExtras()

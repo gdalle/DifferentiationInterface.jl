@@ -72,6 +72,9 @@ function test_correctness(
     y10 = mysimilar(y)
     y1, dy1 = value_and_pushforward!!(f!, y10, mysimilar(y), ba, x, dx, extras)
 
+    y20 = mysimilar(y)
+    dy2 = pushforward!!(f!, y20, mysimilar(y), ba, x, dx, extras)
+
     let (≈)(x, y) = isapprox(x, y; atol, rtol)
         @testset "Primal value" begin
             @test y10 ≈ y
@@ -79,6 +82,7 @@ function test_correctness(
         end
         @testset "Tangent value" begin
             @test dy1 ≈ dy_true
+            @test dy2 ≈ dy_true
         end
     end
     test_scen_intact(new_scen, scen)
@@ -156,13 +160,23 @@ function test_correctness(
     y10 = mysimilar(y)
     y1, dx1 = value_and_pullback!!(f!, y10, mysimilar(x), ba, x, dy, extras)
 
+    y20 = mysimilar(y)
+    dx2 = pullback!!(f!, y20, mysimilar(x), ba, x, dy, extras)
+
+    y3, pullbackfunc!! = value_and_pullback!!_split!!(f!, y, ba, x, extras)
+    pullbackfunc!!(mysimilar(y), mysimilar(x), dy)  # call once in case the second errors
+    dx3 = pullbackfunc!!(mysimilar(y), mysimilar(x), dy)
+
     let (≈)(x, y) = isapprox(x, y; atol, rtol)
         @testset "Primal value" begin
             @test y10 ≈ y
             @test y1 ≈ y
+            @test y3 ≈ y
         end
         @testset "Cotangent value" begin
             @test dx1 ≈ dx_true
+            @test dx2 ≈ dx_true
+            @test dx3 ≈ dx_true
         end
     end
     test_scen_intact(new_scen, scen)

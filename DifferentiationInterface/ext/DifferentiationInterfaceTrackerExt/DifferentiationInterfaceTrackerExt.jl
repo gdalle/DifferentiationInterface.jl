@@ -17,6 +17,11 @@ function DI.value_and_pullback_split(f, ::AutoTracker, x, ::NoPullbackExtras)
     return y, pullbackfunc
 end
 
+function DI.value_and_pullback(f, backend::AutoTracker, x, dy, extras::NoPullbackExtras)
+    y, pullbackfunc = DI.value_and_pullback_split(f, backend, x, extras)
+    return y, pullbackfunc(dy)
+end
+
 ## Gradient
 
 DI.prepare_gradient(f, ::AutoTracker, x) = NoGradientExtras()

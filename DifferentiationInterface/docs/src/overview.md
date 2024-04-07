@@ -7,11 +7,11 @@ Most backends have custom implementations, which we reuse if possible.
 
 We choose the following terminology for the high-level operators we provide:
 
-| operator             | input  `x`      | output   `y`    | result type      | result shape             |
-| -------------------- | --------------- | --------------- | ---------------- | ------------------------ |
-| [`derivative`](@ref) | `Number`        | `Any`           | same as `y`      | `size(y)`                |
-| [`gradient`](@ref)   | `Any`           | `Number`        | same as `x`      | `size(x)`                |
-| [`jacobian`](@ref)   | `AbstractArray` | `AbstractArray` | `AbstractMatrix` | `(length(y), length(x))` |
+| operator             | input  `x`      | output   `y`                | result type      | result shape             |
+| -------------------- | --------------- | --------------------------- | ---------------- | ------------------------ |
+| [`derivative`](@ref) | `Number`        | `Number` or `AbstractArray` | same as `y`      | `size(y)`                |
+| [`gradient`](@ref)   | `AbstractArray` | `Number`                    | same as `x`      | `size(x)`                |
+| [`jacobian`](@ref)   | `AbstractArray` | `AbstractArray`             | `AbstractMatrix` | `(length(y), length(x))` |
 
 They are all based on the following low-level operators:
 
@@ -58,11 +58,11 @@ You can either pick a single backend to do all the work, or combine an "outer" b
 
 The available operators are similar to first-order ones:
 
-| operator                    | input  `x`      | output   `y` | result type      | result shape             |
-| --------------------------- | --------------- | ------------ | ---------------- | ------------------------ |
-| [`second_derivative`](@ref) | `Number`        | `Any`        | same as `y`      | `size(y)`                |
-| [`hvp`](@ref)               | `Any`           | `Number`     | same as `x`      | `size(x)`                |
-| [`hessian`](@ref)           | `AbstractArray` | `Number`     | `AbstractMatrix` | `(length(x), length(x))` |
+| operator                    | input  `x`      | output   `y`                | result type      | result shape             |
+| --------------------------- | --------------- | --------------------------- | ---------------- | ------------------------ |
+| [`second_derivative`](@ref) | `Number`        | `Number` or `AbstractArray` | same as `y`      | `size(y)`                |
+| [`hvp`](@ref)               | `AbstractArray` | `Number`                    | same as `x`      | `size(x)`                |
+| [`hessian`](@ref)           | `AbstractArray` | `Number`                    | `AbstractMatrix` | `(length(x), length(x))` |
 
 We only define two variants for now:
 
@@ -94,11 +94,8 @@ This is a backend-specific procedure, but we expose a common syntax to achieve i
 If you run `prepare_operator(backend, f, x)`, it will create an object called `extras` containing the necessary information to speed up `operator` and its variants.
 This information is specific to `backend` and `f`, as well as the _type and size_ of the input `x`, but it should work with different _values_ of `x`.
 
-You can then call `operator(backend, f, similar_x, extras)`, which should be faster than `operator(backend, f, similar_x)`.
+You can then call `operator(backend, f, x2, extras)`, which should be faster than `operator(f, backend, x2)`.
 This is especially worth it if you plan to call `operator` several times in similar settings: you can think of it as a warm up.
-
-By default, all the preparation functions return `nothing`.
-We do not make any guarantees on their implementation for each backend, or on the performance gains that can be expected.
 
 !!! warning
     For `SecondOrder` backends, the inner differentiation cannot be prepared at the moment, only the outer one is.
@@ -123,12 +120,13 @@ This means the Hessian is obtained as the sparse Jacobian of the gradient.
 
 ### Split reverse mode
 
-Many reverse mode AD backends expose a "split" option, which runs only the forward sweep, and encapsulates the reverse sweep in a closure.
-We make this available for allocating functions only, with the following operators:
+Some reverse mode AD backends expose a "split" option, which runs only the forward sweep, and encapsulates the reverse sweep in a closure.
+We make this available for all backends with the following operators:
 
-| out-of-place                       | in-place (or not)                    |
-| ---------------------------------- | ------------------------------------ |
-| [`value_and_pullback_split`](@ref) | [`value_and_pullback!!_split`](@ref) |
+|                      | out-of-place                       | in-place (or not)                      |
+| -------------------- | ---------------------------------- | -------------------------------------- |
+| allocating functions | [`value_and_pullback_split`](@ref) | [`value_and_pullback!!_split`](@ref)   |
+| mutating functions   | -                                  | [`value_and_pullback!!_split!!`](@ref) |
 
 !!! danger
     Split reverse mode is still experimental, use at your own risk.
