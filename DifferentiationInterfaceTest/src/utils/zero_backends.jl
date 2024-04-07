@@ -54,21 +54,16 @@ DI.supports_mutation(::AutoZeroReverse) = DI.MutationSupported()
 DI.prepare_pullback(f, ::AutoZeroReverse, x) = NoPullbackExtras()
 DI.prepare_pullback(f!, ::AutoZeroReverse, y, x) = NoPullbackExtras()
 
-struct ZeroPullbackFunc{X}
-    x::X
+function DI.value_and_pullback(f, ::AutoZeroReverse, x, dy, ::NoPullbackExtras)
+    y = f(x)
+    dx = myzero(x)
+    return y, dx
 end
 
-(zpf::ZeroPullbackFunc)(_dy) = myzero(zpf.x)
-
-function DI.value_and_pullback_split(f, ::AutoZeroReverse, x, ::NoPullbackExtras)
+function DI.value_and_pullback!!(f, dx, ::AutoZeroReverse, x, dy, ::NoPullbackExtras)
     y = f(x)
-    return y, ZeroPullbackFunc(x)
-end
-
-function DI.value_and_pullback!!_split(f, dx, ::AutoZeroReverse, x, ::NoPullbackExtras)
-    y = f(x)
-    pullbackfunc!!(dx, dy) = myzero!!(dx)
-    return y, pullbackfunc!!
+    dx = myzero!!(dx)
+    return y, dx
 end
 
 function DI.value_and_pullback!!(f!, y, dx, ::AutoZeroReverse, x, dy, ::NoPullbackExtras)

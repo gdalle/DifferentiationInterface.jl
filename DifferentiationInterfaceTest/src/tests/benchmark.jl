@@ -127,15 +127,21 @@ function run_benchmark!(
     bench1 = @be (mysimilar(y), mysimilar(y)) value_and_pushforward!!(
         f!, _[1], _[2], ba, x, dx, extras
     )
+    bench2 = @be (mysimilar(y), mysimilar(y)) pushforward!!(
+        f!, _[1], _[2], ba, x, dx, extras
+    )
     # count
     cc! = CallCounter(f!)
     extras = prepare_pushforward(cc!, ba, y, x)
     calls0 = reset_count!(cc!)
     value_and_pushforward!!(cc!, mysimilar(y), mysimilar(y), ba, x, dx, extras)
     calls1 = reset_count!(cc!)
+    pushforward!!(cc!, mysimilar(y), mysimilar(y), ba, x, dx, extras)
+    calls2 = reset_count!(cc!)
     # record
     record!(data, ba, scen, prepare_pushforward, bench0, calls0)
     record!(data, ba, scen, value_and_pushforward!!, bench1, calls1)
+    record!(data, ba, scen, pushforward!!, bench2, calls2)
     return nothing
 end
 
@@ -186,15 +192,19 @@ function run_benchmark!(
     bench1 = @be (mysimilar(y), mysimilar(x)) value_and_pullback!!(
         f!, _[1], _[2], ba, x, dy, extras
     )
+    bench2 = @be (mysimilar(y), mysimilar(x)) pullback!!(f!, _[1], _[2], ba, x, dy, extras)
     # count
     cc! = CallCounter(f!)
     extras = prepare_pullback(cc!, ba, y, x)
     calls0 = reset_count!(cc!)
     value_and_pullback!!(cc!, mysimilar(y), mysimilar(x), ba, x, dy, extras)
     calls1 = reset_count!(cc!)
+    pullback!!(cc!, mysimilar(y), mysimilar(x), ba, x, dy, extras)
+    calls2 = reset_count!(cc!)
     # record
     record!(data, ba, scen, prepare_pullback, bench0, calls0)
     record!(data, ba, scen, value_and_pullback!!, bench1, calls1)
+    record!(data, ba, scen, pullback!!, bench2, calls2)
     return nothing
 end
 

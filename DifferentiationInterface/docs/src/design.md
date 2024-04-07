@@ -17,12 +17,5 @@ Advanced users are welcome to code more backends and submit pull requests!
 
 ## Fallback call structure
 
-For simplicity, we remove `value_` in the operator names below.
-
-!!! note "Edge labels"
-
-    Full edges in the following graphs require a single call to the destination.
-    Dotted edges require multiple calls to the destination, the number is indicated on the edge.
-
 !!! warning
     This is still in flux, come back later!
