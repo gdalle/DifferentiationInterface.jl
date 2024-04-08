@@ -29,7 +29,7 @@ Make it easy to know, for a given function:
 
 ## Installation
 
-In a Julia REPL, run
+Until the package is registered, you need to install it from the GitHub repo:
 
 ```julia
 julia> using Pkg
@@ -43,4 +43,12 @@ julia> Pkg.add(
         url="https://github.com/gdalle/DifferentiationInterface.jl",
         subdir="DifferentiationInterfaceTest"
     )
+```
+
+Once the package is registered, you will be able to do:
+
+```julia
+julia> using Pkg
+
+julia> Pkg.add("DifferentiationInterfaceTest")
 ```
