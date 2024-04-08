@@ -96,3 +96,17 @@ function value_and_derivative!!(
         f!, y, der, backend, x, one(x), extras.pushforward_extras
     )
 end
+
+"""
+    derivative!!(f!, y, der, backend, x, [extras]) -> der
+"""
+function derivative!!(
+    f!,
+    y,
+    der,
+    backend::AbstractADType,
+    x,
+    extras::DerivativeExtras=prepare_derivative(f!, backend, y, x),
+)
+    return pushforward!!(f!, y, der, backend, x, one(x), extras.pushforward_extras)
+end

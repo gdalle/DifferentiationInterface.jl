@@ -35,6 +35,20 @@ function DI.value_and_pushforward!!(
     return y, dy
 end
 
+function DI.pushforward!!(
+    f!,
+    y,
+    dy,
+    ::AnyAutoFastDifferentiation,
+    x,
+    dx,
+    extras::FastDifferentiationMutatingPushforwardExtras,
+)
+    v_vec = vcat(myvec(x), myvec(dx))
+    extras.jvp_exe!(vec(dy), v_vec)
+    return dy
+end
+
 ## Derivative
 
 struct FastDifferentiationMutatingDerivativeExtras{E} <: DerivativeExtras
@@ -64,6 +78,18 @@ function DI.value_and_derivative!!(
     f!(y, x)
     extras.der_exe!(der, monovec(x))
     return y, der
+end
+
+function DI.derivative!!(
+    f!,
+    y,
+    der,
+    ::AnyAutoFastDifferentiation,
+    x,
+    extras::FastDifferentiationMutatingDerivativeExtras,
+)
+    extras.der_exe!(der, monovec(x))
+    return der
 end
 
 ## Jacobian
@@ -99,4 +125,16 @@ function DI.value_and_jacobian!!(
     f!(y, x)
     extras.jac_exe!(jac, vec(x))
     return y, jac
+end
+
+function DI.jacobian!!(
+    f!,
+    y,
+    jac,
+    ::AnyAutoFastDifferentiation,
+    x,
+    extras::FastDifferentiationMutatingJacobianExtras,
+)
+    extras.jac_exe!(jac, vec(x))
+    return jac
 end

@@ -243,6 +243,9 @@ function test_correctness(
     y10 = mysimilar(y)
     y1, der1 = value_and_derivative!!(f!, y10, mysimilar(y), ba, x, extras)
 
+    y20 = mysimilar(y)
+    der2 = derivative!!(f!, y20, mysimilar(y), ba, x, extras)
+
     let (≈)(x, y) = isapprox(x, y; atol, rtol)
         @testset "Primal value" begin
             @test y10 ≈ y
@@ -250,6 +253,7 @@ function test_correctness(
         end
         @testset "Derivative value" begin
             @test der1 ≈ der_true
+            @test der2 ≈ der_true
         end
     end
     test_scen_intact(new_scen, scen)
@@ -357,6 +361,9 @@ function test_correctness(
     y10 = mysimilar(y)
     y1, jac1 = value_and_jacobian!!(f!, y10, mysimilar(jac_true), ba, x, extras)
 
+    y20 = mysimilar(y)
+    jac2 = jacobian!!(f!, y20, mysimilar(jac_true), ba, x, extras)
+
     let (≈)(x, y) = isapprox(x, y; atol, rtol)
         @testset "Primal value" begin
             @test y10 ≈ y
@@ -364,6 +371,7 @@ function test_correctness(
         end
         @testset "Jacobian value" begin
             @test jac1 ≈ jac_true
+            @test jac2 ≈ jac_true
         end
     end
     test_scen_intact(new_scen, scen)

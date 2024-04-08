@@ -245,15 +245,19 @@ function run_benchmark!(
     bench1 = @be (mysimilar(y), mysimilar(y)) value_and_derivative!!(
         f!, _[1], _[2], ba, x, extras
     )
+    bench2 = @be (mysimilar(y), mysimilar(y)) derivative!!(f!, _[1], _[2], ba, x, extras)
     # count
     cc! = CallCounter(f!)
     extras = prepare_derivative(cc!, ba, y, x)
     calls0 = reset_count!(cc!)
     value_and_derivative!!(cc!, mysimilar(y), mysimilar(y), ba, x, extras)
     calls1 = reset_count!(cc!)
+    derivative!!(cc!, mysimilar(y), mysimilar(y), ba, x, extras)
+    calls2 = reset_count!(cc!)
     # record
     record!(data, ba, scen, prepare_derivative, bench0, calls0)
     record!(data, ba, scen, value_and_derivative!!, bench1, calls1)
+    record!(data, ba, scen, derivative!!, bench2, calls2)
     return nothing
 end
 
@@ -322,15 +326,21 @@ function run_benchmark!(
     bench1 = @be (mysimilar(y), mysimilar(jac_template)) value_and_jacobian!!(
         f!, _[1], _[2], ba, x, extras
     )
+    bench2 = @be (mysimilar(y), mysimilar(jac_template)) jacobian!!(
+        f!, _[1], _[2], ba, x, extras
+    )
     # count
     cc! = CallCounter(f!)
     extras = prepare_jacobian(cc!, ba, y, x)
     calls0 = reset_count!(cc!)
     value_and_jacobian!!(cc!, mysimilar(y), mysimilar(jac_template), ba, x, extras)
     calls1 = reset_count!(cc!)
+    jacobian!!(cc!, mysimilar(y), mysimilar(jac_template), ba, x, extras)
+    calls2 = reset_count!(cc!)
     # record
     record!(data, ba, scen, prepare_jacobian, bench0, calls0)
     record!(data, ba, scen, value_and_jacobian!!, bench1, calls1)
+    record!(data, ba, scen, jacobian!!, bench2, calls2)
     return nothing
 end
 

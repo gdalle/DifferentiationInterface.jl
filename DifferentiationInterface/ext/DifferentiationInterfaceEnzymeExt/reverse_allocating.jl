@@ -73,24 +73,20 @@ end
 
 DI.prepare_gradient(f, ::AutoReverseEnzyme, x) = NoGradientExtras()
 
-function DI.gradient(f, ::AutoReverseEnzyme, x::AbstractArray, ::NoGradientExtras)
+function DI.gradient(f, ::AutoReverseEnzyme, x, ::NoGradientExtras)
     return gradient(Reverse, f, x)
 end
 
-function DI.gradient!!(f, grad, ::AutoReverseEnzyme, x::AbstractArray, ::NoGradientExtras)
+function DI.gradient!!(f, grad, ::AutoReverseEnzyme, x, ::NoGradientExtras)
     grad_sametype = convert(typeof(x), grad)
     gradient!(Reverse, grad_sametype, f, x)
     return grad_sametype
 end
 
-function DI.value_and_gradient(
-    f, backend::AutoReverseEnzyme, x::AbstractArray, ::NoGradientExtras
-)
+function DI.value_and_gradient(f, backend::AutoReverseEnzyme, x, ::NoGradientExtras)
     return DI.value_and_pullback(f, backend, x, one(eltype(x)), NoPullbackExtras())
 end
 
-function DI.value_and_gradient!!(
-    f, grad, backend::AutoReverseEnzyme, x::AbstractArray, ::NoGradientExtras
-)
+function DI.value_and_gradient!!(f, grad, backend::AutoReverseEnzyme, x, ::NoGradientExtras)
     return DI.value_and_pullback!!(f, grad, backend, x, one(eltype(x)), NoPullbackExtras())
 end
