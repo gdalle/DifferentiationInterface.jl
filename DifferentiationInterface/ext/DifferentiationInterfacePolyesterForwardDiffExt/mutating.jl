@@ -22,6 +22,12 @@ function DI.value_and_derivative!!(
     return DI.value_and_derivative!!(f!, y, der, single_threaded(backend), x, extras)
 end
 
+function DI.derivative!!(
+    f!, y, der, backend::AnyAutoPolyForwardDiff, x, extras::DerivativeExtras
+)
+    return DI.derivative!!(f!, y, der, single_threaded(backend), x, extras)
+end
+
 ## Jacobian
 
 DI.prepare_jacobian(f!, ::AnyAutoPolyForwardDiff, y, x) = NoJacobianExtras()
@@ -34,7 +40,19 @@ function DI.value_and_jacobian!!(
     x::AbstractArray,
     ::NoJacobianExtras,
 ) where {C}
-    f!(y, x)
     threaded_jacobian!(f!, y, jac, x, Chunk{C}())
+    f!(y, x)
     return y, jac
+end
+
+function DI.jacobian!!(
+    f!,
+    y::AbstractArray,
+    jac::AbstractMatrix,
+    ::AnyAutoPolyForwardDiff{C},
+    x::AbstractArray,
+    ::NoJacobianExtras,
+) where {C}
+    threaded_jacobian!(f!, y, jac, x, Chunk{C}())
+    return jac
 end

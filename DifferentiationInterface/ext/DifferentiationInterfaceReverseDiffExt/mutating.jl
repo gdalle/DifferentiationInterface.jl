@@ -23,6 +23,24 @@ function DI.value_and_pullback!!(
     return y, dx
 end
 
+function DI.pullback!!(
+    f!,
+    y::AbstractArray,
+    dx::AbstractArray,
+    ::AnyAutoReverseDiff,
+    x::AbstractArray,
+    dy::AbstractArray,
+    ::NoPullbackExtras,
+)
+    function dotproduct_closure(x)
+        y_copy = similar(y, eltype(x))
+        f!(y_copy, x)
+        return dot(y_copy, dy)
+    end
+    dx = gradient!(dx, dotproduct_closure, x)
+    return dx
+end
+
 ### Number in, not supported
 
 function DI.value_and_pullback!!(
@@ -71,4 +89,16 @@ function DI.value_and_jacobian!!(
     result = DiffResults.DiffResult(y, jac)
     result = jacobian!(result, extras.tape, x)
     return DiffResults.value(result), DiffResults.derivative(result)
+end
+
+function DI.jacobian!!(
+    _f!,
+    y::AbstractArray,
+    jac::AbstractMatrix,
+    ::AnyAutoReverseDiff,
+    x::AbstractArray,
+    extras::ReverseDiffMutatingJacobianExtras,
+)
+    jac = jacobian!(jac, extras.tape, x)
+    return jac
 end

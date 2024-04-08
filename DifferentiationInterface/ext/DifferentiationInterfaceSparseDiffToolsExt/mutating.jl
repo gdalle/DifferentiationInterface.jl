@@ -27,5 +27,17 @@ for AutoSparse in SPARSE_BACKENDS
             f!(y, x)
             return y, jac
         end
+
+        function DI.jacobian!!(
+            f!,
+            y,
+            jac,
+            backend::$AutoSparse,
+            x,
+            extras::SparseDiffToolsMutatingJacobianExtras,
+        )
+            sparse_jacobian!(jac, backend, extras.cache, f!, y, x)
+            return jac
+        end
     end
 end

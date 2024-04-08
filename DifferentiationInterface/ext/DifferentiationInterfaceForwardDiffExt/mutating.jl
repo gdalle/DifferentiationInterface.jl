@@ -35,6 +35,18 @@ function DI.value_and_derivative!!(
     return DiffResults.value(result), DiffResults.derivative(result)
 end
 
+function DI.derivative!!(
+    f!,
+    y::AbstractArray,
+    der::AbstractArray,
+    ::AnyAutoForwardDiff,
+    x::Number,
+    extras::ForwardDiffMutatingDerivativeExtras,
+)
+    der = derivative!(der, f!, y, x, extras.config)
+    return der
+end
+
 ## Jacobian
 
 struct ForwardDiffMutatingJacobianExtras{C} <: JacobianExtras
@@ -60,4 +72,16 @@ function DI.value_and_jacobian!!(
     result = DiffResult(y, jac)
     result = jacobian!(result, f!, y, x, extras.config)
     return DiffResults.value(result), DiffResults.jacobian(result)
+end
+
+function DI.jacobian!!(
+    f!,
+    y::AbstractArray,
+    jac::AbstractMatrix,
+    ::AnyAutoForwardDiff,
+    x::AbstractArray,
+    extras::ForwardDiffMutatingJacobianExtras,
+)
+    jac = jacobian!(jac, f!, y, x, extras.config)
+    return jac
 end

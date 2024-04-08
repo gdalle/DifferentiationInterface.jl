@@ -47,6 +47,18 @@ function DI.value_and_derivative!!(
     return y, der
 end
 
+function DI.derivative!!(
+    f!,
+    y::AbstractArray,
+    der::AbstractArray,
+    backend::AnyAutoFiniteDiff,
+    x,
+    ::FiniteDiffMutatingDerivativeExtras,
+)
+    finite_difference_gradient!(der, f!, x, fdtype(backend), eltype(y), FUNCTION_INPLACE)
+    return der
+end
+
 ## Jacobian
 
 struct FiniteDiffMutatingJacobianExtras{C}
@@ -72,4 +84,16 @@ function DI.value_and_jacobian!!(
     finite_difference_jacobian!(jac, f!, x, extras.cache)
     f!(y, x)
     return y, jac
+end
+
+function DI.jacobian!!(
+    f!,
+    y::AbstractArray,
+    jac::AbstractMatrix,
+    ::AnyAutoFiniteDiff,
+    x,
+    extras::FiniteDiffMutatingJacobianExtras,
+)
+    finite_difference_jacobian!(jac, f!, x, extras.cache)
+    return jac
 end

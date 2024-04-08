@@ -203,3 +203,17 @@ function value_and_jacobian_aux!!(
     end
     return y, jac
 end
+
+"""
+    jacobian!!(f!, y, jac, backend, x, [extras]) -> jac
+"""
+function jacobian!!(
+    f!,
+    y,
+    jac,
+    backend::AbstractADType,
+    x,
+    extras::JacobianExtras=prepare_jacobian(f!, backend, y, x),
+)
+    return value_and_jacobian!!(f!, y, jac, backend, x, extras)[2]
+end
