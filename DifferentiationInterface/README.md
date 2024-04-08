@@ -4,10 +4,10 @@
 [![Coverage](https://codecov.io/gh/gdalle/DifferentiationInterface.jl/branch/main/graph/badge.svg)](https://app.codecov.io/gh/gdalle/DifferentiationInterface.jl)
 [![Code Style: Blue](https://img.shields.io/badge/code%20style-blue-4495d1.svg)](https://github.com/invenia/BlueStyle)
 
-| package                      | docs                                                                                                                                             |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| DifferentiationInterface     | [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterface/dev/)     |
-| DifferentiationInterfaceTest | [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterfaceTest/dev/) |
+| Package                      | Docs                                                                                                                                                                                                                                                                                                   |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| DifferentiationInterface     | [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterface/stable/)     [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterface/dev/)     |
+| DifferentiationInterfaceTest | [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterfaceTest/stable/) [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterfaceTest/dev/) |
 
 An interface to various automatic differentiation (AD) backends in Julia.
 
@@ -30,7 +30,7 @@ This package provides a backend-agnostic syntax to differentiate functions of th
 
 We support most of the backends defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl):
 
-| backend                                                                         | object                                                     |
+| Backend                                                                         | Object                                                     |
 | :------------------------------------------------------------------------------ | :--------------------------------------------------------- |
 | [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl)             | `AutoChainRules(ruleconfig)`                               |
 | [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl)                     | `AutoDiffractor()`                                         |
@@ -46,25 +46,14 @@ We support most of the backends defined by [ADTypes.jl](https://github.com/SciML
 
 We also provide some experimental backends ourselves:
 
-| backend                                                                          | object                                                         |
+| Backend                                                                          | Object                                                         |
 | :------------------------------------------------------------------------------- | :------------------------------------------------------------- |
 | [FastDifferentiation.jl](https://github.com/brianguenter/FastDifferentiation.jl) | `AutoFastDifferentiation()`, `AutoSparseFastDifferentiation()` |
 | [Tapir.jl](https://github.com/withbayes/Tapir.jl)                                | `AutoTapir()`                                                  |
 
 ## Installation
 
-Until the package is registered, you need to install it from the GitHub repo:
-
-```julia
-julia> using Pkg
-
-julia> Pkg.add(
-        url="https://github.com/gdalle/DifferentiationInterface.jl",
-        subdir="DifferentiationInterface"
-    )
-```
-
-Once the package is registered, you will be able to do:
+In a Julia REPL, run
 
 ```julia
 julia> using Pkg
