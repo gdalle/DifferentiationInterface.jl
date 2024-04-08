@@ -48,6 +48,7 @@ jobs:
       - name: Install dependencies (replaces buildpkg)
         run: julia --project=${{ matrix.pkg.dir}}/ -e '
           using Pkg;
+          Pkg.Registry.update();
           if "${{ matrix.pkg.name}}" == "DifferentiationInterfaceTest";
               Pkg.develop(PackageSpec(path="./DifferentiationInterface"));
           end;
@@ -88,6 +89,7 @@ jobs:
       - name: Install dependencies
         run: julia --project=${{ matrix.pkg.dir}}/docs/ -e '
           using Pkg;
+          Pkg.Registry.update();
           if "${{ matrix.pkg.name}}" == "DifferentiationInterface";
               Pkg.develop(PackageSpec(path="./DifferentiationInterface"));
           else;

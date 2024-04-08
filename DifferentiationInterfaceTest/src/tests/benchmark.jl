@@ -50,12 +50,12 @@ $(TYPEDFIELDS)
     output_size::Tuple
     calls::Int
     samples::Int
+    evals::Int
     time::Float64
     bytes::Float64
     allocs::Float64
     compile_fraction::Float64
     gc_fraction::Float64
-    evals::Float64
 end
 
 function record!(
@@ -80,12 +80,12 @@ function record!(
         output_size=size(scenario.y),
         calls=calls,
         samples=length(bench.samples),
+        evals=Int(bench_min.evals),
         time=bench_min.time,
         bytes=bench_min.bytes,
         allocs=bench_min.allocs,
         compile_fraction=bench_min.compile_fraction,
         gc_fraction=bench_min.gc_fraction,
-        evals=bench_min.evals,
     )
     return push!(data, row)
 end
@@ -98,7 +98,7 @@ function run_benchmark!(
     (; f, x, y, dx) = deepcopy(scen)
     # benchmark
     extras = prepare_pushforward(f, ba, x)
-    bench0 = @be prepare_pushforward(f, ba, x) evals = 1 samples = 2
+    bench0 = @be prepare_pushforward(f, ba, x) evals = 1 samples = 1
     bench1 = @be mysimilar(y) value_and_pushforward!!(f, _, ba, x, dx, extras)
     bench2 = @be mysimilar(y) pushforward!!(f, _, ba, x, dx, extras)
     # count
@@ -123,7 +123,7 @@ function run_benchmark!(
     f! = f
     # benchmark
     extras = prepare_pushforward(f!, ba, y, x)
-    bench0 = @be prepare_pushforward(f!, ba, y, x) evals = 1 samples = 2
+    bench0 = @be prepare_pushforward(f!, ba, y, x) evals = 1 samples = 1
     bench1 = @be (mysimilar(y), mysimilar(y)) value_and_pushforward!!(
         f!, _[1], _[2], ba, x, dx, extras
     )
@@ -153,7 +153,7 @@ function run_benchmark!(
     (; f, x, y, dy) = deepcopy(scen)
     # benchmark
     extras = prepare_pullback(f, ba, x)
-    bench0 = @be prepare_pullback(f, ba, x) evals = 1 samples = 2
+    bench0 = @be prepare_pullback(f, ba, x) evals = 1 samples = 1
     bench1 = @be mysimilar(x) value_and_pullback!!(f, _, ba, x, dy, extras)
     bench2 = @be mysimilar(x) pullback!!(f, _, ba, x, dy, extras)
     bench3 = @be value_and_pullback!!_split(f, ba, x, extras)
@@ -188,7 +188,7 @@ function run_benchmark!(
     f! = f
     # benchmark
     extras = prepare_pullback(f!, ba, y, x)
-    bench0 = @be prepare_pullback(f!, ba, y, x) evals = 1 samples = 2
+    bench0 = @be prepare_pullback(f!, ba, y, x) evals = 1 samples = 1
     bench1 = @be (mysimilar(y), mysimilar(x)) value_and_pullback!!(
         f!, _[1], _[2], ba, x, dy, extras
     )
@@ -216,7 +216,7 @@ function run_benchmark!(
     (; f, x, y) = deepcopy(scen)
     # benchmark
     extras = prepare_derivative(f, ba, x)
-    bench0 = @be prepare_derivative(f, ba, x) evals = 1 samples = 2
+    bench0 = @be prepare_derivative(f, ba, x) evals = 1 samples = 1
     bench1 = @be mysimilar(y) value_and_derivative!!(f, _, ba, x, extras)
     bench2 = @be mysimilar(y) derivative!!(f, _, ba, x, extras)
     # count
@@ -241,7 +241,7 @@ function run_benchmark!(
     f! = f
     # benchmark
     extras = prepare_derivative(f!, ba, y, x)
-    bench0 = @be prepare_derivative(f!, ba, y, x) evals = 1 samples = 2
+    bench0 = @be prepare_derivative(f!, ba, y, x) evals = 1 samples = 1
     bench1 = @be (mysimilar(y), mysimilar(y)) value_and_derivative!!(
         f!, _[1], _[2], ba, x, extras
     )
@@ -265,7 +265,7 @@ function run_benchmark!(
     (; f, x) = deepcopy(scen)
     # benchmark
     extras = prepare_gradient(f, ba, x)
-    bench0 = @be prepare_gradient(f, ba, x) evals = 1 samples = 2
+    bench0 = @be prepare_gradient(f, ba, x) evals = 1 samples = 1
     bench1 = @be mysimilar(x) value_and_gradient!!(f, _, ba, x, extras)
     bench2 = @be mysimilar(x) gradient!!(f, _, ba, x, extras)
     # count
@@ -292,7 +292,7 @@ function run_benchmark!(
     jac_template = Matrix{eltype(y)}(undef, length(y), length(x))
     # benchmark
     extras = prepare_jacobian(f, ba, x)
-    bench0 = @be prepare_jacobian(f, ba, x) evals = 1 samples = 2
+    bench0 = @be prepare_jacobian(f, ba, x) evals = 1 samples = 1
     bench1 = @be mysimilar(jac_template) value_and_jacobian!!(f, _, ba, x, extras)
     bench2 = @be mysimilar(jac_template) jacobian!!(f, _, ba, x, extras)
     # count
@@ -318,7 +318,7 @@ function run_benchmark!(
     jac_template = Matrix{eltype(y)}(undef, length(y), length(x))
     # benchmark
     extras = prepare_jacobian(f!, ba, y, x)
-    bench0 = @be prepare_jacobian(f!, ba, y, x) evals = 1 samples = 2
+    bench0 = @be prepare_jacobian(f!, ba, y, x) evals = 1 samples = 1
     bench1 = @be (mysimilar(y), mysimilar(jac_template)) value_and_jacobian!!(
         f!, _[1], _[2], ba, x, extras
     )
@@ -344,7 +344,7 @@ function run_benchmark!(
     (; f, x, y) = deepcopy(scen)
     # benchmark
     extras = prepare_second_derivative(f, ba, x)
-    bench0 = @be prepare_second_derivative(f, ba, x) evals = 1 samples = 2
+    bench0 = @be prepare_second_derivative(f, ba, x) evals = 1 samples = 1
     bench1 = @be mysimilar(y) second_derivative!!(f, _, ba, x, extras)
     # count
     cc = CallCounter(f)
@@ -366,7 +366,7 @@ function run_benchmark!(
     (; f, x, y, dx) = deepcopy(scen)
     # benchmark
     extras = prepare_hvp(f, ba, x, dx)
-    bench0 = @be prepare_hvp(f, ba, x, dx) evals = 1 samples = 2
+    bench0 = @be prepare_hvp(f, ba, x, dx) evals = 1 samples = 1
     bench1 = @be mysimilar(x) hvp!!(f, _, ba, x, dx, extras)
     # count
     cc = CallCounter(f)
@@ -389,7 +389,7 @@ function run_benchmark!(
     hess_template = Matrix{typeof(y)}(undef, length(x), length(x))
     # benchmark
     extras = prepare_hessian(f, ba, x)
-    bench0 = @be prepare_hessian(f, ba, x) evals = 1 samples = 2
+    bench0 = @be prepare_hessian(f, ba, x) evals = 1 samples = 1
     bench1 = @be mysimilar(hess_template) hessian!!(f, _, ba, x, extras)
     # count
     cc = CallCounter(f)
