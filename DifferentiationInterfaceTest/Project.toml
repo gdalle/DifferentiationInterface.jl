@@ -19,7 +19,7 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
 ADTypes = "0.2.7"
-Chairmarks = "1.2"
+Chairmarks = "1.2.1"
 ComponentArrays = "0.15"
 DocStringExtensions = "0.9"
 JET = "0.8"

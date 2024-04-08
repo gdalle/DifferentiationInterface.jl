@@ -9,7 +9,7 @@ We present a typical workflow with DifferentiationInterfaceTest.jl, building on 
 ```@repl tuto
 using DifferentiationInterface, DifferentiationInterfaceTest
 import ForwardDiff, Enzyme
-import DataFrames
+import DataFrames, Markdown, PrettyTables, Printf
 ```
 
 ## Introduction
@@ -84,6 +84,15 @@ Here's what the resulting `DataFrame` looks like with all its columns.
 Note that we only compare (possibly) in-place operators, because they are always more efficient.
 
 ```@example tuto
-import Markdown, PrettyTables  # hide
-Markdown.parse(PrettyTables.pretty_table(String, df; backend=Val(:markdown), header=names(df)))  # hide
+function formatter(v, i, j)
+    if j in (14, 15)  # time, bytes
+        return Printf.@sprintf("%.1e", v)
+    elseif j == 16  # allocs
+        return Printf.@sprintf("%.1f", v)
+    else
+        return v
+    end
+end
+table = PrettyTables.pretty_table(String, df; backend=Val(:markdown), header=names(df), formatters=formatter)
+Markdown.parse(table)  # hide
 ```
