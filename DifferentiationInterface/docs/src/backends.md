@@ -79,7 +79,7 @@ You can use [`check_available`](@ref) to verify whether a given backend is loade
 
 ```@example backends
 header = "| backend | available |"  # hide
-subheader = "|---|---|"  # hide
+subheader = "|:---|:---:|"  # hide
 rows = map(all_backends()) do backend  # hide
     "| `$(backend_string(backend))` | $(check_available(backend) ? '✅' : '❌') |"  # hide
 end  # hide
@@ -94,7 +94,7 @@ You can use [`check_mutation`](@ref) to check that feature, like we did below:
 
 ```@example backends
 header = "| backend | mutation |"  # hide
-subheader = "|---|---|"  # hide
+subheader = "|:---|:---:|"  # hide
 rows = map(all_backends()) do backend  # hide
     "| `$(backend_string(backend))` | $(check_mutation(backend) ? '✅' : '❌') |"  # hide
 end  # hide
@@ -108,7 +108,7 @@ You can use [`check_hessian`](@ref) to check that feature, like we did below:
 
 ```@example backends
 header = "| backend | Hessian |"  # hide
-subheader = "|---|---|"  # hide
+subheader = "|:---|:---:|"  # hide
 rows = map(all_backends()) do backend  # hide
     "| `$(backend_string(backend))` | $(check_hessian(backend) ? '✅' : '❌') |"  # hide
 end  # hide
