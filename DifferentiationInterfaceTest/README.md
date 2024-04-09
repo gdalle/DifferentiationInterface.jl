@@ -4,10 +4,10 @@
 [![Coverage](https://codecov.io/gh/gdalle/DifferentiationInterface.jl/branch/main/graph/badge.svg)](https://app.codecov.io/gh/gdalle/DifferentiationInterface.jl)
 [![Code Style: Blue](https://img.shields.io/badge/code%20style-blue-4495d1.svg)](https://github.com/invenia/BlueStyle)
 
-| package                      | docs                                                                                                                                             |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| DifferentiationInterface     | [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterface/dev/)     |
-| DifferentiationInterfaceTest | [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterfaceTest/dev/) |
+|           Package            |                                                                                                                                                    Docs                                                                                                                                                    |
+| :--------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+|   DifferentiationInterface   |   [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterface/stable/)     [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterface/dev/)   |
+| DifferentiationInterfaceTest | [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterfaceTest/stable/) [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterfaceTest/dev/) |
 
 Testing and benchmarking utilities for automatic differentiation (AD) in Julia, based on [DifferentiationInterface](https://github.com/gdalle/DifferentiationInterface.jl/tree/main/DifferentiationInterface).
 
@@ -29,7 +29,15 @@ Make it easy to know, for a given function:
 
 ## Installation
 
-Until the package is registered, you need to install it from the GitHub repo:
+To install the stable version of the package, run the following code in a Julia REPL:
+
+```julia
+julia> using Pkg
+
+julia> Pkg.add("DifferentiationInterfaceTest")
+```
+
+To install the development version, run this instead:
 
 ```julia
 julia> using Pkg
@@ -43,12 +51,4 @@ julia> Pkg.add(
         url="https://github.com/gdalle/DifferentiationInterface.jl",
         subdir="DifferentiationInterfaceTest"
     )
-```
-
-Once the package is registered, you will be able to do:
-
-```julia
-julia> using Pkg
-
-julia> Pkg.add("DifferentiationInterfaceTest")
 ```

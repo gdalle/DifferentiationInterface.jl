@@ -8,7 +8,7 @@ Most backends have custom implementations, which we reuse if possible.
 We choose the following terminology for the high-level operators we provide:
 
 | operator             | input  `x`      | output   `y`                | result type      | result shape             |
-| -------------------- | --------------- | --------------------------- | ---------------- | ------------------------ |
+| :------------------- | :-------------- | :-------------------------- | :--------------- | :----------------------- |
 | [`derivative`](@ref) | `Number`        | `Number` or `AbstractArray` | same as `y`      | `size(y)`                |
 | [`gradient`](@ref)   | `AbstractArray` | `Number`                    | same as `x`      | `size(x)`                |
 | [`jacobian`](@ref)   | `AbstractArray` | `AbstractArray`             | `AbstractMatrix` | `(length(y), length(x))` |
@@ -59,7 +59,7 @@ You can either pick a single backend to do all the work, or combine an "outer" b
 The available operators are similar to first-order ones:
 
 | operator                    | input  `x`      | output   `y`                | result type      | result shape             |
-| --------------------------- | --------------- | --------------------------- | ---------------- | ------------------------ |
+| :-------------------------- | :-------------- | :-------------------------- | :--------------- | :----------------------- |
 | [`second_derivative`](@ref) | `Number`        | `Number` or `AbstractArray` | same as `y`      | `size(y)`                |
 | [`hvp`](@ref)               | `AbstractArray` | `Number`                    | same as `x`      | `size(x)`                |
 | [`hessian`](@ref)           | `AbstractArray` | `Number`                    | `AbstractMatrix` | `(length(x), length(x))` |
@@ -67,7 +67,7 @@ The available operators are similar to first-order ones:
 We only define two variants for now:
 
 | out-of-place                | in-place (or not)             |
-| --------------------------- | ----------------------------- |
+| :-------------------------- | :---------------------------- |
 | [`second_derivative`](@ref) | [`second_derivative!!`](@ref) |
 | [`hvp`](@ref)               | [`hvp!!`](@ref)               |
 | [`hessian`](@ref)           | [`hessian!!`](@ref)           |
@@ -124,7 +124,7 @@ Some reverse mode AD backends expose a "split" option, which runs only the forwa
 We make this available for all backends with the following operators:
 
 |                      | out-of-place                       | in-place (or not)                      |
-| -------------------- | ---------------------------------- | -------------------------------------- |
+| :------------------- | :--------------------------------- | :------------------------------------- |
 | allocating functions | [`value_and_pullback_split`](@ref) | [`value_and_pullback!!_split`](@ref)   |
 | mutating functions   | -                                  | [`value_and_pullback!!_split!!`](@ref) |
 

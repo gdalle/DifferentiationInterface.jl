@@ -6,7 +6,7 @@ To be usable with DifferentiationInterface.jl, an AD backend needs an object sub
 In addition, some operators must be defined:
 
 | backend subtype                               | pushforward necessary | pullback necessary |
-| --------------------------------------------- | --------------------- | ------------------ |
+| :-------------------------------------------- | :-------------------- | :----------------- |
 | `ADTypes.AbstractForwardMode`                 | yes                   | no                 |
 | `ADTypes.AbstractFiniteDifferencesMode`       | yes                   | no                 |
 | `ADTypes.AbstractReverseMode`                 | no                    | yes                |
