@@ -9,9 +9,14 @@ for AutoSparse in SPARSE_BACKENDS
         function DI.prepare_jacobian(
             f!, backend::$AutoSparse, y::AbstractArray, x::AbstractArray
         )
-            cache = sparse_jacobian_cache(
-                backend, SymbolicsSparsityDetection(), f!, similar(y), x
-            )
+            sparsity_detector::AbstractMaybeSparsityDetection =
+                if hasfield(typeof(backend), :sparsity_detector) &&
+                    !isnothing(backend.sparsity_detector)
+                    backend.sparsity_detector
+                else
+                    SymbolicsSparsityDetection()
+                end
+            cache = sparse_jacobian_cache(backend, sparsity_detector, f!, similar(y), x)
             return SparseDiffToolsMutatingJacobianExtras(cache)
         end
 

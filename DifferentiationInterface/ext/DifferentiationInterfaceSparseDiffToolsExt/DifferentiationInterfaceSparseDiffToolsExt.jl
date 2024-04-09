@@ -5,6 +5,7 @@ import DifferentiationInterface as DI
 using DifferentiationInterface:
     HessianExtras, JacobianExtras, NoHessianExtras, SecondOrder, inner, outer
 using SparseDiffTools:
+    AbstractMaybeSparsityDetection,
     AutoSparseEnzyme,
     JacPrototypeSparsityDetection,
     SymbolicsSparsityDetection,
