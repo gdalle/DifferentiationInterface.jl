@@ -34,7 +34,7 @@ Several variants of each operator are defined:
 | [`pullback`](@ref)    | [`pullback!!`](@ref)    | [`value_and_pullback`](@ref)    | [`value_and_pullback!!`](@ref)    |
 
 !!! warning
-    The "bang-bang" syntactic convention `!!` signals that some of the arguments _can_ be mutated, but they do not _have to be_.
+    We use the syntactic convention `!!` to signal that some of the arguments _can_ be mutated, but they do not _have to be_.
     Such arguments will always be part of the return, so that one can simply reuse the operator's output and forget its input.
     In other words, this is good:
     ```julia
