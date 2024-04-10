@@ -43,7 +43,7 @@ DifferentiationInterfaceZygoteExt = "Zygote"
 [compat]
 ADTypes = "0.2.7"
 ChainRulesCore = "1.23.0"
-Diffractor = "0.2.6"
+Diffractor = "=0.2.6"
 DocStringExtensions = "0.9.3"
 Enzyme = "0.11.20"
 FastDifferentiation = "0.3.7"
