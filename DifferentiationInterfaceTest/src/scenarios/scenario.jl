@@ -41,7 +41,7 @@ abstract type AbstractScenario{A,O,F,X,Y,R} end
 abstract type AbstractFirstOrderScenario{A,O,F,X,Y,R} <: AbstractScenario{A,O,F,X,Y,R} end
 abstract type AbstractSecondOrderScenario{A,O,F,X,Y,R} <: AbstractScenario{A,O,F,X,Y,R} end
 
-function compatible(backend::AbstractADType, ::AbstractScenario{A}) where A
+function compatible(backend::AbstractADType, ::AbstractScenario{A}) where {A}
     if A == 2
         return Bool(supports_mutation(backend))
     end

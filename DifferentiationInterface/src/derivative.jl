@@ -82,31 +82,29 @@ end
 ## Two arguments
 
 """
-    value_and_derivative!(f!, y, der, backend, x, [extras]) -> (y, der)
+    value_and_derivative!(f!, (y, der), backend, x, [extras]) -> (y, der)
 """
 function value_and_derivative!(
     f!,
-    y,
-    der,
+    y_and_der::Tuple{<:Any,<:Any},
     backend::AbstractADType,
     x,
-    extras::DerivativeExtras=prepare_derivative(f!, backend, y, x),
+    extras::DerivativeExtras=prepare_derivative(f!, backend, y_and_der[1], x),
 )
     return value_and_pushforward!(
-        f!, y, der, backend, x, one(x), extras.pushforward_extras
+        f!, y_and_der, backend, x, one(x), extras.pushforward_extras
     )
 end
 
 """
-    derivative!(f!, y, der, backend, x, [extras]) -> der
+    derivative!(f!, (y, der), backend, x, [extras]) -> der
 """
 function derivative!(
     f!,
-    y,
-    der,
+    y_and_der::Tuple{<:Any,<:Any},
     backend::AbstractADType,
     x,
-    extras::DerivativeExtras=prepare_derivative(f!, backend, y, x),
+    extras::DerivativeExtras=prepare_derivative(f!, backend, y_and_der[1], x),
 )
-    return pushforward!(f!, y, der, backend, x, one(x), extras.pushforward_extras)
+    return pushforward!(f!, y_and_der, backend, x, one(x), extras.pushforward_extras)
 end

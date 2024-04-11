@@ -21,10 +21,8 @@ Filtering:
 
 - `input_type=Any`: restrict scenario inputs to subtypes of this
 - `output_type=Any`: restrict scenario outputs to subtypes of this
-- `allocating=true`: consider operators for allocating functions
-- `mutating=true`: consider operators for mutating functions
-- `first_order=true`: consider first order operators
-- `second_order=true`: consider second order operators
+- `first_order=true`: include first order operators
+- `second_order=true`: include second order operators
 
 Options:
 
@@ -46,8 +44,6 @@ function test_differentiation(
     # filtering
     input_type::Type=Any,
     output_type::Type=Any,
-    allocating=true,
-    mutating=true,
     first_order=true,
     second_order=true,
     excluded=[],
@@ -58,14 +54,7 @@ function test_differentiation(
     rtol=1e-3,
 )
     scenarios = filter_scenarios(
-        scenarios;
-        first_order,
-        second_order,
-        input_type,
-        output_type,
-        allocating,
-        mutating,
-        excluded,
+        scenarios; first_order, second_order, input_type, output_type, excluded
     )
 
     title_additions =
@@ -135,8 +124,6 @@ function benchmark_differentiation(
     # filtering
     input_type::Type=Any,
     output_type::Type=Any,
-    allocating=true,
-    mutating=true,
     first_order=true,
     second_order=true,
     excluded=[],
@@ -144,14 +131,7 @@ function benchmark_differentiation(
     logging=false,
 )
     scenarios = filter_scenarios(
-        scenarios;
-        first_order,
-        second_order,
-        input_type,
-        output_type,
-        allocating,
-        mutating,
-        excluded,
+        scenarios; first_order, second_order, input_type, output_type, excluded
     )
 
     benchmark_data = BenchmarkDataRow[]

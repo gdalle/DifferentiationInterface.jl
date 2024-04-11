@@ -117,38 +117,37 @@ end
 ## Two arguments
 
 """
-    value_and_pushforward!(f!, y, dy, backend, x, dx, [extras]) -> (y, dy)
+    value_and_pushforward!(f!, (y, dy), backend, x, dx, [extras]) -> (y, dy)
 
 !!! info
     Required primitive for forward mode backends to support mutating functions.
 """
 function value_and_pushforward!(
     f!,
-    y,
-    dy,
+    y_and_dy::Tuple{<:Any,<:Any},
     backend::AbstractADType,
     x,
     dx,
-    extras::PushforwardExtras=prepare_pushforward(f!, backend, y, x),
+    extras::PushforwardExtras=prepare_pushforward(f!, backend, y_and_dy[1], x),
 )
-    return value_and_pushforward_aux!(f!, y, dy, backend, x, dx, extras)
+    return value_and_pushforward_twoarg_aux!(f!, y_and_dy, backend, x, dx, extras)
 end
 
-function value_and_pushforward_aux!(
-    f!, y, dy, backend, x, dx, extras::PullbackPushforwardExtras
+function value_and_pushforward_twoarg_aux!(
+    f!, (y, dy), backend, x, dx, extras::PullbackPushforwardExtras
 )
     (; pullback_extras) = extras
     if x isa Number && y isa AbstractArray
         map!(dy, CartesianIndices(y)) do i
             dx *
-            pullback!(f!, y, zero(x), backend, x, basis(backend, y, i), pullback_extras)
+            pullback!(f!, (y, zero(x)), backend, x, basis(backend, y, i), pullback_extras)
         end
     elseif x isa AbstractArray && y isa AbstractArray
         map!(dy, CartesianIndices(y)) do i
             dot(
                 dx,
                 pullback!(
-                    f!, y, similar(x), backend, x, basis(backend, y, i), pullback_extras
+                    f!, (y, similar(x)), backend, x, basis(backend, y, i), pullback_extras
                 ),
             )
         end
@@ -158,16 +157,15 @@ function value_and_pushforward_aux!(
 end
 
 """
-    pushforward!(f!, y, dy, backend, x, dx, [extras]) -> dy
+    pushforward!(f!, (y, dy), backend, x, dx, [extras]) -> dy
 """
 function pushforward!(
     f!,
-    y,
-    dy,
+    y_and_dy::Tuple{<:Any,<:Any},
     backend::AbstractADType,
     x,
     dx,
-    extras::PushforwardExtras=prepare_pushforward(f!, backend, y, x),
+    extras::PushforwardExtras=prepare_pushforward(f!, backend, y_and_dy[1], x),
 )
-    return value_and_pushforward!(f!, y, dy, backend, x, dx, extras)[2]
+    return value_and_pushforward!(f!, y_and_dy, backend, x, dx, extras)[2]
 end

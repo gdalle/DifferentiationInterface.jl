@@ -148,60 +148,46 @@ end
 """
 function value_and_jacobian!(
     f!,
-    y,
-    jac,
+    y_and_jac::Tuple{<:Any,<:Any},
     backend::AbstractADType,
     x,
-    extras::JacobianExtras=prepare_jacobian(f!, backend, y, x),
+    extras::JacobianExtras=prepare_jacobian(f!, backend, y_and_jac[1], x),
 )
-    return value_and_jacobian_aux!(f!, y, jac, backend, x, extras)
+    return value_and_jacobian_aux!(f!, y_and_jac, backend, x, extras)
 end
 
 function value_and_jacobian_aux!(
-    f!,
-    y::AbstractArray,
-    jac::AbstractMatrix,
-    backend,
-    x::AbstractArray,
-    extras::PushforwardJacobianExtras,
+    f!, (y, jac), backend, x::AbstractArray, extras::PushforwardJacobianExtras
 )
     for (k, j) in enumerate(CartesianIndices(x))
         dx_j = basis(backend, x, j)
         jac_col_j = reshape(view(jac, :, k), size(y))
-        pushforward!(f!, y, jac_col_j, backend, x, dx_j, extras.pushforward_extras)
+        pushforward!(f!, (y, jac_col_j), backend, x, dx_j, extras.pushforward_extras)
     end
     return y, jac
 end
 
 function value_and_jacobian_aux!(
-    f!,
-    y::AbstractArray,
-    jac::AbstractMatrix,
-    backend,
-    x::AbstractArray,
-    extras::PullbackJacobianExtras,
+    f!, (y, jac), backend, x::AbstractArray, extras::PullbackJacobianExtras
 )
-    y, pullbackfunc! = value_and_pullback!_split!(
-        f!, y, backend, x, extras.pullback_extras
-    )
+    y, pullbackfunc! = value_and_pullback!_split!(f!, y, backend, x, extras.pullback_extras)
     for (k, i) in enumerate(CartesianIndices(y))
         dy_i = basis(backend, y, i)
         jac_row_i = reshape(view(jac, k, :), size(x))
-        pullbackfunc!(y, jac_row_i, dy_i)
+        pullbackfunc!((y, jac_row_i), dy_i)
     end
     return y, jac
 end
 
 """
-    jacobian!(f!, y, jac, backend, x, [extras]) -> jac
+    jacobian!(f!, (y, jac), backend, x, [extras]) -> jac
 """
 function jacobian!(
     f!,
-    y,
-    jac,
+    y_and_jac::Tuple{<:Any,<:Any},
     backend::AbstractADType,
     x,
-    extras::JacobianExtras=prepare_jacobian(f!, backend, y, x),
+    extras::JacobianExtras=prepare_jacobian(f!, backend, y_and_jac[1], x),
 )
-    return value_and_jacobian!(f!, y, jac, backend, x, extras)[2]
+    return value_and_jacobian!(f!, y_and_jac, backend, x, extras)[2]
 end

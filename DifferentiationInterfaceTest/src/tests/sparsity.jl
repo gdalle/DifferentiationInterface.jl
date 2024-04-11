@@ -56,12 +56,12 @@ function test_sparsity(ba::AbstractADType, scen::JacobianScenario{2,:inplace}; r
     extras = prepare_jacobian(f!, ba, y, x)
     jac_shape = Matrix{eltype(y)}(undef, length(y), length(x))
     jac_true = if ref_backend isa AbstractADType
-        jacobian!(f!, mysimilar(y), mysimilar(jac_shape), ref_backend, x)
+        jacobian!(f!, (mysimilar(y), mysimilar(jac_shape)), ref_backend, x)
     else
         new_scen.ref(x)
     end
 
-    _, jac1 = value_and_jacobian!(f!, mysimilar(y), mysimilar(jac_true), ba, x, extras)
+    _, jac1 = value_and_jacobian!(f!, (mysimilar(y), mysimilar(jac_true)), ba, x, extras)
 
     @testset "Sparse type" begin
         @test jac1 isa SparseMatrixCSC

@@ -51,9 +51,7 @@ function DI.derivative(f, backend::AnyAutoPolyForwardDiff, x, extras::Derivative
     return DI.derivative(f, single_threaded(backend), x, extras)
 end
 
-function DI.derivative!(
-    f, dy, backend::AnyAutoPolyForwardDiff, x, extras::DerivativeExtras
-)
+function DI.derivative!(f, dy, backend::AnyAutoPolyForwardDiff, x, extras::DerivativeExtras)
     return DI.derivative!(f, dy, single_threaded(backend), x, extras)
 end
 

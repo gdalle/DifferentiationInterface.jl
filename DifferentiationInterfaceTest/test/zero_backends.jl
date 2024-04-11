@@ -20,8 +20,9 @@ for backend in [
     test_differentiation(
         backend,
         default_scenarios();
-        correctness=backend,
+        correctness=true,
         first_order=false,
+        ref_backend=backend,
         logging=get(ENV, "CI", "false") == "false",
     )
 end

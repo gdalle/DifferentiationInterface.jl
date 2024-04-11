@@ -28,10 +28,14 @@ function DI.value_and_pushforward!(f, dy, ::AutoZeroForward, x, dx, ::NoPushforw
 end
 
 function DI.value_and_pushforward!(
-    f!, y, dy, ::AutoZeroForward, x, dx, ::NoPushforwardExtras
+    f!, (y, dy)::Tuple{<:Any,<:Any}, ::AutoZeroForward, x, dx, ::NoPushforwardExtras
 )
     f!(y, x)
-    zero!(dy)
+    if dy isa Number
+        dy = zero(dy)
+    elseif dy isa AbstractArray
+        zero!(dy)
+    end
     return y, dy
 end
 
@@ -62,8 +66,14 @@ function DI.value_and_pullback!(f, dx, ::AutoZeroReverse, x, dy, ::NoPullbackExt
     return y, dx
 end
 
-function DI.value_and_pullback!(f!, y, dx, ::AutoZeroReverse, x, dy, ::NoPullbackExtras)
+function DI.value_and_pullback!(
+    f!, (y, dx)::Tuple{<:Any,<:Any}, ::AutoZeroReverse, x, dy, ::NoPullbackExtras
+)
     f!(y, x)
-    zero!(dx)
+    if dx isa Number
+        dx = zero(dx)
+    elseif dx isa AbstractArray
+        zero!(dx)
+    end
     return y, dx
 end

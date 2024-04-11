@@ -96,16 +96,16 @@ function test_correctness(
     f! = f
     extras = prepare_pushforward(f!, ba, y, x)
     dy_true = if ref_backend isa AbstractADType
-        last(value_and_pushforward!(f!, mysimilar(y), mysimilar(y), ref_backend, x, dx))
+        pushforward!(f!, (mysimilar(y), mysimilar(y)), ref_backend, x, dx)
     else
         new_scen.ref(x, dx)
     end
 
     y1_in, dy1_in = mysimilar(y), mysimilar(y)
-    y1, dy1 = value_and_pushforward!(f!, y1_in, dy1_in, ba, x, dx, extras)
+    y1, dy1 = value_and_pushforward!(f!, (y1_in, dy1_in), ba, x, dx, extras)
 
     y2_in, dy2_in = mysimilar(y), mysimilar(y)
-    dy2 = pushforward!(f!, y2_in, dy2_in, ba, x, dx, extras)
+    dy2 = pushforward!(f!, (y2_in, dy2_in), ba, x, dx, extras)
 
     let (≈)(x, y) = isapprox(x, y; atol, rtol)
         @testset "Primal value" begin
@@ -221,23 +221,22 @@ function test_correctness(
     f! = f
     extras = prepare_pullback(f!, ba, y, x)
     dx_true = if ref_backend isa AbstractADType
-        last(value_and_pullback!(f, mysimilar(y), mysimilar(x), ref_backend, x, dy))
+        pullback!(f, (mysimilar(y), mysimilar(x)), ref_backend, x, dy)
     else
         new_scen.ref(x, dy)
     end
 
     y1_in, dx1_in = mysimilar(y), mysimilar(x)
-    y1, dx1 = value_and_pullback!(f!, y1_in, dx1_in, ba, x, dy, extras)
+    y1, dx1 = value_and_pullback!(f!, (y1_in, dx1_in), ba, x, dy, extras)
 
     y2_in, dx2_in = mysimilar(y), mysimilar(x)
-    dx2 = pullback!(f!, y2_in, dx2_in, ba, x, dy, extras)
+    dx2 = pullback!(f!, (y2_in, dx2_in), ba, x, dy, extras)
 
     y3_in = mysimilar(y)
     y3, pullbackfunc! = value_and_pullback!_split!(f!, y3_in, ba, x, extras)
-    pullbackfunc!(mysimilar(y), mysimilar(x), dy)  # call once in case the second errors
-    y3_in2 = mysimilar(y)
-    dx3_in = mysimilar(x)
-    dx3 = pullbackfunc!(y3_in2, dx3_in, dy)
+    pullbackfunc!((mysimilar(y), mysimilar(x)), dy)  # call once in case the second errors
+    y3_in2, dx3_in = mysimilar(y), mysimilar(x)
+    dx3 = pullbackfunc!((y3_in2, dx3_in), dy)
 
     let (≈)(x, y) = isapprox(x, y; atol, rtol)
         @testset "Primal value" begin
@@ -343,16 +342,16 @@ function test_correctness(
     f! = f
     extras = prepare_derivative(f!, ba, y, x)
     der_true = if ref_backend isa AbstractADType
-        last(value_and_derivative!(f!, mysimilar(y), mysimilar(y), ref_backend, x))
+        derivative!(f!, (mysimilar(y), mysimilar(y)), ref_backend, x)
     else
         new_scen.ref(x)
     end
 
     y1_in, der1_in = mysimilar(y), mysimilar(y)
-    y1, der1 = value_and_derivative!(f!, y1_in, der1_in, ba, x, extras)
+    y1, der1 = value_and_derivative!(f!, (y1_in, der1_in), ba, x, extras)
 
     y2_in, der2_in = mysimilar(y), mysimilar(y)
-    der2 = derivative!(f!, y2_in, der2_in, ba, x, extras)
+    der2 = derivative!(f!, (y2_in, der2_in), ba, x, extras)
 
     let (≈)(x, y) = isapprox(x, y; atol, rtol)
         @testset "Primal value" begin
@@ -527,16 +526,16 @@ function test_correctness(
     extras = prepare_jacobian(f!, ba, y, x)
     jac_shape = Matrix{eltype(y)}(undef, length(y), length(x))
     jac_true = if ref_backend isa AbstractADType
-        jacobian!(f!, mysimilar(y), mysimilar(jac_shape), ref_backend, x)
+        jacobian!(f!, (mysimilar(y), mysimilar(jac_shape)), ref_backend, x)
     else
         new_scen.ref(x)
     end
 
     y1_in, jac1_in = mysimilar(y), mysimilar(jac_true)
-    y1, jac1 = value_and_jacobian!(f!, y1_in, jac1_in, ba, x, extras)
+    y1, jac1 = value_and_jacobian!(f!, (y1_in, jac1_in), ba, x, extras)
 
     y2_in, jac2_in = mysimilar(y), mysimilar(jac_true)
-    jac2 = jacobian!(f!, y2_in, jac2_in, ba, x, extras)
+    jac2 = jacobian!(f!, (y2_in, jac2_in), ba, x, extras)
 
     let (≈)(x, y) = isapprox(x, y; atol, rtol)
         @testset "Primal value" begin
