@@ -3,20 +3,26 @@
 ## Operators
 
 Depending on the type of input and output, differentiation operators can have various names.
-Most backends have custom implementations, which we reuse if possible.
 
-We choose the following terminology for the high-level operators we provide:
+We provide the following high-level operators:
 
-| operator             | input  `x`      | output   `y`                | result type      | result shape             |
-| :------------------- | :-------------- | :-------------------------- | :--------------- | :----------------------- |
-| [`derivative`](@ref) | `Number`        | `Number` or `AbstractArray` | same as `y`      | `size(y)`                |
-| [`gradient`](@ref)   | `AbstractArray` | `Number`                    | same as `x`      | `size(x)`                |
-| [`jacobian`](@ref)   | `AbstractArray` | `AbstractArray`             | `AbstractMatrix` | `(length(y), length(x))` |
+| operator                    | order | input  `x`      | output   `y`                | result type      | result shape             |
+| :-------------------------- | :---- | :-------------- | :-------------------------- | :--------------- | :----------------------- |
+| [`derivative`](@ref)        | 1     | `Number`        | `Number` or `AbstractArray` | same as `y`      | `size(y)`                |
+| [`second_derivative`](@ref) | 2     | `Number`        | `Number` or `AbstractArray` | same as `y`      | `size(y)`                |
+| [`gradient`](@ref)          | 1     | `AbstractArray` | `Number`                    | same as `x`      | `size(x)`                |
+| [`hvp`](@ref)               | 2     | `AbstractArray` | `Number`                    | same as `x`      | `size(x)`                |
+| [`hessian`](@ref)           | 2     | `AbstractArray` | `Number`                    | `AbstractMatrix` | `(length(x), length(x))` |
+| [`jacobian`](@ref)          | 1     | `AbstractArray` | `AbstractArray`             | `AbstractMatrix` | `(length(y), length(x))` |
 
-They are all based on the following low-level operators:
+They can all be derived from two low-level operators:
 
-- [`pushforward`](@ref) (or JVP), to propagate input tangents
-- [`pullback`](@ref) (or VJP), to backpropagate output cotangents
+| operator                       | order | input  `x` | output   `y` | result type | result shape |
+| :----------------------------- | :---- | :--------- | :----------- | :---------- | :----------- |
+| [`pushforward`](@ref) (or JVP) | 1     | `Any`      | `Any`        | same as `y` | `size(y)`    |
+| [`pullback`](@ref) (or VJP)    | 1     | `Any`      | `Any`        | same as `x` | `size(x)`    |
+
+However, most backends have custom implementations, which we reuse if possible instead of relying on fallbacks.
 
 !!! tip
     See the book [The Elements of Differentiable Programming](https://arxiv.org/abs/2403.14606) for details on these concepts.
@@ -25,41 +31,20 @@ They are all based on the following low-level operators:
 
 Several variants of each operator are defined:
 
-| out-of-place          | in-place               | out-of-place + primal           | in-place                         |
-| :-------------------- | :--------------------- | :------------------------------ | :------------------------------- |
-| [`derivative`](@ref)  | [`derivative!`](@ref)  | [`value_and_derivative`](@ref)  | [`value_and_derivative!`](@ref)  |
-| [`gradient`](@ref)    | [`gradient!`](@ref)    | [`value_and_gradient`](@ref)    | [`value_and_gradient!`](@ref)    |
-| [`jacobian`](@ref)    | [`jacobian!`](@ref)    | [`value_and_jacobian`](@ref)    | [`value_and_jacobian!`](@ref)    |
-| [`pushforward`](@ref) | [`pushforward!`](@ref) | [`value_and_pushforward`](@ref) | [`value_and_pushforward!`](@ref) |
-| [`pullback`](@ref)    | [`pullback!`](@ref)    | [`value_and_pullback`](@ref)    | [`value_and_pullback!`](@ref)    |
-
-## Second order
-
-Second-order differentiation is also supported.
-You can either pick a single backend to do all the work, or combine an "outer" backend with an "inner" backend using the [`SecondOrder`](@ref) struct, like so: `SecondOrder(outer, inner)`.
-
-The available operators are similar to first-order ones:
-
-| operator                    | input  `x`      | output   `y`                | result type      | result shape             |
-| :-------------------------- | :-------------- | :-------------------------- | :--------------- | :----------------------- |
-| [`second_derivative`](@ref) | `Number`        | `Number` or `AbstractArray` | same as `y`      | `size(y)`                |
-| [`hvp`](@ref)               | `AbstractArray` | `Number`                    | same as `x`      | `size(x)`                |
-| [`hessian`](@ref)           | `AbstractArray` | `Number`                    | `AbstractMatrix` | `(length(x), length(x))` |
-
-We only define two variants for now:
-
-| out-of-place                | in-place                     |
-| :-------------------------- | :--------------------------- |
-| [`second_derivative`](@ref) | [`second_derivative!`](@ref) |
-| [`hvp`](@ref)               | [`hvp!`](@ref)               |
-| [`hessian`](@ref)           | [`hessian!`](@ref)           |
-
-!!! danger
-    Second-order differentiation is still experimental, use at your own risk.
+| out-of-place                | in-place                     | out-of-place + primal           | in-place + primal                |
+| :-------------------------- | :--------------------------- | :------------------------------ | :------------------------------- |
+| [`derivative`](@ref)        | [`derivative!`](@ref)        | [`value_and_derivative`](@ref)  | [`value_and_derivative!`](@ref)  |
+| [`second_derivative`](@ref) | [`second_derivative!`](@ref) | NA                              | NA                               |
+| [`gradient`](@ref)          | [`gradient!`](@ref)          | [`value_and_gradient`](@ref)    | [`value_and_gradient!`](@ref)    |
+| [`hvp`](@ref)               | [`hvp!`](@ref)               | NA                              | NA                               |
+| [`hessian`](@ref)           | [`hessian!`](@ref)           | NA                              | NA                               |
+| [`jacobian`](@ref)          | [`jacobian!`](@ref)          | [`value_and_jacobian`](@ref)    | [`value_and_jacobian!`](@ref)    |
+| [`pushforward`](@ref)       | [`pushforward!`](@ref)       | [`value_and_pushforward`](@ref) | [`value_and_pushforward!`](@ref) |
+| [`pullback`](@ref)          | [`pullback!`](@ref)          | [`value_and_pullback`](@ref)    | [`value_and_pullback!`](@ref)    |
 
 ## Preparation
 
-In many cases, AD can be accelerated if the function has been run at least once (e.g. to record a tape) and if some cache objects are provided.
+In many cases, AD can be accelerated if the function has been run at least once (e.g. to create a config or record a tape) and if some cache objects are provided.
 This is a backend-specific procedure, but we expose a common syntax to achieve it.
 
 | operator            | preparation function                |
@@ -73,42 +58,76 @@ This is a backend-specific procedure, but we expose a common syntax to achieve i
 | `pullback`          | [`prepare_pullback`](@ref)          |
 | `hvp`               | [`prepare_hvp`](@ref)               |
 
-If you run `prepare_operator(backend, f, x)`, it will create an object called `extras` containing the necessary information to speed up `operator` and its variants.
-This information is specific to `backend` and `f`, as well as the _type and size_ of the input `x`, but it should work with different _values_ of `x`.
+If you run `prepare_operator(backend, f, x, [seed])`, it will create an object called `extras` containing the necessary information to speed up `operator` and its variants.
+This information is specific to `backend` and `f`, as well as the _type and size_ of the input `x` and the _control flow_ within the function, but it should work with different _values_ of `x`.
 
 You can then call `operator(backend, f, x2, extras)`, which should be faster than `operator(f, backend, x2)`.
 This is especially worth it if you plan to call `operator` several times in similar settings: you can think of it as a warm up.
 
 !!! warning
-    For `SecondOrder` backends, the inner differentiation cannot be prepared at the moment, only the outer one is.
+    The `extras` object is nearly always mutated, even if the operator does not have a `!` in its name.
 
-## FAQ
+## Mutation and signatures
 
-### Multiple inputs/outputs
+In order to ensure symmetry between one-argument functions `f(x) = y` and two-argument functions `f!(y, x) = nothing`, we define the same operators for both cases, but with different signatures:
 
-Restricting the API to one input and one output has many coding advantages, but it is not very flexible.
-If you need more than that, use [ComponentArrays.jl](https://github.com/jonniedie/ComponentArrays.jl) to wrap several objects inside a single `ComponentVector`.
+|               | out-of-place                       | in-place                                 | out-of-place + primal                        | in-place + primal                                  |
+| :------------ | :--------------------------------- | :--------------------------------------- | :------------------------------------------- | :------------------------------------------------- |
+| one argument  | `operator(f,     backend, x, ...)` | `operator!(f,     res, backend, x, ...)` | `value_and_operator(f,     backend, x, ...)` | `value_and_operator!(f,     res, backend, x, ...)` |
+| two arguments | `operator(f!, y, backend, x, ...)` | `operator!(f!, y, res, backend, x, ...)` | `value_and_operator(f!, y, backend, x, ...)` | `value_and_operator!(f!, y, res, backend, x, ...)` |
+
+!!! warning
+    In particular, every variant of the operator will mutate `y` when applied to a two-argument function, even if it does not have a `!` in its name.
+
+### Second order
+
+We offer two ways to perform second-order differentiation (for [`second_derivative`](@ref), [`hvp`](@ref) and [`hessian`](@ref)):
+
+- pick a single backend to do all the work
+- combine an "outer" and "inner" backend within the [`SecondOrder`](@ref) struct: the inner backend will be called first, and the outer backend will differentiate the generated code
+
+!!! warning
+    There are many possible backend combinations, a lot of which will fail.
+    At the moment, trial and error is your best friend.
+    Usually, the most efficient approach for Hessians is forward-over-reverse, i.e. a forward-mode outer backend and a reverse-mode inner backend.
+
+## Experimental
+
+!!! danger
+    Everything in this section is still experimental, use it at your own risk.
 
 ### Sparsity
 
-If you need to work with sparse Jacobians, you can pick one of the [sparse backends](@ref Sparse) from [ADTypes.jl](https://github.com/SciML/ADTypes.jl).
+If you know that your Jacobian is sparse, you can pick one of the [sparse first-order backends](@ref Sparse) from [ADTypes.jl](https://github.com/SciML/ADTypes.jl).
 The sparsity pattern is computed automatically with [Symbolics.jl](https://github.com/JuliaSymbolics/Symbolics.jl) during the preparation step.
 
-If you need to work with sparse Hessians, you can use a sparse backend as the _outer_ backend of a `SecondOrder`.
-This means the Hessian is obtained as the sparse Jacobian of the gradient.
-
-!!! danger
-    Sparsity support is still experimental, use at your own risk.
+If you know that your Hessian is sparse, you can use a sparse first-order backend as the _outer_ part of a `SecondOrder` backend.
+In that case, the Hessian is obtained as the sparse Jacobian of the gradient.
 
 ### Split reverse mode
 
 Some reverse mode AD backends expose a "split" option, which runs only the forward sweep, and encapsulates the reverse sweep in a closure.
 We make this available for all backends with the following operators:
 
-|                      | out-of-place                       | in-place (or not)                     |
-| :------------------- | :--------------------------------- | :------------------------------------ |
-| allocating functions | [`value_and_pullback_split`](@ref) | [`value_and_pullback!_split`](@ref)  |
-| mutating functions   | -                                  | [`value_and_pullback!_split!`](@ref) |
+| out-of-place                       | in-place                            |
+| :--------------------------------- | :---------------------------------- |
+| [`value_and_pullback_split`](@ref) | [`value_and_pullback!_split`](@ref) |
 
-!!! danger
-    Split reverse mode is still experimental, use at your own risk.
+## Not supported
+
+### Batched evaluation
+
+!!! info
+    This feature is planned but not yet implemented.
+
+### Non-standard types
+
+The package is thoroughly tested with inputs and outputs of the following types: `Float64`, `Vector{Float64}` and `Matrix{Float64}`.
+We also expect it to work on all kinds of `Number` and `AbstractArray` variables.
+Beyond that, you are in uncharted territory.
+We voluntarily keep the type annotations minimal, so that passing custom structs _might work with some backends_, but we make no guarantees about that.
+
+### Multiple inputs/outputs
+
+Restricting the API to one input and one output has many coding advantages, but it is not very flexible.
+If you need more than that, use [ComponentArrays.jl](https://github.com/jonniedie/ComponentArrays.jl) to wrap several objects inside a single `ComponentVector`.

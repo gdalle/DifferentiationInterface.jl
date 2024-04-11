@@ -20,7 +20,7 @@ This package provides a backend-agnostic syntax to differentiate functions of th
 
 ## Features
 
-- First and second order operators
+- First- and second-order operators
 - In-place and out-of-place differentiation
 - Preparation mechanism (e.g. to create a config or tape)
 - Thorough validation on standard inputs and outputs (scalars, vectors, matrices)
