@@ -22,7 +22,7 @@ They can all be derived from two low-level operators:
 | [`pushforward`](@ref) (or JVP) | 1     | `Any`      | `Any`        | same as `y` | `size(y)`    |
 | [`pullback`](@ref) (or VJP)    | 1     | `Any`      | `Any`        | same as `x` | `size(x)`    |
 
-However, most backends have custom implementations, which we reuse if possible instead of relying on fallbacks.
+Luckily, most backends have custom implementations, which we reuse if possible instead of relying on fallbacks.
 
 !!! tip
     See the book [The Elements of Differentiable Programming](https://arxiv.org/abs/2403.14606) for details on these concepts.
@@ -41,6 +41,19 @@ Several variants of each operator are defined:
 | [`jacobian`](@ref)          | [`jacobian!`](@ref)          | [`value_and_jacobian`](@ref)    | [`value_and_jacobian!`](@ref)    |
 | [`pushforward`](@ref)       | [`pushforward!`](@ref)       | [`value_and_pushforward`](@ref) | [`value_and_pushforward!`](@ref) |
 | [`pullback`](@ref)          | [`pullback!`](@ref)          | [`value_and_pullback`](@ref)    | [`value_and_pullback!`](@ref)    |
+
+## Mutation and signatures
+
+In order to ensure symmetry between one-argument functions `f(x) = y` and two-argument functions `f!(y, x) = nothing`, we define the same operators for both cases.
+However they have different signatures:
+
+| signature  | out-of-place                       | in-place                                 |
+| :--------- | :--------------------------------- | :--------------------------------------- |
+| `f(x)`     | `operator(f,     backend, x, ...)` | `operator!(f,     res, backend, x, ...)` |
+| `f!(y, x)` | `operator(f!, y, backend, x, ...)` | `operator!(f!, y, res, backend, x, ...)` |
+
+!!! warning
+    Every variant of the operator will mutate `y` when applied to a two-argument function `f!(y, x) = nothing`, even if it does not have a `!` in its name.
 
 ## Preparation
 
@@ -67,18 +80,6 @@ This is especially worth it if you plan to call `operator` several times in simi
 !!! warning
     The `extras` object is nearly always mutated, even if the operator does not have a `!` in its name.
 
-## Mutation and signatures
-
-In order to ensure symmetry between one-argument functions `f(x) = y` and two-argument functions `f!(y, x) = nothing`, we define the same operators for both cases, but with different signatures:
-
-|               | out-of-place                       | in-place                                 | out-of-place + primal                        | in-place + primal                                  |
-| :------------ | :--------------------------------- | :--------------------------------------- | :------------------------------------------- | :------------------------------------------------- |
-| one argument  | `operator(f,     backend, x, ...)` | `operator!(f,     res, backend, x, ...)` | `value_and_operator(f,     backend, x, ...)` | `value_and_operator!(f,     res, backend, x, ...)` |
-| two arguments | `operator(f!, y, backend, x, ...)` | `operator!(f!, y, res, backend, x, ...)` | `value_and_operator(f!, y, backend, x, ...)` | `value_and_operator!(f!, y, res, backend, x, ...)` |
-
-!!! warning
-    In particular, every variant of the operator will mutate `y` when applied to a two-argument function, even if it does not have a `!` in its name.
-
 ### Second order
 
 We offer two ways to perform second-order differentiation (for [`second_derivative`](@ref), [`hvp`](@ref) and [`hessian`](@ref)):
@@ -98,11 +99,16 @@ We offer two ways to perform second-order differentiation (for [`second_derivati
 
 ### Sparsity
 
-If you know that your Jacobian is sparse, you can pick one of the [sparse first-order backends](@ref Sparse) from [ADTypes.jl](https://github.com/SciML/ADTypes.jl).
+[ADTypes.jl](https://github.com/SciML/ADTypes.jl) provides [sparse versions](@ref Sparse) of many common AD backends.
+They can accelerate the computation of sparse Jacobians and Hessians:
+
+- for sparse Jacobians, just select one of them as your first-order backend.
+- for sparse Hessians, select one of them as the _outer part_ of a [`SecondOrder`](@ref) backend (in that case, the Hessian is obtained as the sparse Jacobian of the gradient).
+
 The sparsity pattern is computed automatically with [Symbolics.jl](https://github.com/JuliaSymbolics/Symbolics.jl) during the preparation step.
 
-If you know that your Hessian is sparse, you can use a sparse first-order backend as the _outer_ part of a `SecondOrder` backend.
-In that case, the Hessian is obtained as the sparse Jacobian of the gradient.
+!!! info "Planned feature"
+    Modular sparsity pattern computation, with other algorithms beyond those from Symbolics.jl.
 
 ### Split reverse mode
 
@@ -117,15 +123,15 @@ We make this available for all backends with the following operators:
 
 ### Batched evaluation
 
-!!! info
-    This feature is planned but not yet implemented.
+!!! info "Planned feature"
+    Interface for providing several pushforward / pullback seeds at once, similar to the chunking in ForwardDiff.jl or the batches in Enzyme.jl.
 
 ### Non-standard types
 
 The package is thoroughly tested with inputs and outputs of the following types: `Float64`, `Vector{Float64}` and `Matrix{Float64}`.
 We also expect it to work on all kinds of `Number` and `AbstractArray` variables.
 Beyond that, you are in uncharted territory.
-We voluntarily keep the type annotations minimal, so that passing custom structs _might work with some backends_, but we make no guarantees about that.
+We voluntarily keep the type annotations minimal, so that passing more complex objects or custom structs _might work with some backends_, but we make no guarantees about that.
 
 ### Multiple inputs/outputs
 

@@ -11,50 +11,84 @@ DifferentiationInterface
 
 ## Derivative
 
-```@autodocs
-Modules = [DifferentiationInterface]
-Pages = ["src/derivative.jl"]
-Private = false
+```@docs
+prepare_derivative
+derivative
+derivative!
+value_and_derivative
+value_and_derivative!
 ```
 
 ## Gradient
 
-```@autodocs
-Modules = [DifferentiationInterface]
-Pages = ["gradient.jl"]
-Private = false
+```@docs
+prepare_gradient
+gradient
+gradient!
+value_and_gradient
+value_and_gradient!
 ```
 
 ## Jacobian
 
-```@autodocs
-Modules = [DifferentiationInterface]
-Pages = ["jacobian.jl"]
-Private = false
+```@docs
+prepare_jacobian
+jacobian
+jacobian!
+value_and_jacobian
+value_and_jacobian!
 ```
 
 ## Second order
 
-```@autodocs
-Modules = [DifferentiationInterface]
-Pages = ["second_order.jl", "second_derivative.jl", "hessian.jl", "hvp.jl"]
-Private = false
+```@docs
+SecondOrder
+```
+
+```@docs
+prepare_second_derivative
+second_derivative
+second_derivative!
+```
+
+```@docs
+prepare_hvp
+hvp
+hvp!
+```
+
+```@docs
+prepare_hessian
+hessian
+hessian!
 ```
 
 ## Primitives
 
-```@autodocs
-Modules = [DifferentiationInterface]
-Pages = ["pushforward.jl", "pullback.jl"]
-Private = false
+```@docs
+prepare_pushforward
+pushforward
+pushforward!
+value_and_pushforward
+value_and_pushforward!
+```
+
+```@docs
+prepare_pullback
+pullback
+pullback!
+value_and_pullback
+value_and_pullback!
+value_and_pullback_split
+value_and_pullback!_split
 ```
 
 ## Backend queries
 
-```@autodocs
-Modules = [DifferentiationInterface]
-Pages = ["backends.jl"]
-Private = false
+```@docs
+check_available
+check_mutation
+check_hessian
 ```
 
 ## Internals

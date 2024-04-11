@@ -23,7 +23,7 @@ This package provides a backend-agnostic syntax to differentiate functions of th
 - First- and second-order operators
 - In-place and out-of-place differentiation
 - Preparation mechanism (e.g. to create a config or tape)
-- Thorough validation on standard inputs and outputs (scalars, vectors, matrices)
+- Thorough validation on standard inputs and outputs (numbers, vectors, matrices)
 - Testing and benchmarking utilities accessible to users with [DifferentiationInterfaceTest](https://github.com/gdalle/DifferentiationInterface.jl/tree/main/DifferentiationInterfaceTest)
 
 ## Compatibility
