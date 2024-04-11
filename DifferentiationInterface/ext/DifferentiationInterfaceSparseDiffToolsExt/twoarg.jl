@@ -15,24 +15,31 @@ for AutoSparse in SPARSE_BACKENDS
             return SparseDiffToolsTwoArgJacobianExtras(cache)
         end
 
+        function DI.value_and_jacobian(
+            f!, y, backend::$AutoSparse, x, extras::SparseDiffToolsTwoArgJacobianExtras
+        )
+            jac = sparse_jacobian(backend, extras.cache, f!, y, x)
+            f!(y, x)
+            return y, jac
+        end
+
         function DI.value_and_jacobian!(
-            f!,
-            (y, jac)::Tuple,
-            backend::$AutoSparse,
-            x,
-            extras::SparseDiffToolsTwoArgJacobianExtras,
+            f!, y, jac, backend::$AutoSparse, x, extras::SparseDiffToolsTwoArgJacobianExtras
         )
             sparse_jacobian!(jac, backend, extras.cache, f!, y, x)
             f!(y, x)
             return y, jac
         end
 
+        function DI.jacobian(
+            f!, y, backend::$AutoSparse, x, extras::SparseDiffToolsTwoArgJacobianExtras
+        )
+            jac = sparse_jacobian(backend, extras.cache, f!, y, x)
+            return jac
+        end
+
         function DI.jacobian!(
-            f!,
-            (y, jac)::Tuple,
-            backend::$AutoSparse,
-            x,
-            extras::SparseDiffToolsTwoArgJacobianExtras,
+            f!, y, jac, backend::$AutoSparse, x, extras::SparseDiffToolsTwoArgJacobianExtras
         )
             sparse_jacobian!(jac, backend, extras.cache, f!, y, x)
             return jac

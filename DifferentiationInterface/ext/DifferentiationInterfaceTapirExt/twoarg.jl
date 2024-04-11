@@ -8,11 +8,9 @@ end
 
 # see https://github.com/withbayes/Tapir.jl/issues/113#issuecomment-2036718992
 
-function DI.value_and_pullback!(
-    f!, (y, dx)::Tuple, ::AutoTapir, x, dy, extras::TapirTwoArgPullbackExtras
-)
+function DI.value_and_pullback(f!, y, ::AutoTapir, x, dy, extras::TapirTwoArgPullbackExtras)
     dy_righttype = convert(tangent_type(typeof(y)), copy(dy))
-    dx_righttype = convert(tangent_type(typeof(x)), dx)
+    dx_righttype = zero_tangent(x)
 
     # We want the VJP, not VJP + dx, so I'm going to zero-out `dx`. `set_to_zero!!` has the advantage
     # that it will also replace any immutable components of `dx` to zero.
@@ -46,9 +44,5 @@ function DI.value_and_pullback!(
     # Run the reverse-pass.
     _, _, new_dx = pb!!(NoTangent(), df!, dy_righttype, dx_righttype)
 
-    if x isa Number
-        return y, new_dx
-    else
-        return y, copyto!(dx, new_dx)
-    end
+    return y, new_dx
 end

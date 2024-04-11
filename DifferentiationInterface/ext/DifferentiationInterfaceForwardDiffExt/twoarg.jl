@@ -89,9 +89,10 @@ function DI.value_and_jacobian(
     x::AbstractArray,
     extras::ForwardDiffTwoArgJacobianExtras,
 )
-    jac = jacobian(f!, y, x, extras.config)
-    f!(y, x)
-    return y, jac
+    jac = similar(y, length(y), length(x))
+    result = DiffResult(y, jac)
+    result = jacobian!(result, f!, y, x, extras.config)
+    return DiffResults.value(result), DiffResults.jacobian(result)
 end
 
 function DI.value_and_jacobian!(
