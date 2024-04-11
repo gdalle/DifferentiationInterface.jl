@@ -1,6 +1,6 @@
 ## Pushforward
 
-struct FastDifferentiationAllocatingPushforwardExtras{Y,E1,E2} <: PushforwardExtras
+struct FastDifferentiationOneArgPushforwardExtras{Y,E1,E2} <: PushforwardExtras
     y_prototype::Y
     jvp_exe::E1
     jvp_exe!::E2
@@ -20,7 +20,7 @@ function DI.prepare_pushforward(f, ::AnyAutoFastDifferentiation, x)
     jv_vec_var, v_vec_var = jacobian_times_v(y_vec_var, x_vec_var)
     jvp_exe = make_function(jv_vec_var, vcat(x_vec_var, v_vec_var); in_place=false)
     jvp_exe! = make_function(jv_vec_var, vcat(x_vec_var, v_vec_var); in_place=true)
-    return FastDifferentiationAllocatingPushforwardExtras(y_prototype, jvp_exe, jvp_exe!)
+    return FastDifferentiationOneArgPushforwardExtras(y_prototype, jvp_exe, jvp_exe!)
 end
 
 function DI.pushforward(
@@ -28,7 +28,7 @@ function DI.pushforward(
     ::AnyAutoFastDifferentiation,
     x,
     dx,
-    extras::FastDifferentiationAllocatingPushforwardExtras,
+    extras::FastDifferentiationOneArgPushforwardExtras,
 )
     v_vec = vcat(myvec(x), myvec(dx))
     if extras.y_prototype isa Number
@@ -44,7 +44,7 @@ function DI.pushforward!(
     ::AnyAutoFastDifferentiation,
     x,
     dx,
-    extras::FastDifferentiationAllocatingPushforwardExtras,
+    extras::FastDifferentiationOneArgPushforwardExtras,
 )
     v_vec = vcat(myvec(x), myvec(dx))
     if extras.y_prototype isa Number
@@ -60,7 +60,7 @@ function DI.value_and_pushforward(
     backend::AnyAutoFastDifferentiation,
     x,
     dx,
-    extras::FastDifferentiationAllocatingPushforwardExtras,
+    extras::FastDifferentiationOneArgPushforwardExtras,
 )
     return f(x), DI.pushforward(f, backend, x, dx, extras)
 end
@@ -70,7 +70,7 @@ function DI.value_and_pushforward!(
     backend::AnyAutoFastDifferentiation,
     x,
     dx,
-    extras::FastDifferentiationAllocatingPushforwardExtras,
+    extras::FastDifferentiationOneArgPushforwardExtras,
 )
     return f(x), DI.pushforward!(f, dy, backend, x, dx, extras)
 end
@@ -81,7 +81,7 @@ end
 
 ## Derivative
 
-struct FastDifferentiationAllocatingDerivativeExtras{Y,E1,E2} <: DerivativeExtras
+struct FastDifferentiationOneArgDerivativeExtras{Y,E1,E2} <: DerivativeExtras
     y_prototype::Y
     der_exe::E1
     der_exe!::E2
@@ -97,14 +97,14 @@ function DI.prepare_derivative(f, ::AnyAutoFastDifferentiation, x)
     der_vec_var = derivative(y_vec_var, x_var)
     der_exe = make_function(der_vec_var, x_vec_var; in_place=false)
     der_exe! = make_function(der_vec_var, x_vec_var; in_place=true)
-    return FastDifferentiationAllocatingDerivativeExtras(y_prototype, der_exe, der_exe!)
+    return FastDifferentiationOneArgDerivativeExtras(y_prototype, der_exe, der_exe!)
 end
 
 function DI.derivative(
     f,
     ::AnyAutoFastDifferentiation,
     x,
-    extras::FastDifferentiationAllocatingDerivativeExtras,
+    extras::FastDifferentiationOneArgDerivativeExtras,
 )
     if extras.y_prototype isa Number
         return only(extras.der_exe(monovec(x)))
@@ -118,7 +118,7 @@ function DI.derivative!(
     der,
     ::AnyAutoFastDifferentiation,
     x,
-    extras::FastDifferentiationAllocatingDerivativeExtras,
+    extras::FastDifferentiationOneArgDerivativeExtras,
 )
     if extras.y_prototype isa Number
         return only(extras.der_exe(monovec(x)))
@@ -132,7 +132,7 @@ function DI.value_and_derivative(
     f,
     backend::AnyAutoFastDifferentiation,
     x,
-    extras::FastDifferentiationAllocatingDerivativeExtras,
+    extras::FastDifferentiationOneArgDerivativeExtras,
 )
     return f(x), DI.derivative(f, backend, x, extras)
 end
@@ -142,14 +142,14 @@ function DI.value_and_derivative!(
     der,
     backend::AnyAutoFastDifferentiation,
     x,
-    extras::FastDifferentiationAllocatingDerivativeExtras,
+    extras::FastDifferentiationOneArgDerivativeExtras,
 )
     return f(x), DI.derivative!(f, der, backend, x, extras)
 end
 
 ## Jacobian
 
-struct FastDifferentiationAllocatingJacobianExtras{Y,E1,E2} <: JacobianExtras
+struct FastDifferentiationOneArgJacobianExtras{Y,E1,E2} <: JacobianExtras
     y_prototype::Y
     jac_exe::E1
     jac_exe!::E2
@@ -169,11 +169,11 @@ function DI.prepare_jacobian(f, backend::AnyAutoFastDifferentiation, x)
     end
     jac_exe = make_function(jac_var, x_vec_var; in_place=false)
     jac_exe! = make_function(jac_var, x_vec_var; in_place=true)
-    return FastDifferentiationAllocatingJacobianExtras(y_prototype, jac_exe, jac_exe!)
+    return FastDifferentiationOneArgJacobianExtras(y_prototype, jac_exe, jac_exe!)
 end
 
 function DI.jacobian(
-    f, ::AnyAutoFastDifferentiation, x, extras::FastDifferentiationAllocatingJacobianExtras
+    f, ::AnyAutoFastDifferentiation, x, extras::FastDifferentiationOneArgJacobianExtras
 )
     return extras.jac_exe(vec(x))
 end
@@ -183,7 +183,7 @@ function DI.jacobian!(
     jac,
     ::AnyAutoFastDifferentiation,
     x,
-    extras::FastDifferentiationAllocatingJacobianExtras,
+    extras::FastDifferentiationOneArgJacobianExtras,
 )
     extras.jac_exe!(jac, vec(x))
     return jac
@@ -193,7 +193,7 @@ function DI.value_and_jacobian(
     f,
     backend::AnyAutoFastDifferentiation,
     x,
-    extras::FastDifferentiationAllocatingJacobianExtras,
+    extras::FastDifferentiationOneArgJacobianExtras,
 )
     return f(x), DI.jacobian(f, backend, x, extras)
 end
@@ -203,7 +203,7 @@ function DI.value_and_jacobian!(
     jac,
     backend::AnyAutoFastDifferentiation,
     x,
-    extras::FastDifferentiationAllocatingJacobianExtras,
+    extras::FastDifferentiationOneArgJacobianExtras,
 )
     return f(x), DI.jacobian!(f, jac, backend, x, extras)
 end

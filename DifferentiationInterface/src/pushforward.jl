@@ -124,7 +124,7 @@ end
 """
 function value_and_pushforward!(
     f!,
-    y_and_dy::Tuple{<:Any,<:Any},
+    y_and_dy::Tuple,
     backend::AbstractADType,
     x,
     dx,
@@ -161,7 +161,7 @@ end
 """
 function pushforward!(
     f!,
-    y_and_dy::Tuple{<:Any,<:Any},
+    y_and_dy::Tuple,
     backend::AbstractADType,
     x,
     dx,

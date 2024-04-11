@@ -64,7 +64,7 @@ end
 
 ## Jacobian
 
-struct ReverseDiffMutatingJacobianExtras{T} <: JacobianExtras
+struct ReverseDiffTwoArgJacobianExtras{T} <: JacobianExtras
     tape::T
 end
 
@@ -75,7 +75,7 @@ function DI.prepare_jacobian(
     if backend.compile
         tape = compile(tape)
     end
-    return ReverseDiffMutatingJacobianExtras(tape)
+    return ReverseDiffTwoArgJacobianExtras(tape)
 end
 
 function DI.value_and_jacobian!(
@@ -84,7 +84,7 @@ function DI.value_and_jacobian!(
     jac::AbstractMatrix,
     ::AnyAutoReverseDiff,
     x::AbstractArray,
-    extras::ReverseDiffMutatingJacobianExtras,
+    extras::ReverseDiffTwoArgJacobianExtras,
 )
     result = DiffResults.DiffResult(y, jac)
     result = jacobian!(result, extras.tape, x)
@@ -97,7 +97,7 @@ function DI.jacobian!(
     jac::AbstractMatrix,
     ::AnyAutoReverseDiff,
     x::AbstractArray,
-    extras::ReverseDiffMutatingJacobianExtras,
+    extras::ReverseDiffTwoArgJacobianExtras,
 )
     jac = jacobian!(jac, extras.tape, x)
     return jac

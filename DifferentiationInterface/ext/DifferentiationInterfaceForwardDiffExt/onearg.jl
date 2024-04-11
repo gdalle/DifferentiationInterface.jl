@@ -58,12 +58,12 @@ end
 
 ## Jacobian
 
-struct ForwardDiffAllocatingJacobianExtras{C} <: JacobianExtras
+struct ForwardDiffOneArgJacobianExtras{C} <: JacobianExtras
     config::C
 end
 
 function DI.prepare_jacobian(f, backend::AnyAutoForwardDiff, x::AbstractArray)
-    return ForwardDiffAllocatingJacobianExtras(
+    return ForwardDiffOneArgJacobianExtras(
         JacobianConfig(f, x, choose_chunk(backend, x))
     )
 end
@@ -73,7 +73,7 @@ function DI.value_and_jacobian!(
     jac::AbstractMatrix,
     ::AnyAutoForwardDiff,
     x::AbstractArray,
-    extras::ForwardDiffAllocatingJacobianExtras,
+    extras::ForwardDiffOneArgJacobianExtras,
 )
     y = f(x)
     result = DiffResult(y, jac)
@@ -82,7 +82,7 @@ function DI.value_and_jacobian!(
 end
 
 function DI.value_and_jacobian(
-    f, ::AnyAutoForwardDiff, x::AbstractArray, extras::ForwardDiffAllocatingJacobianExtras
+    f, ::AnyAutoForwardDiff, x::AbstractArray, extras::ForwardDiffOneArgJacobianExtras
 )
     return f(x), jacobian(f, x, extras.config)
 end
@@ -92,13 +92,13 @@ function DI.jacobian!(
     jac::AbstractMatrix,
     ::AnyAutoForwardDiff,
     x::AbstractArray,
-    extras::ForwardDiffAllocatingJacobianExtras,
+    extras::ForwardDiffOneArgJacobianExtras,
 )
     return jacobian!(jac, f, x, extras.config)
 end
 
 function DI.jacobian(
-    f, ::AnyAutoForwardDiff, x::AbstractArray, extras::ForwardDiffAllocatingJacobianExtras
+    f, ::AnyAutoForwardDiff, x::AbstractArray, extras::ForwardDiffOneArgJacobianExtras
 )
     return jacobian(f, x, extras.config)
 end

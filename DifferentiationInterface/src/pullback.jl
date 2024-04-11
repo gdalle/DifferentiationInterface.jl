@@ -124,7 +124,7 @@ end
 """
 function value_and_pullback!(
     f!,
-    y_and_dx::Tuple{<:Any,<:Any},
+    y_and_dx::Tuple,
     backend::AbstractADType,
     x,
     dy,
@@ -166,7 +166,7 @@ end
 """
 function pullback!(
     f!,
-    y_and_dx::Tuple{<:Any,<:Any},
+    y_and_dx::Tuple,
     backend::AbstractADType,
     x,
     dy,
@@ -208,7 +208,7 @@ function (pbf::OneArgPullbackFunc!)(dx, dy)
     return pullback!(f, dx, backend, x, dy, extras)
 end
 
-function (pbf::TwoArgPullbackFunc!)((y, dx)::Tuple{<:Any,<:Any}, dy)
+function (pbf::TwoArgPullbackFunc!)((y, dx)::Tuple, dy)
     (; f!, backend, x, extras) = pbf
     return pullback!(f!, (y, dx), backend, x, dy, extras)
 end

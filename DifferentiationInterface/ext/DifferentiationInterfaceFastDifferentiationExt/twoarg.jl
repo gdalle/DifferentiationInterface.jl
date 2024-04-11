@@ -1,6 +1,6 @@
 ## Pushforward
 
-struct FastDifferentiationMutatingPushforwardExtras{E} <: PushforwardExtras
+struct FastDifferentiationTwoArgPushforwardExtras{E} <: PushforwardExtras
     jvp_exe!::E
 end
 
@@ -17,7 +17,7 @@ function DI.prepare_pushforward(f!, ::AnyAutoFastDifferentiation, y, x)
     y_vec_var = vec(y_var)
     jv_vec_var, v_vec_var = jacobian_times_v(y_vec_var, x_vec_var)
     jvp_exe! = make_function(jv_vec_var, vcat(x_vec_var, v_vec_var); in_place=true)
-    return FastDifferentiationMutatingPushforwardExtras(jvp_exe!)
+    return FastDifferentiationTwoArgPushforwardExtras(jvp_exe!)
 end
 
 function DI.value_and_pushforward!(
@@ -27,7 +27,7 @@ function DI.value_and_pushforward!(
     ::AnyAutoFastDifferentiation,
     x,
     dx,
-    extras::FastDifferentiationMutatingPushforwardExtras,
+    extras::FastDifferentiationTwoArgPushforwardExtras,
 )
     f!(y, x)
     v_vec = vcat(myvec(x), myvec(dx))
@@ -42,7 +42,7 @@ function DI.pushforward!(
     ::AnyAutoFastDifferentiation,
     x,
     dx,
-    extras::FastDifferentiationMutatingPushforwardExtras,
+    extras::FastDifferentiationTwoArgPushforwardExtras,
 )
     v_vec = vcat(myvec(x), myvec(dx))
     extras.jvp_exe!(vec(dy), v_vec)
@@ -51,7 +51,7 @@ end
 
 ## Derivative
 
-struct FastDifferentiationMutatingDerivativeExtras{E} <: DerivativeExtras
+struct FastDifferentiationTwoArgDerivativeExtras{E} <: DerivativeExtras
     der_exe!::E
 end
 
@@ -64,7 +64,7 @@ function DI.prepare_derivative(f!, ::AnyAutoFastDifferentiation, y, x)
     y_vec_var = vec(y_var)
     der_vec_var = derivative(y_vec_var, x_var)
     der_exe! = make_function(der_vec_var, x_vec_var; in_place=true)
-    return FastDifferentiationMutatingDerivativeExtras(der_exe!)
+    return FastDifferentiationTwoArgDerivativeExtras(der_exe!)
 end
 
 function DI.value_and_derivative!(
@@ -73,7 +73,7 @@ function DI.value_and_derivative!(
     der,
     ::AnyAutoFastDifferentiation,
     x,
-    extras::FastDifferentiationMutatingDerivativeExtras,
+    extras::FastDifferentiationTwoArgDerivativeExtras,
 )
     f!(y, x)
     extras.der_exe!(der, monovec(x))
@@ -86,7 +86,7 @@ function DI.derivative!(
     der,
     ::AnyAutoFastDifferentiation,
     x,
-    extras::FastDifferentiationMutatingDerivativeExtras,
+    extras::FastDifferentiationTwoArgDerivativeExtras,
 )
     extras.der_exe!(der, monovec(x))
     return der
@@ -94,7 +94,7 @@ end
 
 ## Jacobian
 
-struct FastDifferentiationMutatingJacobianExtras{E} <: JacobianExtras
+struct FastDifferentiationTwoArgJacobianExtras{E} <: JacobianExtras
     jac_exe!::E
 end
 
@@ -111,7 +111,7 @@ function DI.prepare_jacobian(f!, backend::AnyAutoFastDifferentiation, y, x)
         jac_var = jacobian(y_vec_var, x_vec_var)
     end
     jac_exe! = make_function(jac_var, x_vec_var; in_place=true)
-    return FastDifferentiationMutatingJacobianExtras(jac_exe!)
+    return FastDifferentiationTwoArgJacobianExtras(jac_exe!)
 end
 
 function DI.value_and_jacobian!(
@@ -120,7 +120,7 @@ function DI.value_and_jacobian!(
     jac,
     ::AnyAutoFastDifferentiation,
     x,
-    extras::FastDifferentiationMutatingJacobianExtras,
+    extras::FastDifferentiationTwoArgJacobianExtras,
 )
     f!(y, x)
     extras.jac_exe!(jac, vec(x))
@@ -133,7 +133,7 @@ function DI.jacobian!(
     jac,
     ::AnyAutoFastDifferentiation,
     x,
-    extras::FastDifferentiationMutatingJacobianExtras,
+    extras::FastDifferentiationTwoArgJacobianExtras,
 )
     extras.jac_exe!(jac, vec(x))
     return jac

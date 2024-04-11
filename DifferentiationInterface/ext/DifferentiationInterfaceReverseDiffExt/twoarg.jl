@@ -87,7 +87,7 @@ end
 
 ## Jacobian
 
-struct ReverseDiffAllocatingJacobianExtras{T} <: JacobianExtras
+struct ReverseDiffOneArgJacobianExtras{T} <: JacobianExtras
     tape::T
 end
 
@@ -96,7 +96,7 @@ function DI.prepare_jacobian(f, backend::AnyAutoReverseDiff, x::AbstractArray)
     if backend.compile
         tape = compile(tape)
     end
-    return ReverseDiffAllocatingJacobianExtras(tape)
+    return ReverseDiffOneArgJacobianExtras(tape)
 end
 
 function DI.value_and_jacobian!(
@@ -104,7 +104,7 @@ function DI.value_and_jacobian!(
     jac::AbstractMatrix,
     ::AnyAutoReverseDiff,
     x::AbstractArray,
-    extras::ReverseDiffAllocatingJacobianExtras,
+    extras::ReverseDiffOneArgJacobianExtras,
 )
     y = f(x)
     result = DiffResult(y, jac)
@@ -113,7 +113,7 @@ function DI.value_and_jacobian!(
 end
 
 function DI.value_and_jacobian(
-    f, ::AnyAutoReverseDiff, x::AbstractArray, extras::ReverseDiffAllocatingJacobianExtras
+    f, ::AnyAutoReverseDiff, x::AbstractArray, extras::ReverseDiffOneArgJacobianExtras
 )
     return f(x), jacobian!(extras.tape, x)
 end
@@ -123,13 +123,13 @@ function DI.jacobian!(
     jac::AbstractMatrix,
     ::AnyAutoReverseDiff,
     x::AbstractArray,
-    extras::ReverseDiffAllocatingJacobianExtras,
+    extras::ReverseDiffOneArgJacobianExtras,
 )
     return jacobian!(jac, extras.tape, x)
 end
 
 function DI.jacobian(
-    f, ::AnyAutoReverseDiff, x::AbstractArray, extras::ReverseDiffAllocatingJacobianExtras
+    f, ::AnyAutoReverseDiff, x::AbstractArray, extras::ReverseDiffOneArgJacobianExtras
 )
     return jacobian!(extras.tape, x)
 end

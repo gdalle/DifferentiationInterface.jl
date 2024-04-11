@@ -1,4 +1,4 @@
-struct SparseDiffToolsMutatingJacobianExtras{C} <: JacobianExtras
+struct SparseDiffToolsTwoArgJacobianExtras{C} <: JacobianExtras
     cache::C
 end
 
@@ -12,7 +12,7 @@ for AutoSparse in SPARSE_BACKENDS
             cache = sparse_jacobian_cache(
                 backend, SymbolicsSparsityDetection(), f!, similar(y), x
             )
-            return SparseDiffToolsMutatingJacobianExtras(cache)
+            return SparseDiffToolsTwoArgJacobianExtras(cache)
         end
 
         function DI.value_and_jacobian!(
@@ -21,7 +21,7 @@ for AutoSparse in SPARSE_BACKENDS
             jac,
             backend::$AutoSparse,
             x,
-            extras::SparseDiffToolsMutatingJacobianExtras,
+            extras::SparseDiffToolsTwoArgJacobianExtras,
         )
             sparse_jacobian!(jac, backend, extras.cache, f!, y, x)
             f!(y, x)
@@ -34,7 +34,7 @@ for AutoSparse in SPARSE_BACKENDS
             jac,
             backend::$AutoSparse,
             x,
-            extras::SparseDiffToolsMutatingJacobianExtras,
+            extras::SparseDiffToolsTwoArgJacobianExtras,
         )
             sparse_jacobian!(jac, backend, extras.cache, f!, y, x)
             return jac

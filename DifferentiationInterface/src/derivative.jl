@@ -86,7 +86,7 @@ end
 """
 function value_and_derivative!(
     f!,
-    y_and_der::Tuple{<:Any,<:Any},
+    y_and_der::Tuple,
     backend::AbstractADType,
     x,
     extras::DerivativeExtras=prepare_derivative(f!, backend, y_and_der[1], x),
@@ -101,7 +101,7 @@ end
 """
 function derivative!(
     f!,
-    y_and_der::Tuple{<:Any,<:Any},
+    y_and_der::Tuple,
     backend::AbstractADType,
     x,
     extras::DerivativeExtras=prepare_derivative(f!, backend, y_and_der[1], x),

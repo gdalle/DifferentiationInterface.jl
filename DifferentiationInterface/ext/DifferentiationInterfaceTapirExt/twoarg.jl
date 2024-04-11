@@ -1,15 +1,15 @@
-struct TapirMutatingPullbackExtras{R} <: PullbackExtras
+struct TapirTwoArgPullbackExtras{R} <: PullbackExtras
     rrule::R
 end
 
 function DI.prepare_pullback(f!, ::AutoTapir, y, x)
-    return TapirMutatingPullbackExtras(build_rrule(f!, y, x))
+    return TapirTwoArgPullbackExtras(build_rrule(f!, y, x))
 end
 
 # see https://github.com/withbayes/Tapir.jl/issues/113#issuecomment-2036718992
 
 function DI.value_and_pullback!(
-    f!, y, dx, ::AutoTapir, x, dy, extras::TapirMutatingPullbackExtras
+    f!, y, dx, ::AutoTapir, x, dy, extras::TapirTwoArgPullbackExtras
 )
     dy_righttype = convert(tangent_type(typeof(y)), copy(dy))
     dx_righttype = convert(tangent_type(typeof(x)), dx)

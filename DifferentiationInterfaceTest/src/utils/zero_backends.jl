@@ -28,7 +28,7 @@ function DI.value_and_pushforward!(f, dy, ::AutoZeroForward, x, dx, ::NoPushforw
 end
 
 function DI.value_and_pushforward!(
-    f!, (y, dy)::Tuple{<:Any,<:Any}, ::AutoZeroForward, x, dx, ::NoPushforwardExtras
+    f!, (y, dy)::Tuple, ::AutoZeroForward, x, dx, ::NoPushforwardExtras
 )
     f!(y, x)
     if dy isa Number
@@ -67,7 +67,7 @@ function DI.value_and_pullback!(f, dx, ::AutoZeroReverse, x, dy, ::NoPullbackExt
 end
 
 function DI.value_and_pullback!(
-    f!, (y, dx)::Tuple{<:Any,<:Any}, ::AutoZeroReverse, x, dy, ::NoPullbackExtras
+    f!, (y, dx)::Tuple, ::AutoZeroReverse, x, dy, ::NoPullbackExtras
 )
     f!(y, x)
     if dx isa Number

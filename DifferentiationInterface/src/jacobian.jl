@@ -148,7 +148,7 @@ end
 """
 function value_and_jacobian!(
     f!,
-    y_and_jac::Tuple{<:Any,<:Any},
+    y_and_jac::Tuple,
     backend::AbstractADType,
     x,
     extras::JacobianExtras=prepare_jacobian(f!, backend, y_and_jac[1], x),
@@ -184,7 +184,7 @@ end
 """
 function jacobian!(
     f!,
-    y_and_jac::Tuple{<:Any,<:Any},
+    y_and_jac::Tuple,
     backend::AbstractADType,
     x,
     extras::JacobianExtras=prepare_jacobian(f!, backend, y_and_jac[1], x),
