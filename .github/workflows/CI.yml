@@ -58,7 +58,7 @@ jobs:
           project: ${{ matrix.pkg.dir }}
       - uses: julia-actions/julia-processcoverage@v1
         with:
-          directories: ./DifferentiationInterface/src, ./DifferentiationInterface/ext, ./DifferentiationInterfaceTest/src, ./DifferentiationInterfaceTest/ext
+          directories: ${{ matrix.pkg.dir }}/src,${{ matrix.pkg.dir }}/ext
       - uses: codecov/codecov-action@v4
         with:
           files: lcov.info
