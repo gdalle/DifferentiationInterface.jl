@@ -19,6 +19,7 @@ num_to_num_pushforward(x, dx) = num_to_num_derivative(x) * dx
 num_to_num_pullback(x, dy) = num_to_num_derivative(x) * dy
 
 function num_to_num_scenarios_onearg(x::Number)
+    # everyone out of place
     return [
         PushforwardScenario(
             num_to_num; x=x, ref=num_to_num_pushforward, operator=:outofplace
@@ -69,56 +70,76 @@ function _num_to_arr_pullback(a)
 end
 
 function num_to_arr_scenarios_onearg(x::Number, a::AbstractArray)
-    return [
-        PushforwardScenario(
-            _num_to_arr(a); x=x, ref=_num_to_arr_pushforward(a), operator=:outofplace
-        ),
-        PushforwardScenario(
-            _num_to_arr(a); x=x, ref=_num_to_arr_pushforward(a), operator=:inplace
-        ),
-        PullbackScenario(
-            _num_to_arr(a); x=x, ref=_num_to_arr_pullback(a), operator=:outofplace
-        ),
-        # no in-place pullback for number-to-array
-        DerivativeScenario(
-            _num_to_arr(a); x=x, ref=_num_to_arr_derivative(a), operator=:outofplace
-        ),
-        DerivativeScenario(
-            _num_to_arr(a); x=x, ref=_num_to_arr_derivative(a), operator=:inplace
-        ),
-        SecondDerivativeScenario(
-            _num_to_arr(a); x=x, ref=_num_to_arr_second_derivative(a), operator=:outofplace
-        ),
-        SecondDerivativeScenario(
-            _num_to_arr(a); x=x, ref=_num_to_arr_second_derivative(a), operator=:inplace
-        ),
-    ]
+    # pullback stays out of place
+    scens = AbstractScenario[]
+    for op in (:outofplace, :inplace)
+        append!(
+            scens,
+            [
+                PushforwardScenario(
+                    _num_to_arr(a); x=x, ref=_num_to_arr_pushforward(a), operator=op
+                ),
+                DerivativeScenario(
+                    _num_to_arr(a); x=x, ref=_num_to_arr_derivative(a), operator=op
+                ),
+                SecondDerivativeScenario(
+                    _num_to_arr(a); x=x, ref=_num_to_arr_second_derivative(a), operator=op
+                ),
+            ],
+        )
+    end
+    for op in (:outofplace,)
+        append!(
+            scens,
+            [
+                PullbackScenario(
+                    _num_to_arr(a); x=x, ref=_num_to_arr_pullback(a), operator=op
+                ),
+            ],
+        )
+    end
+    return scens
 end
 
 function num_to_arr_scenarios_twoarg(x::Number, a::AbstractArray)
-    return [
-        PushforwardScenario(
-            _num_to_arr!(a);
-            x=x,
-            y=similar(float.(a)),
-            ref=_num_to_arr_pushforward(a),
-            operator=:inplace,
-        ),
-        PullbackScenario(
-            _num_to_arr!(a);
-            x=x,
-            y=similar(float.(a)),
-            ref=_num_to_arr_pullback(a),
-            operator=:inplace,
-        ),
-        DerivativeScenario(
-            _num_to_arr!(a);
-            x=x,
-            y=similar(float.(a)),
-            ref=_num_to_arr_derivative(a),
-            operator=:inplace,
-        ),
-    ]
+    # pullback stays out of place
+    scens = AbstractScenario[]
+    for op in (:outofplace, :inplace)
+        append!(
+            scens,
+            [
+                PushforwardScenario(
+                    _num_to_arr!(a);
+                    x=x,
+                    y=similar(float.(a)),
+                    ref=_num_to_arr_pushforward(a),
+                    operator=op,
+                ),
+                DerivativeScenario(
+                    _num_to_arr!(a);
+                    x=x,
+                    y=similar(float.(a)),
+                    ref=_num_to_arr_derivative(a),
+                    operator=op,
+                ),
+            ],
+        )
+    end
+    for op in (:outofplace,)
+        append!(
+            scens,
+            [
+                PullbackScenario(
+                    _num_to_arr!(a);
+                    x=x,
+                    y=similar(float.(a)),
+                    ref=_num_to_arr_pullback(a),
+                    operator=op,
+                ),
+            ],
+        )
+    end
+    return scens
 end
 
 ## Array to scalar
@@ -132,19 +153,27 @@ arr_to_num_pullback(x, dy) = arr_to_num_gradient(x) .* dy
 arr_to_num_hessian(x) = Matrix(Diagonal(-sin.(vec(x))))
 
 function arr_to_num_scenarios_onearg(x::AbstractArray)
-    return [
-        PushforwardScenario(
-            arr_to_num; x=x, ref=arr_to_num_pushforward, operator=:outofplace
-        ),
-        PullbackScenario(arr_to_num; x=x, ref=arr_to_num_pullback, operator=:outofplace),
-        PullbackScenario(arr_to_num; x=x, ref=arr_to_num_pullback, operator=:inplace),
-        GradientScenario(arr_to_num; x=x, ref=arr_to_num_gradient, operator=:outofplace),
-        GradientScenario(arr_to_num; x=x, ref=arr_to_num_gradient, operator=:inplace),
-        HVPScenario(arr_to_num; x=x, ref=arr_to_num_hvp, operator=:outofplace),
-        HVPScenario(arr_to_num; x=x, ref=arr_to_num_hvp, operator=:inplace),
-        HessianScenario(arr_to_num; x=x, ref=arr_to_num_hessian, operator=:outofplace),
-        HessianScenario(arr_to_num; x=x, ref=arr_to_num_hessian, operator=:inplace),
-    ]
+    # pushforward stays out of place
+    scens = AbstractScenario[]
+    for op in (:outofplace, :inplace)
+        append!(
+            scens,
+            [
+                PullbackScenario(arr_to_num; x=x, ref=arr_to_num_pullback, operator=op),
+                GradientScenario(arr_to_num; x=x, ref=arr_to_num_gradient, operator=op),
+                GradientScenario(arr_to_num; x=x, ref=arr_to_num_gradient, operator=op),
+                HVPScenario(arr_to_num; x=x, ref=arr_to_num_hvp, operator=op),
+                HessianScenario(arr_to_num; x=x, ref=arr_to_num_hessian, operator=op),
+            ],
+        )
+    end
+    for op in (:outofplace,)
+        append!(
+            scens,
+            [PushforwardScenario(arr_to_num; x=x, ref=arr_to_num_pushforward, operator=op)],
+        )
+    end
+    return scens
 end
 
 ## Array to array
@@ -162,37 +191,46 @@ vec_to_vec_pullback(x, dy) = cos.(x) .* first_half(dy) .- sin.(x) .* second_half
 vec_to_vec_jacobian(x) = vcat(Diagonal(cos.(x)), Diagonal(-sin.(x)))
 
 function vec_to_vec_scenarios_onearg(x::AbstractVector)
-    n = length(x)
-    return [
-        PushforwardScenario(
-            vec_to_vec; x=x, ref=vec_to_vec_pushforward, operator=:outofplace
-        ),
-        PushforwardScenario(vec_to_vec; x=x, ref=vec_to_vec_pushforward, operator=:inplace),
-        PullbackScenario(vec_to_vec; x=x, ref=vec_to_vec_pullback, operator=:outofplace),
-        # no in-place pullback for array-to-number
-        PullbackScenario(vec_to_vec; x=x, ref=vec_to_vec_pullback, operator=:inplace),
-        JacobianScenario(vec_to_vec; x=x, ref=vec_to_vec_jacobian, operator=:outofplace),
-        JacobianScenario(vec_to_vec; x=x, ref=vec_to_vec_jacobian, operator=:inplace),
-    ]
+    scens = AbstractScenario[]
+    for op in (:outofplace, :inplace)
+        append!(
+            scens,
+            [
+                PushforwardScenario(
+                    vec_to_vec; x=x, ref=vec_to_vec_pushforward, operator=op
+                ),
+                PullbackScenario(vec_to_vec; x=x, ref=vec_to_vec_pullback, operator=op),
+                JacobianScenario(vec_to_vec; x=x, ref=vec_to_vec_jacobian, operator=op),
+            ],
+        )
+    end
+    return scens
 end
 
 function vec_to_vec_scenarios_twoarg(x::AbstractVector)
     n = length(x)
-    return [
-        PushforwardScenario(
-            vec_to_vec!;
-            x=x,
-            y=similar(x, 2n),
-            ref=vec_to_vec_pushforward,
-            operator=:inplace,
-        ),
-        PullbackScenario(
-            vec_to_vec!; x=x, y=similar(x, 2n), ref=vec_to_vec_pullback, operator=:inplace
-        ),
-        JacobianScenario(
-            vec_to_vec!; x=x, y=similar(x, 2n), ref=vec_to_vec_jacobian, operator=:inplace
-        ),
-    ]
+    scens = AbstractScenario[]
+    for op in (:outofplace, :inplace)
+        append!(
+            scens,
+            [
+                PushforwardScenario(
+                    vec_to_vec!;
+                    x=x,
+                    y=similar(x, 2n),
+                    ref=vec_to_vec_pushforward,
+                    operator=op,
+                ),
+                PullbackScenario(
+                    vec_to_vec!; x=x, y=similar(x, 2n), ref=vec_to_vec_pullback, operator=op
+                ),
+                JacobianScenario(
+                    vec_to_vec!; x=x, y=similar(x, 2n), ref=vec_to_vec_jacobian, operator=op
+                ),
+            ],
+        )
+    end
+    return scens
 end
 
 vec_to_mat(x::AbstractVector)::AbstractMatrix = hcat(sin.(x), cos.(x))
@@ -208,36 +246,43 @@ vec_to_mat_pullback(x, dy) = cos.(x) .* dy[:, 1] .- sin.(x) .* dy[:, 2]
 vec_to_mat_jacobian(x) = vcat(Diagonal(cos.(x)), Diagonal(-sin.(x)))
 
 function vec_to_mat_scenarios_onearg(x::AbstractVector)
-    n = length(x)
-    return [
-        PushforwardScenario(
-            vec_to_mat; x=x, ref=vec_to_mat_pushforward, operator=:outofplace
-        ),
-        PushforwardScenario(vec_to_mat; x=x, ref=vec_to_mat_pushforward, operator=:inplace),
-        PullbackScenario(vec_to_mat; x=x, ref=vec_to_mat_pullback, operator=:outofplace),
-        PullbackScenario(vec_to_mat; x=x, ref=vec_to_mat_pullback, operator=:inplace),
-        JacobianScenario(vec_to_mat; x=x, ref=vec_to_mat_jacobian, operator=:outofplace),
-        JacobianScenario(vec_to_mat; x=x, ref=vec_to_mat_jacobian, operator=:inplace),
-    ]
+    scens = AbstractScenario[]
+    for op in (:outofplace, :inplace)
+        append!(
+            scens,
+            [
+                PushforwardScenario(
+                    vec_to_mat; x=x, ref=vec_to_mat_pushforward, operator=op
+                ),
+                PullbackScenario(vec_to_mat; x=x, ref=vec_to_mat_pullback, operator=op),
+                JacobianScenario(vec_to_mat; x=x, ref=vec_to_mat_jacobian, operator=op),
+            ],
+        )
+    end
+    return scens
 end
 
 function vec_to_mat_scenarios_twoarg(x::AbstractVector)
     n = length(x)
-    return [
-        PushforwardScenario(
-            vec_to_mat!;
-            x=x,
-            y=similar(x, n, 2),
-            ref=vec_to_mat_pushforward,
-            operator=:inplace,
-        ),
-        PullbackScenario(
-            vec_to_mat!; x=x, y=similar(x, n, 2), ref=vec_to_mat_pullback, operator=:inplace
-        ),
-        JacobianScenario(
-            vec_to_mat!; x=x, y=similar(x, n, 2), ref=vec_to_mat_jacobian, operator=:inplace
-        ),
-    ]
+    scens = AbstractScenario[]
+    for op in (:outofplace, :inplace)
+        return [
+            PushforwardScenario(
+                vec_to_mat!;
+                x=x,
+                y=similar(x, n, 2),
+                ref=vec_to_mat_pushforward,
+                operator=op,
+            ),
+            PullbackScenario(
+                vec_to_mat!; x=x, y=similar(x, n, 2), ref=vec_to_mat_pullback, operator=op
+            ),
+            JacobianScenario(
+                vec_to_mat!; x=x, y=similar(x, n, 2), ref=vec_to_mat_jacobian, operator=op
+            ),
+        ]
+    end
+    return scens
 end
 
 mat_to_vec(x::AbstractMatrix)::AbstractVector = vcat(vec(sin.(x)), vec(cos.(x)))
@@ -262,51 +307,58 @@ mat_to_vec_jacobian(x) = vcat(Diagonal(vec(cos.(x))), Diagonal(vec(-sin.(x))))
 
 function mat_to_vec_scenarios_onearg(x::AbstractMatrix)
     m, n = size(x)
-    return [
-        PushforwardScenario(
-            mat_to_vec; x=x, ref=mat_to_vec_pushforward, operator=:outofplace
-        ),
-        PushforwardScenario(mat_to_vec; x=x, ref=mat_to_vec_pushforward, operator=:inplace),
-        PullbackScenario(
-            mat_to_vec; x=randn(m, n), ref=mat_to_vec_pullback, operator=:outofplace
-        ),
-        PullbackScenario(
-            mat_to_vec; x=randn(m, n), ref=mat_to_vec_pullback, operator=:inplace
-        ),
-        JacobianScenario(
-            mat_to_vec; x=randn(m, n), ref=mat_to_vec_jacobian, operator=:outofplace
-        ),
-        JacobianScenario(
-            mat_to_vec; x=randn(m, n), ref=mat_to_vec_jacobian, operator=:inplace
-        ),
-    ]
+    scens = AbstractScenario[]
+    for op in (:outofplace, :inplace)
+        append!(
+            scens,
+            [
+                PushforwardScenario(
+                    mat_to_vec; x=x, ref=mat_to_vec_pushforward, operator=op
+                ),
+                PullbackScenario(
+                    mat_to_vec; x=randn(m, n), ref=mat_to_vec_pullback, operator=op
+                ),
+                JacobianScenario(
+                    mat_to_vec; x=randn(m, n), ref=mat_to_vec_jacobian, operator=op
+                ),
+            ],
+        )
+    end
+    return scens
 end
 
 function mat_to_vec_scenarios_twoarg(x::AbstractMatrix)
     m, n = size(x)
-    return [
-        PushforwardScenario(
-            mat_to_vec!;
-            x=x,
-            y=similar(x, m * n * 2),
-            ref=mat_to_vec_pushforward,
-            operator=:inplace,
-        ),
-        PullbackScenario(
-            mat_to_vec!;
-            x=x,
-            y=similar(x, m * n * 2),
-            ref=mat_to_vec_pullback,
-            operator=:inplace,
-        ),
-        JacobianScenario(
-            mat_to_vec!;
-            x=x,
-            y=similar(x, m * n * 2),
-            ref=mat_to_vec_jacobian,
-            operator=:inplace,
-        ),
-    ]
+    scens = AbstractScenario[]
+    for op in (:outofplace, :inplace)
+        append!(
+            scens,
+            [
+                PushforwardScenario(
+                    mat_to_vec!;
+                    x=x,
+                    y=similar(x, m * n * 2),
+                    ref=mat_to_vec_pushforward,
+                    operator=op,
+                ),
+                PullbackScenario(
+                    mat_to_vec!;
+                    x=x,
+                    y=similar(x, m * n * 2),
+                    ref=mat_to_vec_pullback,
+                    operator=op,
+                ),
+                JacobianScenario(
+                    mat_to_vec!;
+                    x=x,
+                    y=similar(x, m * n * 2),
+                    ref=mat_to_vec_jacobian,
+                    operator=op,
+                ),
+            ],
+        )
+    end
+    return scens
 end
 
 mat_to_mat(x::AbstractMatrix)::AbstractMatrix = hcat(vec(sin.(x)), vec(cos.(x)))
@@ -329,44 +381,54 @@ end
 mat_to_mat_jacobian(x) = vcat(Diagonal(vec(cos.(x))), Diagonal(vec(-sin.(x))))
 
 function mat_to_mat_scenarios_onearg(x::AbstractMatrix)
-    m, n = size(x)
-    return [
-        PushforwardScenario(
-            mat_to_mat; x=x, ref=mat_to_mat_pushforward, operator=:outofplace
-        ),
-        PushforwardScenario(mat_to_mat; x=x, ref=mat_to_mat_pushforward, operator=:inplace),
-        PullbackScenario(mat_to_mat; x=x, ref=mat_to_mat_pullback, operator=:outofplace),
-        PullbackScenario(mat_to_mat; x=x, ref=mat_to_mat_pullback, operator=:inplace),
-        JacobianScenario(mat_to_mat; x=x, ref=mat_to_mat_jacobian, operator=:outofplace),
-        JacobianScenario(mat_to_mat; x=x, ref=mat_to_mat_jacobian, operator=:inplace),
-    ]
+    scens = AbstractScenario[]
+    for op in (:outofplace, :inplace)
+        append!(
+            scens,
+            [
+                PushforwardScenario(
+                    mat_to_mat; x=x, ref=mat_to_mat_pushforward, operator=op
+                ),
+                PullbackScenario(mat_to_mat; x=x, ref=mat_to_mat_pullback, operator=op),
+                JacobianScenario(mat_to_mat; x=x, ref=mat_to_mat_jacobian, operator=op),
+            ],
+        )
+    end
+    return scens
 end
 
 function mat_to_mat_scenarios_twoarg(x::AbstractMatrix)
     m, n = size(x)
-    return [
-        PushforwardScenario(
-            mat_to_mat!;
-            x=x,
-            y=similar(x, m * n, 2),
-            ref=mat_to_mat_pushforward,
-            operator=:inplace,
-        ),
-        PullbackScenario(
-            mat_to_mat!;
-            x=x,
-            y=similar(x, m * n, 2),
-            ref=mat_to_mat_pullback,
-            operator=:inplace,
-        ),
-        JacobianScenario(
-            mat_to_mat!;
-            x=x,
-            y=similar(x, m * n, 2),
-            ref=mat_to_mat_jacobian,
-            operator=:inplace,
-        ),
-    ]
+    scens = AbstractScenario[]
+    for op in (:outofplace, :inplace)
+        append!(
+            scens,
+            [
+                PushforwardScenario(
+                    mat_to_mat!;
+                    x=x,
+                    y=similar(x, m * n, 2),
+                    ref=mat_to_mat_pushforward,
+                    operator=op,
+                ),
+                PullbackScenario(
+                    mat_to_mat!;
+                    x=x,
+                    y=similar(x, m * n, 2),
+                    ref=mat_to_mat_pullback,
+                    operator=op,
+                ),
+                JacobianScenario(
+                    mat_to_mat!;
+                    x=x,
+                    y=similar(x, m * n, 2),
+                    ref=mat_to_mat_jacobian,
+                    operator=op,
+                ),
+            ],
+        )
+    end
+    return scens
 end
 
 ## Gather

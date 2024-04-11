@@ -1,3 +1,22 @@
+## Docstrings
+
+"""
+    prepare_hessian(f, backend, x) -> extras
+
+Create an `extras` object subtyping [`HessianExtras`](@ref) that can be given to Hessian operators.
+"""
+function prepare_hessian end
+
+"""
+    hessian(f, backend, x, [extras]) -> hess
+"""
+function hessian end
+
+"""
+    hessian!(f, hess, backend, x, [extras]) -> hess
+"""
+function hessian! end
+
 ## Preparation
 
 """
@@ -13,11 +32,6 @@ struct HVPHessianExtras{E<:HVPExtras} <: HessianExtras
     hvp_extras::E
 end
 
-"""
-    prepare_hessian(f, backend, x) -> extras
-
-Create an `extras` object subtyping [`HessianExtras`](@ref) that can be given to Hessian operators.
-"""
 function prepare_hessian(f, backend::AbstractADType, x)
     return HVPHessianExtras(
         prepare_hvp(f, backend, x, basis(backend, x, first(CartesianIndices(x))))
@@ -26,9 +40,6 @@ end
 
 ## One argument
 
-"""
-    hessian(f, backend, x, [extras]) -> hess
-"""
 function hessian(
     f, backend::AbstractADType, x, extras::HessianExtras=prepare_hessian(f, backend, x)
 )
@@ -47,9 +58,6 @@ function hessian(
     return hess
 end
 
-"""
-    hessian!(f, hess, backend, x, [extras]) -> hess
-"""
 function hessian!(
     f,
     hess,

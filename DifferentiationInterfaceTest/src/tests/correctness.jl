@@ -86,6 +86,43 @@ end
 
 function test_correctness(
     ba::AbstractADType,
+    scen::PushforwardScenario{2,:outofplace};
+    isapprox::Function,
+    atol,
+    rtol,
+    ref_backend,
+)
+    (; f, x, y, dx) = new_scen = deepcopy(scen)
+    f! = f
+    extras = prepare_pushforward(f!, ba, y, x)
+    dy_true = if ref_backend isa AbstractADType
+        pushforward(f!, mysimilar(y), ref_backend, x, dx)
+    else
+        new_scen.ref(x, dx)
+    end
+
+    y1_in = mysimilar(y)
+    y1, dy1 = value_and_pushforward(f!, y1_in, ba, x, dx, extras)
+
+    y2_in = mysimilar(y)
+    dy2 = pushforward(f!, y2_in, ba, x, dx, extras)
+
+    let (≈)(x, y) = isapprox(x, y; atol, rtol)
+        @testset "Primal value" begin
+            @test y1_in ≈ y
+            @test y1 ≈ y
+        end
+        @testset "Tangent value" begin
+            @test dy1 ≈ dy_true
+            @test dy2 ≈ dy_true
+        end
+    end
+    test_scen_intact(new_scen, scen)
+    return nothing
+end
+
+function test_correctness(
+    ba::AbstractADType,
     scen::PushforwardScenario{2,:inplace};
     isapprox::Function,
     atol,
@@ -96,16 +133,16 @@ function test_correctness(
     f! = f
     extras = prepare_pushforward(f!, ba, y, x)
     dy_true = if ref_backend isa AbstractADType
-        pushforward!(f!, (mysimilar(y), mysimilar(y)), ref_backend, x, dx)
+        pushforward(f!, mysimilar(y), ref_backend, x, dx)
     else
         new_scen.ref(x, dx)
     end
 
     y1_in, dy1_in = mysimilar(y), mysimilar(y)
-    y1, dy1 = value_and_pushforward!(f!, (y1_in, dy1_in), ba, x, dx, extras)
+    y1, dy1 = value_and_pushforward!(f!, y1_in, dy1_in, ba, x, dx, extras)
 
     y2_in, dy2_in = mysimilar(y), mysimilar(y)
-    dy2 = pushforward!(f!, (y2_in, dy2_in), ba, x, dx, extras)
+    dy2 = pushforward!(f!, y2_in, dy2_in, ba, x, dx, extras)
 
     let (≈)(x, y) = isapprox(x, y; atol, rtol)
         @testset "Primal value" begin
@@ -211,7 +248,7 @@ end
 
 function test_correctness(
     ba::AbstractADType,
-    scen::PullbackScenario{2,:inplace};
+    scen::PullbackScenario{2,:outofplace};
     isapprox::Function,
     atol,
     rtol,
@@ -221,22 +258,22 @@ function test_correctness(
     f! = f
     extras = prepare_pullback(f!, ba, y, x)
     dx_true = if ref_backend isa AbstractADType
-        pullback!(f, (mysimilar(y), mysimilar(x)), ref_backend, x, dy)
+        pullback(f!, mysimilar(y), ref_backend, x, dy)
     else
         new_scen.ref(x, dy)
     end
 
-    y1_in, dx1_in = mysimilar(y), mysimilar(x)
-    y1, dx1 = value_and_pullback!(f!, (y1_in, dx1_in), ba, x, dy, extras)
+    y1_in = mysimilar(y)
+    y1, dx1 = value_and_pullback!(f!, y1_in, ba, x, dy, extras)
 
-    y2_in, dx2_in = mysimilar(y), mysimilar(x)
-    dx2 = pullback!(f!, (y2_in, dx2_in), ba, x, dy, extras)
+    y2_in = mysimilar(y)
+    dx2 = pullback!(f!, y2_in, ba, x, dy, extras)
 
     y3_in = mysimilar(y)
-    y3, pullbackfunc! = value_and_pullback!_split!(f!, y3_in, ba, x, extras)
-    pullbackfunc!((mysimilar(y), mysimilar(x)), dy)  # call once in case the second errors
-    y3_in2, dx3_in = mysimilar(y), mysimilar(x)
-    dx3 = pullbackfunc!((y3_in2, dx3_in), dy)
+    y3, pullbackfunc = value_and_pullback_split(f!, y3_in, ba, x, extras)
+    pullbackfunc(mysimilar(y), dy)  # call once in case the second errors
+    y3_in2 = mysimilar(y)
+    dx3 = pullbackfunc(y3_in2, dy)
 
     let (≈)(x, y) = isapprox(x, y; atol, rtol)
         @testset "Primal value" begin
@@ -249,11 +286,55 @@ function test_correctness(
             @test dx1 ≈ dx_true
             @test dx2 ≈ dx_true
             @test dx3 ≈ dx_true
-            if !isa(dx_true, Number)  # TODO: find cleaner fix
-                @test dx1_in ≈ dx_true
-                @test dx2_in ≈ dx_true
-                @test dx3_in ≈ dx_true
-            end
+        end
+    end
+    test_scen_intact(new_scen, scen)
+    return nothing
+end
+
+function test_correctness(
+    ba::AbstractADType,
+    scen::PullbackScenario{2,:inplace};
+    isapprox::Function,
+    atol,
+    rtol,
+    ref_backend,
+)
+    (; f, x, y, dy) = new_scen = deepcopy(scen)
+    f! = f
+    extras = prepare_pullback(f!, ba, y, x)
+    dx_true = if ref_backend isa AbstractADType
+        pullback(f!, mysimilar(y), ref_backend, x, dy)
+    else
+        new_scen.ref(x, dy)
+    end
+
+    y1_in, dx1_in = mysimilar(y), mysimilar(x)
+    y1, dx1 = value_and_pullback!(f!, y1_in, dx1_in, ba, x, dy, extras)
+
+    y2_in, dx2_in = mysimilar(y), mysimilar(x)
+    dx2 = pullback!(f!, y2_in, dx2_in, ba, x, dy, extras)
+
+    y3_in = mysimilar(y)
+    y3, pullbackfunc! = value_and_pullback!_split(f!, y3_in, ba, x, extras)
+    pullbackfunc!((mysimilar(y), mysimilar(x)), dy)  # call once in case the second errors
+    y3_in2, dx3_in = mysimilar(y), mysimilar(x)
+    dx3 = pullbackfunc!((y3_in2, dx3_in), dy)
+
+    let (≈)(x, y) = isapprox(x, y; atol, rtol)
+        @testset "Primal value" begin
+            @test y1_in ≈ y
+            @test y1 ≈ y
+            @test y3_in ≈ y
+            @test y3 ≈ y
+        end
+        @testset "Cotangent value" begin
+            @test dx1_in ≈ dx_true
+            @test dx1 ≈ dx_true
+            @test dx2_in ≈ dx_true
+            @test dx2 ≈ dx_true
+            @test dx3_in ≈ dx_true
+            @test dx3 ≈ dx_true
         end
     end
     test_scen_intact(new_scen, scen)
@@ -334,6 +415,43 @@ end
 
 function test_correctness(
     ba::AbstractADType,
+    scen::DerivativeScenario{2,:outofplace};
+    isapprox::Function,
+    atol,
+    rtol,
+    ref_backend,
+)
+    (; f, x, y) = new_scen = deepcopy(scen)
+    f! = f
+    extras = prepare_derivative(f!, ba, y, x)
+    der_true = if ref_backend isa AbstractADType
+        derivative(f!, mysimilar(y), ref_backend, x)
+    else
+        new_scen.ref(x)
+    end
+
+    y1_in = mysimilar(y)
+    y1, der1 = value_and_derivative(f!, y1_in, ba, x, extras)
+
+    y2_in = mysimilar(y)
+    der2 = derivative(f!, y2_in, ba, x, extras)
+
+    let (≈)(x, y) = isapprox(x, y; atol, rtol)
+        @testset "Primal value" begin
+            @test y1_in ≈ y
+            @test y1 ≈ y
+        end
+        @testset "Derivative value" begin
+            @test der1 ≈ der_true
+            @test der2 ≈ der_true
+        end
+    end
+    test_scen_intact(new_scen, scen)
+    return nothing
+end
+
+function test_correctness(
+    ba::AbstractADType,
     scen::DerivativeScenario{2,:inplace};
     isapprox::Function,
     atol,
@@ -344,16 +462,16 @@ function test_correctness(
     f! = f
     extras = prepare_derivative(f!, ba, y, x)
     der_true = if ref_backend isa AbstractADType
-        derivative!(f!, (mysimilar(y), mysimilar(y)), ref_backend, x)
+        derivative(f!, mysimilar(y), ref_backend, x)
     else
         new_scen.ref(x)
     end
 
     y1_in, der1_in = mysimilar(y), mysimilar(y)
-    y1, der1 = value_and_derivative!(f!, (y1_in, der1_in), ba, x, extras)
+    y1, der1 = value_and_derivative!(f!, y1_in, der1_in, ba, x, extras)
 
     y2_in, der2_in = mysimilar(y), mysimilar(y)
-    der2 = derivative!(f!, (y2_in, der2_in), ba, x, extras)
+    der2 = derivative!(f!, y2_in, der2_in, ba, x, extras)
 
     let (≈)(x, y) = isapprox(x, y; atol, rtol)
         @testset "Primal value" begin
@@ -517,6 +635,43 @@ end
 
 function test_correctness(
     ba::AbstractADType,
+    scen::JacobianScenario{2,:outofplace};
+    isapprox::Function,
+    atol,
+    rtol,
+    ref_backend,
+)
+    (; f, x, y) = new_scen = deepcopy(scen)
+    f! = f
+    extras = prepare_jacobian(f!, ba, y, x)
+    jac_true = if ref_backend isa AbstractADType
+        jacobian(f!, mysimilar(y), ref_backend, x)
+    else
+        new_scen.ref(x)
+    end
+
+    y1_in = mysimilar(y)
+    y1, jac1 = value_and_jacobian(f!, y1_in, ba, x, extras)
+
+    y2_in = mysimilar(y)
+    jac2 = jacobian(f!, y2_in, ba, x, extras)
+
+    let (≈)(x, y) = isapprox(x, y; atol, rtol)
+        @testset "Primal value" begin
+            @test y1_in ≈ y
+            @test y1 ≈ y
+        end
+        @testset "Jacobian value" begin
+            @test jac1 ≈ jac_true
+            @test jac2 ≈ jac_true
+        end
+    end
+    test_scen_intact(new_scen, scen)
+    return nothing
+end
+
+function test_correctness(
+    ba::AbstractADType,
     scen::JacobianScenario{2,:inplace};
     isapprox::Function,
     atol,
@@ -526,18 +681,17 @@ function test_correctness(
     (; f, x, y) = new_scen = deepcopy(scen)
     f! = f
     extras = prepare_jacobian(f!, ba, y, x)
-    jac_shape = Matrix{eltype(y)}(undef, length(y), length(x))
     jac_true = if ref_backend isa AbstractADType
-        jacobian!(f!, (mysimilar(y), mysimilar(jac_shape)), ref_backend, x)
+        jacobian(f!, mysimilar(y), ref_backend, x)
     else
         new_scen.ref(x)
     end
 
     y1_in, jac1_in = mysimilar(y), mysimilar(jac_true)
-    y1, jac1 = value_and_jacobian!(f!, (y1_in, jac1_in), ba, x, extras)
+    y1, jac1 = value_and_jacobian!(f!, y1_in, jac1_in, ba, x, extras)
 
     y2_in, jac2_in = mysimilar(y), mysimilar(jac_true)
-    jac2 = jacobian!(f!, (y2_in, jac2_in), ba, x, extras)
+    jac2 = jacobian!(f!, y2_in, jac2_in, ba, x, extras)
 
     let (≈)(x, y) = isapprox(x, y; atol, rtol)
         @testset "Primal value" begin

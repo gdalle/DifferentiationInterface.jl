@@ -19,7 +19,7 @@ function DI.value_and_pullback(
         ReverseSplitWithPrimal, Const{typeof(f)}, Duplicated, Active{typeof(x)}
     )
     tape, y, new_dy = forw(Const(f), Active(x))
-    new_dy .= dy
+    copyto!(new_dy, dy)
     new_dx = only(only(rev(Const(f), Active(x), tape)))
     return y, new_dx
 end
@@ -60,7 +60,7 @@ function DI.value_and_pullback!(
         ReverseSplitWithPrimal, Const{typeof(f)}, Duplicated, Duplicated{typeof(x)}
     )
     tape, y, new_dy = forw(Const(f), Duplicated(x, dx_sametype))
-    new_dy .= dy
+    copyto!(new_dy, dy)
     rev(Const(f), Duplicated(x, dx_sametype), tape)
     return y, copyto!(dx, dx_sametype)
 end

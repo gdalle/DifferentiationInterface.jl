@@ -16,16 +16,29 @@ function comp_to_num_pullback(x, dy)
 end
 
 function comp_to_num_scenarios_onearg(x::ComponentVector)
-    return [
-        PushforwardScenario(
-            comp_to_num; x=x, ref=comp_to_num_pushforward, operator=:outofplace
-        ),
-        # no in-place pushforward for array-to-number
-        PullbackScenario(comp_to_num; x=x, ref=comp_to_num_pullback, operator=:outofplace),
-        PullbackScenario(comp_to_num; x=x, ref=comp_to_num_pullback, operator=:inplace),
-        GradientScenario(comp_to_num; x=x, ref=comp_to_num_gradient, operator=:outofplace),
-        GradientScenario(comp_to_num; x=x, ref=comp_to_num_gradient, operator=:inplace),
-    ]
+    # pushforward stays out of place
+    scens = AbstractScenario[]
+    for op in (:outofplace, :inplace)
+        append!(
+            scens,
+            [
+                PullbackScenario(comp_to_num; x=x, ref=comp_to_num_pullback, operator=op),
+                GradientScenario(comp_to_num; x=x, ref=comp_to_num_gradient, operator=op),
+            ],
+        )
+    end
+    for op in (:outofplace,)
+        append!(
+            scens,
+            [
+                PushforwardScenario(
+                    comp_to_num; x=x, ref=comp_to_num_pushforward, operator=op
+                ),
+            ],
+        )
+    end
+
+    return scens
 end
 
 ## Gather

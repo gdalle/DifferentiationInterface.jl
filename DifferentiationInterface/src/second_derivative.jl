@@ -1,3 +1,22 @@
+## Docstrings
+
+"""
+    prepare_second_derivative(f, backend, x) -> extras
+
+Create an `extras` object subtyping [`SecondDerivativeExtras`](@ref) that can be given to second derivative operators.
+"""
+function prepare_second_derivative end
+
+"""
+    second_derivative(f, backend, x, [extras]) -> der2
+"""
+function second_derivative end
+
+"""
+    second_derivative!(f, der2, backend, x, [extras]) -> der2
+"""
+function second_derivative! end
+
 ## Preparation
 
 """
@@ -14,12 +33,7 @@ struct ClosureSecondDerivativeExtras{C,E} <: SecondDerivativeExtras
     outer_derivative_extras::E
 end
 
-"""
-    prepare_second_derivative(f, backend, x) -> extras
-
-Create an `extras` object subtyping [`SecondDerivativeExtras`](@ref) that can be given to second derivative operators.
-"""
-prepare_second_derivative(f, backend::AbstractADType, x) = NoSecondDerivativeExtras()
+prepare_second_derivative(f, ::AbstractADType, x) = NoSecondDerivativeExtras()
 
 function prepare_second_derivative(f, backend::SecondOrder, x)
     inner_derivative_closure(z) = derivative(f, inner(backend), z)
@@ -31,9 +45,6 @@ end
 
 ## One argument
 
-"""
-    second_derivative(f, backend, x, [extras]) -> der2
-"""
 function second_derivative(
     f,
     backend::AbstractADType,
@@ -56,9 +67,6 @@ function second_derivative(
     )
 end
 
-"""
-    second_derivative!(f, der2, backend, x, [extras]) -> der2
-"""
 function second_derivative!(
     f,
     der2,
