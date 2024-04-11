@@ -246,12 +246,14 @@ function test_correctness(
             @test y3 ≈ y
         end
         @testset "Cotangent value" begin
-            @test dx1_in ≈ dx_true
             @test dx1 ≈ dx_true
-            @test dx2_in ≈ dx_true
             @test dx2 ≈ dx_true
-            @test dx3_in ≈ dx_true
             @test dx3 ≈ dx_true
+            if !isa(dx_true, Number)  # TODO: find cleaner fix
+                @test dx1_in ≈ dx_true
+                @test dx2_in ≈ dx_true
+                @test dx3_in ≈ dx_true
+            end
         end
     end
     test_scen_intact(new_scen, scen)

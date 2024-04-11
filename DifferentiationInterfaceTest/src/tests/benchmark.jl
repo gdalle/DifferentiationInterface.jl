@@ -95,6 +95,32 @@ end
 function run_benchmark!(
     data::Vector{BenchmarkDataRow},
     ba::AbstractADType,
+    scen::PushforwardScenario{1,:outofplace};
+)
+    (; f, x, y, dx) = deepcopy(scen)
+    # benchmark
+    extras = prepare_pushforward(f, ba, x)
+    bench0 = @be prepare_pushforward(f, ba, x) evals = 1 samples = 1
+    bench1 = @be value_and_pushforward(f, ba, x, dx, extras)
+    bench2 = @be pushforward(f, ba, x, dx, extras)
+    # count
+    cc = CallCounter(f)
+    extras = prepare_pushforward(cc, ba, x)
+    calls0 = reset_count!(cc)
+    value_and_pushforward(cc, ba, x, dx, extras)
+    calls1 = reset_count!(cc)
+    pushforward(cc, ba, x, dx, extras)
+    calls2 = reset_count!(cc)
+    # record
+    record!(data, ba, scen, prepare_pushforward, bench0, calls0)
+    record!(data, ba, scen, value_and_pushforward, bench1, calls1)
+    record!(data, ba, scen, pushforward, bench2, calls2)
+    return nothing
+end
+
+function run_benchmark!(
+    data::Vector{BenchmarkDataRow},
+    ba::AbstractADType,
     scen::PushforwardScenario{1,:inplace};
 )
     (; f, x, y, dx) = deepcopy(scen)
@@ -152,6 +178,40 @@ end
 ## Pullback
 
 function run_benchmark!(
+    data::Vector{BenchmarkDataRow},
+    ba::AbstractADType,
+    scen::PullbackScenario{1,:outofplace};
+)
+    (; f, x, y, dy) = deepcopy(scen)
+    # benchmark
+    extras = prepare_pullback(f, ba, x)
+    bench0 = @be prepare_pullback(f, ba, x) evals = 1 samples = 1
+    bench1 = @be value_and_pullback(f, ba, x, dy, extras)
+    bench2 = @be pullback(f, ba, x, dy, extras)
+    bench3 = @be value_and_pullback_split(f, ba, x, extras)
+    bench4 = @be last(value_and_pullback_split(f, ba, x, extras)) _(dy)
+    # count
+    cc = CallCounter(f)
+    extras = prepare_pullback(cc, ba, x)
+    calls0 = reset_count!(cc)
+    value_and_pullback(cc, ba, x, dy, extras)
+    calls1 = reset_count!(cc)
+    pullback(cc, ba, x, dy, extras)
+    calls2 = reset_count!(cc)
+    _, pullbackfunc = value_and_pullback_split(cc, ba, x, extras)
+    calls3 = reset_count!(cc)
+    pullbackfunc(dy)
+    calls4 = reset_count!(cc)
+    # record
+    record!(data, ba, scen, prepare_pullback, bench0, calls0)
+    record!(data, ba, scen, value_and_pullback, bench1, calls1)
+    record!(data, ba, scen, pullback, bench2, calls2)
+    record!(data, ba, scen, value_and_pullback_split, bench3, calls3)
+    record!(data, ba, scen, pullbackfunc, bench4, calls4)
+    return nothing
+end
+
+function run_benchmark!(
     data::Vector{BenchmarkDataRow}, ba::AbstractADType, scen::PullbackScenario{1,:inplace};
 )
     (; f, x, y, dy) = deepcopy(scen)
@@ -172,7 +232,7 @@ function run_benchmark!(
     calls1 = reset_count!(cc)
     pullback!(cc, mysimilar(x), ba, x, dy, extras)
     calls2 = reset_count!(cc)
-    _, pullbackfunc!! = value_and_pullback!_split(cc, ba, x, extras)
+    _, pullbackfunc! = value_and_pullback!_split(cc, ba, x, extras)
     calls3 = reset_count!(cc)
     pullbackfunc!(mysimilar(x), dy)
     calls4 = reset_count!(cc)
@@ -213,6 +273,32 @@ function run_benchmark!(
 end
 
 ## Derivative
+
+function run_benchmark!(
+    data::Vector{BenchmarkDataRow},
+    ba::AbstractADType,
+    scen::DerivativeScenario{1,:outofplace};
+)
+    (; f, x, y) = deepcopy(scen)
+    # benchmark
+    extras = prepare_derivative(f, ba, x)
+    bench0 = @be prepare_derivative(f, ba, x) evals = 1 samples = 1
+    bench1 = @be value_and_derivative(f, ba, x, extras)
+    bench2 = @be derivative(f, ba, x, extras)
+    # count
+    cc = CallCounter(f)
+    extras = prepare_derivative(cc, ba, x)
+    calls0 = reset_count!(cc)
+    value_and_derivative(cc, ba, x, extras)
+    calls1 = reset_count!(cc)
+    derivative(cc, ba, x, extras)
+    calls2 = reset_count!(cc)
+    # record
+    record!(data, ba, scen, prepare_derivative, bench0, calls0)
+    record!(data, ba, scen, value_and_derivative, bench1, calls1)
+    record!(data, ba, scen, derivative, bench2, calls2)
+    return nothing
+end
 
 function run_benchmark!(
     data::Vector{BenchmarkDataRow},
@@ -272,6 +358,32 @@ end
 ## Gradient
 
 function run_benchmark!(
+    data::Vector{BenchmarkDataRow},
+    ba::AbstractADType,
+    scen::GradientScenario{1,:outofplace};
+)
+    (; f, x) = deepcopy(scen)
+    # benchmark
+    extras = prepare_gradient(f, ba, x)
+    bench0 = @be prepare_gradient(f, ba, x) evals = 1 samples = 1
+    bench1 = @be value_and_gradient(f, ba, x, extras)
+    bench2 = @be gradient(f, ba, x, extras)
+    # count
+    cc = CallCounter(f)
+    extras = prepare_gradient(cc, ba, x)
+    calls0 = reset_count!(cc)
+    value_and_gradient(cc, ba, x, extras)
+    calls1 = reset_count!(cc)
+    gradient(cc, ba, x, extras)
+    calls2 = reset_count!(cc)
+    # record
+    record!(data, ba, scen, prepare_gradient, bench0, calls0)
+    record!(data, ba, scen, value_and_gradient, bench1, calls1)
+    record!(data, ba, scen, gradient, bench2, calls2)
+    return nothing
+end
+
+function run_benchmark!(
     data::Vector{BenchmarkDataRow}, ba::AbstractADType, scen::GradientScenario{1,:inplace};
 )
     (; f, x) = deepcopy(scen)
@@ -296,6 +408,33 @@ function run_benchmark!(
 end
 
 ## Jacobian
+
+function run_benchmark!(
+    data::Vector{BenchmarkDataRow},
+    ba::AbstractADType,
+    scen::JacobianScenario{1,:outofplace};
+)
+    (; f, x, y) = deepcopy(scen)
+    jac_template = Matrix{eltype(y)}(undef, length(y), length(x))
+    # benchmark
+    extras = prepare_jacobian(f, ba, x)
+    bench0 = @be prepare_jacobian(f, ba, x) evals = 1 samples = 1
+    bench1 = @be value_and_jacobian(f, ba, x, extras)
+    bench2 = @be jacobian(f, ba, x, extras)
+    # count
+    cc = CallCounter(f)
+    extras = prepare_jacobian(cc, ba, x)
+    calls0 = reset_count!(cc)
+    value_and_jacobian(cc, ba, x, extras)
+    calls1 = reset_count!(cc)
+    jacobian(cc, ba, x, extras)
+    calls2 = reset_count!(cc)
+    # record
+    record!(data, ba, scen, prepare_jacobian, bench0, calls0)
+    record!(data, ba, scen, value_and_jacobian, bench1, calls1)
+    record!(data, ba, scen, jacobian, bench2, calls2)
+    return nothing
+end
 
 function run_benchmark!(
     data::Vector{BenchmarkDataRow}, ba::AbstractADType, scen::JacobianScenario{1,:inplace};
@@ -357,6 +496,28 @@ end
 function run_benchmark!(
     data::Vector{BenchmarkDataRow},
     ba::AbstractADType,
+    scen::SecondDerivativeScenario{1,:outofplace};
+)
+    (; f, x, y) = deepcopy(scen)
+    # benchmark
+    extras = prepare_second_derivative(f, ba, x)
+    bench0 = @be prepare_second_derivative(f, ba, x) evals = 1 samples = 1
+    bench1 = @be second_derivative(f, ba, x, extras)
+    # count
+    cc = CallCounter(f)
+    extras = prepare_second_derivative(cc, ba, x)
+    calls0 = reset_count!(cc)
+    second_derivative(cc, ba, x, extras)
+    calls1 = reset_count!(cc)
+    # record
+    record!(data, ba, scen, prepare_second_derivative, bench0, calls0)
+    record!(data, ba, scen, second_derivative, bench1, calls1)
+    return nothing
+end
+
+function run_benchmark!(
+    data::Vector{BenchmarkDataRow},
+    ba::AbstractADType,
     scen::SecondDerivativeScenario{1,:inplace};
 )
     (; f, x, y) = deepcopy(scen)
@@ -372,11 +533,31 @@ function run_benchmark!(
     calls1 = reset_count!(cc)
     # record
     record!(data, ba, scen, prepare_second_derivative, bench0, calls0)
-    record!(data, ba, scen, second_derivative, bench1, calls1)
+    record!(data, ba, scen, second_derivative!, bench1, calls1)
     return nothing
 end
 
 ## Hessian-vector product
+
+function run_benchmark!(
+    data::Vector{BenchmarkDataRow}, ba::AbstractADType, scen::HVPScenario{1,:outofplace}
+)
+    (; f, x, y, dx) = deepcopy(scen)
+    # benchmark
+    extras = prepare_hvp(f, ba, x, dx)
+    bench0 = @be prepare_hvp(f, ba, x, dx) evals = 1 samples = 1
+    bench1 = @be hvp(f, ba, x, dx, extras)
+    # count
+    cc = CallCounter(f)
+    extras = prepare_hvp(cc, ba, x, dx)
+    calls0 = reset_count!(cc)
+    hvp(cc, ba, x, dx, extras)
+    calls1 = reset_count!(cc)
+    # record
+    record!(data, ba, scen, prepare_hvp, bench0, calls0)
+    record!(data, ba, scen, hvp, bench1, calls1)
+    return nothing
+end
 
 function run_benchmark!(
     data::Vector{BenchmarkDataRow}, ba::AbstractADType, scen::HVPScenario{1,:inplace}
@@ -394,11 +575,32 @@ function run_benchmark!(
     calls1 = reset_count!(cc)
     # record
     record!(data, ba, scen, prepare_hvp, bench0, calls0)
-    record!(data, ba, scen, hvp, bench1, calls1)
+    record!(data, ba, scen, hvp!, bench1, calls1)
     return nothing
 end
 
 ## Hessian
+
+function run_benchmark!(
+    data::Vector{BenchmarkDataRow}, ba::AbstractADType, scen::HessianScenario{1,:outofplace}
+)
+    (; f, x, y) = deepcopy(scen)
+    hess_template = Matrix{typeof(y)}(undef, length(x), length(x))
+    # benchmark
+    extras = prepare_hessian(f, ba, x)
+    bench0 = @be prepare_hessian(f, ba, x) evals = 1 samples = 1
+    bench1 = @be hessian(f, ba, x, extras)
+    # count
+    cc = CallCounter(f)
+    extras = prepare_hessian(cc, ba, x)
+    calls0 = reset_count!(cc)
+    hessian(cc, ba, x, extras)
+    calls1 = reset_count!(cc)
+    # record
+    record!(data, ba, scen, prepare_hessian, bench0, calls0)
+    record!(data, ba, scen, hessian, bench1, calls1)
+    return nothing
+end
 
 function run_benchmark!(
     data::Vector{BenchmarkDataRow}, ba::AbstractADType, scen::HessianScenario{1,:inplace}
@@ -417,6 +619,6 @@ function run_benchmark!(
     calls1 = reset_count!(cc)
     # record
     record!(data, ba, scen, prepare_hessian, bench0, calls0)
-    record!(data, ba, scen, hessian, bench1, calls1)
+    record!(data, ba, scen, hessian!, bench1, calls1)
     return nothing
 end
