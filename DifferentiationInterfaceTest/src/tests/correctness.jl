@@ -264,10 +264,10 @@ function test_correctness(
     end
 
     y1_in = mysimilar(y)
-    y1, dx1 = value_and_pullback!(f!, y1_in, ba, x, dy, extras)
+    y1, dx1 = value_and_pullback(f!, y1_in, ba, x, dy, extras)
 
     y2_in = mysimilar(y)
-    dx2 = pullback!(f!, y2_in, ba, x, dy, extras)
+    dx2 = pullback(f!, y2_in, ba, x, dy, extras)
 
     y3_in = mysimilar(y)
     y3, pullbackfunc = value_and_pullback_split(f!, y3_in, ba, x, extras)
@@ -317,9 +317,9 @@ function test_correctness(
 
     y3_in = mysimilar(y)
     y3, pullbackfunc! = value_and_pullback!_split(f!, y3_in, ba, x, extras)
-    pullbackfunc!((mysimilar(y), mysimilar(x)), dy)  # call once in case the second errors
+    pullbackfunc!(mysimilar(y), mysimilar(x), dy)  # call once in case the second errors
     y3_in2, dx3_in = mysimilar(y), mysimilar(x)
-    dx3 = pullbackfunc!((y3_in2, dx3_in), dy)
+    dx3 = pullbackfunc!(y3_in2, dx3_in, dy)
 
     let (≈)(x, y) = isapprox(x, y; atol, rtol)
         @testset "Primal value" begin

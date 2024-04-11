@@ -184,7 +184,7 @@ end
 function value_and_jacobian_twoarg_aux(
     f!, y, backend, x::AbstractArray, extras::PullbackJacobianExtras
 )
-    y, pullbackfunc = value_and_pullback_split(f!, backend, x, extras.pullback_extras)
+    y, pullbackfunc = value_and_pullback_split(f!, y, backend, x, extras.pullback_extras)
     jac = stack(CartesianIndices(y); dims=1) do i
         dy_i = basis(backend, y, i)
         jac_row_i = pullbackfunc(y, dy_i)
@@ -206,7 +206,7 @@ function value_and_jacobian!(
 end
 
 function value_and_jacobian_twoarg_aux!(
-    f!, jac::AbstractMatrix, backend, x::AbstractArray, extras::PushforwardJacobianExtras
+    f!, y, jac::AbstractMatrix, backend, x::AbstractArray, extras::PushforwardJacobianExtras
 )
     for (k, j) in enumerate(CartesianIndices(x))
         dx_j = basis(backend, x, j)
@@ -218,7 +218,7 @@ function value_and_jacobian_twoarg_aux!(
 end
 
 function value_and_jacobian_twoarg_aux!(
-    f!, jac::AbstractMatrix, backend, x::AbstractArray, extras::PullbackJacobianExtras
+    f!, y, jac::AbstractMatrix, backend, x::AbstractArray, extras::PullbackJacobianExtras
 )
     y, pullbackfunc! = value_and_pullback!_split(f!, y, backend, x, extras.pullback_extras)
     for (k, i) in enumerate(CartesianIndices(y))

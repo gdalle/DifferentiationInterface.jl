@@ -159,13 +159,11 @@ function value_and_pullback_twoarg_aux(
     f!, y, backend, x, dy, extras::PushforwardPullbackExtras
 )
     (; pushforward_extras) = extras
-    if x isa Number && y isa AbstractArray
-        dx = dot(dy, pushforward(f!, y, backend, x, one(x), pushforward_extras))
+    dx = if x isa Number && y isa AbstractArray
+        dot(dy, pushforward(f!, y, backend, x, one(x), pushforward_extras))
     elseif x isa AbstractArray && y isa AbstractArray
-        map!(dx, CartesianIndices(x)) do j
-            dot(
-                dy, pushforward(f!, y, backend, x, basis(backend, x, j), pushforward_extras)
-            )
+        map(CartesianIndices(x)) do j
+            dot(dy, pushforward(f!, y, backend, x, basis(backend, x, j), pushforward_extras))
         end
     end
     f!(y, x)
@@ -272,7 +270,7 @@ function (pbf::TwoArgPullbackFunc!)(y, dx, dy)
     return pullback!(f!, y, dx, backend, x, dy, extras)
 end
 
-function value_and_pullback_split!(
+function value_and_pullback_split(
     f!,
     y,
     backend::AbstractADType,
@@ -283,7 +281,7 @@ function value_and_pullback_split!(
     return y, TwoArgPullbackFunc(f!, backend, x, extras)
 end
 
-function value_and_pullback!_split!(
+function value_and_pullback!_split(
     f!,
     y,
     backend::AbstractADType,

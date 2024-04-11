@@ -149,12 +149,12 @@ function value_and_pushforward_twoarg_aux(
     f!, y, backend, x, dx, extras::PullbackPushforwardExtras
 )
     (; pullback_extras) = extras
-    if x isa Number && y isa AbstractArray
-        dy = map(CartesianIndices(y)) do i
+    dy = if x isa Number && y isa AbstractArray
+        map(CartesianIndices(y)) do i
             dx * pullback(f!, y, backend, x, basis(backend, y, i), pullback_extras)
         end
     elseif x isa AbstractArray && y isa AbstractArray
-        dy = map(CartesianIndices(y)) do i
+        map(CartesianIndices(y)) do i
             dot(dx, pullback(f!, y, backend, x, basis(backend, y, i), pullback_extras))
         end
     end

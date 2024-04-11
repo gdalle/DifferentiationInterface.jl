@@ -150,8 +150,8 @@ function test_jet(ba::AbstractADType, scen::DerivativeScenario{2,:inplace}; ref_
     extras = prepare_derivative(f!, ba, y, x)
     y_in, der_in = mysimilar(y), mysimilar(y)
 
-    @test_opt value_and_derivative!(f!, (y_in, der_in), ba, x, extras)
-    @test_opt derivative!(f!, (y_in, der_in), ba, x, extras)
+    @test_opt value_and_derivative!(f!, y_in, der_in, ba, x, extras)
+    @test_opt derivative!(f!, y_in, der_in, ba, x, extras)
     return nothing
 end
 

@@ -390,7 +390,7 @@ function run_benchmark!(
     # benchmark
     extras = prepare_derivative(f!, ba, y, x)
     bench0 = @be prepare_derivative(f!, ba, y, x) evals = 1 samples = 1
-    bench1 = @be mysimilar(y) value_and_derivative!(f!, _, ba, x, extras)
+    bench1 = @be mysimilar(y) value_and_derivative(f!, _, ba, x, extras)
     bench2 = @be mysimilar(y) derivative(f!, _, ba, x, extras)
     # count
     cc! = CallCounter(f!)
@@ -551,15 +551,15 @@ function run_benchmark!(
     # benchmark
     extras = prepare_jacobian(f!, ba, y, x)
     bench0 = @be prepare_jacobian(f!, ba, y, x) evals = 1 samples = 1
-    bench1 = @be mysimilar(y) value_and_jacobian!(f!, _, ba, x, extras)
-    bench2 = @be mysimilar(y) jacobian!(f!, _, ba, x, extras)
+    bench1 = @be mysimilar(y) value_and_jacobian(f!, _, ba, x, extras)
+    bench2 = @be mysimilar(y) jacobian(f!, _, ba, x, extras)
     # count
     cc! = CallCounter(f!)
     extras = prepare_jacobian(cc!, ba, y, x)
     calls0 = reset_count!(cc!)
     value_and_jacobian(cc!, mysimilar(y), ba, x, extras)
     calls1 = reset_count!(cc!)
-    jacobian!(cc!, mysimilar(y), ba, x, extras)
+    jacobian(cc!, mysimilar(y), ba, x, extras)
     calls2 = reset_count!(cc!)
     # record
     record!(data, ba, scen, prepare_jacobian, bench0, calls0)
