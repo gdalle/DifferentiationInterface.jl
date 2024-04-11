@@ -20,7 +20,8 @@ function DI.value_and_pushforward!(
     f, dy, backend::AutoForwardEnzyme, x, dx, extras::NoPushforwardExtras
 )
     # dy cannot be passed anyway
-    return copyto!(dy, DI.value_and_pushforward(f, backend, x, dx, extras))
+    y, new_dy = DI.value_and_pushforward(f, backend, x, dx, extras)
+    return y, copyto!(dy, new_dy)
 end
 
 function DI.pushforward!(
@@ -53,7 +54,8 @@ end
 function DI.value_and_gradient!(
     f, grad, backend::AutoForwardEnzyme, x::AbstractArray, extras::NoGradientExtras
 )
-    return copyto!(grad, DI.value_and_gradient(f, backend, x, extras))
+    y, new_grad = DI.value_and_gradient(f, backend, x, extras)
+    return y, copyto!(grad, new_grad)
 end
 
 ## Jacobian
