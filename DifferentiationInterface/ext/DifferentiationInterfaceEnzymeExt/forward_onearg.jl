@@ -17,17 +17,17 @@ function DI.pushforward(f, backend::AutoForwardEnzyme, x, dx, ::NoPushforwardExt
 end
 
 function DI.value_and_pushforward!(
-    f, _dy, backend::AutoForwardEnzyme, x, dx, extras::NoPushforwardExtras
+    f, dy, backend::AutoForwardEnzyme, x, dx, extras::NoPushforwardExtras
 )
     # dy cannot be passed anyway
-    return DI.value_and_pushforward(f, backend, x, dx, extras)
+    return copyto!(dy, DI.value_and_pushforward(f, backend, x, dx, extras))
 end
 
 function DI.pushforward!(
-    f, _dy, backend::AutoForwardEnzyme, x, dx, extras::NoPushforwardExtras
+    f, dy, backend::AutoForwardEnzyme, x, dx, extras::NoPushforwardExtras
 )
     # dy cannot be passed anyway
-    return DI.pushforward(f, backend, x, dx, extras)
+    return copyto!(dy, DI.pushforward(f, backend, x, dx, extras))
 end
 
 ## Gradient
@@ -45,15 +45,15 @@ function DI.value_and_gradient(
 end
 
 function DI.gradient!(
-    f, _grad, backend::AutoForwardEnzyme, x::AbstractArray, extras::NoGradientExtras
+    f, grad, backend::AutoForwardEnzyme, x::AbstractArray, extras::NoGradientExtras
 )
-    return DI.gradient(f, backend, x, extras)
+    return copyto!(grad, DI.gradient(f, backend, x, extras))
 end
 
 function DI.value_and_gradient!(
-    f, _grad, backend::AutoForwardEnzyme, x::AbstractArray, extras::NoGradientExtras
+    f, grad, backend::AutoForwardEnzyme, x::AbstractArray, extras::NoGradientExtras
 )
-    return DI.value_and_gradient(f, backend, x, extras)
+    return copyto!(grad, DI.value_and_gradient(f, backend, x, extras))
 end
 
 ## Jacobian
@@ -74,13 +74,14 @@ function DI.value_and_jacobian(
 end
 
 function DI.jacobian!(
-    f, _jac, backend::AutoForwardEnzyme, x::AbstractArray, extras::NoJacobianExtras
+    f, jac, backend::AutoForwardEnzyme, x::AbstractArray, extras::NoJacobianExtras
 )
-    return DI.jacobian(f, backend, x, extras)
+    return copyto!(jac, DI.jacobian(f, backend, x, extras))
 end
 
 function DI.value_and_jacobian!(
-    f, _jac, backend::AutoForwardEnzyme, x::AbstractArray, extras::NoJacobianExtras
+    f, jac, backend::AutoForwardEnzyme, x::AbstractArray, extras::NoJacobianExtras
 )
-    return DI.value_and_jacobian(f, backend, x, extras)
+    y, new_jac = DI.value_and_jacobian(f, backend, x, extras)
+    return y, copyto!(jac, new_jac)
 end

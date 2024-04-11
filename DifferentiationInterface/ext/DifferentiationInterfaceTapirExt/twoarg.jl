@@ -46,5 +46,9 @@ function DI.value_and_pullback!(
     # Run the reverse-pass.
     _, _, new_dx = pb!!(NoTangent(), df!, dy_righttype, dx_righttype)
 
-    return y, copyto!(dx, new_dx)
+    if x isa Number
+        return y, new_dx
+    else
+        return y, copyto!(dx, new_dx)
+    end
 end

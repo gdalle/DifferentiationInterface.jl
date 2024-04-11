@@ -16,5 +16,5 @@ function DI.value_and_pullback!(
     dx_sametype = zero_sametype!(dx, x)
     dy_sametype = convert(typeof(y), copy(dy))
     autodiff(Reverse, f!, Const, Duplicated(y, dy_sametype), Duplicated(x, dx_sametype))
-    return y, dx_sametype
+    return y, copyto!(dx, dx_sametype)
 end

@@ -23,10 +23,10 @@ function DI.value_and_pullback!(
     dy_righttype = convert(tangent_type(Y), dy)
     dx_righttype = convert(tangent_type(typeof(x)), dx)
     dx_righttype = set_to_zero!!(dx_righttype)
-    new_y, (new_df, new_dx) = value_and_pullback!!(
+    y, (new_df, new_dx) = value_and_pullback!!(
         extras.rrule, dy_righttype, zero_codual(f), CoDual(x, dx_righttype)
     )
-    return new_y, new_dx
+    return y, copyto!(dx, new_dx)
 end
 
 function DI.pullback(f, backend::AutoTapir, x, dy, extras::TapirOneArgPullbackExtras)

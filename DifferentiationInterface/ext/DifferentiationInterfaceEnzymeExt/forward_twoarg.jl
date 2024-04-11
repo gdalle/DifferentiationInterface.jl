@@ -10,5 +10,5 @@ function DI.value_and_pushforward!(
     autodiff(
         backend.mode, f!, Const, Duplicated(y, dy_sametype), Duplicated(x, dx_sametype)
     )
-    return y, dy_sametype
+    return y, copyto!(dy, dy_sametype)
 end

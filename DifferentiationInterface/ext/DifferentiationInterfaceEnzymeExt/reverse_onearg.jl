@@ -49,7 +49,7 @@ function DI.value_and_pullback!(
     dx_sametype = zero_sametype!(dx, x)
     _, y = autodiff(ReverseWithPrimal, f, Active, Duplicated(x, dx_sametype))
     dx_sametype .*= dy
-    return y, dx_sametype
+    return y, copyto!(dx, dx_sametype)
 end
 
 function DI.value_and_pullback!(
@@ -62,7 +62,7 @@ function DI.value_and_pullback!(
     tape, y, new_dy = forw(Const(f), Duplicated(x, dx_sametype))
     new_dy .= dy
     rev(Const(f), Duplicated(x, dx_sametype), tape)
-    return y, dx_sametype
+    return y, copyto!(dx, dx_sametype)
 end
 
 function DI.pullback!(f, dx, backend::AutoReverseEnzyme, x, dy, extras::NoPullbackExtras)
@@ -80,7 +80,7 @@ end
 function DI.gradient!(f, grad, ::AutoReverseEnzyme, x, ::NoGradientExtras)
     grad_sametype = convert(typeof(x), grad)
     gradient!(Reverse, grad_sametype, f, x)
-    return grad_sametype
+    return copyto!(grad, grad_sametype)
 end
 
 function DI.value_and_gradient(f, backend::AutoReverseEnzyme, x, ::NoGradientExtras)

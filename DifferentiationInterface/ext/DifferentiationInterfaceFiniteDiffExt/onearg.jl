@@ -45,13 +45,9 @@ function DI.derivative(
 end
 
 function DI.derivative!(
-    f,
-    _der,
-    backend::AnyAutoFiniteDiff,
-    x,
-    extras::FiniteDiffOneArgDerivativeExtras{Nothing},
+    f, der, backend::AnyAutoFiniteDiff, x, extras::FiniteDiffOneArgDerivativeExtras{Nothing}
 )
-    return DI.derivative(f, backend, x, extras)
+    return copyto!(der, DI.derivative(f, backend, x, extras))
 end
 
 function DI.value_and_derivative(
@@ -62,13 +58,10 @@ function DI.value_and_derivative(
 end
 
 function DI.value_and_derivative!(
-    f,
-    _der,
-    backend::AnyAutoFiniteDiff,
-    x,
-    extras::FiniteDiffOneArgDerivativeExtras{Nothing},
+    f, der, backend::AnyAutoFiniteDiff, x, extras::FiniteDiffOneArgDerivativeExtras{Nothing}
 )
-    return DI.value_and_derivative(f, backend, x, extras)
+    y, new_der = DI.value_and_derivative(f, backend, x, extras)
+    return y, copyto!(der, new_der)
 end
 
 ### Scalar to array
@@ -172,14 +165,15 @@ end
 function DI.jacobian!(
     f, jac, ::AnyAutoFiniteDiff, x, extras::FiniteDiffOneArgJacobianExtras
 )
-    return finite_difference_jacobian(f, x, extras.cache; jac_prototype=jac)
+    return copyto!(jac, finite_difference_jacobian(f, x, extras.cache; jac_prototype=jac))
 end
 
 function DI.value_and_jacobian!(
     f, jac, ::AnyAutoFiniteDiff, x, extras::FiniteDiffOneArgJacobianExtras
 )
     y = f(x)
-    return y, finite_difference_jacobian(f, x, extras.cache, y; jac_prototype=jac)
+    return y,
+    copyto!(jac, finite_difference_jacobian(f, x, extras.cache, y; jac_prototype=jac))
 end
 
 ## Hessian

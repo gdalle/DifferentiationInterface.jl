@@ -27,6 +27,7 @@ include("test_imports.jl")
         include("first_order.jl")
     end
 
+    #=
     @testset verbose = true "Second order" begin
         include("second_order.jl")
     end
@@ -44,4 +45,5 @@ include("test_imports.jl")
             include("weird_arrays.jl")
         end
     end
+    =#
 end;

@@ -19,7 +19,7 @@ function DI.value_and_pushforward!(
     new_dy = finite_difference_derivative(
         step, zero(eltype(x)), fdtype(backend), eltype(y), y
     )
-    return y, new_dy
+    return y, copyto!(dy, new_dy)
 end
 
 ## Derivative
