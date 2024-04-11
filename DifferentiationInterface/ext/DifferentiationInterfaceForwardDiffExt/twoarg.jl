@@ -1,14 +1,12 @@
 DI.prepare_pushforward(f!, ::AnyAutoForwardDiff, y, x) = NoPushforwardExtras()
 
-function DI.value_and_pushforward!(
-    f!, (y, dy)::Tuple, ::AnyAutoForwardDiff, x, dx, ::NoPushforwardExtras
-)
+function DI.value_and_pushforward(f!, y, ::AnyAutoForwardDiff, x, dx, ::NoPushforwardExtras)
     T = tag_type(f!, x)
     xdual = make_dual(T, x, dx)
-    ydual = make_dual(T, y, dy)
+    ydual = make_dual(T, y, similar(y))
     f!(ydual, xdual)
     y = myvalue!(T, y, ydual)
-    dy = myderivative!(T, dy, ydual)
+    dy = myderivative(T, ydual)
     return y, dy
 end
 
@@ -22,9 +20,22 @@ function DI.prepare_derivative(f!, ::AnyAutoForwardDiff, y::AbstractArray, x::Nu
     return ForwardDiffTwoArgDerivativeExtras(DerivativeConfig(f!, y, x))
 end
 
+function DI.value_and_derivative(
+    f!,
+    y::AbstractArray,
+    ::AnyAutoForwardDiff,
+    x::Number,
+    extras::ForwardDiffTwoArgDerivativeExtras,
+)
+    result = DiffResult(y, similar(y))
+    result = derivative!(result, f!, y, x, extras.config)
+    return DiffResults.value(result), DiffResults.derivative(result)
+end
+
 function DI.value_and_derivative!(
     f!,
-    (y, der)::Tuple{<:AbstractArray,<:AbstractArray},
+    y::AbstractArray,
+    der::AbstractArray,
     ::AnyAutoForwardDiff,
     x::Number,
     extras::ForwardDiffTwoArgDerivativeExtras,
@@ -34,9 +45,21 @@ function DI.value_and_derivative!(
     return DiffResults.value(result), DiffResults.derivative(result)
 end
 
+function DI.derivative(
+    f!,
+    y::AbstractArray,
+    ::AnyAutoForwardDiff,
+    x::Number,
+    extras::ForwardDiffTwoArgDerivativeExtras,
+)
+    der = derivative(f!, y, x, extras.config)
+    return der
+end
+
 function DI.derivative!(
     f!,
-    (y, der)::Tuple{<:AbstractArray,<:AbstractArray},
+    y::AbstractArray,
+    der::AbstractArray,
     ::AnyAutoForwardDiff,
     x::Number,
     extras::ForwardDiffTwoArgDerivativeExtras,
@@ -59,9 +82,22 @@ function DI.prepare_jacobian(
     )
 end
 
+function DI.value_and_jacobian(
+    f!,
+    y::AbstractArray,
+    ::AnyAutoForwardDiff,
+    x::AbstractArray,
+    extras::ForwardDiffTwoArgJacobianExtras,
+)
+    jac = jacobian(f!, y, x, extras.config)
+    f!(y, x)
+    return y, jac
+end
+
 function DI.value_and_jacobian!(
     f!,
-    (y, jac)::Tuple{<:AbstractArray,AbstractMatrix},
+    y::AbstractArray,
+    jac::AbstractMatrix,
     ::AnyAutoForwardDiff,
     x::AbstractArray,
     extras::ForwardDiffTwoArgJacobianExtras,
@@ -71,9 +107,21 @@ function DI.value_and_jacobian!(
     return DiffResults.value(result), DiffResults.jacobian(result)
 end
 
+function DI.jacobian(
+    f!,
+    y::AbstractArray,
+    ::AnyAutoForwardDiff,
+    x::AbstractArray,
+    extras::ForwardDiffTwoArgJacobianExtras,
+)
+    jac = jacobian(f!, y, x, extras.config)
+    return jac
+end
+
 function DI.jacobian!(
     f!,
-    (y, jac)::Tuple{<:AbstractArray,<:AbstractMatrix},
+    y::AbstractArray,
+    jac::AbstractMatrix,
     ::AnyAutoForwardDiff,
     x::AbstractArray,
     extras::ForwardDiffTwoArgJacobianExtras,
