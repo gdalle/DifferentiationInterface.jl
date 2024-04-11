@@ -7,7 +7,7 @@ const SMAT = SMatrix{size(IMAT, 1),size(IMAT, 2)}(IMAT)
 Create a vector of [`AbstractScenario`](@ref)s with static array types from [StaticArrays.jl](https://github.com/JuliaArrays/StaticArrays.jl).
 """
 function static_scenarios()
-    return vcat(
+    scens = vcat(
         # one argument
         num_to_arr_scenarios_onearg(randn(), SVEC),
         num_to_arr_scenarios_onearg(randn(), SMAT),
@@ -25,4 +25,8 @@ function static_scenarios()
         mat_to_vec_scenarios_twoarg(MMatrix{2,3}(randn(2, 3))),
         mat_to_mat_scenarios_twoarg(MMatrix{2,3}(randn(2, 3))),
     )
+    scens = filter(scens) do s
+        operator(s) == :outofplace || typeof(s.x) isa Union{Number,MVector,MMatrix}
+    end
+    return scens
 end

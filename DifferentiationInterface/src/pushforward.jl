@@ -140,7 +140,7 @@ function value_and_pushforward(
     backend::AbstractADType,
     x,
     dx,
-    extras::PushforwardExtras=prepare_pushforward(f!, backend, y_and_dy[1], x),
+    extras::PushforwardExtras=prepare_pushforward(f!, backend, y, x),
 )
     return value_and_pushforward_twoarg_aux(f!, y, backend, x, dx, extras)
 end

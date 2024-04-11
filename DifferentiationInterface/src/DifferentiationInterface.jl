@@ -107,7 +107,7 @@ export SecondOrder
 
 export value_and_pushforward!, value_and_pushforward
 export value_and_pullback!, value_and_pullback
-export value_and_pullback!_split, value_and_pullback_split, value_and_pullback!_split!
+export value_and_pullback!_split, value_and_pullback_split
 
 export value_and_derivative!, value_and_derivative
 export value_and_gradient!, value_and_gradient
