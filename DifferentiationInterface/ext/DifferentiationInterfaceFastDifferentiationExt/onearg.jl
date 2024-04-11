@@ -47,12 +47,8 @@ function DI.pushforward!(
     extras::FastDifferentiationOneArgPushforwardExtras,
 )
     v_vec = vcat(myvec(x), myvec(dx))
-    if extras.y_prototype isa Number
-        return only(extras.jvp_exe(v_vec))
-    else
-        extras.jvp_exe!(vec(dy), v_vec)
-        return dy
-    end
+    extras.jvp_exe!(vec(dy), v_vec)
+    return dy
 end
 
 function DI.value_and_pushforward(
@@ -117,12 +113,8 @@ function DI.derivative!(
     x,
     extras::FastDifferentiationOneArgDerivativeExtras,
 )
-    if extras.y_prototype isa Number
-        return only(extras.der_exe(monovec(x)))
-    else
-        extras.der_exe!(vec(der), monovec(x))
-        return der
-    end
+    extras.der_exe!(vec(der), monovec(x))
+    return der
 end
 
 function DI.value_and_derivative(
@@ -245,12 +237,8 @@ function DI.second_derivative!(
     x,
     extras::FastDifferentiationAllocatingSecondDerivativeExtras,
 )
-    if extras.y_prototype isa Number
-        return only(extras.der2_exe(monovec(x)))
-    else
-        extras.der2_exe!(vec(der2), monovec(x))
-        return der2
-    end
+    extras.der2_exe!(vec(der2), monovec(x))
+    return der2
 end
 
 ## HVP
@@ -261,11 +249,7 @@ struct FastDifferentiationHVPExtras{E1,E2} <: HVPExtras
 end
 
 function DI.prepare_hvp(f, ::AnyAutoFastDifferentiation, x, v)
-    x_var = if x isa Number
-        only(make_variables(:x))
-    else
-        make_variables(:x, size(x)...)
-    end
+    x_var = make_variables(:x, size(x)...)
     y_var = f(x_var)
 
     x_vec_var = vec(x_var)

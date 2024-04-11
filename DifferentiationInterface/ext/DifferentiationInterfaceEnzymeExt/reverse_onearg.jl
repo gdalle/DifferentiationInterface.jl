@@ -38,12 +38,6 @@ end
 ### In-place
 
 function DI.value_and_pullback!(
-    f, _dx, backend::AutoReverseEnzyme, x::Number, dy, extras::NoPullbackExtras
-)
-    return DI.value_and_pullback(f, backend, x, dy, extras)
-end
-
-function DI.value_and_pullback!(
     f, dx, ::AutoReverseEnzyme, x::AbstractArray, dy::Number, ::NoPullbackExtras
 )
     dx_sametype = zero_sametype!(dx, x)

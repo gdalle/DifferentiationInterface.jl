@@ -36,8 +36,14 @@ end
 test_differentiation(
     sparse_backends,
     [
-        JacobianScenario(abs2diff; x=rand(5), ref=abs2diff_jacobian),
-        JacobianScenario(abs2diff!; x=rand(5), y=zeros(4), ref=abs2diff_jacobian),
+        JacobianScenario(abs2diff; x=rand(5), ref=abs2diff_jacobian, operator=:outofplace),
+        JacobianScenario(abs2diff; x=rand(5), ref=abs2diff_jacobian, operator=:inplace),
+        JacobianScenario(
+            abs2diff!; x=rand(5), y=zeros(4), ref=abs2diff_jacobian, operator=:outofplace
+        ),
+        JacobianScenario(
+            abs2diff!; x=rand(5), y=zeros(4), ref=abs2diff_jacobian, operator=:inplace
+        ),
     ];
     sparsity=true,
     logging=get(ENV, "CI", "false") == "false",
@@ -45,7 +51,12 @@ test_differentiation(
 
 test_differentiation(
     sparse_second_order_backends,
-    [HessianScenario(sumabs2diff; x=rand(5), ref=sumabs2diff_hessian)];
+    [
+        HessianScenario(
+            sumabs2diff; x=rand(5), ref=sumabs2diff_hessian, operator=:outofplace
+        ),
+        HessianScenario(sumabs2diff; x=rand(5), ref=sumabs2diff_hessian, operator=:inplace),
+    ];
     sparsity=true,
     logging=get(ENV, "CI", "false") == "false",
 )

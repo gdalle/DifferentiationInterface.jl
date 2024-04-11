@@ -266,21 +266,32 @@ function vec_to_mat_scenarios_twoarg(x::AbstractVector)
     n = length(x)
     scens = AbstractScenario[]
     for op in (:outofplace, :inplace)
-        return [
-            PushforwardScenario(
-                vec_to_mat!;
-                x=x,
-                y=similar(x, n, 2),
-                ref=vec_to_mat_pushforward,
-                operator=op,
-            ),
-            PullbackScenario(
-                vec_to_mat!; x=x, y=similar(x, n, 2), ref=vec_to_mat_pullback, operator=op
-            ),
-            JacobianScenario(
-                vec_to_mat!; x=x, y=similar(x, n, 2), ref=vec_to_mat_jacobian, operator=op
-            ),
-        ]
+        append!(
+            scens,
+            [
+                PushforwardScenario(
+                    vec_to_mat!;
+                    x=x,
+                    y=similar(x, n, 2),
+                    ref=vec_to_mat_pushforward,
+                    operator=op,
+                ),
+                PullbackScenario(
+                    vec_to_mat!;
+                    x=x,
+                    y=similar(x, n, 2),
+                    ref=vec_to_mat_pullback,
+                    operator=op,
+                ),
+                JacobianScenario(
+                    vec_to_mat!;
+                    x=x,
+                    y=similar(x, n, 2),
+                    ref=vec_to_mat_jacobian,
+                    operator=op,
+                ),
+            ],
+        )
     end
     return scens
 end
