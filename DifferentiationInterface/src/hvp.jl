@@ -90,7 +90,7 @@ function prepare_hvp_aux(f, backend::SecondOrder, x, v, ::ReverseOverReverse)
     return ReverseOverReverseHVPExtras(inner_gradient_closure, outer_pullback_extras)
 end
 
-## Allocating
+## One argument
 
 """
     hvp(f, backend, x, v, [extras]) -> p

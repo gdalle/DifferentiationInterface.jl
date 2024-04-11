@@ -24,7 +24,7 @@ function prepare_hessian(f, backend::AbstractADType, x)
     )
 end
 
-## Allocating
+## One argument
 
 """
     hessian(f, backend, x, [extras]) -> hess

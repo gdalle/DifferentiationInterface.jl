@@ -18,7 +18,7 @@ num_to_num_second_derivative(x) = -sin(x)
 num_to_num_pushforward(x, dx) = num_to_num_derivative(x) * dx
 num_to_num_pullback(x, dy) = num_to_num_derivative(x) * dy
 
-function num_to_num_scenarios_allocating(x::Number)
+function num_to_num_scenarios_onearg(x::Number)
     return [
         PushforwardScenario(
             num_to_num; x=x, ref=num_to_num_pushforward, operator=:outofplace
@@ -68,7 +68,7 @@ function _num_to_arr_pullback(a)
     return (x, dy) -> dot(a .* cos.(a .* x), dy)
 end
 
-function num_to_arr_scenarios_allocating(x::Number, a::AbstractArray)
+function num_to_arr_scenarios_onearg(x::Number, a::AbstractArray)
     return [
         PushforwardScenario(
             _num_to_arr(a); x=x, ref=_num_to_arr_pushforward(a), operator=:outofplace
@@ -79,6 +79,7 @@ function num_to_arr_scenarios_allocating(x::Number, a::AbstractArray)
         PullbackScenario(
             _num_to_arr(a); x=x, ref=_num_to_arr_pullback(a), operator=:outofplace
         ),
+        # no in-place pullback for number-to-array
         DerivativeScenario(
             _num_to_arr(a); x=x, ref=_num_to_arr_derivative(a), operator=:outofplace
         ),
@@ -94,7 +95,7 @@ function num_to_arr_scenarios_allocating(x::Number, a::AbstractArray)
     ]
 end
 
-function num_to_arr_scenarios_mutating(x::Number, a::AbstractArray)
+function num_to_arr_scenarios_twoarg(x::Number, a::AbstractArray)
     return [
         PushforwardScenario(
             _num_to_arr!(a);
@@ -130,7 +131,7 @@ arr_to_num_pushforward(x, dx) = dot(arr_to_num_gradient(x), dx)
 arr_to_num_pullback(x, dy) = arr_to_num_gradient(x) .* dy
 arr_to_num_hessian(x) = Matrix(Diagonal(-sin.(vec(x))))
 
-function arr_to_num_scenarios_allocating(x::AbstractArray)
+function arr_to_num_scenarios_onearg(x::AbstractArray)
     return [
         PushforwardScenario(
             arr_to_num; x=x, ref=arr_to_num_pushforward, operator=:outofplace
@@ -160,7 +161,7 @@ vec_to_vec_pushforward(x, dx) = vcat(cos.(x) .* dx, -sin.(x) .* dx)
 vec_to_vec_pullback(x, dy) = cos.(x) .* first_half(dy) .- sin.(x) .* second_half(dy)
 vec_to_vec_jacobian(x) = vcat(Diagonal(cos.(x)), Diagonal(-sin.(x)))
 
-function vec_to_vec_scenarios_allocating(x::AbstractVector)
+function vec_to_vec_scenarios_onearg(x::AbstractVector)
     n = length(x)
     return [
         PushforwardScenario(
@@ -168,13 +169,14 @@ function vec_to_vec_scenarios_allocating(x::AbstractVector)
         ),
         PushforwardScenario(vec_to_vec; x=x, ref=vec_to_vec_pushforward, operator=:inplace),
         PullbackScenario(vec_to_vec; x=x, ref=vec_to_vec_pullback, operator=:outofplace),
+        # no in-place pullback for array-to-number
         PullbackScenario(vec_to_vec; x=x, ref=vec_to_vec_pullback, operator=:inplace),
         JacobianScenario(vec_to_vec; x=x, ref=vec_to_vec_jacobian, operator=:outofplace),
         JacobianScenario(vec_to_vec; x=x, ref=vec_to_vec_jacobian, operator=:inplace),
     ]
 end
 
-function vec_to_vec_scenarios_mutating(x::AbstractVector)
+function vec_to_vec_scenarios_twoarg(x::AbstractVector)
     n = length(x)
     return [
         PushforwardScenario(
@@ -205,7 +207,7 @@ vec_to_mat_pushforward(x, dx) = hcat(cos.(x) .* dx, -sin.(x) .* dx)
 vec_to_mat_pullback(x, dy) = cos.(x) .* dy[:, 1] .- sin.(x) .* dy[:, 2]
 vec_to_mat_jacobian(x) = vcat(Diagonal(cos.(x)), Diagonal(-sin.(x)))
 
-function vec_to_mat_scenarios_allocating(x::AbstractVector)
+function vec_to_mat_scenarios_onearg(x::AbstractVector)
     n = length(x)
     return [
         PushforwardScenario(
@@ -219,7 +221,7 @@ function vec_to_mat_scenarios_allocating(x::AbstractVector)
     ]
 end
 
-function vec_to_mat_scenarios_mutating(x::AbstractVector)
+function vec_to_mat_scenarios_twoarg(x::AbstractVector)
     n = length(x)
     return [
         PushforwardScenario(
@@ -258,26 +260,51 @@ end
 
 mat_to_vec_jacobian(x) = vcat(Diagonal(vec(cos.(x))), Diagonal(vec(-sin.(x))))
 
-function mat_to_vec_scenarios_allocating(x::AbstractMatrix)
-    m, n = size(x)
-    return [
-        PushforwardScenario(mat_to_vec; x=x, ref=mat_to_vec_pushforward),
-        PullbackScenario(mat_to_vec; x=randn(m, n), ref=mat_to_vec_pullback),
-        JacobianScenario(mat_to_vec; x=randn(m, n), ref=mat_to_vec_jacobian),
-    ]
-end
-
-function mat_to_vec_scenarios_mutating(x::AbstractMatrix)
+function mat_to_vec_scenarios_onearg(x::AbstractMatrix)
     m, n = size(x)
     return [
         PushforwardScenario(
-            mat_to_vec!; x=x, y=similar(x, m * n * 2), ref=mat_to_vec_pushforward
+            mat_to_vec; x=x, ref=mat_to_vec_pushforward, operator=:outofplace
+        ),
+        PushforwardScenario(mat_to_vec; x=x, ref=mat_to_vec_pushforward, operator=:inplace),
+        PullbackScenario(
+            mat_to_vec; x=randn(m, n), ref=mat_to_vec_pullback, operator=:outofplace
         ),
         PullbackScenario(
-            mat_to_vec!; x=x, y=similar(x, m * n * 2), ref=mat_to_vec_pullback
+            mat_to_vec; x=randn(m, n), ref=mat_to_vec_pullback, operator=:inplace
         ),
         JacobianScenario(
-            mat_to_vec!; x=x, y=similar(x, m * n * 2), ref=mat_to_vec_jacobian
+            mat_to_vec; x=randn(m, n), ref=mat_to_vec_jacobian, operator=:outofplace
+        ),
+        JacobianScenario(
+            mat_to_vec; x=randn(m, n), ref=mat_to_vec_jacobian, operator=:inplace
+        ),
+    ]
+end
+
+function mat_to_vec_scenarios_twoarg(x::AbstractMatrix)
+    m, n = size(x)
+    return [
+        PushforwardScenario(
+            mat_to_vec!;
+            x=x,
+            y=similar(x, m * n * 2),
+            ref=mat_to_vec_pushforward,
+            operator=:inplace,
+        ),
+        PullbackScenario(
+            mat_to_vec!;
+            x=x,
+            y=similar(x, m * n * 2),
+            ref=mat_to_vec_pullback,
+            operator=:inplace,
+        ),
+        JacobianScenario(
+            mat_to_vec!;
+            x=x,
+            y=similar(x, m * n * 2),
+            ref=mat_to_vec_jacobian,
+            operator=:inplace,
         ),
     ]
 end
@@ -301,23 +328,44 @@ end
 
 mat_to_mat_jacobian(x) = vcat(Diagonal(vec(cos.(x))), Diagonal(vec(-sin.(x))))
 
-function mat_to_mat_scenarios_allocating(x::AbstractMatrix)
-    m, n = size(x)
-    return [
-        PushforwardScenario(mat_to_mat; x=x, ref=mat_to_mat_pushforward),
-        PullbackScenario(mat_to_mat; x=x, ref=mat_to_mat_pullback),
-        JacobianScenario(mat_to_mat; x=x, ref=mat_to_mat_jacobian),
-    ]
-end
-
-function mat_to_mat_scenarios_mutating(x::AbstractMatrix)
+function mat_to_mat_scenarios_onearg(x::AbstractMatrix)
     m, n = size(x)
     return [
         PushforwardScenario(
-            mat_to_mat!; x=x, y=similar(x, m * n, 2), ref=mat_to_mat_pushforward
+            mat_to_mat; x=x, ref=mat_to_mat_pushforward, operator=:outofplace
         ),
-        PullbackScenario(mat_to_mat!; x=x, y=similar(x, m * n, 2), ref=mat_to_mat_pullback),
-        JacobianScenario(mat_to_mat!; x=x, y=similar(x, m * n, 2), ref=mat_to_mat_jacobian),
+        PushforwardScenario(mat_to_mat; x=x, ref=mat_to_mat_pushforward, operator=:inplace),
+        PullbackScenario(mat_to_mat; x=x, ref=mat_to_mat_pullback, operator=:outofplace),
+        PullbackScenario(mat_to_mat; x=x, ref=mat_to_mat_pullback, operator=:inplace),
+        JacobianScenario(mat_to_mat; x=x, ref=mat_to_mat_jacobian, operator=:outofplace),
+        JacobianScenario(mat_to_mat; x=x, ref=mat_to_mat_jacobian, operator=:inplace),
+    ]
+end
+
+function mat_to_mat_scenarios_twoarg(x::AbstractMatrix)
+    m, n = size(x)
+    return [
+        PushforwardScenario(
+            mat_to_mat!;
+            x=x,
+            y=similar(x, m * n, 2),
+            ref=mat_to_mat_pushforward,
+            operator=:inplace,
+        ),
+        PullbackScenario(
+            mat_to_mat!;
+            x=x,
+            y=similar(x, m * n, 2),
+            ref=mat_to_mat_pullback,
+            operator=:inplace,
+        ),
+        JacobianScenario(
+            mat_to_mat!;
+            x=x,
+            y=similar(x, m * n, 2),
+            ref=mat_to_mat_jacobian,
+            operator=:inplace,
+        ),
     ]
 end
 
@@ -333,22 +381,22 @@ Create a vector of [`AbstractScenario`](@ref)s with standard array types.
 """
 function default_scenarios()
     return vcat(
-        # allocating
-        num_to_num_scenarios_allocating(randn()),
-        num_to_arr_scenarios_allocating(randn(), IVEC),
-        num_to_arr_scenarios_allocating(randn(), IMAT),
-        arr_to_num_scenarios_allocating(randn(6)),
-        arr_to_num_scenarios_allocating(randn(2, 3)),
-        vec_to_vec_scenarios_allocating(randn(6)),
-        vec_to_mat_scenarios_allocating(randn(6)),
-        mat_to_vec_scenarios_allocating(randn(2, 3)),
-        mat_to_mat_scenarios_allocating(randn(2, 3)),
-        # mutating
-        num_to_arr_scenarios_mutating(randn(), IVEC),
-        num_to_arr_scenarios_mutating(randn(), IMAT),
-        vec_to_vec_scenarios_mutating(randn(6)),
-        vec_to_mat_scenarios_mutating(randn(6)),
-        mat_to_vec_scenarios_mutating(randn(2, 3)),
-        mat_to_mat_scenarios_mutating(randn(2, 3)),
+        # one argument
+        num_to_num_scenarios_onearg(randn()),
+        num_to_arr_scenarios_onearg(randn(), IVEC),
+        num_to_arr_scenarios_onearg(randn(), IMAT),
+        arr_to_num_scenarios_onearg(randn(6)),
+        arr_to_num_scenarios_onearg(randn(2, 3)),
+        vec_to_vec_scenarios_onearg(randn(6)),
+        vec_to_mat_scenarios_onearg(randn(6)),
+        mat_to_vec_scenarios_onearg(randn(2, 3)),
+        mat_to_mat_scenarios_onearg(randn(2, 3)),
+        # two arguments
+        num_to_arr_scenarios_twoarg(randn(), IVEC),
+        num_to_arr_scenarios_twoarg(randn(), IMAT),
+        vec_to_vec_scenarios_twoarg(randn(6)),
+        vec_to_mat_scenarios_twoarg(randn(6)),
+        mat_to_vec_scenarios_twoarg(randn(2, 3)),
+        mat_to_mat_scenarios_twoarg(randn(2, 3)),
     )
 end

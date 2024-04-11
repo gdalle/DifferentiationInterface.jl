@@ -22,7 +22,7 @@ function prepare_gradient(f, backend::AbstractADType, x)
     return PullbackGradientExtras(prepare_pullback(f, backend, x))
 end
 
-## Allocating
+## One argument
 
 """
     value_and_gradient(f, backend, x, [extras]) -> (y, grad)

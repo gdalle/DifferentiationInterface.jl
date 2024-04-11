@@ -27,7 +27,7 @@ function prepare_derivative(f!, backend::AbstractADType, y, x)
     return PushforwardDerivativeExtras(prepare_pushforward(f!, backend, y, x))
 end
 
-## Allocating
+## One argument
 
 """
     value_and_derivative(f, backend, x, [extras]) -> (y, der)
@@ -79,7 +79,7 @@ function derivative!(
     return pushforward!(f, der, backend, x, one(x), extras.pushforward_extras)
 end
 
-## Mutating
+## Two arguments
 
 """
     value_and_derivative!(f!, y, der, backend, x, [extras]) -> (y, der)

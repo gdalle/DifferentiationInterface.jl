@@ -8,21 +8,21 @@ Create a vector of [`AbstractScenario`](@ref)s with static array types from [Sta
 """
 function static_scenarios()
     return vcat(
-        # allocating
-        num_to_arr_scenarios_allocating(randn(), SVEC),
-        num_to_arr_scenarios_allocating(randn(), SMAT),
-        arr_to_num_scenarios_allocating(SVector{6}(randn(6))),
-        arr_to_num_scenarios_allocating(SMatrix{2,3}(randn(2, 3))),
-        vec_to_vec_scenarios_allocating(SVector{6}(randn(6))),
-        vec_to_mat_scenarios_allocating(SVector{6}(randn(6))),
-        mat_to_vec_scenarios_allocating(SMatrix{2,3}(randn(2, 3))),
-        mat_to_mat_scenarios_allocating(SMatrix{2,3}(randn(2, 3))),
-        # mutating
-        num_to_arr_scenarios_mutating(randn(), SVEC),
-        num_to_arr_scenarios_mutating(randn(), SMAT),
-        vec_to_vec_scenarios_mutating(MVector{6}(randn(6))),
-        vec_to_mat_scenarios_mutating(MVector{6}(randn(6))),
-        mat_to_vec_scenarios_mutating(MMatrix{2,3}(randn(2, 3))),
-        mat_to_mat_scenarios_mutating(MMatrix{2,3}(randn(2, 3))),
+        # one argument
+        num_to_arr_scenarios_onearg(randn(), SVEC),
+        num_to_arr_scenarios_onearg(randn(), SMAT),
+        arr_to_num_scenarios_onearg(SVector{6}(randn(6))),
+        arr_to_num_scenarios_onearg(SMatrix{2,3}(randn(2, 3))),
+        vec_to_vec_scenarios_onearg(SVector{6}(randn(6))),
+        vec_to_mat_scenarios_onearg(SVector{6}(randn(6))),
+        mat_to_vec_scenarios_onearg(SMatrix{2,3}(randn(2, 3))),
+        mat_to_mat_scenarios_onearg(SMatrix{2,3}(randn(2, 3))),
+        # two arguments
+        num_to_arr_scenarios_twoarg(randn(), SVEC),
+        num_to_arr_scenarios_twoarg(randn(), SMAT),
+        vec_to_vec_scenarios_twoarg(MVector{6}(randn(6))),
+        vec_to_mat_scenarios_twoarg(MVector{6}(randn(6))),
+        mat_to_vec_scenarios_twoarg(MMatrix{2,3}(randn(2, 3))),
+        mat_to_mat_scenarios_twoarg(MMatrix{2,3}(randn(2, 3))),
     )
 end

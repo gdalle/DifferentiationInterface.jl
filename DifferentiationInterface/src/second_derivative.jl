@@ -29,7 +29,7 @@ function prepare_second_derivative(f, backend::SecondOrder, x)
     return ClosureSecondDerivativeExtras(inner_derivative_closure, outer_derivative_extras)
 end
 
-## Allocating
+## One argument
 
 """
     second_derivative(f, backend, x, [extras]) -> der2

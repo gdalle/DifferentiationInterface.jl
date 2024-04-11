@@ -35,7 +35,7 @@ using LinearAlgebra: dot, mul!
 const AnyAutoForwardDiff{C,T} = Union{AutoForwardDiff{C,T},AutoSparseForwardDiff{C,T}}
 
 include("utils.jl")
-include("allocating.jl")
-include("mutating.jl")
+include("onearg.jl")
+include("twoarg.jl")
 
 end # module

@@ -35,7 +35,7 @@ function prepare_pushforward_aux(f!, backend, y, x, ::PushforwardSlow)
     return PullbackPushforwardExtras(prepare_pullback(f!, backend, y, x))
 end
 
-## Allocating
+## One argument
 
 """
     value_and_pushforward(f, backend, x, dx, [extras]) -> (y, dy)
@@ -113,7 +113,7 @@ function pushforward!(
     return value_and_pushforward!(f, dy, backend, x, dx, extras)[2]
 end
 
-## Mutating
+## Two arguments
 
 """
     value_and_pushforward!(f!, y, dy, backend, x, dx, [extras]) -> (y, dy)

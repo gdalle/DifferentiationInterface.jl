@@ -35,7 +35,7 @@ function prepare_pullback_aux(f!, backend, y, x, ::PullbackSlow)
     return PushforwardPullbackExtras(prepare_pushforward(f!, backend, y, x))
 end
 
-## Allocating
+## One argument
 
 """
     value_and_pullback(f, backend, x, dy, [extras]) -> (y, dx)
@@ -113,7 +113,7 @@ function pullback!(
     return value_and_pullback!(f, dx, backend, x, dy, extras)[2]
 end
 
-## Mutating
+## Two arguments
 
 """
     value_and_pullback!(f!, y, dx, backend, x, dy, [extras]) -> (y, dx)
@@ -137,9 +137,7 @@ function value_and_pullback_aux!(
     f!, y, dx, backend, x, dy, extras::PushforwardPullbackExtras
 )
     (; pushforward_extras) = extras
-    new_dx = if x isa Number && y isa AbstractArray
-        dot(dy, pushforward!(f!, y, similar(y), backend, x, one(x), pushforward_extras))
-    elseif x isa AbstractArray && y isa AbstractArray
+    if x isa AbstractArray && y isa AbstractArray
         map!(dx, CartesianIndices(x)) do j
             dot(
                 dy,
@@ -156,7 +154,7 @@ function value_and_pullback_aux!(
         end
     end
     f!(y, x)
-    return y, new_dx
+    return y, dx
 end
 
 """

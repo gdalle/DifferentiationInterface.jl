@@ -27,7 +27,7 @@ using ReverseDiff:
 
 const AnyAutoReverseDiff = Union{AutoReverseDiff,AutoSparseReverseDiff}
 
-include("allocating.jl")
-include("mutating.jl")
+include("onearg.jl")
+include("twoarg.jl")
 
 end # module

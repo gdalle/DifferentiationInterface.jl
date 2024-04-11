@@ -51,11 +51,12 @@ end
 function DI.value_and_gradient!(
     f, grad, backend::AnyAutoZygote, x, extras::NoGradientExtras
 )
-    return DI.value_and_gradient(f, backend, x, extras)
+    y, new_grad = DI.value_and_gradient(f, backend, x, extras)
+    return y, copyto!(grad, new_grad)
 end
 
 function DI.gradient!(f, grad, backend::AnyAutoZygote, x, extras::NoGradientExtras)
-    return DI.gradient(f, backend, x, extras)
+    return copyto!(grad, DI.gradient(f, backend, x, extras))
 end
 
 ## Jacobian
@@ -71,11 +72,12 @@ function DI.jacobian(f, ::AnyAutoZygote, x, ::NoJacobianExtras)
 end
 
 function DI.value_and_jacobian!(f, jac, backend::AnyAutoZygote, x, extras::NoJacobianExtras)
-    return DI.value_and_jacobian(f, backend, x, extras)
+    y, new_jac = DI.value_and_jacobian(f, backend, x, extras)
+    return y, copyto!(jac, new_jac)
 end
 
 function DI.jacobian!(f, jac, backend::AnyAutoZygote, x, extras::NoJacobianExtras)
-    return DI.jacobian(f, backend, x, extras)
+    return copyto!(jac, DI.jacobian(f, backend, x, extras))
 end
 
 ## Hessian
@@ -87,7 +89,7 @@ function DI.hessian(f, ::AnyAutoZygote, x, ::NoHessianExtras)
 end
 
 function DI.hessian!(f, hess, backend::AnyAutoZygote, x, extras::NoHessianExtras)
-    return DI.hessian(f, backend, x, extras)
+    return copyto!(hess, DI.hessian(f, backend, x, extras))
 end
 
 end

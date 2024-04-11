@@ -54,7 +54,7 @@ end
 
 See [`AbstractScenario`](@ref) for details.
 """
-struct PushforwardScenario{A,O,F,X,Y,R,DX} <: AbstractFirstOrderScenario{A,O,F,X,Y,R}
+struct PushforwardScenario{A,O,F,X,Y,DX,R} <: AbstractFirstOrderScenario{A,O,F,X,Y,R}
     "function"
     f::F
     "input"
@@ -72,7 +72,7 @@ end
 
 See [`AbstractScenario`](@ref) for details.
 """
-struct PullbackScenario{A,O,F,X,Y,R,DY} <: AbstractFirstOrderScenario{A,O,F,X,Y,R}
+struct PullbackScenario{A,O,F,X,Y,DY,R} <: AbstractFirstOrderScenario{A,O,F,X,Y,R}
     "function"
     f::F
     "input"
@@ -156,7 +156,7 @@ end
 
 See [`AbstractScenario`](@ref) for details.
 """
-struct HVPScenario{A,O,F,X,Y<:Number,R,DX} <: AbstractSecondOrderScenario{A,O,F,X,Y,R}
+struct HVPScenario{A,O,F,X,Y<:Number,DX,R} <: AbstractSecondOrderScenario{A,O,F,X,Y,R}
     "function"
     f::F
     "input"
@@ -222,7 +222,7 @@ for S in (:PushforwardScenario, :HVPScenario)
             if isnothing(dx)
                 dx = mysimilar_random(x)
             end
-            return ($S){A,operator,F,X,typeof(y),R,typeof(dx)}(f, x, y, dx, ref)
+            return ($S){A,operator,F,X,typeof(y),typeof(dx),R}(f, x, y, dx, ref)
         end
     end
 end
@@ -241,7 +241,7 @@ for S in (:PullbackScenario,)
             if isnothing(dy)
                 dy = mysimilar_random(y)
             end
-            return ($S){A,operator,F,X,typeof(y),R,typeof(dy)}(f, x, y, dy, ref)
+            return ($S){A,operator,F,X,typeof(y),typeof(dy),R}(f, x, y, dy, ref)
         end
     end
 end

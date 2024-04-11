@@ -15,11 +15,16 @@ function comp_to_num_pullback(x, dy)
     return comp_to_num_gradient(x) .* dy
 end
 
-function comp_to_num_scenarios_allocating(x::ComponentVector)
+function comp_to_num_scenarios_onearg(x::ComponentVector)
     return [
-        PushforwardScenario(comp_to_num; x=x, ref=comp_to_num_pushforward),
-        PullbackScenario(comp_to_num; x=x, ref=comp_to_num_pullback),
-        GradientScenario(comp_to_num; x=x, ref=comp_to_num_gradient),
+        PushforwardScenario(
+            comp_to_num; x=x, ref=comp_to_num_pushforward, operator=:outofplace
+        ),
+        # no in-place pushforward for array-to-number
+        PullbackScenario(comp_to_num; x=x, ref=comp_to_num_pullback, operator=:outofplace),
+        PullbackScenario(comp_to_num; x=x, ref=comp_to_num_pullback, operator=:inplace),
+        GradientScenario(comp_to_num; x=x, ref=comp_to_num_gradient, operator=:outofplace),
+        GradientScenario(comp_to_num; x=x, ref=comp_to_num_gradient, operator=:inplace),
     ]
 end
 
@@ -35,10 +40,10 @@ Create a vector of [`AbstractScenario`](@ref)s with component array types from [
 function component_scenarios()
     x = ComponentVector(; a=randn(4), b=randn(2))
     return vcat(
-        # allocating
-        num_to_arr_scenarios_allocating(randn(), CVEC),
-        comp_to_num_scenarios_allocating(x::ComponentVector),
-        # mutating
-        num_to_arr_scenarios_mutating(randn(), CVEC),
+        # one argument
+        num_to_arr_scenarios_onearg(randn(), CVEC),
+        comp_to_num_scenarios_onearg(x::ComponentVector),
+        # two arguments
+        num_to_arr_scenarios_twoarg(randn(), CVEC),
     )
 end

@@ -60,10 +60,10 @@ function zero_sametype!(x_target, x)
     return x_sametype
 end
 
-include("forward_allocating.jl")
-include("forward_mutating.jl")
+include("forward_onearg.jl")
+include("forward_twoarg.jl")
 
-include("reverse_allocating.jl")
-include("reverse_mutating.jl")
+include("reverse_onearg.jl")
+include("reverse_twoarg.jl")
 
 end # module

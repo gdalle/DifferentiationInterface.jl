@@ -47,7 +47,7 @@ function prepare_jacobian_aux(f!, backend, y, x, ::PushforwardSlow)
     return PullbackJacobianExtras(prepare_pullback(f!, backend, y, x))
 end
 
-## Allocating
+## One argument
 
 """
     value_and_jacobian(f, backend, x, [extras]) -> (y, jac)
@@ -141,7 +141,7 @@ function jacobian!(
     return value_and_jacobian!(f, jac, backend, x, extras)[2]
 end
 
-## Mutating
+## Two arguments
 
 """
     value_and_jacobian!(f!, y, jac, backend, x, [extras]) -> (y, jac)

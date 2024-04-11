@@ -45,11 +45,12 @@ function DI.gradient(f, ::AutoTracker, x, ::NoGradientExtras)
 end
 
 function DI.value_and_gradient!(f, grad, backend::AutoTracker, x, extras::NoGradientExtras)
-    return DI.value_and_gradient(f, backend, x, extras)
+    y, new_grad = DI.value_and_gradient(f, backend, x, extras)
+    return y, copyto!(grad, new_grad)
 end
 
 function DI.gradient!(f, grad, backend::AutoTracker, x, extras::NoGradientExtras)
-    return DI.gradient(f, backend, x, extras)
+    return copyto!(grad, DI.gradient(f, backend, x, extras))
 end
 
 end
