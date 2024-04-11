@@ -83,7 +83,8 @@ function value_and_pushforward!(
     dx,
     extras::PushforwardExtras=prepare_pushforward(f, backend, x),
 )
-    return copyto!(dy, value_and_pushforward(f, backend, x, dx, extras))
+    y, new_dy = value_and_pushforward(f, backend, x, dx, extras)
+    return y, copyto!(dy, new_dy)
 end
 
 """

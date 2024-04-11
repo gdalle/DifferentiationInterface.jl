@@ -7,7 +7,8 @@ for backend in [AutoZeroForward(), AutoZeroReverse()]
     test_differentiation(
         backend,
         default_scenarios();
-        correctness=backend,
+        correctness=true,
+        ref_backend=backend,
         logging=get(ENV, "CI", "false") == "false",
     )
 end

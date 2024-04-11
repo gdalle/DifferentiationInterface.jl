@@ -43,7 +43,7 @@ $(TYPEDFIELDS)
     scenario::Symbol
     operator::Symbol
     func::Symbol
-    mutating::Bool
+    arguments::Int
     input_type::Type
     output_type::Type
     input_size::Tuple
@@ -61,11 +61,11 @@ end
 function record!(
     data::Vector{BenchmarkDataRow},
     backend::AbstractADType,
-    scenario::AbstractScenario,
+    scenario::AbstractScenario{A},
     operator,
     bench::Benchmark,
     calls::Integer,
-)
+) where {A}
     bench_min = minimum(bench)
     row = BenchmarkDataRow(;
         backend=backend_string(backend),
@@ -73,7 +73,7 @@ function record!(
         scenario=typeof(scenario).name.name,
         operator=Symbol(operator),
         func=Symbol(scenario.f),
-        mutating=ismutating(scenario),
+        arguments=A,
         input_type=typeof(scenario.x),
         output_type=typeof(scenario.y),
         input_size=size(scenario.x),

@@ -226,11 +226,11 @@ function test_correctness(
         new_scen.ref(x, dy)
     end
 
-    y1_in, dy1_in = mysimilar(y), mysimilar(y)
-    y1, dx1 = value_and_pullback!(f!, y1_in, dy1_in, ba, x, dy, extras)
+    y1_in, dx1_in = mysimilar(y), mysimilar(x)
+    y1, dx1 = value_and_pullback!(f!, y1_in, dx1_in, ba, x, dy, extras)
 
-    y2_in, dy2_in = mysimilar(y), mysimilar(y)
-    dx2 = pullback!(f!, y2_in, dy2_in, ba, x, dy, extras)
+    y2_in, dx2_in = mysimilar(y), mysimilar(x)
+    dx2 = pullback!(f!, y2_in, dx2_in, ba, x, dy, extras)
 
     y3_in = mysimilar(y)
     y3, pullbackfunc! = value_and_pullback!_split!(f!, y3_in, ba, x, extras)

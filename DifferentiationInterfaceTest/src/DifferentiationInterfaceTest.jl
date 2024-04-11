@@ -46,7 +46,6 @@ include("scenarios/component.jl")
 include("scenarios/gpu.jl")
 
 include("utils/zero_backends.jl")
-include("utils/compatibility.jl")
 include("utils/misc.jl")
 include("utils/filter.jl")
 

@@ -41,7 +41,12 @@ abstract type AbstractScenario{A,O,F,X,Y,R} end
 abstract type AbstractFirstOrderScenario{A,O,F,X,Y,R} <: AbstractScenario{A,O,F,X,Y,R} end
 abstract type AbstractSecondOrderScenario{A,O,F,X,Y,R} <: AbstractScenario{A,O,F,X,Y,R} end
 
-ismutating(::AbstractScenario{A}) where {A} = mut
+function compatible(backend::AbstractADType, ::AbstractScenario{A}) where A
+    if A == 2
+        return Bool(supports_mutation(backend))
+    end
+    return true
+end
 
 function Base.string(scen::S) where {A,O,F,X,Y,S<:AbstractScenario{A,O,F,X,Y}}
     return "$(S.name.name){$A,$O} $(string(scen.f)) : $X -> $Y"
@@ -232,7 +237,7 @@ for S in (:PullbackScenario,)
         function $S(
             f::F; x::X, y=nothing, ref::R=nothing, dy=nothing, operator=:inplace
         ) where {F,X,R}
-            A = isnothing(y) ? 2 : 1
+            A = isnothing(y) ? 1 : 2
             if A == 2
                 f(y, x)
             else

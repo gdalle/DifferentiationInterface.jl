@@ -79,11 +79,12 @@ function value_and_pullback!(
     f,
     dx,
     backend::AbstractADType,
-    x,
+    x::AbstractArray,
     dy,
     extras::PullbackExtras=prepare_pullback(f, backend, x),
 )
-    return copyto!(dy, value_and_pullback(f, backend, x, dy, extras))
+    y, new_dx = value_and_pullback(f, backend, x, dy, extras)
+    return y, copyto!(dx, new_dx)
 end
 
 """
@@ -106,7 +107,7 @@ function pullback!(
     f,
     dx,
     backend::AbstractADType,
-    x,
+    x::AbstractArray,
     dy,
     extras::PullbackExtras=prepare_pullback(f, backend, x),
 )
@@ -142,17 +143,35 @@ function value_and_pullback_aux!(
             dot(
                 dy,
                 pushforward!(
-                    f!,
-                    y,
-                    similar(y),
-                    backend,
-                    x,
-                    basis(backend, x, j),
-                    pushforward_extras,
+                    f!, y, similar(y), backend, x, basis(backend, x, j), pushforward_extras
                 ),
             )
         end
     end
+    f!(y, x)
+    return y, dx
+end
+
+"""
+    value_and_pullback!(f!, y, backend, x, dy, [extras]) -> (y, dx)
+
+!!! info
+    Required primitive for reverse mode backends to support mutating functions.
+"""
+function value_and_pullback!(
+    f!,
+    y,
+    backend::AbstractADType,
+    x::Number,
+    dy,
+    extras::PullbackExtras=prepare_pullback(f!, backend, y, x),
+)
+    return value_and_pullback_aux!(f!, y, backend, x, dy, extras)
+end
+
+function value_and_pullback_aux!(f!, y, backend, x, dy, extras::PushforwardPullbackExtras)
+    (; pushforward_extras) = extras
+    dx = dot(dy, pushforward!(f!, y, similar(y), backend, x, one(x), pushforward_extras))
     f!(y, x)
     return y, dx
 end
@@ -173,40 +192,55 @@ function pullback!(
     return value_and_pullback!(f!, y, dx, backend, x, dy, extras)[2]
 end
 
+"""
+    pullback!(f!, y, backend, x, dy, [extras]) -> dx
+
+"""
+function pullback!(
+    f!,
+    y,
+    backend::AbstractADType,
+    x::Number,
+    dy,
+    extras::PullbackExtras=prepare_pullback(f!, backend, y, x),
+)
+    return value_and_pullback!(f!, y, backend, x, dy, extras)[2]
+end
+
 ## Split
 
-struct AllocatingPullbackFunc{B,F,X,E}
+struct OneArgPullbackFunc{B,F,X,E}
     f::F
     backend::B
     x::X
     extras::E
 end
 
-struct AllocatingPullbackFunc!!{B,F,X,E}
+struct OneArgPullbackFunc!{B,F,X,E}
     f::F
     backend::B
     x::X
     extras::E
 end
 
-struct MutatingPullbackFunc!!{B,F,X,E}
+struct TwoArgPullbackFunc!{B,F,X,E}
     f!::F
     backend::B
     x::X
     extras::E
 end
 
-function (pbf::AllocatingPullbackFunc)(dy)
+function (pbf::OneArgPullbackFunc)(dy)
     (; f, backend, x, extras) = pbf
     return pullback(f, backend, x, dy, extras)
 end
 
-function (pbf::AllocatingPullbackFunc!!)(dx, dy)
+function (pbf::OneArgPullbackFunc!)(dx, dy)
     (; f, backend, x, extras) = pbf
     return pullback!(f, dx, backend, x, dy, extras)
 end
 
-function (pbf::MutatingPullbackFunc!!)(y, dx, dy)
+function (pbf::TwoArgPullbackFunc!)(y, dx, dy)
     (; f!, backend, x, extras) = pbf
     return pullback!(f!, y, dx, backend, x, dy, extras)
 end
@@ -217,7 +251,7 @@ end
 function value_and_pullback_split(
     f, backend::AbstractADType, x, extras::PullbackExtras=prepare_pullback(f, backend, x)
 )
-    return f(x), AllocatingPullbackFunc(f, backend, x, extras)
+    return f(x), OneArgPullbackFunc(f, backend, x, extras)
 end
 
 """
@@ -226,7 +260,7 @@ end
 function value_and_pullback!_split(
     f, backend::AbstractADType, x, extras::PullbackExtras=prepare_pullback(f, backend, x)
 )
-    return f(x), AllocatingPullbackFunc!(f, backend, x, extras)
+    return f(x), OneArgPullbackFunc!(f, backend, x, extras)
 end
 
 """
@@ -240,5 +274,5 @@ function value_and_pullback!_split!(
     extras::PullbackExtras=prepare_pullback(f!, backend, y, x),
 )
     f!(y, x)
-    return y, MutatingPullbackFunc!(f!, backend, x, extras)
+    return y, TwoArgPullbackFunc!(f!, backend, x, extras)
 end

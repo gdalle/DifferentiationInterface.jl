@@ -23,12 +23,12 @@ function num_to_num_scenarios_onearg(x::Number)
         PushforwardScenario(
             num_to_num; x=x, ref=num_to_num_pushforward, operator=:outofplace
         ),
-        PullbackScenario(num_to_num; x=x, ref=num_to_num_pullback; operator=:outofplace),
+        PullbackScenario(num_to_num; x=x, ref=num_to_num_pullback, operator=:outofplace),
         DerivativeScenario(
-            num_to_num; x=x, ref=num_to_num_derivative; operator=:outofplace
+            num_to_num; x=x, ref=num_to_num_derivative, operator=:outofplace
         ),
         SecondDerivativeScenario(
-            num_to_num; x=x, ref=num_to_num_second_derivative; operator=:outofplace
+            num_to_num; x=x, ref=num_to_num_second_derivative, operator=:outofplace
         ),
     ]
 end
