@@ -73,9 +73,9 @@ function value_and_pullback_aux(f, backend, x, dy, extras::PushforwardPullbackEx
 end
 
 """
-    value_and_pullback!!(f, dx, backend, x, dy, [extras]) -> (y, dx)
+    value_and_pullback!(f, dx, backend, x, dy, [extras]) -> (y, dx)
 """
-function value_and_pullback!!(
+function value_and_pullback!(
     f,
     dx,
     backend::AbstractADType,
@@ -83,7 +83,7 @@ function value_and_pullback!!(
     dy,
     extras::PullbackExtras=prepare_pullback(f, backend, x),
 )
-    return value_and_pullback(f, backend, x, dy, extras)
+    return copyto!(dy, value_and_pullback(f, backend, x, dy, extras))
 end
 
 """
@@ -100,9 +100,9 @@ function pullback(
 end
 
 """
-    pullback!!(f, dx, backend, x, dy, [extras]) -> dx
+    pullback!(f, dx, backend, x, dy, [extras]) -> dx
 """
-function pullback!!(
+function pullback!(
     f,
     dx,
     backend::AbstractADType,
@@ -110,18 +110,18 @@ function pullback!!(
     dy,
     extras::PullbackExtras=prepare_pullback(f, backend, x),
 )
-    return value_and_pullback!!(f, dx, backend, x, dy, extras)[2]
+    return value_and_pullback!(f, dx, backend, x, dy, extras)[2]
 end
 
 ## Mutating
 
 """
-    value_and_pullback!!(f!, y, dx, backend, x, dy, [extras]) -> (y, dx)
+    value_and_pullback!(f!, y, dx, backend, x, dy, [extras]) -> (y, dx)
 
 !!! info
     Required primitive for reverse mode backends to support mutating functions.
 """
-function value_and_pullback!!(
+function value_and_pullback!(
     f!,
     y,
     dx,
@@ -130,20 +130,20 @@ function value_and_pullback!!(
     dy,
     extras::PullbackExtras=prepare_pullback(f!, backend, y, x),
 )
-    return value_and_pullback_aux!!(f!, y, dx, backend, x, dy, extras)
+    return value_and_pullback_aux!(f!, y, dx, backend, x, dy, extras)
 end
 
-function value_and_pullback_aux!!(
+function value_and_pullback_aux!(
     f!, y, dx, backend, x, dy, extras::PushforwardPullbackExtras
 )
     (; pushforward_extras) = extras
     new_dx = if x isa Number && y isa AbstractArray
-        dot(dy, pushforward!!(f!, y, similar(y), backend, x, one(x), pushforward_extras))
+        dot(dy, pushforward!(f!, y, similar(y), backend, x, one(x), pushforward_extras))
     elseif x isa AbstractArray && y isa AbstractArray
         map!(dx, CartesianIndices(x)) do j
             dot(
                 dy,
-                pushforward!!(
+                pushforward!(
                     f!,
                     y,
                     similar(y),
@@ -160,10 +160,10 @@ function value_and_pullback_aux!!(
 end
 
 """
-    pullback!!(f!, y, dx, backend, x, dy, [extras]) -> dx
+    pullback!(f!, y, dx, backend, x, dy, [extras]) -> dx
 
 """
-function pullback!!(
+function pullback!(
     f!,
     y,
     dx,
@@ -172,7 +172,7 @@ function pullback!!(
     dy,
     extras::PullbackExtras=prepare_pullback(f!, backend, y, x),
 )
-    return value_and_pullback!!(f!, y, dx, backend, x, dy, extras)[2]
+    return value_and_pullback!(f!, y, dx, backend, x, dy, extras)[2]
 end
 
 ## Split
@@ -205,12 +205,12 @@ end
 
 function (pbf::AllocatingPullbackFunc!!)(dx, dy)
     (; f, backend, x, extras) = pbf
-    return pullback!!(f, dx, backend, x, dy, extras)
+    return pullback!(f, dx, backend, x, dy, extras)
 end
 
 function (pbf::MutatingPullbackFunc!!)(y, dx, dy)
     (; f!, backend, x, extras) = pbf
-    return pullback!!(f!, y, dx, backend, x, dy, extras)
+    return pullback!(f!, y, dx, backend, x, dy, extras)
 end
 
 """
@@ -223,18 +223,18 @@ function value_and_pullback_split(
 end
 
 """
-    value_and_pullback!!_split(f, backend, x, [extras]) -> (y, pullbackfunc!!(dx, dy) -> dx)
+    value_and_pullback!_split(f, backend, x, [extras]) -> (y, pullbackfunc!(dx, dy) -> dx)
 """
-function value_and_pullback!!_split(
+function value_and_pullback!_split(
     f, backend::AbstractADType, x, extras::PullbackExtras=prepare_pullback(f, backend, x)
 )
-    return f(x), AllocatingPullbackFunc!!(f, backend, x, extras)
+    return f(x), AllocatingPullbackFunc!(f, backend, x, extras)
 end
 
 """
-    value_and_pullback!!_split!!(f!, y, backend, x, [extras]) -> (y, pullbackfunc!!(y, dx, dy) -> dx)
+    value_and_pullback!_split!(f!, y, backend, x, [extras]) -> (y, pullbackfunc!(y, dx, dy) -> dx)
 """
-function value_and_pullback!!_split!!(
+function value_and_pullback!_split!(
     f!,
     y,
     backend::AbstractADType,
@@ -242,5 +242,5 @@ function value_and_pullback!!_split!!(
     extras::PullbackExtras=prepare_pullback(f!, backend, y, x),
 )
     f!(y, x)
-    return y, MutatingPullbackFunc!!(f!, backend, x, extras)
+    return y, MutatingPullbackFunc!(f!, backend, x, extras)
 end

@@ -19,14 +19,14 @@ for AutoSparse in SPARSE_BACKENDS
             return SparseDiffToolsAllocatingJacobianExtras(cache)
         end
 
-        function DI.value_and_jacobian!!(
+        function DI.value_and_jacobian!(
             f, jac, backend::$AutoSparse, x, extras::SparseDiffToolsAllocatingJacobianExtras
         )
             sparse_jacobian!(jac, backend, extras.cache, f, x)
             return f(x), jac
         end
 
-        function DI.jacobian!!(
+        function DI.jacobian!(
             f, jac, backend::$AutoSparse, x, extras::SparseDiffToolsAllocatingJacobianExtras
         )
             sparse_jacobian!(jac, backend, extras.cache, f, x)
@@ -68,14 +68,14 @@ for AutoSparse in SPARSE_BACKENDS
             )
         end
 
-        function DI.hessian!!(
+        function DI.hessian!(
             f,
             hess,
             backend::SecondOrder{<:$AutoSparse},
             x,
             extras::SparseDiffToolsHessianExtras,
         )
-            return DI.jacobian!!(
+            return DI.jacobian!(
                 extras.inner_gradient_closure,
                 hess,
                 outer(backend),

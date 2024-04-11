@@ -54,7 +54,7 @@ function DI.basis(::AutoEnzyme, a::AbstractArray{T}, i::CartesianIndex) where {T
     return b
 end
 
-function zero_sametype!!(x_target, x)
+function zero_sametype!(x_target, x)
     x_sametype = convert(typeof(x), x_target)
     x_sametype .= zero(eltype(x_sametype))
     return x_sametype

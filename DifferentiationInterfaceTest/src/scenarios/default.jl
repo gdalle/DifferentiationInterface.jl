@@ -20,10 +20,16 @@ num_to_num_pullback(x, dy) = num_to_num_derivative(x) * dy
 
 function num_to_num_scenarios_allocating(x::Number)
     return [
-        PushforwardScenario(num_to_num; x=x, ref=num_to_num_pushforward),
-        PullbackScenario(num_to_num; x=x, ref=num_to_num_pullback),
-        DerivativeScenario(num_to_num; x=x, ref=num_to_num_derivative),
-        SecondDerivativeScenario(num_to_num; x=x, ref=num_to_num_second_derivative),
+        PushforwardScenario(
+            num_to_num; x=x, ref=num_to_num_pushforward, operator=:outofplace
+        ),
+        PullbackScenario(num_to_num; x=x, ref=num_to_num_pullback; operator=:outofplace),
+        DerivativeScenario(
+            num_to_num; x=x, ref=num_to_num_derivative; operator=:outofplace
+        ),
+        SecondDerivativeScenario(
+            num_to_num; x=x, ref=num_to_num_second_derivative; operator=:outofplace
+        ),
     ]
 end
 
@@ -64,23 +70,52 @@ end
 
 function num_to_arr_scenarios_allocating(x::Number, a::AbstractArray)
     return [
-        PushforwardScenario(_num_to_arr(a); x=x, ref=_num_to_arr_pushforward(a)),
-        PullbackScenario(_num_to_arr(a); x=x, ref=_num_to_arr_pullback(a)),
-        DerivativeScenario(_num_to_arr(a); x=x, ref=_num_to_arr_derivative(a)),
-        SecondDerivativeScenario(_num_to_arr(a); x=x, ref=_num_to_arr_second_derivative(a)),
+        PushforwardScenario(
+            _num_to_arr(a); x=x, ref=_num_to_arr_pushforward(a), operator=:outofplace
+        ),
+        PushforwardScenario(
+            _num_to_arr(a); x=x, ref=_num_to_arr_pushforward(a), operator=:inplace
+        ),
+        PullbackScenario(
+            _num_to_arr(a); x=x, ref=_num_to_arr_pullback(a), operator=:outofplace
+        ),
+        DerivativeScenario(
+            _num_to_arr(a); x=x, ref=_num_to_arr_derivative(a), operator=:outofplace
+        ),
+        DerivativeScenario(
+            _num_to_arr(a); x=x, ref=_num_to_arr_derivative(a), operator=:inplace
+        ),
+        SecondDerivativeScenario(
+            _num_to_arr(a); x=x, ref=_num_to_arr_second_derivative(a), operator=:outofplace
+        ),
+        SecondDerivativeScenario(
+            _num_to_arr(a); x=x, ref=_num_to_arr_second_derivative(a), operator=:inplace
+        ),
     ]
 end
 
 function num_to_arr_scenarios_mutating(x::Number, a::AbstractArray)
     return [
         PushforwardScenario(
-            _num_to_arr!(a); x=x, y=similar(float.(a)), ref=_num_to_arr_pushforward(a)
+            _num_to_arr!(a);
+            x=x,
+            y=similar(float.(a)),
+            ref=_num_to_arr_pushforward(a),
+            operator=:inplace,
         ),
         PullbackScenario(
-            _num_to_arr!(a); x=x, y=similar(float.(a)), ref=_num_to_arr_pullback(a)
+            _num_to_arr!(a);
+            x=x,
+            y=similar(float.(a)),
+            ref=_num_to_arr_pullback(a),
+            operator=:inplace,
         ),
         DerivativeScenario(
-            _num_to_arr!(a); x=x, y=similar(float.(a)), ref=_num_to_arr_derivative(a)
+            _num_to_arr!(a);
+            x=x,
+            y=similar(float.(a)),
+            ref=_num_to_arr_derivative(a),
+            operator=:inplace,
         ),
     ]
 end
@@ -97,11 +132,17 @@ arr_to_num_hessian(x) = Matrix(Diagonal(-sin.(vec(x))))
 
 function arr_to_num_scenarios_allocating(x::AbstractArray)
     return [
-        PushforwardScenario(arr_to_num; x=x, ref=arr_to_num_pushforward),
-        PullbackScenario(arr_to_num; x=x, ref=arr_to_num_pullback),
-        GradientScenario(arr_to_num; x=x, ref=arr_to_num_gradient),
-        HVPScenario(arr_to_num; x=x, ref=arr_to_num_hvp),
-        HessianScenario(arr_to_num; x=x, ref=arr_to_num_hessian),
+        PushforwardScenario(
+            arr_to_num; x=x, ref=arr_to_num_pushforward, operator=:outofplace
+        ),
+        PullbackScenario(arr_to_num; x=x, ref=arr_to_num_pullback, operator=:outofplace),
+        PullbackScenario(arr_to_num; x=x, ref=arr_to_num_pullback, operator=:inplace),
+        GradientScenario(arr_to_num; x=x, ref=arr_to_num_gradient, operator=:outofplace),
+        GradientScenario(arr_to_num; x=x, ref=arr_to_num_gradient, operator=:inplace),
+        HVPScenario(arr_to_num; x=x, ref=arr_to_num_hvp, operator=:outofplace),
+        HVPScenario(arr_to_num; x=x, ref=arr_to_num_hvp, operator=:inplace),
+        HessianScenario(arr_to_num; x=x, ref=arr_to_num_hessian, operator=:outofplace),
+        HessianScenario(arr_to_num; x=x, ref=arr_to_num_hessian, operator=:inplace),
     ]
 end
 
@@ -122,18 +163,33 @@ vec_to_vec_jacobian(x) = vcat(Diagonal(cos.(x)), Diagonal(-sin.(x)))
 function vec_to_vec_scenarios_allocating(x::AbstractVector)
     n = length(x)
     return [
-        PushforwardScenario(vec_to_vec; x=x, ref=vec_to_vec_pushforward),
-        PullbackScenario(vec_to_vec; x=x, ref=vec_to_vec_pullback),
-        JacobianScenario(vec_to_vec; x=x, ref=vec_to_vec_jacobian),
+        PushforwardScenario(
+            vec_to_vec; x=x, ref=vec_to_vec_pushforward, operator=:outofplace
+        ),
+        PushforwardScenario(vec_to_vec; x=x, ref=vec_to_vec_pushforward, operator=:inplace),
+        PullbackScenario(vec_to_vec; x=x, ref=vec_to_vec_pullback, operator=:outofplace),
+        PullbackScenario(vec_to_vec; x=x, ref=vec_to_vec_pullback, operator=:inplace),
+        JacobianScenario(vec_to_vec; x=x, ref=vec_to_vec_jacobian, operator=:outofplace),
+        JacobianScenario(vec_to_vec; x=x, ref=vec_to_vec_jacobian, operator=:inplace),
     ]
 end
 
 function vec_to_vec_scenarios_mutating(x::AbstractVector)
     n = length(x)
     return [
-        PushforwardScenario(vec_to_vec!; x=x, y=similar(x, 2n), ref=vec_to_vec_pushforward),
-        PullbackScenario(vec_to_vec!; x=x, y=similar(x, 2n), ref=vec_to_vec_pullback),
-        JacobianScenario(vec_to_vec!; x=x, y=similar(x, 2n), ref=vec_to_vec_jacobian),
+        PushforwardScenario(
+            vec_to_vec!;
+            x=x,
+            y=similar(x, 2n),
+            ref=vec_to_vec_pushforward,
+            operator=:inplace,
+        ),
+        PullbackScenario(
+            vec_to_vec!; x=x, y=similar(x, 2n), ref=vec_to_vec_pullback, operator=:inplace
+        ),
+        JacobianScenario(
+            vec_to_vec!; x=x, y=similar(x, 2n), ref=vec_to_vec_jacobian, operator=:inplace
+        ),
     ]
 end
 
@@ -152,9 +208,14 @@ vec_to_mat_jacobian(x) = vcat(Diagonal(cos.(x)), Diagonal(-sin.(x)))
 function vec_to_mat_scenarios_allocating(x::AbstractVector)
     n = length(x)
     return [
-        PushforwardScenario(vec_to_mat; x=x, ref=vec_to_mat_pushforward),
-        PullbackScenario(vec_to_mat; x=x, ref=vec_to_mat_pullback),
-        JacobianScenario(vec_to_mat; x=x, ref=vec_to_mat_jacobian),
+        PushforwardScenario(
+            vec_to_mat; x=x, ref=vec_to_mat_pushforward, operator=:outofplace
+        ),
+        PushforwardScenario(vec_to_mat; x=x, ref=vec_to_mat_pushforward, operator=:inplace),
+        PullbackScenario(vec_to_mat; x=x, ref=vec_to_mat_pullback, operator=:outofplace),
+        PullbackScenario(vec_to_mat; x=x, ref=vec_to_mat_pullback, operator=:inplace),
+        JacobianScenario(vec_to_mat; x=x, ref=vec_to_mat_jacobian, operator=:outofplace),
+        JacobianScenario(vec_to_mat; x=x, ref=vec_to_mat_jacobian, operator=:inplace),
     ]
 end
 
@@ -162,10 +223,18 @@ function vec_to_mat_scenarios_mutating(x::AbstractVector)
     n = length(x)
     return [
         PushforwardScenario(
-            vec_to_mat!; x=x, y=similar(x, n, 2), ref=vec_to_mat_pushforward
+            vec_to_mat!;
+            x=x,
+            y=similar(x, n, 2),
+            ref=vec_to_mat_pushforward,
+            operator=:inplace,
         ),
-        PullbackScenario(vec_to_mat!; x=x, y=similar(x, n, 2), ref=vec_to_mat_pullback),
-        JacobianScenario(vec_to_mat!; x=x, y=similar(x, n, 2), ref=vec_to_mat_jacobian),
+        PullbackScenario(
+            vec_to_mat!; x=x, y=similar(x, n, 2), ref=vec_to_mat_pullback, operator=:inplace
+        ),
+        JacobianScenario(
+            vec_to_mat!; x=x, y=similar(x, n, 2), ref=vec_to_mat_jacobian, operator=:inplace
+        ),
     ]
 end
 

@@ -22,6 +22,14 @@ function DI.value_and_pullback_split(f, ::AnyAutoZygote, x, ::NoPullbackExtras)
     return y, pullbackfunc
 end
 
+function DI.value_and_pullback!_split(
+    f, backend::AutoReverseChainRules, x, ::NoPullbackExtras
+)
+    y, pullbackfunc = DI.value_and_pullback_split(f, backend, x, extras)
+    pullbackfunc!(dx, dy) = copyto!(dx, pullbackfunc(dy))
+    return y, pullbackfunc!
+end
+
 function DI.value_and_pullback(f, backend::AnyAutoZygote, x, dy, extras::NoPullbackExtras)
     y, pullbackfunc = DI.value_and_pullback_split(f, backend, x, extras)
     return y, pullbackfunc(dy)
@@ -40,13 +48,13 @@ function DI.gradient(f, ::AnyAutoZygote, x, ::NoGradientExtras)
     return only(gradient(f, x))
 end
 
-function DI.value_and_gradient!!(
+function DI.value_and_gradient!(
     f, grad, backend::AnyAutoZygote, x, extras::NoGradientExtras
 )
     return DI.value_and_gradient(f, backend, x, extras)
 end
 
-function DI.gradient!!(f, grad, backend::AnyAutoZygote, x, extras::NoGradientExtras)
+function DI.gradient!(f, grad, backend::AnyAutoZygote, x, extras::NoGradientExtras)
     return DI.gradient(f, backend, x, extras)
 end
 
@@ -62,13 +70,11 @@ function DI.jacobian(f, ::AnyAutoZygote, x, ::NoJacobianExtras)
     return only(jacobian(f, x))
 end
 
-function DI.value_and_jacobian!!(
-    f, jac, backend::AnyAutoZygote, x, extras::NoJacobianExtras
-)
+function DI.value_and_jacobian!(f, jac, backend::AnyAutoZygote, x, extras::NoJacobianExtras)
     return DI.value_and_jacobian(f, backend, x, extras)
 end
 
-function DI.jacobian!!(f, jac, backend::AnyAutoZygote, x, extras::NoJacobianExtras)
+function DI.jacobian!(f, jac, backend::AnyAutoZygote, x, extras::NoJacobianExtras)
     return DI.jacobian(f, backend, x, extras)
 end
 
@@ -80,7 +86,7 @@ function DI.hessian(f, ::AnyAutoZygote, x, ::NoHessianExtras)
     return hessian(f, x)
 end
 
-function DI.hessian!!(f, hess, backend::AnyAutoZygote, x, extras::NoHessianExtras)
+function DI.hessian!(f, hess, backend::AnyAutoZygote, x, extras::NoHessianExtras)
     return DI.hessian(f, backend, x, extras)
 end
 

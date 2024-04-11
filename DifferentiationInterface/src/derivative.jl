@@ -42,16 +42,16 @@ function value_and_derivative(
 end
 
 """
-    value_and_derivative!!(f, der, backend, x, [extras]) -> (y, der)
+    value_and_derivative!(f, der, backend, x, [extras]) -> (y, der)
 """
-function value_and_derivative!!(
+function value_and_derivative!(
     f,
     der,
     backend::AbstractADType,
     x,
     extras::DerivativeExtras=prepare_derivative(f, backend, x),
 )
-    return value_and_pushforward!!(f, der, backend, x, one(x), extras.pushforward_extras)
+    return value_and_pushforward!(f, der, backend, x, one(x), extras.pushforward_extras)
 end
 
 """
@@ -67,24 +67,24 @@ function derivative(
 end
 
 """
-    derivative!!(f, der, backend, x, [extras]) -> der
+    derivative!(f, der, backend, x, [extras]) -> der
 """
-function derivative!!(
+function derivative!(
     f,
     der,
     backend::AbstractADType,
     x,
     extras::DerivativeExtras=prepare_derivative(f, backend, x),
 )
-    return pushforward!!(f, der, backend, x, one(x), extras.pushforward_extras)
+    return pushforward!(f, der, backend, x, one(x), extras.pushforward_extras)
 end
 
 ## Mutating
 
 """
-    value_and_derivative!!(f!, y, der, backend, x, [extras]) -> (y, der)
+    value_and_derivative!(f!, y, der, backend, x, [extras]) -> (y, der)
 """
-function value_and_derivative!!(
+function value_and_derivative!(
     f!,
     y,
     der,
@@ -92,15 +92,15 @@ function value_and_derivative!!(
     x,
     extras::DerivativeExtras=prepare_derivative(f!, backend, y, x),
 )
-    return value_and_pushforward!!(
+    return value_and_pushforward!(
         f!, y, der, backend, x, one(x), extras.pushforward_extras
     )
 end
 
 """
-    derivative!!(f!, y, der, backend, x, [extras]) -> der
+    derivative!(f!, y, der, backend, x, [extras]) -> der
 """
-function derivative!!(
+function derivative!(
     f!,
     y,
     der,
@@ -108,5 +108,5 @@ function derivative!!(
     x,
     extras::DerivativeExtras=prepare_derivative(f!, backend, y, x),
 )
-    return pushforward!!(f!, y, der, backend, x, one(x), extras.pushforward_extras)
+    return pushforward!(f!, y, der, backend, x, one(x), extras.pushforward_extras)
 end

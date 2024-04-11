@@ -17,7 +17,7 @@ function DI.value_and_pullback(
     return new_y, new_dx
 end
 
-function DI.value_and_pullback!!(
+function DI.value_and_pullback!(
     f, dx, ::AutoTapir, x, dy, extras::TapirAllocatingPullbackExtras{Y}
 ) where {Y}
     dy_righttype = convert(tangent_type(Y), dy)
@@ -33,8 +33,8 @@ function DI.pullback(f, backend::AutoTapir, x, dy, extras::TapirAllocatingPullba
     return DI.value_and_pullback(f, backend, x, dy, extras)[2]
 end
 
-function DI.pullback!!(
+function DI.pullback!(
     f, dx, backend::AutoTapir, x, dy, extras::TapirAllocatingPullbackExtras
 )
-    return DI.value_and_pullback!!(f, dx, backend, x, dy, extras)[2]
+    return DI.value_and_pullback!(f, dx, backend, x, dy, extras)[2]
 end

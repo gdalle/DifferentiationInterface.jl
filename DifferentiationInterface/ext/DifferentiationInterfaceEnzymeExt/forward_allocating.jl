@@ -16,14 +16,14 @@ function DI.pushforward(f, backend::AutoForwardEnzyme, x, dx, ::NoPushforwardExt
     return new_dy
 end
 
-function DI.value_and_pushforward!!(
+function DI.value_and_pushforward!(
     f, _dy, backend::AutoForwardEnzyme, x, dx, extras::NoPushforwardExtras
 )
     # dy cannot be passed anyway
     return DI.value_and_pushforward(f, backend, x, dx, extras)
 end
 
-function DI.pushforward!!(
+function DI.pushforward!(
     f, _dy, backend::AutoForwardEnzyme, x, dx, extras::NoPushforwardExtras
 )
     # dy cannot be passed anyway
@@ -44,13 +44,13 @@ function DI.value_and_gradient(
     return f(x), DI.gradient(f, backend, x, extras)
 end
 
-function DI.gradient!!(
+function DI.gradient!(
     f, _grad, backend::AutoForwardEnzyme, x::AbstractArray, extras::NoGradientExtras
 )
     return DI.gradient(f, backend, x, extras)
 end
 
-function DI.value_and_gradient!!(
+function DI.value_and_gradient!(
     f, _grad, backend::AutoForwardEnzyme, x::AbstractArray, extras::NoGradientExtras
 )
     return DI.value_and_gradient(f, backend, x, extras)
@@ -73,13 +73,13 @@ function DI.value_and_jacobian(
     return f(x), DI.jacobian(f, backend, x, extras)
 end
 
-function DI.jacobian!!(
+function DI.jacobian!(
     f, _jac, backend::AutoForwardEnzyme, x::AbstractArray, extras::NoJacobianExtras
 )
     return DI.jacobian(f, backend, x, extras)
 end
 
-function DI.value_and_jacobian!!(
+function DI.value_and_jacobian!(
     f, _jac, backend::AutoForwardEnzyme, x::AbstractArray, extras::NoJacobianExtras
 )
     return DI.value_and_jacobian(f, backend, x, extras)

@@ -4,7 +4,7 @@ DI.prepare_pullback(f!, ::AnyAutoReverseDiff, y, x) = NoPullbackExtras()
 
 ### Array in
 
-function DI.value_and_pullback!!(
+function DI.value_and_pullback!(
     f!,
     y::AbstractArray,
     dx::AbstractArray,
@@ -23,7 +23,7 @@ function DI.value_and_pullback!!(
     return y, dx
 end
 
-function DI.pullback!!(
+function DI.pullback!(
     f!,
     y::AbstractArray,
     dx::AbstractArray,
@@ -43,7 +43,7 @@ end
 
 ### Number in, not supported
 
-function DI.value_and_pullback!!(
+function DI.value_and_pullback!(
     f!,
     y::AbstractArray,
     _dx::Number,
@@ -56,7 +56,7 @@ function DI.value_and_pullback!!(
     dx_array = similar(x_array)
     f!_array(_y::AbstractArray, _x_array) = f!(_y, only(_x_array))
     new_extras = DI.prepare_pullback(f!_array, backend, y, x_array)
-    y, dx_array = DI.value_and_pullback!!(
+    y, dx_array = DI.value_and_pullback!(
         f!_array, y, dx_array, backend, x_array, dy, new_extras
     )
     return y, only(dx_array)
@@ -78,7 +78,7 @@ function DI.prepare_jacobian(
     return ReverseDiffMutatingJacobianExtras(tape)
 end
 
-function DI.value_and_jacobian!!(
+function DI.value_and_jacobian!(
     _f!,
     y::AbstractArray,
     jac::AbstractMatrix,
@@ -91,7 +91,7 @@ function DI.value_and_jacobian!!(
     return DiffResults.value(result), DiffResults.derivative(result)
 end
 
-function DI.jacobian!!(
+function DI.jacobian!(
     _f!,
     y::AbstractArray,
     jac::AbstractMatrix,

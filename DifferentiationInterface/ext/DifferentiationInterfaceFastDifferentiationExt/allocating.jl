@@ -38,7 +38,7 @@ function DI.pushforward(
     end
 end
 
-function DI.pushforward!!(
+function DI.pushforward!(
     f,
     dy,
     ::AnyAutoFastDifferentiation,
@@ -64,7 +64,7 @@ function DI.value_and_pushforward(
 )
     return f(x), DI.pushforward(f, backend, x, dx, extras)
 end
-function DI.value_and_pushforward!!(
+function DI.value_and_pushforward!(
     f,
     dy,
     backend::AnyAutoFastDifferentiation,
@@ -72,7 +72,7 @@ function DI.value_and_pushforward!!(
     dx,
     extras::FastDifferentiationAllocatingPushforwardExtras,
 )
-    return f(x), DI.pushforward!!(f, dy, backend, x, dx, extras)
+    return f(x), DI.pushforward!(f, dy, backend, x, dx, extras)
 end
 
 ## Pullback
@@ -113,7 +113,7 @@ function DI.derivative(
     end
 end
 
-function DI.derivative!!(
+function DI.derivative!(
     f,
     der,
     ::AnyAutoFastDifferentiation,
@@ -137,14 +137,14 @@ function DI.value_and_derivative(
     return f(x), DI.derivative(f, backend, x, extras)
 end
 
-function DI.value_and_derivative!!(
+function DI.value_and_derivative!(
     f,
     der,
     backend::AnyAutoFastDifferentiation,
     x,
     extras::FastDifferentiationAllocatingDerivativeExtras,
 )
-    return f(x), DI.derivative!!(f, der, backend, x, extras)
+    return f(x), DI.derivative!(f, der, backend, x, extras)
 end
 
 ## Jacobian
@@ -178,7 +178,7 @@ function DI.jacobian(
     return extras.jac_exe(vec(x))
 end
 
-function DI.jacobian!!(
+function DI.jacobian!(
     f,
     jac,
     ::AnyAutoFastDifferentiation,
@@ -198,14 +198,14 @@ function DI.value_and_jacobian(
     return f(x), DI.jacobian(f, backend, x, extras)
 end
 
-function DI.value_and_jacobian!!(
+function DI.value_and_jacobian!(
     f,
     jac,
     backend::AnyAutoFastDifferentiation,
     x,
     extras::FastDifferentiationAllocatingJacobianExtras,
 )
-    return f(x), DI.jacobian!!(f, jac, backend, x, extras)
+    return f(x), DI.jacobian!(f, jac, backend, x, extras)
 end
 
 ## Second derivative
@@ -245,7 +245,7 @@ function DI.second_derivative(
     end
 end
 
-function DI.second_derivative!!(
+function DI.second_derivative!(
     f,
     der2,
     backend::AnyAutoFastDifferentiation,
@@ -288,7 +288,7 @@ function DI.hvp(f, ::AnyAutoFastDifferentiation, x, v, extras::FastDifferentiati
     return reshape(hv_vec, size(x))
 end
 
-function DI.hvp!!(
+function DI.hvp!(
     f, p, ::AnyAutoFastDifferentiation, x, v, extras::FastDifferentiationHVPExtras
 )
     v_vec = vcat(vec(x), vec(v))
@@ -322,7 +322,7 @@ function DI.hessian(
     return extras.hess_exe(vec(x))
 end
 
-function DI.hessian!!(
+function DI.hessian!(
     f,
     hess,
     backend::AnyAutoFastDifferentiation,

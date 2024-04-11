@@ -28,7 +28,7 @@ function DI.value_and_pullback(
     f, backend::AutoReverseEnzyme, x::AbstractArray, dy, extras::NoPullbackExtras
 )
     dx = similar(x)
-    return DI.value_and_pullback!!(f, dx, backend, x, dy, extras)
+    return DI.value_and_pullback!(f, dx, backend, x, dy, extras)
 end
 
 function DI.pullback(f, backend::AutoReverseEnzyme, x, dy, extras::NoPullbackExtras)
@@ -37,25 +37,25 @@ end
 
 ### In-place
 
-function DI.value_and_pullback!!(
+function DI.value_and_pullback!(
     f, _dx, backend::AutoReverseEnzyme, x::Number, dy, extras::NoPullbackExtras
 )
     return DI.value_and_pullback(f, backend, x, dy, extras)
 end
 
-function DI.value_and_pullback!!(
+function DI.value_and_pullback!(
     f, dx, ::AutoReverseEnzyme, x::AbstractArray, dy::Number, ::NoPullbackExtras
 )
-    dx_sametype = zero_sametype!!(dx, x)
+    dx_sametype = zero_sametype!(dx, x)
     _, y = autodiff(ReverseWithPrimal, f, Active, Duplicated(x, dx_sametype))
     dx_sametype .*= dy
     return y, dx_sametype
 end
 
-function DI.value_and_pullback!!(
+function DI.value_and_pullback!(
     f, dx, ::AutoReverseEnzyme, x::AbstractArray, dy::AbstractArray, ::NoPullbackExtras
 )
-    dx_sametype = zero_sametype!!(dx, x)
+    dx_sametype = zero_sametype!(dx, x)
     forw, rev = autodiff_thunk(
         ReverseSplitWithPrimal, Const{typeof(f)}, Duplicated, Duplicated{typeof(x)}
     )
@@ -65,8 +65,8 @@ function DI.value_and_pullback!!(
     return y, dx_sametype
 end
 
-function DI.pullback!!(f, dx, backend::AutoReverseEnzyme, x, dy, extras::NoPullbackExtras)
-    return DI.value_and_pullback!!(f, dx, backend, x, dy, extras)[2]
+function DI.pullback!(f, dx, backend::AutoReverseEnzyme, x, dy, extras::NoPullbackExtras)
+    return DI.value_and_pullback!(f, dx, backend, x, dy, extras)[2]
 end
 
 ## Gradient
@@ -77,7 +77,7 @@ function DI.gradient(f, ::AutoReverseEnzyme, x, ::NoGradientExtras)
     return gradient(Reverse, f, x)
 end
 
-function DI.gradient!!(f, grad, ::AutoReverseEnzyme, x, ::NoGradientExtras)
+function DI.gradient!(f, grad, ::AutoReverseEnzyme, x, ::NoGradientExtras)
     grad_sametype = convert(typeof(x), grad)
     gradient!(Reverse, grad_sametype, f, x)
     return grad_sametype
@@ -87,6 +87,6 @@ function DI.value_and_gradient(f, backend::AutoReverseEnzyme, x, ::NoGradientExt
     return DI.value_and_pullback(f, backend, x, one(eltype(x)), NoPullbackExtras())
 end
 
-function DI.value_and_gradient!!(f, grad, backend::AutoReverseEnzyme, x, ::NoGradientExtras)
-    return DI.value_and_pullback!!(f, grad, backend, x, one(eltype(x)), NoPullbackExtras())
+function DI.value_and_gradient!(f, grad, backend::AutoReverseEnzyme, x, ::NoGradientExtras)
+    return DI.value_and_pullback!(f, grad, backend, x, one(eltype(x)), NoPullbackExtras())
 end

@@ -34,16 +34,16 @@ function value_and_gradient(
 end
 
 """
-    value_and_gradient!!(f, grad, backend, x, [extras]) -> (y, grad)
+    value_and_gradient!(f, grad, backend, x, [extras]) -> (y, grad)
 """
-function value_and_gradient!!(
+function value_and_gradient!(
     f,
     grad,
     backend::AbstractADType,
     x,
     extras::GradientExtras=prepare_gradient(f, backend, x),
 )
-    return value_and_pullback!!(f, grad, backend, x, one(eltype(x)), extras.pullback_extras)
+    return value_and_pullback!(f, grad, backend, x, one(eltype(x)), extras.pullback_extras)
 end
 
 """
@@ -56,14 +56,14 @@ function gradient(
 end
 
 """
-    gradient!!(f, grad, backend, x, [extras]) -> grad
+    gradient!(f, grad, backend, x, [extras]) -> grad
 """
-function gradient!!(
+function gradient!(
     f,
     grad,
     backend::AbstractADType,
     x,
     extras::GradientExtras=prepare_gradient(f, backend, x),
 )
-    return pullback!!(f, grad, backend, x, one(eltype(x)), extras.pullback_extras)
+    return pullback!(f, grad, backend, x, one(eltype(x)), extras.pullback_extras)
 end

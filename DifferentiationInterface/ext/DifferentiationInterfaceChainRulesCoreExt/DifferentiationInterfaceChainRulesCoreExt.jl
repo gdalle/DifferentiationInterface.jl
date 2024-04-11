@@ -28,6 +28,14 @@ function DI.value_and_pullback_split(
     return y, pullbackfunc
 end
 
+function DI.value_and_pullback!_split(
+    f, backend::AutoReverseChainRules, x, ::NoPullbackExtras
+)
+    y, pullbackfunc = DI.value_and_pullback_split(f, backend, x, extras)
+    pullbackfunc!(dx, dy) = copyto!(dx, pullbackfunc(dy))
+    return y, pullbackfunc!
+end
+
 function DI.value_and_pullback(
     f, backend::AutoReverseChainRules, x, dy, extras::NoPullbackExtras
 )

@@ -21,7 +21,7 @@ function DI.prepare_gradient(f, backend::AnyAutoForwardDiff, x::AbstractArray)
     return ForwardDiffGradientExtras(GradientConfig(f, x, choose_chunk(backend, x)))
 end
 
-function DI.value_and_gradient!!(
+function DI.value_and_gradient!(
     f,
     grad::AbstractArray,
     ::AnyAutoForwardDiff,
@@ -37,10 +37,10 @@ function DI.value_and_gradient(
     f, backend::AnyAutoForwardDiff, x::AbstractArray, extras::ForwardDiffGradientExtras
 )
     grad = similar(x)
-    return DI.value_and_gradient!!(f, grad, backend, x, extras)
+    return DI.value_and_gradient!(f, grad, backend, x, extras)
 end
 
-function DI.gradient!!(
+function DI.gradient!(
     f,
     grad::AbstractArray,
     ::AnyAutoForwardDiff,
@@ -68,7 +68,7 @@ function DI.prepare_jacobian(f, backend::AnyAutoForwardDiff, x::AbstractArray)
     )
 end
 
-function DI.value_and_jacobian!!(
+function DI.value_and_jacobian!(
     f,
     jac::AbstractMatrix,
     ::AnyAutoForwardDiff,
@@ -87,7 +87,7 @@ function DI.value_and_jacobian(
     return f(x), jacobian(f, x, extras.config)
 end
 
-function DI.jacobian!!(
+function DI.jacobian!(
     f,
     jac::AbstractMatrix,
     ::AnyAutoForwardDiff,
@@ -113,7 +113,7 @@ function DI.prepare_hessian(f, backend::AnyAutoForwardDiff, x::AbstractArray)
     return ForwardDiffHessianExtras(HessianConfig(f, x, choose_chunk(backend, x)))
 end
 
-function DI.hessian!!(
+function DI.hessian!(
     f,
     hess::AbstractMatrix,
     ::AnyAutoForwardDiff,

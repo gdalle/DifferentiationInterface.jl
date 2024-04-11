@@ -14,7 +14,7 @@ function DI.value_and_pullback(
     return y, dx
 end
 
-function DI.value_and_pullback!!(
+function DI.value_and_pullback!(
     f, dx, ::AnyAutoReverseDiff, x::AbstractArray, dy, ::NoPullbackExtras
 )
     y = f(x)
@@ -50,7 +50,7 @@ function DI.prepare_gradient(f, backend::AnyAutoReverseDiff, x::AbstractArray)
     return ReverseDiffGradientExtras(tape)
 end
 
-function DI.value_and_gradient!!(
+function DI.value_and_gradient!(
     _f,
     grad::AbstractArray,
     ::AnyAutoReverseDiff,
@@ -66,10 +66,10 @@ function DI.value_and_gradient(
     f, backend::AnyAutoReverseDiff, x::AbstractArray, extras::ReverseDiffGradientExtras
 )
     grad = similar(x)
-    return DI.value_and_gradient!!(f, grad, backend, x, extras)
+    return DI.value_and_gradient!(f, grad, backend, x, extras)
 end
 
-function DI.gradient!!(
+function DI.gradient!(
     _f,
     grad::AbstractArray,
     ::AnyAutoReverseDiff,
@@ -99,7 +99,7 @@ function DI.prepare_jacobian(f, backend::AnyAutoReverseDiff, x::AbstractArray)
     return ReverseDiffAllocatingJacobianExtras(tape)
 end
 
-function DI.value_and_jacobian!!(
+function DI.value_and_jacobian!(
     f,
     jac::AbstractMatrix,
     ::AnyAutoReverseDiff,
@@ -118,7 +118,7 @@ function DI.value_and_jacobian(
     return f(x), jacobian!(extras.tape, x)
 end
 
-function DI.jacobian!!(
+function DI.jacobian!(
     _f,
     jac::AbstractMatrix,
     ::AnyAutoReverseDiff,
@@ -148,7 +148,7 @@ function DI.prepare_hessian(f, backend::AnyAutoReverseDiff, x::AbstractArray)
     return ReverseDiffHessianExtras(tape)
 end
 
-function DI.hessian!!(
+function DI.hessian!(
     _f,
     hess::AbstractMatrix,
     ::AnyAutoReverseDiff,

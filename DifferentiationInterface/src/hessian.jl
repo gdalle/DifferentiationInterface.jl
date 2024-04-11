@@ -48,9 +48,9 @@ function hessian(
 end
 
 """
-    hessian!!(f, hess, backend, x, [extras]) -> hess
+    hessian!(f, hess, backend, x, [extras]) -> hess
 """
-function hessian!!(
+function hessian!(
     f,
     hess,
     backend::AbstractADType,
@@ -59,19 +59,15 @@ function hessian!!(
 )
     new_backend = SecondOrder(backend)
     new_extras = prepare_hessian(f, new_backend, x)
-    return hessian!!(f, hess, new_backend, x, new_extras)
+    return hessian!(f, hess, new_backend, x, new_extras)
 end
 
-function hessian!!(
+function hessian!(
     f, hess, backend::SecondOrder, x, extras::HessianExtras=prepare_hessian(f, backend, x)
 )
     for (k, j) in enumerate(CartesianIndices(x))
-        hess_col_j_old = reshape(view(hess, :, k), size(x))
-        hess_col_j_new = hvp!!(
-            f, hess_col_j_old, backend, x, basis(backend, x, j), extras.hvp_extras
-        )
-        # this allocates
-        copyto!(hess_col_j_old, hess_col_j_new)
+        hess_col_j = reshape(view(hess, :, k), size(x))
+        hvp!(f, hess_col_j, backend, x, basis(backend, x, j), extras.hvp_extras)
     end
     return hess
 end

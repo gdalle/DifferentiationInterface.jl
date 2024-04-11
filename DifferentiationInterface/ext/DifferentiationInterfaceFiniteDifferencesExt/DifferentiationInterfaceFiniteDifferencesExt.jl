@@ -56,11 +56,11 @@ function DI.value_and_gradient(
     return f(x), DI.gradient(f, backend, x, extras)
 end
 
-function DI.gradient!!(f, grad, backend::AutoFiniteDifferences, x, extras::NoGradientExtras)
+function DI.gradient!(f, grad, backend::AutoFiniteDifferences, x, extras::NoGradientExtras)
     return DI.gradient(f, backend, x, extras)
 end
 
-function DI.value_and_gradient!!(
+function DI.value_and_gradient!(
     f, grad, backend::AutoFiniteDifferences, x, extras::NoGradientExtras
 )
     return DI.value_and_gradient(f, backend, x, extras)
@@ -80,11 +80,11 @@ function DI.value_and_jacobian(
     return f(x), DI.jacobian(f, backend, x, extras)
 end
 
-function DI.jacobian!!(f, jac, backend::AutoFiniteDifferences, x, extras::NoJacobianExtras)
+function DI.jacobian!(f, jac, backend::AutoFiniteDifferences, x, extras::NoJacobianExtras)
     return DI.jacobian(f, backend, x, extras)
 end
 
-function DI.value_and_jacobian!!(
+function DI.value_and_jacobian!(
     f, jac, backend::AutoFiniteDifferences, x, extras::NoJacobianExtras
 )
     return DI.value_and_jacobian(f, backend, x)

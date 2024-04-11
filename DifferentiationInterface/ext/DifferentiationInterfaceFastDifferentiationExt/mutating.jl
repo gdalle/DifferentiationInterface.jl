@@ -20,7 +20,7 @@ function DI.prepare_pushforward(f!, ::AnyAutoFastDifferentiation, y, x)
     return FastDifferentiationMutatingPushforwardExtras(jvp_exe!)
 end
 
-function DI.value_and_pushforward!!(
+function DI.value_and_pushforward!(
     f!,
     y,
     dy,
@@ -35,7 +35,7 @@ function DI.value_and_pushforward!!(
     return y, dy
 end
 
-function DI.pushforward!!(
+function DI.pushforward!(
     f!,
     y,
     dy,
@@ -67,7 +67,7 @@ function DI.prepare_derivative(f!, ::AnyAutoFastDifferentiation, y, x)
     return FastDifferentiationMutatingDerivativeExtras(der_exe!)
 end
 
-function DI.value_and_derivative!!(
+function DI.value_and_derivative!(
     f!,
     y,
     der,
@@ -80,7 +80,7 @@ function DI.value_and_derivative!!(
     return y, der
 end
 
-function DI.derivative!!(
+function DI.derivative!(
     f!,
     y,
     der,
@@ -114,7 +114,7 @@ function DI.prepare_jacobian(f!, backend::AnyAutoFastDifferentiation, y, x)
     return FastDifferentiationMutatingJacobianExtras(jac_exe!)
 end
 
-function DI.value_and_jacobian!!(
+function DI.value_and_jacobian!(
     f!,
     y,
     jac,
@@ -127,7 +127,7 @@ function DI.value_and_jacobian!!(
     return y, jac
 end
 
-function DI.jacobian!!(
+function DI.jacobian!(
     f!,
     y,
     jac,

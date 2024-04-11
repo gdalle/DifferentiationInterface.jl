@@ -35,7 +35,7 @@ Check whether `backend` supports differentiation of mutating functions by trying
 """
 function check_mutation(backend::AbstractADType)
     try
-        y, jac = value_and_jacobian!!(square!, [0.0], [0.0;;], backend, [3.0])
+        y, jac = value_and_jacobian!(square!, [0.0], [0.0;;], backend, [3.0])
         return isapprox(y, [9.0]; rtol=1e-3) && isapprox(jac, [6.0;;]; rtol=1e-3)
     catch exception
         @warn "Backend $backend does not support mutation" exception

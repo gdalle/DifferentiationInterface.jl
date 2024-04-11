@@ -8,7 +8,7 @@ end
 
 # see https://github.com/withbayes/Tapir.jl/issues/113#issuecomment-2036718992
 
-function DI.value_and_pullback!!(
+function DI.value_and_pullback!(
     f!, y, dx, ::AutoTapir, x, dy, extras::TapirMutatingPullbackExtras
 )
     dy_righttype = convert(tangent_type(typeof(y)), copy(dy))

@@ -57,9 +57,9 @@ function second_derivative(
 end
 
 """
-    second_derivative!!(f, der2, backend, x, [extras]) -> der2
+    second_derivative!(f, der2, backend, x, [extras]) -> der2
 """
-function second_derivative!!(
+function second_derivative!(
     f,
     der2,
     backend::AbstractADType,
@@ -68,17 +68,17 @@ function second_derivative!!(
 )
     new_backend = SecondOrder(backend, backend)
     new_extras = prepare_second_derivative(f, new_backend, x)
-    return second_derivative!!(f, der2, new_backend, x, new_extras)
+    return second_derivative!(f, der2, new_backend, x, new_extras)
 end
 
-function second_derivative!!(
+function second_derivative!(
     f,
     der2,
     backend::SecondOrder,
     x,
     extras::SecondDerivativeExtras=prepare_second_derivative(f, backend, x),
 )
-    return derivative!!(
+    return derivative!(
         extras.inner_derivative_closure,
         der2,
         outer(backend),

@@ -15,7 +15,7 @@ for AutoSparse in SPARSE_BACKENDS
             return SparseDiffToolsMutatingJacobianExtras(cache)
         end
 
-        function DI.value_and_jacobian!!(
+        function DI.value_and_jacobian!(
             f!,
             y,
             jac,
@@ -28,7 +28,7 @@ for AutoSparse in SPARSE_BACKENDS
             return y, jac
         end
 
-        function DI.jacobian!!(
+        function DI.jacobian!(
             f!,
             y,
             jac,

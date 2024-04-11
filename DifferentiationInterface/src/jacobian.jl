@@ -83,44 +83,38 @@ function value_and_jacobian_aux(
 end
 
 """
-    value_and_jacobian!!(f, jac, backend, x, [extras]) -> (y, jac)
+    value_and_jacobian!(f, jac, backend, x, [extras]) -> (y, jac)
 """
-function value_and_jacobian!!(
+function value_and_jacobian!(
     f,
     jac,
     backend::AbstractADType,
     x,
     extras::JacobianExtras=prepare_jacobian(f, backend, x),
 )
-    return value_and_jacobian_aux!!(f, jac, backend, x, extras)
+    return value_and_jacobian_aux!(f, jac, backend, x, extras)
 end
 
-function value_and_jacobian_aux!!(
+function value_and_jacobian_aux!(
     f, jac::AbstractMatrix, backend, x::AbstractArray, extras::PushforwardJacobianExtras
 )
     y = f(x)
     for (k, j) in enumerate(CartesianIndices(x))
         dx_j = basis(backend, x, j)
-        jac_col_j_old = reshape(view(jac, :, k), size(y))
-        jac_col_j_new = pushforward!!(
-            f, jac_col_j_old, backend, x, dx_j, extras.pushforward_extras
-        )
-        # this allocates
-        copyto!(jac_col_j_old, jac_col_j_new)
+        jac_col_j = reshape(view(jac, :, k), size(y))
+        pushforward!(f, jac_col_j, backend, x, dx_j, extras.pushforward_extras)
     end
     return y, jac
 end
 
-function value_and_jacobian_aux!!(
+function value_and_jacobian_aux!(
     f, jac::AbstractMatrix, backend, x::AbstractArray, extras::PullbackJacobianExtras
 )
-    y, pullbackfunc!! = value_and_pullback!!_split(f, backend, x, extras.pullback_extras)
+    y, pullbackfunc! = value_and_pullback!_split(f, backend, x, extras.pullback_extras)
     for (k, i) in enumerate(CartesianIndices(y))
         dy_i = basis(backend, y, i)
-        jac_row_i_old = reshape(view(jac, k, :), size(x))
-        jac_row_i_new = pullbackfunc!!(jac_row_i_old, dy_i)
-        # this allocates
-        copyto!(jac_row_i_old, jac_row_i_new)
+        jac_row_i = reshape(view(jac, k, :), size(x))
+        pullbackfunc!(jac_row_i, dy_i)
     end
     return y, jac
 end
@@ -135,24 +129,24 @@ function jacobian(
 end
 
 """
-    jacobian!!(f, jac, backend, x, [extras]) -> jac
+    jacobian!(f, jac, backend, x, [extras]) -> jac
 """
-function jacobian!!(
+function jacobian!(
     f,
     jac,
     backend::AbstractADType,
     x,
     extras::JacobianExtras=prepare_jacobian(f, backend, x),
 )
-    return value_and_jacobian!!(f, jac, backend, x, extras)[2]
+    return value_and_jacobian!(f, jac, backend, x, extras)[2]
 end
 
 ## Mutating
 
 """
-    value_and_jacobian!!(f!, y, jac, backend, x, [extras]) -> (y, jac)
+    value_and_jacobian!(f!, y, jac, backend, x, [extras]) -> (y, jac)
 """
-function value_and_jacobian!!(
+function value_and_jacobian!(
     f!,
     y,
     jac,
@@ -160,10 +154,10 @@ function value_and_jacobian!!(
     x,
     extras::JacobianExtras=prepare_jacobian(f!, backend, y, x),
 )
-    return value_and_jacobian_aux!!(f!, y, jac, backend, x, extras)
+    return value_and_jacobian_aux!(f!, y, jac, backend, x, extras)
 end
 
-function value_and_jacobian_aux!!(
+function value_and_jacobian_aux!(
     f!,
     y::AbstractArray,
     jac::AbstractMatrix,
@@ -173,17 +167,13 @@ function value_and_jacobian_aux!!(
 )
     for (k, j) in enumerate(CartesianIndices(x))
         dx_j = basis(backend, x, j)
-        jac_col_j_old = reshape(view(jac, :, k), size(y))
-        jac_col_j_new = pushforward!!(
-            f!, y, jac_col_j_old, backend, x, dx_j, extras.pushforward_extras
-        )
-        # this allocates
-        copyto!(jac_col_j_old, jac_col_j_new)
+        jac_col_j = reshape(view(jac, :, k), size(y))
+        pushforward!(f!, y, jac_col_j, backend, x, dx_j, extras.pushforward_extras)
     end
     return y, jac
 end
 
-function value_and_jacobian_aux!!(
+function value_and_jacobian_aux!(
     f!,
     y::AbstractArray,
     jac::AbstractMatrix,
@@ -191,23 +181,21 @@ function value_and_jacobian_aux!!(
     x::AbstractArray,
     extras::PullbackJacobianExtras,
 )
-    y, pullbackfunc!! = value_and_pullback!!_split!!(
+    y, pullbackfunc! = value_and_pullback!_split!(
         f!, y, backend, x, extras.pullback_extras
     )
     for (k, i) in enumerate(CartesianIndices(y))
         dy_i = basis(backend, y, i)
-        jac_row_i_old = reshape(view(jac, k, :), size(x))
-        jac_row_i_new = pullbackfunc!!(y, jac_row_i_old, dy_i)
-        # this allocates
-        copyto!(jac_row_i_old, jac_row_i_new)
+        jac_row_i = reshape(view(jac, k, :), size(x))
+        pullbackfunc!(y, jac_row_i, dy_i)
     end
     return y, jac
 end
 
 """
-    jacobian!!(f!, y, jac, backend, x, [extras]) -> jac
+    jacobian!(f!, y, jac, backend, x, [extras]) -> jac
 """
-function jacobian!!(
+function jacobian!(
     f!,
     y,
     jac,
@@ -215,5 +203,5 @@ function jacobian!!(
     x,
     extras::JacobianExtras=prepare_jacobian(f!, backend, y, x),
 )
-    return value_and_jacobian!!(f!, y, jac, backend, x, extras)[2]
+    return value_and_jacobian!(f!, y, jac, backend, x, extras)[2]
 end

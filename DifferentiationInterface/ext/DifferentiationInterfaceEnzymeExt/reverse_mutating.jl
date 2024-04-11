@@ -2,7 +2,7 @@
 
 DI.prepare_pullback(f!, ::AutoReverseEnzyme, y, x) = NoPullbackExtras()
 
-function DI.value_and_pullback!!(
+function DI.value_and_pullback!(
     f!, y, _dx, ::AutoReverseEnzyme, x::Number, dy, ::NoPullbackExtras
 )
     dy_sametype = convert(typeof(y), copy(dy))
@@ -10,10 +10,10 @@ function DI.value_and_pullback!!(
     return y, new_dx
 end
 
-function DI.value_and_pullback!!(
+function DI.value_and_pullback!(
     f!, y, dx, ::AutoReverseEnzyme, x::AbstractArray, dy, ::NoPullbackExtras
 )
-    dx_sametype = zero_sametype!!(dx, x)
+    dx_sametype = zero_sametype!(dx, x)
     dy_sametype = convert(typeof(y), copy(dy))
     autodiff(Reverse, f!, Const, Duplicated(y, dy_sametype), Duplicated(x, dx_sametype))
     return y, dx_sametype

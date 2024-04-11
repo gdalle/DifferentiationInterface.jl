@@ -2,7 +2,7 @@
 
 DI.prepare_pushforward(f!, ::AnyAutoFiniteDiff, y, x) = NoPushforwardExtras()
 
-function DI.value_and_pushforward!!(
+function DI.value_and_pushforward!(
     f!,
     y::AbstractArray,
     dy::AbstractArray,
@@ -34,7 +34,7 @@ function DI.prepare_derivative(f!, ::AnyAutoFiniteDiff, y, x)
     return FiniteDiffMutatingDerivativeExtras(cache)
 end
 
-function DI.value_and_derivative!!(
+function DI.value_and_derivative!(
     f!,
     y::AbstractArray,
     der::AbstractArray,
@@ -47,7 +47,7 @@ function DI.value_and_derivative!!(
     return y, der
 end
 
-function DI.derivative!!(
+function DI.derivative!(
     f!,
     y::AbstractArray,
     der::AbstractArray,
@@ -73,7 +73,7 @@ function DI.prepare_jacobian(f!, backend::AnyAutoFiniteDiff, y, x)
     return FiniteDiffMutatingJacobianExtras(cache)
 end
 
-function DI.value_and_jacobian!!(
+function DI.value_and_jacobian!(
     f!,
     y::AbstractArray,
     jac::AbstractMatrix,
@@ -86,7 +86,7 @@ function DI.value_and_jacobian!!(
     return y, jac
 end
 
-function DI.jacobian!!(
+function DI.jacobian!(
     f!,
     y::AbstractArray,
     jac::AbstractMatrix,

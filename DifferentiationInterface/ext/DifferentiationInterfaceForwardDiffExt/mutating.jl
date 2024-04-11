@@ -1,14 +1,14 @@
 DI.prepare_pushforward(f!, ::AnyAutoForwardDiff, y, x) = NoPushforwardExtras()
 
-function DI.value_and_pushforward!!(
+function DI.value_and_pushforward!(
     f!, y, dy, ::AnyAutoForwardDiff, x, dx, ::NoPushforwardExtras
 )
     T = tag_type(f!, x)
     xdual = make_dual(T, x, dx)
     ydual = make_dual(T, y, dy)
     f!(ydual, xdual)
-    y = myvalue!!(T, y, ydual)
-    dy = myderivative!!(T, dy, ydual)
+    y = myvalue!(T, y, ydual)
+    dy = myderivative!(T, dy, ydual)
     return y, dy
 end
 
@@ -22,7 +22,7 @@ function DI.prepare_derivative(f!, ::AnyAutoForwardDiff, y::AbstractArray, x::Nu
     return ForwardDiffMutatingDerivativeExtras(DerivativeConfig(f!, y, x))
 end
 
-function DI.value_and_derivative!!(
+function DI.value_and_derivative!(
     f!,
     y::AbstractArray,
     der::AbstractArray,
@@ -35,7 +35,7 @@ function DI.value_and_derivative!!(
     return DiffResults.value(result), DiffResults.derivative(result)
 end
 
-function DI.derivative!!(
+function DI.derivative!(
     f!,
     y::AbstractArray,
     der::AbstractArray,
@@ -61,7 +61,7 @@ function DI.prepare_jacobian(
     )
 end
 
-function DI.value_and_jacobian!!(
+function DI.value_and_jacobian!(
     f!,
     y::AbstractArray,
     jac::AbstractMatrix,
@@ -74,7 +74,7 @@ function DI.value_and_jacobian!!(
     return DiffResults.value(result), DiffResults.jacobian(result)
 end
 
-function DI.jacobian!!(
+function DI.jacobian!(
     f!,
     y::AbstractArray,
     jac::AbstractMatrix,

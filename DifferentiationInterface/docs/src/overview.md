@@ -25,31 +25,13 @@ They are all based on the following low-level operators:
 
 Several variants of each operator are defined:
 
-| out-of-place          | in-place (or not)       | out-of-place + primal           | in-place (or not) + primal        |
-| :-------------------- | :---------------------- | :------------------------------ | :-------------------------------- |
-| [`derivative`](@ref)  | [`derivative!!`](@ref)  | [`value_and_derivative`](@ref)  | [`value_and_derivative!!`](@ref)  |
-| [`gradient`](@ref)    | [`gradient!!`](@ref)    | [`value_and_gradient`](@ref)    | [`value_and_gradient!!`](@ref)    |
-| [`jacobian`](@ref)    | [`jacobian!!`](@ref)    | [`value_and_jacobian`](@ref)    | [`value_and_jacobian!!`](@ref)    |
-| [`pushforward`](@ref) | [`pushforward!!`](@ref) | [`value_and_pushforward`](@ref) | [`value_and_pushforward!!`](@ref) |
-| [`pullback`](@ref)    | [`pullback!!`](@ref)    | [`value_and_pullback`](@ref)    | [`value_and_pullback!!`](@ref)    |
-
-!!! warning
-    We use the syntactic convention `!!` to signal that some of the arguments _can_ be mutated, but they do not _have to be_.
-    Such arguments will always be part of the return, so that one can simply reuse the operator's output and forget its input.
-    In other words, this is good:
-    ```julia
-    # work with grad_in
-    grad_out = gradient!!(f, grad_in, backend, x)
-    # work with grad_out: OK
-    ```
-    On the other hand, this is bad, because if `grad_in` has not been mutated, you will forget the results:
-    ```julia
-    # work with grad_in
-    gradient!!(f, grad_in, backend, x)
-    # mistakenly keep working with grad_in: NOT OK
-    ```
-    Note that we don't guarantee `grad_out` will have the same type as `grad_in`.
-    Its type can even depend on the choice of backend.
+| out-of-place          | in-place               | out-of-place + primal           | in-place                         |
+| :-------------------- | :--------------------- | :------------------------------ | :------------------------------- |
+| [`derivative`](@ref)  | [`derivative!`](@ref)  | [`value_and_derivative`](@ref)  | [`value_and_derivative!`](@ref)  |
+| [`gradient`](@ref)    | [`gradient!`](@ref)    | [`value_and_gradient`](@ref)    | [`value_and_gradient!`](@ref)    |
+| [`jacobian`](@ref)    | [`jacobian!`](@ref)    | [`value_and_jacobian`](@ref)    | [`value_and_jacobian!`](@ref)    |
+| [`pushforward`](@ref) | [`pushforward!`](@ref) | [`value_and_pushforward`](@ref) | [`value_and_pushforward!`](@ref) |
+| [`pullback`](@ref)    | [`pullback!`](@ref)    | [`value_and_pullback`](@ref)    | [`value_and_pullback!`](@ref)    |
 
 ## Second order
 
@@ -66,11 +48,11 @@ The available operators are similar to first-order ones:
 
 We only define two variants for now:
 
-| out-of-place                | in-place (or not)             |
-| :-------------------------- | :---------------------------- |
-| [`second_derivative`](@ref) | [`second_derivative!!`](@ref) |
-| [`hvp`](@ref)               | [`hvp!!`](@ref)               |
-| [`hessian`](@ref)           | [`hessian!!`](@ref)           |
+| out-of-place                | in-place                     |
+| :-------------------------- | :--------------------------- |
+| [`second_derivative`](@ref) | [`second_derivative!`](@ref) |
+| [`hvp`](@ref)               | [`hvp!`](@ref)               |
+| [`hessian`](@ref)           | [`hessian!`](@ref)           |
 
 !!! danger
     Second-order differentiation is still experimental, use at your own risk.
@@ -123,10 +105,10 @@ This means the Hessian is obtained as the sparse Jacobian of the gradient.
 Some reverse mode AD backends expose a "split" option, which runs only the forward sweep, and encapsulates the reverse sweep in a closure.
 We make this available for all backends with the following operators:
 
-|                      | out-of-place                       | in-place (or not)                      |
-| :------------------- | :--------------------------------- | :------------------------------------- |
-| allocating functions | [`value_and_pullback_split`](@ref) | [`value_and_pullback!!_split`](@ref)   |
-| mutating functions   | -                                  | [`value_and_pullback!!_split!!`](@ref) |
+|                      | out-of-place                       | in-place (or not)                     |
+| :------------------- | :--------------------------------- | :------------------------------------ |
+| allocating functions | [`value_and_pullback_split`](@ref) | [`value_and_pullback!_split`](@ref)  |
+| mutating functions   | -                                  | [`value_and_pullback!_split!`](@ref) |
 
 !!! danger
     Split reverse mode is still experimental, use at your own risk.
