@@ -101,10 +101,7 @@ function DI.prepare_derivative(f, ::AnyAutoFastDifferentiation, x)
 end
 
 function DI.derivative(
-    f,
-    ::AnyAutoFastDifferentiation,
-    x,
-    extras::FastDifferentiationOneArgDerivativeExtras,
+    f, ::AnyAutoFastDifferentiation, x, extras::FastDifferentiationOneArgDerivativeExtras
 )
     if extras.y_prototype isa Number
         return only(extras.der_exe(monovec(x)))
@@ -179,11 +176,7 @@ function DI.jacobian(
 end
 
 function DI.jacobian!(
-    f,
-    jac,
-    ::AnyAutoFastDifferentiation,
-    x,
-    extras::FastDifferentiationOneArgJacobianExtras,
+    f, jac, ::AnyAutoFastDifferentiation, x, extras::FastDifferentiationOneArgJacobianExtras
 )
     extras.jac_exe!(jac, vec(x))
     return jac

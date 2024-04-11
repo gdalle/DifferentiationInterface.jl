@@ -4,8 +4,7 @@ DI.prepare_pushforward(f!, ::AnyAutoFiniteDiff, y, x) = NoPushforwardExtras()
 
 function DI.value_and_pushforward!(
     f!,
-    y::AbstractArray,
-    dy::AbstractArray,
+    (y, dy)::Tuple{<:AbstractArray,<:AbstractArray},
     backend::AnyAutoFiniteDiff,
     x,
     dx,
@@ -36,8 +35,7 @@ end
 
 function DI.value_and_derivative!(
     f!,
-    y::AbstractArray,
-    der::AbstractArray,
+    (y, der)::Tuple{<:AbstractArray,<:AbstractArray},
     backend::AnyAutoFiniteDiff,
     x,
     ::FiniteDiffTwoArgDerivativeExtras,
@@ -49,8 +47,7 @@ end
 
 function DI.derivative!(
     f!,
-    y::AbstractArray,
-    der::AbstractArray,
+    (y, der)::Tuple{<:AbstractArray,<:AbstractArray},
     backend::AnyAutoFiniteDiff,
     x,
     ::FiniteDiffTwoArgDerivativeExtras,
@@ -75,8 +72,7 @@ end
 
 function DI.value_and_jacobian!(
     f!,
-    y::AbstractArray,
-    jac::AbstractMatrix,
+    (y, jac)::Tuple{<:AbstractArray,<:AbstractMatrix},
     ::AnyAutoFiniteDiff,
     x,
     extras::FiniteDiffTwoArgJacobianExtras,
@@ -88,8 +84,7 @@ end
 
 function DI.jacobian!(
     f!,
-    y::AbstractArray,
-    jac::AbstractMatrix,
+    (y, jac)::Tuple{<:AbstractArray,<:AbstractMatrix},
     ::AnyAutoFiniteDiff,
     x,
     extras::FiniteDiffTwoArgJacobianExtras,

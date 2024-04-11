@@ -17,8 +17,7 @@ for AutoSparse in SPARSE_BACKENDS
 
         function DI.value_and_jacobian!(
             f!,
-            y,
-            jac,
+            (y, jac)::Tuple,
             backend::$AutoSparse,
             x,
             extras::SparseDiffToolsTwoArgJacobianExtras,
@@ -30,8 +29,7 @@ for AutoSparse in SPARSE_BACKENDS
 
         function DI.jacobian!(
             f!,
-            y,
-            jac,
+            (y, jac)::Tuple,
             backend::$AutoSparse,
             x,
             extras::SparseDiffToolsTwoArgJacobianExtras,

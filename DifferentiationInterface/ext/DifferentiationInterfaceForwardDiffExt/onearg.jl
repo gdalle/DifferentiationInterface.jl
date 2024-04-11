@@ -63,9 +63,7 @@ struct ForwardDiffOneArgJacobianExtras{C} <: JacobianExtras
 end
 
 function DI.prepare_jacobian(f, backend::AnyAutoForwardDiff, x::AbstractArray)
-    return ForwardDiffOneArgJacobianExtras(
-        JacobianConfig(f, x, choose_chunk(backend, x))
-    )
+    return ForwardDiffOneArgJacobianExtras(JacobianConfig(f, x, choose_chunk(backend, x)))
 end
 
 function DI.value_and_jacobian!(

@@ -33,8 +33,6 @@ function DI.pullback(f, backend::AutoTapir, x, dy, extras::TapirOneArgPullbackEx
     return DI.value_and_pullback(f, backend, x, dy, extras)[2]
 end
 
-function DI.pullback!(
-    f, dx, backend::AutoTapir, x, dy, extras::TapirOneArgPullbackExtras
-)
+function DI.pullback!(f, dx, backend::AutoTapir, x, dy, extras::TapirOneArgPullbackExtras)
     return DI.value_and_pullback!(f, dx, backend, x, dy, extras)[2]
 end

@@ -22,8 +22,7 @@ end
 
 function DI.value_and_pushforward!(
     f!,
-    y,
-    dy,
+    (y, dy)::Tuple,
     ::AnyAutoFastDifferentiation,
     x,
     dx,
@@ -37,8 +36,7 @@ end
 
 function DI.pushforward!(
     f!,
-    y,
-    dy,
+    (y, dy)::Tuple,
     ::AnyAutoFastDifferentiation,
     x,
     dx,
@@ -69,8 +67,7 @@ end
 
 function DI.value_and_derivative!(
     f!,
-    y,
-    der,
+    (y, der)::Tuple,
     ::AnyAutoFastDifferentiation,
     x,
     extras::FastDifferentiationTwoArgDerivativeExtras,
@@ -82,8 +79,7 @@ end
 
 function DI.derivative!(
     f!,
-    y,
-    der,
+    (y, der)::Tuple,
     ::AnyAutoFastDifferentiation,
     x,
     extras::FastDifferentiationTwoArgDerivativeExtras,
@@ -116,8 +112,7 @@ end
 
 function DI.value_and_jacobian!(
     f!,
-    y,
-    jac,
+    (y, jac)::Tuple,
     ::AnyAutoFastDifferentiation,
     x,
     extras::FastDifferentiationTwoArgJacobianExtras,
@@ -129,8 +124,7 @@ end
 
 function DI.jacobian!(
     f!,
-    y,
-    jac,
+    (y, jac)::Tuple,
     ::AnyAutoFastDifferentiation,
     x,
     extras::FastDifferentiationTwoArgJacobianExtras,

@@ -9,7 +9,7 @@ end
 # see https://github.com/withbayes/Tapir.jl/issues/113#issuecomment-2036718992
 
 function DI.value_and_pullback!(
-    f!, y, dx, ::AutoTapir, x, dy, extras::TapirTwoArgPullbackExtras
+    f!, (y, dx)::Tuple, ::AutoTapir, x, dy, extras::TapirTwoArgPullbackExtras
 )
     dy_righttype = convert(tangent_type(typeof(y)), copy(dy))
     dx_righttype = convert(tangent_type(typeof(x)), dx)
@@ -41,10 +41,10 @@ function DI.value_and_pullback!(
     dy_righttype = increment!!(dy_righttype, dy_righttype_backup)
 
     # Record the state of `y` before running the reverse-pass.
-    y = copy!(y, y_copy)
+    y = copyto!(y, y_copy)
 
     # Run the reverse-pass.
     _, _, new_dx = pb!!(NoTangent(), df!, dy_righttype, dx_righttype)
 
-    return y, new_dx
+    return y, copyto!(dx, new_dx)
 end

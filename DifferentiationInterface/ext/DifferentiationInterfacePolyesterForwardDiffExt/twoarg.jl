@@ -5,9 +5,15 @@ function DI.prepare_pushforward(f!, backend::AnyAutoPolyForwardDiff, y, x)
 end
 
 function DI.value_and_pushforward!(
-    f!, y, dy, backend::AnyAutoPolyForwardDiff, x, dx, extras::PushforwardExtras
+    f!, (y, dy)::Tuple, backend::AnyAutoPolyForwardDiff, x, dx, extras::PushforwardExtras
 )
-    return DI.value_and_pushforward!(f!, y, dy, single_threaded(backend), x, dx, extras)
+    return DI.value_and_pushforward!(f!, (y, dy), single_threaded(backend), x, dx, extras)
+end
+
+function DI.pushforward!(
+    f!, (y, dy)::Tuple, backend::AnyAutoPolyForwardDiff, x, dx, extras::PushforwardExtras
+)
+    return DI.pushforward!(f!, (y, dy), single_threaded(backend), x, dx, extras)
 end
 
 ## Derivative
@@ -17,15 +23,15 @@ function DI.prepare_derivative(f!, backend::AnyAutoPolyForwardDiff, y, x)
 end
 
 function DI.value_and_derivative!(
-    f!, y, der, backend::AnyAutoPolyForwardDiff, x, extras::DerivativeExtras
+    f!, (y, der)::Tuple, backend::AnyAutoPolyForwardDiff, x, extras::DerivativeExtras
 )
-    return DI.value_and_derivative!(f!, y, der, single_threaded(backend), x, extras)
+    return DI.value_and_derivative!(f!, (y, der), single_threaded(backend), x, extras)
 end
 
 function DI.derivative!(
-    f!, y, der, backend::AnyAutoPolyForwardDiff, x, extras::DerivativeExtras
+    f!, (y, der)::Tuple, backend::AnyAutoPolyForwardDiff, x, extras::DerivativeExtras
 )
-    return DI.derivative!(f!, y, der, single_threaded(backend), x, extras)
+    return DI.derivative!(f!, (y, der), single_threaded(backend), x, extras)
 end
 
 ## Jacobian
@@ -34,8 +40,7 @@ DI.prepare_jacobian(f!, ::AnyAutoPolyForwardDiff, y, x) = NoJacobianExtras()
 
 function DI.value_and_jacobian!(
     f!,
-    y::AbstractArray,
-    jac::AbstractMatrix,
+    (y, jac)::Tuple{<:AbstractArray,<:AbstractMatrix},
     ::AnyAutoPolyForwardDiff{C},
     x::AbstractArray,
     ::NoJacobianExtras,
@@ -47,8 +52,7 @@ end
 
 function DI.jacobian!(
     f!,
-    y::AbstractArray,
-    jac::AbstractMatrix,
+    (y, jac)::Tuple{<:AbstractArray,<:AbstractMatrix},
     ::AnyAutoPolyForwardDiff{C},
     x::AbstractArray,
     ::NoJacobianExtras,
