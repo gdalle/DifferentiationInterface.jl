@@ -41,7 +41,7 @@ using LinearAlgebra: Symmetric, dot
 
 Chooses [FastDifferentiation.jl](https://github.com/brianguenter/FastDifferentiation.jl).
 
-!!! danger
+!! danger
     This backend is experimental, use at your own risk.
 """
 struct AutoFastDifferentiation <: AbstractSymbolicDifferentiationMode end
@@ -51,7 +51,7 @@ struct AutoFastDifferentiation <: AbstractSymbolicDifferentiationMode end
 
 Chooses [FastDifferentiation.jl](https://github.com/brianguenter/FastDifferentiation.jl) leveraging sparsity.
 
-!!! danger
+!! danger
     This backend is experimental, use at your own risk.
 """
 struct AutoSparseFastDifferentiation <: AbstractSymbolicDifferentiationMode end
@@ -61,7 +61,7 @@ struct AutoSparseFastDifferentiation <: AbstractSymbolicDifferentiationMode end
 
 Chooses [Tapir.jl](https://github.com/withbayes/Tapir.jl).
 
-!!! danger
+!! danger
     This backend is experimental, use at your own risk.
 """
 struct AutoTapir <: AbstractReverseMode end
@@ -105,24 +105,24 @@ export AutoChainRules,
 export AutoFastDifferentiation, AutoSparseFastDifferentiation, AutoTapir
 export SecondOrder
 
-export value_and_pushforward!!, value_and_pushforward
-export value_and_pullback!!, value_and_pullback
-export value_and_pullback!!_split, value_and_pullback_split, value_and_pullback!!_split!!
+export value_and_pushforward!, value_and_pushforward
+export value_and_pullback!, value_and_pullback
+export value_and_pullback!_split, value_and_pullback_split
 
-export value_and_derivative!!, value_and_derivative
-export value_and_gradient!!, value_and_gradient
-export value_and_jacobian!!, value_and_jacobian
+export value_and_derivative!, value_and_derivative
+export value_and_gradient!, value_and_gradient
+export value_and_jacobian!, value_and_jacobian
 
-export pushforward!!, pushforward
-export pullback!!, pullback
+export pushforward!, pushforward
+export pullback!, pullback
 
-export derivative!!, derivative
-export gradient!!, gradient
-export jacobian!!, jacobian
+export derivative!, derivative
+export gradient!, gradient
+export jacobian!, jacobian
 
-export second_derivative!!, second_derivative
-export hvp!!, hvp
-export hessian!!, hessian
+export second_derivative!, second_derivative
+export hvp!, hvp
+export hessian!, hessian
 
 export prepare_pushforward, prepare_pullback
 export prepare_derivative, prepare_gradient, prepare_jacobian

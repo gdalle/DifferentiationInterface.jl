@@ -7,7 +7,8 @@ for backend in [AutoZeroForward(), AutoZeroReverse()]
     test_differentiation(
         backend,
         default_scenarios();
-        correctness=backend,
+        correctness=true,
+        ref_backend=backend,
         logging=get(ENV, "CI", "false") == "false",
     )
 end
@@ -19,8 +20,9 @@ for backend in [
     test_differentiation(
         backend,
         default_scenarios();
-        correctness=backend,
+        correctness=true,
         first_order=false,
+        ref_backend=backend,
         logging=get(ENV, "CI", "false") == "false",
     )
 end
@@ -59,23 +61,24 @@ for backend in [AutoZeroForward(), AutoZeroReverse()]
     test_differentiation(
         backend,
         gpu_scenarios();
-        correctness=backend,
+        correctness=true,
+        ref_backend=backend,
         logging=get(ENV, "CI", "false") == "false",
     )
-    # copyto!(col, col) fails on static arrays
     test_differentiation(
         backend,
         static_scenarios();
-        correctness=backend,
-        excluded=[JacobianScenario, HessianScenario],
+        correctness=true,
+        ref_backend=backend,
         logging=get(ENV, "CI", "false") == "false",
     )
     # stack fails on component vectors
     test_differentiation(
         backend,
         component_scenarios();
-        correctness=backend,
+        correctness=true,
         excluded=[HessianScenario],
+        ref_backend=backend,
         logging=get(ENV, "CI", "false") == "false",
     )
 end

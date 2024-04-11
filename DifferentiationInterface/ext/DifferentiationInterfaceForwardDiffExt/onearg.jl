@@ -21,7 +21,7 @@ function DI.prepare_gradient(f, backend::AnyAutoForwardDiff, x::AbstractArray)
     return ForwardDiffGradientExtras(GradientConfig(f, x, choose_chunk(backend, x)))
 end
 
-function DI.value_and_gradient!!(
+function DI.value_and_gradient!(
     f,
     grad::AbstractArray,
     ::AnyAutoForwardDiff,
@@ -37,10 +37,10 @@ function DI.value_and_gradient(
     f, backend::AnyAutoForwardDiff, x::AbstractArray, extras::ForwardDiffGradientExtras
 )
     grad = similar(x)
-    return DI.value_and_gradient!!(f, grad, backend, x, extras)
+    return DI.value_and_gradient!(f, grad, backend, x, extras)
 end
 
-function DI.gradient!!(
+function DI.gradient!(
     f,
     grad::AbstractArray,
     ::AnyAutoForwardDiff,
@@ -58,22 +58,20 @@ end
 
 ## Jacobian
 
-struct ForwardDiffAllocatingJacobianExtras{C} <: JacobianExtras
+struct ForwardDiffOneArgJacobianExtras{C} <: JacobianExtras
     config::C
 end
 
 function DI.prepare_jacobian(f, backend::AnyAutoForwardDiff, x::AbstractArray)
-    return ForwardDiffAllocatingJacobianExtras(
-        JacobianConfig(f, x, choose_chunk(backend, x))
-    )
+    return ForwardDiffOneArgJacobianExtras(JacobianConfig(f, x, choose_chunk(backend, x)))
 end
 
-function DI.value_and_jacobian!!(
+function DI.value_and_jacobian!(
     f,
     jac::AbstractMatrix,
     ::AnyAutoForwardDiff,
     x::AbstractArray,
-    extras::ForwardDiffAllocatingJacobianExtras,
+    extras::ForwardDiffOneArgJacobianExtras,
 )
     y = f(x)
     result = DiffResult(y, jac)
@@ -82,23 +80,23 @@ function DI.value_and_jacobian!!(
 end
 
 function DI.value_and_jacobian(
-    f, ::AnyAutoForwardDiff, x::AbstractArray, extras::ForwardDiffAllocatingJacobianExtras
+    f, ::AnyAutoForwardDiff, x::AbstractArray, extras::ForwardDiffOneArgJacobianExtras
 )
     return f(x), jacobian(f, x, extras.config)
 end
 
-function DI.jacobian!!(
+function DI.jacobian!(
     f,
     jac::AbstractMatrix,
     ::AnyAutoForwardDiff,
     x::AbstractArray,
-    extras::ForwardDiffAllocatingJacobianExtras,
+    extras::ForwardDiffOneArgJacobianExtras,
 )
     return jacobian!(jac, f, x, extras.config)
 end
 
 function DI.jacobian(
-    f, ::AnyAutoForwardDiff, x::AbstractArray, extras::ForwardDiffAllocatingJacobianExtras
+    f, ::AnyAutoForwardDiff, x::AbstractArray, extras::ForwardDiffOneArgJacobianExtras
 )
     return jacobian(f, x, extras.config)
 end
@@ -113,7 +111,7 @@ function DI.prepare_hessian(f, backend::AnyAutoForwardDiff, x::AbstractArray)
     return ForwardDiffHessianExtras(HessianConfig(f, x, choose_chunk(backend, x)))
 end
 
-function DI.hessian!!(
+function DI.hessian!(
     f,
     hess::AbstractMatrix,
     ::AnyAutoForwardDiff,

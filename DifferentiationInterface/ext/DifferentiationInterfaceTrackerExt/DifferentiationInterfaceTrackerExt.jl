@@ -17,6 +17,12 @@ function DI.value_and_pullback_split(f, ::AutoTracker, x, ::NoPullbackExtras)
     return y, pullbackfunc
 end
 
+function DI.value_and_pullback!_split(f, backend::AutoTracker, x, extras::NoPullbackExtras)
+    y, pullbackfunc = DI.value_and_pullback_split(f, backend, x, extras)
+    pullbackfunc!(dx, dy) = copyto!(dx, pullbackfunc(dy))
+    return y, pullbackfunc!
+end
+
 function DI.value_and_pullback(f, backend::AutoTracker, x, dy, extras::NoPullbackExtras)
     y, pullbackfunc = DI.value_and_pullback_split(f, backend, x, extras)
     return y, pullbackfunc(dy)
@@ -36,12 +42,13 @@ function DI.gradient(f, ::AutoTracker, x, ::NoGradientExtras)
     return data(only(grad))
 end
 
-function DI.value_and_gradient!!(f, grad, backend::AutoTracker, x, extras::NoGradientExtras)
-    return DI.value_and_gradient(f, backend, x, extras)
+function DI.value_and_gradient!(f, grad, backend::AutoTracker, x, extras::NoGradientExtras)
+    y, new_grad = DI.value_and_gradient(f, backend, x, extras)
+    return y, copyto!(grad, new_grad)
 end
 
-function DI.gradient!!(f, grad, backend::AutoTracker, x, extras::NoGradientExtras)
-    return DI.gradient(f, backend, x, extras)
+function DI.gradient!(f, grad, backend::AutoTracker, x, extras::NoGradientExtras)
+    return copyto!(grad, DI.gradient(f, backend, x, extras))
 end
 
 end

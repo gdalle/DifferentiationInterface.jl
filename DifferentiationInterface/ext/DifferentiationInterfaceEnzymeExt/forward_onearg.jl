@@ -16,18 +16,19 @@ function DI.pushforward(f, backend::AutoForwardEnzyme, x, dx, ::NoPushforwardExt
     return new_dy
 end
 
-function DI.value_and_pushforward!!(
-    f, _dy, backend::AutoForwardEnzyme, x, dx, extras::NoPushforwardExtras
+function DI.value_and_pushforward!(
+    f, dy, backend::AutoForwardEnzyme, x, dx, extras::NoPushforwardExtras
 )
     # dy cannot be passed anyway
-    return DI.value_and_pushforward(f, backend, x, dx, extras)
+    y, new_dy = DI.value_and_pushforward(f, backend, x, dx, extras)
+    return y, copyto!(dy, new_dy)
 end
 
-function DI.pushforward!!(
-    f, _dy, backend::AutoForwardEnzyme, x, dx, extras::NoPushforwardExtras
+function DI.pushforward!(
+    f, dy, backend::AutoForwardEnzyme, x, dx, extras::NoPushforwardExtras
 )
     # dy cannot be passed anyway
-    return DI.pushforward(f, backend, x, dx, extras)
+    return copyto!(dy, DI.pushforward(f, backend, x, dx, extras))
 end
 
 ## Gradient
@@ -44,16 +45,17 @@ function DI.value_and_gradient(
     return f(x), DI.gradient(f, backend, x, extras)
 end
 
-function DI.gradient!!(
-    f, _grad, backend::AutoForwardEnzyme, x::AbstractArray, extras::NoGradientExtras
+function DI.gradient!(
+    f, grad, backend::AutoForwardEnzyme, x::AbstractArray, extras::NoGradientExtras
 )
-    return DI.gradient(f, backend, x, extras)
+    return copyto!(grad, DI.gradient(f, backend, x, extras))
 end
 
-function DI.value_and_gradient!!(
-    f, _grad, backend::AutoForwardEnzyme, x::AbstractArray, extras::NoGradientExtras
+function DI.value_and_gradient!(
+    f, grad, backend::AutoForwardEnzyme, x::AbstractArray, extras::NoGradientExtras
 )
-    return DI.value_and_gradient(f, backend, x, extras)
+    y, new_grad = DI.value_and_gradient(f, backend, x, extras)
+    return y, copyto!(grad, new_grad)
 end
 
 ## Jacobian
@@ -73,14 +75,15 @@ function DI.value_and_jacobian(
     return f(x), DI.jacobian(f, backend, x, extras)
 end
 
-function DI.jacobian!!(
-    f, _jac, backend::AutoForwardEnzyme, x::AbstractArray, extras::NoJacobianExtras
+function DI.jacobian!(
+    f, jac, backend::AutoForwardEnzyme, x::AbstractArray, extras::NoJacobianExtras
 )
-    return DI.jacobian(f, backend, x, extras)
+    return copyto!(jac, DI.jacobian(f, backend, x, extras))
 end
 
-function DI.value_and_jacobian!!(
-    f, _jac, backend::AutoForwardEnzyme, x::AbstractArray, extras::NoJacobianExtras
+function DI.value_and_jacobian!(
+    f, jac, backend::AutoForwardEnzyme, x::AbstractArray, extras::NoJacobianExtras
 )
-    return DI.value_and_jacobian(f, backend, x, extras)
+    y, new_jac = DI.value_and_jacobian(f, backend, x, extras)
+    return y, copyto!(jac, new_jac)
 end

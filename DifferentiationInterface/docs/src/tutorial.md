@@ -63,13 +63,13 @@ Some backends get a speed boost from this trick.
 
 ```@repl tuto
 grad = zero(x)
-grad = gradient!!(f, grad, backend, x)
+grad = gradient!(f, grad, backend, x)
 ```
 
 Note the double exclamation mark, which is a convention telling you that `grad` _may or may not_ be overwritten, but will be returned either way (see [this section](@ref Variants) for more details).
 
 ```@repl tuto
-@btime gradient!!($f, _grad, $backend, $x) evals=1 setup=(_grad=similar($x));
+@btime gradient!($f, _grad, $backend, $x) evals=1 setup=(_grad=similar($x));
 ```
 
 For some reason the in-place version is not much better than your first attempt.
@@ -90,13 +90,13 @@ You don't need to know what this object is, you just need to pass it to the grad
 
 ```@repl tuto
 grad = zero(x);
-grad = gradient!!(f, grad, backend, x, extras)
+grad = gradient!(f, grad, backend, x, extras)
 ```
 
 Preparation makes the gradient computation much faster, and (in this case) allocation-free.
 
 ```@repl tuto
-@btime gradient!!($f, _grad, $backend, $x, _extras) evals=1 setup=(
+@btime gradient!($f, _grad, $backend, $x, _extras) evals=1 setup=(
     _grad=similar($x);
     _extras=prepare_gradient($f, $backend, $x)
 );
@@ -123,7 +123,7 @@ gradient(f, backend2, x)
 And you can run the same benchmarks:
 
 ```@repl tuto
-@btime gradient!!($f, _grad, $backend2, $x, _extras) evals=1 setup=(
+@btime gradient!($f, _grad, $backend2, $x, _extras) evals=1 setup=(
     _grad=similar($x);
     _extras=prepare_gradient($f, $backend2, $x)
 );

@@ -39,7 +39,7 @@ fdhtype(::AutoSparseFiniteDiff) = Val{:hcentral}()
 const FUNCTION_INPLACE = Val{true}
 const FUNCTION_NOT_INPLACE = Val{false}
 
-include("allocating.jl")
-include("mutating.jl")
+include("onearg.jl")
+include("twoarg.jl")
 
 end # module

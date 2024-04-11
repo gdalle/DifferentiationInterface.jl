@@ -15,15 +15,15 @@ An interface to various automatic differentiation (AD) backends in Julia.
 
 This package provides a backend-agnostic syntax to differentiate functions of the following types:
 
-- _allocating_: `f(x) = y`
-- _mutating_: `f!(y, x) = nothing`
+- _one-argument functions_ (allocating): `f(x) = y`
+- _two-argument functions_ (mutating): `f!(y, x) = nothing`
 
 ## Features
 
-- First and second order operators
+- First- and second-order operators
 - In-place and out-of-place differentiation
 - Preparation mechanism (e.g. to create a config or tape)
-- Thorough validation on standard inputs and outputs (scalars, vectors, matrices)
+- Thorough validation on standard inputs and outputs (numbers, vectors, matrices)
 - Testing and benchmarking utilities accessible to users with [DifferentiationInterfaceTest](https://github.com/gdalle/DifferentiationInterface.jl/tree/main/DifferentiationInterfaceTest)
 
 ## Compatibility

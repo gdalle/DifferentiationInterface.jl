@@ -34,7 +34,7 @@ function single_threaded(::AutoSparsePolyesterForwardDiff{C}) where {C}
     return AutoSparseForwardDiff{C,Nothing}(nothing)
 end
 
-include("allocating.jl")
-include("mutating.jl")
+include("onearg.jl")
+include("twoarg.jl")
 
 end # module

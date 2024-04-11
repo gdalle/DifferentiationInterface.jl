@@ -88,8 +88,8 @@ Markdown.parse(join(vcat(header, subheader, rows...), "\n"))  # hide
 
 ## Mutation support
 
-All backends are compatible with allocating functions `f(x) = y`.
-Only some are compatible with mutating functions `f!(y, x) = nothing`.
+All backends are compatible with one-argument functions `f(x) = y`.
+Only some are compatible with two-argument functions `f!(y, x) = nothing`.
 You can use [`check_mutation`](@ref) to check that feature, like we did below:
 
 ```@example backends
@@ -114,8 +114,3 @@ rows = map(all_backends()) do backend  # hide
 end  # hide
 Markdown.parse(join(vcat(header, subheader, rows...), "\n"))  # hide
 ```
-
-!!! warning
-    Second-order operators can also be used with a combination of backends inside the [`SecondOrder`](@ref) struct.
-    There are many possible combinations, a lot of which will fail.
-    Due to compilation overhead, we do not currently test them all to display the working ones in the documentation, but we might if users deem it relevant.

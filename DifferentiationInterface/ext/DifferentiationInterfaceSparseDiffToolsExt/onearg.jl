@@ -1,4 +1,4 @@
-struct SparseDiffToolsAllocatingJacobianExtras{C} <: JacobianExtras
+struct SparseDiffToolsOneArgJacobianExtras{C} <: JacobianExtras
     cache::C
 end
 
@@ -16,31 +16,31 @@ for AutoSparse in SPARSE_BACKENDS
             cache = sparse_jacobian_cache(
                 backend, SymbolicsSparsityDetection(), f, x; fx=f(x)
             )
-            return SparseDiffToolsAllocatingJacobianExtras(cache)
+            return SparseDiffToolsOneArgJacobianExtras(cache)
         end
 
-        function DI.value_and_jacobian!!(
-            f, jac, backend::$AutoSparse, x, extras::SparseDiffToolsAllocatingJacobianExtras
+        function DI.value_and_jacobian!(
+            f, jac, backend::$AutoSparse, x, extras::SparseDiffToolsOneArgJacobianExtras
         )
             sparse_jacobian!(jac, backend, extras.cache, f, x)
             return f(x), jac
         end
 
-        function DI.jacobian!!(
-            f, jac, backend::$AutoSparse, x, extras::SparseDiffToolsAllocatingJacobianExtras
+        function DI.jacobian!(
+            f, jac, backend::$AutoSparse, x, extras::SparseDiffToolsOneArgJacobianExtras
         )
             sparse_jacobian!(jac, backend, extras.cache, f, x)
             return jac
         end
 
         function DI.value_and_jacobian(
-            f, backend::$AutoSparse, x, extras::SparseDiffToolsAllocatingJacobianExtras
+            f, backend::$AutoSparse, x, extras::SparseDiffToolsOneArgJacobianExtras
         )
             return f(x), sparse_jacobian(backend, extras.cache, f, x)
         end
 
         function DI.jacobian(
-            f, backend::$AutoSparse, x, extras::SparseDiffToolsAllocatingJacobianExtras
+            f, backend::$AutoSparse, x, extras::SparseDiffToolsOneArgJacobianExtras
         )
             return sparse_jacobian(backend, extras.cache, f, x)
         end
@@ -68,14 +68,14 @@ for AutoSparse in SPARSE_BACKENDS
             )
         end
 
-        function DI.hessian!!(
+        function DI.hessian!(
             f,
             hess,
             backend::SecondOrder{<:$AutoSparse},
             x,
             extras::SparseDiffToolsHessianExtras,
         )
-            return DI.jacobian!!(
+            return DI.jacobian!(
                 extras.inner_gradient_closure,
                 hess,
                 outer(backend),

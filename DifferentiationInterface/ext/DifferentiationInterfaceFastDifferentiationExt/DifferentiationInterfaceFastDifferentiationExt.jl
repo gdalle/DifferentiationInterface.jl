@@ -43,7 +43,7 @@ myvec(x::AbstractArray) = vec(x)
 issparse(::AutoFastDifferentiation) = false
 issparse(::AutoSparseFastDifferentiation) = true
 
-include("allocating.jl")
-include("mutating.jl")
+include("onearg.jl")
+include("twoarg.jl")
 
 end

@@ -1,12 +1,24 @@
-#=
-Source: https://arxiv.org/abs/2403.14606 (section 8.1)
+## Docstrings
 
-By order of preference:
-- forward on reverse
-- reverse on forward
-- reverse on reverse
-- forward on forward
-=#
+"""
+    prepare_hvp(f, backend, x, v) -> extras
+
+Create an `extras` object subtyping [`HVPExtras`](@ref) that can be given to Hessian-vector product operators.
+
+!!! warning
+    Unlike the others, this preparation operator takes an additional argument `v`.
+"""
+function prepare_hvp end
+
+"""
+    hvp(f, backend, x, v, [extras]) -> p
+"""
+function hvp end
+
+"""
+    hvp!(f, p, backend, x, v, [extras]) -> p
+"""
+function hvp! end
 
 ## Preparation
 
@@ -18,6 +30,16 @@ Abstract type for additional information needed by Hessian-vector product operat
 abstract type HVPExtras <: Extras end
 
 struct NoHVPExtras <: HVPExtras end
+
+#=
+Source: https://arxiv.org/abs/2403.14606 (section 8.1)
+
+By order of preference:
+- forward on reverse
+- reverse on forward
+- reverse on reverse
+- forward on forward
+=#
 
 struct ForwardOverForwardHVPExtras{C,E} <: HVPExtras
     inner_gradient_closure::C
@@ -39,14 +61,6 @@ struct ReverseOverReverseHVPExtras{C,E} <: HVPExtras
     outer_pullback_extras::E
 end
 
-"""
-    prepare_hvp(f, backend, x, v) -> extras
-
-Create an `extras` object subtyping [`HVPExtras`](@ref) that can be given to Hessian-vector product operators.
-
-!!! warning
-    Unlike the others, this preparation operator takes an additional argument `v`.
-"""
 prepare_hvp(f, ::AbstractADType, x, v) = NoHVPExtras()
 
 function prepare_hvp(f, backend::SecondOrder, x, v)
@@ -90,11 +104,8 @@ function prepare_hvp_aux(f, backend::SecondOrder, x, v, ::ReverseOverReverse)
     return ReverseOverReverseHVPExtras(inner_gradient_closure, outer_pullback_extras)
 end
 
-## Allocating
+## One argument
 
-"""
-    hvp(f, backend, x, v, [extras]) -> p
-"""
 function hvp(
     f, backend::AbstractADType, x, v, extras::HVPExtras=prepare_hvp(f, backend, x, v)
 )
@@ -132,25 +143,22 @@ function hvp_aux(f, backend, x, v, extras::ReverseOverReverseHVPExtras)
     )
 end
 
-"""
-    hvp!!(f, p, backend, x, v, [extras]) -> p
-"""
-function hvp!!(
+function hvp!(
     f, p, backend::AbstractADType, x, v, extras::HVPExtras=prepare_hvp(f, backend, x, v)
 )
     new_backend = SecondOrder(backend)
     new_extras = prepare_hvp(f, new_backend, x, v)
-    return hvp!!(f, p, new_backend, x, v, new_extras)
+    return hvp!(f, p, new_backend, x, v, new_extras)
 end
 
-function hvp!!(
+function hvp!(
     f, p, backend::SecondOrder, x, v, extras::HVPExtras=prepare_hvp(f, backend, x, v)
 )
-    return hvp_aux!!(f, p, backend, x, v, extras)
+    return hvp_aux!(f, p, backend, x, v, extras)
 end
 
-function hvp_aux!!(f, p, backend, x, v, extras::ForwardOverForwardHVPExtras)
-    return pushforward!!(
+function hvp_aux!(f, p, backend, x, v, extras::ForwardOverForwardHVPExtras)
+    return pushforward!(
         extras.inner_gradient_closure,
         p,
         outer(backend),
@@ -160,8 +168,8 @@ function hvp_aux!!(f, p, backend, x, v, extras::ForwardOverForwardHVPExtras)
     )
 end
 
-function hvp_aux!!(f, p, backend, x, v, extras::ForwardOverReverseHVPExtras)
-    return pushforward!!(
+function hvp_aux!(f, p, backend, x, v, extras::ForwardOverReverseHVPExtras)
+    return pushforward!(
         extras.inner_gradient_closure,
         p,
         outer(backend),
@@ -171,15 +179,15 @@ function hvp_aux!!(f, p, backend, x, v, extras::ForwardOverReverseHVPExtras)
     )
 end
 
-function hvp_aux!!(f, p, backend, x, v, extras::ReverseOverForwardHVPExtras)
+function hvp_aux!(f, p, backend, x, v, extras::ReverseOverForwardHVPExtras)
     inner_pushforward_closure = extras.inner_pushforward_closure_generator(v)
-    return gradient!!(
+    return gradient!(
         inner_pushforward_closure, p, outer(backend), x, extras.outer_gradient_extras
     )
 end
 
-function hvp_aux!!(f, p, backend, x, v, extras::ReverseOverReverseHVPExtras)
-    return pullback!!(
+function hvp_aux!(f, p, backend, x, v, extras::ReverseOverReverseHVPExtras)
+    return pullback!(
         extras.inner_gradient_closure, p, outer(backend), x, v, extras.outer_pullback_extras
     )
 end

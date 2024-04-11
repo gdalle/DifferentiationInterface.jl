@@ -1,8 +1,4 @@
-myzero(x::Number) = zero(x)
-myzero(x::AbstractArray) = zero(x)
-
-myzero!!(x::Number) = zero(x)
-myzero!!(x::AbstractArray) = x .= zero(eltype(x))
+zero!(x::AbstractArray) = x .= zero(eltype(x))
 
 ## Forward
 
@@ -21,21 +17,27 @@ DI.prepare_pushforward(f!, ::AutoZeroForward, y, x) = NoPushforwardExtras()
 
 function DI.value_and_pushforward(f, ::AutoZeroForward, x, dx, ::NoPushforwardExtras)
     y = f(x)
-    dy = myzero(y)
+    dy = zero(y)
     return y, dy
 end
 
-function DI.value_and_pushforward!!(f, dy, ::AutoZeroForward, x, dx, ::NoPushforwardExtras)
+function DI.value_and_pushforward(f!, y, ::AutoZeroForward, x, dx, ::NoPushforwardExtras)
+    f!(y, x)
+    dy = zero(y)
+    return y, dy
+end
+
+function DI.value_and_pushforward!(f, dy, ::AutoZeroForward, x, dx, ::NoPushforwardExtras)
     y = f(x)
-    dy = myzero!!(dy)
+    zero!(dy)
     return y, dy
 end
 
-function DI.value_and_pushforward!!(
+function DI.value_and_pushforward!(
     f!, y, dy, ::AutoZeroForward, x, dx, ::NoPushforwardExtras
 )
     f!(y, x)
-    dy = myzero!!(dy)
+    zero!(dy)
     return y, dy
 end
 
@@ -56,18 +58,24 @@ DI.prepare_pullback(f!, ::AutoZeroReverse, y, x) = NoPullbackExtras()
 
 function DI.value_and_pullback(f, ::AutoZeroReverse, x, dy, ::NoPullbackExtras)
     y = f(x)
-    dx = myzero(x)
+    dx = zero(x)
     return y, dx
 end
 
-function DI.value_and_pullback!!(f, dx, ::AutoZeroReverse, x, dy, ::NoPullbackExtras)
-    y = f(x)
-    dx = myzero!!(dx)
-    return y, dx
-end
-
-function DI.value_and_pullback!!(f!, y, dx, ::AutoZeroReverse, x, dy, ::NoPullbackExtras)
+function DI.value_and_pullback(f!, y, ::AutoZeroReverse, x, dy, ::NoPullbackExtras)
     f!(y, x)
-    dx = myzero!!(dx)
+    dx = zero(x)
+    return y, dx
+end
+
+function DI.value_and_pullback!(f, dx, ::AutoZeroReverse, x, dy, ::NoPullbackExtras)
+    y = f(x)
+    zero!(dx)
+    return y, dx
+end
+
+function DI.value_and_pullback!(f!, y, dx, ::AutoZeroReverse, x, dy, ::NoPullbackExtras)
+    f!(y, x)
+    zero!(dx)
     return y, dx
 end

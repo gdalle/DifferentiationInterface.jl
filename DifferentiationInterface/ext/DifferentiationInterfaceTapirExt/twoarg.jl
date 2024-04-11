@@ -1,18 +1,16 @@
-struct TapirMutatingPullbackExtras{R} <: PullbackExtras
+struct TapirTwoArgPullbackExtras{R} <: PullbackExtras
     rrule::R
 end
 
 function DI.prepare_pullback(f!, ::AutoTapir, y, x)
-    return TapirMutatingPullbackExtras(build_rrule(f!, y, x))
+    return TapirTwoArgPullbackExtras(build_rrule(f!, y, x))
 end
 
 # see https://github.com/withbayes/Tapir.jl/issues/113#issuecomment-2036718992
 
-function DI.value_and_pullback!!(
-    f!, y, dx, ::AutoTapir, x, dy, extras::TapirMutatingPullbackExtras
-)
+function DI.value_and_pullback(f!, y, ::AutoTapir, x, dy, extras::TapirTwoArgPullbackExtras)
     dy_righttype = convert(tangent_type(typeof(y)), copy(dy))
-    dx_righttype = convert(tangent_type(typeof(x)), dx)
+    dx_righttype = zero_tangent(x)
 
     # We want the VJP, not VJP + dx, so I'm going to zero-out `dx`. `set_to_zero!!` has the advantage
     # that it will also replace any immutable components of `dx` to zero.
@@ -41,7 +39,7 @@ function DI.value_and_pullback!!(
     dy_righttype = increment!!(dy_righttype, dy_righttype_backup)
 
     # Record the state of `y` before running the reverse-pass.
-    y = copy!(y, y_copy)
+    y = copyto!(y, y_copy)
 
     # Run the reverse-pass.
     _, _, new_dx = pb!!(NoTangent(), df!, dy_righttype, dx_righttype)

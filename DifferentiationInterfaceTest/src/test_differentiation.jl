@@ -12,20 +12,17 @@ Cross-test a list of `backends` on a list of `scenarios`, running a variety of d
 Testing:
 
 - `correctness=true`: whether to compare the differentiation results with the theoretical values specified in each scenario
-    - If a backend object like `correctness=AutoForwardDiff()` is passed instead of a boolean, the results will be compared using that reference backend as the ground truth.
-    - Otherwise, the scenario-specific reference operator will be used as the ground truth instead, see [`AbstractScenario`](@ref) for details.
 - `type_stability=false`: whether to check type stability with JET.jl (thanks to `@test_opt`)
 - `sparsity`: whether to check sparsity of the jacobian / hessian
+- `ref_backend`: if not `nothing`, an `ADTypes.AbstractADType` object to use instead of the scenario-specific reference to provide true values
 - `detailed=false`: whether to print a detailed or condensed test log
 
 Filtering:
 
 - `input_type=Any`: restrict scenario inputs to subtypes of this
 - `output_type=Any`: restrict scenario outputs to subtypes of this
-- `allocating=true`: consider operators for allocating functions
-- `mutating=true`: consider operators for mutating functions
-- `first_order=true`: consider first order operators
-- `second_order=true`: consider second order operators
+- `first_order=true`: include first order operators
+- `second_order=true`: include second order operators
 
 Options:
 
@@ -38,16 +35,15 @@ function test_differentiation(
     backends::Vector{<:AbstractADType},
     scenarios::Vector{<:AbstractScenario}=default_scenarios();
     # testing
-    correctness::Union{Bool,AbstractADType}=true,
+    correctness::Bool=true,
     type_stability::Bool=false,
     call_count::Bool=false,
     sparsity::Bool=false,
+    ref_backend=nothing,
     detailed=false,
     # filtering
     input_type::Type=Any,
     output_type::Type=Any,
-    allocating=true,
-    mutating=true,
     first_order=true,
     second_order=true,
     excluded=[],
@@ -58,14 +54,7 @@ function test_differentiation(
     rtol=1e-3,
 )
     scenarios = filter_scenarios(
-        scenarios;
-        first_order,
-        second_order,
-        input_type,
-        output_type,
-        allocating,
-        mutating,
-        excluded,
+        scenarios; first_order, second_order, input_type, output_type, excluded
     )
 
     title_additions =
@@ -95,22 +84,14 @@ function test_differentiation(
                         (:output, typeof(scen.y)),
                     ],
                 )
-                correctness != false && @testset "Correctness" begin
-                    if correctness isa AbstractADType
-                        test_correctness(
-                            backend, scen; isapprox, atol, rtol, ref_backend=correctness
-                        )
-                    else
-                        test_correctness(
-                            backend, scen; isapprox, atol, rtol, ref_backend=nothing
-                        )
-                    end
+                correctness && @testset "Correctness" begin
+                    test_correctness(backend, scen; isapprox, atol, rtol, ref_backend)
                 end
                 type_stability && @testset "Type stability" begin
-                    test_jet(backend, scen)
+                    test_jet(backend, scen; ref_backend)
                 end
                 sparsity && @testset "Sparsity" begin
-                    test_sparsity(backend, scen; ref_backend=nothing)
+                    test_sparsity(backend, scen; ref_backend)
                 end
             end
         end
@@ -143,8 +124,6 @@ function benchmark_differentiation(
     # filtering
     input_type::Type=Any,
     output_type::Type=Any,
-    allocating=true,
-    mutating=true,
     first_order=true,
     second_order=true,
     excluded=[],
@@ -152,14 +131,7 @@ function benchmark_differentiation(
     logging=false,
 )
     scenarios = filter_scenarios(
-        scenarios;
-        first_order,
-        second_order,
-        input_type,
-        output_type,
-        allocating,
-        mutating,
-        excluded,
+        scenarios; first_order, second_order, input_type, output_type, excluded
     )
 
     benchmark_data = BenchmarkDataRow[]
