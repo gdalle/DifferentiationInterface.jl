@@ -1,17 +1,17 @@
 all_backends = [
     AutoChainRules(Zygote.ZygoteRuleConfig()),
-    # AutoDiffractor(),
+    AutoDiffractor(),
     # AutoEnzyme(Enzyme.Forward),
     # AutoEnzyme(Enzyme.Reverse),
     # AutoFastDifferentiation(),
     # AutoFiniteDiff(),
-    # AutoFiniteDifferences(FiniteDifferences.central_fdm(3, 1)),
-    # AutoForwardDiff(),
+    AutoFiniteDifferences(FiniteDifferences.central_fdm(3, 1)),
+    AutoForwardDiff(),
     # AutoPolyesterForwardDiff(; chunksize=1),
     # AutoReverseDiff(; compile=true),
     # AutoTapir(),
-    # AutoTracker(),
-    # AutoZygote(),
+    AutoTracker(),
+    AutoZygote(),
 ]
 
 ##

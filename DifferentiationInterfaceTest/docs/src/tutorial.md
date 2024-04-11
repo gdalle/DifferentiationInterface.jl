@@ -63,7 +63,7 @@ test_differentiation(
 )
 ```
 
-If you are too lazy to manually specify the reference, you can also provide an AD backend as the `correctness` keyword argument, which will serve as the ground truth for comparison.
+If you are too lazy to manually specify the reference, you can also provide an AD backend as the `ref_backend` keyword argument, which will serve as the ground truth for comparison.
 
 ## Benchmarking
 
@@ -93,6 +93,14 @@ function formatter(v, i, j)
         return v
     end
 end
-table = PrettyTables.pretty_table(String, df; backend=Val(:markdown), header=names(df), formatters=formatter)
-Markdown.parse(table)  # hide
+
+table = PrettyTables.pretty_table(
+    String,
+    df;
+    backend=Val(:markdown),
+    header=names(df),
+    formatters=formatter
+)
+
+Markdown.parse(table)
 ```
