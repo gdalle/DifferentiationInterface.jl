@@ -4,6 +4,13 @@ Pkg.develop(
     Pkg.PackageSpec(; path=joinpath(@__DIR__, "..", "..", "DifferentiationInterfaceTest"))
 )
 
+Pkg.add(
+    Pkg.PackageSpec(;
+        url="https://github.com/brianguenter/FastDifferentiation.jl",
+        rev="brianguenter/issue67",
+    ),
+)
+
 ##
 
 using DifferentiationInterface
