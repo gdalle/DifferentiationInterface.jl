@@ -78,6 +78,94 @@ function DI.pushforward!(
     return dy
 end
 
+## Pullback
+
+struct FastDifferentiationTwoArgPullbackExtras{E1,E2} <: PullbackExtras
+    vjp_exe::E1
+    vjp_exe!::E2
+end
+
+function DI.prepare_pullback(f!, ::AnyAutoFastDifferentiation, y, x)
+    x_var = if x isa Number
+        only(make_variables(:x))
+    else
+        make_variables(:x, size(x)...)
+    end
+    y_var = make_variables(:y, size(y)...)
+    f!(y_var, x_var)
+
+    x_vec_var = x_var isa Number ? monovec(x_var) : vec(x_var)
+    y_vec_var = vec(y_var)
+    vj_vec_var, v_vec_var = jacobian_transpose_v(y_vec_var, x_vec_var)
+    vjp_exe = make_function(vj_vec_var, vcat(x_vec_var, v_vec_var); in_place=false)
+    vjp_exe! = make_function(vj_vec_var, vcat(x_vec_var, v_vec_var); in_place=true)
+    return FastDifferentiationTwoArgPullbackExtras(vjp_exe, vjp_exe!)
+end
+
+function DI.value_and_pullback(
+    f!,
+    y,
+    ::AnyAutoFastDifferentiation,
+    x,
+    dy,
+    extras::FastDifferentiationTwoArgPullbackExtras,
+)
+    f!(y, x)
+    v_vec = vcat(myvec(x), vec(dy))
+    dx = if x isa Number
+        only(extras.vjp_exe(v_vec))
+    elseif x isa AbstractArray
+        reshape(extras.vjp_exe(v_vec), size(x))
+    end
+    return y, dx
+end
+
+function DI.value_and_pullback!(
+    f!,
+    y,
+    dx,
+    ::AnyAutoFastDifferentiation,
+    x,
+    dy,
+    extras::FastDifferentiationTwoArgPullbackExtras,
+)
+    f!(y, x)
+    v_vec = vcat(myvec(x), vec(dy))
+    extras.vjp_exe!(vec(dx), v_vec)
+    return y, dx
+end
+
+function DI.pullback(
+    f!,
+    y,
+    ::AnyAutoFastDifferentiation,
+    x,
+    dy,
+    extras::FastDifferentiationTwoArgPullbackExtras,
+)
+    v_vec = vcat(myvec(x), vec(dy))
+    dx = if x isa Number
+        only(extras.vjp_exe(v_vec))
+    elseif x isa AbstractArray
+        reshape(extras.vjp_exe(v_vec), size(x))
+    end
+    return dx
+end
+
+function DI.pullback!(
+    f!,
+    y,
+    dx,
+    ::AnyAutoFastDifferentiation,
+    x,
+    dy,
+    extras::FastDifferentiationTwoArgPullbackExtras,
+)
+    v_vec = vcat(myvec(x), myvec(dy))
+    extras.vjp_exe!(vec(dx), v_vec)
+    return dx
+end
+
 ## Derivative
 
 struct FastDifferentiationTwoArgDerivativeExtras{E1,E2} <: DerivativeExtras
