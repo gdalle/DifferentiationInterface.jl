@@ -2,7 +2,7 @@ struct TapirTwoArgPullbackExtras{R} <: PullbackExtras
     rrule::R
 end
 
-function DI.prepare_pullback(f!, ::AutoTapir, y, x)
+function DI.prepare_pullback(f!, y, ::AutoTapir, x)
     return TapirTwoArgPullbackExtras(build_rrule(f!, y, x))
 end
 

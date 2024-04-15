@@ -53,7 +53,7 @@ function test_sparsity(
 )
     (; f, x, y) = new_scen = deepcopy(scen)
     f! = f
-    extras = prepare_jacobian(f!, ba, y, x)
+    extras = prepare_jacobian(f!, mysimilar(y), ba, x)
     jac_true = if ref_backend isa AbstractADType
         jacobian(f!, mysimilar(y), ref_backend, x)
     else
@@ -77,7 +77,7 @@ end
 function test_sparsity(ba::AbstractADType, scen::JacobianScenario{2,:inplace}; ref_backend)
     (; f, x, y) = new_scen = deepcopy(scen)
     f! = f
-    extras = prepare_jacobian(f!, ba, y, x)
+    extras = prepare_jacobian(f!, mysimilar(y), ba, x)
     jac_true = if ref_backend isa AbstractADType
         jacobian(f!, mysimilar(y), ref_backend, x)
     else

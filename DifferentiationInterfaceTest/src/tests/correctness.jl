@@ -94,7 +94,7 @@ function test_correctness(
 )
     (; f, x, y, dx) = new_scen = deepcopy(scen)
     f! = f
-    extras = prepare_pushforward(f!, ba, y, x)
+    extras = prepare_pushforward(f!, mysimilar(y), ba, x)
     dy_true = if ref_backend isa AbstractADType
         pushforward(f!, mysimilar(y), ref_backend, x, dx)
     else
@@ -131,7 +131,7 @@ function test_correctness(
 )
     (; f, x, y, dx) = new_scen = deepcopy(scen)
     f! = f
-    extras = prepare_pushforward(f!, ba, y, x)
+    extras = prepare_pushforward(f!, mysimilar(y), ba, x)
     dy_true = if ref_backend isa AbstractADType
         pushforward(f!, mysimilar(y), ref_backend, x, dx)
     else
@@ -256,7 +256,7 @@ function test_correctness(
 )
     (; f, x, y, dy) = new_scen = deepcopy(scen)
     f! = f
-    extras = prepare_pullback(f!, ba, y, x)
+    extras = prepare_pullback(f!, mysimilar(y), ba, x)
     dx_true = if ref_backend isa AbstractADType
         pullback(f!, mysimilar(y), ref_backend, x, dy)
     else
@@ -302,7 +302,7 @@ function test_correctness(
 )
     (; f, x, y, dy) = new_scen = deepcopy(scen)
     f! = f
-    extras = prepare_pullback(f!, ba, y, x)
+    extras = prepare_pullback(f!, mysimilar(y), ba, x)
     dx_true = if ref_backend isa AbstractADType
         pullback(f!, mysimilar(y), ref_backend, x, dy)
     else
@@ -423,7 +423,7 @@ function test_correctness(
 )
     (; f, x, y) = new_scen = deepcopy(scen)
     f! = f
-    extras = prepare_derivative(f!, ba, y, x)
+    extras = prepare_derivative(f!, mysimilar(y), ba, x)
     der_true = if ref_backend isa AbstractADType
         derivative(f!, mysimilar(y), ref_backend, x)
     else
@@ -460,7 +460,7 @@ function test_correctness(
 )
     (; f, x, y) = new_scen = deepcopy(scen)
     f! = f
-    extras = prepare_derivative(f!, ba, y, x)
+    extras = prepare_derivative(f!, mysimilar(y), ba, x)
     der_true = if ref_backend isa AbstractADType
         derivative(f!, mysimilar(y), ref_backend, x)
     else
@@ -643,7 +643,7 @@ function test_correctness(
 )
     (; f, x, y) = new_scen = deepcopy(scen)
     f! = f
-    extras = prepare_jacobian(f!, ba, y, x)
+    extras = prepare_jacobian(f!, mysimilar(y), ba, x)
     jac_true = if ref_backend isa AbstractADType
         jacobian(f!, mysimilar(y), ref_backend, x)
     else
@@ -680,7 +680,7 @@ function test_correctness(
 )
     (; f, x, y) = new_scen = deepcopy(scen)
     f! = f
-    extras = prepare_jacobian(f!, ba, y, x)
+    extras = prepare_jacobian(f!, mysimilar(y), ba, x)
     jac_true = if ref_backend isa AbstractADType
         jacobian(f!, mysimilar(y), ref_backend, x)
     else

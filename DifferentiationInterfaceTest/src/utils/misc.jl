@@ -1,4 +1,4 @@
-mysimilar(x::Number) = zero(x)
+# mysimilar(x::Number) = zero(x)
 mysimilar(x::AbstractArray) = similar(x)
 
 mysimilar_random(x::Number) = randn(typeof(x))

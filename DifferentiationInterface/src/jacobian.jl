@@ -1,10 +1,12 @@
 ## Docstrings
 
 """
-    prepare_jacobian(f,  backend, x) -> extras
-    prepare_jacobian(f!, backend, y, x) -> extras
+    prepare_jacobian(f,     backend, x) -> extras
+    prepare_jacobian(f!, y, backend, x) -> extras
 
 Create an `extras` object subtyping [`JacobianExtras`](@ref) that can be given to Jacobian operators.
+
+Beware that in the two-argument case, `y` is mutated by `f!` during preparation.
 """
 function prepare_jacobian end
 
@@ -55,24 +57,24 @@ function prepare_jacobian(f, backend::AbstractADType, x)
     return prepare_jacobian_aux(f, backend, x, pushforward_performance(backend))
 end
 
-function prepare_jacobian(f!, backend::AbstractADType, y, x)
-    return prepare_jacobian_aux(f!, backend, y, x, pushforward_performance(backend))
+function prepare_jacobian(f!, y, backend::AbstractADType, x)
+    return prepare_jacobian_aux(f!, y, backend, x, pushforward_performance(backend))
 end
 
 function prepare_jacobian_aux(f, backend, x, ::PushforwardFast)
     return PushforwardJacobianExtras(prepare_pushforward(f, backend, x))
 end
 
-function prepare_jacobian_aux(f!, backend, y, x, ::PushforwardFast)
-    return PushforwardJacobianExtras(prepare_pushforward(f!, backend, y, x))
+function prepare_jacobian_aux(f!, y, backend, x, ::PushforwardFast)
+    return PushforwardJacobianExtras(prepare_pushforward(f!, y, backend, x))
 end
 
 function prepare_jacobian_aux(f, backend, x, ::PushforwardSlow)
     return PullbackJacobianExtras(prepare_pullback(f, backend, x))
 end
 
-function prepare_jacobian_aux(f!, backend, y, x, ::PushforwardSlow)
-    return PullbackJacobianExtras(prepare_pullback(f!, backend, y, x))
+function prepare_jacobian_aux(f!, y, backend, x, ::PushforwardSlow)
+    return PullbackJacobianExtras(prepare_pullback(f!, y, backend, x))
 end
 
 ## One argument
@@ -164,7 +166,7 @@ function value_and_jacobian(
     y,
     backend::AbstractADType,
     x,
-    extras::JacobianExtras=prepare_jacobian(f!, backend, y, x),
+    extras::JacobianExtras=prepare_jacobian(f!, y, backend, x),
 )
     return value_and_jacobian_twoarg_aux(f!, y, backend, x, extras)
 end
@@ -200,7 +202,7 @@ function value_and_jacobian!(
     jac,
     backend::AbstractADType,
     x,
-    extras::JacobianExtras=prepare_jacobian(f!, backend, y, x),
+    extras::JacobianExtras=prepare_jacobian(f!, y, backend, x),
 )
     return value_and_jacobian_twoarg_aux!(f!, y, jac, backend, x, extras)
 end
@@ -235,7 +237,7 @@ function jacobian(
     y,
     backend::AbstractADType,
     x,
-    extras::JacobianExtras=prepare_jacobian(f!, backend, y, x),
+    extras::JacobianExtras=prepare_jacobian(f!, y, backend, x),
 )
     return value_and_jacobian(f!, y, backend, x, extras)[2]
 end
@@ -246,7 +248,7 @@ function jacobian!(
     jac,
     backend::AbstractADType,
     x,
-    extras::JacobianExtras=prepare_jacobian(f!, backend, y, x),
+    extras::JacobianExtras=prepare_jacobian(f!, y, backend, x),
 )
     return value_and_jacobian!(f!, y, jac, backend, x, extras)[2]
 end

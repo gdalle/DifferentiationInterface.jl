@@ -26,7 +26,7 @@ end
 function test_jet(ba::AbstractADType, scen::PushforwardScenario{2,:outofplace}; ref_backend)
     (; f, x, y, dx) = deepcopy(scen)
     f! = f
-    extras = prepare_pushforward(f!, ba, y, x)
+    extras = prepare_pushforward(f!, mysimilar(y), ba, x)
     y_in = mysimilar(y)
 
     if Bool(pushforward_performance(ba))
@@ -39,7 +39,7 @@ end
 function test_jet(ba::AbstractADType, scen::PushforwardScenario{2,:inplace}; ref_backend)
     (; f, x, y, dx) = deepcopy(scen)
     f! = f
-    extras = prepare_pushforward(f!, ba, y, x)
+    extras = prepare_pushforward(f!, mysimilar(y), ba, x)
     y_in, dy_in = mysimilar(y), mysimilar(y)
 
     if Bool(pushforward_performance(ba))
@@ -83,7 +83,7 @@ end
 function test_jet(ba::AbstractADType, scen::PullbackScenario{2,:outofplace}; ref_backend)
     (; f, x, y, dy) = deepcopy(scen)
     f! = f
-    extras = prepare_pullback(f!, ba, y, x)
+    extras = prepare_pullback(f!, mysimilar(y), ba, x)
     y_in = mysimilar(y)
 
     _, pullbackfunc = value_and_pullback_split(f!, y, ba, x, extras)
@@ -99,7 +99,7 @@ end
 function test_jet(ba::AbstractADType, scen::PullbackScenario{2,:inplace}; ref_backend)
     (; f, x, y, dy) = deepcopy(scen)
     f! = f
-    extras = prepare_pullback(f!, ba, y, x)
+    extras = prepare_pullback(f!, mysimilar(y), ba, x)
     y_in, dx_in = mysimilar(y), mysimilar(x)
 
     _, pullbackfunc! = value_and_pullback!_split(f!, y, ba, x, extras)
@@ -136,7 +136,7 @@ end
 function test_jet(ba::AbstractADType, scen::DerivativeScenario{2,:outofplace}; ref_backend)
     (; f, x, y) = deepcopy(scen)
     f! = f
-    extras = prepare_derivative(f!, ba, y, x)
+    extras = prepare_derivative(f!, mysimilar(y), ba, x)
     y_in = mysimilar(y)
 
     @test_opt value_and_derivative(f!, y_in, ba, x, extras)
@@ -147,7 +147,7 @@ end
 function test_jet(ba::AbstractADType, scen::DerivativeScenario{2,:inplace}; ref_backend)
     (; f, x, y) = deepcopy(scen)
     f! = f
-    extras = prepare_derivative(f!, ba, y, x)
+    extras = prepare_derivative(f!, mysimilar(y), ba, x)
     y_in, der_in = mysimilar(y), mysimilar(y)
 
     @test_opt value_and_derivative!(f!, y_in, der_in, ba, x, extras)
@@ -200,7 +200,7 @@ end
 function test_jet(ba::AbstractADType, scen::JacobianScenario{2,:outofplace}; ref_backend)
     (; f, x, y) = deepcopy(scen)
     f! = f
-    extras = prepare_jacobian(f!, ba, y, x)
+    extras = prepare_jacobian(f!, mysimilar(y), ba, x)
     y_in = mysimilar(y)
 
     @test_opt value_and_jacobian(f!, y_in, ba, x, extras)
@@ -211,7 +211,7 @@ end
 function test_jet(ba::AbstractADType, scen::JacobianScenario{2,:inplace}; ref_backend)
     (; f, x, y) = deepcopy(scen)
     f! = f
-    extras = prepare_jacobian(f!, ba, y, x)
+    extras = prepare_jacobian(f!, mysimilar(y), ba, x)
     y_in, jac_in = mysimilar(y), Matrix{eltype(y)}(undef, length(y), length(x))
 
     @test_opt value_and_jacobian!(f!, y_in, jac_in, ba, x, extras)

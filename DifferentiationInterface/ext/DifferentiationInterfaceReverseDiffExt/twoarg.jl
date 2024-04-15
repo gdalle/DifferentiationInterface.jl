@@ -1,6 +1,6 @@
 ## Pullback
 
-DI.prepare_pullback(f!, ::AnyAutoReverseDiff, y, x) = NoPullbackExtras()
+DI.prepare_pullback(f!, y, ::AnyAutoReverseDiff, x) = NoPullbackExtras()
 
 ### Array in
 
@@ -60,7 +60,7 @@ function DI.value_and_pullback(
     x_array = [x]
     dx_array = similar(x_array)
     f!_array(_y::AbstractArray, _x_array) = f!(_y, only(_x_array))
-    new_extras = DI.prepare_pullback(f!_array, backend, y, x_array)
+    new_extras = DI.prepare_pullback(f!_array, y, backend, x_array)
     y, dx_array = DI.value_and_pullback(f!_array, y, backend, x_array, dy, new_extras)
     return y, only(dx_array)
 end
@@ -72,7 +72,7 @@ struct ReverseDiffTwoArgJacobianExtras{T} <: JacobianExtras
 end
 
 function DI.prepare_jacobian(
-    f!, backend::AnyAutoReverseDiff, y::AbstractArray, x::AbstractArray
+    f!, y::AbstractArray, backend::AnyAutoReverseDiff, x::AbstractArray
 )
     tape = JacobianTape(f!, y, x)
     if backend.compile

@@ -152,13 +152,13 @@ function run_benchmark!(
     (; f, x, y, dx) = deepcopy(scen)
     f! = f
     # benchmark
-    extras = prepare_pushforward(f!, ba, y, x)
-    bench0 = @be prepare_pushforward(f!, ba, y, x) evals = 1 samples = 1
+    extras = prepare_pushforward(f!, mysimilar(y), ba, x)
+    bench0 = @be mysimilar(y) prepare_pushforward(f!, _, ba, x) evals = 1 samples = 1
     bench1 = @be mysimilar(y) value_and_pushforward(f!, _, ba, x, dx, extras)
     bench2 = @be mysimilar(y) pushforward(f!, _, ba, x, dx, extras)
     # count
     cc! = CallCounter(f!)
-    extras = prepare_pushforward(cc!, ba, y, x)
+    extras = prepare_pushforward(cc!, mysimilar(y), ba, x)
     calls0 = reset_count!(cc!)
     value_and_pushforward(cc!, mysimilar(y), ba, x, dx, extras)
     calls1 = reset_count!(cc!)
@@ -179,8 +179,8 @@ function run_benchmark!(
     (; f, x, y, dx) = deepcopy(scen)
     f! = f
     # benchmark
-    extras = prepare_pushforward(f!, ba, y, x)
-    bench0 = @be prepare_pushforward(f!, ba, y, x) evals = 1 samples = 1
+    extras = prepare_pushforward(f!, mysimilar(y), ba, x)
+    bench0 = @be mysimilar(y) prepare_pushforward(f!, _, ba, x) evals = 1 samples = 1
     bench1 = @be (mysimilar(y), mysimilar(y)) value_and_pushforward!(
         f!, _[1], _[2], ba, x, dx, extras
     )
@@ -189,7 +189,7 @@ function run_benchmark!(
     )
     # count
     cc! = CallCounter(f!)
-    extras = prepare_pushforward(cc!, ba, y, x)
+    extras = prepare_pushforward(cc!, mysimilar(y), ba, x)
     calls0 = reset_count!(cc!)
     value_and_pushforward!(cc!, mysimilar(y), mysimilar(y), ba, x, dx, extras)
     calls1 = reset_count!(cc!)
@@ -280,13 +280,13 @@ function run_benchmark!(
     (; f, x, y, dy) = deepcopy(scen)
     f! = f
     # benchmark
-    extras = prepare_pullback(f!, ba, y, x)
-    bench0 = @be prepare_pullback(f!, ba, y, x) evals = 1 samples = 1
+    extras = prepare_pullback(f!, mysimilar(y), ba, x)
+    bench0 = @be mysimilar(y) prepare_pullback(f!, _, ba, x) evals = 1 samples = 1
     bench1 = @be mysimilar(y) value_and_pullback(f!, _, ba, x, dy, extras)
     bench2 = @be mysimilar(y) pullback(f!, _, ba, x, dy, extras)
     # count
     cc! = CallCounter(f!)
-    extras = prepare_pullback(cc!, ba, y, x)
+    extras = prepare_pullback(cc!, mysimilar(y), ba, x)
     calls0 = reset_count!(cc!)
     value_and_pullback(cc!, mysimilar(y), ba, x, dy, extras)
     calls1 = reset_count!(cc!)
@@ -305,15 +305,15 @@ function run_benchmark!(
     (; f, x, y, dy) = deepcopy(scen)
     f! = f
     # benchmark
-    extras = prepare_pullback(f!, ba, y, x)
-    bench0 = @be prepare_pullback(f!, ba, y, x) evals = 1 samples = 1
+    extras = prepare_pullback(f!, mysimilar(y), ba, x)
+    bench0 = @be mysimilar(y) prepare_pullback(f!, _, ba, x) evals = 1 samples = 1
     bench1 = @be (mysimilar(y), mysimilar(x)) value_and_pullback!(
         f!, _[1], _[2], ba, x, dy, extras
     )
     bench2 = @be (mysimilar(y), mysimilar(x)) pullback!(f!, _[1], _[2], ba, x, dy, extras)
     # count
     cc! = CallCounter(f!)
-    extras = prepare_pullback(cc!, ba, y, x)
+    extras = prepare_pullback(cc!, mysimilar(y), ba, x)
     calls0 = reset_count!(cc!)
     value_and_pullback!(cc!, mysimilar(y), mysimilar(x), ba, x, dy, extras)
     calls1 = reset_count!(cc!)
@@ -388,13 +388,13 @@ function run_benchmark!(
     (; f, x, y) = deepcopy(scen)
     f! = f
     # benchmark
-    extras = prepare_derivative(f!, ba, y, x)
-    bench0 = @be prepare_derivative(f!, ba, y, x) evals = 1 samples = 1
+    extras = prepare_derivative(f!, mysimilar(y), ba, x)
+    bench0 = @be mysimilar(y) prepare_derivative(f!, _, ba, x) evals = 1 samples = 1
     bench1 = @be mysimilar(y) value_and_derivative(f!, _, ba, x, extras)
     bench2 = @be mysimilar(y) derivative(f!, _, ba, x, extras)
     # count
     cc! = CallCounter(f!)
-    extras = prepare_derivative(cc!, ba, y, x)
+    extras = prepare_derivative(cc!, mysimilar(y), ba, x)
     calls0 = reset_count!(cc!)
     value_and_derivative(cc!, mysimilar(y), ba, x, extras)
     calls1 = reset_count!(cc!)
@@ -415,15 +415,15 @@ function run_benchmark!(
     (; f, x, y) = deepcopy(scen)
     f! = f
     # benchmark
-    extras = prepare_derivative(f!, ba, y, x)
-    bench0 = @be prepare_derivative(f!, ba, y, x) evals = 1 samples = 1
+    extras = prepare_derivative(f!, mysimilar(y), ba, x)
+    bench0 = @be mysimilar(y) prepare_derivative(f!, _, ba, x) evals = 1 samples = 1
     bench1 = @be (mysimilar(y), mysimilar(y)) value_and_derivative!(
         f!, _[1], _[2], ba, x, extras
     )
     bench2 = @be (mysimilar(y), mysimilar(y)) derivative!(f!, _[1], _[2], ba, x, extras)
     # count
     cc! = CallCounter(f!)
-    extras = prepare_derivative(cc!, ba, y, x)
+    extras = prepare_derivative(cc!, mysimilar(y), ba, x)
     calls0 = reset_count!(cc!)
     value_and_derivative!(cc!, mysimilar(y), mysimilar(y), ba, x, extras)
     calls1 = reset_count!(cc!)
@@ -549,13 +549,13 @@ function run_benchmark!(
     (; f, x, y) = deepcopy(scen)
     f! = f
     # benchmark
-    extras = prepare_jacobian(f!, ba, y, x)
-    bench0 = @be prepare_jacobian(f!, ba, y, x) evals = 1 samples = 1
+    extras = prepare_jacobian(f!, mysimilar(y), ba, x)
+    bench0 = @be mysimilar(y) prepare_jacobian(f!, _, ba, x) evals = 1 samples = 1
     bench1 = @be mysimilar(y) value_and_jacobian(f!, _, ba, x, extras)
     bench2 = @be mysimilar(y) jacobian(f!, _, ba, x, extras)
     # count
     cc! = CallCounter(f!)
-    extras = prepare_jacobian(cc!, ba, y, x)
+    extras = prepare_jacobian(cc!, mysimilar(y), ba, x)
     calls0 = reset_count!(cc!)
     value_and_jacobian(cc!, mysimilar(y), ba, x, extras)
     calls1 = reset_count!(cc!)
@@ -575,8 +575,8 @@ function run_benchmark!(
     f! = f
     jac_template = mysimilar(jacobian(f!, mysimilar(y), ba, x))
     # benchmark
-    extras = prepare_jacobian(f!, ba, y, x)
-    bench0 = @be prepare_jacobian(f!, ba, y, x) evals = 1 samples = 1
+    extras = prepare_jacobian(f!, mysimilar(y), ba, x)
+    bench0 = @be mysimilar(y) prepare_jacobian(f!, _, ba, x) evals = 1 samples = 1
     bench1 = @be (mysimilar(y), mysimilar(jac_template)) value_and_jacobian!(
         f!, _[1], _[2], ba, x, extras
     )
@@ -585,7 +585,7 @@ function run_benchmark!(
     )
     # count
     cc! = CallCounter(f!)
-    extras = prepare_jacobian(cc!, ba, y, x)
+    extras = prepare_jacobian(cc!, y, ba, x)
     calls0 = reset_count!(cc!)
     value_and_jacobian!(cc!, mysimilar(y), mysimilar(jac_template), ba, x, extras)
     calls1 = reset_count!(cc!)

@@ -1,4 +1,4 @@
-DI.prepare_pushforward(f!, ::AnyAutoForwardDiff, y, x) = NoPushforwardExtras()
+DI.prepare_pushforward(f!, y, ::AnyAutoForwardDiff, x) = NoPushforwardExtras()
 
 function DI.value_and_pushforward(f!, y, ::AnyAutoForwardDiff, x, dx, ::NoPushforwardExtras)
     T = tag_type(f!, x)
@@ -16,7 +16,7 @@ struct ForwardDiffTwoArgDerivativeExtras{C} <: DerivativeExtras
     config::C
 end
 
-function DI.prepare_derivative(f!, ::AnyAutoForwardDiff, y::AbstractArray, x::Number)
+function DI.prepare_derivative(f!, y::AbstractArray, ::AnyAutoForwardDiff, x::Number)
     return ForwardDiffTwoArgDerivativeExtras(DerivativeConfig(f!, y, x))
 end
 
@@ -75,7 +75,7 @@ struct ForwardDiffTwoArgJacobianExtras{C} <: JacobianExtras
 end
 
 function DI.prepare_jacobian(
-    f!, backend::AnyAutoForwardDiff, y::AbstractArray, x::AbstractArray
+    f!, y::AbstractArray, backend::AnyAutoForwardDiff, x::AbstractArray
 )
     return ForwardDiffTwoArgJacobianExtras(
         JacobianConfig(f!, y, x, choose_chunk(backend, x))
