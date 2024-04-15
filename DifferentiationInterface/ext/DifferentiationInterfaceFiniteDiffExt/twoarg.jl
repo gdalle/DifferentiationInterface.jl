@@ -1,6 +1,6 @@
 ## Pushforward
 
-DI.prepare_pushforward(f!, ::AnyAutoFiniteDiff, y, x) = NoPushforwardExtras()
+DI.prepare_pushforward(f!, y, ::AnyAutoFiniteDiff, x) = NoPushforwardExtras()
 
 function DI.value_and_pushforward(
     f!, y, backend::AnyAutoFiniteDiff, x, dx, ::NoPushforwardExtras
@@ -23,7 +23,7 @@ struct FiniteDiffTwoArgDerivativeExtras{C}
     cache::C
 end
 
-function DI.prepare_derivative(f!, ::AnyAutoFiniteDiff, y, x)
+function DI.prepare_derivative(f!, y, ::AnyAutoFiniteDiff, x)
     cache = nothing
     return FiniteDiffTwoArgDerivativeExtras(cache)
 end
@@ -65,7 +65,7 @@ struct FiniteDiffTwoArgJacobianExtras{C}
     cache::C
 end
 
-function DI.prepare_jacobian(f!, backend::AnyAutoFiniteDiff, y, x)
+function DI.prepare_jacobian(f!, y, backend::AnyAutoFiniteDiff, x)
     x1 = similar(x)
     fx = similar(y)
     fx1 = similar(y)

@@ -13,7 +13,7 @@ struct AutoZeroForward <: ADTypes.AbstractForwardMode end
 DI.supports_mutation(::AutoZeroForward) = DI.MutationSupported()
 
 DI.prepare_pushforward(f, ::AutoZeroForward, x) = NoPushforwardExtras()
-DI.prepare_pushforward(f!, ::AutoZeroForward, y, x) = NoPushforwardExtras()
+DI.prepare_pushforward(f!, y, ::AutoZeroForward, x) = NoPushforwardExtras()
 
 function DI.value_and_pushforward(f, ::AutoZeroForward, x, dx, ::NoPushforwardExtras)
     y = f(x)
@@ -54,7 +54,7 @@ struct AutoZeroReverse <: ADTypes.AbstractReverseMode end
 DI.supports_mutation(::AutoZeroReverse) = DI.MutationSupported()
 
 DI.prepare_pullback(f, ::AutoZeroReverse, x) = NoPullbackExtras()
-DI.prepare_pullback(f!, ::AutoZeroReverse, y, x) = NoPullbackExtras()
+DI.prepare_pullback(f!, y, ::AutoZeroReverse, x) = NoPullbackExtras()
 
 function DI.value_and_pullback(f, ::AutoZeroReverse, x, dy, ::NoPullbackExtras)
     y = f(x)

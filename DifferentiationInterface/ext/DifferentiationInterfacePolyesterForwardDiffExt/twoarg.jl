@@ -1,7 +1,7 @@
 ## Pushforward
 
-function DI.prepare_pushforward(f!, backend::AnyAutoPolyForwardDiff, y, x)
-    return DI.prepare_pushforward(f!, single_threaded(backend), y, x)
+function DI.prepare_pushforward(f!, y, backend::AnyAutoPolyForwardDiff, x)
+    return DI.prepare_pushforward(f!, y, single_threaded(backend), x)
 end
 
 function DI.value_and_pushforward(
@@ -30,8 +30,8 @@ end
 
 ## Derivative
 
-function DI.prepare_derivative(f!, backend::AnyAutoPolyForwardDiff, y, x)
-    return DI.prepare_derivative(f!, single_threaded(backend), y, x)
+function DI.prepare_derivative(f!, y, backend::AnyAutoPolyForwardDiff, x)
+    return DI.prepare_derivative(f!, y, single_threaded(backend), x)
 end
 
 function DI.value_and_derivative(
@@ -58,7 +58,7 @@ end
 
 ## Jacobian
 
-DI.prepare_jacobian(f!, ::AnyAutoPolyForwardDiff, y, x) = NoJacobianExtras()
+DI.prepare_jacobian(f!, y, ::AnyAutoPolyForwardDiff, x) = NoJacobianExtras()
 
 function DI.value_and_jacobian(
     f!, y, ::AnyAutoPolyForwardDiff{C}, x, ::NoJacobianExtras

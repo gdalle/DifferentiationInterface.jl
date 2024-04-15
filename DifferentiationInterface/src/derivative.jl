@@ -1,10 +1,12 @@
 ## Docstrings
 
 """
-    prepare_derivative(f,  backend,    x) -> extras
-    prepare_derivative(f!, backend, y, x) -> extras
+    prepare_derivative(f,     backend, x) -> extras
+    prepare_derivative(f!, y, backend, x) -> extras
 
 Create an `extras` object subtyping [`DerivativeExtras`](@ref) that can be given to derivative operators.
+
+Beware that in the two-argument case, `y` is mutated by `f!` during preparation.
 """
 function prepare_derivative end
 
@@ -51,8 +53,8 @@ function prepare_derivative(f, backend::AbstractADType, x)
     return PushforwardDerivativeExtras(prepare_pushforward(f, backend, x))
 end
 
-function prepare_derivative(f!, backend::AbstractADType, y, x)
-    return PushforwardDerivativeExtras(prepare_pushforward(f!, backend, y, x))
+function prepare_derivative(f!, y, backend::AbstractADType, x)
+    return PushforwardDerivativeExtras(prepare_pushforward(f!, y, backend, x))
 end
 
 ## One argument
@@ -102,7 +104,7 @@ function value_and_derivative(
     y,
     backend::AbstractADType,
     x,
-    extras::DerivativeExtras=prepare_derivative(f!, backend, y, x),
+    extras::DerivativeExtras=prepare_derivative(f!, y, backend, x),
 )
     return value_and_pushforward(f!, y, backend, x, one(x), extras.pushforward_extras)
 end
@@ -113,7 +115,7 @@ function value_and_derivative!(
     der,
     backend::AbstractADType,
     x,
-    extras::DerivativeExtras=prepare_derivative(f!, backend, y, x),
+    extras::DerivativeExtras=prepare_derivative(f!, y, backend, x),
 )
     return value_and_pushforward!(f!, y, der, backend, x, one(x), extras.pushforward_extras)
 end
@@ -123,7 +125,7 @@ function derivative(
     y,
     backend::AbstractADType,
     x,
-    extras::DerivativeExtras=prepare_derivative(f!, backend, y, x),
+    extras::DerivativeExtras=prepare_derivative(f!, y, backend, x),
 )
     return pushforward(f!, y, backend, x, one(x), extras.pushforward_extras)
 end
@@ -134,7 +136,7 @@ function derivative!(
     der,
     backend::AbstractADType,
     x,
-    extras::DerivativeExtras=prepare_derivative(f!, backend, y, x),
+    extras::DerivativeExtras=prepare_derivative(f!, y, backend, x),
 )
     return pushforward!(f!, y, der, backend, x, one(x), extras.pushforward_extras)
 end

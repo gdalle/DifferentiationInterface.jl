@@ -5,7 +5,7 @@ struct FastDifferentiationTwoArgPushforwardExtras{E1,E2} <: PushforwardExtras
     jvp_exe!::E2
 end
 
-function DI.prepare_pushforward(f!, ::AnyAutoFastDifferentiation, y, x)
+function DI.prepare_pushforward(f!, y, ::AnyAutoFastDifferentiation, x)
     x_var = if x isa Number
         only(make_variables(:x))
     else
@@ -85,7 +85,7 @@ struct FastDifferentiationTwoArgDerivativeExtras{E1,E2} <: DerivativeExtras
     der_exe!::E2
 end
 
-function DI.prepare_derivative(f!, ::AnyAutoFastDifferentiation, y, x)
+function DI.prepare_derivative(f!, y, ::AnyAutoFastDifferentiation, x)
     x_var = only(make_variables(:x))
     y_var = make_variables(:y, size(y)...)
     f!(y_var, x_var)
@@ -153,7 +153,7 @@ struct FastDifferentiationTwoArgJacobianExtras{E1,E2} <: JacobianExtras
     jac_exe!::E2
 end
 
-function DI.prepare_jacobian(f!, backend::AnyAutoFastDifferentiation, y, x)
+function DI.prepare_jacobian(f!, y, backend::AnyAutoFastDifferentiation, x)
     x_var = make_variables(:x, size(x)...)
     y_var = make_variables(:y, size(y)...)
     f!(y_var, x_var)

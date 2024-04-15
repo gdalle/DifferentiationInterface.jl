@@ -7,7 +7,7 @@ for AutoSparse in SPARSE_BACKENDS
         ## Jacobian
 
         function DI.prepare_jacobian(
-            f!, backend::$AutoSparse, y::AbstractArray, x::AbstractArray
+            f!, y::AbstractArray, backend::$AutoSparse, x::AbstractArray
         )
             cache = sparse_jacobian_cache(
                 backend, SymbolicsSparsityDetection(), f!, similar(y), x
