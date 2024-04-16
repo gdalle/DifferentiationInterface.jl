@@ -31,7 +31,7 @@ const AnyAutoFastDifferentiation = Union{
     AutoFastDifferentiation,AutoSparseFastDifferentiation
 }
 
-DI.check_available(::AutoFastDifferentiation) = true
+DI.check_available(::AnyAutoFastDifferentiation) = true
 DI.mode(::AnyAutoFastDifferentiation) = ADTypes.AbstractSymbolicDifferentiationMode
 DI.pushforward_performance(::AnyAutoFastDifferentiation) = DI.PushforwardFast()
 DI.pullback_performance(::AnyAutoFastDifferentiation) = DI.PullbackSlow()

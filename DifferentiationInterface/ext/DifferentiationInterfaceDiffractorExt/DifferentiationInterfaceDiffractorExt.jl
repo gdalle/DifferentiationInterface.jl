@@ -6,7 +6,7 @@ using DifferentiationInterface: NoPushforwardExtras
 using Diffractor: DiffractorRuleConfig, TaylorTangentIndex, ZeroBundle, bundle, ∂☆
 
 DI.check_available(::AutoDiffractor) = true
-DI.supports_mutation(::AutoDiffractor) = DI.MutationNotSupported()
+DI.mutation_support(::AutoDiffractor) = DI.MutationNotSupported()
 DI.mode(::AutoDiffractor) = ADTypes.AbstractForwardMode
 DI.mode(::AutoChainRules{<:DiffractorRuleConfig}) = ADTypes.AbstractForwardMode
 

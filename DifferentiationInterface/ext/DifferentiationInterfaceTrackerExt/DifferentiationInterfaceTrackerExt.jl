@@ -6,7 +6,7 @@ using DifferentiationInterface: NoGradientExtras, NoPullbackExtras
 using Tracker: Tracker, back, data, forward, gradient, jacobian, param, withgradient
 
 DI.check_available(::AutoTracker) = true
-DI.supports_mutation(::AutoTracker) = DI.MutationNotSupported()
+DI.mutation_support(::AutoTracker) = DI.MutationNotSupported()
 
 ## Pullback
 

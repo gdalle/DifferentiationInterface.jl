@@ -47,13 +47,16 @@ Several variants of each operator are defined:
 In order to ensure symmetry between one-argument functions `f(x) = y` and two-argument functions `f!(y, x) = nothing`, we define the same operators for both cases.
 However they have different signatures:
 
-| signature  | out-of-place                       | in-place                                 |
-| :--------- | :--------------------------------- | :--------------------------------------- |
-| `f(x)`     | `operator(f,     backend, x, ...)` | `operator!(f,     res, backend, x, ...)` |
-| `f!(y, x)` | `operator(f!, y, backend, x, ...)` | `operator!(f!, y, res, backend, x, ...)` |
+| signature  | out-of-place                       | in-place                                    |
+| :--------- | :--------------------------------- | :------------------------------------------ |
+| `f(x)`     | `operator(f,     backend, x, ...)` | `operator!(f,     result, backend, x, ...)` |
+| `f!(y, x)` | `operator(f!, y, backend, x, ...)` | `operator!(f!, y, result, backend, x, ...)` |
 
 !!! warning
-    Every variant of the operator will mutate `y` when applied to a two-argument function `f!(y, x) = nothing`, even if it does not have a `!` in its name.
+    Our mutation convention is that all positional arguments between `f`/`f!` and `backend` are mutated (the `extras` as well, see below).
+    This convention holds regardless of the bang `!` in the operator name, because we assume that a user passing a two-argument function `f!(y, x)` anticipates mutation anyway.
+
+    Still, better be careful with two-argument functions, because every variant of the operator will mutate `y`... even if it does not have a `!` in its name (see the bottom left cell in the table).
 
 ## Preparation
 
@@ -71,14 +74,21 @@ This is a backend-specific procedure, but we expose a common syntax to achieve i
 | `pullback`          | [`prepare_pullback`](@ref)          |
 | `hvp`               | [`prepare_hvp`](@ref)               |
 
-If you run `prepare_operator(backend, f, x, [seed])`, it will create an object called `extras` containing the necessary information to speed up `operator` and its variants.
+Unsurprisingly, preparation syntax depends on the number of arguments:
+
+| signature  | preparation signature                      |
+| :--------- | :----------------------------------------- |
+| `f(x)`     | `prepare_operator(f,     backend, x, ...)` |
+| `f!(y, x)` | `prepare_operator(f!, y, backend, x, ...)` |
+
+The preparation `prepare_operator(f, backend, x)` will create an object called `extras` containing the necessary information to speed up `operator` and its variants.
 This information is specific to `backend` and `f`, as well as the _type and size_ of the input `x` and the _control flow_ within the function, but it should work with different _values_ of `x`.
 
-You can then call `operator(backend, f, x2, extras)`, which should be faster than `operator(f, backend, x2)`.
+You can then call e.g. `operator(backend, f, x2, extras)`, which should be faster than `operator(f, backend, x2)`.
 This is especially worth it if you plan to call `operator` several times in similar settings: you can think of it as a warm up.
 
 !!! warning
-    The `extras` object is nearly always mutated, even if the operator does not have a `!` in its name.
+    The `extras` object is nearly always mutated when given to an operator, even when said operator does not have a bang `!` in its name.
 
 ### Second order
 
@@ -129,7 +139,7 @@ We make this available for all backends with the following operators:
 ### Non-standard types
 
 The package is thoroughly tested with inputs and outputs of the following types: `Float64`, `Vector{Float64}` and `Matrix{Float64}`.
-We also expect it to work on all kinds of `Number` and `AbstractArray` variables.
+We also expect it to work on most kinds of `Number` and `AbstractArray` variables.
 Beyond that, you are in uncharted territory.
 We voluntarily keep the type annotations minimal, so that passing more complex objects or custom structs _might work with some backends_, but we make no guarantees about that.
 

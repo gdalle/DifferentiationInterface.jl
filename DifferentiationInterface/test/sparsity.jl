@@ -11,6 +11,10 @@ sparse_second_order_backends = [
     SecondOrder(AutoSparseFiniteDiff(), AutoZygote()),
 ]
 
+for backend in vcat(sparse_backends, sparse_second_order_backends)
+    @test check_available(backend)
+end
+
 test_differentiation(
     sparse_backends,
     sparse_scenarios(rand(5));

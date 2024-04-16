@@ -87,7 +87,7 @@ value_and_pullback!_split
 
 ```@docs
 check_available
-check_mutation
+check_twoarg
 check_hessian
 ```
 
