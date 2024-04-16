@@ -20,6 +20,7 @@ function all_backends()
         AutoForwardDiff(),
         AutoPolyesterForwardDiff(; chunksize=1),
         AutoReverseDiff(),
+        AutoSymbolics(),
         AutoTapir(),
         AutoTracker(),
         AutoZygote(),
@@ -56,6 +57,7 @@ AutoFiniteDifferences
 AutoPolyesterForwardDiff
 AutoPolyesterForwardDiff()
 AutoReverseDiff
+AutoSymbolics
 AutoTapir
 AutoTracker
 AutoZygote
@@ -73,6 +75,7 @@ AutoSparseForwardDiff
 AutoSparseForwardDiff()
 AutoSparsePolyesterForwardDiff
 AutoSparseReverseDiff
+AutoSparseSymbolics
 AutoSparseZygote
 ```
 

@@ -49,6 +49,7 @@ We also provide some experimental backends ourselves:
 | Backend                                                                          | Object                                                         |
 | :------------------------------------------------------------------------------- | :------------------------------------------------------------- |
 | [FastDifferentiation.jl](https://github.com/brianguenter/FastDifferentiation.jl) | `AutoFastDifferentiation()`, `AutoSparseFastDifferentiation()` |
+| [Symbolics.jl](https://github.com/JuliaSymbolics/Symbolics.jl)                   | `AutoSymbolics()`, `AutoSparseSymbolics()`                     |
 | [Tapir.jl](https://github.com/withbayes/Tapir.jl)                                | `AutoTapir()`                                                  |
 
 ## Installation

@@ -36,6 +36,7 @@ DifferentiationInterfaceForwardDiffExt = "ForwardDiff"
 DifferentiationInterfacePolyesterForwardDiffExt = "PolyesterForwardDiff"
 DifferentiationInterfaceReverseDiffExt = "ReverseDiff"
 DifferentiationInterfaceSparseDiffToolsExt = ["SparseDiffTools", "Symbolics"]
+DifferentiationInterfaceSymbolicsExt = "Symbolics"
 DifferentiationInterfaceTapirExt = "Tapir"
 DifferentiationInterfaceTrackerExt = "Tracker"
 DifferentiationInterfaceZygoteExt = "Zygote"

@@ -1,38 +1,35 @@
-"""
-    check_available(backend)
-
-Check whether `backend` is available (i.e. whether the extension is loaded).
-"""
-check_available(backend::AbstractADType) = false
-
-function check_available(backend::SecondOrder)
-    return check_available(inner(backend)) && check_available(outer(backend))
-end
 
 """
-    check_twoarg(backend)
+    AutoFastDifferentiation
 
-Check whether `backend` supports differentiation of two-argument functions.
+Chooses [FastDifferentiation.jl](https://github.com/brianguenter/FastDifferentiation.jl).
 """
-check_twoarg(backend::AbstractADType) = Bool(mutation_support(backend))
-
-sqnorm(x::AbstractArray) = sum(abs2, x)
+struct AutoFastDifferentiation <: AbstractSymbolicDifferentiationMode end
 
 """
-    check_hessian(backend)
+    AutoSparseFastDifferentiation
 
-Check whether `backend` supports second order differentiation by trying to compute a hessian.
-
-!!! warning
-    Might take a while due to compilation time.
+Chooses [FastDifferentiation.jl](https://github.com/brianguenter/FastDifferentiation.jl) leveraging sparsity.
 """
-function check_hessian(backend::AbstractADType)
-    try
-        x = [3.0]
-        hess = hessian(sqnorm, backend, x)
-        return isapprox(hess, [2.0;;]; rtol=1e-3)
-    catch exception
-        @warn "Backend $backend does not support hessian" exception
-        return false
-    end
-end
+struct AutoSparseFastDifferentiation <: AbstractSymbolicDifferentiationMode end
+
+"""
+    AutoSymbolics
+
+Chooses [Symbolics.jl](https://github.com/JuliaSymbolics/Symbolics.jl).
+"""
+struct AutoSymbolics <: AbstractSymbolicDifferentiationMode end
+
+"""
+    AutoSparseSymbolics
+
+Chooses [Symbolics.jl](https://github.com/JuliaSymbolics/Symbolics.jl) leveraging sparsity.
+"""
+struct AutoSparseSymbolics <: AbstractSymbolicDifferentiationMode end
+
+"""
+    AutoTapir
+
+Chooses [Tapir.jl](https://github.com/withbayes/Tapir.jl).
+"""
+struct AutoTapir <: AbstractReverseMode end

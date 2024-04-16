@@ -60,6 +60,7 @@ function DI.value_and_pushforward(
 )
     return f(x), DI.pushforward(f, backend, x, dx, extras)
 end
+
 function DI.value_and_pushforward!(
     f,
     dy,
@@ -73,7 +74,7 @@ end
 
 ## Pullback
 
-# TODO: this only fails for scalar -> matrix, not sure why
+# TODO: fix https://github.com/gdalle/DifferentiationInterface.jl/issues/131
 
 ## Derivative
 
@@ -209,10 +210,10 @@ function DI.prepare_jacobian(f, backend::AnyAutoFastDifferentiation, x)
 
     x_vec_var = vec(x_var)
     y_vec_var = vec(y_var)
-    if issparse(backend)
-        jac_var = sparse_jacobian(y_vec_var, x_vec_var)
+    jac_var = if issparse(backend)
+        sparse_jacobian(y_vec_var, x_vec_var)
     else
-        jac_var = jacobian(y_vec_var, x_vec_var)
+        jacobian(y_vec_var, x_vec_var)
     end
     jac_exe = make_function(jac_var, x_vec_var; in_place=false)
     jac_exe! = make_function(jac_var, x_vec_var; in_place=true)
@@ -341,10 +342,10 @@ end
 function DI.prepare_hessian(f, backend::AnyAutoFastDifferentiation, x)
     x_vec_var = make_variables(:x, size(x)...)
     y_vec_var = f(x_vec_var)
-    if issparse(backend)
-        hess_var = sparse_hessian(y_vec_var, vec(x_vec_var))
+    hess_var = if issparse(backend)
+        sparse_hessian(y_vec_var, vec(x_vec_var))
     else
-        hess_var = hessian(y_vec_var, vec(x_vec_var))
+        hessian(y_vec_var, vec(x_vec_var))
     end
     hess_exe = make_function(hess_var, vec(x_vec_var); in_place=false)
     hess_exe! = make_function(hess_var, vec(x_vec_var); in_place=true)

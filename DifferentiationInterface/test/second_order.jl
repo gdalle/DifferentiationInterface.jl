@@ -2,6 +2,7 @@ second_order_backends = [
     AutoForwardDiff(),  #
     AutoPolyesterForwardDiff(; chunksize=1),  #
     AutoFastDifferentiation(),
+    AutoSymbolics(),
     AutoReverseDiff(),
 ]
 
@@ -23,7 +24,7 @@ for backend in vcat(second_order_backends, second_order_mixed_backends)
 end
 
 test_differentiation(
-    vcat(second_order_backends, second_order_mixed_backends);
+    identity.(vcat(second_order_backends, second_order_mixed_backends));
     first_order=false,
     second_order=true,
     logging=get(ENV, "CI", "false") == "false",
