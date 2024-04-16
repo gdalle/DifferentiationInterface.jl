@@ -9,7 +9,7 @@ using Zygote:
     ZygoteRuleConfig, gradient, hessian, jacobian, pullback, withgradient, withjacobian
 
 DI.check_available(::AutoZygote) = true
-DI.mutation_support(::Union{AutoZygote,AutoSparseZygote}) = DI.MutationNotSupported()
+DI.mutation_support(::AutoZygote) = DI.MutationNotSupported()
 
 ## Pullback
 

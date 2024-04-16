@@ -30,8 +30,8 @@ test_differentiation(
 );
 
 test_differentiation(
-    sparse_backends,
-    filter(s -> !isa(s, JacobianScenario), default_scenarios());
+    sparse_backends;
     second_order=false,
+    excluded=[JacobianScenario],
     logging=get(ENV, "CI", "false") == "false",
 );

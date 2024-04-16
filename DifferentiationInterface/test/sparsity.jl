@@ -8,6 +8,8 @@ sparse_backends = [
 
 sparse_second_order_backends = [
     AutoSparseFastDifferentiation(),
+    AutoSparseForwardDiff(),
+    AutoSparseSymbolics(),
     SecondOrder(AutoSparseForwardDiff(), AutoZygote()),
     SecondOrder(AutoSparseFiniteDiff(), AutoZygote()),
 ]

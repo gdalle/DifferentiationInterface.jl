@@ -39,10 +39,10 @@ test_differentiation(
 );
 
 test_differentiation(
-    sparse_second_order_backends,
-    filter(s -> !isa(s, HessianScenario), default_scenarios());
+    sparse_second_order_backends;
     first_order=false,
     second_order=true,
+    excluded=[HessianScenario],
     logging=get(ENV, "CI", "false") == "false",
 );
 
