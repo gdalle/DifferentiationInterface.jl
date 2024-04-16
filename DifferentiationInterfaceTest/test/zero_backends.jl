@@ -1,5 +1,7 @@
 @test check_available(AutoZeroForward())
 @test check_available(AutoZeroReverse())
+@test check_twoarg(AutoZeroForward())
+@test check_twoarg(AutoZeroReverse())
 
 ## Correctness (vs oneself)
 

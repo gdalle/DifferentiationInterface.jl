@@ -1,7 +1,7 @@
 ## Pushforward
 
-function DI.prepare_pushforward(f!, y, backend::AutoPolyesterForwardDiff, x)
-    return DI.prepare_pushforward(f!, y, single_threaded(backend), x)
+function DI.prepare_pushforward(f!, y, backend::AutoPolyesterForwardDiff, x, dx)
+    return DI.prepare_pushforward(f!, y, single_threaded(backend), x, dx)
 end
 
 function DI.value_and_pushforward(

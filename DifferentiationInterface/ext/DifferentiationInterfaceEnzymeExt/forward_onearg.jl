@@ -1,6 +1,6 @@
 ## Pushforward
 
-DI.prepare_pushforward(f, ::AutoForwardEnzyme, x) = NoPushforwardExtras()
+DI.prepare_pushforward(f, ::AutoForwardEnzyme, x, dx) = NoPushforwardExtras()
 
 function DI.value_and_pushforward(
     f, backend::AutoForwardEnzyme, x, dx, ::NoPushforwardExtras

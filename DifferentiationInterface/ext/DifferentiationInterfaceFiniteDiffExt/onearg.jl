@@ -1,6 +1,6 @@
 ## Pushforward
 
-DI.prepare_pushforward(f, ::AutoFiniteDiff, x) = NoPushforwardExtras()
+DI.prepare_pushforward(f, ::AutoFiniteDiff, x, dx) = NoPushforwardExtras()
 
 function DI.pushforward(f, backend::AutoFiniteDiff, x, dx, ::NoPushforwardExtras)
     step(t::Number) = f(x .+ t .* dx)

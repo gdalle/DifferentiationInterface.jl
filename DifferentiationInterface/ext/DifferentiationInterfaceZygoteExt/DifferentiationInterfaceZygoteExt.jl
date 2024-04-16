@@ -13,7 +13,7 @@ DI.mutation_support(::Union{AutoZygote,AutoSparseZygote}) = DI.MutationNotSuppor
 
 ## Pullback
 
-DI.prepare_pullback(f, ::AutoZygote, x) = NoPullbackExtras()
+DI.prepare_pullback(f, ::AutoZygote, x, dy) = NoPullbackExtras()
 
 function DI.value_and_pullback_split(f, ::AutoZygote, x, ::NoPullbackExtras)
     y, back = pullback(f, x)

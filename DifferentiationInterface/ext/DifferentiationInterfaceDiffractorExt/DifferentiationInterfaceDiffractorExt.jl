@@ -12,7 +12,7 @@ DI.mode(::AutoChainRules{<:DiffractorRuleConfig}) = ADTypes.AbstractForwardMode
 
 ## Pushforward
 
-DI.prepare_pushforward(f, ::AutoDiffractor, x) = NoPushforwardExtras()
+DI.prepare_pushforward(f, ::AutoDiffractor, x, dx) = NoPushforwardExtras()
 
 function DI.pushforward(f, ::AutoDiffractor, x, dx, ::NoPushforwardExtras)
     # code copied from Diffractor.jl

@@ -18,7 +18,7 @@ DI.mode(::AutoReverseChainRules) = ADTypes.AbstractReverseMode
 
 ## Pullback
 
-DI.prepare_pullback(f, ::AutoReverseChainRules, x) = NoPullbackExtras()
+DI.prepare_pullback(f, ::AutoReverseChainRules, x, dy) = NoPullbackExtras()
 
 function DI.value_and_pullback_split(
     f, backend::AutoReverseChainRules, x, ::NoPullbackExtras

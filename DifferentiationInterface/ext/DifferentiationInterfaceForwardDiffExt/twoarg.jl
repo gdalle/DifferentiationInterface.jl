@@ -1,4 +1,4 @@
-DI.prepare_pushforward(f!, y, ::AutoForwardDiff, x) = NoPushforwardExtras()
+DI.prepare_pushforward(f!, y, ::AutoForwardDiff, x, dx) = NoPushforwardExtras()
 
 function DI.value_and_pushforward(f!, y, ::AutoForwardDiff, x, dx, ::NoPushforwardExtras)
     T = tag_type(f!, x)

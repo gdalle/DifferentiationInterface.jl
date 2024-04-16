@@ -1,6 +1,6 @@
 ## Pullback
 
-DI.prepare_pullback(f!, y, ::AutoReverseDiff, x) = NoPullbackExtras()
+DI.prepare_pullback(f!, y, ::AutoReverseDiff, x, dy) = NoPullbackExtras()
 
 ### Array in
 
@@ -60,7 +60,7 @@ function DI.value_and_pullback(
     x_array = [x]
     dx_array = similar(x_array)
     f!_array(_y::AbstractArray, _x_array) = f!(_y, only(_x_array))
-    new_extras = DI.prepare_pullback(f!_array, y, backend, x_array)
+    new_extras = DI.prepare_pullback(f!_array, y, backend, x_array, dy)
     y, dx_array = DI.value_and_pullback(f!_array, y, backend, x_array, dy, new_extras)
     return y, only(dx_array)
 end
