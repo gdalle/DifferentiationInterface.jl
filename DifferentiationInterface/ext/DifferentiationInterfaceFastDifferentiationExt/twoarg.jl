@@ -5,7 +5,7 @@ struct FastDifferentiationTwoArgPushforwardExtras{E1,E2} <: PushforwardExtras
     jvp_exe!::E2
 end
 
-function DI.prepare_pushforward(f!, y, ::AnyAutoFastDifferentiation, x, dx)
+function DI.prepare_pushforward(f!, y, ::AutoFastDifferentiation, x, dx)
     x_var = if x isa Number
         only(make_variables(:x))
     else
@@ -25,7 +25,7 @@ end
 function DI.value_and_pushforward(
     f!,
     y,
-    ::AnyAutoFastDifferentiation,
+    ::AutoFastDifferentiation,
     x,
     dx,
     extras::FastDifferentiationTwoArgPushforwardExtras,
@@ -40,7 +40,7 @@ function DI.value_and_pushforward!(
     f!,
     y,
     dy,
-    ::AnyAutoFastDifferentiation,
+    ::AutoFastDifferentiation,
     x,
     dx,
     extras::FastDifferentiationTwoArgPushforwardExtras,
@@ -54,7 +54,7 @@ end
 function DI.pushforward(
     f!,
     y,
-    ::AnyAutoFastDifferentiation,
+    ::AutoFastDifferentiation,
     x,
     dx,
     extras::FastDifferentiationTwoArgPushforwardExtras,
@@ -68,7 +68,7 @@ function DI.pushforward!(
     f!,
     y,
     dy,
-    ::AnyAutoFastDifferentiation,
+    ::AutoFastDifferentiation,
     x,
     dx,
     extras::FastDifferentiationTwoArgPushforwardExtras,
@@ -85,7 +85,7 @@ struct FastDifferentiationTwoArgDerivativeExtras{E1,E2} <: DerivativeExtras
     der_exe!::E2
 end
 
-function DI.prepare_derivative(f!, y, ::AnyAutoFastDifferentiation, x)
+function DI.prepare_derivative(f!, y, ::AutoFastDifferentiation, x)
     x_var = only(make_variables(:x))
     y_var = make_variables(:y, size(y)...)
     f!(y_var, x_var)
@@ -99,11 +99,7 @@ function DI.prepare_derivative(f!, y, ::AnyAutoFastDifferentiation, x)
 end
 
 function DI.value_and_derivative(
-    f!,
-    y,
-    ::AnyAutoFastDifferentiation,
-    x,
-    extras::FastDifferentiationTwoArgDerivativeExtras,
+    f!, y, ::AutoFastDifferentiation, x, extras::FastDifferentiationTwoArgDerivativeExtras
 )
     f!(y, x)
     der = reshape(extras.der_exe(monovec(x)), size(y))
@@ -114,7 +110,7 @@ function DI.value_and_derivative!(
     f!,
     y,
     der,
-    ::AnyAutoFastDifferentiation,
+    ::AutoFastDifferentiation,
     x,
     extras::FastDifferentiationTwoArgDerivativeExtras,
 )
@@ -124,11 +120,7 @@ function DI.value_and_derivative!(
 end
 
 function DI.derivative(
-    f!,
-    y,
-    ::AnyAutoFastDifferentiation,
-    x,
-    extras::FastDifferentiationTwoArgDerivativeExtras,
+    f!, y, ::AutoFastDifferentiation, x, extras::FastDifferentiationTwoArgDerivativeExtras
 )
     der = reshape(extras.der_exe(monovec(x)), size(y))
     return der
@@ -138,7 +130,7 @@ function DI.derivative!(
     f!,
     y,
     der,
-    ::AnyAutoFastDifferentiation,
+    ::AutoFastDifferentiation,
     x,
     extras::FastDifferentiationTwoArgDerivativeExtras,
 )

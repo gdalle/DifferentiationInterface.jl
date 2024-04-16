@@ -5,7 +5,7 @@ struct SymbolicsTwoArgPushforwardExtras{E1,E2} <: PushforwardExtras
     pushforward_exe!::E2
 end
 
-function DI.prepare_pushforward(f!, y, ::AnyAutoSymbolics, x, dx)
+function DI.prepare_pushforward(f!, y, ::AutoSymbolics, x, dx)
     x_var = if x isa Number
         variable(:x)
     else
@@ -32,7 +32,7 @@ function DI.prepare_pushforward(f!, y, ::AnyAutoSymbolics, x, dx)
 end
 
 function DI.pushforward(
-    f!, y, ::AnyAutoSymbolics, x, dx, extras::SymbolicsTwoArgPushforwardExtras
+    f!, y, ::AutoSymbolics, x, dx, extras::SymbolicsTwoArgPushforwardExtras
 )
     v_vec = vcat(myvec(x), myvec(dx))
     dy = extras.pushforward_exe(v_vec)
@@ -40,7 +40,7 @@ function DI.pushforward(
 end
 
 function DI.pushforward!(
-    f!, y, dy, ::AnyAutoSymbolics, x, dx, extras::SymbolicsTwoArgPushforwardExtras
+    f!, y, dy, ::AutoSymbolics, x, dx, extras::SymbolicsTwoArgPushforwardExtras
 )
     v_vec = vcat(myvec(x), myvec(dx))
     extras.pushforward_exe!(dy, v_vec)
@@ -48,7 +48,7 @@ function DI.pushforward!(
 end
 
 function DI.value_and_pushforward(
-    f!, y, backend::AnyAutoSymbolics, x, dx, extras::SymbolicsTwoArgPushforwardExtras
+    f!, y, backend::AutoSymbolics, x, dx, extras::SymbolicsTwoArgPushforwardExtras
 )
     dy = DI.pushforward(f!, y, backend, x, dx, extras)
     f!(y, x)
@@ -56,7 +56,7 @@ function DI.value_and_pushforward(
 end
 
 function DI.value_and_pushforward!(
-    f!, y, dy, backend::AnyAutoSymbolics, x, dx, extras::SymbolicsTwoArgPushforwardExtras
+    f!, y, dy, backend::AutoSymbolics, x, dx, extras::SymbolicsTwoArgPushforwardExtras
 )
     DI.pushforward!(f!, y, dy, backend, x, dx, extras)
     f!(y, x)
@@ -70,7 +70,7 @@ struct SymbolicsTwoArgDerivativeExtras{E1,E2} <: DerivativeExtras
     der_exe!::E2
 end
 
-function DI.prepare_derivative(f!, y, ::AnyAutoSymbolics, x)
+function DI.prepare_derivative(f!, y, ::AutoSymbolics, x)
     x_var = variable(:x)
     y_var = variables(:y, axes(y)...)
     f!(y_var, x_var)
@@ -85,21 +85,19 @@ function DI.prepare_derivative(f!, y, ::AnyAutoSymbolics, x)
     return SymbolicsTwoArgDerivativeExtras(der_exe, der_exe!)
 end
 
-function DI.derivative(
-    f!, y, ::AnyAutoSymbolics, x, extras::SymbolicsTwoArgDerivativeExtras
-)
+function DI.derivative(f!, y, ::AutoSymbolics, x, extras::SymbolicsTwoArgDerivativeExtras)
     return extras.der_exe(x)
 end
 
 function DI.derivative!(
-    f!, y, der, ::AnyAutoSymbolics, x, extras::SymbolicsTwoArgDerivativeExtras
+    f!, y, der, ::AutoSymbolics, x, extras::SymbolicsTwoArgDerivativeExtras
 )
     extras.der_exe!(der, x)
     return der
 end
 
 function DI.value_and_derivative(
-    f!, y, backend::AnyAutoSymbolics, x, extras::SymbolicsTwoArgDerivativeExtras
+    f!, y, backend::AutoSymbolics, x, extras::SymbolicsTwoArgDerivativeExtras
 )
     der = DI.derivative(f!, y, backend, x, extras)
     f!(y, x)
@@ -107,7 +105,7 @@ function DI.value_and_derivative(
 end
 
 function DI.value_and_derivative!(
-    f!, y, der, backend::AnyAutoSymbolics, x, extras::SymbolicsTwoArgDerivativeExtras
+    f!, y, der, backend::AutoSymbolics, x, extras::SymbolicsTwoArgDerivativeExtras
 )
     DI.derivative!(f!, y, der, backend, x, extras)
     f!(y, x)

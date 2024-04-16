@@ -1,4 +1,4 @@
-all_backends = [
+dense_backends = [
     AutoChainRules(Zygote.ZygoteRuleConfig()),
     AutoDiffractor(),
     AutoEnzyme(Enzyme.Forward),
@@ -15,12 +15,23 @@ all_backends = [
     AutoZygote(),
 ]
 
+sparse_backends = [
+    AutoSparseFastDifferentiation(), AutoSparseForwardDiff(), AutoSparseSymbolics()
+]
+
 ##
 
-for backend in all_backends
+for backend in vcat(dense_backends, sparse_backends)
     @test check_available(backend)
 end
 
 test_differentiation(
-    all_backends; second_order=false, logging=get(ENV, "CI", "false") == "false"
+    dense_backends; second_order=false, logging=get(ENV, "CI", "false") == "false"
+);
+
+test_differentiation(
+    sparse_backends;
+    second_order=false,
+    excluded=[JacobianScenario],
+    logging=get(ENV, "CI", "false") == "false",
 );

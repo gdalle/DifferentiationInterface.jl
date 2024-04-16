@@ -56,6 +56,7 @@ include("hvp.jl")
 include("hessian.jl")
 
 include("check.jl")
+include("sparse.jl")
 
 export AutoChainRules,
     AutoDiffractor,
