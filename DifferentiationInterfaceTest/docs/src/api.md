@@ -20,6 +20,7 @@ benchmark_differentiation
 
 ```@docs
 default_scenarios
+sparse_scenarios
 component_scenarios
 gpu_scenarios
 static_scenarios

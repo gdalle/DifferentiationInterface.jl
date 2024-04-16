@@ -35,12 +35,13 @@ using JET: @test_call, @test_opt
 using JLArrays: jl
 using LinearAlgebra: Diagonal, dot
 using ProgressMeter: ProgressUnknown, next!
-using SparseArrays: SparseArrays, nnz, SparseMatrixCSC
+using SparseArrays: SparseArrays, SparseMatrixCSC, nnz, spdiagm
 using StaticArrays: MMatrix, MVector, SMatrix, SVector
 using Test: @testset, @test
 
 include("scenarios/scenario.jl")
 include("scenarios/default.jl")
+include("scenarios/sparse.jl")
 include("scenarios/static.jl")
 include("scenarios/component.jl")
 include("scenarios/gpu.jl")
@@ -64,7 +65,7 @@ export PushforwardScenario,
     SecondDerivativeScenario,
     HVPScenario,
     HessianScenario
-export default_scenarios
+export default_scenarios, sparse_scenarios
 export static_scenarios, component_scenarios, gpu_scenarios
 export test_differentiation, benchmark_differentiation
 
