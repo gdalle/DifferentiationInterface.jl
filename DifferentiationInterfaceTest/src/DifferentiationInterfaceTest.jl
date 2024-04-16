@@ -25,7 +25,7 @@ using DifferentiationInterface:
     inner,
     mode,
     outer,
-    supports_mutation,
+    mutation_support,
     pushforward_performance,
     pullback_performance
 using DifferentiationInterface: NoPullbackExtras, NoPushforwardExtras

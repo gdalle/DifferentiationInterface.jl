@@ -11,7 +11,7 @@ Used in testing and benchmarking.
 struct AutoZeroForward <: ADTypes.AbstractForwardMode end
 
 DI.check_available(::AutoZeroForward) = true
-DI.supports_mutation(::AutoZeroForward) = DI.MutationSupported()
+DI.mutation_support(::AutoZeroForward) = DI.MutationSupported()
 
 DI.prepare_pushforward(f, ::AutoZeroForward, x) = NoPushforwardExtras()
 DI.prepare_pushforward(f!, y, ::AutoZeroForward, x) = NoPushforwardExtras()
@@ -53,7 +53,7 @@ Used in testing and benchmarking.
 struct AutoZeroReverse <: ADTypes.AbstractReverseMode end
 
 DI.check_available(::AutoZeroReverse) = true
-DI.supports_mutation(::AutoZeroReverse) = DI.MutationSupported()
+DI.mutation_support(::AutoZeroReverse) = DI.MutationSupported()
 
 DI.prepare_pullback(f, ::AutoZeroReverse, x) = NoPullbackExtras()
 DI.prepare_pullback(f!, y, ::AutoZeroReverse, x) = NoPullbackExtras()

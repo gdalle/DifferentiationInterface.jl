@@ -46,7 +46,7 @@ operator(::AbstractScenario{A,O}) where {A,O} = O
 
 function compatible(backend::AbstractADType, scen::AbstractScenario)
     if nbargs(scen) == 2
-        return Bool(supports_mutation(backend))
+        return Bool(mutation_support(backend))
     end
     return true
 end

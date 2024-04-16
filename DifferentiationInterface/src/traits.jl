@@ -26,23 +26,23 @@ abstract type MutationBehavior end
 """
     MutationSupported
 
-Trait identifying backends that support mutating functions `f!(y, x)`.
+Trait identifying backends that support two-argument functions `f!(y, x)`.
 """
 struct MutationSupported <: MutationBehavior end
 
 """
     MutationNotSupported
 
-Trait identifying backends that do not support mutating functions `f!(y, x)`.
+Trait identifying backends that do not support two-argument functions `f!(y, x)`.
 """
 struct MutationNotSupported <: MutationBehavior end
 
 """
-    supports_mutation(backend)
+    mutation_support(backend)
 
 Return [`MutationSupported`](@ref) or [`MutationNotSupported`](@ref) in a statically predictable way.
 """
-supports_mutation(::AbstractADType) = MutationSupported()
+mutation_support(::AbstractADType) = MutationSupported()
 
 ## Pushforward
 

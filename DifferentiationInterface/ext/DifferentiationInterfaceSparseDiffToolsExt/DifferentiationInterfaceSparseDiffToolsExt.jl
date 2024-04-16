@@ -27,8 +27,6 @@ AnyTwoArgAutoSparse = Union{
     AutoSparseReverseDiff,
 }
 
-DI.check_available(::AnyOneArgAutoSparse) = true
-
 dense(::AutoSparseFiniteDiff) = AutoFiniteDiff()
 dense(backend::AutoSparseReverseDiff) = AutoReverseDiff(backend.compile)
 dense(::AutoSparseZygote) = AutoZygote()
@@ -40,6 +38,8 @@ end
 function dense(::AutoSparsePolyesterForwardDiff{chunksize}) where {chunksize}
     return AutoSparsePolyesterForwardDiff{chunksize}()
 end
+
+DI.check_available(backend::AnyOneArgAutoSparse) = DI.check_available(dense(backend))
 
 include("onearg.jl")
 include("twoarg.jl")

@@ -93,13 +93,13 @@ Markdown.parse(join(vcat(header, subheader, rows...), "\n"))  # hide
 
 All backends are compatible with one-argument functions `f(x) = y`.
 Only some are compatible with two-argument functions `f!(y, x) = nothing`.
-You can use [`check_mutation`](@ref) to check that feature, like we did below:
+You can use [`check_twoarg`](@ref) to check that feature, like we did below:
 
 ```@example backends
 header = "| backend | mutation |"  # hide
 subheader = "|:---|:---:|"  # hide
 rows = map(all_backends()) do backend  # hide
-    "| `$(backend_string(backend))` | $(check_mutation(backend) ? '✅' : '❌') |"  # hide
+    "| `$(backend_string(backend))` | $(check_twoarg(backend) ? '✅' : '❌') |"  # hide
 end  # hide
 Markdown.parse(join(vcat(header, subheader, rows...), "\n"))  # hide
 ```

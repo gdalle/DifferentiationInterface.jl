@@ -5,12 +5,16 @@ Check whether `backend` is available (i.e. whether the extension is loaded).
 """
 check_available(backend::AbstractADType) = false
 
-"""
-    check_mutation(backend)
+function check_available(backend::SecondOrder)
+    return check_available(inner(backend)) && check_available(outer(backend))
+end
 
-Check whether `backend` supports differentiation of mutating functions.
 """
-check_mutation(backend::AbstractADType) = Bool(supports_mutation(backend))
+    check_twoarg(backend)
+
+Check whether `backend` supports differentiation of two-argument functions.
+"""
+check_twoarg(backend::AbstractADType) = Bool(mutation_support(backend))
 
 sqnorm(x::AbstractArray) = sum(abs2, x)
 

@@ -128,6 +128,6 @@ export prepare_pushforward, prepare_pullback
 export prepare_derivative, prepare_gradient, prepare_jacobian
 export prepare_second_derivative, prepare_hvp, prepare_hessian
 
-export check_available, check_mutation, check_hessian
+export check_available, check_twoarg, check_hessian
 
 end # module

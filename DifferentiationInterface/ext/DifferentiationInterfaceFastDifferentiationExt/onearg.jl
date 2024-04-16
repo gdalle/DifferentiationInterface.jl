@@ -136,6 +136,64 @@ function DI.value_and_derivative!(
     return f(x), DI.derivative!(f, der, backend, x, extras)
 end
 
+## Gradient
+
+struct FastDifferentiationOneArgGradientExtras{E1,E2} <: GradientExtras
+    jac_exe::E1
+    jac_exe!::E2
+end
+
+function DI.prepare_gradient(f, backend::AnyAutoFastDifferentiation, x)
+    y_prototype = f(x)
+    x_var = make_variables(:x, size(x)...)
+    y_var = f(x_var)
+
+    x_vec_var = vec(x_var)
+    y_vec_var = monovec(y_var)
+    jac_var = jacobian(y_vec_var, x_vec_var)
+    jac_exe = make_function(jac_var, x_vec_var; in_place=false)
+    jac_exe! = make_function(jac_var, x_vec_var; in_place=true)
+    return FastDifferentiationOneArgGradientExtras(jac_exe, jac_exe!)
+end
+
+function DI.gradient(
+    f, ::AnyAutoFastDifferentiation, x, extras::FastDifferentiationOneArgGradientExtras
+)
+    jac = extras.jac_exe(vec(x))
+    grad_vec = @view jac[1, :]
+    return reshape(grad_vec, size(x))
+end
+
+function DI.gradient!(
+    f,
+    grad,
+    ::AnyAutoFastDifferentiation,
+    x,
+    extras::FastDifferentiationOneArgGradientExtras,
+)
+    extras.jac_exe!(reshape(grad, 1, length(grad)), vec(x))
+    return grad
+end
+
+function DI.value_and_gradient(
+    f,
+    backend::AnyAutoFastDifferentiation,
+    x,
+    extras::FastDifferentiationOneArgGradientExtras,
+)
+    return f(x), DI.gradient(f, backend, x, extras)
+end
+
+function DI.value_and_gradient!(
+    f,
+    grad,
+    backend::AnyAutoFastDifferentiation,
+    x,
+    extras::FastDifferentiationOneArgGradientExtras,
+)
+    return f(x), DI.gradient!(f, grad, backend, x, extras)
+end
+
 ## Jacobian
 
 struct FastDifferentiationOneArgJacobianExtras{Y,E1,E2} <: JacobianExtras
