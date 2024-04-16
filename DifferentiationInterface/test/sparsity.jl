@@ -2,6 +2,7 @@ sparse_backends = [
     AutoSparseFastDifferentiation(),
     AutoSparseForwardDiff(),
     AutoSparseFiniteDiff(),
+    AutoSparseSymbolics(),
     AutoSparseZygote(),
 ]
 

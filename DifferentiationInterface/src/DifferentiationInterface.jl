@@ -36,38 +36,9 @@ using DocStringExtensions
 using FillArrays: OneElement
 using LinearAlgebra: Symmetric, dot
 
-"""
-    AutoFastDifferentiation
-
-Chooses [FastDifferentiation.jl](https://github.com/brianguenter/FastDifferentiation.jl).
-
-!! danger
-    This backend is experimental, use at your own risk.
-"""
-struct AutoFastDifferentiation <: AbstractSymbolicDifferentiationMode end
-
-"""
-    AutoSparseFastDifferentiation
-
-Chooses [FastDifferentiation.jl](https://github.com/brianguenter/FastDifferentiation.jl) leveraging sparsity.
-
-!! danger
-    This backend is experimental, use at your own risk.
-"""
-struct AutoSparseFastDifferentiation <: AbstractSymbolicDifferentiationMode end
-
-"""
-    AutoTapir
-
-Chooses [Tapir.jl](https://github.com/withbayes/Tapir.jl).
-
-!! danger
-    This backend is experimental, use at your own risk.
-"""
-struct AutoTapir <: AbstractReverseMode end
-
 abstract type Extras end
 
+include("backends.jl")
 include("second_order.jl")
 include("traits.jl")
 include("utils.jl")
@@ -84,7 +55,7 @@ include("second_derivative.jl")
 include("hvp.jl")
 include("hessian.jl")
 
-include("backends.jl")
+include("check.jl")
 
 export AutoChainRules,
     AutoDiffractor,
@@ -102,7 +73,8 @@ export AutoChainRules,
     AutoTracker,
     AutoZygote
 
-export AutoFastDifferentiation, AutoSparseFastDifferentiation, AutoTapir
+export AutoFastDifferentiation,
+    AutoSparseFastDifferentiation, AutoSymbolics, AutoSparseSymbolics, AutoTapir
 export SecondOrder
 
 export value_and_pushforward!, value_and_pushforward

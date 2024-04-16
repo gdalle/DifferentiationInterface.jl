@@ -2,6 +2,7 @@ second_order_backends = [
     AutoForwardDiff(),  #
     AutoPolyesterForwardDiff(; chunksize=1),  #
     AutoFastDifferentiation(),
+    AutoSymbolics(),
     AutoReverseDiff(),
 ]
 

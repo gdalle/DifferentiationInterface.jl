@@ -175,10 +175,12 @@ function DI.prepare_hessian(f, backend::AutoFiniteDiff, x)
     return FiniteDiffHessianExtras(cache)
 end
 
-function DI.hessian(f, ::AutoFiniteDiff, x, extras::FiniteDiffHessianExtras)
-    return finite_difference_hessian(f, x, extras.cache)
+# cache cannot be reused because of https://github.com/JuliaDiff/FiniteDiff.jl/issues/185
+
+function DI.hessian(f, backend::AutoFiniteDiff, x, extras::FiniteDiffHessianExtras)
+    return finite_difference_hessian(f, x, HessianCache(x, fdhtype(backend)))
 end
 
-function DI.hessian!(f, hess, ::AutoFiniteDiff, x, extras::FiniteDiffHessianExtras)
-    return finite_difference_hessian!(hess, f, x, extras.cache)
+function DI.hessian!(f, hess, backend::AutoFiniteDiff, x, extras::FiniteDiffHessianExtras)
+    return finite_difference_hessian!(hess, f, x, HessianCache(x, fdhtype(backend)))
 end
