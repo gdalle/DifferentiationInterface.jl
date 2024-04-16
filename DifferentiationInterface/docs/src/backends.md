@@ -63,6 +63,9 @@ AutoZygote
 
 ### Sparse
 
+!!! warning
+    For sparse backends, only the Jacobian and Hessian operators are implemented.
+
 ```@docs
 AutoSparseFastDifferentiation
 AutoSparseFiniteDiff

@@ -1,9 +1,9 @@
 ## Pullback
 
-DI.prepare_pullback(f, ::AnyAutoReverseDiff, x) = NoPullbackExtras()
+DI.prepare_pullback(f, ::AutoReverseDiff, x) = NoPullbackExtras()
 
 function DI.value_and_pullback(
-    f, ::AnyAutoReverseDiff, x::AbstractArray, dy, ::NoPullbackExtras
+    f, ::AutoReverseDiff, x::AbstractArray, dy, ::NoPullbackExtras
 )
     y = f(x)
     dx = if y isa Number
@@ -15,7 +15,7 @@ function DI.value_and_pullback(
 end
 
 function DI.value_and_pullback!(
-    f, dx, ::AnyAutoReverseDiff, x::AbstractArray, dy, ::NoPullbackExtras
+    f, dx, ::AutoReverseDiff, x::AbstractArray, dy, ::NoPullbackExtras
 )
     y = f(x)
     dx = if y isa Number
@@ -28,7 +28,7 @@ function DI.value_and_pullback!(
 end
 
 function DI.value_and_pullback(
-    f, backend::AnyAutoReverseDiff, x::Number, dy, ::NoPullbackExtras
+    f, backend::AutoReverseDiff, x::Number, dy, ::NoPullbackExtras
 )
     x_array = [x]
     f_array = f ∘ only
@@ -42,7 +42,7 @@ struct ReverseDiffGradientExtras{T} <: GradientExtras
     tape::T
 end
 
-function DI.prepare_gradient(f, backend::AnyAutoReverseDiff, x::AbstractArray)
+function DI.prepare_gradient(f, backend::AutoReverseDiff, x::AbstractArray)
     tape = GradientTape(f, x)
     if backend.compile
         tape = compile(tape)
@@ -53,7 +53,7 @@ end
 function DI.value_and_gradient!(
     _f,
     grad::AbstractArray,
-    ::AnyAutoReverseDiff,
+    ::AutoReverseDiff,
     x::AbstractArray,
     extras::ReverseDiffGradientExtras,
 )
@@ -63,7 +63,7 @@ function DI.value_and_gradient!(
 end
 
 function DI.value_and_gradient(
-    f, backend::AnyAutoReverseDiff, x::AbstractArray, extras::ReverseDiffGradientExtras
+    f, backend::AutoReverseDiff, x::AbstractArray, extras::ReverseDiffGradientExtras
 )
     grad = similar(x)
     return DI.value_and_gradient!(f, grad, backend, x, extras)
@@ -72,7 +72,7 @@ end
 function DI.gradient!(
     _f,
     grad::AbstractArray,
-    ::AnyAutoReverseDiff,
+    ::AutoReverseDiff,
     x::AbstractArray,
     extras::ReverseDiffGradientExtras,
 )
@@ -80,7 +80,7 @@ function DI.gradient!(
 end
 
 function DI.gradient(
-    _f, ::AnyAutoReverseDiff, x::AbstractArray, extras::ReverseDiffGradientExtras
+    _f, ::AutoReverseDiff, x::AbstractArray, extras::ReverseDiffGradientExtras
 )
     return gradient!(extras.tape, x)
 end
@@ -91,7 +91,7 @@ struct ReverseDiffOneArgJacobianExtras{T} <: JacobianExtras
     tape::T
 end
 
-function DI.prepare_jacobian(f, backend::AnyAutoReverseDiff, x::AbstractArray)
+function DI.prepare_jacobian(f, backend::AutoReverseDiff, x::AbstractArray)
     tape = JacobianTape(f, x)
     if backend.compile
         tape = compile(tape)
@@ -102,7 +102,7 @@ end
 function DI.value_and_jacobian!(
     f,
     jac::AbstractMatrix,
-    ::AnyAutoReverseDiff,
+    ::AutoReverseDiff,
     x::AbstractArray,
     extras::ReverseDiffOneArgJacobianExtras,
 )
@@ -113,7 +113,7 @@ function DI.value_and_jacobian!(
 end
 
 function DI.value_and_jacobian(
-    f, ::AnyAutoReverseDiff, x::AbstractArray, extras::ReverseDiffOneArgJacobianExtras
+    f, ::AutoReverseDiff, x::AbstractArray, extras::ReverseDiffOneArgJacobianExtras
 )
     return f(x), jacobian!(extras.tape, x)
 end
@@ -121,7 +121,7 @@ end
 function DI.jacobian!(
     _f,
     jac::AbstractMatrix,
-    ::AnyAutoReverseDiff,
+    ::AutoReverseDiff,
     x::AbstractArray,
     extras::ReverseDiffOneArgJacobianExtras,
 )
@@ -129,7 +129,7 @@ function DI.jacobian!(
 end
 
 function DI.jacobian(
-    f, ::AnyAutoReverseDiff, x::AbstractArray, extras::ReverseDiffOneArgJacobianExtras
+    f, ::AutoReverseDiff, x::AbstractArray, extras::ReverseDiffOneArgJacobianExtras
 )
     return jacobian!(extras.tape, x)
 end
@@ -140,7 +140,7 @@ struct ReverseDiffHessianExtras{T} <: HessianExtras
     tape::T
 end
 
-function DI.prepare_hessian(f, backend::AnyAutoReverseDiff, x::AbstractArray)
+function DI.prepare_hessian(f, backend::AutoReverseDiff, x::AbstractArray)
     tape = HessianTape(f, x)
     if backend.compile
         tape = compile(tape)
@@ -151,7 +151,7 @@ end
 function DI.hessian!(
     _f,
     hess::AbstractMatrix,
-    ::AnyAutoReverseDiff,
+    ::AutoReverseDiff,
     x::AbstractArray,
     extras::ReverseDiffHessianExtras,
 )
@@ -159,7 +159,7 @@ function DI.hessian!(
 end
 
 function DI.hessian(
-    _f, ::AnyAutoReverseDiff, x::AbstractArray, extras::ReverseDiffHessianExtras
+    _f, ::AutoReverseDiff, x::AbstractArray, extras::ReverseDiffHessianExtras
 )
     return hessian!(extras.tape, x)
 end

@@ -22,9 +22,7 @@ using PolyesterForwardDiff: threaded_gradient!, threaded_jacobian!
 using PolyesterForwardDiff.ForwardDiff: Chunk
 using PolyesterForwardDiff.ForwardDiff.DiffResults: DiffResults
 
-const AnyAutoPolyForwardDiff{C} = Union{
-    AutoPolyesterForwardDiff{C},AutoSparsePolyesterForwardDiff{C}
-}
+DI.check_available(::AutoPolyesterForwardDiff) = true
 
 function single_threaded(::AutoPolyesterForwardDiff{C}) where {C}
     return AutoForwardDiff{C,Nothing}(nothing)

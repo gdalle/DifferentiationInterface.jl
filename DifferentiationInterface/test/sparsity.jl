@@ -3,7 +3,6 @@ sparse_backends = [
     AutoSparseForwardDiff(),
     AutoSparseFiniteDiff(),
     AutoSparseZygote(),
-    SparseDiffTools.AutoSparseEnzyme(),
 ]
 
 sparse_second_order_backends = [
