@@ -1,13 +1,18 @@
-second_order_backends = [
+dense_second_order_backends = [
     AutoForwardDiff(),  #
-    AutoSparseForwardDiff(),  #
     AutoPolyesterForwardDiff(; chunksize=1),  #
     AutoFastDifferentiation(),
     AutoSymbolics(),
     AutoReverseDiff(),
 ]
 
-second_order_mixed_backends = [
+sparse_second_order_backends = [
+    AutoSparseForwardDiff(),  #
+    AutoSparseFastDifferentiation(),
+    AutoSparseSymbolics(),
+]
+
+mixed_second_order_backends = [
     # forward over forward
     SecondOrder(AutoForwardDiff(), AutoEnzyme(Enzyme.Forward)),
     # forward over reverse
@@ -20,12 +25,22 @@ second_order_mixed_backends = [
 
 ##
 
-for backend in vcat(second_order_backends, second_order_mixed_backends)
+for backend in vcat(
+    dense_second_order_backends, sparse_second_order_backends, mixed_second_order_backends
+)
     check_hessian(backend)
 end
 
 test_differentiation(
-    vcat(second_order_backends, second_order_mixed_backends);
+    vcat(dense_second_order_backends, mixed_second_order_backends);
+    first_order=false,
+    second_order=true,
+    logging=get(ENV, "CI", "false") == "false",
+);
+
+test_differentiation(
+    sparse_second_order_backends,
+    filter(s -> !isa(s, HessianScenario), default_scenarios());
     first_order=false,
     second_order=true,
     logging=get(ENV, "CI", "false") == "false",

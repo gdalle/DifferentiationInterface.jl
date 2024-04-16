@@ -31,10 +31,10 @@ const AnyAutoFastDifferentiation = Union{
     AutoFastDifferentiation,AutoSparseFastDifferentiation
 }
 
-DI.check_available(::AnyAutoFastDifferentiation) = true
-DI.mode(::AnyAutoFastDifferentiation) = ADTypes.AbstractSymbolicDifferentiationMode
-DI.pushforward_performance(::AnyAutoFastDifferentiation) = DI.PushforwardFast()
-DI.pullback_performance(::AnyAutoFastDifferentiation) = DI.PullbackSlow()
+DI.check_available(::AutoFastDifferentiation) = true
+DI.mode(::AutoFastDifferentiation) = ADTypes.AbstractSymbolicDifferentiationMode
+DI.pushforward_performance(::AutoFastDifferentiation) = DI.PushforwardFast()
+DI.pullback_performance(::AutoFastDifferentiation) = DI.PullbackSlow()
 
 monovec(x::Number) = Fill(x, 1)
 

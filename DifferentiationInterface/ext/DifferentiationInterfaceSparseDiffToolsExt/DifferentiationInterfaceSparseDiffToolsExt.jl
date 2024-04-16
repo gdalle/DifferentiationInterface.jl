@@ -12,6 +12,14 @@ using SparseDiffTools:
     sparse_jacobian_cache
 using Symbolics: Symbolics
 
+AnyAutoSparseNoSymbolic = Union{
+    AutoSparseFiniteDiff,
+    AutoSparseForwardDiff,
+    AutoSparsePolyesterForwardDiff,
+    AutoSparseReverseDiff,
+    AutoSparseZygote,
+}
+
 include("onearg.jl")
 include("twoarg.jl")
 
