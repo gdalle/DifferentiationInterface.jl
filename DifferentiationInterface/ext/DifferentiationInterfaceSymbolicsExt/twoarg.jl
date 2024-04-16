@@ -5,7 +5,7 @@ struct SymbolicsTwoArgPushforwardExtras{E1,E2} <: PushforwardExtras
     pushforward_exe!::E2
 end
 
-function DI.prepare_pushforward(f!, y, ::AnyAutoSymbolics, x, dx)
+function DI.prepare_pushforward(f!, y, ::AutoSymbolics, x, dx)
     x_var = if x isa Number
         variable(:x)
     else
