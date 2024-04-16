@@ -63,10 +63,12 @@ Some backends get a speed boost from this trick.
 
 ```@repl tuto
 grad = zero(x)
-grad = gradient!(f, grad, backend, x)
+gradient!(f, grad, backend, x);
+grad
 ```
 
-Note the double exclamation mark, which is a convention telling you that `grad` _may or may not_ be overwritten, but will be returned either way (see [this section](@ref Variants) for more details).
+The bang indicates that one of the arguments of `gradient!` might be mutated.
+More precisely, our convention is that _every positional argument between the function and the backend is mutated (and the `extras` too, see below)_.
 
 ```@repl tuto
 @btime gradient!($f, _grad, $backend, $x) evals=1 setup=(_grad=similar($x));
@@ -90,7 +92,8 @@ You don't need to know what this object is, you just need to pass it to the grad
 
 ```@repl tuto
 grad = zero(x);
-grad = gradient!(f, grad, backend, x, extras)
+gradient!(f, grad, backend, x, extras);
+grad
 ```
 
 Preparation makes the gradient computation much faster, and (in this case) allocation-free.
@@ -101,6 +104,8 @@ Preparation makes the gradient computation much faster, and (in this case) alloc
     _extras=prepare_gradient($f, $backend, $x)
 );
 ```
+
+Beware that the `extras` object is nearly always mutated by differentiation operators, even though it is given as the last positional argument.
 
 ## Switching backends
 

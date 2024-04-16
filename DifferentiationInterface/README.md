@@ -30,19 +30,19 @@ This package provides a backend-agnostic syntax to differentiate functions of th
 
 We support most of the backends defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl):
 
-| Backend                                                                         | Object                                                     |
-| :------------------------------------------------------------------------------ | :--------------------------------------------------------- |
-| [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl)             | `AutoChainRules(ruleconfig)`                               |
-| [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl)                     | `AutoDiffractor()`                                         |
-| [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl)                              | `AutoEnzyme(Enzyme.Forward)`, `AutoEnzyme(Enzyme.Reverse)` |
-| [FiniteDiff.jl](https://github.com/JuliaDiff/FiniteDiff.jl)                     | `AutoFiniteDiff()`                                         |
-| [FiniteDifferences.jl](https://github.com/JuliaDiff/FiniteDifferences.jl)       | `AutoFiniteDifferences(fdm)`                               |
-| [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl)                   | `AutoForwardDiff()`                                        |
-| [PolyesterForwardDiff.jl](https://github.com/JuliaDiff/PolyesterForwardDiff.jl) | `AutoPolyesterForwardDiff(; chunksize)`                    |
-| [ReverseDiff.jl](https://github.com/JuliaDiff/ReverseDiff.jl)                   | `AutoReverseDiff()`                                        |
-| [SparseDiffTools.jl](https://github.com/JuliaDiff/SparseDiffTools.jl)           | `AutoSparseForwardDiff()`, `AutoSparseFiniteDiff()`        |
-| [Tracker.jl](https://github.com/FluxML/Tracker.jl)                              | `AutoTracker()`                                            |
-| [Zygote.jl](https://github.com/FluxML/Zygote.jl)                                | `AutoZygote()`                                             |
+| Backend                                                                         | Object                                                                   |
+| :------------------------------------------------------------------------------ | :----------------------------------------------------------------------- |
+| [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl)             | `AutoChainRules(; ruleconfig)`                                           |
+| [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl)                     | `AutoDiffractor()`                                                       |
+| [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl)                              | `AutoEnzyme(; mode=Enzyme.Forward)`, `AutoEnzyme(; mode=Enzyme.Reverse)` |
+| [FiniteDiff.jl](https://github.com/JuliaDiff/FiniteDiff.jl)                     | `AutoFiniteDiff()`                                                       |
+| [FiniteDifferences.jl](https://github.com/JuliaDiff/FiniteDifferences.jl)       | `AutoFiniteDifferences(; fdm)`                                           |
+| [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl)                   | `AutoForwardDiff()`                                                      |
+| [PolyesterForwardDiff.jl](https://github.com/JuliaDiff/PolyesterForwardDiff.jl) | `AutoPolyesterForwardDiff(; chunksize)`                                  |
+| [ReverseDiff.jl](https://github.com/JuliaDiff/ReverseDiff.jl)                   | `AutoReverseDiff()`                                                      |
+| [SparseDiffTools.jl](https://github.com/JuliaDiff/SparseDiffTools.jl)           | `AutoSparseForwardDiff()`, `AutoSparseFiniteDiff()`                      |
+| [Tracker.jl](https://github.com/FluxML/Tracker.jl)                              | `AutoTracker()`                                                          |
+| [Zygote.jl](https://github.com/FluxML/Zygote.jl)                                | `AutoZygote()`                                                           |
 
 We also provide some experimental backends ourselves:
 
