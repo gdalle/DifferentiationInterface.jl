@@ -2,13 +2,9 @@
 
 function test_scen_intact(new_scen, scen)
     @testset "Scenario intact" begin
-        @test new_scen.x == scen.x
-        @test new_scen.y == scen.y
-        if hasfield(typeof(scen), :dx)
-            @test new_scen.dx == scen.dx
-        end
-        if hasfield(typeof(scen), :dy)
-            @test new_scen.dy == scen.dy
+        for n in fieldnames(typeof(scen))
+            n in (:f, :ref) && continue
+            @test getfield(new_scen, n) == getfield(scen, n)
         end
     end
 end
@@ -24,7 +20,7 @@ function test_correctness(
     ref_backend,
 )
     (; f, x, y, dx) = new_scen = deepcopy(scen)
-    extras = prepare_pushforward(f, ba, x)
+    extras = prepare_pushforward(f, ba, x, dx)
     dy_true = if ref_backend isa AbstractADType
         pushforward(f, ref_backend, x, dx)
     else
@@ -56,7 +52,7 @@ function test_correctness(
     ref_backend,
 )
     (; f, x, y, dx) = new_scen = deepcopy(scen)
-    extras = prepare_pushforward(f, ba, x)
+    extras = prepare_pushforward(f, ba, x, dx)
     dy_true = if ref_backend isa AbstractADType
         pushforward(f, ref_backend, x, dx)
     else
@@ -94,7 +90,7 @@ function test_correctness(
 )
     (; f, x, y, dx) = new_scen = deepcopy(scen)
     f! = f
-    extras = prepare_pushforward(f!, mysimilar(y), ba, x)
+    extras = prepare_pushforward(f!, mysimilar(y), ba, x, dx)
     dy_true = if ref_backend isa AbstractADType
         pushforward(f!, mysimilar(y), ref_backend, x, dx)
     else
@@ -131,7 +127,7 @@ function test_correctness(
 )
     (; f, x, y, dx) = new_scen = deepcopy(scen)
     f! = f
-    extras = prepare_pushforward(f!, mysimilar(y), ba, x)
+    extras = prepare_pushforward(f!, mysimilar(y), ba, x, dx)
     dy_true = if ref_backend isa AbstractADType
         pushforward(f!, mysimilar(y), ref_backend, x, dx)
     else
@@ -171,7 +167,7 @@ function test_correctness(
     ref_backend,
 )
     (; f, x, y, dy) = new_scen = deepcopy(scen)
-    extras = prepare_pullback(f, ba, x)
+    extras = prepare_pullback(f, ba, x, dy)
     dx_true = if ref_backend isa AbstractADType
         pullback(f, ref_backend, x, dy)
     else
@@ -210,7 +206,7 @@ function test_correctness(
     ref_backend,
 )
     (; f, x, y, dy) = new_scen = deepcopy(scen)
-    extras = prepare_pullback(f, ba, x)
+    extras = prepare_pullback(f, ba, x, dy)
     dx_true = if ref_backend isa AbstractADType
         pullback(f, ref_backend, x, dy)
     else
@@ -256,7 +252,7 @@ function test_correctness(
 )
     (; f, x, y, dy) = new_scen = deepcopy(scen)
     f! = f
-    extras = prepare_pullback(f!, mysimilar(y), ba, x)
+    extras = prepare_pullback(f!, mysimilar(y), ba, x, dy)
     dx_true = if ref_backend isa AbstractADType
         pullback(f!, mysimilar(y), ref_backend, x, dy)
     else
@@ -302,7 +298,7 @@ function test_correctness(
 )
     (; f, x, y, dy) = new_scen = deepcopy(scen)
     f! = f
-    extras = prepare_pullback(f!, mysimilar(y), ba, x)
+    extras = prepare_pullback(f!, mysimilar(y), ba, x, dy)
     dx_true = if ref_backend isa AbstractADType
         pullback(f!, mysimilar(y), ref_backend, x, dy)
     else

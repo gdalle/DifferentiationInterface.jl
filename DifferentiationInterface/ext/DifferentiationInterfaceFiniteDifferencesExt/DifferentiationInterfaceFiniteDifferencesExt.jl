@@ -17,7 +17,7 @@ end
 
 ## Pushforward
 
-DI.prepare_pushforward(f, ::AutoFiniteDifferences, x) = NoPushforwardExtras()
+DI.prepare_pushforward(f, ::AutoFiniteDifferences, x, dx) = NoPushforwardExtras()
 
 function DI.pushforward(f, backend::AutoFiniteDifferences, x, dx, ::NoPushforwardExtras)
     return jvp(backend.fdm, f, (x, dx))

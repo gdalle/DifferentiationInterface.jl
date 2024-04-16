@@ -43,7 +43,10 @@ struct PullbackGradientExtras{E<:PullbackExtras} <: GradientExtras
 end
 
 function prepare_gradient(f, backend::AbstractADType, x)
-    return PullbackGradientExtras(prepare_pullback(f, backend, x))
+    y = f(x)
+    dy = one(y)
+    pullback_extras = prepare_pullback(f, backend, x, dy)
+    return PullbackGradientExtras(pullback_extras)
 end
 
 ## One argument

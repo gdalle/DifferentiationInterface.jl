@@ -5,7 +5,7 @@ struct FastDifferentiationTwoArgPushforwardExtras{E1,E2} <: PushforwardExtras
     jvp_exe!::E2
 end
 
-function DI.prepare_pushforward(f!, y, ::AnyAutoFastDifferentiation, x)
+function DI.prepare_pushforward(f!, y, ::AnyAutoFastDifferentiation, x, dx)
     x_var = if x isa Number
         only(make_variables(:x))
     else

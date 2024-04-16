@@ -3,7 +3,7 @@ struct TapirOneArgPullbackExtras{Y,R} <: PullbackExtras
     rrule::R
 end
 
-function DI.prepare_pullback(f, ::AutoTapir, x)
+function DI.prepare_pullback(f, ::AutoTapir, x, dy)
     y = f(x)
     rrule = build_rrule(f, x)
     return TapirOneArgPullbackExtras(y, rrule)

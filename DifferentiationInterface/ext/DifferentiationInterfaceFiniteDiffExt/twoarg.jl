@@ -1,6 +1,6 @@
 ## Pushforward
 
-DI.prepare_pushforward(f!, y, ::AutoFiniteDiff, x) = NoPushforwardExtras()
+DI.prepare_pushforward(f!, y, ::AutoFiniteDiff, x, dx) = NoPushforwardExtras()
 
 function DI.value_and_pushforward(
     f!, y, backend::AutoFiniteDiff, x, dx, ::NoPushforwardExtras

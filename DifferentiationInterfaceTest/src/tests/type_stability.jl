@@ -2,7 +2,7 @@
 
 function test_jet(ba::AbstractADType, scen::PushforwardScenario{1,:outofplace}; ref_backend)
     (; f, x, y, dx) = deepcopy(scen)
-    extras = prepare_pushforward(f, ba, x)
+    extras = prepare_pushforward(f, ba, x, dx)
 
     if Bool(pushforward_performance(ba))
         @test_opt value_and_pushforward(f, ba, x, dx, extras)
@@ -13,7 +13,7 @@ end
 
 function test_jet(ba::AbstractADType, scen::PushforwardScenario{1,:inplace}; ref_backend)
     (; f, x, y, dx) = deepcopy(scen)
-    extras = prepare_pushforward(f, ba, x)
+    extras = prepare_pushforward(f, ba, x, dx)
     dy_in = mysimilar(y)
 
     if Bool(pushforward_performance(ba))
@@ -26,7 +26,7 @@ end
 function test_jet(ba::AbstractADType, scen::PushforwardScenario{2,:outofplace}; ref_backend)
     (; f, x, y, dx) = deepcopy(scen)
     f! = f
-    extras = prepare_pushforward(f!, mysimilar(y), ba, x)
+    extras = prepare_pushforward(f!, mysimilar(y), ba, x, dx)
     y_in = mysimilar(y)
 
     if Bool(pushforward_performance(ba))
@@ -39,7 +39,7 @@ end
 function test_jet(ba::AbstractADType, scen::PushforwardScenario{2,:inplace}; ref_backend)
     (; f, x, y, dx) = deepcopy(scen)
     f! = f
-    extras = prepare_pushforward(f!, mysimilar(y), ba, x)
+    extras = prepare_pushforward(f!, mysimilar(y), ba, x, dx)
     y_in, dy_in = mysimilar(y), mysimilar(y)
 
     if Bool(pushforward_performance(ba))
@@ -53,7 +53,7 @@ end
 
 function test_jet(ba::AbstractADType, scen::PullbackScenario{1,:outofplace}; ref_backend)
     (; f, x, dy) = deepcopy(scen)
-    extras = prepare_pullback(f, ba, x)
+    extras = prepare_pullback(f, ba, x, dy)
 
     _, pullbackfunc = value_and_pullback_split(f, ba, x, extras)
 
@@ -67,7 +67,7 @@ end
 
 function test_jet(ba::AbstractADType, scen::PullbackScenario{1,:inplace}; ref_backend)
     (; f, x, dy) = deepcopy(scen)
-    extras = prepare_pullback(f, ba, x)
+    extras = prepare_pullback(f, ba, x, dy)
     dx_in = mysimilar(x)
 
     _, pullbackfunc! = value_and_pullback!_split(f, ba, x, extras)
@@ -83,7 +83,7 @@ end
 function test_jet(ba::AbstractADType, scen::PullbackScenario{2,:outofplace}; ref_backend)
     (; f, x, y, dy) = deepcopy(scen)
     f! = f
-    extras = prepare_pullback(f!, mysimilar(y), ba, x)
+    extras = prepare_pullback(f!, mysimilar(y), ba, x, dy)
     y_in = mysimilar(y)
 
     _, pullbackfunc = value_and_pullback_split(f!, y, ba, x, extras)
@@ -99,7 +99,7 @@ end
 function test_jet(ba::AbstractADType, scen::PullbackScenario{2,:inplace}; ref_backend)
     (; f, x, y, dy) = deepcopy(scen)
     f! = f
-    extras = prepare_pullback(f!, mysimilar(y), ba, x)
+    extras = prepare_pullback(f!, mysimilar(y), ba, x, dy)
     y_in, dx_in = mysimilar(y), mysimilar(x)
 
     _, pullbackfunc! = value_and_pullback!_split(f!, y, ba, x, extras)

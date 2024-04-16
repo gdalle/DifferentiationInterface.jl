@@ -50,11 +50,14 @@ struct PushforwardDerivativeExtras{E<:PushforwardExtras} <: DerivativeExtras
 end
 
 function prepare_derivative(f, backend::AbstractADType, x)
-    return PushforwardDerivativeExtras(prepare_pushforward(f, backend, x))
+    dx = one(x)
+    return PushforwardDerivativeExtras(prepare_pushforward(f, backend, x, dx))
 end
 
 function prepare_derivative(f!, y, backend::AbstractADType, x)
-    return PushforwardDerivativeExtras(prepare_pushforward(f!, y, backend, x))
+    dx = one(x)
+    pushforward_extras = prepare_pushforward(f!, y, backend, x, dx)
+    return PushforwardDerivativeExtras(pushforward_extras)
 end
 
 ## One argument

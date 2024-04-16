@@ -1,6 +1,6 @@
 ## Pullback
 
-DI.prepare_pullback(f!, y, ::AutoReverseEnzyme, x) = NoPullbackExtras()
+DI.prepare_pullback(f!, y, ::AutoReverseEnzyme, x, dy) = NoPullbackExtras()
 
 function DI.value_and_pullback(
     f!, y, ::AutoReverseEnzyme, x::Number, dy, ::NoPullbackExtras

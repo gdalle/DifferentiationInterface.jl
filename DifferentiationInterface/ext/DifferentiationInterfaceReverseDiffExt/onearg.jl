@@ -1,6 +1,6 @@
 ## Pullback
 
-DI.prepare_pullback(f, ::AutoReverseDiff, x) = NoPullbackExtras()
+DI.prepare_pullback(f, ::AutoReverseDiff, x, dy) = NoPullbackExtras()
 
 function DI.value_and_pullback(
     f, ::AutoReverseDiff, x::AbstractArray, dy, ::NoPullbackExtras

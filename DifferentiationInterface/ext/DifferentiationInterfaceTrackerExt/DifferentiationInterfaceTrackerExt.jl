@@ -10,7 +10,7 @@ DI.mutation_support(::AutoTracker) = DI.MutationNotSupported()
 
 ## Pullback
 
-DI.prepare_pullback(f, ::AutoTracker, x) = NoPullbackExtras()
+DI.prepare_pullback(f, ::AutoTracker, x, dy) = NoPullbackExtras()
 
 function DI.value_and_pullback_split(f, ::AutoTracker, x, ::NoPullbackExtras)
     y, back = forward(f, x)

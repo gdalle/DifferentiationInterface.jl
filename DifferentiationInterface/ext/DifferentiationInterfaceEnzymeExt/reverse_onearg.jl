@@ -1,6 +1,6 @@
 ## Pullback
 
-DI.prepare_pullback(f, ::AutoReverseEnzyme, x) = NoPullbackExtras()
+DI.prepare_pullback(f, ::AutoReverseEnzyme, x, dy) = NoPullbackExtras()
 
 ### Out-of-place
 

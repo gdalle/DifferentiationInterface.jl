@@ -33,9 +33,9 @@ struct HVPHessianExtras{E<:HVPExtras} <: HessianExtras
 end
 
 function prepare_hessian(f, backend::AbstractADType, x)
-    return HVPHessianExtras(
-        prepare_hvp(f, backend, x, basis(backend, x, first(CartesianIndices(x))))
-    )
+    v = basis(backend, x, first(CartesianIndices(x)))
+    hvp_extras = prepare_hvp(f, backend, x, v)
+    return HVPHessianExtras(hvp_extras)
 end
 
 ## One argument

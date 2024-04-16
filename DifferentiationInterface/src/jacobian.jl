@@ -62,19 +62,28 @@ function prepare_jacobian(f!, y, backend::AbstractADType, x)
 end
 
 function prepare_jacobian_aux(f, backend, x, ::PushforwardFast)
-    return PushforwardJacobianExtras(prepare_pushforward(f, backend, x))
+    dx = basis(backend, x, first(CartesianIndices(x)))
+    pushforward_extras = prepare_pushforward(f, backend, x, dx)
+    return PushforwardJacobianExtras(pushforward_extras)
 end
 
 function prepare_jacobian_aux(f!, y, backend, x, ::PushforwardFast)
-    return PushforwardJacobianExtras(prepare_pushforward(f!, y, backend, x))
+    dx = basis(backend, x, first(CartesianIndices(x)))
+    pushforward_extras = prepare_pushforward(f!, y, backend, x, dx)
+    return PushforwardJacobianExtras(pushforward_extras)
 end
 
 function prepare_jacobian_aux(f, backend, x, ::PushforwardSlow)
-    return PullbackJacobianExtras(prepare_pullback(f, backend, x))
+    y = f(x)
+    dy = basis(backend, y, first(CartesianIndices(y)))
+    pullback_extras = prepare_pullback(f, backend, x, dy)
+    return PullbackJacobianExtras(pullback_extras)
 end
 
 function prepare_jacobian_aux(f!, y, backend, x, ::PushforwardSlow)
-    return PullbackJacobianExtras(prepare_pullback(f!, y, backend, x))
+    dy = basis(backend, y, first(CartesianIndices(y)))
+    pullback_extras = prepare_pullback(f!, y, backend, x, dy)
+    return PullbackJacobianExtras(pullback_extras)
 end
 
 ## One argument

@@ -1,8 +1,8 @@
 ## Docstrings
 
 """
-    prepare_pushforward(f,     backend, x) -> extras
-    prepare_pushforward(f!, y, backend, x) -> extras
+    prepare_pushforward(f,     backend, x, dx) -> extras
+    prepare_pushforward(f!, y, backend, x, dx) -> extras
 
 Create an `extras` object subtyping [`PushforwardExtras`](@ref) that can be given to pushforward operators.
 
@@ -52,20 +52,25 @@ struct PullbackPushforwardExtras{E} <: PushforwardExtras
     pullback_extras::E
 end
 
-function prepare_pushforward(f, backend::AbstractADType, x)
-    return prepare_pushforward_aux(f, backend, x, pushforward_performance(backend))
+function prepare_pushforward(f, backend::AbstractADType, x, dx)
+    return prepare_pushforward_aux(f, backend, x, dx, pushforward_performance(backend))
 end
 
-function prepare_pushforward(f!, y, backend::AbstractADType, x)
-    return prepare_pushforward_aux(f!, y, backend, x, pushforward_performance(backend))
+function prepare_pushforward(f!, y, backend::AbstractADType, x, dx)
+    return prepare_pushforward_aux(f!, y, backend, x, dx, pushforward_performance(backend))
 end
 
-function prepare_pushforward_aux(f, backend, x, ::PushforwardSlow)
-    return PullbackPushforwardExtras(prepare_pullback(f, backend, x))
+function prepare_pushforward_aux(f, backend, x, dx, ::PushforwardSlow)
+    y = f(x)
+    dy = y isa Number ? one(y) : basis(backend, y, first(CartesianIndices(y)))
+    pullback_extras = prepare_pullback(f, backend, x, dy)
+    return PullbackPushforwardExtras(pullback_extras)
 end
 
-function prepare_pushforward_aux(f!, y, backend, x, ::PushforwardSlow)
-    return PullbackPushforwardExtras(prepare_pullback(f!, y, backend, x))
+function prepare_pushforward_aux(f!, y, backend, x, dx, ::PushforwardSlow)
+    dy = y isa Number ? one(y) : basis(backend, y, first(CartesianIndices(y)))
+    pullback_extras = prepare_pullback(f!, y, backend, x, dy)
+    return PullbackPushforwardExtras(pullback_extras)
 end
 
 ## One argument
@@ -75,7 +80,7 @@ function value_and_pushforward(
     backend::AbstractADType,
     x,
     dx,
-    extras::PushforwardExtras=prepare_pushforward(f, backend, x),
+    extras::PushforwardExtras=prepare_pushforward(f, backend, x, dx),
 )
     return value_and_pushforward_onearg_aux(f, backend, x, dx, extras)
 end
@@ -107,7 +112,7 @@ function value_and_pushforward!(
     backend::AbstractADType,
     x,
     dx,
-    extras::PushforwardExtras=prepare_pushforward(f, backend, x),
+    extras::PushforwardExtras=prepare_pushforward(f, backend, x, dx),
 )
     y, new_dy = value_and_pushforward(f, backend, x, dx, extras)
     return y, copyto!(dy, new_dy)
@@ -118,7 +123,7 @@ function pushforward(
     backend::AbstractADType,
     x,
     dx,
-    extras::PushforwardExtras=prepare_pushforward(f, backend, x),
+    extras::PushforwardExtras=prepare_pushforward(f, backend, x, dx),
 )
     return value_and_pushforward(f, backend, x, dx, extras)[2]
 end
@@ -129,7 +134,7 @@ function pushforward!(
     backend::AbstractADType,
     x,
     dx,
-    extras::PushforwardExtras=prepare_pushforward(f, backend, x),
+    extras::PushforwardExtras=prepare_pushforward(f, backend, x, dx),
 )
     return value_and_pushforward!(f, dy, backend, x, dx, extras)[2]
 end
@@ -142,7 +147,7 @@ function value_and_pushforward(
     backend::AbstractADType,
     x,
     dx,
-    extras::PushforwardExtras=prepare_pushforward(f!, y, backend, x),
+    extras::PushforwardExtras=prepare_pushforward(f!, y, backend, x, dx),
 )
     return value_and_pushforward_twoarg_aux(f!, y, backend, x, dx, extras)
 end
@@ -171,7 +176,7 @@ function value_and_pushforward!(
     backend::AbstractADType,
     x,
     dx,
-    extras::PushforwardExtras=prepare_pushforward(f!, y, backend, x),
+    extras::PushforwardExtras=prepare_pushforward(f!, y, backend, x, dx),
 )
     y, new_dy = value_and_pushforward(f!, y, backend, x, dx, extras)
     return y, copyto!(dy, new_dy)
@@ -183,7 +188,7 @@ function pushforward(
     backend::AbstractADType,
     x,
     dx,
-    extras::PushforwardExtras=prepare_pushforward(f!, y, backend, x),
+    extras::PushforwardExtras=prepare_pushforward(f!, y, backend, x, dx),
 )
     return value_and_pushforward(f!, y, backend, x, dx, extras)[2]
 end
@@ -195,7 +200,7 @@ function pushforward!(
     backend::AbstractADType,
     x,
     dx,
-    extras::PushforwardExtras=prepare_pushforward(f!, y, backend, x),
+    extras::PushforwardExtras=prepare_pushforward(f!, y, backend, x, dx),
 )
     return value_and_pushforward!(f!, y, dy, backend, x, dx, extras)[2]
 end
