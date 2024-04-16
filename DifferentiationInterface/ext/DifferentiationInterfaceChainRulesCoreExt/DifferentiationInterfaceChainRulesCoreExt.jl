@@ -11,6 +11,7 @@ ruleconfig(backend::AutoChainRules) = backend.ruleconfig
 const AutoForwardChainRules = AutoChainRules{<:RuleConfig{>:HasForwardsMode}}
 const AutoReverseChainRules = AutoChainRules{<:RuleConfig{>:HasReverseMode}}
 
+DI.check_available(::AutoChainRules) = true
 DI.supports_mutation(::AutoChainRules) = DI.MutationNotSupported()
 DI.mode(::AutoForwardChainRules) = ADTypes.AbstractForwardMode
 DI.mode(::AutoReverseChainRules) = ADTypes.AbstractReverseMode

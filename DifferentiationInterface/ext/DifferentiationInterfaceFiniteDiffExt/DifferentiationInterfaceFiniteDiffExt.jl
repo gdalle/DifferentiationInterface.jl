@@ -23,7 +23,7 @@ using FiniteDiff:
     finite_difference_jacobian!
 using LinearAlgebra: dot, mul!
 
-const AnyAutoFiniteDiff = Union{AutoFiniteDiff,AutoSparseFiniteDiff}
+DI.check_available(::AutoFiniteDiff) = true
 
 # see https://github.com/SciML/ADTypes.jl/issues/33
 

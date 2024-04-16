@@ -1,6 +1,6 @@
 
-choose_chunk(::AnyAutoForwardDiff{nothing}, x) = Chunk(x)
-choose_chunk(::AnyAutoForwardDiff{C}, x) where {C} = Chunk{C}()
+choose_chunk(::AutoForwardDiff{nothing}, x) = Chunk(x)
+choose_chunk(::AutoForwardDiff{C}, x) where {C} = Chunk{C}()
 
 tag_type(::F, x::Number) where {F} = Tag{F,typeof(x)}
 tag_type(::F, x::AbstractArray) where {F} = Tag{F,eltype(x)}

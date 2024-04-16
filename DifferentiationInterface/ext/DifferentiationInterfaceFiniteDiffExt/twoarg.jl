@@ -1,9 +1,9 @@
 ## Pushforward
 
-DI.prepare_pushforward(f!, y, ::AnyAutoFiniteDiff, x) = NoPushforwardExtras()
+DI.prepare_pushforward(f!, y, ::AutoFiniteDiff, x) = NoPushforwardExtras()
 
 function DI.value_and_pushforward(
-    f!, y, backend::AnyAutoFiniteDiff, x, dx, ::NoPushforwardExtras
+    f!, y, backend::AutoFiniteDiff, x, dx, ::NoPushforwardExtras
 )
     function step(t::Number)::AbstractArray
         new_y = similar(y)
@@ -23,13 +23,13 @@ struct FiniteDiffTwoArgDerivativeExtras{C}
     cache::C
 end
 
-function DI.prepare_derivative(f!, y, ::AnyAutoFiniteDiff, x)
+function DI.prepare_derivative(f!, y, ::AutoFiniteDiff, x)
     cache = nothing
     return FiniteDiffTwoArgDerivativeExtras(cache)
 end
 
 function DI.value_and_derivative(
-    f!, y, backend::AnyAutoFiniteDiff, x, ::FiniteDiffTwoArgDerivativeExtras
+    f!, y, backend::AutoFiniteDiff, x, ::FiniteDiffTwoArgDerivativeExtras
 )
     f!(y, x)
     der = finite_difference_gradient(f!, x, fdtype(backend), eltype(y), FUNCTION_INPLACE, y)
@@ -37,7 +37,7 @@ function DI.value_and_derivative(
 end
 
 function DI.value_and_derivative!(
-    f!, y, der, backend::AnyAutoFiniteDiff, x, ::FiniteDiffTwoArgDerivativeExtras
+    f!, y, der, backend::AutoFiniteDiff, x, ::FiniteDiffTwoArgDerivativeExtras
 )
     f!(y, x)
     finite_difference_gradient!(der, f!, x, fdtype(backend), eltype(y), FUNCTION_INPLACE, y)
@@ -45,7 +45,7 @@ function DI.value_and_derivative!(
 end
 
 function DI.derivative(
-    f!, y, backend::AnyAutoFiniteDiff, x, ::FiniteDiffTwoArgDerivativeExtras
+    f!, y, backend::AutoFiniteDiff, x, ::FiniteDiffTwoArgDerivativeExtras
 )
     f!(y, x)
     der = finite_difference_gradient(f!, x, fdtype(backend), eltype(y), FUNCTION_INPLACE, y)
@@ -53,7 +53,7 @@ function DI.derivative(
 end
 
 function DI.derivative!(
-    f!, y, der, backend::AnyAutoFiniteDiff, x, ::FiniteDiffTwoArgDerivativeExtras
+    f!, y, der, backend::AutoFiniteDiff, x, ::FiniteDiffTwoArgDerivativeExtras
 )
     finite_difference_gradient!(der, f!, x, fdtype(backend), eltype(y), FUNCTION_INPLACE)
     return der
@@ -65,7 +65,7 @@ struct FiniteDiffTwoArgJacobianExtras{C}
     cache::C
 end
 
-function DI.prepare_jacobian(f!, y, backend::AnyAutoFiniteDiff, x)
+function DI.prepare_jacobian(f!, y, backend::AutoFiniteDiff, x)
     x1 = similar(x)
     fx = similar(y)
     fx1 = similar(y)
@@ -74,7 +74,7 @@ function DI.prepare_jacobian(f!, y, backend::AnyAutoFiniteDiff, x)
 end
 
 function DI.value_and_jacobian(
-    f!, y, ::AnyAutoFiniteDiff, x, extras::FiniteDiffTwoArgJacobianExtras
+    f!, y, ::AutoFiniteDiff, x, extras::FiniteDiffTwoArgJacobianExtras
 )
     jac = similar(y, length(y), length(x))
     finite_difference_jacobian!(jac, f!, x, extras.cache)
@@ -83,21 +83,21 @@ function DI.value_and_jacobian(
 end
 
 function DI.value_and_jacobian!(
-    f!, y, jac, ::AnyAutoFiniteDiff, x, extras::FiniteDiffTwoArgJacobianExtras
+    f!, y, jac, ::AutoFiniteDiff, x, extras::FiniteDiffTwoArgJacobianExtras
 )
     finite_difference_jacobian!(jac, f!, x, extras.cache)
     f!(y, x)
     return y, jac
 end
 
-function DI.jacobian(f!, y, ::AnyAutoFiniteDiff, x, extras::FiniteDiffTwoArgJacobianExtras)
+function DI.jacobian(f!, y, ::AutoFiniteDiff, x, extras::FiniteDiffTwoArgJacobianExtras)
     jac = similar(y, length(y), length(x))
     finite_difference_jacobian!(jac, f!, x, extras.cache)
     return jac
 end
 
 function DI.jacobian!(
-    f!, y, jac, ::AnyAutoFiniteDiff, x, extras::FiniteDiffTwoArgJacobianExtras
+    f!, y, jac, ::AutoFiniteDiff, x, extras::FiniteDiffTwoArgJacobianExtras
 )
     finite_difference_jacobian!(jac, f!, x, extras.cache)
     return jac

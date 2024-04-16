@@ -38,6 +38,8 @@ AutoEnzyme
 const AutoForwardEnzyme = AutoEnzyme{<:ForwardMode}
 const AutoReverseEnzyme = AutoEnzyme{<:ReverseMode}
 
+DI.check_available(::AutoEnzyme) = true
+
 function DI.mode(::AutoEnzyme)
     return error(
         "You need to specify the Enzyme mode with `AutoEnzyme(Enzyme.Forward)` or `AutoEnzyme(Enzyme.Reverse)`",

@@ -32,7 +32,7 @@ using ForwardDiff:
     value
 using LinearAlgebra: dot, mul!
 
-const AnyAutoForwardDiff{C,T} = Union{AutoForwardDiff{C,T},AutoSparseForwardDiff{C,T}}
+DI.check_available(::AutoForwardDiff) = true
 
 include("utils.jl")
 include("onearg.jl")

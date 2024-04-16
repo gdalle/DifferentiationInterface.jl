@@ -17,6 +17,8 @@ using Tapir:
     zero_codual,
     zero_tangent
 
+DI.check_available(::AutoTapir) = true
+
 include("onearg.jl")
 include("twoarg.jl")
 

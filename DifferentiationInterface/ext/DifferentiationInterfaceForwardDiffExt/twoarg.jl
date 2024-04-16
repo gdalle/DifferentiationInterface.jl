@@ -1,6 +1,6 @@
-DI.prepare_pushforward(f!, y, ::AnyAutoForwardDiff, x) = NoPushforwardExtras()
+DI.prepare_pushforward(f!, y, ::AutoForwardDiff, x) = NoPushforwardExtras()
 
-function DI.value_and_pushforward(f!, y, ::AnyAutoForwardDiff, x, dx, ::NoPushforwardExtras)
+function DI.value_and_pushforward(f!, y, ::AutoForwardDiff, x, dx, ::NoPushforwardExtras)
     T = tag_type(f!, x)
     xdual = make_dual(T, x, dx)
     ydual = make_dual(T, y, similar(y))
@@ -16,14 +16,14 @@ struct ForwardDiffTwoArgDerivativeExtras{C} <: DerivativeExtras
     config::C
 end
 
-function DI.prepare_derivative(f!, y::AbstractArray, ::AnyAutoForwardDiff, x::Number)
+function DI.prepare_derivative(f!, y::AbstractArray, ::AutoForwardDiff, x::Number)
     return ForwardDiffTwoArgDerivativeExtras(DerivativeConfig(f!, y, x))
 end
 
 function DI.value_and_derivative(
     f!,
     y::AbstractArray,
-    ::AnyAutoForwardDiff,
+    ::AutoForwardDiff,
     x::Number,
     extras::ForwardDiffTwoArgDerivativeExtras,
 )
@@ -36,7 +36,7 @@ function DI.value_and_derivative!(
     f!,
     y::AbstractArray,
     der::AbstractArray,
-    ::AnyAutoForwardDiff,
+    ::AutoForwardDiff,
     x::Number,
     extras::ForwardDiffTwoArgDerivativeExtras,
 )
@@ -48,7 +48,7 @@ end
 function DI.derivative(
     f!,
     y::AbstractArray,
-    ::AnyAutoForwardDiff,
+    ::AutoForwardDiff,
     x::Number,
     extras::ForwardDiffTwoArgDerivativeExtras,
 )
@@ -60,7 +60,7 @@ function DI.derivative!(
     f!,
     y::AbstractArray,
     der::AbstractArray,
-    ::AnyAutoForwardDiff,
+    ::AutoForwardDiff,
     x::Number,
     extras::ForwardDiffTwoArgDerivativeExtras,
 )
@@ -75,7 +75,7 @@ struct ForwardDiffTwoArgJacobianExtras{C} <: JacobianExtras
 end
 
 function DI.prepare_jacobian(
-    f!, y::AbstractArray, backend::AnyAutoForwardDiff, x::AbstractArray
+    f!, y::AbstractArray, backend::AutoForwardDiff, x::AbstractArray
 )
     return ForwardDiffTwoArgJacobianExtras(
         JacobianConfig(f!, y, x, choose_chunk(backend, x))
@@ -85,7 +85,7 @@ end
 function DI.value_and_jacobian(
     f!,
     y::AbstractArray,
-    ::AnyAutoForwardDiff,
+    ::AutoForwardDiff,
     x::AbstractArray,
     extras::ForwardDiffTwoArgJacobianExtras,
 )
@@ -99,7 +99,7 @@ function DI.value_and_jacobian!(
     f!,
     y::AbstractArray,
     jac::AbstractMatrix,
-    ::AnyAutoForwardDiff,
+    ::AutoForwardDiff,
     x::AbstractArray,
     extras::ForwardDiffTwoArgJacobianExtras,
 )
@@ -111,7 +111,7 @@ end
 function DI.jacobian(
     f!,
     y::AbstractArray,
-    ::AnyAutoForwardDiff,
+    ::AutoForwardDiff,
     x::AbstractArray,
     extras::ForwardDiffTwoArgJacobianExtras,
 )
@@ -123,7 +123,7 @@ function DI.jacobian!(
     f!,
     y::AbstractArray,
     jac::AbstractMatrix,
-    ::AnyAutoForwardDiff,
+    ::AutoForwardDiff,
     x::AbstractArray,
     extras::ForwardDiffTwoArgJacobianExtras,
 )

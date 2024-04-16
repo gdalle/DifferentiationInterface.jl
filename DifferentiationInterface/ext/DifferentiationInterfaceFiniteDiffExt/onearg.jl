@@ -1,16 +1,14 @@
 ## Pushforward
 
-DI.prepare_pushforward(f, ::AnyAutoFiniteDiff, x) = NoPushforwardExtras()
+DI.prepare_pushforward(f, ::AutoFiniteDiff, x) = NoPushforwardExtras()
 
-function DI.pushforward(f, backend::AnyAutoFiniteDiff, x, dx, ::NoPushforwardExtras)
+function DI.pushforward(f, backend::AutoFiniteDiff, x, dx, ::NoPushforwardExtras)
     step(t::Number) = f(x .+ t .* dx)
     new_dy = finite_difference_derivative(step, zero(eltype(x)), fdtype(backend))
     return new_dy
 end
 
-function DI.value_and_pushforward(
-    f, backend::AnyAutoFiniteDiff, x, dx, ::NoPushforwardExtras
-)
+function DI.value_and_pushforward(f, backend::AutoFiniteDiff, x, dx, ::NoPushforwardExtras)
     y = f(x)
     step(t::Number) = f(x .+ t .* dx)
     new_dy = finite_difference_derivative(
@@ -25,7 +23,7 @@ struct FiniteDiffOneArgDerivativeExtras{C}
     cache::C
 end
 
-function DI.prepare_derivative(f, backend::AnyAutoFiniteDiff, x)
+function DI.prepare_derivative(f, backend::AutoFiniteDiff, x)
     y = f(x)
     cache = if y isa Number
         nothing
@@ -39,26 +37,26 @@ end
 ### Scalar to scalar
 
 function DI.derivative(
-    f, backend::AnyAutoFiniteDiff, x, ::FiniteDiffOneArgDerivativeExtras{Nothing}
+    f, backend::AutoFiniteDiff, x, ::FiniteDiffOneArgDerivativeExtras{Nothing}
 )
     return finite_difference_derivative(f, x, fdtype(backend))
 end
 
 function DI.derivative!(
-    f, der, backend::AnyAutoFiniteDiff, x, extras::FiniteDiffOneArgDerivativeExtras{Nothing}
+    f, der, backend::AutoFiniteDiff, x, extras::FiniteDiffOneArgDerivativeExtras{Nothing}
 )
     return copyto!(der, DI.derivative(f, backend, x, extras))
 end
 
 function DI.value_and_derivative(
-    f, backend::AnyAutoFiniteDiff, x, ::FiniteDiffOneArgDerivativeExtras{Nothing}
+    f, backend::AutoFiniteDiff, x, ::FiniteDiffOneArgDerivativeExtras{Nothing}
 )
     y = f(x)
     return y, finite_difference_derivative(f, x, fdtype(backend), eltype(y), y)
 end
 
 function DI.value_and_derivative!(
-    f, der, backend::AnyAutoFiniteDiff, x, extras::FiniteDiffOneArgDerivativeExtras{Nothing}
+    f, der, backend::AutoFiniteDiff, x, extras::FiniteDiffOneArgDerivativeExtras{Nothing}
 )
     y, new_der = DI.value_and_derivative(f, backend, x, extras)
     return y, copyto!(der, new_der)
@@ -67,34 +65,26 @@ end
 ### Scalar to array
 
 function DI.derivative(
-    f, ::AnyAutoFiniteDiff, x, extras::FiniteDiffOneArgDerivativeExtras{<:GradientCache}
+    f, ::AutoFiniteDiff, x, extras::FiniteDiffOneArgDerivativeExtras{<:GradientCache}
 )
     return finite_difference_gradient(f, x, extras.cache)
 end
 
 function DI.derivative!(
-    f,
-    der,
-    ::AnyAutoFiniteDiff,
-    x,
-    extras::FiniteDiffOneArgDerivativeExtras{<:GradientCache},
+    f, der, ::AutoFiniteDiff, x, extras::FiniteDiffOneArgDerivativeExtras{<:GradientCache}
 )
     return finite_difference_gradient!(der, f, x, extras.cache)
 end
 
 function DI.value_and_derivative(
-    f, ::AnyAutoFiniteDiff, x, extras::FiniteDiffOneArgDerivativeExtras{<:GradientCache}
+    f, ::AutoFiniteDiff, x, extras::FiniteDiffOneArgDerivativeExtras{<:GradientCache}
 )
     y = f(x)
     return y, finite_difference_gradient(f, x, extras.cache)
 end
 
 function DI.value_and_derivative!(
-    f,
-    der,
-    ::AnyAutoFiniteDiff,
-    x,
-    extras::FiniteDiffOneArgDerivativeExtras{<:GradientCache},
+    f, der, ::AutoFiniteDiff, x, extras::FiniteDiffOneArgDerivativeExtras{<:GradientCache}
 )
     return f(x), finite_difference_gradient!(der, f, x, extras.cache)
 end
@@ -105,7 +95,7 @@ struct FiniteDiffGradientExtras{C}
     cache::C
 end
 
-function DI.prepare_gradient(f, backend::AnyAutoFiniteDiff, x)
+function DI.prepare_gradient(f, backend::AutoFiniteDiff, x)
     y = f(x)
     df = zero(y) .* x
     cache = GradientCache(df, x, fdtype(backend))
@@ -113,25 +103,25 @@ function DI.prepare_gradient(f, backend::AnyAutoFiniteDiff, x)
 end
 
 function DI.gradient(
-    f, ::AnyAutoFiniteDiff, x::AbstractArray, extras::FiniteDiffGradientExtras
+    f, ::AutoFiniteDiff, x::AbstractArray, extras::FiniteDiffGradientExtras
 )
     return finite_difference_gradient(f, x, extras.cache)
 end
 
 function DI.value_and_gradient(
-    f, ::AnyAutoFiniteDiff, x::AbstractArray, extras::FiniteDiffGradientExtras
+    f, ::AutoFiniteDiff, x::AbstractArray, extras::FiniteDiffGradientExtras
 )
     return f(x), finite_difference_gradient(f, x, extras.cache)
 end
 
 function DI.gradient!(
-    f, grad, ::AnyAutoFiniteDiff, x::AbstractArray, extras::FiniteDiffGradientExtras
+    f, grad, ::AutoFiniteDiff, x::AbstractArray, extras::FiniteDiffGradientExtras
 )
     return finite_difference_gradient!(grad, f, x, extras.cache)
 end
 
 function DI.value_and_gradient!(
-    f, grad, ::AnyAutoFiniteDiff, x::AbstractArray, extras::FiniteDiffGradientExtras
+    f, grad, ::AutoFiniteDiff, x::AbstractArray, extras::FiniteDiffGradientExtras
 )
     return f(x), finite_difference_gradient!(grad, f, x, extras.cache)
 end
@@ -142,7 +132,7 @@ struct FiniteDiffOneArgJacobianExtras{C}
     cache::C
 end
 
-function DI.prepare_jacobian(f, backend::AnyAutoFiniteDiff, x)
+function DI.prepare_jacobian(f, backend::AutoFiniteDiff, x)
     y = f(x)
     x1 = similar(x)
     fx = similar(y)
@@ -151,25 +141,23 @@ function DI.prepare_jacobian(f, backend::AnyAutoFiniteDiff, x)
     return FiniteDiffOneArgJacobianExtras(cache)
 end
 
-function DI.jacobian(f, ::AnyAutoFiniteDiff, x, extras::FiniteDiffOneArgJacobianExtras)
+function DI.jacobian(f, ::AutoFiniteDiff, x, extras::FiniteDiffOneArgJacobianExtras)
     return finite_difference_jacobian(f, x, extras.cache)
 end
 
 function DI.value_and_jacobian(
-    f, ::AnyAutoFiniteDiff, x, extras::FiniteDiffOneArgJacobianExtras
+    f, ::AutoFiniteDiff, x, extras::FiniteDiffOneArgJacobianExtras
 )
     y = f(x)
     return y, finite_difference_jacobian(f, x, extras.cache, y)
 end
 
-function DI.jacobian!(
-    f, jac, ::AnyAutoFiniteDiff, x, extras::FiniteDiffOneArgJacobianExtras
-)
+function DI.jacobian!(f, jac, ::AutoFiniteDiff, x, extras::FiniteDiffOneArgJacobianExtras)
     return copyto!(jac, finite_difference_jacobian(f, x, extras.cache; jac_prototype=jac))
 end
 
 function DI.value_and_jacobian!(
-    f, jac, ::AnyAutoFiniteDiff, x, extras::FiniteDiffOneArgJacobianExtras
+    f, jac, ::AutoFiniteDiff, x, extras::FiniteDiffOneArgJacobianExtras
 )
     y = f(x)
     return y,
@@ -182,15 +170,15 @@ struct FiniteDiffHessianExtras{C}
     cache::C
 end
 
-function DI.prepare_hessian(f, backend::AnyAutoFiniteDiff, x)
+function DI.prepare_hessian(f, backend::AutoFiniteDiff, x)
     cache = HessianCache(x, fdhtype(backend))
     return FiniteDiffHessianExtras(cache)
 end
 
-function DI.hessian(f, ::AnyAutoFiniteDiff, x, extras::FiniteDiffHessianExtras)
+function DI.hessian(f, ::AutoFiniteDiff, x, extras::FiniteDiffHessianExtras)
     return finite_difference_hessian(f, x, extras.cache)
 end
 
-function DI.hessian!(f, hess, ::AnyAutoFiniteDiff, x, extras::FiniteDiffHessianExtras)
+function DI.hessian!(f, hess, ::AutoFiniteDiff, x, extras::FiniteDiffHessianExtras)
     return finite_difference_hessian!(hess, f, x, extras.cache)
 end

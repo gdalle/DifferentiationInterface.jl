@@ -25,7 +25,7 @@ using ReverseDiff:
     jacobian,
     jacobian!
 
-const AnyAutoReverseDiff = Union{AutoReverseDiff,AutoSparseReverseDiff}
+DI.check_available(::AutoReverseDiff) = true
 
 include("onearg.jl")
 include("twoarg.jl")

@@ -8,6 +8,7 @@ using FillArrays: OneElement
 using FiniteDifferences: FiniteDifferences, grad, jacobian, jvp, j′vp
 using LinearAlgebra: dot
 
+DI.check_available(::AutoFiniteDifferences) = true
 DI.supports_mutation(::AutoFiniteDifferences) = DI.MutationNotSupported()
 
 function FiniteDifferences.to_vec(a::OneElement)  # TODO: remove type piracy (https://github.com/JuliaDiff/FiniteDifferences.jl/issues/141)
