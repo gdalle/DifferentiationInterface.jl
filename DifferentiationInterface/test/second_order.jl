@@ -1,5 +1,6 @@
 second_order_backends = [
     AutoForwardDiff(),  #
+    AutoSparseForwardDiff(),  #
     AutoPolyesterForwardDiff(; chunksize=1),  #
     AutoFastDifferentiation(),
     AutoSymbolics(),

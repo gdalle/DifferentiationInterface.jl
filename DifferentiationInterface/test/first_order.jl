@@ -9,6 +9,7 @@ all_backends = [
     AutoForwardDiff(),
     AutoPolyesterForwardDiff(; chunksize=1),
     AutoReverseDiff(; compile=true),
+    AutoSparseForwardDiff(),
     AutoSymbolics(),
     AutoTapir(),
     AutoTracker(),
