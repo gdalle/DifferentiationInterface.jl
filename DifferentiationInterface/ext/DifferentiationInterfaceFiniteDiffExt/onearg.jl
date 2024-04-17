@@ -178,9 +178,9 @@ end
 # cache cannot be reused because of https://github.com/JuliaDiff/FiniteDiff.jl/issues/185
 
 function DI.hessian(f, backend::AutoFiniteDiff, x, extras::FiniteDiffHessianExtras)
-    return finite_difference_hessian(f, x, HessianCache(x, fdhtype(backend)))
+    return finite_difference_hessian(f, x, extras.cache)
 end
 
 function DI.hessian!(f, hess, backend::AutoFiniteDiff, x, extras::FiniteDiffHessianExtras)
-    return finite_difference_hessian!(hess, f, x, HessianCache(x, fdhtype(backend)))
+    return finite_difference_hessian!(hess, f, x, extras.cache)
 end
