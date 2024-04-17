@@ -33,56 +33,78 @@ end
 
 ## Gradient
 
-DI.prepare_gradient(f, ::AutoForwardEnzyme, x) = NoGradientExtras()
+struct EnzymeForwardGradientExtras{C,O}
+    shadow::O
+end
 
-function DI.gradient(f, backend::AutoForwardEnzyme, x::AbstractArray, ::NoGradientExtras)
-    return reshape(collect(gradient(backend.mode, f, x)), size(x))
+function DI.prepare_gradient(f, ::AutoForwardEnzyme, x)
+    C = pick_chunksize(length(x))
+    shadow = chunkedonehot(x, Val(C))
+    return EnzymeForwardGradientExtras{C,typeof(shadow)}(shadow)
+end
+
+function DI.gradient(
+    f, backend::AutoForwardEnzyme, x, extras::EnzymeForwardGradientExtras{C}
+) where {C}
+    grad_tup = gradient(backend.mode, f, x, Val{C}(); shadow=extras.shadow)
+    return reshape(collect(grad_tup), size(x))
 end
 
 function DI.value_and_gradient(
-    f, backend::AutoForwardEnzyme, x::AbstractArray, extras::NoGradientExtras
+    f, backend::AutoForwardEnzyme, x, extras::EnzymeForwardGradientExtras
 )
     return f(x), DI.gradient(f, backend, x, extras)
 end
 
 function DI.gradient!(
-    f, grad, backend::AutoForwardEnzyme, x::AbstractArray, extras::NoGradientExtras
-)
-    return copyto!(grad, DI.gradient(f, backend, x, extras))
+    f, grad, backend::AutoForwardEnzyme, x, extras::EnzymeForwardGradientExtras{C}
+) where {C}
+    grad_tup = gradient(backend.mode, f, x, Val{C}(); shadow=extras.shadow)
+    return copyto!(grad, grad_tup)
 end
 
 function DI.value_and_gradient!(
-    f, grad, backend::AutoForwardEnzyme, x::AbstractArray, extras::NoGradientExtras
-)
-    y, new_grad = DI.value_and_gradient(f, backend, x, extras)
-    return y, copyto!(grad, new_grad)
+    f, grad, backend::AutoForwardEnzyme, x, extras::EnzymeForwardGradientExtras{C}
+) where {C}
+    grad_tup = gradient(backend.mode, f, x, Val{C}(); shadow=extras.shadow)
+    return f(x), copyto!(grad, grad_tup)
 end
 
 ## Jacobian
 
-DI.prepare_jacobian(f, ::AutoForwardEnzyme, x) = NoJacobianExtras()
+struct EnzymeForwardOneArgJacobianExtras{C,O}
+    shadow::O
+end
 
-function DI.jacobian(f, backend::AutoForwardEnzyme, x::AbstractArray, ::NoJacobianExtras)
-    jac_wrongshape = jacobian(backend.mode, f, x)
+function DI.prepare_jacobian(f, ::AutoForwardEnzyme, x)
+    C = pick_chunksize(length(x))
+    shadow = chunkedonehot(x, Val(C))
+    return EnzymeForwardOneArgJacobianExtras{C,typeof(shadow)}(shadow)
+end
+
+function DI.jacobian(
+    f, backend::AutoForwardEnzyme, x, extras::EnzymeForwardOneArgJacobianExtras{C}
+) where {C}
+    jac_wrongshape = jacobian(backend.mode, f, x, Val{C}(); shadow=extras.shadow)
     nx = length(x)
     ny = length(jac_wrongshape) ÷ length(x)
     return reshape(jac_wrongshape, ny, nx)
 end
 
 function DI.value_and_jacobian(
-    f, backend::AutoForwardEnzyme, x::AbstractArray, extras::NoJacobianExtras
+    f, backend::AutoForwardEnzyme, x, extras::EnzymeForwardOneArgJacobianExtras
 )
     return f(x), DI.jacobian(f, backend, x, extras)
 end
 
 function DI.jacobian!(
-    f, jac, backend::AutoForwardEnzyme, x::AbstractArray, extras::NoJacobianExtras
+    f, jac, backend::AutoForwardEnzyme, x, extras::EnzymeForwardOneArgJacobianExtras
 )
     return copyto!(jac, DI.jacobian(f, backend, x, extras))
 end
 
 function DI.value_and_jacobian!(
-    f, jac, backend::AutoForwardEnzyme, x::AbstractArray, extras::NoJacobianExtras
+    f, jac, backend::AutoForwardEnzyme, x, extras::EnzymeForwardOneArgJacobianExtras
 )
     y, new_jac = DI.value_and_jacobian(f, backend, x, extras)
     return y, copyto!(jac, new_jac)
