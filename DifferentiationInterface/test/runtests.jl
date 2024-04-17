@@ -43,5 +43,9 @@ include("test_imports.jl")
         @testset "Weird arrays" begin
             include("weird_arrays.jl")
         end
+
+        @testset "Chunks" begin
+            include("chunk.jl")
+        end
     end
 end;

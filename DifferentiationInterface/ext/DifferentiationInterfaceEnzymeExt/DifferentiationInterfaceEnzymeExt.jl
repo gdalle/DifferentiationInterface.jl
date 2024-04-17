@@ -7,7 +7,8 @@ using DifferentiationInterface:
     NoGradientExtras,
     NoJacobianExtras,
     NoPullbackExtras,
-    NoPushforwardExtras
+    NoPushforwardExtras,
+    pick_chunksize
 using DocStringExtensions
 using Enzyme:
     Active,
@@ -22,6 +23,7 @@ using Enzyme:
     ReverseMode,
     autodiff,
     autodiff_thunk,
+    chunkedonehot,
     gradient,
     gradient!,
     jacobian,

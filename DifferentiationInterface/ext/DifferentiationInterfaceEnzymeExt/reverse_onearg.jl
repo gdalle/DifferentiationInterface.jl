@@ -84,3 +84,63 @@ end
 function DI.value_and_gradient!(f, grad, backend::AutoReverseEnzyme, x, ::NoGradientExtras)
     return DI.value_and_pullback!(f, grad, backend, x, one(eltype(x)), NoPullbackExtras())
 end
+
+## Jacobian
+
+# see https://github.com/EnzymeAD/Enzyme.jl/issues/1391
+
+#=
+
+struct EnzymeReverseOneArgJacobianExtras{C,N} end
+
+function DI.prepare_jacobian(f, ::AutoReverseEnzyme, x)
+    C = pick_chunksize(length(x))
+    y = f(x)
+    N = length(y)
+    return EnzymeReverseOneArgJacobianExtras{C,N}()
+end
+
+function DI.jacobian(
+    f,
+    backend::AutoReverseEnzyme,
+    x::AbstractArray,
+    ::EnzymeReverseOneArgJacobianExtras{C,N},
+) where {C,N}
+    jac_wrongshape = jacobian(backend.mode, f, x, Val{N}(), Val{C}())
+    nx = length(x)
+    ny = length(jac_wrongshape) ÷ length(x)
+    jac_rightshape = reshape(jac_wrongshape, ny, nx)
+    return jac_rightshape
+end
+
+function DI.value_and_jacobian(
+    f,
+    backend::AutoReverseEnzyme,
+    x::AbstractArray,
+    extras::EnzymeReverseOneArgJacobianExtras,
+)
+    return f(x), DI.jacobian(f, backend, x, extras)
+end
+
+function DI.jacobian!(
+    f,
+    jac,
+    backend::AutoReverseEnzyme,
+    x::AbstractArray,
+    extras::EnzymeReverseOneArgJacobianExtras,
+)
+    return copyto!(jac, DI.jacobian(f, backend, x, extras))
+end
+
+function DI.value_and_jacobian!(
+    f,
+    jac,
+    backend::AutoReverseEnzyme,
+    x::AbstractArray,
+    extras::EnzymeReverseOneArgJacobianExtras,
+)
+    y, new_jac = DI.value_and_jacobian(f, backend, x, extras)
+    return y, copyto!(jac, new_jac)
+end
+
+=#
