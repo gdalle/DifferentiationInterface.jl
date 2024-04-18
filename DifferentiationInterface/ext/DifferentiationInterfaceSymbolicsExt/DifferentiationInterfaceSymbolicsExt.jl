@@ -30,8 +30,6 @@ using Symbolics.RuntimeGeneratedFunctions: RuntimeGeneratedFunction
 const AnyAutoSymbolics = Union{AutoSymbolics,AutoSparseSymbolics}
 
 DI.check_available(::AutoSymbolics) = true
-DI.mode(::AutoSymbolics) = ADTypes.AbstractSymbolicDifferentiationMode
-DI.pushforward_performance(::AutoSymbolics) = DI.PushforwardFast()
 DI.pullback_performance(::AutoSymbolics) = DI.PullbackSlow()
 
 monovec(x::Number) = Fill(x, 1)
