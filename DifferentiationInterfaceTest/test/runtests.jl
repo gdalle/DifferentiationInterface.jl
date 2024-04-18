@@ -26,6 +26,6 @@ include("test_imports.jl")
     end
 
     @testset verbose = false "ForwardDiff" begin
-        test_differentiation(AutoForwardDiff(); logging=get(ENV, "CI", "false") == "false")
+        include("forwarddiff.jl")
     end
 end;
