@@ -11,3 +11,5 @@ using DataFrames: DataFrames
 using SparseArrays: SparseArrays
 
 using ForwardDiff: ForwardDiff
+using SparseDiffTools: SparseDiffTools
+using Symbolics: Symbolics
