@@ -124,7 +124,7 @@ function DI.prepare_jacobian(f!, y, backend::AnyAutoSymbolics, x)
     y_var = variables(:y, axes(y)...)
     f!(y_var, x_var)
     jac_var = if issparse(backend)
-        sparsejacobian(y_var, x_var)
+        sparsejacobian(vec(y_var), vec(x_var))
     else
         jacobian(y_var, x_var)
     end
