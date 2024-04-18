@@ -70,7 +70,66 @@ end
 
 ## Pullback
 
-# TODO: fix https://github.com/gdalle/DifferentiationInterface.jl/issues/131
+struct FastDifferentiationOneArgPullbackExtras{E1,E2} <: PullbackExtras
+    vjp_exe::E1
+    vjp_exe!::E2
+end
+
+function DI.prepare_pullback(f, ::AutoFastDifferentiation, x, dy)
+    x_var = if x isa Number
+        only(make_variables(:x))
+    else
+        make_variables(:x, size(x)...)
+    end
+    y_var = f(x_var)
+
+    x_vec_var = x_var isa Number ? monovec(x_var) : vec(x_var)
+    y_vec_var = y_var isa Number ? monovec(y_var) : vec(y_var)
+    vj_vec_var, v_vec_var = jacobian_transpose_v(y_vec_var, x_vec_var)
+    vjp_exe = make_function(vj_vec_var, vcat(x_vec_var, v_vec_var); in_place=false)
+    vjp_exe! = make_function(vj_vec_var, vcat(x_vec_var, v_vec_var); in_place=true)
+    return FastDifferentiationOneArgPullbackExtras(vjp_exe, vjp_exe!)
+end
+
+function DI.pullback(
+    f, ::AutoFastDifferentiation, x, dy, extras::FastDifferentiationOneArgPullbackExtras
+)
+    v_vec = vcat(myvec(x), myvec(dy))
+    if x isa Number
+        return only(extras.vjp_exe(v_vec))
+    else
+        return reshape(extras.vjp_exe(v_vec), size(x))
+    end
+end
+
+function DI.pullback!(
+    f, dx, ::AutoFastDifferentiation, x, dy, extras::FastDifferentiationOneArgPullbackExtras
+)
+    v_vec = vcat(myvec(x), myvec(dy))
+    extras.vjp_exe!(vec(dx), v_vec)
+    return dx
+end
+
+function DI.value_and_pullback(
+    f,
+    backend::AutoFastDifferentiation,
+    x,
+    dy,
+    extras::FastDifferentiationOneArgPullbackExtras,
+)
+    return f(x), DI.pullback(f, backend, x, dy, extras)
+end
+
+function DI.value_and_pullback!(
+    f,
+    dx,
+    backend::AutoFastDifferentiation,
+    x,
+    dy,
+    extras::FastDifferentiationOneArgPullbackExtras,
+)
+    return f(x), DI.pullback!(f, dx, backend, x, dy, extras)
+end
 
 ## Derivative
 
