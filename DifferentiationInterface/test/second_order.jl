@@ -28,7 +28,7 @@ mixed_second_order_backends = [
 for backend in vcat(
     dense_second_order_backends, sparse_second_order_backends, mixed_second_order_backends
 )
-    check_hessian(backend)
+    @test check_hessian(backend)
 end
 
 test_differentiation(
