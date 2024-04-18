@@ -25,5 +25,5 @@ deploydocs(;
     devbranch="main",
     dirname="DifferentiationInterfaceTest",
     tag_prefix="DifferentiationInterfaceTest-",
-    push_preview=true,
+    push_preview=false,
 )
