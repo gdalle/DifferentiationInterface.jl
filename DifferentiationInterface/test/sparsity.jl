@@ -20,7 +20,7 @@ end
 
 test_differentiation(
     sparse_backends,
-    sparse_scenarios(rand(5));
+    sparse_scenarios();
     sparsity=true,
     second_order=false,
     logging=get(ENV, "CI", "false") == "false",
@@ -28,7 +28,7 @@ test_differentiation(
 
 test_differentiation(
     sparse_second_order_backends,
-    sparse_scenarios(rand(5));
+    sparse_scenarios();
     sparsity=true,
     first_order=false,
     logging=get(ENV, "CI", "false") == "false",
