@@ -109,16 +109,10 @@ We offer two ways to perform second-order differentiation (for [`second_derivati
 
 ### Sparsity
 
-[ADTypes.jl](https://github.com/SciML/ADTypes.jl) provides [sparse versions](@ref Sparse) of many common AD backends.
-They can accelerate the computation of sparse Jacobians and Hessians:
+[ADTypes.jl](https://github.com/SciML/ADTypes.jl) provides `AutoSparse` to accelerate the computation of sparse Jacobians and Hessians:
 
-- for sparse Jacobians, just select one of them as your first-order backend.
-- for sparse Hessians, select one of them as the _outer part_ of a [`SecondOrder`](@ref) backend (in that case, the Hessian is obtained as the sparse Jacobian of the gradient).
-
-The sparsity pattern is computed automatically with [Symbolics.jl](https://github.com/JuliaSymbolics/Symbolics.jl) during the preparation step.
-
-!!! info "Planned feature"
-    Modular sparsity pattern computation, with other algorithms beyond those from Symbolics.jl.
+- for sparse Jacobians, wrap `AutoSparse` around your first-order backend.
+- for sparse Hessians, wrap `AutoSparse` around the _outer part_ of a [`SecondOrder`](@ref) backend.
 
 ### Split reverse mode
 

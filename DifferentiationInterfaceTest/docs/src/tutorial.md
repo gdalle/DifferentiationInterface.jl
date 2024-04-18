@@ -17,7 +17,7 @@ import DataFrames, Markdown, PrettyTables, Printf
 The AD backends we want to compare are [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl) and [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl).
 
 ```@repl tuto
-backends = [AutoForwardDiff(), AutoEnzyme(Enzyme.Reverse)]
+backends = [AutoForwardDiff(), AutoEnzyme(; mode=Enzyme.Reverse)]
 ```
 
 To do that, we are going to take gradients of a simple function:

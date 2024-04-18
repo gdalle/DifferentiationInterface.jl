@@ -34,27 +34,7 @@ end
 
 We support all dense backend choices from [ADTypes.jl](https://github.com/SciML/ADTypes.jl).
 
-```@docs
-AutoChainRules
-AutoDiffractor
-AutoEnzyme
-AutoFastDifferentiation
-AutoForwardDiff
-AutoFiniteDiff
-AutoFiniteDifferences
-AutoPolyesterForwardDiff
-AutoReverseDiff
-AutoSymbolics
-AutoTapir
-AutoTracker
-AutoZygote
-```
-
 For sparse backends, only the Jacobian and Hessian operators are implemented differently, the other operators behave the same as for the corresponding dense backend.
-
-```@docs
-AutoSparse
-```
 
 ## Availability
 

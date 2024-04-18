@@ -37,7 +37,7 @@ extensions = [
 ]
 
 makedocs(;
-    modules=[ADTypes, DifferentiationInterface, extensions...],
+    modules=[DifferentiationInterface, extensions...],
     authors="Guillaume Dalle, Adrian Hill",
     sitename="DifferentiationInterface.jl",
     format=Documenter.HTML(),
@@ -47,7 +47,8 @@ makedocs(;
         "API reference" => "api.md",
         "Advanced" => ["design.md", "extensions.md"],
     ],
-    warnonly=:missing_docs,  # missing docs for ADTypes.jl are normal
+    pagesonly=true,
+    warnonly=true,
 )
 
 deploydocs(;
