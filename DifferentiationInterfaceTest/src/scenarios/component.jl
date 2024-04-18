@@ -37,7 +37,6 @@ function comp_to_num_scenarios_onearg(x::ComponentVector)
             ],
         )
     end
-
     return scens
 end
 
