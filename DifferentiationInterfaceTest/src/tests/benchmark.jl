@@ -39,7 +39,7 @@ $(TYPEDFIELDS)
 """
 @kwdef struct BenchmarkDataRow
     backend::String
-    mode::Type
+    mode::AbstractMode
     scenario::Symbol
     operator::Symbol
     func::Symbol
