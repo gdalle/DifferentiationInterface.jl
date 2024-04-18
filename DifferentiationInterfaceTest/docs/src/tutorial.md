@@ -8,7 +8,7 @@ We present a typical workflow with DifferentiationInterfaceTest.jl, building on 
 
 ```@repl tuto
 using DifferentiationInterface, DifferentiationInterfaceTest
-import ForwardDiff, Enzyme
+import ADTypes, ForwardDiff, Enzyme
 import DataFrames, Markdown, PrettyTables, Printf
 ```
 
@@ -17,7 +17,7 @@ import DataFrames, Markdown, PrettyTables, Printf
 The AD backends we want to compare are [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl) and [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl).
 
 ```@repl tuto
-backends = [AutoForwardDiff(), AutoEnzyme(; mode=Enzyme.Reverse)]
+backends = [ADTypes.AutoForwardDiff(), ADTypes.AutoEnzyme(; mode=Enzyme.Reverse)]
 ```
 
 To do that, we are going to take gradients of a simple function:
@@ -38,13 +38,12 @@ DifferentiationInterfaceTest.jl relies with so-called "scenarios", in which you 
 - the input `x` (and output `y` for mutating functions)
 - optionally a reference `ref` to check against
 
-There is one scenario per operator, and so here we will use [`GradientScenario`](@ref).
-Let us experiment with various input types and sizes:
+There is one scenario per operator, and so here we will use [`GradientScenario`](@ref):
 
 ```@repl tuto
 scenarios = [
-    GradientScenario(f; x=rand(Float64, 3), ref=∇f),
-    GradientScenario(f; x=rand(Float32, 3, 4), ref=∇f),
+    GradientScenario(f; x=rand(Float32, 3), ref=∇f, operator=:inplace),
+    GradientScenario(f; x=rand(Float64, 3, 2), ref=∇f, operator=:inplace)
 ];
 ```
 
@@ -58,7 +57,7 @@ test_differentiation(
     backends,  # the backends you want to compare
     scenarios,  # the scenarios you defined,
     correctness=true,  # compares values against the reference
-    type_stability=true,  # checks type stability with JET.jl
+    type_stability=false,  # checks type stability with JET.jl
     detailed=true,  # prints a detailed test set
 )
 ```
