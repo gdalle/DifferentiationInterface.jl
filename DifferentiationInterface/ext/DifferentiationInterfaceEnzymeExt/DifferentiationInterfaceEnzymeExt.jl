@@ -29,27 +29,10 @@ using Enzyme:
     jacobian,
     make_zero
 
-"""
-    AutoEnzyme(Enzyme.Forward)
-    AutoEnzyme(Enzyme.Reverse)
-
-Construct a forward or reverse mode `AutoEnzyme` backend.
-"""
-AutoEnzyme
-
 const AutoForwardEnzyme = AutoEnzyme{<:ForwardMode}
 const AutoReverseEnzyme = AutoEnzyme{<:ReverseMode}
 
 DI.check_available(::AutoEnzyme) = true
-
-function DI.mode(::AutoEnzyme)
-    return error(
-        "You need to specify the Enzyme mode with `AutoEnzyme(Enzyme.Forward)` or `AutoEnzyme(Enzyme.Reverse)`",
-    )
-end
-
-DI.mode(::AutoForwardEnzyme) = ADTypes.AbstractForwardMode
-DI.mode(::AutoReverseEnzyme) = ADTypes.AbstractReverseMode
 
 # Enzyme's `Duplicated(x, dx)` expects both arguments to be of the same type
 function DI.basis(::AutoEnzyme, a::AbstractArray{T}, i::CartesianIndex) where {T}

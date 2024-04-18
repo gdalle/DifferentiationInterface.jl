@@ -9,27 +9,21 @@ $(EXPORTS)
 """
 module DifferentiationInterface
 
-using ADTypes:
-    ADTypes,
-    AbstractADType,
-    AbstractForwardMode,
-    AbstractFiniteDifferencesMode,
-    AbstractReverseMode,
-    AbstractSymbolicDifferentiationMode
+using ADTypes: ADTypes, AbstractADType
+using ADTypes: mode, ForwardMode, ForwardOrReverseMode, ReverseMode, SymbolicMode
+using ADTypes: AutoSparse, dense_ad
 using ADTypes:
     AutoChainRules,
     AutoDiffractor,
     AutoEnzyme,
+    AutoFastDifferentiation,
     AutoFiniteDiff,
     AutoFiniteDifferences,
     AutoForwardDiff,
     AutoPolyesterForwardDiff,
     AutoReverseDiff,
-    AutoSparseFiniteDiff,
-    AutoSparseForwardDiff,
-    AutoSparsePolyesterForwardDiff,
-    AutoSparseReverseDiff,
-    AutoSparseZygote,
+    AutoSymbolics,
+    AutoTapir,
     AutoTracker,
     AutoZygote
 using DocStringExtensions
@@ -38,7 +32,6 @@ using LinearAlgebra: Symmetric, dot
 
 abstract type Extras end
 
-include("backends.jl")
 include("second_order.jl")
 include("traits.jl")
 include("utils.jl")
@@ -59,24 +52,6 @@ include("check.jl")
 include("sparse.jl")
 include("chunk.jl")
 
-export AutoChainRules,
-    AutoDiffractor,
-    AutoEnzyme,
-    AutoFiniteDiff,
-    AutoFiniteDifferences,
-    AutoForwardDiff,
-    AutoPolyesterForwardDiff,
-    AutoReverseDiff,
-    AutoSparseFiniteDiff,
-    AutoSparseForwardDiff,
-    AutoSparsePolyesterForwardDiff,
-    AutoSparseReverseDiff,
-    AutoSparseZygote,
-    AutoTracker,
-    AutoZygote
-
-export AutoFastDifferentiation,
-    AutoSparseFastDifferentiation, AutoSymbolics, AutoSparseSymbolics, AutoTapir
 export SecondOrder
 
 export value_and_pushforward!, value_and_pushforward

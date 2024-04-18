@@ -4,6 +4,7 @@ CollapsedDocStrings = true
 ```
 
 ```@setup backends
+using ADTypes
 using DifferentiationInterface
 using DifferentiationInterface: backend_string
 import Markdown
@@ -12,25 +13,18 @@ import Diffractor, Enzyme, FastDifferentiation, FiniteDiff, FiniteDifferences, F
 function all_backends()
     return [
         AutoDiffractor(),
-        AutoEnzyme(Enzyme.Forward),
-        AutoEnzyme(Enzyme.Reverse),
+        AutoEnzyme(; mode=Enzyme.Forward),
+        AutoEnzyme(; mode=Enzyme.Reverse),
         AutoFastDifferentiation(),
         AutoFiniteDiff(),
-        AutoFiniteDifferences(FiniteDifferences.central_fdm(3, 1)),
+        AutoFiniteDifferences(; fdm=FiniteDifferences.central_fdm(3, 1)),
         AutoForwardDiff(),
         AutoPolyesterForwardDiff(; chunksize=1),
         AutoReverseDiff(),
-        AutoSymbolics(),
         AutoTapir(),
         AutoTracker(),
         AutoZygote(),
     ]
-end
-
-function all_backends_without_enzyme()
-    return filter(all_backends()) do b
-        !isa(b, AutoEnzyme)
-    end
 end
 ```
 
@@ -38,12 +32,7 @@ end
 
 ## Types
 
-We support (and re-export) most backend choices from [ADTypes.jl](https://github.com/SciML/ADTypes.jl), and we provide a few more of our own.
-
-!!! warning
-    Only the backends listed below are supported by DifferentiationInterface.jl, even though ADTypes.jl defines more.
-
-### Dense
+We support all dense backend choices from [ADTypes.jl](https://github.com/SciML/ADTypes.jl).
 
 ```@docs
 AutoChainRules
@@ -51,11 +40,9 @@ AutoDiffractor
 AutoEnzyme
 AutoFastDifferentiation
 AutoForwardDiff
-AutoForwardDiff()
 AutoFiniteDiff
 AutoFiniteDifferences
 AutoPolyesterForwardDiff
-AutoPolyesterForwardDiff()
 AutoReverseDiff
 AutoSymbolics
 AutoTapir
@@ -63,19 +50,10 @@ AutoTracker
 AutoZygote
 ```
 
-### Sparse
-
 For sparse backends, only the Jacobian and Hessian operators are implemented differently, the other operators behave the same as for the corresponding dense backend.
 
 ```@docs
-AutoSparseFastDifferentiation
-AutoSparseFiniteDiff
-AutoSparseForwardDiff
-AutoSparseForwardDiff()
-AutoSparsePolyesterForwardDiff
-AutoSparseReverseDiff
-AutoSparseSymbolics
-AutoSparseZygote
+AutoSparse
 ```
 
 ## Availability

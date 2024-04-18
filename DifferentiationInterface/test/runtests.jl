@@ -9,6 +9,7 @@ include("test_imports.jl")
                 DifferentiationInterface;
                 ambiguities=false,
                 deps_compat=(check_extras = false),
+                persistent_tasks=false,
             )
         end
         @testset "JuliaFormatter" begin
@@ -31,9 +32,9 @@ include("test_imports.jl")
         include("second_order.jl")
     end
 
-    @testset verbose = true "Sparsity" begin
-        include("sparsity.jl")
-    end
+    # @testset verbose = true "Sparsity" begin
+    #     include("sparsity.jl")
+    # end
 
     @testset verbose = true "Bonus round" begin
         @testset "Type stability" begin

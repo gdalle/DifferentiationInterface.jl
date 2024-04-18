@@ -1,24 +1,3 @@
-const AbstractMode = AbstractADType
-
-"""
-    mode(backend)
-
-Return the AD mode of a backend in a statically predictable way.
-
-The return value is a `Type` object chosen among:
-
-- `ADTypes.AbstractForwardMode`
-- `ADTypes.AbstractFiniteDifferencesMode`
-- `ADTypes.AbstractReverseMode`
-- `ADTypes.AbstractSymbolicDifferentiationMode`
-
-This function exists because there are backends (like Enzyme) that can support both forward and reverse mode, which means their ADTypes.jl object does not subtype either.
-"""
-mode(::AbstractForwardMode) = AbstractForwardMode
-mode(::AbstractFiniteDifferencesMode) = AbstractFiniteDifferencesMode
-mode(::AbstractReverseMode) = AbstractReverseMode
-mode(::AbstractSymbolicDifferentiationMode) = AbstractSymbolicDifferentiationMode
-
 ## Mutation
 
 abstract type MutationBehavior end
@@ -68,10 +47,10 @@ struct PushforwardSlow <: PushforwardPerformance end
 Return [`PushforwardFast`](@ref) or [`PushforwardSlow`](@ref) in a statically predictable way.
 """
 pushforward_performance(backend::AbstractADType) = pushforward_performance(mode(backend))
-pushforward_performance(::Type{AbstractForwardMode}) = PushforwardFast()
-pushforward_performance(::Type{AbstractFiniteDifferencesMode}) = PushforwardFast()
-pushforward_performance(::Type{AbstractReverseMode}) = PushforwardSlow()
-pushforward_performance(::Type{AbstractSymbolicDifferentiationMode}) = PushforwardFast()
+pushforward_performance(::ForwardMode) = PushforwardFast()
+pushforward_performance(::ForwardOrReverseMode) = PushforwardFast()
+pushforward_performance(::ReverseMode) = PushforwardSlow()
+pushforward_performance(::SymbolicMode) = PushforwardFast()
 
 ## Pullback
 
@@ -97,10 +76,10 @@ struct PullbackSlow <: PullbackPerformance end
 Return [`PullbackFast`](@ref) or [`PullbackSlow`](@ref) in a statically predictable way.
 """
 pullback_performance(backend::AbstractADType) = pullback_performance(mode(backend))
-pullback_performance(::Type{<:AbstractForwardMode}) = PullbackSlow()
-pullback_performance(::Type{AbstractFiniteDifferencesMode}) = PullbackSlow()
-pullback_performance(::Type{AbstractReverseMode}) = PullbackFast()
-pullback_performance(::Type{AbstractSymbolicDifferentiationMode}) = PullbackFast()
+pullback_performance(::ForwardMode) = PullbackSlow()
+pullback_performance(::ForwardOrReverseMode) = PullbackFast()
+pullback_performance(::ReverseMode) = PullbackFast()
+pullback_performance(::SymbolicMode) = PullbackFast()
 
 ## HVP
 

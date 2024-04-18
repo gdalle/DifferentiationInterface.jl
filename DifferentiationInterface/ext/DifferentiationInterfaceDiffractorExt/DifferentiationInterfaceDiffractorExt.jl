@@ -1,14 +1,13 @@
 module DifferentiationInterfaceDiffractorExt
 
-using ADTypes: ADTypes, AutoChainRules, AutoDiffractor
+using ADTypes: ADTypes, AutoDiffractor
 import DifferentiationInterface as DI
 using DifferentiationInterface: NoPushforwardExtras
 using Diffractor: DiffractorRuleConfig, TaylorTangentIndex, ZeroBundle, bundle, ∂☆
 
 DI.check_available(::AutoDiffractor) = true
 DI.mutation_support(::AutoDiffractor) = DI.MutationNotSupported()
-DI.mode(::AutoDiffractor) = ADTypes.AbstractForwardMode
-DI.mode(::AutoChainRules{<:DiffractorRuleConfig}) = ADTypes.AbstractForwardMode
+DI.pullback_performance(::AutoDiffractor) = DI.PullbackSlow()
 
 ## Pushforward
 

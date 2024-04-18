@@ -1,6 +1,6 @@
 module DifferentiationInterfaceZygoteExt
 
-using ADTypes: AutoZygote, AutoSparseZygote
+using ADTypes: AutoZygote
 import DifferentiationInterface as DI
 using DifferentiationInterface:
     NoGradientExtras, NoHessianExtras, NoJacobianExtras, NoPullbackExtras

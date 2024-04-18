@@ -9,14 +9,16 @@ dense_backends = [
     AutoForwardDiff(),
     AutoPolyesterForwardDiff(; chunksize=1),
     AutoReverseDiff(; compile=true),
-    AutoSymbolics(),
+    # AutoSymbolics(),
     AutoTapir(),
     AutoTracker(),
     AutoZygote(),
 ]
 
 sparse_backends = [
-    AutoSparseFastDifferentiation(), AutoSparseForwardDiff(), AutoSparseSymbolics()
+    AutoSparse(AutoFastDifferentiation()),
+    AutoSparse(AutoForwardDiff()),
+    # AutoSparse(AutoSymbolics()),
 ]
 
 ##

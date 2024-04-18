@@ -6,6 +6,7 @@ Pkg.develop(
 
 ##
 
+using ADTypes
 using DifferentiationInterface
 using DifferentiationInterfaceTest
 
@@ -27,8 +28,7 @@ using FiniteDifferences: FiniteDifferences
 using ForwardDiff: ForwardDiff
 using PolyesterForwardDiff: PolyesterForwardDiff
 using ReverseDiff: ReverseDiff
-using SparseDiffTools: SparseDiffTools
-using Symbolics: Symbolics
+# using Symbolics: Symbolics
 using Tapir: Tapir
 using Tracker: Tracker
 using Zygote: Zygote

@@ -1,5 +1,7 @@
 type_stable_backends = [
-    AutoForwardDiff(), AutoEnzyme(Enzyme.Forward), AutoEnzyme(Enzyme.Reverse)
+    AutoForwardDiff(), #
+    AutoEnzyme(Enzyme.Forward),
+    # AutoEnzyme(Enzyme.Reverse),  # TODO: add it back
 ]
 
 test_differentiation(

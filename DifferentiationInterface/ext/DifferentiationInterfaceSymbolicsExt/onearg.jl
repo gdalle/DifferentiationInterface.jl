@@ -147,7 +147,7 @@ end
 
 function DI.prepare_jacobian(f, backend::AnyAutoSymbolics, x)
     x_var = variables(:x, axes(x)...)
-    jac_var = if issparse(backend)
+    jac_var = if backend isa AutoSparse
         sparsejacobian(vec(f(x_var)), vec(x_var))
     else
         jacobian(f(x_var), x_var)
@@ -193,7 +193,7 @@ end
 function DI.prepare_hessian(f, backend::AnyAutoSymbolics, x)
     x_var = variables(:x, axes(x)...)
     # Symbolic.hessian only accepts vectors
-    hess_var = if issparse(backend)
+    hess_var = if backend isa AutoSparse
         sparsehessian(f(x_var), vec(x_var))
     else
         hessian(f(x_var), vec(x_var))

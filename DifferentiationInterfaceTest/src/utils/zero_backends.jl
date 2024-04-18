@@ -3,13 +3,14 @@ zero!(x::AbstractArray) = x .= zero(eltype(x))
 ## Forward
 
 """
-    AutoZeroForward <: ADTypes.AbstractForwardMode
+    AutoZeroForward <: ADTypes.AbstractADType
 
 Trivial backend that sets all derivatives to zero.
 Used in testing and benchmarking.
 """
-struct AutoZeroForward <: ADTypes.AbstractForwardMode end
+struct AutoZeroForward <: AbstractADType end
 
+ADTypes.mode(::AutoZeroForward) = ForwardMode()
 DI.check_available(::AutoZeroForward) = true
 DI.mutation_support(::AutoZeroForward) = DI.MutationSupported()
 
@@ -45,13 +46,14 @@ end
 ## Reverse
 
 """
-    AutoZeroReverse <: ADTypes.AbstractReverseMode
+    AutoZeroReverse <: ADTypes.AbstractADType
 
 Trivial backend that sets all derivatives to zero.
 Used in testing and benchmarking.
 """
-struct AutoZeroReverse <: ADTypes.AbstractReverseMode end
+struct AutoZeroReverse <: AbstractADType end
 
+ADTypes.mode(::AutoZeroReverse) = ReverseMode()
 DI.check_available(::AutoZeroReverse) = true
 DI.mutation_support(::AutoZeroReverse) = DI.MutationSupported()
 
