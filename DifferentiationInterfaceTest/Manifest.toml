@@ -2,7 +2,7 @@
 
 julia_version = "1.10.2"
 manifest_format = "2.0"
-project_hash = "6e96d4509eefc3345cd320f96307eb263e4d5240"
+project_hash = "9cf8c71901ea02612004610c9d57e18cddfdb8d3"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "d16895447effb46f3705c4de6263145d1ed92e6e"
@@ -223,7 +223,7 @@ uuid = "b552c78f-8df3-52c6-915a-8e097449b14b"
 version = "1.15.1"
 
 [[deps.DifferentiationInterface]]
-deps = ["ADTypes", "DocStringExtensions", "FillArrays", "LinearAlgebra"]
+deps = ["ADTypes", "DocStringExtensions", "FillArrays", "LinearAlgebra", "SciMLBase"]
 path = "../DifferentiationInterface"
 uuid = "a0c0ee7d-e4b9-4e03-894e-1c5f64a51d63"
 version = "0.3.0"
