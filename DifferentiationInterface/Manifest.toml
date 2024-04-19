@@ -2,7 +2,7 @@
 
 julia_version = "1.10.2"
 manifest_format = "2.0"
-project_hash = "fe996a48c6b5ba090c36f4ac70a422127ca540fe"
+project_hash = "80ce66eaf4fceffee5caedda1eea40d971add7f5"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "d16895447effb46f3705c4de6263145d1ed92e6e"
@@ -333,11 +333,11 @@ version = "0.7.0"
 
 [[deps.SciMLBase]]
 deps = ["ADTypes", "ArrayInterface", "CommonSolve", "ConstructionBase", "Distributed", "DocStringExtensions", "EnumX", "FunctionWrappersWrappers", "IteratorInterfaceExtensions", "LinearAlgebra", "Logging", "Markdown", "PrecompileTools", "Preferences", "Printf", "RecipesBase", "RecursiveArrayTools", "Reexport", "RuntimeGeneratedFunctions", "SciMLOperators", "SciMLStructures", "StaticArraysCore", "Statistics", "SymbolicIndexingInterface", "Tables"]
-git-tree-sha1 = "52593541961cebeecd9fff42a10fa16e055e76cf"
-repo-rev = "adtypes_v1"
-repo-url = "https://github.com/gdalle/SciMLBase.jl"
+git-tree-sha1 = "7f7562eeb5496e6d603e17f5752a60bd3bf5842c"
+repo-rev = "master"
+repo-url = "https://github.com/SciML/SciMLBase.jl"
 uuid = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
-version = "2.33.1"
+version = "2.34.0"
 
     [deps.SciMLBase.extensions]
     SciMLBaseChainRulesCoreExt = "ChainRulesCore"

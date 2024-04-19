@@ -966,11 +966,11 @@ version = "0.7.0"
 
 [[deps.SciMLBase]]
 deps = ["ADTypes", "ArrayInterface", "CommonSolve", "ConstructionBase", "Distributed", "DocStringExtensions", "EnumX", "FunctionWrappersWrappers", "IteratorInterfaceExtensions", "LinearAlgebra", "Logging", "Markdown", "PrecompileTools", "Preferences", "Printf", "RecipesBase", "RecursiveArrayTools", "Reexport", "RuntimeGeneratedFunctions", "SciMLOperators", "SciMLStructures", "StaticArraysCore", "Statistics", "SymbolicIndexingInterface", "Tables"]
-git-tree-sha1 = "52593541961cebeecd9fff42a10fa16e055e76cf"
-repo-rev = "adtypes_v1"
-repo-url = "https://github.com/gdalle/SciMLBase.jl"
+git-tree-sha1 = "7f7562eeb5496e6d603e17f5752a60bd3bf5842c"
+repo-rev = "master"
+repo-url = "https://github.com/SciML/SciMLBase.jl"
 uuid = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
-version = "2.33.1"
+version = "2.34.0"
 
     [deps.SciMLBase.extensions]
     SciMLBaseChainRulesCoreExt = "ChainRulesCore"
