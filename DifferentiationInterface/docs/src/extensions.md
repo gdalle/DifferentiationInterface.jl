@@ -18,6 +18,7 @@ Modules = [
     Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceForwardDiffExt),
     Base.get_extension(DifferentiationInterface, :DifferentiationInterfacePolyesterForwardDiffExt),
     Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceReverseDiffExt),
+    Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceSymbolicsExt),
     Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceTapirExt),
     Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceTrackerExt),
     Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceZygoteExt)

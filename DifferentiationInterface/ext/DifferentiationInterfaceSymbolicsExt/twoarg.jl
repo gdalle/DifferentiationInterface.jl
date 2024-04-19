@@ -119,7 +119,9 @@ struct SymbolicsTwoArgJacobianExtras{E1,E2} <: JacobianExtras
     jac_exe!::E2
 end
 
-function DI.prepare_jacobian(f!, y, backend::AnyAutoSymbolics, x)
+function DI.prepare_jacobian(
+    f!, y, backend::Union{AutoSymbolics,AutoSparse{<:AutoSymbolics}}, x
+)
     x_var = variables(:x, axes(x)...)
     y_var = variables(:y, axes(y)...)
     f!(y_var, x_var)
@@ -138,19 +140,34 @@ function DI.prepare_jacobian(f!, y, backend::AnyAutoSymbolics, x)
     return SymbolicsTwoArgJacobianExtras(jac_exe, jac_exe!)
 end
 
-function DI.jacobian(f!, y, ::AnyAutoSymbolics, x, extras::SymbolicsTwoArgJacobianExtras)
+function DI.jacobian(
+    f!,
+    y,
+    ::Union{AutoSymbolics,AutoSparse{<:AutoSymbolics}},
+    x,
+    extras::SymbolicsTwoArgJacobianExtras,
+)
     return extras.jac_exe(x)
 end
 
 function DI.jacobian!(
-    f!, y, jac, ::AnyAutoSymbolics, x, extras::SymbolicsTwoArgJacobianExtras
+    f!,
+    y,
+    jac,
+    ::Union{AutoSymbolics,AutoSparse{<:AutoSymbolics}},
+    x,
+    extras::SymbolicsTwoArgJacobianExtras,
 )
     extras.jac_exe!(jac, x)
     return jac
 end
 
 function DI.value_and_jacobian(
-    f!, y, backend::AnyAutoSymbolics, x, extras::SymbolicsTwoArgJacobianExtras
+    f!,
+    y,
+    backend::Union{AutoSymbolics,AutoSparse{<:AutoSymbolics}},
+    x,
+    extras::SymbolicsTwoArgJacobianExtras,
 )
     jac = DI.jacobian(f!, y, backend, x, extras)
     f!(y, x)
@@ -158,7 +175,12 @@ function DI.value_and_jacobian(
 end
 
 function DI.value_and_jacobian!(
-    f!, y, jac, backend::AnyAutoSymbolics, x, extras::SymbolicsTwoArgJacobianExtras
+    f!,
+    y,
+    jac,
+    backend::Union{AutoSymbolics,AutoSparse{<:AutoSymbolics}},
+    x,
+    extras::SymbolicsTwoArgJacobianExtras,
 )
     DI.jacobian!(f!, y, jac, backend, x, extras)
     f!(y, x)

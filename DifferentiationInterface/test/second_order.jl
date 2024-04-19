@@ -2,14 +2,14 @@ dense_second_order_backends = [
     AutoForwardDiff(),  #
     AutoPolyesterForwardDiff(; chunksize=1),  #
     AutoFastDifferentiation(),
-    # AutoSymbolics(),
+    AutoSymbolics(),
     AutoReverseDiff(),
 ]
 
 sparse_second_order_backends = [
     AutoSparseForwardDiff(),  #
     AutoSparseFastDifferentiation(),
-    # AutoSparseSymbolics(),
+    AutoSparseSymbolics(),
 ]
 
 mixed_second_order_backends = [

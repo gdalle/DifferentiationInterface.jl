@@ -13,7 +13,7 @@ using FiniteDifferences: FiniteDifferences
 using ForwardDiff: ForwardDiff
 using PolyesterForwardDiff: PolyesterForwardDiff
 using ReverseDiff: ReverseDiff
-# using Symbolics: Symbolics
+using Symbolics: Symbolics
 using Tapir: Tapir
 using Tracker: Tracker
 using Zygote: Zygote
@@ -30,7 +30,7 @@ extensions = [
     get_extension(DI, :DifferentiationInterfaceForwardDiffExt),
     get_extension(DI, :DifferentiationInterfacePolyesterForwardDiffExt),
     get_extension(DI, :DifferentiationInterfaceReverseDiffExt),
-    # get_extension(DI, :DifferentiationInterfaceSymbolicsExt),
+    get_extension(DI, :DifferentiationInterfaceSymbolicsExt),
     get_extension(DI, :DifferentiationInterfaceTapirExt),
     get_extension(DI, :DifferentiationInterfaceTrackerExt),
     get_extension(DI, :DifferentiationInterfaceZygoteExt),
