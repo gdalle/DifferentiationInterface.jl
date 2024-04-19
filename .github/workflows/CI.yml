@@ -49,8 +49,8 @@ jobs:
         run: julia --project=${{ matrix.pkg.dir}}/ -e '
           using Pkg;
           Pkg.Registry.update();
-          Pkg.add(url="https://github.com/SciML/ADTypes.jl");
           Pkg.add(url="https://github.com/gdalle/SciMLBase.jl", rev="adtypes_v1");
+          Pkg.add(url="https://github.com/SciML/ADTypes.jl");
           if "${{ matrix.pkg.name}}" == "DifferentiationInterfaceTest";
               Pkg.develop(PackageSpec(path="./DifferentiationInterface"));
           end;
@@ -93,8 +93,8 @@ jobs:
         run: julia --project=${{ matrix.pkg.dir}}/docs/ -e '
           using Pkg;
           Pkg.Registry.update();
-          Pkg.add(url="https://github.com/SciML/ADTypes.jl");
           Pkg.add(url="https://github.com/gdalle/SciMLBase.jl", rev="adtypes_v1");
+          Pkg.add(url="https://github.com/SciML/ADTypes.jl");
           if "${{ matrix.pkg.name}}" == "DifferentiationInterface";
               Pkg.develop(PackageSpec(path="./DifferentiationInterface"));
           else;

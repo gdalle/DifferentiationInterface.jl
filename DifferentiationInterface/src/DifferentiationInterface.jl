@@ -50,6 +50,7 @@ include("hessian.jl")
 
 include("check.jl")
 include("coloring.jl")
+include("decompression.jl")
 include("sparse.jl")
 include("chunk.jl")
 
