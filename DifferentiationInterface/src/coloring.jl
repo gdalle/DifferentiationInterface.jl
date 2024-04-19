@@ -2,6 +2,12 @@
 Everything in this file is taken from "What color is your Jacobian?"
 =#
 
+function get_groups(colors::AbstractVector{<:Integer})
+    return map(unique(colors)) do c
+        filter(j -> colors[j] == c, eachindex(colors))
+    end
+end
+
 abstract type AbstractMatrixGraph end
 
 Base.size(g::AbstractMatrixGraph, args...) = size(g.A, args...)

@@ -14,8 +14,6 @@ backend_string_aux(::AutoTapir) = "Tapir"
 backend_string_aux(::AutoTracker) = "Tracker"
 backend_string_aux(::AutoZygote) = "Zygote"
 
-backend_string_aux(backend::AutoSparse) = "$(backend_string(dense_ad(backend))) sparse"
-
 function backend_string(backend::AbstractADType)
     bs = backend_string_aux(backend)
     if mode(backend) isa ForwardMode
@@ -30,6 +28,8 @@ function backend_string(backend::AbstractADType)
         error("Unknown mode")
     end
 end
+
+backend_string(backend::AutoSparse) = "Sparse $(backend_string(dense_ad(backend)))"
 
 function backend_string(backend::SecondOrder)
     return "$(backend_string(outer(backend))) / $(backend_string(inner(backend)))"

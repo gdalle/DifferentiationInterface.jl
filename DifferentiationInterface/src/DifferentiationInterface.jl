@@ -12,6 +12,8 @@ module DifferentiationInterface
 using ADTypes: ADTypes, AbstractADType
 using ADTypes: mode, ForwardMode, ForwardOrReverseMode, ReverseMode, SymbolicMode
 using ADTypes: AutoSparse, dense_ad
+using ADTypes: coloring_algorithm, column_coloring, row_coloring, symmetric_coloring
+using ADTypes: sparsity_detector, jacobian_sparsity, hessian_sparsity
 using ADTypes:
     AutoChainRules,
     AutoDiffractor,
@@ -50,7 +52,6 @@ include("hessian.jl")
 
 include("check.jl")
 include("coloring.jl")
-include("decompression.jl")
 include("sparse.jl")
 include("chunk.jl")
 

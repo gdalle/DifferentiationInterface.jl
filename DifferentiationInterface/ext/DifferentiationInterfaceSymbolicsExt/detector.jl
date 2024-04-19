@@ -1,13 +1,17 @@
 struct SymbolicsSparsityDetector <: ADTypes.AbstractSparsityDetector end
 
 function ADTypes.jacobian_sparsity(f, x, ::SymbolicsSparsityDetector)
-    return Symbolics.jacobian_sparsity(f, x)
+    y = similar(f(x))
+    f!(y, x) = copyto!(y, f(x))
+    return jacobian_sparsity(f!, y, x)
 end
 
 function ADTypes.jacobian_sparsity(f!, y, x, ::SymbolicsSparsityDetector)
-    return Symbolics.jacobian_sparsity(f!, y, x)
+    f!_vec(y_vec, x_vec) = f!(reshape(y_vec, size(y)), reshape(x_vec, size(x)))
+    return jacobian_sparsity(f!_vec, vec(y), vec(x))
 end
 
 function ADTypes.hessian_sparsity(f, x, ::SymbolicsSparsityDetector)
-    return Symbolics.hessian_sparsity(f, x)
+    f_vec(x_vec) = f(reshape(x_vec, size(x)))
+    return hessian_sparsity(f_vec, vec(x))
 end
