@@ -32,7 +32,7 @@ jobs:
           - name: DifferentiationInterfaceTest
             dir: './DifferentiationInterfaceTest'
         version:
-          - '1.10'
+          - '1'
         os:
           - ubuntu-latest
         arch:
@@ -56,6 +56,7 @@ jobs:
       - uses: julia-actions/julia-runtest@v1
         with:
           project: ${{ matrix.pkg.dir }}
+          force_latest_compatible_version: true
       - uses: julia-actions/julia-processcoverage@v1
         with:
           directories: ${{ matrix.pkg.dir }}/src,${{ matrix.pkg.dir }}/ext
