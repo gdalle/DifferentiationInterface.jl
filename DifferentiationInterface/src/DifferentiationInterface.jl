@@ -49,6 +49,7 @@ include("hvp.jl")
 include("hessian.jl")
 
 include("check.jl")
+include("coloring.jl")
 include("sparse.jl")
 include("chunk.jl")
 
