@@ -40,7 +40,7 @@ We support all of the backends defined by [ADTypes.jl](https://github.com/SciML/
 - [PolyesterForwardDiff.jl](https://github.com/JuliaDiff/PolyesterForwardDiff.jl)
 - [ReverseDiff.jl](https://github.com/JuliaDiff/ReverseDiff.jl)
 - [SparseDiffTools.jl](https://github.com/JuliaDiff/SparseDiffTools.jl)
-- [Symbolics.jl](https://github.com/JuliaSymbolics/Symbolics.jl) (currently broken)
+- [Symbolics.jl](https://github.com/JuliaSymbolics/Symbolics.jl)
 - [Tapir.jl](https://github.com/withbayes/Tapir.jl)
 - [Tracker.jl](https://github.com/FluxML/Tracker.jl)
 - [Zygote.jl](https://github.com/FluxML/Zygote.jl)
