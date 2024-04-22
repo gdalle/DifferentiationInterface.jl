@@ -54,5 +54,5 @@ deploydocs(;
     devbranch="main",
     dirname="DifferentiationInterface",
     tag_prefix="DifferentiationInterface-",
-    push_preview=false,
+    push_preview=true,
 )
