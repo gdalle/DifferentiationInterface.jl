@@ -32,7 +32,7 @@ end
 
 ## Types
 
-We support all dense backend choices from [ADTypes.jl](https://github.com/SciML/ADTypes.jl).
+We support all dense backend choices from [ADTypes.jl](https://github.com/SciML/ADTypes.jl), as well as their sparse wrapper `AutoSparse`.
 
 For sparse backends, only the Jacobian and Hessian operators are implemented differently, the other operators behave the same as for the corresponding dense backend.
 

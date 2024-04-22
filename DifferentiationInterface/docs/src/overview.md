@@ -111,8 +111,8 @@ We offer two ways to perform second-order differentiation (for [`second_derivati
 
 [ADTypes.jl](https://github.com/SciML/ADTypes.jl) provides `AutoSparse` to accelerate the computation of sparse Jacobians and Hessians:
 
-- for sparse Jacobians, wrap `AutoSparse` around your first-order backend.
-- for sparse Hessians, wrap `AutoSparse` around the _outer part_ of a [`SecondOrder`](@ref) backend.
+- for sparse Jacobians, wrap `AutoSparse` around a first-order backend.
+- for sparse Hessians, wrap `AutoSparse` around a [`SecondOrder`](@ref) backend.
 
 ### Split reverse mode
 
@@ -123,12 +123,7 @@ We make this available for all backends with the following operators:
 | :--------------------------------- | :---------------------------------- |
 | [`value_and_pullback_split`](@ref) | [`value_and_pullback!_split`](@ref) |
 
-## Not supported
-
-### Batched evaluation
-
-!!! info "Planned feature"
-    Interface for providing several pushforward / pullback seeds at once, similar to the chunking in ForwardDiff.jl or the batches in Enzyme.jl.
+## Going further
 
 ### Non-standard types
 
@@ -141,3 +136,7 @@ We voluntarily keep the type annotations minimal, so that passing more complex o
 
 Restricting the API to one input and one output has many coding advantages, but it is not very flexible.
 If you need more than that, use [ComponentArrays.jl](https://github.com/jonniedie/ComponentArrays.jl) to wrap several objects inside a single `ComponentVector`.
+
+### Batched evaluation
+
+This is not supported at the moment, but we plan to allow several pushforward / pullback seeds at once (similar to the chunking in ForwardDiff.jl or the batches in Enzyme.jl).
