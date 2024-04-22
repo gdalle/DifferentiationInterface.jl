@@ -34,26 +34,26 @@ using LinearAlgebra: Symmetric, dot
 
 abstract type Extras end
 
-include("second_order.jl")
-include("traits.jl")
-include("utils.jl")
-include("printing.jl")
+include("second_order/second_order.jl")
 
-include("pushforward.jl")
-include("pullback.jl")
+include("utils/traits.jl")
+include("utils/basis.jl")
+include("utils/printing.jl")
+include("utils/chunk.jl")
+include("utils/check.jl")
 
-include("derivative.jl")
-include("gradient.jl")
-include("jacobian.jl")
+include("first_order/pushforward.jl")
+include("first_order/pullback.jl")
+include("first_order/derivative.jl")
+include("first_order/gradient.jl")
+include("first_order/jacobian.jl")
 
-include("second_derivative.jl")
-include("hvp.jl")
-include("hessian.jl")
+include("second_order/second_derivative.jl")
+include("second_order/hvp.jl")
+include("second_order/hessian.jl")
 
-include("check.jl")
-include("coloring.jl")
-include("sparse.jl")
-include("chunk.jl")
+include("sparse/coloring.jl")
+include("sparse/sparse.jl")
 
 export SecondOrder
 
