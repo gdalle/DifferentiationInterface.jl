@@ -31,6 +31,10 @@ include("test_imports.jl")
         include("second_order.jl")
     end
 
+    @testset verbose = true "Coloring" begin
+        include("coloring.jl")
+    end
+
     @testset verbose = true "Sparsity" begin
         include("sparsity.jl")
     end

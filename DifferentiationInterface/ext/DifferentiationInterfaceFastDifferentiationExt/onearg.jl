@@ -247,14 +247,16 @@ struct FastDifferentiationOneArgJacobianExtras{Y,E1,E2} <: JacobianExtras
     jac_exe!::E2
 end
 
-function DI.prepare_jacobian(f, backend::AnyAutoFastDifferentiation, x)
+function DI.prepare_jacobian(
+    f, backend::Union{AutoFastDifferentiation,AutoSparse{<:AutoFastDifferentiation}}, x
+)
     y_prototype = f(x)
     x_var = make_variables(:x, size(x)...)
     y_var = f(x_var)
 
     x_vec_var = vec(x_var)
     y_vec_var = vec(y_var)
-    jac_var = if issparse(backend)
+    jac_var = if backend isa AutoSparse
         sparse_jacobian(y_vec_var, x_vec_var)
     else
         jacobian(y_vec_var, x_vec_var)
@@ -265,13 +267,20 @@ function DI.prepare_jacobian(f, backend::AnyAutoFastDifferentiation, x)
 end
 
 function DI.jacobian(
-    f, ::AnyAutoFastDifferentiation, x, extras::FastDifferentiationOneArgJacobianExtras
+    f,
+    ::Union{AutoFastDifferentiation,AutoSparse{<:AutoFastDifferentiation}},
+    x,
+    extras::FastDifferentiationOneArgJacobianExtras,
 )
     return extras.jac_exe(vec(x))
 end
 
 function DI.jacobian!(
-    f, jac, ::AnyAutoFastDifferentiation, x, extras::FastDifferentiationOneArgJacobianExtras
+    f,
+    jac,
+    ::Union{AutoFastDifferentiation,AutoSparse{<:AutoFastDifferentiation}},
+    x,
+    extras::FastDifferentiationOneArgJacobianExtras,
 )
     extras.jac_exe!(jac, vec(x))
     return jac
@@ -279,7 +288,7 @@ end
 
 function DI.value_and_jacobian(
     f,
-    backend::AnyAutoFastDifferentiation,
+    backend::Union{AutoFastDifferentiation,AutoSparse{<:AutoFastDifferentiation}},
     x,
     extras::FastDifferentiationOneArgJacobianExtras,
 )
@@ -289,7 +298,7 @@ end
 function DI.value_and_jacobian!(
     f,
     jac,
-    backend::AnyAutoFastDifferentiation,
+    backend::Union{AutoFastDifferentiation,AutoSparse{<:AutoFastDifferentiation}},
     x,
     extras::FastDifferentiationOneArgJacobianExtras,
 )
@@ -383,10 +392,12 @@ struct FastDifferentiationHessianExtras{E1,E2} <: HessianExtras
     hess_exe!::E2
 end
 
-function DI.prepare_hessian(f, backend::AnyAutoFastDifferentiation, x)
+function DI.prepare_hessian(
+    f, backend::Union{AutoFastDifferentiation,AutoSparse{<:AutoFastDifferentiation}}, x
+)
     x_vec_var = make_variables(:x, size(x)...)
     y_vec_var = f(x_vec_var)
-    hess_var = if issparse(backend)
+    hess_var = if backend isa AutoSparse
         sparse_hessian(y_vec_var, vec(x_vec_var))
     else
         hessian(y_vec_var, vec(x_vec_var))
@@ -397,7 +408,10 @@ function DI.prepare_hessian(f, backend::AnyAutoFastDifferentiation, x)
 end
 
 function DI.hessian(
-    f, backend::AnyAutoFastDifferentiation, x, extras::FastDifferentiationHessianExtras
+    f,
+    backend::Union{AutoFastDifferentiation,AutoSparse{<:AutoFastDifferentiation}},
+    x,
+    extras::FastDifferentiationHessianExtras,
 )
     return extras.hess_exe(vec(x))
 end
@@ -405,7 +419,7 @@ end
 function DI.hessian!(
     f,
     hess,
-    backend::AnyAutoFastDifferentiation,
+    backend::Union{AutoFastDifferentiation,AutoSparse{<:AutoFastDifferentiation}},
     x,
     extras::FastDifferentiationHessianExtras,
 )

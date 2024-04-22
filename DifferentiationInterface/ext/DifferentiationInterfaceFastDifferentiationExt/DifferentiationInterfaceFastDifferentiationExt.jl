@@ -1,8 +1,7 @@
 module DifferentiationInterfaceFastDifferentiationExt
 
-using ADTypes: ADTypes
+using ADTypes: ADTypes, AutoFastDifferentiation, AutoSparse
 import DifferentiationInterface as DI
-using DifferentiationInterface: AutoFastDifferentiation, AutoSparseFastDifferentiation
 using DifferentiationInterface:
     DerivativeExtras,
     GradientExtras,
@@ -27,19 +26,12 @@ using FillArrays: Fill
 using LinearAlgebra: dot
 using FastDifferentiation.RuntimeGeneratedFunctions: RuntimeGeneratedFunction
 
-const AnyAutoFastDifferentiation = Union{
-    AutoFastDifferentiation,AutoSparseFastDifferentiation
-}
-
 DI.check_available(::AutoFastDifferentiation) = true
 
 monovec(x::Number) = Fill(x, 1)
 
 myvec(x::Number) = monovec(x)
 myvec(x::AbstractArray) = vec(x)
-
-issparse(::AutoFastDifferentiation) = false
-issparse(::AutoSparseFastDifferentiation) = true
 
 include("onearg.jl")
 include("twoarg.jl")

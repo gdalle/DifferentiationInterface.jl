@@ -1,17 +1,22 @@
+coloring_algorithm = DifferentiationInterface.GreedyColoringAlgorithm()
+symbolics_ext = Base.get_extension(
+    DifferentiationInterface, :DifferentiationInterfaceSymbolicsExt
+)
+sparsity_detector = symbolics_ext.SymbolicsSparsityDetector()
+
 sparse_backends = [
-    AutoSparseFastDifferentiation(),
-    AutoSparseForwardDiff(),
-    AutoSparseFiniteDiff(),
-    AutoSparseSymbolics(),
-    AutoSparseZygote(),
+    AutoSparse(AutoFastDifferentiation()),
+    AutoSparse(AutoSymbolics()),
+    AutoSparse(AutoForwardDiff(); sparsity_detector, coloring_algorithm),
+    AutoSparse(AutoZygote(); sparsity_detector, coloring_algorithm),
 ]
 
 sparse_second_order_backends = [
-    AutoSparseFastDifferentiation(),
-    AutoSparseForwardDiff(),
-    AutoSparseSymbolics(),
-    SecondOrder(AutoSparseForwardDiff(), AutoZygote()),
-    SecondOrder(AutoSparseFiniteDiff(), AutoZygote()),
+    AutoSparse(AutoFastDifferentiation()),
+    AutoSparse(AutoSymbolics()),
+    AutoSparse(
+        SecondOrder(AutoForwardDiff(), AutoZygote()); sparsity_detector, coloring_algorithm
+    ),
 ]
 
 for backend in vcat(sparse_backends, sparse_second_order_backends)

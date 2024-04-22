@@ -13,8 +13,6 @@ const AutoReverseChainRules = AutoChainRules{<:RuleConfig{>:HasReverseMode}}
 
 DI.check_available(::AutoChainRules) = true
 DI.mutation_support(::AutoChainRules) = DI.MutationNotSupported()
-DI.mode(::AutoForwardChainRules) = ADTypes.AbstractForwardMode
-DI.mode(::AutoReverseChainRules) = ADTypes.AbstractReverseMode
 
 ## Pullback
 

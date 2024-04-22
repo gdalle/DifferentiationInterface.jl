@@ -12,10 +12,11 @@ module DifferentiationInterfaceTest
 using ADTypes
 using ADTypes:
     AbstractADType,
-    AbstractFiniteDifferencesMode,
-    AbstractForwardMode,
-    AbstractReverseMode,
-    AbstractSymbolicDifferentiationMode
+    AbstractMode,
+    ForwardMode,
+    ForwardOrReverseMode,
+    ReverseMode,
+    SymbolicMode
 using Base: get_extension
 using Chairmarks: @be, Benchmark, Sample
 using ComponentArrays: ComponentVector

@@ -14,28 +14,22 @@ backend_string_aux(::AutoTapir) = "Tapir"
 backend_string_aux(::AutoTracker) = "Tracker"
 backend_string_aux(::AutoZygote) = "Zygote"
 
-backend_string_aux(::AutoSparseFastDifferentiation) = "FastDifferentiation sparse"
-backend_string_aux(::AutoSparseFiniteDiff) = "FiniteDiff sparse"
-backend_string_aux(::AutoSparseForwardDiff) = "ForwardDiff sparse"
-backend_string_aux(::AutoSparsePolyesterForwardDiff) = "PolyesterForwardDiff sparse"
-backend_string_aux(::AutoSparseReverseDiff) = "ReverseDiff sparse"
-backend_string_aux(::AutoSparseSymbolics) = "Symbolics sparse"
-backend_string_aux(::AutoSparseZygote) = "Zygote sparse"
-
 function backend_string(backend::AbstractADType)
     bs = backend_string_aux(backend)
-    if mode(backend) == AbstractFiniteDifferencesMode
-        return "$bs (finite)"
-    elseif mode(backend) == AbstractForwardMode
+    if mode(backend) isa ForwardMode
         return "$bs (forward)"
-    elseif mode(backend) == AbstractReverseMode
+    elseif mode(backend) isa ReverseMode
         return "$bs (reverse)"
-    elseif mode(backend) == AbstractSymbolicDifferentiationMode
+    elseif mode(backend) isa SymbolicMode
         return "$bs (symbolic)"
+    elseif mode(backend) isa ForwardOrReverseMode
+        return "$bs (forward/reverse)"
     else
         error("Unknown mode")
     end
 end
+
+backend_string(backend::AutoSparse) = "Sparse $(backend_string(dense_ad(backend)))"
 
 function backend_string(backend::SecondOrder)
     return "$(backend_string(outer(backend))) / $(backend_string(inner(backend)))"

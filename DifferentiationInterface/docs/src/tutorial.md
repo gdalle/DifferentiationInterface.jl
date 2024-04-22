@@ -8,7 +8,7 @@ We present a typical workflow with DifferentiationInterface.jl and showcase its 
 
 ```@repl tuto
 using DifferentiationInterface
-import ForwardDiff, Enzyme
+import ADTypes, ForwardDiff, Enzyme
 using BenchmarkTools
 ```
 
@@ -32,7 +32,7 @@ Most backend types are defined by [ADTypes.jl](https://github.com/SciML/ADTypes.
 [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl) is very generic and efficient for low-dimensional inputs, so it's a good starting point:
 
 ```@repl tuto
-backend = AutoForwardDiff()
+backend = ADTypes.AutoForwardDiff()
 ```
 
 Now you can use DifferentiationInterface.jl to get the gradient:
@@ -116,7 +116,7 @@ So let's try the state-of-the-art [Enzyme.jl](https://github.com/EnzymeAD/Enzyme
 For this one, the backend definition is slightly more involved, because you need to feed the "mode" to the object from ADTypes.jl:
 
 ```@repl tuto
-backend2 = AutoEnzyme(Enzyme.Reverse)
+backend2 = ADTypes.AutoEnzyme(; mode=Enzyme.Reverse)
 ```
 
 But once it is done, things run smoothly with exactly the same syntax:

@@ -1,10 +1,6 @@
 module DifferentiationInterfacePolyesterForwardDiffExt
 
-using ADTypes:
-    AutoForwardDiff,
-    AutoPolyesterForwardDiff,
-    AutoSparseForwardDiff,
-    AutoSparsePolyesterForwardDiff
+using ADTypes: AutoForwardDiff, AutoPolyesterForwardDiff
 import DifferentiationInterface as DI
 using DifferentiationInterface:
     DerivativeExtras,
@@ -24,12 +20,8 @@ using PolyesterForwardDiff.ForwardDiff.DiffResults: DiffResults
 
 DI.check_available(::AutoPolyesterForwardDiff) = true
 
-function single_threaded(::AutoPolyesterForwardDiff{C}) where {C}
-    return AutoForwardDiff{C,Nothing}(nothing)
-end
-
-function single_threaded(::AutoSparsePolyesterForwardDiff{C}) where {C}
-    return AutoSparseForwardDiff{C,Nothing}(nothing)
+function single_threaded(backend::AutoPolyesterForwardDiff{C,T}) where {C,T}
+    return AutoForwardDiff{C,T}(backend.tag)
 end
 
 include("onearg.jl")

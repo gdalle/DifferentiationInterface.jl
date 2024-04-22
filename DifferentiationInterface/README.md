@@ -28,29 +28,22 @@ This package provides a backend-agnostic syntax to differentiate functions of th
 
 ## Compatibility
 
-We support most of the backends defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl):
+We support all of the backends defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl) v1.0:
 
-| Backend                                                                         | Object                                                                   |
-| :------------------------------------------------------------------------------ | :----------------------------------------------------------------------- |
-| [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl)             | `AutoChainRules(; ruleconfig)`                                           |
-| [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl)                     | `AutoDiffractor()`                                                       |
-| [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl)                              | `AutoEnzyme(; mode=Enzyme.Forward)`, `AutoEnzyme(; mode=Enzyme.Reverse)` |
-| [FiniteDiff.jl](https://github.com/JuliaDiff/FiniteDiff.jl)                     | `AutoFiniteDiff()`                                                       |
-| [FiniteDifferences.jl](https://github.com/JuliaDiff/FiniteDifferences.jl)       | `AutoFiniteDifferences(; fdm)`                                           |
-| [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl)                   | `AutoForwardDiff()`                                                      |
-| [PolyesterForwardDiff.jl](https://github.com/JuliaDiff/PolyesterForwardDiff.jl) | `AutoPolyesterForwardDiff(; chunksize)`                                  |
-| [ReverseDiff.jl](https://github.com/JuliaDiff/ReverseDiff.jl)                   | `AutoReverseDiff()`                                                      |
-| [SparseDiffTools.jl](https://github.com/JuliaDiff/SparseDiffTools.jl)           | `AutoSparseForwardDiff()`, `AutoSparseFiniteDiff()`                      |
-| [Tracker.jl](https://github.com/FluxML/Tracker.jl)                              | `AutoTracker()`                                                          |
-| [Zygote.jl](https://github.com/FluxML/Zygote.jl)                                | `AutoZygote()`                                                           |
-
-We also provide some experimental backends ourselves:
-
-| Backend                                                                          | Object                                                         |
-| :------------------------------------------------------------------------------- | :------------------------------------------------------------- |
-| [FastDifferentiation.jl](https://github.com/brianguenter/FastDifferentiation.jl) | `AutoFastDifferentiation()`, `AutoSparseFastDifferentiation()` |
-| [Symbolics.jl](https://github.com/JuliaSymbolics/Symbolics.jl)                   | `AutoSymbolics()`, `AutoSparseSymbolics()`                     |
-| [Tapir.jl](https://github.com/withbayes/Tapir.jl)                                | `AutoTapir()`                                                  |
+- [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl)
+- [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl)
+- [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl)
+- [FastDifferentiation.jl](https://github.com/brianguenter/FastDifferentiation.jl)
+- [FiniteDiff.jl](https://github.com/JuliaDiff/FiniteDiff.jl)
+- [FiniteDifferences.jl](https://github.com/JuliaDiff/FiniteDifferences.jl)
+- [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl)
+- [PolyesterForwardDiff.jl](https://github.com/JuliaDiff/PolyesterForwardDiff.jl)
+- [ReverseDiff.jl](https://github.com/JuliaDiff/ReverseDiff.jl)
+- [SparseDiffTools.jl](https://github.com/JuliaDiff/SparseDiffTools.jl)
+- [Symbolics.jl](https://github.com/JuliaSymbolics/Symbolics.jl) (currently broken)
+- [Tapir.jl](https://github.com/withbayes/Tapir.jl)
+- [Tracker.jl](https://github.com/FluxML/Tracker.jl)
+- [Zygote.jl](https://github.com/FluxML/Zygote.jl)
 
 ## Installation
 
@@ -76,11 +69,11 @@ julia> Pkg.add(
 ## Example
 
 ```jldoctest readme
-julia> import ForwardDiff
+julia> import ADTypes, ForwardDiff
 
 julia> using DifferentiationInterface
 
-julia> backend = AutoForwardDiff();
+julia> backend = ADTypes.AutoForwardDiff();
 
 julia> f(x) = sum(abs2, x);
 

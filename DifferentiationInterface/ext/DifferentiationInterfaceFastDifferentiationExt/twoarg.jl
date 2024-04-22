@@ -221,14 +221,16 @@ struct FastDifferentiationTwoArgJacobianExtras{E1,E2} <: JacobianExtras
     jac_exe!::E2
 end
 
-function DI.prepare_jacobian(f!, y, backend::AnyAutoFastDifferentiation, x)
+function DI.prepare_jacobian(
+    f!, y, backend::Union{AutoFastDifferentiation,AutoSparse{<:AutoFastDifferentiation}}, x
+)
     x_var = make_variables(:x, size(x)...)
     y_var = make_variables(:y, size(y)...)
     f!(y_var, x_var)
 
     x_vec_var = vec(x_var)
     y_vec_var = vec(y_var)
-    jac_var = if issparse(backend)
+    jac_var = if backend isa AutoSparse
         sparse_jacobian(y_vec_var, x_vec_var)
     else
         jacobian(y_vec_var, x_vec_var)
@@ -239,7 +241,11 @@ function DI.prepare_jacobian(f!, y, backend::AnyAutoFastDifferentiation, x)
 end
 
 function DI.value_and_jacobian(
-    f!, y, ::AnyAutoFastDifferentiation, x, extras::FastDifferentiationTwoArgJacobianExtras
+    f!,
+    y,
+    ::Union{AutoFastDifferentiation,AutoSparse{<:AutoFastDifferentiation}},
+    x,
+    extras::FastDifferentiationTwoArgJacobianExtras,
 )
     f!(y, x)
     jac = extras.jac_exe(vec(x))
@@ -250,7 +256,7 @@ function DI.value_and_jacobian!(
     f!,
     y,
     jac,
-    ::AnyAutoFastDifferentiation,
+    ::Union{AutoFastDifferentiation,AutoSparse{<:AutoFastDifferentiation}},
     x,
     extras::FastDifferentiationTwoArgJacobianExtras,
 )
@@ -260,7 +266,11 @@ function DI.value_and_jacobian!(
 end
 
 function DI.jacobian(
-    f!, y, ::AnyAutoFastDifferentiation, x, extras::FastDifferentiationTwoArgJacobianExtras
+    f!,
+    y,
+    ::Union{AutoFastDifferentiation,AutoSparse{<:AutoFastDifferentiation}},
+    x,
+    extras::FastDifferentiationTwoArgJacobianExtras,
 )
     jac = extras.jac_exe(vec(x))
     return jac
@@ -270,7 +280,7 @@ function DI.jacobian!(
     f!,
     y,
     jac,
-    ::AnyAutoFastDifferentiation,
+    ::Union{AutoFastDifferentiation,AutoSparse{<:AutoFastDifferentiation}},
     x,
     extras::FastDifferentiationTwoArgJacobianExtras,
 )

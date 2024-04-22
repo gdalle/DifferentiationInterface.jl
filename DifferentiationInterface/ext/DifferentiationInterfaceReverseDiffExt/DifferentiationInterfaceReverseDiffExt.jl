@@ -1,6 +1,6 @@
 module DifferentiationInterfaceReverseDiffExt
 
-using ADTypes: AutoReverseDiff, AutoSparseReverseDiff
+using ADTypes: AutoReverseDiff
 import DifferentiationInterface as DI
 using DifferentiationInterface:
     DerivativeExtras, GradientExtras, HessianExtras, JacobianExtras, NoPullbackExtras

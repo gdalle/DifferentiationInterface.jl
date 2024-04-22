@@ -145,9 +145,11 @@ struct SymbolicsOneArgJacobianExtras{E1,E2} <: JacobianExtras
     jac_exe!::E2
 end
 
-function DI.prepare_jacobian(f, backend::AnyAutoSymbolics, x)
+function DI.prepare_jacobian(
+    f, backend::Union{AutoSymbolics,AutoSparse{<:AutoSymbolics}}, x
+)
     x_var = variables(:x, axes(x)...)
-    jac_var = if issparse(backend)
+    jac_var = if backend isa AutoSparse
         sparsejacobian(vec(f(x_var)), vec(x_var))
     else
         jacobian(f(x_var), x_var)
@@ -162,23 +164,41 @@ function DI.prepare_jacobian(f, backend::AnyAutoSymbolics, x)
     return SymbolicsOneArgJacobianExtras(jac_exe, jac_exe!)
 end
 
-function DI.jacobian(f, ::AnyAutoSymbolics, x, extras::SymbolicsOneArgJacobianExtras)
+function DI.jacobian(
+    f,
+    ::Union{AutoSymbolics,AutoSparse{<:AutoSymbolics}},
+    x,
+    extras::SymbolicsOneArgJacobianExtras,
+)
     return extras.jac_exe(x)
 end
 
-function DI.jacobian!(f, jac, ::AnyAutoSymbolics, x, extras::SymbolicsOneArgJacobianExtras)
+function DI.jacobian!(
+    f,
+    jac,
+    ::Union{AutoSymbolics,AutoSparse{<:AutoSymbolics}},
+    x,
+    extras::SymbolicsOneArgJacobianExtras,
+)
     extras.jac_exe!(jac, x)
     return jac
 end
 
 function DI.value_and_jacobian(
-    f, backend::AnyAutoSymbolics, x, extras::SymbolicsOneArgJacobianExtras
+    f,
+    backend::Union{AutoSymbolics,AutoSparse{<:AutoSymbolics}},
+    x,
+    extras::SymbolicsOneArgJacobianExtras,
 )
     return f(x), DI.jacobian(f, backend, x, extras)
 end
 
 function DI.value_and_jacobian!(
-    f, jac, backend::AnyAutoSymbolics, x, extras::SymbolicsOneArgJacobianExtras
+    f,
+    jac,
+    backend::Union{AutoSymbolics,AutoSparse{<:AutoSymbolics}},
+    x,
+    extras::SymbolicsOneArgJacobianExtras,
 )
     return f(x), DI.jacobian!(f, jac, backend, x, extras)
 end
@@ -190,10 +210,10 @@ struct SymbolicsOneArgHessianExtras{E1,E2} <: HessianExtras
     hess_exe!::E2
 end
 
-function DI.prepare_hessian(f, backend::AnyAutoSymbolics, x)
+function DI.prepare_hessian(f, backend::Union{AutoSymbolics,AutoSparse{<:AutoSymbolics}}, x)
     x_var = variables(:x, axes(x)...)
     # Symbolic.hessian only accepts vectors
-    hess_var = if issparse(backend)
+    hess_var = if backend isa AutoSparse
         sparsehessian(f(x_var), vec(x_var))
     else
         hessian(f(x_var), vec(x_var))
@@ -208,11 +228,22 @@ function DI.prepare_hessian(f, backend::AnyAutoSymbolics, x)
     return SymbolicsOneArgHessianExtras(hess_exe, hess_exe!)
 end
 
-function DI.hessian(f, ::AnyAutoSymbolics, x, extras::SymbolicsOneArgHessianExtras)
+function DI.hessian(
+    f,
+    ::Union{AutoSymbolics,AutoSparse{<:AutoSymbolics}},
+    x,
+    extras::SymbolicsOneArgHessianExtras,
+)
     return extras.hess_exe(vec(x))
 end
 
-function DI.hessian!(f, hess, ::AnyAutoSymbolics, x, extras::SymbolicsOneArgHessianExtras)
+function DI.hessian!(
+    f,
+    hess,
+    ::Union{AutoSymbolics,AutoSparse{<:AutoSymbolics}},
+    x,
+    extras::SymbolicsOneArgHessianExtras,
+)
     extras.hess_exe!(hess, vec(x))
     return hess
 end

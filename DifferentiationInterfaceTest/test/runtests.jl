@@ -28,4 +28,8 @@ include("test_imports.jl")
     @testset verbose = false "ForwardDiff" begin
         include("forwarddiff.jl")
     end
+
+    @testset verbose = false "Symbolics" begin
+        include("symbolics.jl")
+    end
 end;

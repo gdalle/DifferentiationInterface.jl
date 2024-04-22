@@ -7,9 +7,9 @@ dense_second_order_backends = [
 ]
 
 sparse_second_order_backends = [
-    AutoSparseForwardDiff(),  #
-    AutoSparseFastDifferentiation(),
-    AutoSparseSymbolics(),
+    AutoSparse(AutoForwardDiff()),  #
+    AutoSparse(AutoFastDifferentiation()),
+    AutoSparse(AutoSymbolics()),
 ]
 
 mixed_second_order_backends = [

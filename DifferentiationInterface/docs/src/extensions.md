@@ -4,7 +4,7 @@
 CurrentModule = DifferentiationInterface
 ```
 
-Backend-specific extension content is not part of the public API.
+Package extension content is not part of the public API.
 If any docstrings are present in an extension, they will appear below.
 
 ```@autodocs
@@ -18,7 +18,7 @@ Modules = [
     Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceForwardDiffExt),
     Base.get_extension(DifferentiationInterface, :DifferentiationInterfacePolyesterForwardDiffExt),
     Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceReverseDiffExt),
-    Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceSparseDiffToolsExt),
+    Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceSymbolicsExt),
     Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceTapirExt),
     Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceTrackerExt),
     Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceZygoteExt)

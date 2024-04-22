@@ -1,6 +1,6 @@
 module DifferentiationInterfaceFiniteDiffExt
 
-using ADTypes: AutoFiniteDiff, AutoSparseFiniteDiff
+using ADTypes: AutoFiniteDiff
 import DifferentiationInterface as DI
 using DifferentiationInterface:
     NoDerivativeExtras,
@@ -30,10 +30,6 @@ DI.check_available(::AutoFiniteDiff) = true
 fdtype(::AutoFiniteDiff{fdt}) where {fdt} = fdt
 fdjtype(::AutoFiniteDiff{fdt,fdjt}) where {fdt,fdjt} = fdjt
 fdhtype(::AutoFiniteDiff{fdt,fdjt,fdht}) where {fdt,fdjt,fdht} = fdht
-
-fdtype(::AutoSparseFiniteDiff) = Val{:central}()
-fdjtype(::AutoSparseFiniteDiff) = Val{:central}()
-fdhtype(::AutoSparseFiniteDiff) = Val{:hcentral}()
 
 # see https://docs.sciml.ai/FiniteDiff/stable/#f-Definitions
 const FUNCTION_INPLACE = Val{true}

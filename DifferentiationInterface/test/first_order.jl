@@ -16,7 +16,9 @@ dense_backends = [
 ]
 
 sparse_backends = [
-    AutoSparseFastDifferentiation(), AutoSparseForwardDiff(), AutoSparseSymbolics()
+    AutoSparse(AutoFastDifferentiation()),
+    AutoSparse(AutoForwardDiff()),
+    AutoSparse(AutoSymbolics()),
 ]
 
 ##

@@ -14,7 +14,6 @@ using ForwardDiff: ForwardDiff
 using PolyesterForwardDiff: PolyesterForwardDiff
 using ReverseDiff: ReverseDiff
 using Symbolics: Symbolics
-using SparseDiffTools: SparseDiffTools
 using Tapir: Tapir
 using Tracker: Tracker
 using Zygote: Zygote
@@ -31,14 +30,14 @@ extensions = [
     get_extension(DI, :DifferentiationInterfaceForwardDiffExt),
     get_extension(DI, :DifferentiationInterfacePolyesterForwardDiffExt),
     get_extension(DI, :DifferentiationInterfaceReverseDiffExt),
-    get_extension(DI, :DifferentiationInterfaceSparseDiffToolsExt),
+    get_extension(DI, :DifferentiationInterfaceSymbolicsExt),
     get_extension(DI, :DifferentiationInterfaceTapirExt),
     get_extension(DI, :DifferentiationInterfaceTrackerExt),
     get_extension(DI, :DifferentiationInterfaceZygoteExt),
 ]
 
 makedocs(;
-    modules=[ADTypes, DifferentiationInterface, extensions...],
+    modules=[DifferentiationInterface, extensions...],
     authors="Guillaume Dalle, Adrian Hill",
     sitename="DifferentiationInterface.jl",
     format=Documenter.HTML(),
@@ -48,7 +47,6 @@ makedocs(;
         "API reference" => "api.md",
         "Advanced" => ["design.md", "extensions.md"],
     ],
-    warnonly=:missing_docs,  # missing docs for ADTypes.jl are normal
 )
 
 deploydocs(;
