@@ -9,8 +9,6 @@ include("test_imports.jl")
                 DifferentiationInterfaceTest;
                 ambiguities=false,
                 deps_compat=(check_extras = false),
-                persistent_tasks=false,
-                stale_deps=false,
             )
         end
         @testset "JuliaFormatter" begin
