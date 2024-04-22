@@ -47,8 +47,6 @@ makedocs(;
         "API reference" => "api.md",
         "Advanced" => ["design.md", "extensions.md"],
     ],
-    pagesonly=true,
-    warnonly=true,
 )
 
 deploydocs(;
