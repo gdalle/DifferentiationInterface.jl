@@ -12,7 +12,7 @@ Check marks (✅) are clickable and link to the source code.
 ```@setup overloads
 using ADTypes
 using DifferentiationInterface
-using DifferentiationInterface: backend_string
+using DifferentiationInterface: backend_string, mutation_support, MutationSupported
 using Markdown: Markdown
 using Diffractor: Diffractor
 using Enzyme: Enzyme
@@ -137,13 +137,17 @@ function print_overloads(backend, ext::Symbol)
     io = IOBuffer()
     ext = Base.get_extension(DifferentiationInterface, ext)
 
-    println(io, "### `f(x)`")
+    println(io, "#### One-argument functions `y = f(x)`")
     println(io)
     print_overload_table(io, operators_and_types_f(backend), ext)
 
-    println(io, "### `f!(y, x)`")
+    println(io, "#### Two-argument functions `f!(y, x)`")
     println(io)
-    print_overload_table(io, operators_and_types_f!(backend), ext)
+    if mutation_support(backend) == MutationSupported()
+        print_overload_table(io, operators_and_types_f!(backend), ext)
+    else
+        println(io, "Backend doesn't support mutating functions.")
+    end
 
     return Markdown.parse(String(take!(io)))
 end
