@@ -5,7 +5,7 @@ Each cell can have three values:
 
 - ❌: the backend does not support this operator
 - ✅: our extension calls the backend operator and handles preparation if possible
-- NA: the operator is not available (e.g. because mutation on scalar function outputs isn't possible).
+- NA: the operator is not available
 
 Checkmarks (✅) are clickable and link to the source code.
 
@@ -25,25 +25,6 @@ using ReverseDiff: ReverseDiff
 using Tapir: Tapir
 using Tracker: Tracker
 using Zygote: Zygote
-
-ext_module(ext::Symbol) = Base.get_extension(DifferentiationInterface, ext)
-
-function all_backends_and_extensions()
-    return [
-        (AutoDiffractor(), ext_module(:DifferentiationInterfaceDiffractorExt)),
-        (AutoEnzyme(; mode=Enzyme.Forward), ext_module(:DifferentiationInterfaceEnzymeExt)),
-        (AutoEnzyme(; mode=Enzyme.Reverse), ext_module(:DifferentiationInterfaceEnzymeExt)),
-        (AutoFastDifferentiation(), ext_module(:DifferentiationInterfaceFastDifferentiationExt),),
-        (AutoFiniteDiff(), ext_module(:DifferentiationInterfaceFiniteDiffExt)),
-        (AutoFiniteDifferences(; fdm=FiniteDifferences.central_fdm(3, 1)),ext_module(:DifferentiationInterfaceFiniteDifferencesExt),),
-        (AutoForwardDiff(), ext_module(:DifferentiationInterfaceForwardDiffExt)),
-        (AutoPolyesterForwardDiff(; chunksize=1),ext_module(:DifferentiationInterfacePolyesterForwardDiffExt),),
-        (AutoReverseDiff(), ext_module(:DifferentiationInterfaceReverseDiffExt)),
-        (AutoTapir(), ext_module(:DifferentiationInterfaceTapirExt)),
-        (AutoTracker(), ext_module(:DifferentiationInterfaceTrackerExt)),
-        (AutoZygote(), ext_module(:DifferentiationInterfaceZygoteExt)),
-    ]
-end
 
 function operators_and_types_f(backend::T) where {T<:AbstractADType}
     return (
@@ -82,36 +63,26 @@ function operators_and_types_f(backend::T) where {T<:AbstractADType}
             (nothing, nothing),
         ),
         (
-            (:pushforward, (Any, T, Any, Any, Any)),
-            (:pushforward!, (Any, Any, T, Any, Any, Any)),
-            (:value_and_pushforward, (Any, T, Any, Any, Any)),
-            (:value_and_pushforward!, (Any, Any, T, Any, Any, Any)),
-        ),
-        (
             (:pullback, (Any, T, Any, Any, Any)),
             (:pullback!, (Any, Any, T, Any, Any, Any)),
             (:value_and_pullback, (Any, T, Any, Any, Any)),
             (:value_and_pullback!, (Any, Any, T, Any, Any, Any)),
         ),
+        (
+            (:pushforward, (Any, T, Any, Any, Any)),
+            (:pushforward!, (Any, Any, T, Any, Any, Any)),
+            (:value_and_pushforward, (Any, T, Any, Any, Any)),
+            (:value_and_pushforward!, (Any, Any, T, Any, Any, Any)),
+        ),
     )
 end
 function operators_and_types_f!(backend::T) where {T<:AbstractADType}
     return (
-        # (op,          types_op), 
-        # (op!,         types_op!), 
-        # (val_and_op,  types_val_and_op),
-        # (val_and_op!, types_val_and_op!),
         (
             (:derivative, (Any, Any, T, Any, Any)),
             (:derivative!, (Any, Any, Any, T, Any, Any)),
             (:value_and_derivative, (Any, Any, T, Any, Any)),
             (:value_and_derivative!, (Any, Any, Any, T, Any, Any)),
-        ),
-        (
-            (:gradient, (Any, Any, T, Any, Any)),
-            (:gradient!, (Any, Any, Any, T, Any, Any)),
-            (:value_and_gradient, (Any, Any, T, Any, Any)),
-            (:value_and_gradient!, (Any, Any, Any, T, Any, Any)),
         ),
         (
             (:jacobian, (Any, Any, T, Any, Any)),
@@ -120,16 +91,10 @@ function operators_and_types_f!(backend::T) where {T<:AbstractADType}
             (:value_and_jacobian!, (Any, Any, Any, T, Any, Any)),
         ),
         (
-            (:hessian, (Any, Any, T, Any, Any)),
-            (:hessian!, (Any, Any, Any, T, Any, Any)),
-            (nothing, nothing),
-            (nothing, nothing),
-        ),
-        (
-            (:hvp, (Any, Any, T, Any, Any, Any)),
-            (:hvp!, (Any, Any, Any, T, Any, Any, Any)),
-            (nothing, nothing),
-            (nothing, nothing),
+            (:pullback, (Any, Any, T, Any, Any, Any)),
+            (:pullback!, (Any, Any, Any, T, Any, Any, Any)),
+            (:value_and_pullback, (Any, Any, T, Any, Any, Any)),
+            (:value_and_pullback!, (Any, Any, Any, T, Any, Any, Any)),
         ),
         (
             (:pushforward, (Any, Any, T, Any, Any, Any)),
@@ -137,18 +102,12 @@ function operators_and_types_f!(backend::T) where {T<:AbstractADType}
             (:value_and_pushforward, (Any, Any, T, Any, Any, Any)),
             (:value_and_pushforward!, (Any, Any, Any, T, Any, Any, Any)),
         ),
-        (
-            (:pullback, (Any, Any, T, Any, Any, Any)),
-            (:pullback!, (Any, Any, Any, T, Any, Any, Any)),
-            (:value_and_pullback, (Any, Any, T, Any, Any, Any)),
-            (:value_and_pullback!, (Any, Any, Any, T, Any, Any, Any)),
-        ),
     )
 end
 
-function method_overloaded(operator::Symbol, argtypes, m::Module)
+function method_overloaded(operator::Symbol, argtypes, ext::Module)
     f = @eval DifferentiationInterface.$operator
-    ms = methods(f, argtypes, m)
+    ms = methods(f, argtypes, ext)
 
     n = length(ms)
     n == 0 && return "❌"
@@ -156,42 +115,13 @@ function method_overloaded(operator::Symbol, argtypes, m::Module)
     return "✅"
 end
 
-io = IOBuffer()
-
-for (backend, ext) in all_backends_and_extensions()
-    bname = backend_string(backend)
-    btype = typeof(backend)
-
-    # Subsection title
-    println(io, "## $bname")
-
-    # First-order table
-    println(io, "### Functions `f(x)`")
-    println(io)
+function print_overload_table(io::IO, operators_and_types, ext::Module)
     println(io, "| Operator | `op` | `op!` | `value_and_op` | `value_and_op!` |")
     println(io, "|:---------|:----:|:-----:|:--------------:|:---------------:|")
-    for variants in operators_and_types_f(backend)
-        opname = first(first(variants))
+    for operator_variants in operators_and_types
+        opname = first(first(operator_variants))
         print(io, "| `$opname` |")
-        for (op, type_signature) in variants
-            if isnothing(op)
-                print(io, "NA")
-            else
-                print(io, method_overloaded(op, type_signature, ext))
-            end
-            print(io, '|')
-        end
-        println(io)
-    end
-
-    println(io, "### Functions `f!(y, x)`")
-    println(io)
-    println(io, "| Operator | `op` | `op!` | `value_and_op` | `value_and_op!` |")
-    println(io, "|:---------|:----:|:-----:|:--------------:|:---------------:|")
-    for variants in operators_and_types_f!(backend)
-        opname = first(first(variants))
-        print(io, "| `$opname` |")
-        for (op, type_signature) in variants
+        for (op, type_signature) in operator_variants
             if isnothing(op)
                 print(io, "NA")
             else
@@ -203,9 +133,78 @@ for (backend, ext) in all_backends_and_extensions()
     end
 end
 
-overload_tables = Markdown.parse(String(take!(io)))
+function print_overloads(backend, ext::Symbol)
+    io = IOBuffer()
+    ext = Base.get_extension(DifferentiationInterface, ext)
+
+    println(io, "### `f(x)`")
+    println(io)
+    print_overload_table(io, operators_and_types_f(backend), ext)
+
+    println(io, "### `f!(y, x)`")
+    println(io)
+    print_overload_table(io, operators_and_types_f!(backend), ext)
+
+    return Markdown.parse(String(take!(io)))
+end
 ```
 
+## Diffractor (forward/reverse)
 ```@example overloads
-overload_tables # hide
+print_overloads(AutoDiffractor(), :DifferentiationInterfaceDiffractorExt) # hide
+```
+
+## Enzyme (forward)
+```@example overloads
+print_overloads(AutoEnzyme(; mode=Enzyme.Forward), :DifferentiationInterfaceEnzymeExt) # hide
+```
+
+## Enzyme (reverse)
+```@example overloads
+print_overloads(AutoEnzyme(; mode=Enzyme.Reverse), :DifferentiationInterfaceEnzymeExt) # hide
+```
+
+## FastDifferentiation (symbolic)
+```@example overloads
+print_overloads(AutoFastDifferentiation(), :DifferentiationInterfaceFastDifferentiationExt) # hide
+```
+
+## FiniteDiff (forward)
+```@example overloads
+print_overloads(AutoFiniteDiff(), :DifferentiationInterfaceFiniteDiffExt) # hide
+```
+
+## FiniteDifferences (forward)
+```@example overloads
+print_overloads(AutoFiniteDifferences(; fdm=FiniteDifferences.central_fdm(3, 1)), :DifferentiationInterfaceFiniteDifferencesExt) # hide
+```
+
+## ForwardDiff (forward)
+```@example overloads
+print_overloads(AutoForwardDiff(), :DifferentiationInterfaceForwardDiffExt) # hide
+```
+
+## PolyesterForwardDiff (forward)
+```@example overloads
+print_overloads(AutoPolyesterForwardDiff(; chunksize=1), :DifferentiationInterfacePolyesterForwardDiffExt) # hide
+```
+
+## ReverseDiff (reverse)
+```@example overloads
+print_overloads(AutoReverseDiff(), :DifferentiationInterfaceReverseDiffExt) # hide
+```
+
+## Tapir (reverse)
+```@example overloads
+print_overloads(AutoTapir(), :DifferentiationInterfaceTapirExt) # hide
+```
+
+## Tracker (reverse)
+```@example overloads
+print_overloads(AutoTracker(), :DifferentiationInterfaceTrackerExt) # hide
+```
+
+## Zygote (reverse)
+```@example overloads
+print_overloads(AutoZygote(), :DifferentiationInterfaceZygoteExt) # hide
 ```
