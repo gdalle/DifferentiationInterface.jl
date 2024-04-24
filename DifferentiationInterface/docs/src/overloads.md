@@ -112,7 +112,7 @@ function method_overloaded(operator::Symbol, argtypes, ext::Module)
     n = length(ms)
     n == 0 && return "❌"
     n == 1 && return "[✅]($(Base.url(only(ms))))"
-    return "✅"
+    return "[✅]($(Base.url(first(ms))))" # Optional TODO: return all URLs?
 end
 
 function print_overload_table(io::IO, operators_and_types, ext::Module)
