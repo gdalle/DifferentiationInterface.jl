@@ -14,8 +14,8 @@ When available, DifferentiationInterface **always** calls these backend-specific
 The following tables summarize all implemented overloads for each backend.
 Each cell can have three values:
 
-- ❌: the backend does not support this operator
-- ✅: our extension calls the backend operator and handles preparation if possible
+- ❌: the operator is not overloaded because the backend does not support it
+- ✅: the operator is overloaded
 - NA: the operator does not exist
 
 !!! tip
