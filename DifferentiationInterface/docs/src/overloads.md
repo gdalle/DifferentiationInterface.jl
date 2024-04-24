@@ -73,7 +73,7 @@ for (backend, ext) in all_backends_and_extensions()
     # Subsection title
     println(io, "## $bname")
     # Table header
-    println(io, "| Signature | `operator(f, backend, x, ...)`| `operator(f!, y, backend, x, ...)` |")
+    println(io, "| Operator | `operator(f, backend, x, ...)`| `operator(f!, y, backend, x, ...)` |")
     println(io, "|:---|:---:|:---:|")
     # Table contents
     for op in operators
