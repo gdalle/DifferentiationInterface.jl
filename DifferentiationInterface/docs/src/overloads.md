@@ -1,10 +1,11 @@
 # Table of overloads
 
 This table recaps the features of each extension, with respect to high-level operators.
-Each cell can have two values
+Each cell can have three values
 
 - ❌: the backend does not support this operator
 - ✅: our extension calls the backend operator and handles preparation if possible
+- NA: The operator is not available (e.g. because mutation on scalar function outputs isn't possible).
 
 Checkmarks (✅) are clickable and link to the source code.
 
@@ -53,6 +54,16 @@ operators = (
     :hessian, 
 )
 
+isinplace(op::Symbol) = contains(string(op), '!')
+
+function supports_inplace_fn(op::Symbol)
+    name = string(op)
+    contains(name, "gradient") && return false
+    contains(name, "hvp") && return false
+    contains(name, "hessian") && return false
+    return true
+end
+
 function method_overloaded(operator::Symbol, argtypes, m::Module)
     f = @eval DifferentiationInterface.$operator
     ms = methods(f, argtypes, m)
@@ -71,17 +82,30 @@ for (backend, ext) in all_backends_and_extensions()
 
     # Subsection title
     println(io, "## $bname")
-    # Table header
-    println(io, "| Operator | `operator(f, backend, x, ...)`| `operator(f!, y, backend, x, ...)` |")
-    println(io, "|:---|:---:|:---:|")
-    # Table contents
+
+    # First-order table
+    println(io, "| Operator | `f(x)` | `f!(y, x)` |")
+    println(io, "|:---------|:------:|:----------:|")
     for op in operators
-        println(io, "| `$op` | ", 
-            method_overloaded(op, (Any, btype, Any, Any), ext), 
-            "|",
-            method_overloaded(op, (Any, Any, btype, Any, Any), ext),
-            "|" 
-        )
+        print(io, "| `$op` | ")
+        # Column f(x)
+        if isinplace(op)
+            print(io, method_overloaded(op, (Any, Any, btype, Any, Any), ext))
+        else
+            print(io, method_overloaded(op, (Any, btype, Any, Any), ext))
+        end
+        print(io, '|')
+        # Column f!(x)
+        if !supports_inplace_fn(op)
+            print(io, "NA")
+        else
+            if isinplace(op)
+                print(io, method_overloaded(op, (Any, Any, Any, btype, Any, Any), ext))
+            else
+                print(io, method_overloaded(op, (Any, Any, btype, Any, Any), ext))
+            end
+        end
+        println(io, '|')
     end
 end
 
