@@ -56,7 +56,7 @@ data1 = benchmark_differentiation(
 );
 
 data2 = benchmark_differentiation(
-    SecondOrder(AutoZeroForward(), AutoZeroReverse());
+    [SecondOrder(AutoZeroForward(), AutoZeroReverse())];
     first_order=false,
     logging=get(ENV, "CI", "false") == "false",
 );
