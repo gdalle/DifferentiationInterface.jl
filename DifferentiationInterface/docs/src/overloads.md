@@ -35,33 +35,26 @@ function all_backends_and_extensions()
     ]
 end
 
-operators = (
-    :value_and_derivative!, 
-    :value_and_derivative, 
-    :derivative!, 
-    :derivative,   
-    :value_and_gradient!, 
-    :value_and_gradient, 
-    :gradient!, 
-    :gradient, 
-    :value_and_jacobian!, 
-    :value_and_jacobian, 
-    :jacobian!, 
-    :jacobian, 
-    :hvp!, 
-    :hvp, 
-    :hessian!,
-    :hessian, 
-)
-
-isinplace(op::Symbol) = contains(string(op), '!')
-
-function supports_inplace_fn(op::Symbol)
-    name = string(op)
-    contains(name, "gradient") && return false
-    contains(name, "hvp") && return false
-    contains(name, "hessian") && return false
-    return true
+function operators(backend::T) where {T<:AbstractADType} 
+    return (
+        # (operator, signature_f, signature_f!)
+        (:value_and_derivative!, (Any, Any, T, Any, Any), (Any, Any, Any, T, Any, Any)), 
+        (:value_and_derivative, (Any, T, Any, Any), (Any, Any, T, Any, Any)), 
+        (:derivative!, (Any, Any, T, Any, Any), (Any, Any, Any, T, Any, Any)), 
+        (:derivative, (Any, T, Any, Any), (Any, Any, T, Any, Any)),   
+        (:value_and_gradient!, (Any, Any, T, Any, Any), nothing), 
+        (:value_and_gradient, (Any, T, Any, Any), nothing), 
+        (:gradient!, (Any, Any, T, Any, Any), nothing), 
+        (:gradient, (Any, T, Any, Any), nothing), 
+        (:value_and_jacobian!, (Any, Any, T, Any, Any), (Any, Any, Any, T, Any, Any)), 
+        (:value_and_jacobian, (Any, T, Any, Any), (Any, Any, T, Any, Any)), 
+        (:jacobian!, (Any, Any, T, Any, Any), (Any, Any, Any, T, Any, Any)), 
+        (:jacobian, (Any, T, Any, Any), (Any, Any, T, Any, Any)), 
+        (:hvp!, (Any, Any, T, Any, Any, Any), nothing), 
+        (:hvp, (Any, T, Any, Any, Any), nothing), 
+        (:hessian!, (Any, Any, T, Any, Any), nothing),
+        (:hessian, (Any, T, Any, Any), nothing), 
+    )
 end
 
 function method_overloaded(operator::Symbol, argtypes, m::Module)
@@ -86,26 +79,15 @@ for (backend, ext) in all_backends_and_extensions()
     # First-order table
     println(io, "| Operator | `f(x)` | `f!(y, x)` |")
     println(io, "|:---------|:------:|:----------:|")
-    for op in operators
-        print(io, "| `$op` | ")
-        # Column f(x)
-        if isinplace(op)
-            print(io, method_overloaded(op, (Any, Any, btype, Any, Any), ext))
+    for (op, signature_f, signature_f!) in operators(backend)
+        # First column: f(x)
+        print(io, "| `$op` |", method_overloaded(op, signature_f, ext), '|') 
+        # Second column: f!(y, x)
+        if isnothing(signature_f!)
+            println(io, "NA |")
         else
-            print(io, method_overloaded(op, (Any, btype, Any, Any), ext))
+            println(io, method_overloaded(op, signature_f!, ext), '|')
         end
-        print(io, '|')
-        # Column f!(x)
-        if !supports_inplace_fn(op)
-            print(io, "NA")
-        else
-            if isinplace(op)
-                print(io, method_overloaded(op, (Any, Any, Any, btype, Any, Any), ext))
-            else
-                print(io, method_overloaded(op, (Any, Any, btype, Any, Any), ext))
-            end
-        end
-        println(io, '|')
     end
 end
 
