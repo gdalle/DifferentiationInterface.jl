@@ -1,10 +1,9 @@
 # Table of overloads
 
 This table recaps the features of each extension, with respect to high-level operators.
-Each cell can have four values
+Each cell can have two values
 
 - ❌: the backend does not support this operator
-- ❔: the backend supports this operator but our extension doesn't call it yet / doesn't handle preparation
 - ✅: our extension calls the backend operator and handles preparation if possible
 
 Checkmarks (✅) are clickable and link to the source code.
