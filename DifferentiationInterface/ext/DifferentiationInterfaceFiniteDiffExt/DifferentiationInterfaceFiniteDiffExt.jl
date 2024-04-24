@@ -9,6 +9,7 @@ using DifferentiationInterface:
     NoJacobianExtras,
     NoPullbackExtras,
     NoPushforwardExtras
+    GradientExtras
 using FiniteDiff:
     DerivativeCache,
     GradientCache,
