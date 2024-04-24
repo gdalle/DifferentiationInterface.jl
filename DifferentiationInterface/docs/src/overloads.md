@@ -5,9 +5,9 @@ Each cell can have three values:
 
 - ❌: the backend does not support this operator
 - ✅: our extension calls the backend operator and handles preparation if possible
-- NA: the operator is not available
+- NA: the operator does not exist
 
-Checkmarks (✅) are clickable and link to the source code.
+Check marks (✅) are clickable and link to the source code.
 
 ```@setup overloads
 using ADTypes
