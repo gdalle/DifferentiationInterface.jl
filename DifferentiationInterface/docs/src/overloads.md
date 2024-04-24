@@ -1,13 +1,25 @@
 # Table of overloads
 
-This table recaps the features of each extension, with respect to high-level operators.
+As described in the [overview](@ref sec-overview), DifferentiationInterface provides multiple high-level operators like [`jacobian`](@ref),
+each with several variants: 
+* **out-of-place** or **in-place** return values
+* **with** or **without primal** output value
+* support for **one-argument functions** `y = f(x)` or **two-argument functions** `f!(y, x)`
+
+To support a new backend, it is only required to [define either a pushforward or a pullback function](@ref ssec-requirements),
+since DifferentiationInterface provides default implementations of all operators using just these two primitives.
+However, backends sometimes provide their own implementations of operators, which can be more performant.
+When available, DifferentiationInterface **always** calls these backend-specific implementations, which we call *"overloads"*.
+
+The following tables summarize all implemented overloads for each backend.
 Each cell can have three values:
 
 - ❌: the backend does not support this operator
 - ✅: our extension calls the backend operator and handles preparation if possible
 - NA: the operator does not exist
 
-Check marks (✅) are clickable and link to the source code.
+!!! tip
+    Check marks (✅) are clickable and link to the source code.
 
 ```@setup overloads
 using ADTypes
