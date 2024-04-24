@@ -29,6 +29,7 @@ for backend in vcat(
     dense_second_order_backends, sparse_second_order_backends, mixed_second_order_backends
 )
     @test check_hessian(backend)
+    @test mode(backend) isa ADTypes.AbstractMode
 end
 
 test_differentiation(
