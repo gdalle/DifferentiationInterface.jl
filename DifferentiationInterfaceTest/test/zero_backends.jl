@@ -51,11 +51,18 @@ test_differentiation(
 
 ## Benchmark
 
-data = benchmark_differentiation(
+data1 = benchmark_differentiation(
     [AutoZeroForward(), AutoZeroReverse()]; logging=get(ENV, "CI", "false") == "false"
 );
 
-df = DataFrames.DataFrame(data)
+data2 = benchmark_differentiation(
+    [SecondOrder(AutoZeroForward(), AutoZeroReverse())];
+    first_order=false,
+    logging=get(ENV, "CI", "false") == "false",
+);
+
+df1 = DataFrames.DataFrame(data1)
+df2 = DataFrames.DataFrame(data2)
 
 ## Weird arrays
 

@@ -26,3 +26,10 @@ outer(backend::SecondOrder) = backend.outer
 function Base.show(io::IO, backend::SecondOrder)
     return print(io, "SecondOrder($(outer(backend)) / $(inner(backend)))")
 end
+
+"""
+    mode(backend::SecondOrder)
+
+Return the _outer_ mode of the second-order backend.
+"""
+ADTypes.mode(backend::SecondOrder) = mode(outer(backend))
