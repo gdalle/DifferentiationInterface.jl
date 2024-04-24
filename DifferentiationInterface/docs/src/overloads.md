@@ -1,11 +1,11 @@
 # Table of overloads
 
 This table recaps the features of each extension, with respect to high-level operators.
-Each cell can have three values
+Each cell can have three values:
 
 - ❌: the backend does not support this operator
 - ✅: our extension calls the backend operator and handles preparation if possible
-- NA: The operator is not available (e.g. because mutation on scalar function outputs isn't possible).
+- NA: the operator is not available (e.g. because mutation on scalar function outputs isn't possible).
 
 Checkmarks (✅) are clickable and link to the source code.
 
@@ -13,8 +13,18 @@ Checkmarks (✅) are clickable and link to the source code.
 using ADTypes
 using DifferentiationInterface
 using DifferentiationInterface: backend_string
-import Markdown
-import Diffractor, Enzyme, FastDifferentiation, FiniteDiff, FiniteDifferences, ForwardDiff, PolyesterForwardDiff, ReverseDiff, Tapir, Tracker, Zygote
+using Markdown: Markdown
+using Diffractor: Diffractor
+using Enzyme: Enzyme
+using FastDifferentiation: FastDifferentiation
+using FiniteDiff: FiniteDiff
+using FiniteDifferences: FiniteDifferences
+using ForwardDiff: ForwardDiff
+using PolyesterForwardDiff: PolyesterForwardDiff
+using ReverseDiff: ReverseDiff
+using Tapir: Tapir
+using Tracker: Tracker
+using Zygote: Zygote
 
 ext_module(ext::Symbol) = Base.get_extension(DifferentiationInterface, ext)
 
@@ -23,11 +33,11 @@ function all_backends_and_extensions()
         (AutoDiffractor(), ext_module(:DifferentiationInterfaceDiffractorExt)),
         (AutoEnzyme(; mode=Enzyme.Forward), ext_module(:DifferentiationInterfaceEnzymeExt)),
         (AutoEnzyme(; mode=Enzyme.Reverse), ext_module(:DifferentiationInterfaceEnzymeExt)),
-        (AutoFastDifferentiation(), ext_module(:DifferentiationInterfaceFastDifferentiationExt)),
+        (AutoFastDifferentiation(), ext_module(:DifferentiationInterfaceFastDifferentiationExt),),
         (AutoFiniteDiff(), ext_module(:DifferentiationInterfaceFiniteDiffExt)),
-        (AutoFiniteDifferences(; fdm=FiniteDifferences.central_fdm(3, 1)), ext_module(:DifferentiationInterfaceFiniteDifferencesExt)),
+        (AutoFiniteDifferences(; fdm=FiniteDifferences.central_fdm(3, 1)),ext_module(:DifferentiationInterfaceFiniteDifferencesExt),),
         (AutoForwardDiff(), ext_module(:DifferentiationInterfaceForwardDiffExt)),
-        (AutoPolyesterForwardDiff(; chunksize=1), ext_module(:DifferentiationInterfacePolyesterForwardDiffExt)),
+        (AutoPolyesterForwardDiff(; chunksize=1),ext_module(:DifferentiationInterfacePolyesterForwardDiffExt),),
         (AutoReverseDiff(), ext_module(:DifferentiationInterfaceReverseDiffExt)),
         (AutoTapir(), ext_module(:DifferentiationInterfaceTapirExt)),
         (AutoTracker(), ext_module(:DifferentiationInterfaceTrackerExt)),
@@ -35,25 +45,104 @@ function all_backends_and_extensions()
     ]
 end
 
-function operators(backend::T) where {T<:AbstractADType} 
+function operators_and_types_f(backend::T) where {T<:AbstractADType}
     return (
-        # (operator, signature_f, signature_f!)
-        (:value_and_derivative!, (Any, Any, T, Any, Any), (Any, Any, Any, T, Any, Any)), 
-        (:value_and_derivative, (Any, T, Any, Any), (Any, Any, T, Any, Any)), 
-        (:derivative!, (Any, Any, T, Any, Any), (Any, Any, Any, T, Any, Any)), 
-        (:derivative, (Any, T, Any, Any), (Any, Any, T, Any, Any)),   
-        (:value_and_gradient!, (Any, Any, T, Any, Any), nothing), 
-        (:value_and_gradient, (Any, T, Any, Any), nothing), 
-        (:gradient!, (Any, Any, T, Any, Any), nothing), 
-        (:gradient, (Any, T, Any, Any), nothing), 
-        (:value_and_jacobian!, (Any, Any, T, Any, Any), (Any, Any, Any, T, Any, Any)), 
-        (:value_and_jacobian, (Any, T, Any, Any), (Any, Any, T, Any, Any)), 
-        (:jacobian!, (Any, Any, T, Any, Any), (Any, Any, Any, T, Any, Any)), 
-        (:jacobian, (Any, T, Any, Any), (Any, Any, T, Any, Any)), 
-        (:hvp!, (Any, Any, T, Any, Any, Any), nothing), 
-        (:hvp, (Any, T, Any, Any, Any), nothing), 
-        (:hessian!, (Any, Any, T, Any, Any), nothing),
-        (:hessian, (Any, T, Any, Any), nothing), 
+        # (op,          types_op), 
+        # (op!,         types_op!), 
+        # (val_and_op,  types_val_and_op),
+        # (val_and_op!, types_val_and_op!),
+        (
+            (:derivative, (Any, T, Any, Any)),
+            (:derivative!, (Any, Any, T, Any, Any)),
+            (:value_and_derivative, (Any, T, Any, Any)),
+            (:value_and_derivative!, (Any, Any, T, Any, Any)),
+        ),
+        (
+            (:gradient, (Any, T, Any, Any)),
+            (:gradient!, (Any, Any, T, Any, Any)),
+            (:value_and_gradient, (Any, T, Any, Any)),
+            (:value_and_gradient!, (Any, Any, T, Any, Any)),
+        ),
+        (
+            (:jacobian, (Any, T, Any, Any)),
+            (:jacobian!, (Any, Any, T, Any, Any)),
+            (:value_and_jacobian, (Any, T, Any, Any)),
+            (:value_and_jacobian!, (Any, Any, T, Any, Any)),
+        ),
+        (
+            (:hessian, (Any, T, Any, Any)),
+            (:hessian!, (Any, Any, T, Any, Any)),
+            (nothing, nothing),
+            (nothing, nothing),
+        ),
+        (
+            (:hvp, (Any, T, Any, Any, Any)),
+            (:hvp!, (Any, Any, T, Any, Any, Any)),
+            (nothing, nothing),
+            (nothing, nothing),
+        ),
+        (
+            (:pushforward, (Any, T, Any, Any, Any)),
+            (:pushforward!, (Any, Any, T, Any, Any, Any)),
+            (:value_and_pushforward, (Any, T, Any, Any, Any)),
+            (:value_and_pushforward!, (Any, Any, T, Any, Any, Any)),
+        ),
+        (
+            (:pullback, (Any, T, Any, Any, Any)),
+            (:pullback!, (Any, Any, T, Any, Any, Any)),
+            (:value_and_pullback, (Any, T, Any, Any, Any)),
+            (:value_and_pullback!, (Any, Any, T, Any, Any, Any)),
+        ),
+    )
+end
+function operators_and_types_f!(backend::T) where {T<:AbstractADType}
+    return (
+        # (op,          types_op), 
+        # (op!,         types_op!), 
+        # (val_and_op,  types_val_and_op),
+        # (val_and_op!, types_val_and_op!),
+        (
+            (:derivative, (Any, Any, T, Any, Any)),
+            (:derivative!, (Any, Any, Any, T, Any, Any)),
+            (:value_and_derivative, (Any, Any, T, Any, Any)),
+            (:value_and_derivative!, (Any, Any, Any, T, Any, Any)),
+        ),
+        (
+            (:gradient, (Any, Any, T, Any, Any)),
+            (:gradient!, (Any, Any, Any, T, Any, Any)),
+            (:value_and_gradient, (Any, Any, T, Any, Any)),
+            (:value_and_gradient!, (Any, Any, Any, T, Any, Any)),
+        ),
+        (
+            (:jacobian, (Any, Any, T, Any, Any)),
+            (:jacobian!, (Any, Any, Any, T, Any, Any)),
+            (:value_and_jacobian, (Any, Any, T, Any, Any)),
+            (:value_and_jacobian!, (Any, Any, Any, T, Any, Any)),
+        ),
+        (
+            (:hessian, (Any, Any, T, Any, Any)),
+            (:hessian!, (Any, Any, Any, T, Any, Any)),
+            (nothing, nothing),
+            (nothing, nothing),
+        ),
+        (
+            (:hvp, (Any, Any, T, Any, Any, Any)),
+            (:hvp!, (Any, Any, Any, T, Any, Any, Any)),
+            (nothing, nothing),
+            (nothing, nothing),
+        ),
+        (
+            (:pushforward, (Any, Any, T, Any, Any, Any)),
+            (:pushforward!, (Any, Any, Any, T, Any, Any, Any)),
+            (:value_and_pushforward, (Any, Any, T, Any, Any, Any)),
+            (:value_and_pushforward!, (Any, Any, Any, T, Any, Any, Any)),
+        ),
+        (
+            (:pullback, (Any, Any, T, Any, Any, Any)),
+            (:pullback!, (Any, Any, Any, T, Any, Any, Any)),
+            (:value_and_pullback, (Any, Any, T, Any, Any, Any)),
+            (:value_and_pullback!, (Any, Any, Any, T, Any, Any, Any)),
+        ),
     )
 end
 
@@ -77,17 +166,40 @@ for (backend, ext) in all_backends_and_extensions()
     println(io, "## $bname")
 
     # First-order table
-    println(io, "| Operator | `f(x)` | `f!(y, x)` |")
-    println(io, "|:---------|:------:|:----------:|")
-    for (op, signature_f, signature_f!) in operators(backend)
-        # First column: f(x)
-        print(io, "| `$op` |", method_overloaded(op, signature_f, ext), '|') 
-        # Second column: f!(y, x)
-        if isnothing(signature_f!)
-            println(io, "NA |")
-        else
-            println(io, method_overloaded(op, signature_f!, ext), '|')
+    println(io, "### Functions `f(x)`")
+    println(io)
+    println(io, "| Operator | `op` | `op!` | `value_and_op` | `value_and_op!` |")
+    println(io, "|:---------|:----:|:-----:|:--------------:|:---------------:|")
+    for variants in operators_and_types_f(backend)
+        opname = first(first(variants))
+        print(io, "| `$opname` |")
+        for (op, type_signature) in variants
+            if isnothing(op)
+                print(io, "NA")
+            else
+                print(io, method_overloaded(op, type_signature, ext))
+            end
+            print(io, '|')
         end
+        println(io)
+    end
+
+    println(io, "### Functions `f!(y, x)`")
+    println(io)
+    println(io, "| Operator | `op` | `op!` | `value_and_op` | `value_and_op!` |")
+    println(io, "|:---------|:----:|:-----:|:--------------:|:---------------:|")
+    for variants in operators_and_types_f!(backend)
+        opname = first(first(variants))
+        print(io, "| `$opname` |")
+        for (op, type_signature) in variants
+            if isnothing(op)
+                print(io, "NA")
+            else
+                print(io, method_overloaded(op, type_signature, ext))
+            end
+            print(io, '|')
+        end
+        println(io)
     end
 end
 
