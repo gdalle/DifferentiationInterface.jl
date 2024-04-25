@@ -85,7 +85,7 @@ function DI.value_and_jacobian(
     _f!, y, ::AutoReverseDiff, x, extras::ReverseDiffTwoArgJacobianExtras
 )
     jac = similar(y, length(y), length(x))
-    result = MutableDiffResult(y, jac)
+    result = MutableDiffResult(y, (jac,))
     result = jacobian!(result, extras.tape, x)
     return DiffResults.value(result), DiffResults.derivative(result)
 end
