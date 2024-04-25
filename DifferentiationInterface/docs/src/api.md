@@ -83,6 +83,25 @@ value_and_pullback_split
 value_and_pullback!_split
 ```
 
+## Backends
+The following backend types and their documentation have been re-exported from [ADTypes.jl](https://github.com/SciML/ADTypes.jl):
+
+```@docs
+AutoChainRules
+AutoDiffractor
+AutoEnzyme
+AutoFastDifferentiation
+AutoFiniteDiff
+AutoFiniteDifferences
+AutoForwardDiff
+AutoPolyesterForwardDiff
+AutoReverseDiff
+AutoSymbolics
+AutoTapir
+AutoTracker
+AutoZygote
+```
+
 ## Backend queries
 
 ```@docs
