@@ -91,7 +91,7 @@ end
 
 ## Gradient
 
-struct FiniteDiffGradientExtras{C}
+struct FiniteDiffGradientExtras{C} <: GradientExtras
     cache::C
 end
 

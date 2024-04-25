@@ -8,7 +8,8 @@ using DifferentiationInterface:
     NoHessianExtras,
     NoJacobianExtras,
     NoPullbackExtras,
-    NoPushforwardExtras
+    NoPushforwardExtras,
+    GradientExtras
 using FiniteDiff:
     DerivativeCache,
     GradientCache,
