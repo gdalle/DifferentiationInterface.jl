@@ -23,6 +23,9 @@ include("test_imports.jl")
 
     Documenter.doctest(DifferentiationInterface)
 
+    @testset verbose = true "Exception handling" begin
+        include("test_exceptions.jl")
+    end
     @testset verbose = true "First order" begin
         include("first_order.jl")
     end

@@ -1,18 +1,21 @@
-backend_string_aux(b::AbstractADType) = string(b)
+backend_package_name(b::AbstractADType) = strip(string(b), ['(', ')'])
 
-backend_string_aux(::AutoChainRules) = "ChainRules"
-backend_string_aux(::AutoDiffractor) = "Diffractor"
-backend_string_aux(::AutoEnzyme) = "Enzyme"
-backend_string_aux(::AutoFastDifferentiation) = "FastDifferentiation"
-backend_string_aux(::AutoFiniteDiff) = "FiniteDiff"
-backend_string_aux(::AutoFiniteDifferences) = "FiniteDifferences"
-backend_string_aux(::AutoForwardDiff) = "ForwardDiff"
-backend_string_aux(::AutoPolyesterForwardDiff) = "PolyesterForwardDiff"
+backend_package_name(::AutoChainRules) = "ChainRules"
+backend_package_name(::AutoDiffractor) = "Diffractor"
+backend_package_name(::AutoEnzyme) = "Enzyme"
+backend_package_name(::AutoFastDifferentiation) = "FastDifferentiation"
+backend_package_name(::AutoFiniteDiff) = "FiniteDiff"
+backend_package_name(::AutoFiniteDifferences) = "FiniteDifferences"
+backend_package_name(::AutoForwardDiff) = "ForwardDiff"
+backend_package_name(::AutoPolyesterForwardDiff) = "PolyesterForwardDiff"
+backend_package_name(::AutoSymbolics) = "Symbolics"
+backend_package_name(::AutoTapir) = "Tapir"
+backend_package_name(::AutoTracker) = "Tracker"
+backend_package_name(::AutoZygote) = "Zygote"
+backend_package_name(::AutoReverseDiff) = "ReverseDiff"
+
+backend_string_aux(b::AbstractADType) = backend_package_name(b)
 backend_string_aux(b::AutoReverseDiff) = "ReverseDiff$(b.compile ? "{compiled}" : "")"
-backend_string_aux(::AutoSymbolics) = "Symbolics"
-backend_string_aux(::AutoTapir) = "Tapir"
-backend_string_aux(::AutoTracker) = "Tracker"
-backend_string_aux(::AutoZygote) = "Zygote"
 
 function backend_string(backend::AbstractADType)
     bs = backend_string_aux(backend)
