@@ -1,23 +1,25 @@
 ## Pushforward
 
-DI.prepare_pushforward(f, ::AutoForwardEnzyme, x, dx) = NoPushforwardExtras()
+DI.prepare_pushforward(f, ::AutoForwardOrNothingEnzyme, x, dx) = NoPushforwardExtras()
 
 function DI.value_and_pushforward(
-    f, backend::AutoForwardEnzyme, x, dx, ::NoPushforwardExtras
+    f, backend::AutoForwardOrNothingEnzyme, x, dx, ::NoPushforwardExtras
 )
     dx_sametype = convert(typeof(x), dx)
     y, new_dy = autodiff(backend.mode, f, Duplicated, Duplicated(x, dx_sametype))
     return y, new_dy
 end
 
-function DI.pushforward(f, backend::AutoForwardEnzyme, x, dx, ::NoPushforwardExtras)
+function DI.pushforward(
+    f, backend::AutoForwardOrNothingEnzyme, x, dx, ::NoPushforwardExtras
+)
     dx_sametype = convert(typeof(x), dx)
     new_dy = only(autodiff(backend.mode, f, DuplicatedNoNeed, Duplicated(x, dx_sametype)))
     return new_dy
 end
 
 function DI.value_and_pushforward!(
-    f, dy, backend::AutoForwardEnzyme, x, dx, extras::NoPushforwardExtras
+    f, dy, backend::AutoForwardOrNothingEnzyme, x, dx, extras::NoPushforwardExtras
 )
     # dy cannot be passed anyway
     y, new_dy = DI.value_and_pushforward(f, backend, x, dx, extras)
@@ -25,7 +27,7 @@ function DI.value_and_pushforward!(
 end
 
 function DI.pushforward!(
-    f, dy, backend::AutoForwardEnzyme, x, dx, extras::NoPushforwardExtras
+    f, dy, backend::AutoForwardOrNothingEnzyme, x, dx, extras::NoPushforwardExtras
 )
     # dy cannot be passed anyway
     return copyto!(dy, DI.pushforward(f, backend, x, dx, extras))
@@ -76,14 +78,14 @@ struct EnzymeForwardOneArgJacobianExtras{C,O}
     shadow::O
 end
 
-function DI.prepare_jacobian(f, ::AutoForwardEnzyme, x)
+function DI.prepare_jacobian(f, ::AutoForwardOrNothingEnzyme, x)
     C = pick_chunksize(length(x))
     shadow = chunkedonehot(x, Val(C))
     return EnzymeForwardOneArgJacobianExtras{C,typeof(shadow)}(shadow)
 end
 
 function DI.jacobian(
-    f, backend::AutoForwardEnzyme, x, extras::EnzymeForwardOneArgJacobianExtras{C}
+    f, backend::AutoForwardOrNothingEnzyme, x, extras::EnzymeForwardOneArgJacobianExtras{C}
 ) where {C}
     jac_wrongshape = jacobian(backend.mode, f, x, Val{C}(); shadow=extras.shadow)
     nx = length(x)
@@ -92,19 +94,27 @@ function DI.jacobian(
 end
 
 function DI.value_and_jacobian(
-    f, backend::AutoForwardEnzyme, x, extras::EnzymeForwardOneArgJacobianExtras
+    f, backend::AutoForwardOrNothingEnzyme, x, extras::EnzymeForwardOneArgJacobianExtras
 )
     return f(x), DI.jacobian(f, backend, x, extras)
 end
 
 function DI.jacobian!(
-    f, jac, backend::AutoForwardEnzyme, x, extras::EnzymeForwardOneArgJacobianExtras
+    f,
+    jac,
+    backend::AutoForwardOrNothingEnzyme,
+    x,
+    extras::EnzymeForwardOneArgJacobianExtras,
 )
     return copyto!(jac, DI.jacobian(f, backend, x, extras))
 end
 
 function DI.value_and_jacobian!(
-    f, jac, backend::AutoForwardEnzyme, x, extras::EnzymeForwardOneArgJacobianExtras
+    f,
+    jac,
+    backend::AutoForwardOrNothingEnzyme,
+    x,
+    extras::EnzymeForwardOneArgJacobianExtras,
 )
     y, new_jac = DI.value_and_jacobian(f, backend, x, extras)
     return y, copyto!(jac, new_jac)

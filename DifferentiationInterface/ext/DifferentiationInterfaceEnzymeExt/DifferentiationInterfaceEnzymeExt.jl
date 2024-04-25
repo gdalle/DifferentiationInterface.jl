@@ -30,7 +30,9 @@ using Enzyme:
     make_zero
 
 const AutoForwardEnzyme = AutoEnzyme{<:ForwardMode}
+const AutoForwardOrNothingEnzyme = Union{AutoEnzyme{<:ForwardMode},AutoEnzyme{Nothing}}
 const AutoReverseEnzyme = AutoEnzyme{<:ReverseMode}
+const AutoReverseOrNothingEnzyme = Union{AutoEnzyme{<:ReverseMode},AutoEnzyme{Nothing}}
 
 DI.check_available(::AutoEnzyme) = true
 
