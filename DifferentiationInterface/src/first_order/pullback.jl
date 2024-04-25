@@ -84,6 +84,20 @@ function prepare_pullback_aux(f!, y, backend, x, dy, ::PullbackSlow)
     return PushforwardPullbackExtras(pushforward_extras)
 end
 
+# Throw error if backend isn't loaded
+function PREPARE_PULLBACK_ERROR(backend)
+    return ErrorException(
+        """Failed to prepare pullback for $(backend_string(backend)) backend. 
+        This usually due to the backend not being loaded. To fix, specify
+
+            using $(backend_package_name(backend))
+        """
+    )
+end
+
+prepare_pullback_aux(f, backend, x, dy, ::PullbackFast)     = throw(PREPARE_PULLBACK_ERROR(backend))
+prepare_pullback_aux(f!, y, backend, x, dy, ::PullbackFast) = throw(PREPARE_PULLBACK_ERROR(backend))
+
 ## One argument
 
 function value_and_pullback(
