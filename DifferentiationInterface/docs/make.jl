@@ -4,7 +4,6 @@ import DifferentiationInterface as DI
 using Documenter
 using DocumenterMermaid
 
-using ADTypes
 using Diffractor: Diffractor
 using Enzyme: Enzyme
 using FastDifferentiation: FastDifferentiation
@@ -42,7 +41,7 @@ makedocs(;
     sitename="DifferentiationInterface.jl",
     format=Documenter.HTML(),
     pages=[
-        "Home" => "index.md", #
+        "Home" => "index.md",
         "Start here" => ["tutorial.md", "overview.md", "backends.md"],
         "API reference" => "api.md",
         "Advanced" => ["design.md", "extensions.md", "overloads.md"],
