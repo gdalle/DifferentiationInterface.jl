@@ -58,7 +58,7 @@ function jacobian!(f, jac, backend::AutoSparse, x, extras::SparseJacobianExtras{
     (; compressed, seeds, products, jp_extras) = extras
     for k in eachindex(seeds, products)
         pushforward!(f, products[k], backend, x, seeds[k], jp_extras)
-        copyto!(view(compressed.aggregates[:, k]), vec(products[k]))
+        copyto!(view(compressed.aggregates, :, k), vec(products[k]))
     end
     decompress!(jac, compressed)
     return jac
@@ -68,7 +68,7 @@ function jacobian!(f, jac, backend::AutoSparse, x, extras::SparseJacobianExtras{
     (; compressed, seeds, products, jp_extras) = extras
     for k in eachindex(seeds, products)
         pullback!(f, products[k], backend, x, seeds[k], jp_extras)
-        copyto!(view(compressed.aggregates[k, :]), vec(products[k]))
+        copyto!(view(compressed.aggregates, k, :), vec(products[k]))
     end
     decompress!(jac, compressed)
     return jac
@@ -127,7 +127,7 @@ function jacobian!(f!, y, jac, backend::AutoSparse, x, extras::SparseJacobianExt
     (; compressed, seeds, products, jp_extras) = extras
     for k in eachindex(seeds, products)
         pushforward!(f!, y, products[k], backend, x, seeds[k], jp_extras)
-        copyto!(view(compressed.aggregates[:, k]), vec(products[k]))
+        copyto!(view(compressed.aggregates, :, k), vec(products[k]))
     end
     decompress!(jac, compressed)
     return jac
@@ -137,7 +137,7 @@ function jacobian!(f!, y, jac, backend::AutoSparse, x, extras::SparseJacobianExt
     (; compressed, seeds, products, jp_extras) = extras
     for k in eachindex(seeds, products)
         pullback!(f!, y, products[k], backend, x, seeds[k], jp_extras)
-        copyto!(view(compressed.aggregates[k, :]), vec(products[k]))
+        copyto!(view(compressed.aggregates, k, :), vec(products[k]))
     end
     decompress!(jac, compressed)
     return jac

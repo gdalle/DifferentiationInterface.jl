@@ -26,6 +26,10 @@ This graph is defined as `G = (R, C, E)` where `R = 1:m` is the set of row indic
 # Fields
 
 - `A::AbstractMatrix`
+
+# Reference
+
+> [What Color Is Your Jacobian? Graph Coloring for Computing Derivatives](https://epubs.siam.org/doi/abs/10.1137/S0036144504444711), Gebremedhin et al. (2005)
 """
 struct BipartiteGraph{M<:AbstractMatrix} <: AbstractMatrixGraph
     A::M
@@ -127,6 +131,10 @@ This graph is defined as `G = (C, E)` where `C = 1:n` is the set of columns and 
 # Fields
 
 - `A::AbstractMatrix`
+
+# Reference
+
+> [What Color Is Your Jacobian? Graph Coloring for Computing Derivatives](https://epubs.siam.org/doi/abs/10.1137/S0036144504444711), Gebremedhin et al. (2005)
 """
 struct AdjacencyGraph{M<:AbstractMatrix} <: AbstractMatrixGraph
     A::M
@@ -196,6 +204,23 @@ end
 
 ## ADTypes overloads
 
+"""
+    GreedyColoringAlgorithm <: ADTypes.AbstractColoringAlgorithm
+
+Matrix coloring algorithm for sparse Jacobians and Hessians.
+
+Compatible with the [ADTypes.jl coloring framework](https://sciml.github.io/ADTypes.jl/stable/#Coloring-algorithm).
+
+# See also
+
+- `ADTypes.column_coloring`
+- `ADTypes.row_coloring`
+- `ADTypes.symmetric_coloring`
+
+# Reference
+
+> [What Color Is Your Jacobian? Graph Coloring for Computing Derivatives](https://epubs.siam.org/doi/abs/10.1137/S0036144504444711), Gebremedhin et al. (2005)
+"""
 struct GreedyColoringAlgorithm <: ADTypes.AbstractColoringAlgorithm end
 
 function ADTypes.column_coloring(A, ::GreedyColoringAlgorithm)
