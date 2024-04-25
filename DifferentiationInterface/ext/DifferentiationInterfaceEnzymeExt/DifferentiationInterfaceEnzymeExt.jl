@@ -34,6 +34,12 @@ const AutoForwardOrNothingEnzyme = Union{AutoEnzyme{<:ForwardMode},AutoEnzyme{No
 const AutoReverseEnzyme = AutoEnzyme{<:ReverseMode}
 const AutoReverseOrNothingEnzyme = Union{AutoEnzyme{<:ReverseMode},AutoEnzyme{Nothing}}
 
+forward_mode(backend::AutoEnzyme{<:ForwardMode}) = backend.mode
+forward_mode(::AutoEnzyme{Nothing}) = Enzyme.Forward
+
+reverse_mode(backend::AutoEnzyme{<:ReverseMode}) = backend.mode
+reverse_mode(::AutoEnzyme{Nothing}) = Enzyme.Reverse
+
 DI.check_available(::AutoEnzyme) = true
 
 # Enzyme's `Duplicated(x, dx)` expects both arguments to be of the same type

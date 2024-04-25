@@ -8,7 +8,11 @@ function DI.value_and_pushforward(
     dx_sametype = convert(typeof(x), dx)
     dy_sametype = zero(y)
     autodiff(
-        backend.mode, f!, Const, Duplicated(y, dy_sametype), Duplicated(x, dx_sametype)
+        forward_mode(backend),
+        f!,
+        Const,
+        Duplicated(y, dy_sametype),
+        Duplicated(x, dx_sametype),
     )
     return y, dy_sametype
 end

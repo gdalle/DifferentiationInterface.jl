@@ -74,13 +74,13 @@ end
 
 DI.prepare_gradient(f, ::AutoReverseOrNothingEnzyme, x) = NoGradientExtras()
 
-function DI.gradient(f, ::AutoReverseOrNothingEnzyme, x, ::NoGradientExtras)
-    return gradient(Reverse, f, x)
+function DI.gradient(f, backend::AutoReverseOrNothingEnzyme, x, ::NoGradientExtras)
+    return gradient(reverse_mode(backend), f, x)
 end
 
-function DI.gradient!(f, grad, ::AutoReverseOrNothingEnzyme, x, ::NoGradientExtras)
+function DI.gradient!(f, grad, backend::AutoReverseOrNothingEnzyme, x, ::NoGradientExtras)
     grad_sametype = convert(typeof(x), grad)
-    gradient!(Reverse, grad_sametype, f, x)
+    gradient!(reverse_mode(backend), grad_sametype, f, x)
     return copyto!(grad, grad_sametype)
 end
 
@@ -117,7 +117,7 @@ function DI.jacobian(
     x::AbstractArray,
     ::EnzymeReverseOneArgJacobianExtras{C,N},
 ) where {C,N}
-    jac_wrongshape = jacobian(backend.mode, f, x, Val{N}(), Val{C}())
+    jac_wrongshape = jacobian(reverse_mode(backend), f, x, Val{N}(), Val{C}())
     nx = length(x)
     ny = length(jac_wrongshape) ÷ length(x)
     jac_rightshape = reshape(jac_wrongshape, ny, nx)

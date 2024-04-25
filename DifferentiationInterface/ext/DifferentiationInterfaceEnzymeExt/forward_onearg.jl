@@ -6,7 +6,7 @@ function DI.value_and_pushforward(
     f, backend::AutoForwardOrNothingEnzyme, x, dx, ::NoPushforwardExtras
 )
     dx_sametype = convert(typeof(x), dx)
-    y, new_dy = autodiff(backend.mode, f, Duplicated, Duplicated(x, dx_sametype))
+    y, new_dy = autodiff(forward_mode(backend), f, Duplicated, Duplicated(x, dx_sametype))
     return y, new_dy
 end
 
@@ -14,7 +14,9 @@ function DI.pushforward(
     f, backend::AutoForwardOrNothingEnzyme, x, dx, ::NoPushforwardExtras
 )
     dx_sametype = convert(typeof(x), dx)
-    new_dy = only(autodiff(backend.mode, f, DuplicatedNoNeed, Duplicated(x, dx_sametype)))
+    new_dy = only(
+        autodiff(forward_mode(backend), f, DuplicatedNoNeed, Duplicated(x, dx_sametype))
+    )
     return new_dy
 end
 
@@ -48,7 +50,7 @@ end
 function DI.gradient(
     f, backend::AutoForwardEnzyme, x, extras::EnzymeForwardGradientExtras{C}
 ) where {C}
-    grad_tup = gradient(backend.mode, f, x, Val{C}(); shadow=extras.shadow)
+    grad_tup = gradient(forward_mode(backend), f, x, Val{C}(); shadow=extras.shadow)
     return reshape(collect(grad_tup), size(x))
 end
 
@@ -61,14 +63,14 @@ end
 function DI.gradient!(
     f, grad, backend::AutoForwardEnzyme, x, extras::EnzymeForwardGradientExtras{C}
 ) where {C}
-    grad_tup = gradient(backend.mode, f, x, Val{C}(); shadow=extras.shadow)
+    grad_tup = gradient(forward_mode(backend), f, x, Val{C}(); shadow=extras.shadow)
     return copyto!(grad, grad_tup)
 end
 
 function DI.value_and_gradient!(
     f, grad, backend::AutoForwardEnzyme, x, extras::EnzymeForwardGradientExtras{C}
 ) where {C}
-    grad_tup = gradient(backend.mode, f, x, Val{C}(); shadow=extras.shadow)
+    grad_tup = gradient(forward_mode(backend), f, x, Val{C}(); shadow=extras.shadow)
     return f(x), copyto!(grad, grad_tup)
 end
 
@@ -87,7 +89,7 @@ end
 function DI.jacobian(
     f, backend::AutoForwardOrNothingEnzyme, x, extras::EnzymeForwardOneArgJacobianExtras{C}
 ) where {C}
-    jac_wrongshape = jacobian(backend.mode, f, x, Val{C}(); shadow=extras.shadow)
+    jac_wrongshape = jacobian(forward_mode(backend), f, x, Val{C}(); shadow=extras.shadow)
     nx = length(x)
     ny = length(jac_wrongshape) ÷ length(x)
     return reshape(jac_wrongshape, ny, nx)
