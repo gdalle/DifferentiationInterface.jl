@@ -79,7 +79,7 @@ value_and_gradient(f, AutoEnzyme(),      x) # returns (14.0, [2.0, 4.0, 6.0]) us
 value_and_gradient(f, AutoZygote(),      x) # returns (14.0, [2.0, 4.0, 6.0]) using Zygote.jl
 ```
 
-For more performance, take a look at the [DifferentiationInterface tutorial](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterface/dev/tutorial/).
+For more performance, take a look at the [DifferentiationInterface tutorial](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterface/stable/tutorial/).
 
 ## Related packages
 
