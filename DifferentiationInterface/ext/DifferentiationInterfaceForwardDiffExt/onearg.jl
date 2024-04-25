@@ -28,7 +28,7 @@ function DI.value_and_gradient!(
     x::AbstractArray,
     extras::ForwardDiffGradientExtras,
 )
-    result = DiffResult(zero(eltype(x)), grad)
+    result = MutableDiffResult(zero(eltype(x)), (grad,))
     result = gradient!(result, f, x, extras.config)
     return DiffResults.value(result), DiffResults.gradient(result)
 end
@@ -74,7 +74,7 @@ function DI.value_and_jacobian!(
     extras::ForwardDiffOneArgJacobianExtras,
 )
     y = f(x)
-    result = DiffResult(y, jac)
+    result = MutableDiffResult(y, (jac,))
     result = jacobian!(result, f, x, extras.config)
     return DiffResults.value(result), DiffResults.jacobian(result)
 end

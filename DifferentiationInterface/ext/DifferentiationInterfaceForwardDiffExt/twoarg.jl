@@ -27,7 +27,7 @@ function DI.value_and_derivative(
     x::Number,
     extras::ForwardDiffTwoArgDerivativeExtras,
 )
-    result = DiffResult(y, similar(y))
+    result = MutableDiffResult(y, (similar(y),))
     result = derivative!(result, f!, y, x, extras.config)
     return DiffResults.value(result), DiffResults.derivative(result)
 end
@@ -40,7 +40,7 @@ function DI.value_and_derivative!(
     x::Number,
     extras::ForwardDiffTwoArgDerivativeExtras,
 )
-    result = DiffResult(y, der)
+    result = MutableDiffResult(y, (der,))
     result = derivative!(result, f!, y, x, extras.config)
     return DiffResults.value(result), DiffResults.derivative(result)
 end
@@ -90,7 +90,7 @@ function DI.value_and_jacobian(
     extras::ForwardDiffTwoArgJacobianExtras,
 )
     jac = similar(y, length(y), length(x))
-    result = DiffResult(y, jac)
+    result = MutableDiffResult(y, (jac,))
     result = jacobian!(result, f!, y, x, extras.config)
     return DiffResults.value(result), DiffResults.jacobian(result)
 end
@@ -103,7 +103,7 @@ function DI.value_and_jacobian!(
     x::AbstractArray,
     extras::ForwardDiffTwoArgJacobianExtras,
 )
-    result = DiffResult(y, jac)
+    result = MutableDiffResult(y, (jac,))
     result = jacobian!(result, f!, y, x, extras.config)
     return DiffResults.value(result), DiffResults.jacobian(result)
 end
