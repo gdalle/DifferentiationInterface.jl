@@ -19,7 +19,7 @@ end
 
 ## Derivative
 
-struct FiniteDiffTwoArgDerivativeExtras{C}
+struct FiniteDiffTwoArgDerivativeExtras{C} <: DerivativeExtras
     cache::C
 end
 
@@ -61,7 +61,7 @@ end
 
 ## Jacobian
 
-struct FiniteDiffTwoArgJacobianExtras{C}
+struct FiniteDiffTwoArgJacobianExtras{C} <: JacobianExtras
     cache::C
 end
 

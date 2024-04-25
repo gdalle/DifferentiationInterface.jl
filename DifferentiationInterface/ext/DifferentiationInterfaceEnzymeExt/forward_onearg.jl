@@ -33,7 +33,7 @@ end
 
 ## Gradient
 
-struct EnzymeForwardGradientExtras{C,O}
+struct EnzymeForwardGradientExtras{C,O} <: GradientExtras
     shadow::O
 end
 
@@ -72,7 +72,7 @@ end
 
 ## Jacobian
 
-struct EnzymeForwardOneArgJacobianExtras{C,O}
+struct EnzymeForwardOneArgJacobianExtras{C,O} <: JacobianExtras
     shadow::O
 end
 
