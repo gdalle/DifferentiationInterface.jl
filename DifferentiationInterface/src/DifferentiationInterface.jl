@@ -41,6 +41,7 @@ include("utils/basis.jl")
 include("utils/printing.jl")
 include("utils/chunk.jl")
 include("utils/check.jl")
+include("utils/exceptions.jl")
 
 include("first_order/pushforward.jl")
 include("first_order/pullback.jl")

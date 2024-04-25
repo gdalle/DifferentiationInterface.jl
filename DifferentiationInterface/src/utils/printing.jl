@@ -1,4 +1,4 @@
-backend_package_name(b::AbstractADType) = string(b)
+backend_package_name(b::AbstractADType) = strip(string(b), ['(', ')'])
 
 backend_package_name(::AutoChainRules) = "ChainRules"
 backend_package_name(::AutoDiffractor) = "Diffractor"
