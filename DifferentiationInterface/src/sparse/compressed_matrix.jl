@@ -56,3 +56,18 @@ function decompress!(A::AbstractMatrix, compressed::CompressedMatrix{:row})
     end
     return A
 end
+
+function decompress_symmetric!(A::AbstractMatrix, compressed::CompressedMatrix{:col})
+    (; sparsity, colors, groups, aggregates) = compressed
+    @views for j in axes(A, 2)
+        k = colors[j]
+        group = groups[k]
+        for i in axes(A, 1)
+            if (!iszero(sparsity[i, j]) && count(!iszero, sparsity[i, group]) == 1)
+                A[i, j] = aggregates[i, k]
+                A[j, i] = aggregates[i, k]
+            end
+        end
+    end
+    return A
+end

@@ -57,7 +57,7 @@ include("sparse/coloring.jl")
 include("sparse/compressed_matrix.jl")
 include("sparse/fallbacks.jl")
 include("sparse/jacobian.jl")
-# include("sparse/hessian.jl")
+include("sparse/hessian.jl")
 
 export SecondOrder
 

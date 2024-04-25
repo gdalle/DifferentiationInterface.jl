@@ -1,43 +1,43 @@
+@kwdef struct SparseHessianExtras{
+    C<:CompressedMatrix{:col},S<:AbstractVector,P<:AbstractVector,E<:Extras
+} <: HessianExtras
+    compressed::C
+    seeds::S
+    products::P
+    hvp_extras::E
+end
+
 ## Hessian, one argument
 
 function prepare_hessian(f, backend::AutoSparse, x)
     sparsity = hessian_sparsity(f, x, sparsity_detector(backend))
-    symmetric_colors = symmetric_coloring(sparsity, coloring_algorithm(backend))
-    symmetric_color_groups = get_groups(symmetric_colors)
-    compressed_v = similar(x)
-    compressed_col = similar(x)
-    hvp_extras = prepare_hvp(f, backend, x, compressed_v)
-    return (;
-        sparsity,
-        symmetric_colors,
-        symmetric_color_groups,
-        compressed_v,
-        compressed_col,
-        hvp_extras,
-    )
+    colors = symmetric_coloring(sparsity, coloring_algorithm(backend))
+    groups = get_groups(colors)
+    seeds = map(groups) do group
+        seed = zero(x)
+        seed[group] .= one(eltype(x))
+        seed
+    end
+    hvp_extras = prepare_hvp(f, backend, x, first(seeds))
+    products = map(seeds) do seed
+        hvp(f, backend, x, seed, hvp_extras)
+    end
+    aggregates = stack(vec, products; dims=2)
+    compressed = CompressedMatrix{:col}(sparsity, colors, groups, aggregates)
+    return SparseHessianExtras(; compressed, seeds, products, hvp_extras)
 end
 
-function hessian!(f, hess, backend::AutoSparse, x, extras::NamedTuple)
-    (; sparsity, symmetric_color_groups, compressed_v, compressed_col, hvp_extras) = extras
-    for group in symmetric_color_groups
-        compressed_v .= zero(eltype(compressed_v))
-        for j in group
-            compressed_v[j] = one(eltype(compressed_v))
-        end
-        hvp!(f, compressed_col, backend, x, compressed_v, hvp_extras)
-        @views for j in group
-            for i in axes(hess, 1)
-                if (!iszero(sparsity[i, j]) && count(!iszero, sparsity[i, group]) == 1)
-                    hess[i, j] = compressed_col[i]
-                    hess[j, i] = compressed_col[i]
-                end
-            end
-        end
+function hessian!(f, hess, backend::AutoSparse, x, extras::SparseHessianExtras)
+    (; compressed, seeds, products, hvp_extras) = extras
+    for k in eachindex(seeds, products)
+        hvp!(f, products[k], backend, x, seeds[k], hvp_extras)
+        copyto!(view(compressed.aggregates, :, k), vec(products[k]))
     end
+    decompress_symmetric!(hess, compressed)
     return hess
 end
 
-function hessian(f, backend::AutoSparse, x, extras::NamedTuple)
-    hess = similar(extras.sparsity, eltype(x))
+function hessian(f, backend::AutoSparse, x, extras::SparseHessianExtras)
+    hess = similar(extras.compressed.sparsity, eltype(x))
     return hessian!(f, hess, backend, x, extras)
 end

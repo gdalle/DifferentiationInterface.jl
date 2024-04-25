@@ -30,6 +30,7 @@ function prepare_jacobian(f, backend::AutoSparse, x)
         seeds = map(groups) do group
             seed = zero(x)
             seed[group] .= one(eltype(x))
+            seed
         end
         jp_extras = prepare_pushforward(f, backend, x, first(seeds))
         products = map(seeds) do seed
@@ -43,6 +44,7 @@ function prepare_jacobian(f, backend::AutoSparse, x)
         seeds = map(groups) do group
             seed = zero(y)
             seed[group] .= one(eltype(y))
+            seed
         end
         jp_extras = prepare_pullback(f, backend, x, first(seeds))
         products = map(seeds) do seed
@@ -85,8 +87,8 @@ function value_and_jacobian!(
     return f(x), jacobian!(f, jac, backend, x, extras)
 end
 
-function value_and_jacobian(f, jac, backend::AutoSparse, x, extras::SparseJacobianExtras{1})
-    return f(x), jacobian(f, jac, backend, x, extras)
+function value_and_jacobian(f, backend::AutoSparse, x, extras::SparseJacobianExtras{1})
+    return f(x), jacobian(f, backend, x, extras)
 end
 
 ## Jacobian, two arguments
@@ -99,6 +101,7 @@ function prepare_jacobian(f!, y, backend::AutoSparse, x)
         seeds = map(groups) do group
             seed = zero(x)
             seed[group] .= one(eltype(x))
+            seed
         end
         jp_extras = prepare_pushforward(f!, y, backend, x, first(seeds))
         products = map(seeds) do seed
@@ -112,6 +115,7 @@ function prepare_jacobian(f!, y, backend::AutoSparse, x)
         seeds = map(groups) do group
             seed = zero(y)
             seed[group] .= one(eltype(y))
+            seed
         end
         jp_extras = prepare_pullback(f!, y, backend, x, first(seeds))
         products = map(seeds) do seed
