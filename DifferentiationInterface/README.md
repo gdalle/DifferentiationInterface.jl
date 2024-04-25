@@ -50,9 +50,7 @@ We support all of the backends defined by [ADTypes.jl](https://github.com/SciML/
 To install the stable version of the package, run the following code in a Julia REPL:
 
 ```julia
-julia> using Pkg
-
-julia> Pkg.add("DifferentiationInterface")
+julia> ]add DifferentiationInterface
 ```
 
 To install the development version, run this instead:
@@ -68,18 +66,20 @@ julia> Pkg.add(
 
 ## Example
 
-```jldoctest readme
-julia> import ADTypes, ForwardDiff
+```julia
+using DifferentiationInterface, ADTypes
+import ForwardDiff, Enzyme, Zygote          # import automatic differentiation backends you want to use 
 
-julia> using DifferentiationInterface
+f(x) = sum(abs2, x)
 
-julia> backend = ADTypes.AutoForwardDiff();
+x = [1., 2., 3.]
 
-julia> f(x) = sum(abs2, x);
-
-julia> value_and_gradient(f, backend, [1., 2., 3.])
-(14.0, [2.0, 4.0, 6.0])
+value_and_gradient(f, AutoForwardDiff(), x) # returns (14.0, [2.0, 4.0, 6.0]) using ForwardDiff.jl
+value_and_gradient(f, AutoEnzyme(),      x) # returns (14.0, [2.0, 4.0, 6.0]) using Enzyme.jl
+value_and_gradient(f, AutoZygote(),      x) # returns (14.0, [2.0, 4.0, 6.0]) using Zygote.jl
 ```
+
+For more performance, take a look at the [DifferentiationInterface tutorial](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterface/dev/tutorial/).
 
 ## Related packages
 
