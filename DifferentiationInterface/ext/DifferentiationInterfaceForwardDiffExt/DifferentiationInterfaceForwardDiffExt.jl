@@ -9,7 +9,7 @@ using DifferentiationInterface:
     JacobianExtras,
     NoDerivativeExtras,
     NoPushforwardExtras
-using ForwardDiff.DiffResults: DiffResults, DiffResult, GradientResult
+using ForwardDiff.DiffResults: DiffResults, DiffResult, GradientResult, MutableDiffResult
 using ForwardDiff:
     Chunk,
     Dual,

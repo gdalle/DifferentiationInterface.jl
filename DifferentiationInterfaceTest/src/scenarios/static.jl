@@ -26,7 +26,7 @@ function static_scenarios()
         mat_to_mat_scenarios_twoarg(MMatrix{2,3}(randn(2, 3))),
     )
     scens = filter(scens) do s
-        operator(s) == :outofplace || typeof(s.x) isa Union{Number,MVector,MMatrix}
+        operator_place(s) == :outofplace || s.x isa Union{Number,MVector,MMatrix}
     end
     return scens
 end

@@ -77,10 +77,10 @@ function test_differentiation(
                         (:backend, "$(backend_string(backend)) - $i/$(length(backends))"),
                         (
                             :scenario,
-                            "$(typeof(scen).name.name) - $j/$(length(filtered_scenarios))",
+                            "$(scen_type(scen)) - $j/$(length(filtered_scenarios))",
                         ),
-                        (:arguments, typeof(scen).parameters[1]),
-                        (:operator, typeof(scen).parameters[2]),
+                        (:arguments, nb_args(scen)),
+                        (:operator, operator_place(scen)),
                         (:function, scen.f),
                         (:input, typeof(scen.x)),
                         (:output, typeof(scen.y)),
@@ -145,12 +145,9 @@ function benchmark_differentiation(
                 prog;
                 showvalues=[
                     (:backend, "$(backend_string(backend)) - $i/$(length(backends))"),
-                    (
-                        :scenario,
-                        "$(typeof(scen).name.name) - $j/$(length(filtered_scenarios))",
-                    ),
-                    (:arguments, typeof(scen).parameters[1]),
-                    (:operator, typeof(scen).parameters[2]),
+                    (:scenario, "$(scen_type(scen)) - $j/$(length(filtered_scenarios))"),
+                    (:arguments, nb_args(scen)),
+                    (:operator, operator_place(scen)),
                     (:function, scen.f),
                     (:input, typeof(scen.x)),
                     (:output, typeof(scen.y)),

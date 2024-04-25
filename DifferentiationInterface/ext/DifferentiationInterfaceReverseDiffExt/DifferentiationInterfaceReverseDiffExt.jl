@@ -4,7 +4,7 @@ using ADTypes: AutoReverseDiff
 import DifferentiationInterface as DI
 using DifferentiationInterface:
     DerivativeExtras, GradientExtras, HessianExtras, JacobianExtras, NoPullbackExtras
-using ReverseDiff.DiffResults: DiffResults, DiffResult, GradientResult
+using ReverseDiff.DiffResults: DiffResults, DiffResult, GradientResult, MutableDiffResult
 using DocStringExtensions
 using LinearAlgebra: dot, mul!
 using ReverseDiff:
