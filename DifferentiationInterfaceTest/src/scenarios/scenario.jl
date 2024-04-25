@@ -36,23 +36,26 @@ The reference keyword `ref` should be a function that takes `x` (and a potential
 
 The operator behavior keyword `operator` should be either `:inplace` or `:outofplace` depending on what must be tested.
 """
-abstract type AbstractScenario{A,O,F,X,Y,R} end
+abstract type AbstractScenario{args,op,F,X,Y,R} end
 
-abstract type AbstractFirstOrderScenario{A,O,F,X,Y,R} <: AbstractScenario{A,O,F,X,Y,R} end
-abstract type AbstractSecondOrderScenario{A,O,F,X,Y,R} <: AbstractScenario{A,O,F,X,Y,R} end
+abstract type AbstractFirstOrderScenario{args,op,F,X,Y,R} <:
+              AbstractScenario{args,op,F,X,Y,R} end
+abstract type AbstractSecondOrderScenario{args,op,F,X,Y,R} <:
+              AbstractScenario{args,op,F,X,Y,R} end
 
-nbargs(::AbstractScenario{A}) where {A} = A
-operator(::AbstractScenario{A,O}) where {A,O} = O
+scen_type(scenario::AbstractScenario) = nameof(typeof(scenario))
+nb_args(::AbstractScenario{args}) where {args} = args
+operator_place(::AbstractScenario{args,op}) where {args,op} = op
 
 function compatible(backend::AbstractADType, scen::AbstractScenario)
-    if nbargs(scen) == 2
+    if nb_args(scen) == 2
         return Bool(mutation_support(backend))
     end
     return true
 end
 
-function Base.string(scen::S) where {A,O,F,X,Y,S<:AbstractScenario{A,O,F,X,Y}}
-    return "$(S.name.name){$A,$O} $(string(scen.f)) : $X -> $Y"
+function Base.string(scen::S) where {args,op,F,X,Y,S<:AbstractScenario{args,op,F,X,Y}}
+    return "$(S.name.name){$args,$op} $(string(scen.f)) : $X -> $Y"
 end
 
 ## Struct definitions
@@ -62,7 +65,8 @@ end
 
 See [`AbstractScenario`](@ref) for details.
 """
-struct PushforwardScenario{A,O,F,X,Y,DX,R} <: AbstractFirstOrderScenario{A,O,F,X,Y,R}
+struct PushforwardScenario{args,op,F,X,Y,DX,R} <:
+       AbstractFirstOrderScenario{args,op,F,X,Y,R}
     "function"
     f::F
     "input"
@@ -80,7 +84,7 @@ end
 
 See [`AbstractScenario`](@ref) for details.
 """
-struct PullbackScenario{A,O,F,X,Y,DY,R} <: AbstractFirstOrderScenario{A,O,F,X,Y,R}
+struct PullbackScenario{args,op,F,X,Y,DY,R} <: AbstractFirstOrderScenario{args,op,F,X,Y,R}
     "function"
     f::F
     "input"
@@ -98,7 +102,8 @@ end
 
 See [`AbstractScenario`](@ref) for details.
 """
-struct DerivativeScenario{A,O,F,X<:Number,Y,R} <: AbstractFirstOrderScenario{A,O,F,X,Y,R}
+struct DerivativeScenario{args,op,F,X<:Number,Y,R} <:
+       AbstractFirstOrderScenario{args,op,F,X,Y,R}
     "function"
     f::F
     "input"
@@ -114,7 +119,8 @@ end
 
 See [`AbstractScenario`](@ref) for details.
 """
-struct GradientScenario{A,O,F,X,Y<:Number,R} <: AbstractFirstOrderScenario{A,O,F,X,Y,R}
+struct GradientScenario{args,op,F,X,Y<:Number,R} <:
+       AbstractFirstOrderScenario{args,op,F,X,Y,R}
     "function"
     f::F
     "input"
@@ -130,8 +136,8 @@ end
 
 See [`AbstractScenario`](@ref) for details.
 """
-struct JacobianScenario{A,O,F,X<:AbstractArray,Y<:AbstractArray,R} <:
-       AbstractFirstOrderScenario{A,O,F,X,Y,R}
+struct JacobianScenario{args,op,F,X<:AbstractArray,Y<:AbstractArray,R} <:
+       AbstractFirstOrderScenario{args,op,F,X,Y,R}
     "function"
     f::F
     "input"
@@ -147,8 +153,8 @@ end
 
 See [`AbstractScenario`](@ref) for details.
 """
-struct SecondDerivativeScenario{A,O,F,X<:Number,Y,R} <:
-       AbstractSecondOrderScenario{A,O,F,X,Y,R}
+struct SecondDerivativeScenario{args,op,F,X<:Number,Y,R} <:
+       AbstractSecondOrderScenario{args,op,F,X,Y,R}
     "function"
     f::F
     "input"
@@ -164,7 +170,8 @@ end
 
 See [`AbstractScenario`](@ref) for details.
 """
-struct HVPScenario{A,O,F,X,Y<:Number,DX,R} <: AbstractSecondOrderScenario{A,O,F,X,Y,R}
+struct HVPScenario{args,op,F,X,Y<:Number,DX,R} <:
+       AbstractSecondOrderScenario{args,op,F,X,Y,R}
     "function"
     f::F
     "input"
@@ -182,8 +189,8 @@ end
 
 See [`AbstractScenario`](@ref) for details.
 """
-struct HessianScenario{A,O,F,X<:AbstractArray,Y<:Number,R} <:
-       AbstractSecondOrderScenario{A,O,F,X,Y,R}
+struct HessianScenario{args,op,F,X<:AbstractArray,Y<:Number,R} <:
+       AbstractSecondOrderScenario{args,op,F,X,Y,R}
     "function"
     f::F
     "input"
@@ -205,13 +212,13 @@ for S in (
 )
     @eval begin
         function $S(f::F; x::X, y=nothing, ref::R=nothing, operator=:inplace) where {F,X,R}
-            A = isnothing(y) ? 1 : 2
-            if A == 2
+            args = isnothing(y) ? 1 : 2
+            if args == 2
                 f(y, x)
             else
                 y = f(x)
             end
-            return ($S){A,operator,F,X,typeof(y),R}(f, x, y, ref)
+            return ($S){args,operator,F,X,typeof(y),R}(f, x, y, ref)
         end
     end
 end
@@ -221,8 +228,8 @@ for S in (:PushforwardScenario, :HVPScenario)
         function $S(
             f::F; x::X, y=nothing, ref::R=nothing, dx=nothing, operator=:inplace
         ) where {F,X,R}
-            A = isnothing(y) ? 1 : 2
-            if A == 2
+            args = isnothing(y) ? 1 : 2
+            if args == 2
                 f(y, x)
             else
                 y = f(x)
@@ -230,7 +237,7 @@ for S in (:PushforwardScenario, :HVPScenario)
             if isnothing(dx)
                 dx = mysimilar_random(x)
             end
-            return ($S){A,operator,F,X,typeof(y),typeof(dx),R}(f, x, y, dx, ref)
+            return ($S){args,operator,F,X,typeof(y),typeof(dx),R}(f, x, y, dx, ref)
         end
     end
 end
@@ -240,8 +247,8 @@ for S in (:PullbackScenario,)
         function $S(
             f::F; x::X, y=nothing, ref::R=nothing, dy=nothing, operator=:inplace
         ) where {F,X,R}
-            A = isnothing(y) ? 1 : 2
-            if A == 2
+            args = isnothing(y) ? 1 : 2
+            if args == 2
                 f(y, x)
             else
                 y = f(x)
@@ -249,7 +256,7 @@ for S in (:PullbackScenario,)
             if isnothing(dy)
                 dy = mysimilar_random(y)
             end
-            return ($S){A,operator,F,X,typeof(y),typeof(dy),R}(f, x, y, dy, ref)
+            return ($S){args,operator,F,X,typeof(y),typeof(dy),R}(f, x, y, dy, ref)
         end
     end
 end
