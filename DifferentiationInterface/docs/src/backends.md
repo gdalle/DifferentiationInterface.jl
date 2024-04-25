@@ -33,8 +33,8 @@ unicode_check_twoarg(backend)    = checkmark(check_twoarg(backend))
 io = IOBuffer()
 
 # Table header 
-println(io, "| Backend | Availability | Mutation support | Hessian support | Example |")
-println(io, "|:--------|:------------:|:----------------:|:---------------:|:--------|")
+println(io, "| Backend | Availability | Two-argument functions | Hessian support | Example |")
+println(io, "|:--------|:------------:|:----------------------:|:---------------:|:--------|")
 
 for example in backend_examples
     b = eval(Meta.parse(example)) # backend
@@ -60,7 +60,7 @@ backend_table #hide
 
 You can use [`check_available`](@ref) to verify whether a given backend is loaded.
 
-## Mutation support
+## Support for two-argument functions
 
 All backends are compatible with one-argument functions `f(x) = y`.
 Only some are compatible with two-argument functions `f!(y, x) = nothing`.
