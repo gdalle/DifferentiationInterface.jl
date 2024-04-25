@@ -35,10 +35,10 @@ const AutoReverseEnzyme = AutoEnzyme{<:ReverseMode}
 const AutoReverseOrNothingEnzyme = Union{AutoEnzyme{<:ReverseMode},AutoEnzyme{Nothing}}
 
 forward_mode(backend::AutoEnzyme{<:ForwardMode}) = backend.mode
-forward_mode(::AutoEnzyme{Nothing}) = Enzyme.Forward
+forward_mode(::AutoEnzyme{Nothing}) = Forward
 
 reverse_mode(backend::AutoEnzyme{<:ReverseMode}) = backend.mode
-reverse_mode(::AutoEnzyme{Nothing}) = Enzyme.Reverse
+reverse_mode(::AutoEnzyme{Nothing}) = Reverse
 
 DI.check_available(::AutoEnzyme) = true
 
