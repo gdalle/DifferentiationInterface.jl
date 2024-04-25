@@ -28,7 +28,7 @@ This package provides a backend-agnostic syntax to differentiate functions of th
 
 ## Compatibility
 
-We support all of the backends defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl) v1.0:
+We support all of the backends defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl) `v1.0`:
 
 - [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl)
 - [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl)
@@ -50,7 +50,9 @@ We support all of the backends defined by [ADTypes.jl](https://github.com/SciML/
 To install the stable version of the package, run the following code in a Julia REPL:
 
 ```julia
-julia> ]add DifferentiationInterface
+julia> using Pkg
+
+julia> Pkg.add("DifferentiationInterface")
 ```
 
 To install the development version, run this instead:

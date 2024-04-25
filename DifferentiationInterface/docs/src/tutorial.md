@@ -12,6 +12,11 @@ using DifferentiationInterface, ADTypes
 import ForwardDiff, Enzyme  # ⚠️ import the backends you want to use ⚠️
 ```
 
+!!! tip
+    Importing backends with `import` instead of `using` avoids name conflicts and makes sure you are using operators from DifferentiationInterface.
+    This is useful since most backends also export operators like `gradient` and `jacobian`.
+
+
 ## Computing a gradient
 
 A common use case of automatic differentiation (AD) is optimizing real-valued functions with first- or second-order methods.
@@ -62,7 +67,7 @@ Since you know how much space your gradient will occupy (the same as your input 
 Some backends get a speed boost from this trick.
 
 ```@example tuto
-grad = zero(x)
+grad = similar(x)
 gradient!(f, grad, backend, x)
 
 grad  # has been mutated
@@ -77,7 +82,7 @@ More precisely, our convention is that _every positional argument between the fu
 
 For some reason the in-place version is not much better than your first attempt.
 However, it has one less allocation, which corresponds to the gradient vector you provided.
-Don't worry, we can get even more performance.
+Don't worry, you can get even more performance.
 
 ## Preparing for multiple gradients
 
@@ -93,7 +98,7 @@ nothing # hide
 You don't need to know what this object is, you just need to pass it to the gradient operator.
 
 ```@example tuto
-grad = zero(x)
+grad = similar(x)
 gradient!(f, grad, backend, x, extras)
 
 grad  # has been mutated
