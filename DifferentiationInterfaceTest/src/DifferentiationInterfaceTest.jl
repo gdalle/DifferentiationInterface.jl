@@ -29,7 +29,17 @@ using DifferentiationInterface:
     mutation_support,
     pushforward_performance,
     pullback_performance
-using DifferentiationInterface: NoPullbackExtras, NoPushforwardExtras
+using DifferentiationInterface:
+    DerivativeExtras,
+    GradientExtras,
+    HessianExtras,
+    HVPExtras,
+    JacobianExtras,
+    PullbackExtras,
+    PushforwardExtras,
+    NoPullbackExtras,
+    NoPushforwardExtras,
+    SecondDerivativeExtras
 using DocStringExtensions
 import DifferentiationInterface as DI
 using JET: @test_call, @test_opt

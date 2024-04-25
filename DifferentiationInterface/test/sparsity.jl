@@ -1,8 +1,5 @@
 coloring_algorithm = DifferentiationInterface.GreedyColoringAlgorithm()
-symbolics_ext = Base.get_extension(
-    DifferentiationInterface, :DifferentiationInterfaceSymbolicsExt
-)
-sparsity_detector = symbolics_ext.SymbolicsSparsityDetector()
+sparsity_detector = DifferentiationInterface.SymbolicsSparsityDetector()
 
 sparse_backends = [
     AutoSparse(AutoFastDifferentiation()),

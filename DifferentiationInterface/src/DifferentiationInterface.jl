@@ -52,8 +52,12 @@ include("second_order/second_derivative.jl")
 include("second_order/hvp.jl")
 include("second_order/hessian.jl")
 
+include("sparse/detector.jl")
 include("sparse/coloring.jl")
-include("sparse/sparse.jl")
+include("sparse/compressed_matrix.jl")
+include("sparse/fallbacks.jl")
+include("sparse/jacobian.jl")
+include("sparse/hessian.jl")
 
 export SecondOrder
 

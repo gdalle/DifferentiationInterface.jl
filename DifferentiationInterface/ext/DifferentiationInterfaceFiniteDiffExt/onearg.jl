@@ -19,7 +19,7 @@ end
 
 ## Derivative
 
-struct FiniteDiffOneArgDerivativeExtras{C}
+struct FiniteDiffOneArgDerivativeExtras{C} <: DerivativeExtras
     cache::C
 end
 
@@ -128,7 +128,7 @@ end
 
 ## Jacobian
 
-struct FiniteDiffOneArgJacobianExtras{C}
+struct FiniteDiffOneArgJacobianExtras{C} <: JacobianExtras
     cache::C
 end
 
@@ -166,7 +166,7 @@ end
 
 ## Hessian
 
-struct FiniteDiffHessianExtras{C}
+struct FiniteDiffHessianExtras{C} <: HessianExtras
     cache::C
 end
 
