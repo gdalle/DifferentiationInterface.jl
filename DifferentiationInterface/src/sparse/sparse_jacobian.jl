@@ -1,5 +1,23 @@
 ## Jacobian, one argument (based on `value_and_jacobian!`)
 
+struct SparseOneArgJacobianExtras{dir,S,C<:CompressedMatrix{dir},D,E<:Extras} <:
+       JacobianExtras
+    sparsity::S
+    colors::Vector{Int}
+    groups::Vector{Vector{Int}}
+    J_compressed::C
+    seed:D
+    extras::E
+end
+
+function SparseOneArgJacobianExtras{dir}(;
+    sparsity::S, colors, groups, J_compressed::C, seed::D, extras::E
+) where {dir,S,C,E}
+    return SparseOneArgJacobianExtras{dir,S,C,D,E}(
+        sparsity, colors, groups, J_compressed, seed, extras
+    )
+end
+
 function prepare_jacobian(f, backend::AutoSparse, x)
     return sparse_prepare_jacobian_aux(f, backend, x, pushforward_performance(backend))
 end
@@ -7,11 +25,13 @@ end
 function sparse_prepare_jacobian_aux(f, backend, x, ::PushforwardFast)
     y = f(x)
     sparsity = jacobian_sparsity(f, x, sparsity_detector(backend))
-    column_colors = column_coloring(sparsity, coloring_algorithm(backend))
-    column_color_groups = get_groups(column_colors)
-    compressed_dx = similar(x)
-    compressed_col = similar(y)
-    pushforward_extras = prepare_pushforward(f, backend, x, compressed_dx)
+    colors = column_coloring(sparsity, coloring_algorithm(backend))
+    groups = get_groups(colors)
+    seed = similar(x)
+    extras = prepare_pushforward(f, backend, x, seed)
+    J_compressed = stack(groups) do g
+        pushforward(f, backend, x, seed)
+    end
     return (;
         sparsity,
         column_colors,
