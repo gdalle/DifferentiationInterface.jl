@@ -45,7 +45,7 @@ makedocs(;
         "Home" => "index.md", #
         "Start here" => ["tutorial.md", "overview.md", "backends.md"],
         "API reference" => "api.md",
-        "Advanced" => ["design.md", "extensions.md"],
+        "Advanced" => ["design.md", "extensions.md", "overloads.md"],
     ],
 )
 

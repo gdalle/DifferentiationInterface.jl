@@ -1,6 +1,6 @@
 # Package design
 
-## Backend requirements
+## [Backend requirements](@id ssec-requirements)
 
 To be usable with DifferentiationInterface.jl, an AD backend needs an object subtyping `ADTypes.AbstractADType`.
 In addition, some operators must be defined:
