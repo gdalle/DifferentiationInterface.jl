@@ -22,7 +22,6 @@ Each cell can have three values:
     Check marks (✅) are clickable and link to the source code.
 
 ```@setup overloads
-using ADTypes
 using DifferentiationInterface
 using DifferentiationInterface: backend_string, mutation_support, MutationSupported
 using Markdown: Markdown

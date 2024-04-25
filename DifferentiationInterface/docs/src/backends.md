@@ -4,7 +4,6 @@ CollapsedDocStrings = true
 ```
 
 ```@setup backends
-using ADTypes
 using DifferentiationInterface
 using DifferentiationInterface: backend_string
 import Markdown
