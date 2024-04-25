@@ -53,7 +53,10 @@ include("second_order/hvp.jl")
 include("second_order/hessian.jl")
 
 include("sparse/coloring.jl")
-include("sparse/sparse.jl")
+include("sparse/compressed.jl")
+include("sparse/sparse_fallbacks.jl")
+include("sparse/sparse_jacobian.jl")
+include("sparse/sparse_hessian.jl")
 
 export SecondOrder
 
