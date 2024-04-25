@@ -57,7 +57,7 @@ function DI.value_and_gradient!(
     x::AbstractArray,
     extras::ReverseDiffGradientExtras,
 )
-    result = DiffResult(zero(eltype(x)), grad)
+    result = MutableDiffResult(zero(eltype(x)), (grad,))
     result = gradient!(result, extras.tape, x)
     return DiffResults.value(result), DiffResults.derivative(result)
 end
@@ -107,7 +107,7 @@ function DI.value_and_jacobian!(
     extras::ReverseDiffOneArgJacobianExtras,
 )
     y = f(x)
-    result = DiffResult(y, jac)
+    result = MutableDiffResult(y, (jac,))
     result = jacobian!(result, extras.tape, x)
     return DiffResults.value(result), DiffResults.derivative(result)
 end
