@@ -87,4 +87,21 @@ export prepare_second_derivative, prepare_hvp, prepare_hessian
 
 export check_available, check_twoarg, check_hessian
 
+# Re-export backends from ADTypes
+export AutoChainRules
+export AutoDiffractor
+export AutoEnzyme
+export AutoFastDifferentiation
+export AutoFiniteDiff
+export AutoFiniteDifferences
+export AutoForwardDiff
+export AutoPolyesterForwardDiff
+export AutoReverseDiff
+export AutoSymbolics
+export AutoTapir
+export AutoTracker
+export AutoZygote
+
+export AutoSparse
+
 end # module
