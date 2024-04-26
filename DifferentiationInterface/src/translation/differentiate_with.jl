@@ -20,7 +20,7 @@ This works by defining new rules overriding the behavior of the outer backend th
 
 # Example
 
-```@repl
+```jldoctest
 using DifferentiationInterface
 import ForwardDiff, Zygote
 
@@ -32,8 +32,12 @@ end
 
 dw = DifferentiateWith(f, AutoForwardDiff());
 
-gradient(dw, AutoZygote(), [1.0, 2.0])  # works because it calls ForwardDiff instead
-gradient(f, AutoZygote(), [1.0, 2.0])  # fails
+gradient(dw, AutoZygote(), [2.0])  # calls ForwardDiff instead
+
+# output
+
+1-element Vector{Float64}:
+ 1.0
 ```
 """
 struct DifferentiateWith{F,B<:AbstractADType}
