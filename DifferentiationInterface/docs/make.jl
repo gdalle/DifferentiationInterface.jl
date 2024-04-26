@@ -40,7 +40,7 @@ makedocs(;
     modules=[DifferentiationInterface, ADTypes, extensions...],
     authors="Guillaume Dalle, Adrian Hill",
     sitename="DifferentiationInterface.jl",
-    format=Documenter.HTML(),
+    format=Documenter.HTML(; assets=["assets/favicon.ico"]),
     pages=[
         "Home" => "index.md",
         "Start here" => ["tutorial.md", "overview.md", "backends.md"],
