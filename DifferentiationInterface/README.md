@@ -20,7 +20,7 @@ This package provides a backend-agnostic syntax to differentiate functions of th
 
 ## Features
 
-- First- and second-order operators
+- First- and second-order operators (gradients, Jacobians, Hessians and [more](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterface/stable/overview/))
 - In-place and out-of-place differentiation
 - Preparation mechanism (e.g. to create a config or tape)
 - Thorough validation on standard inputs and outputs (numbers, vectors, matrices)
@@ -68,18 +68,20 @@ julia> Pkg.add(
 
 ## Example
 
-```jldoctest readme
-julia> import ADTypes, ForwardDiff
+```julia
+using DifferentiationInterface
+import ForwardDiff, Enzyme, Zygote          # import automatic differentiation backends you want to use 
 
-julia> using DifferentiationInterface
+f(x) = sum(abs2, x)
 
-julia> backend = ADTypes.AutoForwardDiff();
+x = [1.0, 2.0, 3.0]
 
-julia> f(x) = sum(abs2, x);
-
-julia> value_and_gradient(f, backend, [1., 2., 3.])
-(14.0, [2.0, 4.0, 6.0])
+value_and_gradient(f, AutoForwardDiff(), x) # returns (14.0, [2.0, 4.0, 6.0]) using ForwardDiff.jl
+value_and_gradient(f, AutoEnzyme(),      x) # returns (14.0, [2.0, 4.0, 6.0]) using Enzyme.jl
+value_and_gradient(f, AutoZygote(),      x) # returns (14.0, [2.0, 4.0, 6.0]) using Zygote.jl
 ```
+
+For more performance, take a look at the [DifferentiationInterface tutorial](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterface/stable/tutorial/).
 
 ## Related packages
 
