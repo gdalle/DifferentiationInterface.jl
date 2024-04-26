@@ -1,4 +1,4 @@
-![DifferentiationInterface Logo](https://raw.githubusercontent.com/gdalle/DifferentiationInterface.jl/DifferentiationInterface/docs/src/assets/logo.svg)
+![DifferentiationInterface Logo](https://raw.githubusercontent.com/gdalle/DifferentiationInterface.jl/main/DifferentiationInterface/docs/src/assets/logo.svg)
 
 # DifferentiationInterface
 
