@@ -19,5 +19,5 @@ test_differentiation(
     AutoZygote(),
     zygote_breaking_scenarios();
     second_order=false,
-    logging=logging=get(ENV, "CI", "false") == "false",,
+    logging=logging = get(ENV, "CI", "false") == "false",
 )
