@@ -7,7 +7,7 @@ CurrentModule = Main
 We present a typical workflow with DifferentiationInterface.jl and showcase its potential performance benefits.
 
 ```@example tuto
-using DifferentiationInterface, ADTypes
+using DifferentiationInterface
 
 import ForwardDiff, Enzyme  # ⚠️ import the backends you want to use ⚠️
 ```

@@ -69,7 +69,7 @@ julia> Pkg.add(
 ## Example
 
 ```julia
-using DifferentiationInterface, ADTypes
+using DifferentiationInterface
 import ForwardDiff, Enzyme, Zygote          # import automatic differentiation backends you want to use 
 
 f(x) = sum(abs2, x)
