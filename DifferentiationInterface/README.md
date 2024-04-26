@@ -1,3 +1,5 @@
+![DifferentiationInterface Logo](https://raw.githubusercontent.com/gdalle/DifferentiationInterface.jl/DifferentiationInterface/docs/src/assets/logo.svg)
+
 # DifferentiationInterface
 
 [![Build Status](https://github.com/gdalle/DifferentiationInterface.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/gdalle/DifferentiationInterface.jl/actions/workflows/CI.yml?query=branch%3Amain)
