@@ -28,7 +28,7 @@ This package provides a backend-agnostic syntax to differentiate functions of th
 
 ## Compatibility
 
-We support all of the backends defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl) `v1.0`:
+We support all of the backends defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl) v1.0:
 
 - [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl)
 - [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl)
@@ -74,7 +74,7 @@ import ForwardDiff, Enzyme, Zygote          # import automatic differentiation b
 
 f(x) = sum(abs2, x)
 
-x = [1., 2., 3.]
+x = [1.0, 2.0, 3.0]
 
 value_and_gradient(f, AutoForwardDiff(), x) # returns (14.0, [2.0, 4.0, 6.0]) using ForwardDiff.jl
 value_and_gradient(f, AutoEnzyme(),      x) # returns (14.0, [2.0, 4.0, 6.0]) using Enzyme.jl

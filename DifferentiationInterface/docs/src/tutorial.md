@@ -13,7 +13,7 @@ import ForwardDiff, Enzyme  # ⚠️ import the backends you want to use ⚠️
 ```
 
 !!! tip
-    Importing backends with `import` instead of `using` avoids name conflicts and makes sure you are using operators from DifferentiationInterface.
+    Importing backends with `import` instead of `using` avoids name conflicts and makes sure you are using operators from DifferentiationInterface.jl.
     This is useful since most backends also export operators like `gradient` and `jacobian`.
 
 
