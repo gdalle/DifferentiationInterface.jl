@@ -84,6 +84,10 @@ function prepare_pullback_aux(f!, y, backend, x, dy, ::PullbackSlow)
     return PushforwardPullbackExtras(pushforward_extras)
 end
 
+# Throw error if backend is missing
+prepare_pullback_aux(f, backend, x, dy, ::PullbackFast)     = throw(MissingBackendError(backend))
+prepare_pullback_aux(f!, y, backend, x, dy, ::PullbackFast) = throw(MissingBackendError(backend))
+
 ## One argument
 
 function value_and_pullback(

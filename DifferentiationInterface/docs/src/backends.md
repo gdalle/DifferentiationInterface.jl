@@ -4,9 +4,8 @@ CollapsedDocStrings = true
 ```
 
 ```@setup backends
-using ADTypes
 using DifferentiationInterface
-using DifferentiationInterface: backend_string
+using DifferentiationInterface: backend_str
 import Markdown
 import Diffractor, Enzyme, FastDifferentiation, FiniteDiff, FiniteDifferences, ForwardDiff, PolyesterForwardDiff, ReverseDiff, Tapir, Tracker, Zygote
 
@@ -38,7 +37,7 @@ println(io, "|:--------|:------------:|:----------------------:|:---------------
 
 for example in backend_examples
     b = eval(Meta.parse(example)) # backend
-    join(io, [backend_string(b), unicode_check_available(b), unicode_check_twoarg(b), unicode_check_hessian(b), "`$example`"], '|')
+    join(io, [backend_str(b), unicode_check_available(b), unicode_check_twoarg(b), unicode_check_hessian(b), "`$example`"], '|')
     println(io, '|' )
 end
 backend_table = Markdown.parse(String(take!(io)))
@@ -70,3 +69,28 @@ You can check this compatibility using [`check_twoarg`](@ref).
 
 Only some backends are able to compute Hessians.
 You can use [`check_hessian`](@ref) to check this feature.
+
+## API reference
+
+!!! warning
+    The following documentation has been re-exported from [ADTypes.jl](https://github.com/SciML/ADTypes.jl).
+    Refer to the ADTypes documentation for more information.
+
+```@docs
+ADTypes
+ADTypes.AbstractADType
+AutoChainRules
+AutoDiffractor
+AutoEnzyme
+AutoFastDifferentiation
+AutoFiniteDiff
+AutoFiniteDifferences
+AutoForwardDiff
+AutoPolyesterForwardDiff
+AutoReverseDiff
+AutoSymbolics
+AutoTapir
+AutoTracker
+AutoZygote
+AutoSparse
+```

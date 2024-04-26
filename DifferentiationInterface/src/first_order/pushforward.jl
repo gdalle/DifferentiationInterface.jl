@@ -73,6 +73,10 @@ function prepare_pushforward_aux(f!, y, backend, x, dx, ::PushforwardSlow)
     return PullbackPushforwardExtras(pullback_extras)
 end
 
+# Throw error if backend is missing
+prepare_pushforward_aux(f, backend, x, dy, ::PushforwardFast)     = throw(MissingBackendError(backend))
+prepare_pushforward_aux(f!, y, backend, x, dy, ::PushforwardFast) = throw(MissingBackendError(backend))
+
 ## One argument
 
 function value_and_pushforward(

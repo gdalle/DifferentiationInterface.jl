@@ -1,21 +1,22 @@
-backend_string_aux(b::AbstractADType) = string(b)
+backend_package_name(b::AbstractADType) = strip(string(b), ['(', ')'])
+backend_package_name(b::AutoSparse) = backend_package_name(dense_ad(b))
 
-backend_string_aux(::AutoChainRules) = "ChainRules"
-backend_string_aux(::AutoDiffractor) = "Diffractor"
-backend_string_aux(::AutoEnzyme) = "Enzyme"
-backend_string_aux(::AutoFastDifferentiation) = "FastDifferentiation"
-backend_string_aux(::AutoFiniteDiff) = "FiniteDiff"
-backend_string_aux(::AutoFiniteDifferences) = "FiniteDifferences"
-backend_string_aux(::AutoForwardDiff) = "ForwardDiff"
-backend_string_aux(::AutoPolyesterForwardDiff) = "PolyesterForwardDiff"
-backend_string_aux(b::AutoReverseDiff) = "ReverseDiff$(b.compile ? "{compiled}" : "")"
-backend_string_aux(::AutoSymbolics) = "Symbolics"
-backend_string_aux(::AutoTapir) = "Tapir"
-backend_string_aux(::AutoTracker) = "Tracker"
-backend_string_aux(::AutoZygote) = "Zygote"
+backend_package_name(::AutoChainRules) = "ChainRules"
+backend_package_name(::AutoDiffractor) = "Diffractor"
+backend_package_name(::AutoEnzyme) = "Enzyme"
+backend_package_name(::AutoFastDifferentiation) = "FastDifferentiation"
+backend_package_name(::AutoFiniteDiff) = "FiniteDiff"
+backend_package_name(::AutoFiniteDifferences) = "FiniteDifferences"
+backend_package_name(::AutoForwardDiff) = "ForwardDiff"
+backend_package_name(::AutoPolyesterForwardDiff) = "PolyesterForwardDiff"
+backend_package_name(::AutoSymbolics) = "Symbolics"
+backend_package_name(::AutoTapir) = "Tapir"
+backend_package_name(::AutoTracker) = "Tracker"
+backend_package_name(::AutoZygote) = "Zygote"
+backend_package_name(::AutoReverseDiff) = "ReverseDiff"
 
-function backend_string(backend::AbstractADType)
-    bs = backend_string_aux(backend)
+function backend_str(backend::AbstractADType)
+    bs = backend_package_name(backend)
     if mode(backend) isa ForwardMode
         return "$bs (forward)"
     elseif mode(backend) isa ReverseMode
@@ -29,8 +30,8 @@ function backend_string(backend::AbstractADType)
     end
 end
 
-backend_string(backend::AutoSparse) = "Sparse $(backend_string(dense_ad(backend)))"
+backend_str(backend::AutoSparse) = "Sparse $(backend_str(dense_ad(backend)))"
 
-function backend_string(backend::SecondOrder)
-    return "$(backend_string(outer(backend))) / $(backend_string(inner(backend)))"
+function backend_str(backend::SecondOrder)
+    return "$(backend_str(outer(backend))) / $(backend_str(inner(backend)))"
 end

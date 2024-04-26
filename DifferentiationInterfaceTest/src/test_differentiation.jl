@@ -67,33 +67,37 @@ function test_differentiation(
     prog = ProgressUnknown(; desc="$title", spinner=true, enabled=logging)
 
     @testset verbose = true "$title" begin
-        @testset verbose = detailed "$(backend_string(backend))" for (i, backend) in
-                                                                     enumerate(backends)
+        @testset verbose = detailed "$(backend_str(backend))" for (i, backend) in
+                                                                  enumerate(backends)
             filtered_scenarios = filter(s -> compatible(backend, s), scenarios)
-            @testset "$scen" for (j, scen) in enumerate(filtered_scenarios)
-                next!(
-                    prog;
-                    showvalues=[
-                        (:backend, "$(backend_string(backend)) - $i/$(length(backends))"),
-                        (
-                            :scenario,
-                            "$(scen_type(scen)) - $j/$(length(filtered_scenarios))",
-                        ),
-                        (:arguments, nb_args(scen)),
-                        (:operator, operator_place(scen)),
-                        (:function, scen.f),
-                        (:input, typeof(scen.x)),
-                        (:output, typeof(scen.y)),
-                    ],
-                )
-                correctness && @testset "Correctness" begin
-                    test_correctness(backend, scen; isapprox, atol, rtol, ref_backend)
-                end
-                type_stability && @testset "Type stability" begin
-                    test_jet(backend, scen; ref_backend)
-                end
-                sparsity && @testset "Sparsity" begin
-                    test_sparsity(backend, scen; ref_backend)
+            grouped_scenarios = group_by_scen_type(filtered_scenarios)
+            @testset verbose = detailed "$st" for (j, (st, st_group)) in
+                                                  enumerate(pairs(grouped_scenarios))
+                @testset "$scen" for (k, scen) in enumerate(st_group)
+                    next!(
+                        prog;
+                        showvalues=[
+                            (:backend, "$(backend_str(backend)) - $i/$(length(backends))"),
+                            (:scenario_type, "$st - $j/$(length(grouped_scenarios))"),
+                            (:scenario, "$k/$(length(st_group))"),
+                            (:arguments, nb_args(scen)),
+                            (:operator, operator_place(scen)),
+                            (:function, scen.f),
+                            (:input_type, typeof(scen.x)),
+                            (:input_size, size(scen.x)),
+                            (:output_type, typeof(scen.y)),
+                            (:output_size, size(scen.y)),
+                        ],
+                    )
+                    correctness && @testset "Correctness" begin
+                        test_correctness(backend, scen; isapprox, atol, rtol, ref_backend)
+                    end
+                    type_stability && @testset "Type stability" begin
+                        test_jet(backend, scen; ref_backend)
+                    end
+                    sparsity && @testset "Sparsity" begin
+                        test_sparsity(backend, scen; ref_backend)
+                    end
                 end
             end
         end
@@ -140,20 +144,26 @@ function benchmark_differentiation(
     prog = ProgressUnknown(; desc="Benchmarking", spinner=true, enabled=logging)
     for (i, backend) in enumerate(backends)
         filtered_scenarios = filter(s -> compatible(backend, s), scenarios)
-        for (j, scen) in enumerate(filtered_scenarios)
-            next!(
-                prog;
-                showvalues=[
-                    (:backend, "$(backend_string(backend)) - $i/$(length(backends))"),
-                    (:scenario, "$(scen_type(scen)) - $j/$(length(filtered_scenarios))"),
-                    (:arguments, nb_args(scen)),
-                    (:operator, operator_place(scen)),
-                    (:function, scen.f),
-                    (:input, typeof(scen.x)),
-                    (:output, typeof(scen.y)),
-                ],
-            )
-            run_benchmark!(benchmark_data, backend, scen)
+        grouped_scenarios = group_by_scen_type(filtered_scenarios)
+        for (j, (st, st_group)) in enumerate(pairs(grouped_scenarios))
+            for (k, scen) in enumerate(st_group)
+                next!(
+                    prog;
+                    showvalues=[
+                        (:backend, "$(backend_str(backend)) - $i/$(length(backends))"),
+                        (:scenario_type, "$st - $j/$(length(grouped_scenarios))"),
+                        (:scenario, "$k/$(length(st_group))"),
+                        (:arguments, nb_args(scen)),
+                        (:operator, operator_place(scen)),
+                        (:function, scen.f),
+                        (:input_type, typeof(scen.x)),
+                        (:input_size, size(scen.x)),
+                        (:output_type, typeof(scen.y)),
+                        (:output_size, size(scen.y)),
+                    ],
+                )
+                run_benchmark!(benchmark_data, backend, scen)
+            end
         end
     end
     return benchmark_data

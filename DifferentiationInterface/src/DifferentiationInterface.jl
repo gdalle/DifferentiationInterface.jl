@@ -41,6 +41,7 @@ include("utils/basis.jl")
 include("utils/printing.jl")
 include("utils/chunk.jl")
 include("utils/check.jl")
+include("utils/exceptions.jl")
 
 include("first_order/pushforward.jl")
 include("first_order/pullback.jl")
@@ -58,6 +59,8 @@ include("sparse/compressed_matrix.jl")
 include("sparse/fallbacks.jl")
 include("sparse/jacobian.jl")
 include("sparse/hessian.jl")
+
+include("translation/differentiate_with.jl")
 
 export SecondOrder
 
@@ -85,5 +88,24 @@ export prepare_derivative, prepare_gradient, prepare_jacobian
 export prepare_second_derivative, prepare_hvp, prepare_hessian
 
 export check_available, check_twoarg, check_hessian
+
+export DifferentiateWith
+
+# Re-export backends from ADTypes
+export AutoChainRules
+export AutoDiffractor
+export AutoEnzyme
+export AutoFastDifferentiation
+export AutoFiniteDiff
+export AutoFiniteDifferences
+export AutoForwardDiff
+export AutoPolyesterForwardDiff
+export AutoReverseDiff
+export AutoSymbolics
+export AutoTapir
+export AutoTracker
+export AutoZygote
+
+export AutoSparse
 
 end # module

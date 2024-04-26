@@ -22,7 +22,7 @@ using Chairmarks: @be, Benchmark, Sample
 using ComponentArrays: ComponentVector
 using DifferentiationInterface
 using DifferentiationInterface:
-    backend_string,
+    backend_str,
     inner,
     mode,
     outer,

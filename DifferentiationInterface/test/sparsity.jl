@@ -1,5 +1,5 @@
-coloring_algorithm = DifferentiationInterface.GreedyColoringAlgorithm()
-sparsity_detector = DifferentiationInterface.SymbolicsSparsityDetector()
+coloring_algorithm = DI.GreedyColoringAlgorithm()
+sparsity_detector = DI.SymbolicsSparsityDetector()
 
 sparse_backends = [
     AutoSparse(AutoFastDifferentiation()),

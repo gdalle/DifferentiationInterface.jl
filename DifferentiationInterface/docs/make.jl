@@ -4,7 +4,7 @@ import DifferentiationInterface as DI
 using Documenter
 using DocumenterMermaid
 
-using ADTypes
+using ADTypes: ADTypes
 using Diffractor: Diffractor
 using Enzyme: Enzyme
 using FastDifferentiation: FastDifferentiation
@@ -37,16 +37,18 @@ extensions = [
 ]
 
 makedocs(;
-    modules=[DifferentiationInterface, extensions...],
+    modules=[DifferentiationInterface, ADTypes, extensions...],
     authors="Guillaume Dalle, Adrian Hill",
     sitename="DifferentiationInterface.jl",
     format=Documenter.HTML(),
     pages=[
-        "Home" => "index.md", #
+        "Home" => "index.md",
         "Start here" => ["tutorial.md", "overview.md", "backends.md"],
         "API reference" => "api.md",
         "Advanced" => ["design.md", "extensions.md", "overloads.md"],
     ],
+    checkdocs=:exports,
+    warnonly=[:missing_docs, :cross_references],
 )
 
 deploydocs(;

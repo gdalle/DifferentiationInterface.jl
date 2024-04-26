@@ -54,6 +54,13 @@ function compatible(backend::AbstractADType, scen::AbstractScenario)
     return true
 end
 
+function group_by_scen_type(scenarios)
+    return Dict(
+        st => filter(s -> scen_type(s) == st, scenarios) for
+        st in unique(scen_type.(scenarios))
+    )
+end
+
 function Base.string(scen::S) where {args,op,F,X,Y,S<:AbstractScenario{args,op,F,X,Y}}
     return "$(S.name.name){$args,$op} $(string(scen.f)) : $X -> $Y"
 end
@@ -220,6 +227,16 @@ for S in (
             end
             return ($S){args,operator,F,X,typeof(y),R}(f, x, y, ref)
         end
+
+        function change_function(s::($S), f)
+            return ($S)(
+                f;
+                x=s.x,
+                y=(nb_args(s) == 1 ? nothing : s.y),
+                ref=s.ref,
+                operator=operator_place(s),
+            )
+        end
     end
 end
 
@@ -239,6 +256,16 @@ for S in (:PushforwardScenario, :HVPScenario)
             end
             return ($S){args,operator,F,X,typeof(y),typeof(dx),R}(f, x, y, dx, ref)
         end
+
+        function change_function(s::($S), f)
+            return ($S)(
+                f;
+                x=s.x,
+                y=(nb_args(s) == 1 ? nothing : s.y),
+                ref=s.ref,
+                operator=operator_place(s),
+            )
+        end
     end
 end
 
@@ -257,6 +284,16 @@ for S in (:PullbackScenario,)
                 dy = mysimilar_random(y)
             end
             return ($S){args,operator,F,X,typeof(y),typeof(dy),R}(f, x, y, dy, ref)
+        end
+
+        function change_function(s::($S), f)
+            return ($S)(
+                f;
+                x=s.x,
+                y=(nb_args(s) == 1 ? nothing : s.y),
+                ref=s.ref,
+                operator=operator_place(s),
+            )
         end
     end
 end

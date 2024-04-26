@@ -8,7 +8,7 @@ We present a typical workflow with DifferentiationInterfaceTest.jl, building on 
 
 ```@repl tuto
 using DifferentiationInterface, DifferentiationInterfaceTest
-import ADTypes, ForwardDiff, Enzyme
+import ForwardDiff, Enzyme
 import DataFrames, Markdown, PrettyTables, Printf
 ```
 
@@ -17,7 +17,7 @@ import DataFrames, Markdown, PrettyTables, Printf
 The AD backends we want to compare are [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl) and [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl).
 
 ```@repl tuto
-backends = [ADTypes.AutoForwardDiff(), ADTypes.AutoEnzyme(; mode=Enzyme.Reverse)]
+backends = [AutoForwardDiff(), AutoEnzyme(; mode=Enzyme.Reverse)]
 ```
 
 To do that, we are going to take gradients of a simple function:

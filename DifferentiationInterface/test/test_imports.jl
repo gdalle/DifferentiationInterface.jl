@@ -9,6 +9,8 @@ Pkg.develop(
 using ADTypes
 using DifferentiationInterface
 using DifferentiationInterfaceTest
+import DifferentiationInterface as DI
+import DifferentiationInterfaceTest as DIT
 
 using Aqua: Aqua
 using Documenter: Documenter
@@ -16,7 +18,8 @@ using JET: JET
 using JuliaFormatter: JuliaFormatter
 using Test
 
-using SparseArrays: SparseArrays
+using LinearAlgebra
+using SparseArrays
 
 ##
 

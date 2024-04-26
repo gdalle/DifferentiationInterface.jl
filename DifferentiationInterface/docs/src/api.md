@@ -91,6 +91,12 @@ check_twoarg
 check_hessian
 ```
 
+## Translation
+
+```@docs
+DifferentiateWith
+```
+
 ## Internals
 
 This is not part of the public API.
