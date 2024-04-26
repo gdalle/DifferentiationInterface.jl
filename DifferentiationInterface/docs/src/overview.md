@@ -123,7 +123,7 @@ We make this available for all backends with the following operators:
 | :--------------------------------- | :---------------------------------- |
 | [`value_and_pullback_split`](@ref) | [`value_and_pullback!_split`](@ref) |
 
-## Translation
+### Translation
 
 The wrapper [`DifferentiateWith`](@ref) allows you to take a function and specify that it should be differentiated with the backend of your choice.
 In other words, when you try to differentiate `dw = DifferentiateWith(f, backend1)` with `backend2`, then `backend1` steps in and `backend2` does nothing.
