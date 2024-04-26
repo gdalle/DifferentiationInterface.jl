@@ -20,7 +20,7 @@ This package provides a backend-agnostic syntax to differentiate functions of th
 
 ## Features
 
-- First- and second-order operators
+- First- and second-order operators (gradients, Jacobians, Hessians and [more](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterface/stable/overview/))
 - In-place and out-of-place differentiation
 - Preparation mechanism (e.g. to create a config or tape)
 - Thorough validation on standard inputs and outputs (numbers, vectors, matrices)
