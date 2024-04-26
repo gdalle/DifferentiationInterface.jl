@@ -4,7 +4,6 @@ CollapsedDocStrings = true
 ```
 
 ```@setup backends
-using ADTypes
 using DifferentiationInterface
 using DifferentiationInterface: backend_string
 import Markdown
@@ -70,3 +69,27 @@ You can check this compatibility using [`check_twoarg`](@ref).
 
 Only some backends are able to compute Hessians.
 You can use [`check_hessian`](@ref) to check this feature.
+
+
+## API Reference
+
+!!! warning
+    The following documentation has been re-exported from [ADTypes.jl](https://github.com/SciML/ADTypes.jl).
+    Refer to the ADTypes documentation for more information.
+
+```@docs
+AutoChainRules
+AutoDiffractor
+AutoEnzyme
+AutoFastDifferentiation
+AutoFiniteDiff
+AutoFiniteDifferences
+AutoForwardDiff
+AutoPolyesterForwardDiff
+AutoReverseDiff
+AutoSymbolics
+AutoTapir
+AutoTracker
+AutoZygote
+AutoSparse
+```
