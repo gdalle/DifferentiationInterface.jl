@@ -96,7 +96,7 @@ function record!(
 )
     bench_min = minimum(bench)
     row = BenchmarkDataRow(;
-        backend=backend_string(backend),
+        backend=backend_str(backend),
         mode=mode(backend),
         scenario=typeof(scenario).name.name,
         operator=Symbol(operator),

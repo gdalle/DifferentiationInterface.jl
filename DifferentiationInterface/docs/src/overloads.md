@@ -24,7 +24,7 @@ Each cell can have three values:
 ```@setup overloads
 using ADTypes: AbstractADType
 using DifferentiationInterface
-using DifferentiationInterface: backend_string, mutation_support, MutationSupported
+using DifferentiationInterface: backend_str, mutation_support, MutationSupported
 using Markdown: Markdown
 using Diffractor: Diffractor
 using Enzyme: Enzyme

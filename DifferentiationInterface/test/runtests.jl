@@ -23,9 +23,6 @@ include("test_imports.jl")
 
     Documenter.doctest(DifferentiationInterface)
 
-    @testset verbose = true "Exception handling" begin
-        include("test_exceptions.jl")
-    end
     @testset verbose = true "First order" begin
         include("first_order.jl")
     end
@@ -34,12 +31,12 @@ include("test_imports.jl")
         include("second_order.jl")
     end
 
-    @testset verbose = true "Coloring" begin
-        include("coloring.jl")
-    end
-
     @testset verbose = true "Sparsity" begin
         include("sparsity.jl")
+    end
+
+    @testset verbose = true "DifferentiateWith" begin
+        include("differentiate_with.jl")
     end
 
     @testset verbose = true "Bonus round" begin
@@ -50,9 +47,19 @@ include("test_imports.jl")
         @testset "Weird arrays" begin
             include("weird_arrays.jl")
         end
+    end
+
+    @testset verbose = true "Internals" begin
+        @testset verbose = true "Exception handling" begin
+            include("test_exceptions.jl")
+        end
 
         @testset "Chunks" begin
             include("chunk.jl")
+        end
+
+        @testset verbose = true "Coloring" begin
+            include("coloring.jl")
         end
     end
 end;

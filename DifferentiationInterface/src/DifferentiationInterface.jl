@@ -60,6 +60,8 @@ include("sparse/fallbacks.jl")
 include("sparse/jacobian.jl")
 include("sparse/hessian.jl")
 
+include("translation/differentiate_with.jl")
+
 export SecondOrder
 
 export value_and_pushforward!, value_and_pushforward
@@ -86,6 +88,8 @@ export prepare_derivative, prepare_gradient, prepare_jacobian
 export prepare_second_derivative, prepare_hvp, prepare_hessian
 
 export check_available, check_twoarg, check_hessian
+
+export DifferentiateWith
 
 # Re-export backends from ADTypes
 export AutoChainRules
