@@ -1,5 +1,3 @@
-using DifferentiationInterface: MissingBackendError
-
 """
     AutoBrokenForward <: ADTypes.AbstractADType
 
@@ -25,9 +23,9 @@ DifferentiationInterface.check_available(::AutoBrokenReverse) = true
     f(x::AbstractArray) = sum(abs2, x)
     x = [1.0, 2.0, 3.0]
 
-    @test_throws MissingBackendError gradient(f, AutoBrokenForward(), x)
-    @test_throws MissingBackendError gradient(f, AutoBrokenReverse(), x)
+    @test_throws DI.MissingBackendError gradient(f, AutoBrokenForward(), x)
+    @test_throws DI.MissingBackendError gradient(f, AutoBrokenReverse(), x)
 
-    @test_throws MissingBackendError hvp(f, AutoBrokenForward(), x, x)
-    @test_throws MissingBackendError hvp(f, AutoBrokenReverse(), x, x)
+    @test_throws DI.MissingBackendError hvp(f, AutoBrokenForward(), x, x)
+    @test_throws DI.MissingBackendError hvp(f, AutoBrokenReverse(), x, x)
 end

@@ -15,11 +15,8 @@ backend_package_name(::AutoTracker) = "Tracker"
 backend_package_name(::AutoZygote) = "Zygote"
 backend_package_name(::AutoReverseDiff) = "ReverseDiff"
 
-backend_string_aux(b::AbstractADType) = backend_package_name(b)
-backend_string_aux(b::AutoReverseDiff) = "ReverseDiff$(b.compile ? "{compiled}" : "")"
-
-function backend_string(backend::AbstractADType)
-    bs = backend_string_aux(backend)
+function backend_str(backend::AbstractADType)
+    bs = backend_package_name(backend)
     if mode(backend) isa ForwardMode
         return "$bs (forward)"
     elseif mode(backend) isa ReverseMode
@@ -33,8 +30,8 @@ function backend_string(backend::AbstractADType)
     end
 end
 
-backend_string(backend::AutoSparse) = "Sparse $(backend_string(dense_ad(backend)))"
+backend_str(backend::AutoSparse) = "Sparse $(backend_str(dense_ad(backend)))"
 
-function backend_string(backend::SecondOrder)
-    return "$(backend_string(outer(backend))) / $(backend_string(inner(backend)))"
+function backend_str(backend::SecondOrder)
+    return "$(backend_str(outer(backend))) / $(backend_str(inner(backend)))"
 end

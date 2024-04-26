@@ -5,7 +5,7 @@ CollapsedDocStrings = true
 
 ```@setup backends
 using DifferentiationInterface
-using DifferentiationInterface: backend_string
+using DifferentiationInterface: backend_str
 import Markdown
 import Diffractor, Enzyme, FastDifferentiation, FiniteDiff, FiniteDifferences, ForwardDiff, PolyesterForwardDiff, ReverseDiff, Tapir, Tracker, Zygote
 
@@ -37,7 +37,7 @@ println(io, "|:--------|:------------:|:----------------------:|:---------------
 
 for example in backend_examples
     b = eval(Meta.parse(example)) # backend
-    join(io, [backend_string(b), unicode_check_available(b), unicode_check_twoarg(b), unicode_check_hessian(b), "`$example`"], '|')
+    join(io, [backend_str(b), unicode_check_available(b), unicode_check_twoarg(b), unicode_check_hessian(b), "`$example`"], '|')
     println(io, '|' )
 end
 backend_table = Markdown.parse(String(take!(io)))
