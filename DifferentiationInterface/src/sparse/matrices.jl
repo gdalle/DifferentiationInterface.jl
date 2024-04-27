@@ -34,7 +34,7 @@ function nz_in_col(A_colmajor::SparseMatrixCSC{T}, j::Integer) where {T}
     return view(rv, ind)
 end
 
-function nz_in_col(A_rowmajor::Transpose{T,<:SparseMatrixCSC{T}}, i::Integer) where {T}
+function nz_in_row(A_rowmajor::Transpose{T,<:SparseMatrixCSC{T}}, i::Integer) where {T}
     A_transpose_colmajor = parent(A_rowmajor)
     rv = rowvals(A_transpose_colmajor)
     ind = nzrange(A_transpose_colmajor, i)

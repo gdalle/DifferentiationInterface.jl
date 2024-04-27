@@ -10,7 +10,6 @@ end
 
 abstract type AbstractMatrixGraph end
 
-Base.size(g::AbstractMatrixGraph, args...) = size(g.A_colmajor, args...)
 rows(g::AbstractMatrixGraph) = axes(g.A_colmajor, 1)
 columns(g::AbstractMatrixGraph) = axes(g.A_colmajor, 2)
 
