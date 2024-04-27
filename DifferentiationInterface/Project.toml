@@ -8,6 +8,7 @@ ADTypes = "47edcb42-4c32-4615-8424-f2b9edc5f35b"
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 FillArrays = "1a297f60-69ca-5386-bcde-b61e274b549b"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [weakdeps]
 ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
@@ -54,6 +55,7 @@ ForwardDiff = "0.10.36"
 LinearAlgebra = "1"
 PolyesterForwardDiff = "0.1.1"
 ReverseDiff = "1.15.1"
+SparseArrays = "1"
 Symbolics = "5.27.1"
 Tapir = "0.1.2"
 Test = "1"
@@ -84,4 +86,25 @@ Tracker = "9f7883ad-71c0-57eb-9f7f-b5c9e6d3789c"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [targets]
-test = ["ADTypes", "Aqua", "Diffractor", "Documenter", "Enzyme", "FastDifferentiation", "FiniteDiff", "FiniteDifferences", "ForwardDiff", "JET", "JuliaFormatter", "Pkg", "PolyesterForwardDiff", "ReverseDiff", "SparseArrays", "Symbolics", "Tapir", "Test", "Tracker", "Zygote"]
+test = [
+    "ADTypes",
+    "Aqua",
+    "Diffractor",
+    "Documenter",
+    "Enzyme",
+    "FastDifferentiation",
+    "FiniteDiff",
+    "FiniteDifferences",
+    "ForwardDiff",
+    "JET",
+    "JuliaFormatter",
+    "Pkg",
+    "PolyesterForwardDiff",
+    "ReverseDiff",
+    "SparseArrays",
+    "Symbolics",
+    "Tapir",
+    "Test",
+    "Tracker",
+    "Zygote",
+]

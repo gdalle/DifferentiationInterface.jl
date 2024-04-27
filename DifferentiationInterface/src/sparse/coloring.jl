@@ -10,9 +10,9 @@ end
 
 abstract type AbstractMatrixGraph end
 
-Base.size(g::AbstractMatrixGraph, args...) = size(g.A, args...)
-rows(g::AbstractMatrixGraph) = axes(g.A, 1)
-columns(g::AbstractMatrixGraph) = axes(g.A, 2)
+Base.size(g::AbstractMatrixGraph, args...) = size(g.A_colmajor, args...)
+rows(g::AbstractMatrixGraph) = axes(g.A_colmajor, 1)
+columns(g::AbstractMatrixGraph) = axes(g.A_colmajor, 2)
 
 ## Jacobian coloring
 
@@ -25,22 +25,33 @@ This graph is defined as `G = (R, C, E)` where `R = 1:m` is the set of row indic
 
 # Fields
 
-- `A::AbstractMatrix`
+- `A_colmajor::AbstractMatrix`: output of [`col_major`](@ref) applied to `A`
+- `A_rowmajor::AbstractMatrix`: output of [`row_major`](@ref) applied to `A`
 
 # Reference
 
 > [What Color Is Your Jacobian? Graph Coloring for Computing Derivatives](https://epubs.siam.org/doi/abs/10.1137/S0036144504444711), Gebremedhin et al. (2005)
 """
-struct BipartiteGraph{M<:AbstractMatrix} <: AbstractMatrixGraph
-    A::M
+struct BipartiteGraph{M1<:AbstractMatrix,M2<:AbstractMatrix} <: AbstractMatrixGraph
+    A_colmajor::M1
+    A_rowmajor::M2
+
+    function BipartiteGraph(A::AbstractMatrix)
+        A_colmajor = col_major(A)
+        A_rowmajor = row_major(A)
+        return new{typeof(A_colmajor),typeof(A_rowmajor)}(A_colmajor, A_rowmajor)
+    end
 end
 
-function neighbors_of_row(g::BipartiteGraph, i::Integer)
-    return filter(j -> !iszero(g.A[i, j]), columns(g))
-end
+neighbors_of_column(g::BipartiteGraph, j::Integer) = nz_in_col(g.A_colmajor, j)
+neighbors_of_row(g::BipartiteGraph, i::Integer) = nz_in_row(g.A_rowmajor, i)
 
-function neighbors_of_column(g::BipartiteGraph, j::Integer)
-    return filter(i -> !iszero(g.A[i, j]), rows(g))
+function colored_neighbors_of_column(
+    g::BipartiteGraph, j::Integer, colors::AbstractVector{<:Integer}
+)
+    return filter(neighbors_of_column(g, j)) do i
+        !iszero(colors[i])
+    end
 end
 
 function colored_neighbors_of_row(
@@ -48,14 +59,6 @@ function colored_neighbors_of_row(
 )
     return filter(neighbors_of_row(g, i)) do j
         !iszero(colors[j])
-    end
-end
-
-function colored_neighbors_of_column(
-    g::BipartiteGraph, j::Integer, colors::AbstractVector{<:Integer}
-)
-    return filter(neighbors_of_column(g, j)) do i
-        !iszero(colors[i])
     end
 end
 
@@ -130,18 +133,23 @@ This graph is defined as `G = (C, E)` where `C = 1:n` is the set of columns and 
 
 # Fields
 
-- `A::AbstractMatrix`
+- `A_colmajor::AbstractMatrix`: output of [`col_major`](@ref) applied to `A`
 
 # Reference
 
 > [What Color Is Your Jacobian? Graph Coloring for Computing Derivatives](https://epubs.siam.org/doi/abs/10.1137/S0036144504444711), Gebremedhin et al. (2005)
 """
 struct AdjacencyGraph{M<:AbstractMatrix} <: AbstractMatrixGraph
-    A::M
+    A_colmajor::M
+
+    function AdjacencyGraph(A::AbstractMatrix)
+        A_colmajor = col_major(A)
+        return new{typeof(A_colmajor)}(A_colmajor)
+    end
 end
 
 function neighbors(g::AdjacencyGraph, j::Integer)
-    return filter(i -> (i != j) && !iszero(g.A[i, j]), columns(g))
+    return filter(!isequal(j), nz_in_col(g.A_colmajor, j))
 end
 
 function colored_neighbors(g::AdjacencyGraph, j::Integer, colors::AbstractVector{<:Integer})
