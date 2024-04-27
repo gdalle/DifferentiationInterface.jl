@@ -79,7 +79,7 @@ function jacobian!(f, jac, backend::AutoSparse, x, extras::SparseJacobianExtras{
 end
 
 function jacobian(f, backend::AutoSparse, x, extras::SparseJacobianExtras{1})
-    jac = similar(extras.compressed.sparsity, eltype(x))
+    jac = major_respecting_similar(extras.compressed.sparsity, eltype(x))
     return jacobian!(f, jac, backend, x, extras)
 end
 
@@ -152,7 +152,7 @@ function jacobian!(f!, y, jac, backend::AutoSparse, x, extras::SparseJacobianExt
 end
 
 function jacobian(f!, y, backend::AutoSparse, x, extras::SparseJacobianExtras{2})
-    jac = similar(extras.compressed.sparsity, eltype(x))
+    jac = major_respecting_similar(extras.compressed.sparsity, eltype(x))
     return jacobian!(f!, y, jac, backend, x, extras)
 end
 

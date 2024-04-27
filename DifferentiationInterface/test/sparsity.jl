@@ -5,7 +5,7 @@ sparse_backends = [
     AutoSparse(AutoFastDifferentiation()),
     AutoSparse(AutoSymbolics()),
     AutoSparse(AutoForwardDiff(); sparsity_detector, coloring_algorithm),
-    AutoSparse(AutoZygote(); sparsity_detector, coloring_algorithm),
+    AutoSparse(AutoEnzyme(Enzyme.Reverse); sparsity_detector, coloring_algorithm),
 ]
 
 sparse_second_order_backends = [

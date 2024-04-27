@@ -14,10 +14,6 @@ function test_sparsity(
     _, jac1 = value_and_jacobian(f, ba, x, extras)
     jac2 = jacobian(f, ba, x, extras)
 
-    @testset "Sparse type" begin
-        @test jac1 isa SparseMatrixCSC
-        @test jac2 isa SparseMatrixCSC
-    end
     @testset "Sparsity pattern" begin
         @test nnz(jac1) == nnz(jac_true)
         @test nnz(jac2) == nnz(jac_true)
@@ -37,10 +33,6 @@ function test_sparsity(ba::AbstractADType, scen::JacobianScenario{1,:inplace}; r
     _, jac1 = value_and_jacobian!(f, mysimilar(jac_true), ba, x, extras)
     jac2 = jacobian!(f, mysimilar(jac_true), ba, x, extras)
 
-    @testset "Sparse type" begin
-        @test jac1 isa SparseMatrixCSC
-        @test jac2 isa SparseMatrixCSC
-    end
     @testset "Sparsity pattern" begin
         @test nnz(jac1) == nnz(jac_true)
         @test nnz(jac2) == nnz(jac_true)
@@ -63,10 +55,6 @@ function test_sparsity(
     _, jac1 = value_and_jacobian(f!, mysimilar(y), ba, x, extras)
     jac2 = jacobian(f!, mysimilar(y), ba, x, extras)
 
-    @testset "Sparse type" begin
-        @test jac1 isa SparseMatrixCSC
-        @test jac2 isa SparseMatrixCSC
-    end
     @testset "Sparsity pattern" begin
         @test nnz(jac1) == nnz(jac_true)
         @test nnz(jac2) == nnz(jac_true)
@@ -87,10 +75,6 @@ function test_sparsity(ba::AbstractADType, scen::JacobianScenario{2,:inplace}; r
     _, jac1 = value_and_jacobian!(f!, mysimilar(y), mysimilar(jac_true), ba, x, extras)
     jac2 = jacobian!(f!, mysimilar(y), mysimilar(jac_true), ba, x, extras)
 
-    @testset "Sparse type" begin
-        @test jac1 isa SparseMatrixCSC
-        @test jac2 isa SparseMatrixCSC
-    end
     @testset "Sparsity pattern" begin
         @test nnz(jac1) == nnz(jac_true)
         @test nnz(jac2) == nnz(jac_true)
@@ -113,9 +97,6 @@ function test_sparsity(
 
     hess1 = hessian(f, ba, x, extras)
 
-    @testset "Sparse type" begin
-        @test hess1 isa SparseMatrixCSC
-    end
     @testset "Sparsity pattern" begin
         @test nnz(hess1) == nnz(hess_true)
     end
@@ -133,9 +114,6 @@ function test_sparsity(ba::AbstractADType, scen::HessianScenario{1,:inplace}; re
 
     hess1 = hessian!(f, mysimilar(hess_true), ba, x, extras)
 
-    @testset "Sparse type" begin
-        @test hess1 isa SparseMatrixCSC
-    end
     @testset "Sparsity pattern" begin
         @test nnz(hess1) == nnz(hess_true)
     end
