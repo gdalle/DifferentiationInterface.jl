@@ -51,15 +51,19 @@ include("test_imports.jl")
 
     @testset verbose = true "Internals" begin
         @testset verbose = true "Exception handling" begin
-            include("test_exceptions.jl")
+            include("internals/exceptions.jl")
         end
 
         @testset "Chunks" begin
-            include("chunk.jl")
+            include("internals/chunk.jl")
+        end
+
+        @testset "Matrices" begin
+            include("internals/matrices.jl")
         end
 
         @testset verbose = true "Coloring" begin
-            include("coloring.jl")
+            include("internals/coloring.jl")
         end
     end
 end;

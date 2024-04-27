@@ -30,7 +30,8 @@ using ADTypes:
     AutoZygote
 using DocStringExtensions
 using FillArrays: OneElement
-using LinearAlgebra: Symmetric, dot
+using LinearAlgebra: Symmetric, Transpose, dot, parent, transpose
+using SparseArrays: SparseMatrixCSC, nzrange, rowvals, sparse
 
 abstract type Extras end
 
@@ -54,6 +55,7 @@ include("second_order/hvp.jl")
 include("second_order/hessian.jl")
 
 include("sparse/detector.jl")
+include("sparse/matrices.jl")
 include("sparse/coloring.jl")
 include("sparse/compressed_matrix.jl")
 include("sparse/fallbacks.jl")
