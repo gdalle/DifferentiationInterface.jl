@@ -23,8 +23,9 @@ end
 
 function prepare_jacobian(f, backend::AutoSparse, x)
     y = f(x)
-    sparsity = jacobian_sparsity(f, x, sparsity_detector(backend))
+    initial_sparsity = jacobian_sparsity(f, x, sparsity_detector(backend))
     if Bool(pushforward_performance(backend))
+        sparsity = col_major(initial_sparsity)
         colors = column_coloring(sparsity, coloring_algorithm(backend))
         groups = get_groups(colors)
         seeds = map(groups) do group
@@ -39,6 +40,7 @@ function prepare_jacobian(f, backend::AutoSparse, x)
         aggregates = stack(vec, products; dims=2)
         compressed = CompressedMatrix{:col}(sparsity, colors, groups, aggregates)
     else
+        sparsity = row_major(initial_sparsity)
         colors = row_coloring(sparsity, coloring_algorithm(backend))
         groups = get_groups(colors)
         seeds = map(groups) do group
@@ -77,7 +79,7 @@ function jacobian!(f, jac, backend::AutoSparse, x, extras::SparseJacobianExtras{
 end
 
 function jacobian(f, backend::AutoSparse, x, extras::SparseJacobianExtras{1})
-    jac = similar(extras.compressed.sparsity, eltype(x))
+    jac = major_respecting_similar(extras.compressed.sparsity, eltype(x))
     return jacobian!(f, jac, backend, x, extras)
 end
 
@@ -94,8 +96,9 @@ end
 ## Jacobian, two arguments
 
 function prepare_jacobian(f!, y, backend::AutoSparse, x)
-    sparsity = jacobian_sparsity(f!, y, x, sparsity_detector(backend))
+    initial_sparsity = jacobian_sparsity(f!, y, x, sparsity_detector(backend))
     if Bool(pushforward_performance(backend))
+        sparsity = col_major(initial_sparsity)
         colors = column_coloring(sparsity, coloring_algorithm(backend))
         groups = get_groups(colors)
         seeds = map(groups) do group
@@ -110,6 +113,7 @@ function prepare_jacobian(f!, y, backend::AutoSparse, x)
         aggregates = stack(vec, products; dims=2)
         compressed = CompressedMatrix{:col}(sparsity, colors, groups, aggregates)
     else
+        sparsity = row_major(initial_sparsity)
         colors = row_coloring(sparsity, coloring_algorithm(backend))
         groups = get_groups(colors)
         seeds = map(groups) do group
@@ -148,7 +152,7 @@ function jacobian!(f!, y, jac, backend::AutoSparse, x, extras::SparseJacobianExt
 end
 
 function jacobian(f!, y, backend::AutoSparse, x, extras::SparseJacobianExtras{2})
-    jac = similar(extras.compressed.sparsity, eltype(x))
+    jac = major_respecting_similar(extras.compressed.sparsity, eltype(x))
     return jacobian!(f!, y, jac, backend, x, extras)
 end
 
