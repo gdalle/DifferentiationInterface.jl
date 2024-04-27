@@ -10,8 +10,9 @@ end
 ## Hessian, one argument
 
 function prepare_hessian(f, backend::AutoSparse, x)
-    sparsity = hessian_sparsity(f, x, sparsity_detector(backend))
-    colors = symmetric_coloring(sparsity, coloring_algorithm(backend))
+    initial_sparsity = hessian_sparsity(f, x, sparsity_detector(backend))
+    sparsity = col_major(initial_sparsity)
+    colors = column_coloring(sparsity, coloring_algorithm(backend))
     groups = get_groups(colors)
     seeds = map(groups) do group
         seed = zero(x)
@@ -33,7 +34,7 @@ function hessian!(f, hess, backend::AutoSparse, x, extras::SparseHessianExtras)
         hvp!(f, products[k], backend, x, seeds[k], hvp_extras)
         copyto!(view(compressed.aggregates, :, k), vec(products[k]))
     end
-    decompress_symmetric!(hess, compressed)
+    decompress!(hess, compressed)
     return hess
 end
 

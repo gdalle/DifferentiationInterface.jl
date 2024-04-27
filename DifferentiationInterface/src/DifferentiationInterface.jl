@@ -31,7 +31,7 @@ using ADTypes:
 using DocStringExtensions
 using FillArrays: OneElement
 using LinearAlgebra: Symmetric, Transpose, dot, parent, transpose
-using SparseArrays: SparseMatrixCSC, nzrange, rowvals, sparse
+using SparseArrays: SparseMatrixCSC, nonzeros, nzrange, rowvals, sparse
 
 abstract type Extras end
 
