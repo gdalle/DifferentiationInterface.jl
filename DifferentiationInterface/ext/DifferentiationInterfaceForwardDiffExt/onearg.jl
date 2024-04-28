@@ -1,14 +1,60 @@
 ## Pushforward
 
-DI.prepare_pushforward(f, ::AutoForwardDiff, x, dx) = NoPushforwardExtras()
+struct ForwardDiffOneArgPushforwardExtras{T,X} <: PushforwardExtras
+    xdual_tmp::X
+end
 
-function DI.value_and_pushforward(f, ::AutoForwardDiff, x, dx, ::NoPushforwardExtras)
+function DI.prepare_pushforward(f, ::AutoForwardDiff, x, dx)
     T = tag_type(f, x)
-    xdual = make_dual(T, x, dx)
-    ydual = f(xdual)
+    xdual_tmp = make_dual(T, x, dx)
+    return ForwardDiffOneArgPushforwardExtras{T,typeof(xdual_tmp)}(xdual_tmp)
+end
+
+function compute_ydual_onearg(
+    f, x, dx, extras::ForwardDiffOneArgPushforwardExtras{T}
+) where {T}
+    (; xdual_tmp) = extras
+    xdual_tmp = if x isa Number
+        make_dual(T, x, dx)
+    else
+        make_dual!(T, xdual_tmp, x, dx)
+    end
+    ydual = f(xdual_tmp)
+    return ydual
+end
+
+function DI.value_and_pushforward(
+    f, ::AutoForwardDiff, x, dx, extras::ForwardDiffOneArgPushforwardExtras{T}
+) where {T}
+    ydual = compute_ydual_onearg(f, x, dx, extras)
     y = myvalue(T, ydual)
     new_dy = myderivative(T, ydual)
     return y, new_dy
+end
+
+function DI.pushforward(
+    f, ::AutoForwardDiff, x, dx, extras::ForwardDiffOneArgPushforwardExtras{T}
+) where {T}
+    ydual = compute_ydual_onearg(f, x, dx, extras)
+    new_dy = myderivative(T, ydual)
+    return new_dy
+end
+
+function DI.value_and_pushforward!(
+    f, dy, ::AutoForwardDiff, x, dx, extras::ForwardDiffOneArgPushforwardExtras{T}
+) where {T}
+    ydual = compute_ydual_onearg(f, x, dx, extras)
+    y = myvalue(T, ydual)
+    myderivative!(T, dy, ydual)
+    return y, dy
+end
+
+function DI.pushforward!(
+    f, dy, ::AutoForwardDiff, x, dx, extras::ForwardDiffOneArgPushforwardExtras{T}
+) where {T}
+    ydual = compute_ydual_onearg(f, x, dx, extras)
+    myderivative!(T, dy, ydual)
+    return dy
 end
 
 ## Gradient

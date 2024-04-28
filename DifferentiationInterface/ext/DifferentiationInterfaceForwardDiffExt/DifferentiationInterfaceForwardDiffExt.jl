@@ -8,7 +8,7 @@ using DifferentiationInterface:
     HessianExtras,
     JacobianExtras,
     NoDerivativeExtras,
-    NoPushforwardExtras
+    PushforwardExtras
 using ForwardDiff.DiffResults: DiffResults, DiffResult, GradientResult, MutableDiffResult
 using ForwardDiff:
     Chunk,
