@@ -1,13 +1,64 @@
-DI.prepare_pushforward(f!, y, ::AutoForwardDiff, x, dx) = NoPushforwardExtras()
+## Pushforward
 
-function DI.value_and_pushforward(f!, y, ::AutoForwardDiff, x, dx, ::NoPushforwardExtras)
+struct ForwardDiffTwoArgPushforwardExtras{T,X,Y} <: PushforwardExtras
+    xdual_tmp::X
+    ydual_tmp::Y
+end
+
+function DI.prepare_pushforward(f!, y, ::AutoForwardDiff, x, dx)
     T = tag_type(f!, x)
-    xdual = make_dual(T, x, dx)
-    ydual = make_dual(T, y, similar(y))
-    f!(ydual, xdual)
-    y = myvalue!(T, y, ydual)
-    dy = myderivative(T, ydual)
+    xdual_tmp = make_dual(T, x, dx)
+    ydual_tmp = make_dual(T, y, similar(y))
+    return ForwardDiffTwoArgPushforwardExtras{T,typeof(xdual_tmp),typeof(ydual_tmp)}(
+        xdual_tmp, ydual_tmp
+    )
+end
+
+function compute_ydual_twoarg(
+    f!, y, x, dx, extras::ForwardDiffTwoArgPushforwardExtras{T}
+) where {T}
+    (; xdual_tmp, ydual_tmp) = extras
+    xdual_tmp = if x isa Number
+        make_dual(T, x, dx)
+    else
+        make_dual!(T, xdual_tmp, x, dx)
+    end
+    f!(ydual_tmp, xdual_tmp)
+    return ydual_tmp
+end
+
+function DI.value_and_pushforward(
+    f!, y, ::AutoForwardDiff, x, dx, extras::ForwardDiffTwoArgPushforwardExtras{T}
+) where {T}
+    ydual_tmp = compute_ydual_twoarg(f!, y, x, dx, extras)
+    myvalue!(T, y, ydual_tmp)
+    dy = myderivative(T, ydual_tmp)
     return y, dy
+end
+
+function DI.pushforward(
+    f!, y, ::AutoForwardDiff, x, dx, extras::ForwardDiffTwoArgPushforwardExtras{T}
+) where {T}
+    ydual_tmp = compute_ydual_twoarg(f!, y, x, dx, extras)
+    dy = myderivative(T, ydual_tmp)
+    return dy
+end
+
+function DI.value_and_pushforward!(
+    f!, y, dy, ::AutoForwardDiff, x, dx, extras::ForwardDiffTwoArgPushforwardExtras{T}
+) where {T}
+    ydual_tmp = compute_ydual_twoarg(f!, y, x, dx, extras)
+    myvalue!(T, y, ydual_tmp)
+    myderivative!(T, dy, ydual_tmp)
+    return y, dy
+end
+
+function DI.pushforward!(
+    f!, y, dy, ::AutoForwardDiff, x, dx, extras::ForwardDiffTwoArgPushforwardExtras{T}
+) where {T}
+    ydual_tmp = compute_ydual_twoarg(f!, y, x, dx, extras)
+    myderivative!(T, dy, ydual_tmp)
+    return dy
 end
 
 ## Derivative
