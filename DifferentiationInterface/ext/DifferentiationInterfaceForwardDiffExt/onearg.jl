@@ -11,14 +11,18 @@ function DI.prepare_pushforward(f, ::AutoForwardDiff, x, dx)
 end
 
 function compute_ydual_onearg(
+    f, x::Number, dx, extras::ForwardDiffOneArgPushforwardExtras{T}
+) where {T}
+    xdual_tmp = make_dual(T, x, dx)
+    ydual = f(xdual_tmp)
+    return ydual
+end
+
+function compute_ydual_onearg(
     f, x, dx, extras::ForwardDiffOneArgPushforwardExtras{T}
 ) where {T}
     (; xdual_tmp) = extras
-    xdual_tmp = if x isa Number
-        make_dual(T, x, dx)
-    else
-        make_dual!(T, xdual_tmp, x, dx)
-    end
+    make_dual!(T, xdual_tmp, x, dx)
     ydual = f(xdual_tmp)
     return ydual
 end
