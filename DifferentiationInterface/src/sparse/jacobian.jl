@@ -94,7 +94,7 @@ function value_and_jacobian!(
 end
 
 function value_and_jacobian(
-    f, backend::AutoSparse, x, extras::SparseJacobianExtras{1}
+    f::F, backend::AutoSparse, x, extras::SparseJacobianExtras{1}
 ) where {F}
     return f(x), jacobian(f, backend, x, extras)
 end
