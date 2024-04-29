@@ -72,15 +72,15 @@ julia> Pkg.add(
 
 ```julia
 using DifferentiationInterface
-import ForwardDiff, Enzyme, Zygote          # import automatic differentiation backends you want to use 
+import ForwardDiff, Enzyme, Zygote  # AD backends you want to use 
 
 f(x) = sum(abs2, x)
 
-x = [1.0, 2.0, 3.0]
+x = [1.0, 2.0]
 
-value_and_gradient(f, AutoForwardDiff(), x) # returns (14.0, [2.0, 4.0, 6.0]) using ForwardDiff.jl
-value_and_gradient(f, AutoEnzyme(),      x) # returns (14.0, [2.0, 4.0, 6.0]) using Enzyme.jl
-value_and_gradient(f, AutoZygote(),      x) # returns (14.0, [2.0, 4.0, 6.0]) using Zygote.jl
+value_and_gradient(f, AutoForwardDiff(), x) # returns (5.0, [2.0, 4.0]) with ForwardDiff.jl
+value_and_gradient(f, AutoEnzyme(),      x) # returns (5.0, [2.0, 4.0]) with Enzyme.jl
+value_and_gradient(f, AutoZygote(),      x) # returns (5.0, [2.0, 4.0]) with Zygote.jl
 ```
 
 For more performance, take a look at the [DifferentiationInterface tutorial](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterface/stable/tutorial/).

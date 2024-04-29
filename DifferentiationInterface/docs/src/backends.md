@@ -47,7 +47,7 @@ backend_table = Markdown.parse(String(take!(io)))
 
 ## Types
 
-We support all dense backend choices from [ADTypes.jl](https://github.com/SciML/ADTypes.jl), as well as their sparse wrapper `AutoSparse`.
+We support all dense backend choices from [ADTypes.jl](https://github.com/SciML/ADTypes.jl), as well as their sparse wrapper [`AutoSparse`](@ref).
 
 For sparse backends, only the Jacobian and Hessian operators are implemented differently, the other operators behave the same as for the corresponding dense backend.
 
@@ -55,26 +55,28 @@ For sparse backends, only the Jacobian and Hessian operators are implemented dif
 backend_table #hide
 ```
 
-## Availability
+## Checks
+
+### Availability
 
 You can use [`check_available`](@ref) to verify whether a given backend is loaded.
 
-## Support for two-argument functions
+### Support for two-argument functions
 
 All backends are compatible with one-argument functions `f(x) = y`.
 Only some are compatible with two-argument functions `f!(y, x) = nothing`.
 You can check this compatibility using [`check_twoarg`](@ref).
 
-## Hessian support
+### Support for Hessian
 
 Only some backends are able to compute Hessians.
-You can use [`check_hessian`](@ref) to check this feature.
+You can use [`check_hessian`](@ref) to check this feature (beware that it will try to compute a small Hessian, so it is not instantaneous).
 
 ## API reference
 
 !!! warning
-    The following documentation has been re-exported from [ADTypes.jl](https://github.com/SciML/ADTypes.jl).
-    Refer to the ADTypes documentation for more information.
+    The following documentation has been borrowed from ADTypes.jl.
+    Refer to the [ADTypes documentation](https://sciml.github.io/ADTypes.jl/stable/) for more information.
 
 ```@docs
 ADTypes
