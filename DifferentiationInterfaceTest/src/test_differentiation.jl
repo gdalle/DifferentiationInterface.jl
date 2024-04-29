@@ -19,10 +19,10 @@ Testing:
 
 Filtering:
 
-- `input_type=Any`: restrict scenario inputs to subtypes of this
-- `output_type=Any`: restrict scenario outputs to subtypes of this
-- `first_order=true`: include first order operators
-- `second_order=true`: include second order operators
+- `input_type=Any`, `output_type=Any`: restrict scenario inputs / outputs to subtypes of this
+- `first_order=true`, `second_order=true`: include first order / second order operators
+- `onearg=true`, `twoarg=true`: include one-argument / two-argument functions
+- `inplace=true`, `outofplace=true`: include in-place / out-of-place operators
 
 Options:
 
@@ -46,6 +46,10 @@ function test_differentiation(
     output_type::Type=Any,
     first_order=true,
     second_order=true,
+    onearg=true,
+    twoarg=true,
+    inplace=true,
+    outofplace=true,
     excluded=[],
     # options
     logging=false,
@@ -54,7 +58,16 @@ function test_differentiation(
     rtol=1e-3,
 )
     scenarios = filter_scenarios(
-        scenarios; first_order, second_order, input_type, output_type, excluded
+        scenarios;
+        first_order,
+        second_order,
+        input_type,
+        output_type,
+        onearg,
+        twoarg,
+        inplace,
+        outofplace,
+        excluded,
     )
 
     title_additions =
@@ -132,12 +145,25 @@ function benchmark_differentiation(
     output_type::Type=Any,
     first_order=true,
     second_order=true,
+    onearg=true,
+    twoarg=true,
+    inplace=true,
+    outofplace=true,
     excluded=[],
     # options
     logging=false,
 )
     scenarios = filter_scenarios(
-        scenarios; first_order, second_order, input_type, output_type, excluded
+        scenarios;
+        first_order,
+        second_order,
+        input_type,
+        output_type,
+        onearg,
+        twoarg,
+        inplace,
+        outofplace,
+        excluded,
     )
 
     benchmark_data = BenchmarkDataRow[]
