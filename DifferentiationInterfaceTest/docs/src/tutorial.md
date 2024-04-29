@@ -42,8 +42,8 @@ There is one scenario per operator, and so here we will use [`GradientScenario`]
 
 ```@repl tuto
 scenarios = [
-    GradientScenario(f; x=rand(Float32, 3), ref=∇f, operator=:inplace),
-    GradientScenario(f; x=rand(Float64, 3, 2), ref=∇f, operator=:inplace)
+    GradientScenario(f; x=rand(Float32, 3), ref=∇f, place=:inplace),
+    GradientScenario(f; x=rand(Float64, 3, 2), ref=∇f, place=:inplace)
 ];
 ```
 
@@ -84,9 +84,9 @@ Note that we only compare (possibly) in-place operators, because they are always
 
 ```@example tuto
 function formatter(v, i, j)
-    if j in (14, 15)  # time, bytes
+    if j in (15, 16)  # time, bytes
         return Printf.@sprintf("%.1e", v)
-    elseif j == 16  # allocs
+    elseif j == 17  # allocs
         return Printf.@sprintf("%.1f", v)
     else
         return v

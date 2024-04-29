@@ -32,17 +32,17 @@ end
 function sparse_vec_to_vec_scenarios(x::AbstractVector)
     n = length(x)
     scens = AbstractScenario[]
-    for op in (:outofplace, :inplace)
+    for place in (:outofplace, :inplace)
         append!(
             scens,
             [
-                JacobianScenario(diffsquare; x=x, ref=diffsquare_jacobian, operator=op),
+                JacobianScenario(diffsquare; x=x, ref=diffsquare_jacobian, place=place),
                 JacobianScenario(
                     diffsquare!;
                     x=x,
                     y=similar(x, n - 1),
                     ref=diffsquare_jacobian,
-                    operator=op,
+                    place=place,
                 ),
             ],
         )
@@ -70,7 +70,7 @@ end
 function sparse_mat_to_vec_scenarios(x::AbstractMatrix)
     m, n = size(x)
     scens = AbstractScenario[]
-    for op in (:outofplace, :inplace)
+    for place in (:outofplace, :inplace)
         append!(
             scens,
             [
@@ -78,14 +78,14 @@ function sparse_mat_to_vec_scenarios(x::AbstractMatrix)
                     diffsquarecube_matvec;
                     x=x,
                     ref=diffsquarecube_matvec_jacobian,
-                    operator=op,
+                    place=place,
                 ),
                 JacobianScenario(
                     diffsquarecube_matvec!;
                     x=x,
                     y=similar(x, 2(m * n) - 2),
                     ref=diffsquarecube_matvec_jacobian,
-                    operator=op,
+                    place=place,
                 ),
             ],
         )
@@ -110,7 +110,7 @@ end
 function sparse_vec_to_mat_scenarios(x::AbstractVector)
     n = length(x)
     scens = AbstractScenario[]
-    for op in (:outofplace, :inplace)
+    for place in (:outofplace, :inplace)
         append!(
             scens,
             [
@@ -118,14 +118,14 @@ function sparse_vec_to_mat_scenarios(x::AbstractVector)
                     diffsquarecube_vecmat;
                     x=x,
                     ref=diffsquarecube_vecmat_jacobian,
-                    operator=op,
+                    place=place,
                 ),
                 JacobianScenario(
                     diffsquarecube_vecmat!;
                     x=x,
                     y=similar(x, n - 1, 2),
                     ref=diffsquarecube_vecmat_jacobian,
-                    operator=op,
+                    place=place,
                 ),
             ],
         )
@@ -152,7 +152,7 @@ end
 function sparse_mat_to_mat_scenarios(x::AbstractMatrix)
     m, n = size(x)
     scens = AbstractScenario[]
-    for op in (:outofplace, :inplace)
+    for place in (:outofplace, :inplace)
         append!(
             scens,
             [
@@ -160,14 +160,14 @@ function sparse_mat_to_mat_scenarios(x::AbstractMatrix)
                     diffsquarecube_matmat;
                     x=x,
                     ref=diffsquarecube_matmat_jacobian,
-                    operator=op,
+                    place=place,
                 ),
                 JacobianScenario(
                     diffsquarecube_matmat!;
                     x=x,
                     y=similar(x, m * n - 1, 2),
                     ref=diffsquarecube_matmat_jacobian,
-                    operator=op,
+                    place=place,
                 ),
             ],
         )
@@ -187,9 +187,9 @@ end
 
 function sparse_vec_to_num_scenarios(x::AbstractVector)
     scens = AbstractScenario[]
-    for op in (:outofplace, :inplace)
+    for place in (:outofplace, :inplace)
         append!(
-            scens, [HessianScenario(sumdiffcube; x=x, ref=sumdiffcube_hessian, operator=op)]
+            scens, [HessianScenario(sumdiffcube; x=x, ref=sumdiffcube_hessian, place=place)]
         )
     end
     return scens
@@ -207,12 +207,12 @@ end
 
 function sparse_mat_to_num_scenarios(x::AbstractMatrix)
     scens = AbstractScenario[]
-    for op in (:outofplace, :inplace)
+    for place in (:outofplace, :inplace)
         append!(
             scens,
             [
                 HessianScenario(
-                    sumdiffcube_mat; x=x, ref=sumdiffcube_mat_hessian, operator=op
+                    sumdiffcube_mat; x=x, ref=sumdiffcube_mat_hessian, place=place
                 ),
             ],
         )

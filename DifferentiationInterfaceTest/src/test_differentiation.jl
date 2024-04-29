@@ -19,10 +19,10 @@ Testing:
 
 Filtering:
 
-- `input_type=Any`: restrict scenario inputs to subtypes of this
-- `output_type=Any`: restrict scenario outputs to subtypes of this
-- `first_order=true`: include first order operators
-- `second_order=true`: include second order operators
+- `input_type=Any`, `output_type=Any`: restrict scenario inputs / outputs to subtypes of this
+- `first_order=true`, `second_order=true`: include first order / second order operators
+- `onearg=true`, `twoarg=true`: include one-argument / two-argument functions
+- `inplace=true`, `outofplace=true`: include in-place / out-of-place operators
 
 Options:
 
@@ -46,6 +46,10 @@ function test_differentiation(
     output_type::Type=Any,
     first_order=true,
     second_order=true,
+    onearg=true,
+    twoarg=true,
+    inplace=true,
+    outofplace=true,
     excluded=[],
     # options
     logging=false,
@@ -54,7 +58,16 @@ function test_differentiation(
     rtol=1e-3,
 )
     scenarios = filter_scenarios(
-        scenarios; first_order, second_order, input_type, output_type, excluded
+        scenarios;
+        first_order,
+        second_order,
+        input_type,
+        output_type,
+        onearg,
+        twoarg,
+        inplace,
+        outofplace,
+        excluded,
     )
 
     title_additions =
@@ -81,7 +94,7 @@ function test_differentiation(
                             (:scenario_type, "$st - $j/$(length(grouped_scenarios))"),
                             (:scenario, "$k/$(length(st_group))"),
                             (:arguments, nb_args(scen)),
-                            (:operator, operator_place(scen)),
+                            (:place, operator_place(scen)),
                             (:function, scen.f),
                             (:input_type, typeof(scen.x)),
                             (:input_size, size(scen.x)),
@@ -132,12 +145,25 @@ function benchmark_differentiation(
     output_type::Type=Any,
     first_order=true,
     second_order=true,
+    onearg=true,
+    twoarg=true,
+    inplace=true,
+    outofplace=true,
     excluded=[],
     # options
     logging=false,
 )
     scenarios = filter_scenarios(
-        scenarios; first_order, second_order, input_type, output_type, excluded
+        scenarios;
+        first_order,
+        second_order,
+        input_type,
+        output_type,
+        onearg,
+        twoarg,
+        inplace,
+        outofplace,
+        excluded,
     )
 
     benchmark_data = BenchmarkDataRow[]
@@ -154,7 +180,7 @@ function benchmark_differentiation(
                         (:scenario_type, "$st - $j/$(length(grouped_scenarios))"),
                         (:scenario, "$k/$(length(st_group))"),
                         (:arguments, nb_args(scen)),
-                        (:operator, operator_place(scen)),
+                        (:place, operator_place(scen)),
                         (:function, scen.f),
                         (:input_type, typeof(scen.x)),
                         (:input_size, size(scen.x)),
@@ -162,7 +188,7 @@ function benchmark_differentiation(
                         (:output_size, size(scen.y)),
                     ],
                 )
-                run_benchmark!(benchmark_data, backend, scen)
+                run_benchmark!(benchmark_data, backend, scen; logging)
             end
         end
     end

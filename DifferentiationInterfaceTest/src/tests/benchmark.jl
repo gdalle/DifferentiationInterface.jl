@@ -70,8 +70,9 @@ $(TYPEDFIELDS)
     mode::AbstractMode
     scenario::Symbol
     operator::Symbol
-    func::Symbol
     arguments::Int
+    place::Symbol
+    func::Symbol
     input_type::Type
     output_type::Type
     input_size::Tuple
@@ -100,8 +101,9 @@ function record!(
         mode=mode(backend),
         scenario=typeof(scenario).name.name,
         operator=Symbol(operator),
-        func=Symbol(scenario.f),
         arguments=nb_args(scenario),
+        place=operator_place(scenario),
+        func=Symbol(scenario.f),
         input_type=typeof(scenario.x),
         output_type=typeof(scenario.y),
         input_size=size(scenario.x),
@@ -124,14 +126,15 @@ function run_benchmark!(
     data::Vector{BenchmarkDataRow},
     ba::AbstractADType,
     scen::PushforwardScenario{1,:outofplace};
+    logging::Bool,
 )
     (; f, x, y, dx) = deepcopy(scen)
     (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
         extras = prepare_pushforward(f, ba, x, dx)
-        bench0 = @be prepare_pushforward(f, ba, x, dx) evals = 1 samples = 1
-        bench1 = @be value_and_pushforward(f, ba, x, dx, extras)
-        bench2 = @be pushforward(f, ba, x, dx, extras)
+        bench0 = @be prepare_pushforward(f, ba, x, dx) samples = 1 evals = 1
+        bench1 = @be deepcopy(extras) value_and_pushforward(f, ba, x, dx, _) evals = 1
+        bench2 = @be deepcopy(extras) pushforward(f, ba, x, dx, _) evals = 1
         # count
         cc = CallCounter(f)
         extras = prepare_pushforward(cc, ba, x, dx)
@@ -142,6 +145,7 @@ function run_benchmark!(
         calls2 = reset_count!(cc)
         (; bench0, bench1, bench2, calls0, calls1, calls2)
     catch e
+        logging && @warn "Error during benchmarking" ba scen e
         bench0, bench1, bench2 = failed_benchs(3)
         calls0, calls1, calls2 = -1, -1, -1
         (; bench0, bench1, bench2, calls0, calls1, calls2)
@@ -157,14 +161,19 @@ function run_benchmark!(
     data::Vector{BenchmarkDataRow},
     ba::AbstractADType,
     scen::PushforwardScenario{1,:inplace};
+    logging::Bool,
 )
     (; f, x, y, dx) = deepcopy(scen)
     (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
         extras = prepare_pushforward(f, ba, x, dx)
-        bench0 = @be prepare_pushforward(f, ba, x, dx) evals = 1 samples = 1
-        bench1 = @be mysimilar(y) value_and_pushforward!(f, _, ba, x, dx, extras)
-        bench2 = @be mysimilar(y) pushforward!(f, _, ba, x, dx, extras)
+        bench0 = @be prepare_pushforward(f, ba, x, dx) samples = 1 evals = 1
+        bench1 = @be (dy=mysimilar(y), ext=deepcopy(extras)) value_and_pushforward!(
+            f, _.dy, ba, x, dx, _.ext
+        ) evals = 1
+        bench2 = @be (dy=mysimilar(y), ext=deepcopy(extras)) pushforward!(
+            f, _.dy, ba, x, dx, _.ext
+        ) evals = 1
         # count
         cc = CallCounter(f)
         extras = prepare_pushforward(cc, ba, x, dx)
@@ -175,6 +184,7 @@ function run_benchmark!(
         calls2 = reset_count!(cc)
         (; bench0, bench1, bench2, calls0, calls1, calls2)
     catch e
+        logging && @warn "Error during benchmarking" ba scen e
         bench0, bench1, bench2 = failed_benchs(3)
         calls0, calls1, calls2 = -1, -1, -1
         (; bench0, bench1, bench2, calls0, calls1, calls2)
@@ -190,16 +200,21 @@ function run_benchmark!(
     data::Vector{BenchmarkDataRow},
     ba::AbstractADType,
     scen::PushforwardScenario{2,:outofplace};
+    logging::Bool,
 )
     (; f, x, y, dx) = deepcopy(scen)
     f! = f
     (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
         extras = prepare_pushforward(f!, mysimilar(y), ba, x, dx)
-        bench0 = @be mysimilar(y) prepare_pushforward(f!, _, ba, x, dx) evals = 1 samples =
+        bench0 = @be mysimilar(y) prepare_pushforward(f!, _, ba, x, dx) samples = 1 evals =
             1
-        bench1 = @be mysimilar(y) value_and_pushforward(f!, _, ba, x, dx, extras)
-        bench2 = @be mysimilar(y) pushforward(f!, _, ba, x, dx, extras)
+        bench1 = @be (y=mysimilar(y), ext=deepcopy(extras)) value_and_pushforward(
+            f!, _.y, ba, x, dx, _.ext
+        ) evals = 1
+        bench2 = @be (y=mysimilar(y), ext=deepcopy(extras)) pushforward(
+            f!, _.y, ba, x, dx, _.ext
+        ) evals = 1
         # count
         cc! = CallCounter(f!)
         extras = prepare_pushforward(cc!, mysimilar(y), ba, x, dx)
@@ -210,6 +225,7 @@ function run_benchmark!(
         calls2 = reset_count!(cc!)
         (; bench0, bench1, bench2, calls0, calls1, calls2)
     catch e
+        logging && @warn "Error during benchmarking" ba scen e
         bench0, bench1, bench2 = failed_benchs(3)
         calls0, calls1, calls2 = -1, -1, -1
         (; bench0, bench1, bench2, calls0, calls1, calls2)
@@ -225,20 +241,21 @@ function run_benchmark!(
     data::Vector{BenchmarkDataRow},
     ba::AbstractADType,
     scen::PushforwardScenario{2,:inplace};
+    logging::Bool,
 )
     (; f, x, y, dx) = deepcopy(scen)
     f! = f
     (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
-        extras = prepare_pushforward(f!, mysimilar(y), ba, x, dx)
+        extras = prepare_pushforward(f!, y, ba, x, dx)
         bench0 = @be mysimilar(y) prepare_pushforward(f!, _, ba, x, dx) evals = 1 samples =
             1
-        bench1 = @be (mysimilar(y), mysimilar(y)) value_and_pushforward!(
-            f!, _[1], _[2], ba, x, dx, extras
-        )
-        bench2 = @be (mysimilar(y), mysimilar(y)) pushforward!(
-            f!, _[1], _[2], ba, x, dx, extras
-        )
+        bench1 = @be (y=mysimilar(y), dy=mysimilar(y), ext=deepcopy(extras)) value_and_pushforward!(
+            f!, _.y, _.dy, ba, x, dx, _.ext
+        ) evals = 1
+        bench2 = @be (y=mysimilar(y), dy=mysimilar(y), ext=deepcopy(extras)) pushforward!(
+            f!, _.y, _.dy, ba, x, dx, _.ext
+        ) evals = 1
         # count
         cc! = CallCounter(f!)
         extras = prepare_pushforward(cc!, mysimilar(y), ba, x, dx)
@@ -249,6 +266,7 @@ function run_benchmark!(
         calls2 = reset_count!(cc!)
         (; bench0, bench1, bench2, calls0, calls1, calls2)
     catch e
+        logging && @warn "Error during benchmarking" ba scen e
         bench0, bench1, bench2 = failed_benchs(3)
         calls0, calls1, calls2 = -1, -1, -1
         (; bench0, bench1, bench2, calls0, calls1, calls2)
@@ -266,16 +284,17 @@ function run_benchmark!(
     data::Vector{BenchmarkDataRow},
     ba::AbstractADType,
     scen::PullbackScenario{1,:outofplace};
+    logging::Bool,
 )
     (; f, x, y, dy) = deepcopy(scen)
     (; bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4) = try
         # benchmark
         extras = prepare_pullback(f, ba, x, dy)
-        bench0 = @be prepare_pullback(f, ba, x, dy) evals = 1 samples = 1
-        bench1 = @be value_and_pullback(f, ba, x, dy, extras)
-        bench2 = @be pullback(f, ba, x, dy, extras)
-        bench3 = @be value_and_pullback_split(f, ba, x, extras)
-        bench4 = @be last(value_and_pullback_split(f, ba, x, extras)) _(dy)
+        bench0 = @be prepare_pullback(f, ba, x, dy) samples = 1 evals = 1
+        bench1 = @be deepcopy(extras) value_and_pullback(f, ba, x, dy, _)
+        bench2 = @be deepcopy(extras) pullback(f, ba, x, dy, _)
+        bench3 = @be deepcopy(extras) value_and_pullback_split(f, ba, x, _)
+        bench4 = @be last(value_and_pullback_split(f, ba, x, deepcopy(extras))) _(dy)
         # count
         cc = CallCounter(f)
         extras = prepare_pullback(cc, ba, x, dy)
@@ -290,6 +309,7 @@ function run_benchmark!(
         calls4 = reset_count!(cc)
         (; bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4)
     catch e
+        logging && @warn "Error during benchmarking" ba scen e
         bench0, bench1, bench2, bench3, bench4 = failed_benchs(5)
         calls0, calls1, calls2, calls3, calls4 = -1, -1, -1, -1, -1
         (; bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4)
@@ -304,19 +324,27 @@ function run_benchmark!(
 end
 
 function run_benchmark!(
-    data::Vector{BenchmarkDataRow}, ba::AbstractADType, scen::PullbackScenario{1,:inplace};
+    data::Vector{BenchmarkDataRow},
+    ba::AbstractADType,
+    scen::PullbackScenario{1,:inplace};
+    logging::Bool,
 )
     (; f, x, y, dy) = deepcopy(scen)
     (; bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4) = try
         # benchmark
         extras = prepare_pullback(f, ba, x, dy)
-        bench0 = @be prepare_pullback(f, ba, x, dy) evals = 1 samples = 1
-        bench1 = @be mysimilar(x) value_and_pullback!(f, _, ba, x, dy, extras)
-        bench2 = @be mysimilar(x) pullback!(f, _, ba, x, dy, extras)
-        bench3 = @be value_and_pullback!_split(f, ba, x, extras)
-        bench4 = @be (mysimilar(x), last(value_and_pullback!_split(f, ba, x, extras))) _[2](
-            _[1], dy
-        )
+        bench0 = @be prepare_pullback(f, ba, x, dy) samples = 1 evals = 1
+        bench1 = @be (dx=mysimilar(x), ext=deepcopy(extras)) value_and_pullback!(
+            f, _.dx, ba, x, dy, _.ext
+        ) evals = 1
+        bench2 = @be (dx=mysimilar(x), ext=deepcopy(extras)) pullback!(
+            f, _.dx, ba, x, dy, _.ext
+        ) evals = 1
+        bench3 = @be deepcopy(extras) value_and_pullback!_split(f, ba, x, _)
+        bench4 = @be (
+            dx=mysimilar(x),
+            (pullbackfunc!)=last(value_and_pullback!_split(f, ba, x, deepcopy(extras))),
+        ) _.pullbackfunc!(_.dx, dy) evals = 1
         # count
         cc = CallCounter(f)
         extras = prepare_pullback(cc, ba, x, dy)
@@ -331,6 +359,7 @@ function run_benchmark!(
         calls4 = reset_count!(cc)
         (; bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4)
     catch e
+        logging && @warn "Error during benchmarking" ba scen e
         bench0, bench1, bench2, bench3, bench4 = failed_benchs(5)
         calls0, calls1, calls2, calls3, calls4 = -1, -1, -1, -1, -1
         (; bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4)
@@ -347,19 +376,29 @@ end
 function run_benchmark!(
     data::Vector{BenchmarkDataRow},
     ba::AbstractADType,
-    scen::PullbackScenario{2,:outofplace},
+    scen::PullbackScenario{2,:outofplace};
+    logging::Bool,
 )
     (; f, x, y, dy) = deepcopy(scen)
     f! = f
     (; bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4) = try
         # benchmark
         extras = prepare_pullback(f!, mysimilar(y), ba, x, dy)
-        bench0 = @be mysimilar(y) prepare_pullback(f!, _, ba, x, dy) evals = 1 samples =
+        bench0 = @be mysimilar(y) prepare_pullback(f!, _, ba, x, dy) samples = 1 evals =
             1
-        bench1 = @be mysimilar(y) value_and_pullback(f!, _, ba, x, dy, extras)
-        bench2 = @be mysimilar(y) pullback(f!, _, ba, x, dy, extras)
-        bench3 = @be value_and_pullback_split(f!, y, ba, x, extras)
-        bench4 = @be last(value_and_pullback_split(f!, y, ba, x, extras)) _(y, dy)
+        bench1 = @be (y=mysimilar(y), ext=deepcopy(extras)) value_and_pullback(
+            f!, _.y, ba, x, dy, _.ext
+        ) evals = 1
+        bench2 = @be (y=mysimilar(y), ext=deepcopy(extras)) pullback(
+            f!, _.y, ba, x, dy, _.ext
+        ) evals = 1
+        bench3 = @be deepcopy(extras) value_and_pullback_split(f!, y, ba, x, _)
+        bench4 = @be (
+            y=mysimilar(y),
+            pullbackfunc=last(
+                value_and_pullback_split(f!, mysimilar(y), ba, x, deepcopy(extras))
+            ),
+        ) _.pullbackfunc(_.y, dy) evals = 1
         # count
         cc! = CallCounter(f!)
         extras = prepare_pullback(cc!, mysimilar(y), ba, x, dy)
@@ -374,6 +413,7 @@ function run_benchmark!(
         calls4 = reset_count!(cc!)
         (; bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4)
     catch e
+        logging && @warn "Error during benchmarking" ba scen e
         bench0, bench1, bench2, bench3, bench4 = failed_benchs(5)
         calls0, calls1, calls2, calls3, calls4 = -1, -1, -1, -1, -1
         (; bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4)
@@ -388,23 +428,34 @@ function run_benchmark!(
 end
 
 function run_benchmark!(
-    data::Vector{BenchmarkDataRow}, ba::AbstractADType, scen::PullbackScenario{2,:inplace}
+    data::Vector{BenchmarkDataRow},
+    ba::AbstractADType,
+    scen::PullbackScenario{2,:inplace};
+    logging::Bool,
 )
     (; f, x, y, dy) = deepcopy(scen)
     f! = f
     (; bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4) = try
         # benchmark
         extras = prepare_pullback(f!, mysimilar(y), ba, x, dy)
-        bench0 = @be mysimilar(y) prepare_pullback(f!, _, ba, x, dy) evals = 1 samples =
+        bench0 = @be mysimilar(y) prepare_pullback(f!, _, ba, x, dy) samples = 1 evals =
             1
-        bench1 = @be (mysimilar(y), mysimilar(x)) value_and_pullback!(
-            f!, _[1], _[2], ba, x, dy, extras
+        bench1 = @be (y=mysimilar(y), dx=mysimilar(x), ext=deepcopy(extras)) value_and_pullback!(
+            f!, _.y, _.dx, ba, x, dy, _.ext
+        ) evals = 1
+        bench2 = @be (y=mysimilar(y), dx=mysimilar(x), ext=deepcopy(extras)) pullback!(
+            f!, _.y, _.dx, ba, x, dy, _.ext
+        ) evals = 1
+        bench3 = @be (y=mysimilar(y), ext=deepcopy(extras)) value_and_pullback!_split(
+            f!, _.y, ba, x, _.ext
         )
-        bench2 = @be (mysimilar(y), mysimilar(x)) pullback!(
-            f!, _[1], _[2], ba, x, dy, extras
-        )
-        bench3 = @be value_and_pullback!_split(f!, y, ba, x, extras)
-        bench4 = @be (mysimilar(x), last(value_and_pullback!_split(f!, y, ba, x, extras))) _[2](y, _[1], dy)
+        bench4 = @be (
+            y=mysimilar(y),
+            dx=mysimilar(x),
+            (pullbackfunc!)=last(
+                value_and_pullback!_split(f!, mysimilar(y), ba, x, deepcopy(extras))
+            ),
+        ) _.pullbackfunc!(_.y, _.dx, dy) evals = 1
         # count
         cc! = CallCounter(f!)
         extras = prepare_pullback(cc!, mysimilar(y), ba, x, dy)
@@ -419,6 +470,7 @@ function run_benchmark!(
         calls4 = reset_count!(cc!)
         (; bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4)
     catch e
+        logging && @warn "Error during benchmarking" ba scen e
         bench0, bench1, bench2, bench3, bench4 = failed_benchs(5)
         calls0, calls1, calls2, calls3, calls4 = -1, -1, -1, -1, -1
         (; bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4)
@@ -438,14 +490,15 @@ function run_benchmark!(
     data::Vector{BenchmarkDataRow},
     ba::AbstractADType,
     scen::DerivativeScenario{1,:outofplace};
+    logging::Bool,
 )
     (; f, x, y) = deepcopy(scen)
     (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
         extras = prepare_derivative(f, ba, x)
-        bench0 = @be prepare_derivative(f, ba, x) evals = 1 samples = 1
-        bench1 = @be value_and_derivative(f, ba, x, extras)
-        bench2 = @be derivative(f, ba, x, extras)
+        bench0 = @be prepare_derivative(f, ba, x) samples = 1 evals = 1
+        bench1 = @be deepcopy(extras) value_and_derivative(f, ba, x, _)
+        bench2 = @be deepcopy(extras) derivative(f, ba, x, _)
         # count
         cc = CallCounter(f)
         extras = prepare_derivative(cc, ba, x)
@@ -456,6 +509,7 @@ function run_benchmark!(
         calls2 = reset_count!(cc)
         (; bench0, bench1, bench2, calls0, calls1, calls2)
     catch e
+        logging && @warn "Error during benchmarking" ba scen e
         bench0, bench1, bench2 = failed_benchs(3)
         calls0, calls1, calls2 = -1, -1, -1
         (; bench0, bench1, bench2, calls0, calls1, calls2)
@@ -471,14 +525,19 @@ function run_benchmark!(
     data::Vector{BenchmarkDataRow},
     ba::AbstractADType,
     scen::DerivativeScenario{1,:inplace};
+    logging::Bool,
 )
     (; f, x, y) = deepcopy(scen)
     (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
         extras = prepare_derivative(f, ba, x)
-        bench0 = @be prepare_derivative(f, ba, x) evals = 1 samples = 1
-        bench1 = @be mysimilar(y) value_and_derivative!(f, _, ba, x, extras)
-        bench2 = @be mysimilar(y) derivative!(f, _, ba, x, extras)
+        bench0 = @be prepare_derivative(f, ba, x) samples = 1 evals = 1
+        bench1 = @be (der=mysimilar(y), ext=deepcopy(extras)) value_and_derivative!(
+            f, _.der, ba, x, _.ext
+        ) evals = 1
+        bench2 = @be (der=mysimilar(y), ext=deepcopy(extras)) derivative!(
+            f, _.der, ba, x, _.ext
+        ) evals = 1
         # count
         cc = CallCounter(f)
         extras = prepare_derivative(cc, ba, x)
@@ -489,6 +548,7 @@ function run_benchmark!(
         calls2 = reset_count!(cc)
         (; bench0, bench1, bench2, calls0, calls1, calls2)
     catch e
+        logging && @warn "Error during benchmarking" ba scen e
         bench0, bench1, bench2 = failed_benchs(3)
         calls0, calls1, calls2 = -1, -1, -1
         (; bench0, bench1, bench2, calls0, calls1, calls2)
@@ -504,15 +564,20 @@ function run_benchmark!(
     data::Vector{BenchmarkDataRow},
     ba::AbstractADType,
     scen::DerivativeScenario{2,:outofplace};
+    logging::Bool,
 )
     (; f, x, y) = deepcopy(scen)
     f! = f
     (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
         extras = prepare_derivative(f!, mysimilar(y), ba, x)
-        bench0 = @be mysimilar(y) prepare_derivative(f!, _, ba, x) evals = 1 samples = 1
-        bench1 = @be mysimilar(y) value_and_derivative(f!, _, ba, x, extras)
-        bench2 = @be mysimilar(y) derivative(f!, _, ba, x, extras)
+        bench0 = @be mysimilar(y) prepare_derivative(f!, _, ba, x) samples = 1 evals = 1
+        bench1 = @be (y=mysimilar(y), ext=deepcopy(extras)) value_and_derivative(
+            f!, _.y, ba, x, _.ext
+        ) evals = 1
+        bench2 = @be (y=mysimilar(y), ext=deepcopy(extras)) derivative(
+            f!, _.y, ba, x, _.ext
+        ) evals = 1
         # count
         cc! = CallCounter(f!)
         extras = prepare_derivative(cc!, mysimilar(y), ba, x)
@@ -523,6 +588,7 @@ function run_benchmark!(
         calls2 = reset_count!(cc!)
         (; bench0, bench1, bench2, calls0, calls1, calls2)
     catch e
+        logging && @warn "Error during benchmarking" ba scen e
         bench0, bench1, bench2 = failed_benchs(3)
         calls0, calls1, calls2 = -1, -1, -1
         (; bench0, bench1, bench2, calls0, calls1, calls2)
@@ -538,17 +604,20 @@ function run_benchmark!(
     data::Vector{BenchmarkDataRow},
     ba::AbstractADType,
     scen::DerivativeScenario{2,:inplace};
+    logging::Bool,
 )
     (; f, x, y) = deepcopy(scen)
     f! = f
     (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
         extras = prepare_derivative(f!, mysimilar(y), ba, x)
-        bench0 = @be mysimilar(y) prepare_derivative(f!, _, ba, x) evals = 1 samples = 1
-        bench1 = @be (mysimilar(y), mysimilar(y)) value_and_derivative!(
-            f!, _[1], _[2], ba, x, extras
-        )
-        bench2 = @be (mysimilar(y), mysimilar(y)) derivative!(f!, _[1], _[2], ba, x, extras)
+        bench0 = @be mysimilar(y) prepare_derivative(f!, _, ba, x) samples = 1 evals = 1
+        bench1 = @be (y=mysimilar(y), der=mysimilar(y), ext=deepcopy(extras)) value_and_derivative!(
+            f!, _.y, _.der, ba, x, _.ext
+        ) evals = 1
+        bench2 = @be (y=mysimilar(y), der=mysimilar(y), ext=deepcopy(extras)) derivative!(
+            f!, _.y, _.der, ba, x, _.ext
+        ) evals = 1
         # count
         cc! = CallCounter(f!)
         extras = prepare_derivative(cc!, mysimilar(y), ba, x)
@@ -559,6 +628,7 @@ function run_benchmark!(
         calls2 = reset_count!(cc!)
         (; bench0, bench1, bench2, calls0, calls1, calls2)
     catch e
+        logging && @warn "Error during benchmarking" ba scen e
         bench0, bench1, bench2 = failed_benchs(3)
         calls0, calls1, calls2 = -1, -1, -1
         (; bench0, bench1, bench2, calls0, calls1, calls2)
@@ -576,14 +646,15 @@ function run_benchmark!(
     data::Vector{BenchmarkDataRow},
     ba::AbstractADType,
     scen::GradientScenario{1,:outofplace};
+    logging::Bool,
 )
     (; f, x) = deepcopy(scen)
     (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
         extras = prepare_gradient(f, ba, x)
-        bench0 = @be prepare_gradient(f, ba, x) evals = 1 samples = 1
-        bench1 = @be value_and_gradient(f, ba, x, extras)
-        bench2 = @be gradient(f, ba, x, extras)
+        bench0 = @be prepare_gradient(f, ba, x) samples = 1 evals = 1
+        bench1 = @be deepcopy(extras) value_and_gradient(f, ba, x, _)
+        bench2 = @be deepcopy(extras) gradient(f, ba, x, _)
         # count
         cc = CallCounter(f)
         extras = prepare_gradient(cc, ba, x)
@@ -594,6 +665,7 @@ function run_benchmark!(
         calls2 = reset_count!(cc)
         (; bench0, bench1, bench2, calls0, calls1, calls2)
     catch e
+        logging && @warn "Error during benchmarking" ba scen e
         bench0, bench1, bench2 = failed_benchs(3)
         calls0, calls1, calls2 = -1, -1, -1
         (; bench0, bench1, bench2, calls0, calls1, calls2)
@@ -606,15 +678,22 @@ function run_benchmark!(
 end
 
 function run_benchmark!(
-    data::Vector{BenchmarkDataRow}, ba::AbstractADType, scen::GradientScenario{1,:inplace};
+    data::Vector{BenchmarkDataRow},
+    ba::AbstractADType,
+    scen::GradientScenario{1,:inplace};
+    logging::Bool,
 )
     (; f, x) = deepcopy(scen)
     (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
         extras = prepare_gradient(f, ba, x)
-        bench0 = @be prepare_gradient(f, ba, x) evals = 1 samples = 1
-        bench1 = @be mysimilar(x) value_and_gradient!(f, _, ba, x, extras)
-        bench2 = @be mysimilar(x) gradient!(f, _, ba, x, extras)
+        bench0 = @be prepare_gradient(f, ba, x) samples = 1 evals = 1
+        bench1 = @be (grad=mysimilar(x), ext=deepcopy(extras)) value_and_gradient!(
+            f, _.grad, ba, x, _.ext
+        ) evals = 1
+        bench2 = @be (grad=mysimilar(x), ext=deepcopy(extras)) gradient!(
+            f, _.grad, ba, x, _.ext
+        ) evals = 1
         # count
         cc = CallCounter(f)
         extras = prepare_gradient(cc, ba, x)
@@ -625,6 +704,7 @@ function run_benchmark!(
         calls2 = reset_count!(cc)
         (; bench0, bench1, bench2, calls0, calls1, calls2)
     catch e
+        logging && @warn "Error during benchmarking" ba scen e
         bench0, bench1, bench2 = failed_benchs(3)
         calls0, calls1, calls2 = -1, -1, -1
         (; bench0, bench1, bench2, calls0, calls1, calls2)
@@ -642,14 +722,15 @@ function run_benchmark!(
     data::Vector{BenchmarkDataRow},
     ba::AbstractADType,
     scen::JacobianScenario{1,:outofplace};
+    logging::Bool,
 )
     (; f, x, y) = deepcopy(scen)
     (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
         extras = prepare_jacobian(f, ba, x)
-        bench0 = @be prepare_jacobian(f, ba, x) evals = 1 samples = 1
-        bench1 = @be value_and_jacobian(f, ba, x, extras)
-        bench2 = @be jacobian(f, ba, x, extras)
+        bench0 = @be prepare_jacobian(f, ba, x) samples = 1 evals = 1
+        bench1 = @be deepcopy(extras) value_and_jacobian(f, ba, x, _)
+        bench2 = @be deepcopy(extras) jacobian(f, ba, x, _)
         # count
         cc = CallCounter(f)
         extras = prepare_jacobian(cc, ba, x)
@@ -660,6 +741,7 @@ function run_benchmark!(
         calls2 = reset_count!(cc)
         (; bench0, bench1, bench2, calls0, calls1, calls2)
     catch e
+        logging && @warn "Error during benchmarking" ba scen e
         bench0, bench1, bench2 = failed_benchs(3)
         calls0, calls1, calls2 = -1, -1, -1
         (; bench0, bench1, bench2, calls0, calls1, calls2)
@@ -672,16 +754,23 @@ function run_benchmark!(
 end
 
 function run_benchmark!(
-    data::Vector{BenchmarkDataRow}, ba::AbstractADType, scen::JacobianScenario{1,:inplace};
+    data::Vector{BenchmarkDataRow},
+    ba::AbstractADType,
+    scen::JacobianScenario{1,:inplace};
+    logging::Bool,
 )
     (; f, x, y) = deepcopy(scen)
     (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         jac_template = mysimilar(jacobian(f, ba, x))
         # benchmark
         extras = prepare_jacobian(f, ba, x)
-        bench0 = @be prepare_jacobian(f, ba, x) evals = 1 samples = 1
-        bench1 = @be mysimilar(jac_template) value_and_jacobian!(f, _, ba, x, extras)
-        bench2 = @be mysimilar(jac_template) jacobian!(f, _, ba, x, extras)
+        bench0 = @be prepare_jacobian(f, ba, x) samples = 1 evals = 1
+        bench1 = @be (jac=mysimilar(jac_template), ext=deepcopy(extras)) value_and_jacobian!(
+            f, _.jac, ba, x, _.ext
+        ) evals = 1
+        bench2 = @be (jac=mysimilar(jac_template), ext=deepcopy(extras)) jacobian!(
+            f, _.jac, ba, x, _.ext
+        ) evals = 1
         # count
         cc = CallCounter(f)
         extras = prepare_jacobian(cc, ba, x)
@@ -692,6 +781,7 @@ function run_benchmark!(
         calls2 = reset_count!(cc)
         (; bench0, bench1, bench2, calls0, calls1, calls2)
     catch e
+        logging && @warn "Error during benchmarking" ba scen e
         bench0, bench1, bench2 = failed_benchs(3)
         calls0, calls1, calls2 = -1, -1, -1
         (; bench0, bench1, bench2, calls0, calls1, calls2)
@@ -706,16 +796,19 @@ end
 function run_benchmark!(
     data::Vector{BenchmarkDataRow},
     ba::AbstractADType,
-    scen::JacobianScenario{2,:outofplace},
+    scen::JacobianScenario{2,:outofplace};
+    logging::Bool,
 )
     (; f, x, y) = deepcopy(scen)
     f! = f
     (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
         extras = prepare_jacobian(f!, mysimilar(y), ba, x)
-        bench0 = @be mysimilar(y) prepare_jacobian(f!, _, ba, x) evals = 1 samples = 1
-        bench1 = @be mysimilar(y) value_and_jacobian(f!, _, ba, x, extras)
-        bench2 = @be mysimilar(y) jacobian(f!, _, ba, x, extras)
+        bench0 = @be mysimilar(y) prepare_jacobian(f!, _, ba, x) samples = 1 evals = 1
+        bench1 = @be (y=mysimilar(y), ext=deepcopy(extras)) value_and_jacobian(
+            f!, _.y, ba, x, _.ext
+        ) evals = 1
+        bench2 = @be (y=mysimilar(y), ext=deepcopy(extras)) jacobian(f!, _.y, ba, x, _.ext) evals = 1
         # count
         cc! = CallCounter(f!)
         extras = prepare_jacobian(cc!, mysimilar(y), ba, x)
@@ -726,6 +819,7 @@ function run_benchmark!(
         calls2 = reset_count!(cc!)
         (; bench0, bench1, bench2, calls0, calls1, calls2)
     catch e
+        logging && @warn "Error during benchmarking" ba scen e
         bench0, bench1, bench2 = failed_benchs(3)
         calls0, calls1, calls2 = -1, -1, -1
         (; bench0, bench1, bench2, calls0, calls1, calls2)
@@ -738,7 +832,10 @@ function run_benchmark!(
 end
 
 function run_benchmark!(
-    data::Vector{BenchmarkDataRow}, ba::AbstractADType, scen::JacobianScenario{2,:inplace}
+    data::Vector{BenchmarkDataRow},
+    ba::AbstractADType,
+    scen::JacobianScenario{2,:inplace};
+    logging::Bool,
 )
     (; f, x, y) = deepcopy(scen)
     f! = f
@@ -746,13 +843,13 @@ function run_benchmark!(
         jac_template = mysimilar(jacobian(f!, mysimilar(y), ba, x))
         # benchmark
         extras = prepare_jacobian(f!, mysimilar(y), ba, x)
-        bench0 = @be mysimilar(y) prepare_jacobian(f!, _, ba, x) evals = 1 samples = 1
-        bench1 = @be (mysimilar(y), mysimilar(jac_template)) value_and_jacobian!(
-            f!, _[1], _[2], ba, x, extras
-        )
-        bench2 = @be (mysimilar(y), mysimilar(jac_template)) jacobian!(
-            f!, _[1], _[2], ba, x, extras
-        )
+        bench0 = @be mysimilar(y) prepare_jacobian(f!, _, ba, x) samples = 1 evals = 1
+        bench1 = @be (y=mysimilar(y), jac=mysimilar(jac_template), ext=deepcopy(extras)) value_and_jacobian!(
+            f!, _.y, _.jac, ba, x, _.ext
+        ) evals = 1
+        bench2 = @be (y=mysimilar(y), jac=mysimilar(jac_template), ext=deepcopy(extras)) jacobian!(
+            f!, _.y, _.jac, ba, x, _.ext
+        ) evals = 1
         # count
         cc! = CallCounter(f!)
         extras = prepare_jacobian(cc!, y, ba, x)
@@ -763,6 +860,7 @@ function run_benchmark!(
         calls2 = reset_count!(cc!)
         (; bench0, bench1, bench2, calls0, calls1, calls2)
     catch e
+        logging && @warn "Error during benchmarking" ba scen e
         bench0, bench1, bench2 = failed_benchs(3)
         calls0, calls1, calls2 = -1, -1, -1
         (; bench0, bench1, bench2, calls0, calls1, calls2)
@@ -780,13 +878,14 @@ function run_benchmark!(
     data::Vector{BenchmarkDataRow},
     ba::AbstractADType,
     scen::SecondDerivativeScenario{1,:outofplace};
+    logging::Bool,
 )
     (; f, x, y) = deepcopy(scen)
     (; bench0, bench1, calls0, calls1) = try
         # benchmark
         extras = prepare_second_derivative(f, ba, x)
-        bench0 = @be prepare_second_derivative(f, ba, x) evals = 1 samples = 1
-        bench1 = @be second_derivative(f, ba, x, extras)
+        bench0 = @be prepare_second_derivative(f, ba, x) samples = 1 evals = 1
+        bench1 = @be deepcopy(extras) second_derivative(f, ba, x, _)
         # count
         cc = CallCounter(f)
         extras = prepare_second_derivative(cc, ba, x)
@@ -795,6 +894,7 @@ function run_benchmark!(
         calls1 = reset_count!(cc)
         (; bench0, bench1, calls0, calls1)
     catch e
+        logging && @warn "Error during benchmarking" ba scen e
         bench0, bench1 = failed_benchs(2)
         calls0, calls1 = -1, -1
         (; bench0, bench1, calls0, calls1)
@@ -809,13 +909,16 @@ function run_benchmark!(
     data::Vector{BenchmarkDataRow},
     ba::AbstractADType,
     scen::SecondDerivativeScenario{1,:inplace};
+    logging::Bool,
 )
     (; f, x, y) = deepcopy(scen)
     (; bench0, bench1, calls0, calls1) = try
         # benchmark
         extras = prepare_second_derivative(f, ba, x)
-        bench0 = @be prepare_second_derivative(f, ba, x) evals = 1 samples = 1
-        bench1 = @be mysimilar(y) second_derivative!(f, _, ba, x, extras)
+        bench0 = @be prepare_second_derivative(f, ba, x) samples = 1 evals = 1
+        bench1 = @be (der=mysimilar(y), ext=deepcopy(extras)) second_derivative!(
+            f, _.der, ba, x, _.ext
+        ) evals = 1
         # count
         cc = CallCounter(f)
         extras = prepare_second_derivative(cc, ba, x)
@@ -824,6 +927,7 @@ function run_benchmark!(
         calls1 = reset_count!(cc)
         (; bench0, bench1, calls0, calls1)
     catch e
+        logging && @warn "Error during benchmarking" ba scen e
         bench0, bench1 = failed_benchs(2)
         calls0, calls1 = -1, -1
         (; bench0, bench1, calls0, calls1)
@@ -837,14 +941,17 @@ end
 ## Hessian-vector product
 
 function run_benchmark!(
-    data::Vector{BenchmarkDataRow}, ba::AbstractADType, scen::HVPScenario{1,:outofplace}
+    data::Vector{BenchmarkDataRow},
+    ba::AbstractADType,
+    scen::HVPScenario{1,:outofplace};
+    logging::Bool,
 )
     (; f, x, y, dx) = deepcopy(scen)
     (; bench0, bench1, calls0, calls1) = try
         # benchmark
         extras = prepare_hvp(f, ba, x, dx)
-        bench0 = @be prepare_hvp(f, ba, x, dx) evals = 1 samples = 1
-        bench1 = @be hvp(f, ba, x, dx, extras)
+        bench0 = @be prepare_hvp(f, ba, x, dx) samples = 1 evals = 1
+        bench1 = @be deepcopy(extras) hvp(f, ba, x, dx, _)
         # count
         cc = CallCounter(f)
         extras = prepare_hvp(cc, ba, x, dx)
@@ -853,6 +960,7 @@ function run_benchmark!(
         calls1 = reset_count!(cc)
         (; bench0, bench1, calls0, calls1)
     catch e
+        logging && @warn "Error during benchmarking" ba scen e
         bench0, bench1 = failed_benchs(2)
         calls0, calls1 = -1, -1
         (; bench0, bench1, calls0, calls1)
@@ -864,14 +972,17 @@ function run_benchmark!(
 end
 
 function run_benchmark!(
-    data::Vector{BenchmarkDataRow}, ba::AbstractADType, scen::HVPScenario{1,:inplace}
+    data::Vector{BenchmarkDataRow},
+    ba::AbstractADType,
+    scen::HVPScenario{1,:inplace};
+    logging::Bool,
 )
     (; f, x, y, dx) = deepcopy(scen)
     (; bench0, bench1, calls0, calls1) = try
         # benchmark
         extras = prepare_hvp(f, ba, x, dx)
-        bench0 = @be prepare_hvp(f, ba, x, dx) evals = 1 samples = 1
-        bench1 = @be mysimilar(x) hvp!(f, _, ba, x, dx, extras)
+        bench0 = @be prepare_hvp(f, ba, x, dx) samples = 1 evals = 1
+        bench1 = @be (p=mysimilar(x), ext=deepcopy(extras)) hvp!(f, _.p, ba, x, dx, _.ext) evals = 1
         # count
         cc = CallCounter(f)
         extras = prepare_hvp(cc, ba, x, dx)
@@ -880,6 +991,7 @@ function run_benchmark!(
         calls1 = reset_count!(cc)
         (; bench0, bench1, calls0, calls1)
     catch e
+        logging && @warn "Error during benchmarking" ba scen e
         bench0, bench1 = failed_benchs(2)
         calls0, calls1 = -1, -1
         (; bench0, bench1, calls0, calls1)
@@ -893,14 +1005,17 @@ end
 ## Hessian
 
 function run_benchmark!(
-    data::Vector{BenchmarkDataRow}, ba::AbstractADType, scen::HessianScenario{1,:outofplace}
+    data::Vector{BenchmarkDataRow},
+    ba::AbstractADType,
+    scen::HessianScenario{1,:outofplace};
+    logging::Bool,
 )
     (; f, x, y) = deepcopy(scen)
     (; bench0, bench1, calls0, calls1) = try
         # benchmark
         extras = prepare_hessian(f, ba, x)
-        bench0 = @be prepare_hessian(f, ba, x) evals = 1 samples = 1
-        bench1 = @be hessian(f, ba, x, extras)
+        bench0 = @be prepare_hessian(f, ba, x) samples = 1 evals = 1
+        bench1 = @be deepcopy(extras) hessian(f, ba, x, _)
         # count
         cc = CallCounter(f)
         extras = prepare_hessian(cc, ba, x)
@@ -909,6 +1024,7 @@ function run_benchmark!(
         calls1 = reset_count!(cc)
         (; bench0, bench1, calls0, calls1)
     catch e
+        logging && @warn "Error during benchmarking" ba scen e
         bench0, bench1 = failed_benchs(2)
         calls0, calls1 = -1, -1
         (; bench0, bench1, calls0, calls1)
@@ -920,15 +1036,20 @@ function run_benchmark!(
 end
 
 function run_benchmark!(
-    data::Vector{BenchmarkDataRow}, ba::AbstractADType, scen::HessianScenario{1,:inplace}
+    data::Vector{BenchmarkDataRow},
+    ba::AbstractADType,
+    scen::HessianScenario{1,:inplace};
+    logging::Bool,
 )
     (; f, x, y) = deepcopy(scen)
     (; bench0, bench1, calls0, calls1) = try
         hess_template = Matrix{typeof(y)}(undef, length(x), length(x))
         # benchmark
         extras = prepare_hessian(f, ba, x)
-        bench0 = @be prepare_hessian(f, ba, x) evals = 1 samples = 1
-        bench1 = @be mysimilar(hess_template) hessian!(f, _, ba, x, extras)
+        bench0 = @be prepare_hessian(f, ba, x) samples = 1 evals = 1
+        bench1 = @be (hess=mysimilar(hess_template), ext=deepcopy(extras)) hessian!(
+            f, _.hess, ba, x, _.ext
+        ) evals = 1
         # count
         cc = CallCounter(f)
         extras = prepare_hessian(cc, ba, x)
@@ -937,6 +1058,7 @@ function run_benchmark!(
         calls1 = reset_count!(cc)
         (; bench0, bench1, calls0, calls1)
     catch e
+        logging && @warn "Error during benchmarking" ba scen e
         bench0, bench1 = failed_benchs(2)
         calls0, calls1 = -1, -1
         (; bench0, bench1, calls0, calls1)
