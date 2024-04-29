@@ -53,34 +53,34 @@ struct PullbackJacobianExtras{E<:PullbackExtras} <: JacobianExtras
     pullback_extras::E
 end
 
-function prepare_jacobian(f, backend::AbstractADType, x)
+function prepare_jacobian(f::F, backend::AbstractADType, x) where {F}
     return prepare_jacobian_aux(f, backend, x, pushforward_performance(backend))
 end
 
-function prepare_jacobian(f!, y, backend::AbstractADType, x)
+function prepare_jacobian(f!::F, y, backend::AbstractADType, x) where {F}
     return prepare_jacobian_aux(f!, y, backend, x, pushforward_performance(backend))
 end
 
-function prepare_jacobian_aux(f, backend, x, ::PushforwardFast)
+function prepare_jacobian_aux(f::F, backend, x, ::PushforwardFast) where {F}
     dx = basis(backend, x, first(CartesianIndices(x)))
     pushforward_extras = prepare_pushforward(f, backend, x, dx)
     return PushforwardJacobianExtras(pushforward_extras)
 end
 
-function prepare_jacobian_aux(f!, y, backend, x, ::PushforwardFast)
+function prepare_jacobian_aux(f!::F, y, backend, x, ::PushforwardFast) where {F}
     dx = basis(backend, x, first(CartesianIndices(x)))
     pushforward_extras = prepare_pushforward(f!, y, backend, x, dx)
     return PushforwardJacobianExtras(pushforward_extras)
 end
 
-function prepare_jacobian_aux(f, backend, x, ::PushforwardSlow)
+function prepare_jacobian_aux(f::F, backend, x, ::PushforwardSlow) where {F}
     y = f(x)
     dy = basis(backend, y, first(CartesianIndices(y)))
     pullback_extras = prepare_pullback(f, backend, x, dy)
     return PullbackJacobianExtras(pullback_extras)
 end
 
-function prepare_jacobian_aux(f!, y, backend, x, ::PushforwardSlow)
+function prepare_jacobian_aux(f!::F, y, backend, x, ::PushforwardSlow) where {F}
     dy = basis(backend, y, first(CartesianIndices(y)))
     pullback_extras = prepare_pullback(f!, y, backend, x, dy)
     return PullbackJacobianExtras(pullback_extras)
@@ -89,14 +89,14 @@ end
 ## One argument
 
 function value_and_jacobian(
-    f, backend::AbstractADType, x, extras::JacobianExtras=prepare_jacobian(f, backend, x)
-)
+    f::F, backend::AbstractADType, x, extras::JacobianExtras=prepare_jacobian(f, backend, x)
+) where {F}
     return value_and_jacobian_onearg_aux(f, backend, x, extras)
 end
 
 function value_and_jacobian_onearg_aux(
-    f, backend, x::AbstractArray, extras::PushforwardJacobianExtras
-)
+    f::F, backend, x::AbstractArray, extras::PushforwardJacobianExtras
+) where {F}
     y = f(x)
     jac = stack(CartesianIndices(x); dims=2) do j
         dx_j = basis(backend, x, j)
@@ -107,8 +107,8 @@ function value_and_jacobian_onearg_aux(
 end
 
 function value_and_jacobian_onearg_aux(
-    f, backend, x::AbstractArray, extras::PullbackJacobianExtras
-)
+    f::F, backend, x::AbstractArray, extras::PullbackJacobianExtras
+) where {F}
     y, pullbackfunc = value_and_pullback_split(f, backend, x, extras.pullback_extras)
     jac = stack(CartesianIndices(y); dims=1) do i
         dy_i = basis(backend, y, i)
@@ -119,18 +119,18 @@ function value_and_jacobian_onearg_aux(
 end
 
 function value_and_jacobian!(
-    f,
+    f::F,
     jac,
     backend::AbstractADType,
     x,
     extras::JacobianExtras=prepare_jacobian(f, backend, x),
-)
+) where {F}
     return value_and_jacobian_onearg_aux!(f, jac, backend, x, extras)
 end
 
 function value_and_jacobian_onearg_aux!(
-    f, jac::AbstractMatrix, backend, x::AbstractArray, extras::PushforwardJacobianExtras
-)
+    f::F, jac::AbstractMatrix, backend, x::AbstractArray, extras::PushforwardJacobianExtras
+) where {F}
     y = f(x)
     for (k, j) in enumerate(CartesianIndices(x))
         dx_j = basis(backend, x, j)
@@ -141,8 +141,8 @@ function value_and_jacobian_onearg_aux!(
 end
 
 function value_and_jacobian_onearg_aux!(
-    f, jac::AbstractMatrix, backend, x::AbstractArray, extras::PullbackJacobianExtras
-)
+    f::F, jac::AbstractMatrix, backend, x::AbstractArray, extras::PullbackJacobianExtras
+) where {F}
     y, pullbackfunc! = value_and_pullback!_split(f, backend, x, extras.pullback_extras)
     for (k, i) in enumerate(CartesianIndices(y))
         dy_i = basis(backend, y, i)
@@ -153,36 +153,36 @@ function value_and_jacobian_onearg_aux!(
 end
 
 function jacobian(
-    f, backend::AbstractADType, x, extras::JacobianExtras=prepare_jacobian(f, backend, x)
-)
+    f::F, backend::AbstractADType, x, extras::JacobianExtras=prepare_jacobian(f, backend, x)
+) where {F}
     return value_and_jacobian(f, backend, x, extras)[2]
 end
 
 function jacobian!(
-    f,
+    f::F,
     jac,
     backend::AbstractADType,
     x,
     extras::JacobianExtras=prepare_jacobian(f, backend, x),
-)
+) where {F}
     return value_and_jacobian!(f, jac, backend, x, extras)[2]
 end
 
 ## Two arguments
 
 function value_and_jacobian(
-    f!,
+    f!::F,
     y,
     backend::AbstractADType,
     x,
     extras::JacobianExtras=prepare_jacobian(f!, y, backend, x),
-)
+) where {F}
     return value_and_jacobian_twoarg_aux(f!, y, backend, x, extras)
 end
 
 function value_and_jacobian_twoarg_aux(
-    f!, y, backend, x::AbstractArray, extras::PushforwardJacobianExtras
-)
+    f!::F, y, backend, x::AbstractArray, extras::PushforwardJacobianExtras
+) where {F}
     jac = stack(CartesianIndices(x); dims=2) do j
         dx_j = basis(backend, x, j)
         jac_col_j = pushforward(f!, y, backend, x, dx_j, extras.pushforward_extras)
@@ -193,8 +193,8 @@ function value_and_jacobian_twoarg_aux(
 end
 
 function value_and_jacobian_twoarg_aux(
-    f!, y, backend, x::AbstractArray, extras::PullbackJacobianExtras
-)
+    f!::F, y, backend, x::AbstractArray, extras::PullbackJacobianExtras
+) where {F}
     y, pullbackfunc = value_and_pullback_split(f!, y, backend, x, extras.pullback_extras)
     jac = stack(CartesianIndices(y); dims=1) do i
         dy_i = basis(backend, y, i)
@@ -206,19 +206,24 @@ function value_and_jacobian_twoarg_aux(
 end
 
 function value_and_jacobian!(
-    f!,
+    f!::F,
     y,
     jac,
     backend::AbstractADType,
     x,
     extras::JacobianExtras=prepare_jacobian(f!, y, backend, x),
-)
+) where {F}
     return value_and_jacobian_twoarg_aux!(f!, y, jac, backend, x, extras)
 end
 
 function value_and_jacobian_twoarg_aux!(
-    f!, y, jac::AbstractMatrix, backend, x::AbstractArray, extras::PushforwardJacobianExtras
-)
+    f!::F,
+    y,
+    jac::AbstractMatrix,
+    backend,
+    x::AbstractArray,
+    extras::PushforwardJacobianExtras,
+) where {F}
     for (k, j) in enumerate(CartesianIndices(x))
         dx_j = basis(backend, x, j)
         jac_col_j = reshape(view(jac, :, k), size(y))
@@ -229,8 +234,8 @@ function value_and_jacobian_twoarg_aux!(
 end
 
 function value_and_jacobian_twoarg_aux!(
-    f!, y, jac::AbstractMatrix, backend, x::AbstractArray, extras::PullbackJacobianExtras
-)
+    f!::F, y, jac::AbstractMatrix, backend, x::AbstractArray, extras::PullbackJacobianExtras
+) where {F}
     y, pullbackfunc! = value_and_pullback!_split(f!, y, backend, x, extras.pullback_extras)
     for (k, i) in enumerate(CartesianIndices(y))
         dy_i = basis(backend, y, i)
@@ -242,22 +247,22 @@ function value_and_jacobian_twoarg_aux!(
 end
 
 function jacobian(
-    f!,
+    f!::F,
     y,
     backend::AbstractADType,
     x,
     extras::JacobianExtras=prepare_jacobian(f!, y, backend, x),
-)
+) where {F}
     return value_and_jacobian(f!, y, backend, x, extras)[2]
 end
 
 function jacobian!(
-    f!,
+    f!::F,
     y,
     jac,
     backend::AbstractADType,
     x,
     extras::JacobianExtras=prepare_jacobian(f!, y, backend, x),
-)
+) where {F}
     return value_and_jacobian!(f!, y, jac, backend, x, extras)[2]
 end

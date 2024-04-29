@@ -9,7 +9,7 @@ end
 
 ## Hessian, one argument
 
-function prepare_hessian(f, backend::AutoSparse, x)
+function prepare_hessian(f::F, backend::AutoSparse, x) where {F}
     initial_sparsity = hessian_sparsity(f, x, sparsity_detector(backend))
     sparsity = col_major(initial_sparsity)
     colors = column_coloring(sparsity, coloring_algorithm(backend))
@@ -28,7 +28,7 @@ function prepare_hessian(f, backend::AutoSparse, x)
     return SparseHessianExtras(; compressed, seeds, products, hvp_extras)
 end
 
-function hessian!(f, hess, backend::AutoSparse, x, extras::SparseHessianExtras)
+function hessian!(f::F, hess, backend::AutoSparse, x, extras::SparseHessianExtras) where {F}
     (; compressed, seeds, products, hvp_extras) = extras
     for k in eachindex(seeds, products)
         hvp!(f, products[k], backend, x, seeds[k], hvp_extras)
@@ -38,7 +38,7 @@ function hessian!(f, hess, backend::AutoSparse, x, extras::SparseHessianExtras)
     return hess
 end
 
-function hessian(f, backend::AutoSparse, x, extras::SparseHessianExtras)
+function hessian(f::F, backend::AutoSparse, x, extras::SparseHessianExtras) where {F}
     hess = similar(extras.compressed.sparsity, eltype(x))
     return hessian!(f, hess, backend, x, extras)
 end

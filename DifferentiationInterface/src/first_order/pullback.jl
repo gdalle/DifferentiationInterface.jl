@@ -64,43 +64,45 @@ struct PushforwardPullbackExtras{E} <: PullbackExtras
     pushforward_extras::E
 end
 
-function prepare_pullback(f, backend::AbstractADType, x, dy)
+function prepare_pullback(f::F, backend::AbstractADType, x, dy) where {F}
     return prepare_pullback_aux(f, backend, x, dy, pullback_performance(backend))
 end
 
-function prepare_pullback(f!, y, backend::AbstractADType, x, dy)
+function prepare_pullback(f!::F, y, backend::AbstractADType, x, dy) where {F}
     return prepare_pullback_aux(f!, y, backend, x, dy, pullback_performance(backend))
 end
 
-function prepare_pullback_aux(f, backend, x, dy, ::PullbackSlow)
+function prepare_pullback_aux(f::F, backend, x, dy, ::PullbackSlow) where {F}
     dx = x isa Number ? one(x) : basis(backend, x, first(CartesianIndices(x)))
     pushforward_extras = prepare_pushforward(f, backend, x, dx)
     return PushforwardPullbackExtras(pushforward_extras)
 end
 
-function prepare_pullback_aux(f!, y, backend, x, dy, ::PullbackSlow)
+function prepare_pullback_aux(f!::F, y, backend, x, dy, ::PullbackSlow) where {F}
     dx = x isa Number ? one(x) : basis(backend, x, first(CartesianIndices(x)))
     pushforward_extras = prepare_pushforward(f!, y, backend, x, dx)
     return PushforwardPullbackExtras(pushforward_extras)
 end
 
 # Throw error if backend is missing
-prepare_pullback_aux(f, backend, x, dy, ::PullbackFast)     = throw(MissingBackendError(backend))
-prepare_pullback_aux(f!, y, backend, x, dy, ::PullbackFast) = throw(MissingBackendError(backend))
+prepare_pullback_aux(f::F, backend, x, dy, ::PullbackFast) where {F}     = throw(MissingBackendError(backend))
+prepare_pullback_aux(f!::F, y, backend, x, dy, ::PullbackFast) where {F} = throw(MissingBackendError(backend))
 
 ## One argument
 
 function value_and_pullback(
-    f,
+    f::F,
     backend::AbstractADType,
     x,
     dy,
     extras::PullbackExtras=prepare_pullback(f, backend, x, dy),
-)
+) where {F}
     return value_and_pullback_onearg_aux(f, backend, x, dy, extras)
 end
 
-function value_and_pullback_onearg_aux(f, backend, x, dy, extras::PushforwardPullbackExtras)
+function value_and_pullback_onearg_aux(
+    f::F, backend, x, dy, extras::PushforwardPullbackExtras
+) where {F}
     (; pushforward_extras) = extras
     y = f(x)
     dx = if x isa Number && y isa Number
@@ -120,54 +122,54 @@ function value_and_pullback_onearg_aux(f, backend, x, dy, extras::PushforwardPul
 end
 
 function value_and_pullback!(
-    f,
+    f::F,
     dx,
     backend::AbstractADType,
     x,
     dy,
     extras::PullbackExtras=prepare_pullback(f, backend, x, dy),
-)
+) where {F}
     y, new_dx = value_and_pullback(f, backend, x, dy, extras)
     return y, copyto!(dx, new_dx)
 end
 
 function pullback(
-    f,
+    f::F,
     backend::AbstractADType,
     x,
     dy,
     extras::PullbackExtras=prepare_pullback(f, backend, x, dy),
-)
+) where {F}
     return value_and_pullback(f, backend, x, dy, extras)[2]
 end
 
 function pullback!(
-    f,
+    f::F,
     dx,
     backend::AbstractADType,
     x,
     dy,
     extras::PullbackExtras=prepare_pullback(f, backend, x, dy),
-)
+) where {F}
     return value_and_pullback!(f, dx, backend, x, dy, extras)[2]
 end
 
 ## Two arguments
 
 function value_and_pullback(
-    f!,
+    f!::F,
     y,
     backend::AbstractADType,
     x,
     dy,
     extras::PullbackExtras=prepare_pullback(f!, y, backend, x, dy),
-)
+) where {F}
     return value_and_pullback_twoarg_aux(f!, y, backend, x, dy, extras)
 end
 
 function value_and_pullback_twoarg_aux(
-    f!, y, backend, x, dy, extras::PushforwardPullbackExtras
-)
+    f!::F, y, backend, x, dy, extras::PushforwardPullbackExtras
+) where {F}
     (; pushforward_extras) = extras
     dx = if x isa Number && y isa AbstractArray
         dot(dy, pushforward(f!, y, backend, x, one(x), pushforward_extras))
@@ -181,38 +183,38 @@ function value_and_pullback_twoarg_aux(
 end
 
 function value_and_pullback!(
-    f!,
+    f!::F,
     y,
     dx,
     backend::AbstractADType,
     x,
     dy,
     extras::PullbackExtras=prepare_pullback(f!, y, backend, x, dy),
-)
+) where {F}
     y, new_dx = value_and_pullback(f!, y, backend, x, dy, extras)
     return y, copyto!(dx, new_dx)
 end
 
 function pullback(
-    f!,
+    f!::F,
     y,
     backend::AbstractADType,
     x,
     dy,
     extras::PullbackExtras=prepare_pullback(f!, y, backend, x, dy),
-)
+) where {F}
     return value_and_pullback(f!, y, backend, x, dy, extras)[2]
 end
 
 function pullback!(
-    f!,
+    f!::F,
     y,
     dx,
     backend::AbstractADType,
     x,
     dy,
     extras::PullbackExtras=prepare_pullback(f!, y, backend, x, dy),
-)
+) where {F}
     return value_and_pullback!(f!, y, dx, backend, x, dy, extras)[2]
 end
 
@@ -243,20 +245,20 @@ function (pbf::OneArgPullbackFunc!)(dx, dy)
 end
 
 function value_and_pullback_split(
-    f,
+    f::F,
     backend::AbstractADType,
     x,
     extras::PullbackExtras=prepare_pullback(f, backend, x, f(x)),
-)
+) where {F}
     return f(x), OneArgPullbackFunc(f, backend, x, extras)
 end
 
 function value_and_pullback!_split(
-    f,
+    f::F,
     backend::AbstractADType,
     x,
     extras::PullbackExtras=prepare_pullback(f, backend, x, f(x)),
-)
+) where {F}
     return f(x), OneArgPullbackFunc!(f, backend, x, extras)
 end
 
@@ -287,23 +289,23 @@ function (pbf::TwoArgPullbackFunc!)(y, dx, dy)
 end
 
 function value_and_pullback_split(
-    f!,
+    f!::F,
     y,
     backend::AbstractADType,
     x,
     extras::PullbackExtras=prepare_pullback(f!, y, backend, x, similar(y)),
-)
+) where {F}
     f!(y, x)
     return y, TwoArgPullbackFunc(f!, backend, x, extras)
 end
 
 function value_and_pullback!_split(
-    f!,
+    f!::F,
     y,
     backend::AbstractADType,
     x,
     extras::PullbackExtras=prepare_pullback(f!, y, backend, x, similar(y)),
-)
+) where {F}
     f!(y, x)
     return y, TwoArgPullbackFunc!(f!, backend, x, extras)
 end

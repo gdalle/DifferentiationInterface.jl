@@ -21,7 +21,7 @@ end
 
 ## Jacobian, one argument
 
-function prepare_jacobian(f, backend::AutoSparse, x)
+function prepare_jacobian(f::F, backend::AutoSparse, x) where {F}
     y = f(x)
     initial_sparsity = jacobian_sparsity(f, x, sparsity_detector(backend))
     if Bool(pushforward_performance(backend))
@@ -58,7 +58,9 @@ function prepare_jacobian(f, backend::AutoSparse, x)
     return SparseJacobianExtras{1}(; compressed, seeds, products, jp_extras)
 end
 
-function jacobian!(f, jac, backend::AutoSparse, x, extras::SparseJacobianExtras{1,:col})
+function jacobian!(
+    f::F, jac, backend::AutoSparse, x, extras::SparseJacobianExtras{1,:col}
+) where {F}
     (; compressed, seeds, products, jp_extras) = extras
     for k in eachindex(seeds, products)
         pushforward!(f, products[k], backend, x, seeds[k], jp_extras)
@@ -68,7 +70,9 @@ function jacobian!(f, jac, backend::AutoSparse, x, extras::SparseJacobianExtras{
     return jac
 end
 
-function jacobian!(f, jac, backend::AutoSparse, x, extras::SparseJacobianExtras{1,:row})
+function jacobian!(
+    f::F, jac, backend::AutoSparse, x, extras::SparseJacobianExtras{1,:row}
+) where {F}
     (; compressed, seeds, products, jp_extras) = extras
     for k in eachindex(seeds, products)
         pullback!(f, products[k], backend, x, seeds[k], jp_extras)
@@ -78,24 +82,26 @@ function jacobian!(f, jac, backend::AutoSparse, x, extras::SparseJacobianExtras{
     return jac
 end
 
-function jacobian(f, backend::AutoSparse, x, extras::SparseJacobianExtras{1})
+function jacobian(f::F, backend::AutoSparse, x, extras::SparseJacobianExtras{1}) where {F}
     jac = major_respecting_similar(extras.compressed.sparsity, eltype(x))
     return jacobian!(f, jac, backend, x, extras)
 end
 
 function value_and_jacobian!(
-    f, jac, backend::AutoSparse, x, extras::SparseJacobianExtras{1}
-)
+    f::F, jac, backend::AutoSparse, x, extras::SparseJacobianExtras{1}
+) where {F}
     return f(x), jacobian!(f, jac, backend, x, extras)
 end
 
-function value_and_jacobian(f, backend::AutoSparse, x, extras::SparseJacobianExtras{1})
+function value_and_jacobian(
+    f::F, backend::AutoSparse, x, extras::SparseJacobianExtras{1}
+) where {F}
     return f(x), jacobian(f, backend, x, extras)
 end
 
 ## Jacobian, two arguments
 
-function prepare_jacobian(f!, y, backend::AutoSparse, x)
+function prepare_jacobian(f!::F, y, backend::AutoSparse, x) where {F}
     initial_sparsity = jacobian_sparsity(f!, y, x, sparsity_detector(backend))
     if Bool(pushforward_performance(backend))
         sparsity = col_major(initial_sparsity)
@@ -131,7 +137,9 @@ function prepare_jacobian(f!, y, backend::AutoSparse, x)
     return SparseJacobianExtras{2}(; compressed, seeds, products, jp_extras)
 end
 
-function jacobian!(f!, y, jac, backend::AutoSparse, x, extras::SparseJacobianExtras{2,:col})
+function jacobian!(
+    f!::F, y, jac, backend::AutoSparse, x, extras::SparseJacobianExtras{2,:col}
+) where {F}
     (; compressed, seeds, products, jp_extras) = extras
     for k in eachindex(seeds, products)
         pushforward!(f!, y, products[k], backend, x, seeds[k], jp_extras)
@@ -141,7 +149,9 @@ function jacobian!(f!, y, jac, backend::AutoSparse, x, extras::SparseJacobianExt
     return jac
 end
 
-function jacobian!(f!, y, jac, backend::AutoSparse, x, extras::SparseJacobianExtras{2,:row})
+function jacobian!(
+    f!::F, y, jac, backend::AutoSparse, x, extras::SparseJacobianExtras{2,:row}
+) where {F}
     (; compressed, seeds, products, jp_extras) = extras
     for k in eachindex(seeds, products)
         pullback!(f!, y, products[k], backend, x, seeds[k], jp_extras)
@@ -151,20 +161,24 @@ function jacobian!(f!, y, jac, backend::AutoSparse, x, extras::SparseJacobianExt
     return jac
 end
 
-function jacobian(f!, y, backend::AutoSparse, x, extras::SparseJacobianExtras{2})
+function jacobian(
+    f!::F, y, backend::AutoSparse, x, extras::SparseJacobianExtras{2}
+) where {F}
     jac = major_respecting_similar(extras.compressed.sparsity, eltype(x))
     return jacobian!(f!, y, jac, backend, x, extras)
 end
 
 function value_and_jacobian!(
-    f!, y, jac, backend::AutoSparse, x, extras::SparseJacobianExtras{2}
-)
+    f!::F, y, jac, backend::AutoSparse, x, extras::SparseJacobianExtras{2}
+) where {F}
     jacobian!(f!, y, jac, backend, x, extras)
     f!(y, x)
     return y, jac
 end
 
-function value_and_jacobian(f!, y, backend::AutoSparse, x, extras::SparseJacobianExtras{2})
+function value_and_jacobian(
+    f!::F, y, backend::AutoSparse, x, extras::SparseJacobianExtras{2}
+) where {F}
     jac = jacobian(f!, y, backend, x, extras)
     f!(y, x)
     return y, jac

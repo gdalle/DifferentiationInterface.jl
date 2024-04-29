@@ -60,11 +60,11 @@ end
 
 prepare_hvp(f, ::AbstractADType, x, v) = NoHVPExtras()
 
-function prepare_hvp(f, backend::SecondOrder, x, v)
+function prepare_hvp(f::F, backend::SecondOrder, x, v) where {F}
     return prepare_hvp_aux(f, backend, x, v, hvp_mode(backend))
 end
 
-function prepare_hvp_aux(f, backend::SecondOrder, x, v, ::ForwardOverForward)
+function prepare_hvp_aux(f::F, backend::SecondOrder, x, v, ::ForwardOverForward) where {F}
     # pushforward of many pushforwards in theory, but pushforward of gradient in practice
     inner_gradient_closure(z) = gradient(f, inner(backend), z)
     outer_pushforward_extras = prepare_pushforward(
@@ -73,7 +73,7 @@ function prepare_hvp_aux(f, backend::SecondOrder, x, v, ::ForwardOverForward)
     return ForwardOverForwardHVPExtras(inner_gradient_closure, outer_pushforward_extras)
 end
 
-function prepare_hvp_aux(f, backend::SecondOrder, x, v, ::ForwardOverReverse)
+function prepare_hvp_aux(f::F, backend::SecondOrder, x, v, ::ForwardOverReverse) where {F}
     # pushforward of gradient
     inner_gradient_closure(z) = gradient(f, inner(backend), z)
     outer_pushforward_extras = prepare_pushforward(
@@ -82,7 +82,7 @@ function prepare_hvp_aux(f, backend::SecondOrder, x, v, ::ForwardOverReverse)
     return ForwardOverReverseHVPExtras(inner_gradient_closure, outer_pushforward_extras)
 end
 
-function prepare_hvp_aux(f, backend::SecondOrder, x, v, ::ReverseOverForward)
+function prepare_hvp_aux(f::F, backend::SecondOrder, x, v, ::ReverseOverForward) where {F}
     # gradient of pushforward
     # uses v in the closure
     inner_pushforward_closure_generator(v) = z -> pushforward(f, inner(backend), z, v)
@@ -94,7 +94,7 @@ function prepare_hvp_aux(f, backend::SecondOrder, x, v, ::ReverseOverForward)
     )
 end
 
-function prepare_hvp_aux(f, backend::SecondOrder, x, v, ::ReverseOverReverse)
+function prepare_hvp_aux(f::F, backend::SecondOrder, x, v, ::ReverseOverReverse) where {F}
     # pullback of the gradient
     inner_gradient_closure(z) = gradient(f, inner(backend), z)
     outer_pullback_extras = prepare_pullback(inner_gradient_closure, outer(backend), x, v)
@@ -104,77 +104,79 @@ end
 ## One argument
 
 function hvp(
-    f, backend::AbstractADType, x, v, extras::HVPExtras=prepare_hvp(f, backend, x, v)
-)
+    f::F, backend::AbstractADType, x, v, extras::HVPExtras=prepare_hvp(f, backend, x, v)
+) where {F}
     new_backend = SecondOrder(backend)
     new_extras = prepare_hvp(f, new_backend, x, v)
     return hvp(f, new_backend, x, v, new_extras)
 end
 
-function hvp(f, backend::SecondOrder, x, v, extras::HVPExtras=prepare_hvp(f, backend, x, v))
+function hvp(
+    f::F, backend::SecondOrder, x, v, extras::HVPExtras=prepare_hvp(f, backend, x, v)
+) where {F}
     return hvp_aux(f, backend, x, v, extras)
 end
 
-function hvp_aux(f, backend, x, v, extras::ForwardOverForwardHVPExtras)
+function hvp_aux(f::F, backend, x, v, extras::ForwardOverForwardHVPExtras) where {F}
     (; inner_gradient_closure, outer_pushforward_extras) = extras
     return pushforward(
         inner_gradient_closure, outer(backend), x, v, outer_pushforward_extras
     )
 end
 
-function hvp_aux(f, backend, x, v, extras::ForwardOverReverseHVPExtras)
+function hvp_aux(f::F, backend, x, v, extras::ForwardOverReverseHVPExtras) where {F}
     (; inner_gradient_closure, outer_pushforward_extras) = extras
     return pushforward(
         inner_gradient_closure, outer(backend), x, v, outer_pushforward_extras
     )
 end
 
-function hvp_aux(f, backend, x, v, extras::ReverseOverForwardHVPExtras)
+function hvp_aux(f::F, backend, x, v, extras::ReverseOverForwardHVPExtras) where {F}
     (; inner_pushforward_closure_generator, outer_gradient_extras) = extras
     inner_pushforward_closure = inner_pushforward_closure_generator(v)
     return gradient(inner_pushforward_closure, outer(backend), x, outer_gradient_extras)
 end
 
-function hvp_aux(f, backend, x, v, extras::ReverseOverReverseHVPExtras)
+function hvp_aux(f::F, backend, x, v, extras::ReverseOverReverseHVPExtras) where {F}
     (; inner_gradient_closure, outer_pullback_extras) = extras
     return pullback(inner_gradient_closure, outer(backend), x, v, outer_pullback_extras)
 end
 
 function hvp!(
-    f, p, backend::AbstractADType, x, v, extras::HVPExtras=prepare_hvp(f, backend, x, v)
-)
+    f::F, p, backend::AbstractADType, x, v, extras::HVPExtras=prepare_hvp(f, backend, x, v)
+) where {F}
     new_backend = SecondOrder(backend)
     new_extras = prepare_hvp(f, new_backend, x, v)
     return hvp!(f, p, new_backend, x, v, new_extras)
 end
 
 function hvp!(
-    f, p, backend::SecondOrder, x, v, extras::HVPExtras=prepare_hvp(f, backend, x, v)
-)
+    f::F, p, backend::SecondOrder, x, v, extras::HVPExtras=prepare_hvp(f, backend, x, v)
+) where {F}
     return hvp_aux!(f, p, backend, x, v, extras)
 end
 
-function hvp_aux!(f, p, backend, x, v, extras::ForwardOverForwardHVPExtras)
+function hvp_aux!(f::F, p, backend, x, v, extras::ForwardOverForwardHVPExtras) where {F}
     (; inner_gradient_closure, outer_pushforward_extras) = extras
     return pushforward!(
         inner_gradient_closure, p, outer(backend), x, v, outer_pushforward_extras
     )
 end
 
-function hvp_aux!(f, p, backend, x, v, extras::ForwardOverReverseHVPExtras)
+function hvp_aux!(f::F, p, backend, x, v, extras::ForwardOverReverseHVPExtras) where {F}
     (; inner_gradient_closure, outer_pushforward_extras) = extras
     return pushforward!(
         inner_gradient_closure, p, outer(backend), x, v, outer_pushforward_extras
     )
 end
 
-function hvp_aux!(f, p, backend, x, v, extras::ReverseOverForwardHVPExtras)
+function hvp_aux!(f::F, p, backend, x, v, extras::ReverseOverForwardHVPExtras) where {F}
     (; inner_pushforward_closure_generator, outer_gradient_extras) = extras
     inner_pushforward_closure = inner_pushforward_closure_generator(v)
     return gradient!(inner_pushforward_closure, p, outer(backend), x, outer_gradient_extras)
 end
 
-function hvp_aux!(f, p, backend, x, v, extras::ReverseOverReverseHVPExtras)
+function hvp_aux!(f::F, p, backend, x, v, extras::ReverseOverReverseHVPExtras) where {F}
     (; inner_gradient_closure, outer_pullback_extras) = extras
     return pullback!(inner_gradient_closure, p, outer(backend), x, v, outer_pullback_extras)
 end

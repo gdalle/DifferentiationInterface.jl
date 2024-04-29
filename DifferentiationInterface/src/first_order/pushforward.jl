@@ -52,46 +52,46 @@ struct PullbackPushforwardExtras{E} <: PushforwardExtras
     pullback_extras::E
 end
 
-function prepare_pushforward(f, backend::AbstractADType, x, dx)
+function prepare_pushforward(f::F, backend::AbstractADType, x, dx) where {F}
     return prepare_pushforward_aux(f, backend, x, dx, pushforward_performance(backend))
 end
 
-function prepare_pushforward(f!, y, backend::AbstractADType, x, dx)
+function prepare_pushforward(f!::F, y, backend::AbstractADType, x, dx) where {F}
     return prepare_pushforward_aux(f!, y, backend, x, dx, pushforward_performance(backend))
 end
 
-function prepare_pushforward_aux(f, backend, x, dx, ::PushforwardSlow)
+function prepare_pushforward_aux(f::F, backend, x, dx, ::PushforwardSlow) where {F}
     y = f(x)
     dy = y isa Number ? one(y) : basis(backend, y, first(CartesianIndices(y)))
     pullback_extras = prepare_pullback(f, backend, x, dy)
     return PullbackPushforwardExtras(pullback_extras)
 end
 
-function prepare_pushforward_aux(f!, y, backend, x, dx, ::PushforwardSlow)
+function prepare_pushforward_aux(f!::F, y, backend, x, dx, ::PushforwardSlow) where {F}
     dy = y isa Number ? one(y) : basis(backend, y, first(CartesianIndices(y)))
     pullback_extras = prepare_pullback(f!, y, backend, x, dy)
     return PullbackPushforwardExtras(pullback_extras)
 end
 
 # Throw error if backend is missing
-prepare_pushforward_aux(f, backend, x, dy, ::PushforwardFast)     = throw(MissingBackendError(backend))
-prepare_pushforward_aux(f!, y, backend, x, dy, ::PushforwardFast) = throw(MissingBackendError(backend))
+prepare_pushforward_aux(f::F, backend, x, dy, ::PushforwardFast) where {F}     = throw(MissingBackendError(backend))
+prepare_pushforward_aux(f!::F, y, backend, x, dy, ::PushforwardFast) where {F} = throw(MissingBackendError(backend))
 
 ## One argument
 
 function value_and_pushforward(
-    f,
+    f::F,
     backend::AbstractADType,
     x,
     dx,
     extras::PushforwardExtras=prepare_pushforward(f, backend, x, dx),
-)
+) where {F}
     return value_and_pushforward_onearg_aux(f, backend, x, dx, extras)
 end
 
 function value_and_pushforward_onearg_aux(
-    f, backend, x, dx, extras::PullbackPushforwardExtras
-)
+    f::F, backend, x, dx, extras::PullbackPushforwardExtras
+) where {F}
     (; pullback_extras) = extras
     y, pullbackfunc = value_and_pullback_split(f, backend, x, pullback_extras)
     dy = if x isa Number && y isa Number
@@ -111,54 +111,54 @@ function value_and_pushforward_onearg_aux(
 end
 
 function value_and_pushforward!(
-    f,
+    f::F,
     dy,
     backend::AbstractADType,
     x,
     dx,
     extras::PushforwardExtras=prepare_pushforward(f, backend, x, dx),
-)
+) where {F}
     y, new_dy = value_and_pushforward(f, backend, x, dx, extras)
     return y, copyto!(dy, new_dy)
 end
 
 function pushforward(
-    f,
+    f::F,
     backend::AbstractADType,
     x,
     dx,
     extras::PushforwardExtras=prepare_pushforward(f, backend, x, dx),
-)
+) where {F}
     return value_and_pushforward(f, backend, x, dx, extras)[2]
 end
 
 function pushforward!(
-    f,
+    f::F,
     dy,
     backend::AbstractADType,
     x,
     dx,
     extras::PushforwardExtras=prepare_pushforward(f, backend, x, dx),
-)
+) where {F}
     return value_and_pushforward!(f, dy, backend, x, dx, extras)[2]
 end
 
 ## Two arguments
 
 function value_and_pushforward(
-    f!,
+    f!::F,
     y,
     backend::AbstractADType,
     x,
     dx,
     extras::PushforwardExtras=prepare_pushforward(f!, y, backend, x, dx),
-)
+) where {F}
     return value_and_pushforward_twoarg_aux(f!, y, backend, x, dx, extras)
 end
 
 function value_and_pushforward_twoarg_aux(
-    f!, y, backend, x, dx, extras::PullbackPushforwardExtras
-)
+    f!::F, y, backend, x, dx, extras::PullbackPushforwardExtras
+) where {F}
     (; pullback_extras) = extras
     dy = if x isa Number && y isa AbstractArray
         map(CartesianIndices(y)) do i
@@ -174,37 +174,37 @@ function value_and_pushforward_twoarg_aux(
 end
 
 function value_and_pushforward!(
-    f!,
+    f!::F,
     y,
     dy,
     backend::AbstractADType,
     x,
     dx,
     extras::PushforwardExtras=prepare_pushforward(f!, y, backend, x, dx),
-)
+) where {F}
     y, new_dy = value_and_pushforward(f!, y, backend, x, dx, extras)
     return y, copyto!(dy, new_dy)
 end
 
 function pushforward(
-    f!,
+    f!::F,
     y,
     backend::AbstractADType,
     x,
     dx,
     extras::PushforwardExtras=prepare_pushforward(f!, y, backend, x, dx),
-)
+) where {F}
     return value_and_pushforward(f!, y, backend, x, dx, extras)[2]
 end
 
 function pushforward!(
-    f!,
+    f!::F,
     y,
     dy,
     backend::AbstractADType,
     x,
     dx,
     extras::PushforwardExtras=prepare_pushforward(f!, y, backend, x, dx),
-)
+) where {F}
     return value_and_pushforward!(f!, y, dy, backend, x, dx, extras)[2]
 end
