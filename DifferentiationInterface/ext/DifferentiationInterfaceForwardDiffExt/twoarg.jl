@@ -5,7 +5,7 @@ struct ForwardDiffTwoArgPushforwardExtras{T,X,Y} <: PushforwardExtras
     ydual_tmp::Y
 end
 
-function DI.prepare_pushforward(f!, y, backend::AutoForwardDiff, x, dx)
+function DI.prepare_pushforward(f!::F, y, backend::AutoForwardDiff, x, dx) where {F}
     T = tag_type(f!, backend, x)
     xdual_tmp = make_dual(T, x, dx)
     ydual_tmp = make_dual(T, y, similar(y))
@@ -15,8 +15,8 @@ function DI.prepare_pushforward(f!, y, backend::AutoForwardDiff, x, dx)
 end
 
 function compute_ydual_twoarg(
-    ::Type{T}, f!, y, x::Number, dx, extras::ForwardDiffTwoArgPushforwardExtras{T}
-) where {T}
+    f!::F, y, x::Number, dx, extras::ForwardDiffTwoArgPushforwardExtras{T}
+) where {F,T}
     (; ydual_tmp) = extras
     xdual_tmp = make_dual(T, x, dx)
     f!(ydual_tmp, xdual_tmp)
@@ -24,8 +24,8 @@ function compute_ydual_twoarg(
 end
 
 function compute_ydual_twoarg(
-    ::Type{T}, f!, y, x, dx, extras::ForwardDiffTwoArgPushforwardExtras{T}
-) where {T}
+    f!::F, y, x, dx, extras::ForwardDiffTwoArgPushforwardExtras{T}
+) where {F,T}
     (; xdual_tmp, ydual_tmp) = extras
     make_dual!(T, xdual_tmp, x, dx)
     f!(ydual_tmp, xdual_tmp)
@@ -33,35 +33,35 @@ function compute_ydual_twoarg(
 end
 
 function DI.value_and_pushforward(
-    f!, y, ::AutoForwardDiff, x, dx, extras::ForwardDiffTwoArgPushforwardExtras{T}
-) where {T}
-    ydual_tmp = compute_ydual_twoarg(T, f!, y, x, dx, extras)
+    f!::F, y, ::AutoForwardDiff, x, dx, extras::ForwardDiffTwoArgPushforwardExtras{T}
+) where {F,T}
+    ydual_tmp = compute_ydual_twoarg(f!, y, x, dx, extras)
     myvalue!(T, y, ydual_tmp)
     dy = myderivative(T, ydual_tmp)
     return y, dy
 end
 
 function DI.pushforward(
-    f!, y, ::AutoForwardDiff, x, dx, extras::ForwardDiffTwoArgPushforwardExtras{T}
-) where {T}
-    ydual_tmp = compute_ydual_twoarg(T, f!, y, x, dx, extras)
+    f!::F, y, ::AutoForwardDiff, x, dx, extras::ForwardDiffTwoArgPushforwardExtras{T}
+) where {F,T}
+    ydual_tmp = compute_ydual_twoarg(f!, y, x, dx, extras)
     dy = myderivative(T, ydual_tmp)
     return dy
 end
 
 function DI.value_and_pushforward!(
-    f!, y, dy, ::AutoForwardDiff, x, dx, extras::ForwardDiffTwoArgPushforwardExtras{T}
-) where {T}
-    ydual_tmp = compute_ydual_twoarg(T, f!, y, x, dx, extras)
+    f!::F, y, dy, ::AutoForwardDiff, x, dx, extras::ForwardDiffTwoArgPushforwardExtras{T}
+) where {F,T}
+    ydual_tmp = compute_ydual_twoarg(f!, y, x, dx, extras)
     myvalue!(T, y, ydual_tmp)
     myderivative!(T, dy, ydual_tmp)
     return y, dy
 end
 
 function DI.pushforward!(
-    f!, y, dy, ::AutoForwardDiff, x, dx, extras::ForwardDiffTwoArgPushforwardExtras{T}
-) where {T}
-    ydual_tmp = compute_ydual_twoarg(T, f!, y, x, dx, extras)
+    f!::F, y, dy, ::AutoForwardDiff, x, dx, extras::ForwardDiffTwoArgPushforwardExtras{T}
+) where {F,T}
+    ydual_tmp = compute_ydual_twoarg(f!, y, x, dx, extras)
     myderivative!(T, dy, ydual_tmp)
     return dy
 end
@@ -72,54 +72,36 @@ struct ForwardDiffTwoArgDerivativeExtras{C} <: DerivativeExtras
     config::C
 end
 
-function DI.prepare_derivative(f!, y::AbstractArray, ::AutoForwardDiff, x::Number)
+function DI.prepare_derivative(f!::F, y, ::AutoForwardDiff, x) where {F}
     return ForwardDiffTwoArgDerivativeExtras(DerivativeConfig(f!, y, x))
 end
 
 function DI.value_and_derivative(
-    f!,
-    y::AbstractArray,
-    ::AutoForwardDiff,
-    x::Number,
-    extras::ForwardDiffTwoArgDerivativeExtras,
-)
+    f!::F, y, ::AutoForwardDiff, x, extras::ForwardDiffTwoArgDerivativeExtras
+) where {F}
     result = MutableDiffResult(y, (similar(y),))
     result = derivative!(result, f!, y, x, extras.config)
     return DiffResults.value(result), DiffResults.derivative(result)
 end
 
 function DI.value_and_derivative!(
-    f!,
-    y::AbstractArray,
-    der::AbstractArray,
-    ::AutoForwardDiff,
-    x::Number,
-    extras::ForwardDiffTwoArgDerivativeExtras,
-)
+    f!::F, y, der, ::AutoForwardDiff, x, extras::ForwardDiffTwoArgDerivativeExtras
+) where {F}
     result = MutableDiffResult(y, (der,))
     result = derivative!(result, f!, y, x, extras.config)
     return DiffResults.value(result), DiffResults.derivative(result)
 end
 
 function DI.derivative(
-    f!,
-    y::AbstractArray,
-    ::AutoForwardDiff,
-    x::Number,
-    extras::ForwardDiffTwoArgDerivativeExtras,
-)
+    f!::F, y, ::AutoForwardDiff, x, extras::ForwardDiffTwoArgDerivativeExtras
+) where {F}
     der = derivative(f!, y, x, extras.config)
     return der
 end
 
 function DI.derivative!(
-    f!,
-    y::AbstractArray,
-    der::AbstractArray,
-    ::AutoForwardDiff,
-    x::Number,
-    extras::ForwardDiffTwoArgDerivativeExtras,
-)
+    f!::F, y, der, ::AutoForwardDiff, x, extras::ForwardDiffTwoArgDerivativeExtras
+) where {F}
     der = derivative!(der, f!, y, x, extras.config)
     return der
 end
@@ -130,21 +112,15 @@ struct ForwardDiffTwoArgJacobianExtras{C} <: JacobianExtras
     config::C
 end
 
-function DI.prepare_jacobian(
-    f!, y::AbstractArray, backend::AutoForwardDiff, x::AbstractArray
-)
+function DI.prepare_jacobian(f!::F, y, backend::AutoForwardDiff, x) where {F}
     return ForwardDiffTwoArgJacobianExtras(
         JacobianConfig(f!, y, x, choose_chunk(backend, x))
     )
 end
 
 function DI.value_and_jacobian(
-    f!,
-    y::AbstractArray,
-    ::AutoForwardDiff,
-    x::AbstractArray,
-    extras::ForwardDiffTwoArgJacobianExtras,
-)
+    f!::F, y, ::AutoForwardDiff, x, extras::ForwardDiffTwoArgJacobianExtras
+) where {F}
     jac = similar(y, length(y), length(x))
     result = MutableDiffResult(y, (jac,))
     result = jacobian!(result, f!, y, x, extras.config)
@@ -152,37 +128,23 @@ function DI.value_and_jacobian(
 end
 
 function DI.value_and_jacobian!(
-    f!,
-    y::AbstractArray,
-    jac::AbstractMatrix,
-    ::AutoForwardDiff,
-    x::AbstractArray,
-    extras::ForwardDiffTwoArgJacobianExtras,
-)
+    f!::F, y, jac, ::AutoForwardDiff, x, extras::ForwardDiffTwoArgJacobianExtras
+) where {F}
     result = MutableDiffResult(y, (jac,))
     result = jacobian!(result, f!, y, x, extras.config)
     return DiffResults.value(result), DiffResults.jacobian(result)
 end
 
 function DI.jacobian(
-    f!,
-    y::AbstractArray,
-    ::AutoForwardDiff,
-    x::AbstractArray,
-    extras::ForwardDiffTwoArgJacobianExtras,
-)
+    f!::F, y, ::AutoForwardDiff, x, extras::ForwardDiffTwoArgJacobianExtras
+) where {F}
     jac = jacobian(f!, y, x, extras.config)
     return jac
 end
 
 function DI.jacobian!(
-    f!,
-    y::AbstractArray,
-    jac::AbstractMatrix,
-    ::AutoForwardDiff,
-    x::AbstractArray,
-    extras::ForwardDiffTwoArgJacobianExtras,
-)
+    f!::F, y, jac, ::AutoForwardDiff, x, extras::ForwardDiffTwoArgJacobianExtras
+) where {F}
     jac = jacobian!(jac, f!, y, x, extras.config)
     return jac
 end
