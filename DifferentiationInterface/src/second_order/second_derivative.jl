@@ -33,9 +33,9 @@ struct ClosureSecondDerivativeExtras{C,E} <: SecondDerivativeExtras
     outer_derivative_extras::E
 end
 
-prepare_second_derivative(f, ::AbstractADType, x) = NoSecondDerivativeExtras()
+prepare_second_derivative(f::F, ::AbstractADType, x) where {F} = NoSecondDerivativeExtras()
 
-function prepare_second_derivative(f, backend::SecondOrder, x)
+function prepare_second_derivative(f::F, backend::SecondOrder, x) where {F}
     inner_derivative_closure(z) = derivative(f, inner(backend), z)
     outer_derivative_extras = prepare_derivative(
         inner_derivative_closure, outer(backend), x
@@ -46,45 +46,45 @@ end
 ## One argument
 
 function second_derivative(
-    f,
+    f::F,
     backend::AbstractADType,
     x,
     extras::SecondDerivativeExtras=prepare_second_derivative(f, backend, x),
-)
+) where {F}
     new_backend = SecondOrder(backend, backend)
     new_extras = prepare_second_derivative(f, new_backend, x)
     return second_derivative(f, new_backend, x, new_extras)
 end
 
 function second_derivative(
-    f,
+    f::F,
     backend::SecondOrder,
     x,
     extras::ClosureSecondDerivativeExtras=prepare_second_derivative(f, backend, x),
-)
+) where {F}
     (; inner_derivative_closure, outer_derivative_extras) = extras
     return derivative(inner_derivative_closure, outer(backend), x, outer_derivative_extras)
 end
 
 function second_derivative!(
-    f,
+    f::F,
     der2,
     backend::AbstractADType,
     x,
     extras::SecondDerivativeExtras=prepare_second_derivative(f, backend, x),
-)
+) where {F}
     new_backend = SecondOrder(backend, backend)
     new_extras = prepare_second_derivative(f, new_backend, x)
     return second_derivative!(f, der2, new_backend, x, new_extras)
 end
 
 function second_derivative!(
-    f,
+    f::F,
     der2,
     backend::SecondOrder,
     x,
     extras::SecondDerivativeExtras=prepare_second_derivative(f, backend, x),
-)
+) where {F}
     (; inner_derivative_closure, outer_derivative_extras) = extras
     return derivative!(
         inner_derivative_closure, der2, outer(backend), x, outer_derivative_extras

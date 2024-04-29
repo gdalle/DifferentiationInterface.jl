@@ -42,7 +42,7 @@ struct PullbackGradientExtras{E<:PullbackExtras} <: GradientExtras
     pullback_extras::E
 end
 
-function prepare_gradient(f, backend::AbstractADType, x)
+function prepare_gradient(f::F, backend::AbstractADType, x) where {F}
     y = f(x)
     dy = one(y)
     pullback_extras = prepare_pullback(f, backend, x, dy)
@@ -52,33 +52,33 @@ end
 ## One argument
 
 function value_and_gradient(
-    f, backend::AbstractADType, x, extras::GradientExtras=prepare_gradient(f, backend, x)
-)
+    f::F, backend::AbstractADType, x, extras::GradientExtras=prepare_gradient(f, backend, x)
+) where {F}
     return value_and_pullback(f, backend, x, one(eltype(x)), extras.pullback_extras)
 end
 
 function value_and_gradient!(
-    f,
+    f::F,
     grad,
     backend::AbstractADType,
     x,
     extras::GradientExtras=prepare_gradient(f, backend, x),
-)
+) where {F}
     return value_and_pullback!(f, grad, backend, x, one(eltype(x)), extras.pullback_extras)
 end
 
 function gradient(
-    f, backend::AbstractADType, x, extras::GradientExtras=prepare_gradient(f, backend, x)
-)
+    f::F, backend::AbstractADType, x, extras::GradientExtras=prepare_gradient(f, backend, x)
+) where {F}
     return pullback(f, backend, x, one(eltype(x)), extras.pullback_extras)
 end
 
 function gradient!(
-    f,
+    f::F,
     grad,
     backend::AbstractADType,
     x,
     extras::GradientExtras=prepare_gradient(f, backend, x),
-)
+) where {F}
     return pullback!(f, grad, backend, x, one(eltype(x)), extras.pullback_extras)
 end

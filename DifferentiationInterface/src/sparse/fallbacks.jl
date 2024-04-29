@@ -27,28 +27,29 @@ for op in (:pushforward, :pullback, :hvp)
 
     ## One argument
     @eval begin
-        $prep(f, ba::AutoSparse, x, v) = $prep(f, dense_ad(ba), x, v)
-        $op(f, ba::AutoSparse, x, v, ex::$E=$prep(f, ba, x, v)) =
+        $prep(f::F, ba::AutoSparse, x, v) where {F} = $prep(f, dense_ad(ba), x, v)
+        $op(f::F, ba::AutoSparse, x, v, ex::$E=$prep(f, ba, x, v)) where {F} =
             $op(f, dense_ad(ba), x, v, ex)
-        $valop(f, ba::AutoSparse, x, v, ex::$E=$prep(f, ba, x, v)) =
+        $valop(f::F, ba::AutoSparse, x, v, ex::$E=$prep(f, ba, x, v)) where {F} =
             $valop(f, dense_ad(ba), x, v, ex)
-        $op!(f, res, ba::AutoSparse, x, v, ex::$E=$prep(f, ba, x, v)) =
+        $op!(f::F, res, ba::AutoSparse, x, v, ex::$E=$prep(f, ba, x, v)) where {F} =
             $op!(f, res, dense_ad(ba), x, v, ex)
-        $valop!(f, res, ba::AutoSparse, x, v, ex::$E=$prep(f, ba, x, v)) =
+        $valop!(f::F, res, ba::AutoSparse, x, v, ex::$E=$prep(f, ba, x, v)) where {F} =
             $valop!(f, res, dense_ad(ba), x, v, ex)
     end
 
     ## Two arguments
     @eval begin
-        $prep(f!, y, ba::AutoSparse, x, v) = $prep(f!, y, dense_ad(ba), x, v)
-        $op(f!, y, ba::AutoSparse, x, v, ex::$E=$prep(f!, y, ba, x, v)) =
+        $prep(f!::F, y, ba::AutoSparse, x, v) where {F} = $prep(f!, y, dense_ad(ba), x, v)
+        $op(f!::F, y, ba::AutoSparse, x, v, ex::$E=$prep(f!, y, ba, x, v)) where {F} =
             $op(f!, y, dense_ad(ba), x, v, ex)
-        $valop(f!, y, ba::AutoSparse, x, v, ex::$E=$prep(f!, y, ba, x, v)) =
+        $valop(f!::F, y, ba::AutoSparse, x, v, ex::$E=$prep(f!, y, ba, x, v)) where {F} =
             $valop(f!, y, dense_ad(ba), x, v, ex)
-        $op!(f!, y, res, ba::AutoSparse, x, v, ex::$E=$prep(f!, y, ba, x, v)) =
+        $op!(f!::F, y, res, ba::AutoSparse, x, v, ex::$E=$prep(f!, y, ba, x, v)) where {F} =
             $op!(f!, y, res, dense_ad(ba), x, v, ex)
-        $valop!(f!, y, res, ba::AutoSparse, x, v, ex::$E=$prep(f!, y, ba, x, v)) =
-            $valop!(f!, y, res, dense_ad(ba), x, v, ex)
+        $valop!(
+            f!::F, y, res, ba::AutoSparse, x, v, ex::$E=$prep(f!, y, ba, x, v)
+        ) where {F} = $valop!(f!, y, res, dense_ad(ba), x, v, ex)
     end
 
     ## Split
@@ -57,14 +58,16 @@ for op in (:pushforward, :pullback, :hvp)
         valop!_split = Symbol("value_and_", op!, "_split")
 
         @eval begin
-            $valop_split(f, ba::AutoSparse, x, ex::$E=$prep(f, ba, x, f(x))) =
+            $valop_split(f::F, ba::AutoSparse, x, ex::$E=$prep(f, ba, x, f(x))) where {F} =
                 $valop_split(f, dense_ad(ba), x, ex)
-            $valop!_split(f, ba::AutoSparse, x, ex::$E=$prep(f, ba, x, f(x))) =
+            $valop!_split(f::F, ba::AutoSparse, x, ex::$E=$prep(f, ba, x, f(x))) where {F} =
                 $valop!_split(f, dense_ad(ba), x, ex)
-            $valop_split(f!, y, ba::AutoSparse, x, ex::$E=$prep(f, ba, x, similar(y))) =
-                $valop_split(f!, y, dense_ad(ba), x, ex)
-            $valop!_split(f!, y, ba::AutoSparse, x, ex::$E=$prep(f, ba, x, similar(y))) =
-                $valop!_split(f!, y, dense_ad(ba), x, ex)
+            $valop_split(
+                f!::F, y, ba::AutoSparse, x, ex::$E=$prep(f, ba, x, similar(y))
+            ) where {F} = $valop_split(f!, y, dense_ad(ba), x, ex)
+            $valop!_split(
+                f!::F, y, ba::AutoSparse, x, ex::$E=$prep(f, ba, x, similar(y))
+            ) where {F} = $valop!_split(f!, y, dense_ad(ba), x, ex)
         end
     end
 end
@@ -84,28 +87,30 @@ for op in (:derivative, :gradient, :second_derivative)
 
     ## One argument
     @eval begin
-        $prep(f, ba::AutoSparse, x) = $prep(f, dense_ad(ba), x)
-        $op(f, ba::AutoSparse, x, ex::$E=$prep(f, ba, x)) = $op(f, dense_ad(ba), x, ex)
-        $valop(f, ba::AutoSparse, x, ex::$E=$prep(f, ba, x)) =
+        $prep(f::F, ba::AutoSparse, x) where {F} = $prep(f, dense_ad(ba), x)
+        $op(f::F, ba::AutoSparse, x, ex::$E=$prep(f, ba, x)) where {F} =
+            $op(f, dense_ad(ba), x, ex)
+        $valop(f::F, ba::AutoSparse, x, ex::$E=$prep(f, ba, x)) where {F} =
             $valop(f, dense_ad(ba), x, ex)
-        $op!(f, res, ba::AutoSparse, x, ex::$E=$prep(f, ba, x)) =
+        $op!(f::F, res, ba::AutoSparse, x, ex::$E=$prep(f, ba, x)) where {F} =
             $op!(f, res, dense_ad(ba), x, ex)
-        $valop!(f, res, ba::AutoSparse, x, ex::$E=$prep(f, ba, x)) =
+        $valop!(f::F, res, ba::AutoSparse, x, ex::$E=$prep(f, ba, x)) where {F} =
             $valop!(f, res, dense_ad(ba), x, ex)
     end
 
     ## Two arguments
     if op in (:derivative,)
         @eval begin
-            $prep(f!, y, ba::AutoSparse, x) = $prep(f!, y, dense_ad(ba), x)
-            $op(f!, y, ba::AutoSparse, x, ex::$E=$prep(f!, y, ba, x)) =
+            $prep(f!::F, y, ba::AutoSparse, x) where {F} = $prep(f!, y, dense_ad(ba), x)
+            $op(f!::F, y, ba::AutoSparse, x, ex::$E=$prep(f!, y, ba, x)) where {F} =
                 $op(f!, y, dense_ad(ba), x, ex)
-            $valop(f!, y, ba::AutoSparse, x, ex::$E=$prep(f!, y, ba, x)) =
+            $valop(f!::F, y, ba::AutoSparse, x, ex::$E=$prep(f!, y, ba, x)) where {F} =
                 $valop(f!, y, dense_ad(ba), x, ex)
-            $op!(f!, y, res, ba::AutoSparse, x, ex::$E=$prep(f!, y, ba, x)) =
+            $op!(f!::F, y, res, ba::AutoSparse, x, ex::$E=$prep(f!, y, ba, x)) where {F} =
                 $op!(f!, y, res, dense_ad(ba), x, ex)
-            $valop!(f!, y, res, ba::AutoSparse, x, ex::$E=$prep(f!, y, ba, x)) =
-                $valop!(f!, y, res, dense_ad(ba), x, ex)
+            $valop!(
+                f!::F, y, res, ba::AutoSparse, x, ex::$E=$prep(f!, y, ba, x)
+            ) where {F} = $valop!(f!, y, res, dense_ad(ba), x, ex)
         end
     end
 end
