@@ -24,7 +24,7 @@ Each cell can have three values:
 ```@setup overloads
 using ADTypes: AbstractADType
 using DifferentiationInterface
-using DifferentiationInterface: backend_str, mutation_support, MutationSupported
+using DifferentiationInterface: backend_str, twoarg_support, TwoArgSupported
 using Markdown: Markdown
 using Diffractor: Diffractor
 using Enzyme: Enzyme
@@ -155,7 +155,7 @@ function print_overloads(backend, ext::Symbol)
 
     println(io, "#### Two-argument functions `f!(y, x)`")
     println(io)
-    if mutation_support(backend) == MutationSupported()
+    if twoarg_support(backend) == TwoArgSupported()
         print_overload_table(io, operators_and_types_f!(backend), ext)
     else
         println(io, "Backend doesn't support mutating functions.")

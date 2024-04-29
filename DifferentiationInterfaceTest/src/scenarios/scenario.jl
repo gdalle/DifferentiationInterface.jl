@@ -49,7 +49,7 @@ operator_place(::AbstractScenario{args,op}) where {args,op} = op
 
 function compatible(backend::AbstractADType, scen::AbstractScenario)
     if nb_args(scen) == 2
-        return Bool(mutation_support(backend))
+        return Bool(twoarg_support(backend))
     end
     return true
 end

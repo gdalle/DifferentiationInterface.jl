@@ -2,7 +2,7 @@
 
 for trait in (
     :check_available,
-    :mutation_support,
+    :twoarg_support,
     :pushforward_performance,
     :pullback_performance,
     :hvp_mode,
