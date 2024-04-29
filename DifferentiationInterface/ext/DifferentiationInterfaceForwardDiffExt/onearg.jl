@@ -4,8 +4,8 @@ struct ForwardDiffOneArgPushforwardExtras{T,X} <: PushforwardExtras
     xdual_tmp::X
 end
 
-function DI.prepare_pushforward(f, ::AutoForwardDiff, x, dx)
-    T = tag_type(f, x)
+function DI.prepare_pushforward(f, backend::AutoForwardDiff, x, dx)
+    T = tag_type(f, backend, x)
     xdual_tmp = make_dual(T, x, dx)
     return ForwardDiffOneArgPushforwardExtras{T,typeof(xdual_tmp)}(xdual_tmp)
 end

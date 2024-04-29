@@ -5,8 +5,8 @@ struct ForwardDiffTwoArgPushforwardExtras{T,X,Y} <: PushforwardExtras
     ydual_tmp::Y
 end
 
-function DI.prepare_pushforward(f!, y, ::AutoForwardDiff, x, dx)
-    T = tag_type(f!, x)
+function DI.prepare_pushforward(f!, y, backend::AutoForwardDiff, x, dx)
+    T = tag_type(f!, backend, x)
     xdual_tmp = make_dual(T, x, dx)
     ydual_tmp = make_dual(T, y, similar(y))
     return ForwardDiffTwoArgPushforwardExtras{T,typeof(xdual_tmp),typeof(ydual_tmp)}(
