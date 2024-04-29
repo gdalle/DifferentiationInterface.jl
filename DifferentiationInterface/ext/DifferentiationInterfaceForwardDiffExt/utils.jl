@@ -5,7 +5,7 @@ tag_type(f, ::AutoForwardDiff{C,T}, x) where {C,T} = T
 tag_type(f, ::AutoForwardDiff{C,Nothing}, x) where {C} = Tag{typeof(f),eltype(x)}
 
 make_dual(::Type{T}, x::Number, dx) where {T} = Dual{T}(x, dx)
-make_dual(::Type{T}, x, dx) where {T} = map(Dual{T}, x, dx)
+make_dual(::Type{T}, x, dx) where {T} = Dual{T}.(x, dx)  # TODO: map causes Enzyme to fail
 
 make_dual!(::Type{T}, xdual, x, dx) where {T} = map!(Dual{T}, xdual, x, dx)
 
