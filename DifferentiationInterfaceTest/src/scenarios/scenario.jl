@@ -68,144 +68,109 @@ end
 ## Struct definitions
 
 """
-    PushforwardScenario(f; x, y, dx, ref, operator)
+    PushforwardScenario(f; x, y, dx, ref, place)
 
 See [`AbstractScenario`](@ref) for details.
 """
 struct PushforwardScenario{args,place,F,X,Y,DX,R} <:
        AbstractFirstOrderScenario{args,place,F,X,Y,R}
-    "function"
     f::F
-    "input"
     x::X
-    "output"
     y::Y
-    "pushforward seed"
     dx::DX
-    "reference pushforward operator or backend to compare against"
     ref::R
 end
 
 """
-    PullbackScenario(f; x, y, dy, ref, operator)
+    PullbackScenario(f; x, y, dy, ref, place)
 
 See [`AbstractScenario`](@ref) for details.
 """
 struct PullbackScenario{args,place,F,X,Y,DY,R} <:
        AbstractFirstOrderScenario{args,place,F,X,Y,R}
-    "function"
     f::F
-    "input"
     x::X
-    "output"
     y::Y
-    "pullback seed"
     dy::DY
-    "reference pullback operator or backend to compare against"
     ref::R
 end
 
 """
-    DerivativeScenario(f; x, y, ref, operator)
+    DerivativeScenario(f; x, y, ref, place)
 
 See [`AbstractScenario`](@ref) for details.
 """
 struct DerivativeScenario{args,place,F,X<:Number,Y,R} <:
        AbstractFirstOrderScenario{args,place,F,X,Y,R}
-    "function"
     f::F
-    "input"
     x::X
-    "output"
     y::Y
-    "reference derivative operator or backend to compare against"
     ref::R
 end
 
 """
-    GradientScenario(f; x, y, ref, operator)
+    GradientScenario(f; x, y, ref, place)
 
 See [`AbstractScenario`](@ref) for details.
 """
 struct GradientScenario{args,place,F,X,Y<:Number,R} <:
        AbstractFirstOrderScenario{args,place,F,X,Y,R}
-    "function"
     f::F
-    "input"
     x::X
-    "output"
     y::Y
-    "reference gradient operator or backend to compare against"
     ref::R
 end
 
 """
-    JacobianScenario(f; x, y, ref, operator)
+    JacobianScenario(f; x, y, ref, place)
 
 See [`AbstractScenario`](@ref) for details.
 """
 struct JacobianScenario{args,place,F,X<:AbstractArray,Y<:AbstractArray,R} <:
        AbstractFirstOrderScenario{args,place,F,X,Y,R}
-    "function"
     f::F
-    "input"
     x::X
-    "output"
     y::Y
-    "reference Jacobian operator or backend to compare against"
     ref::R
 end
 
 """
-    SecondDerivativeScenario(f; x, y, ref, operator)
+    SecondDerivativeScenario(f; x, y, ref, place)
 
 See [`AbstractScenario`](@ref) for details.
 """
 struct SecondDerivativeScenario{args,place,F,X<:Number,Y,R} <:
        AbstractSecondOrderScenario{args,place,F,X,Y,R}
-    "function"
     f::F
-    "input"
     x::X
-    "output"
     y::Y
-    "reference second derivative operator or backend to compare against"
     ref::R
 end
 
 """
-    HVPScenario(f; x, y, dx, ref, operator)
+    HVPScenario(f; x, y, dx, ref, place)
 
 See [`AbstractScenario`](@ref) for details.
 """
 struct HVPScenario{args,place,F,X,Y<:Number,DX,R} <:
        AbstractSecondOrderScenario{args,place,F,X,Y,R}
-    "function"
     f::F
-    "input"
     x::X
-    "output"
     y::Y
-    "Hessian-vector product seed"
     dx::DX
-    "reference Hessian-vector product operator or backend to compare against"
     ref::R
 end
 
 """
-    HessianScenario(f; x, y, ref, operator)
+    HessianScenario(f; x, y, ref, place)
 
 See [`AbstractScenario`](@ref) for details.
 """
 struct HessianScenario{args,place,F,X<:AbstractArray,Y<:Number,R} <:
        AbstractSecondOrderScenario{args,place,F,X,Y,R}
-    "function"
     f::F
-    "input"
     x::X
-    "output"
     y::Y
-    "reference Hessian operator or backend to compare against"
     ref::R
 end
 

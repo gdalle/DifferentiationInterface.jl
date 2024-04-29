@@ -27,7 +27,7 @@ function comp_to_num_scenarios_onearg(x::ComponentVector)
             ],
         )
     end
-    for op in (:outofplace,)
+    for place in (:outofplace,)
         append!(
             scens,
             [
