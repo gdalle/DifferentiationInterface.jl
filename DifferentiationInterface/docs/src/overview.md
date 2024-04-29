@@ -11,16 +11,16 @@ We provide the following high-level operators:
 | [`derivative`](@ref)        | 1     | `Number`        | `Number` or `AbstractArray` | same as `y`      | `size(y)`                |
 | [`second_derivative`](@ref) | 2     | `Number`        | `Number` or `AbstractArray` | same as `y`      | `size(y)`                |
 | [`gradient`](@ref)          | 1     | `AbstractArray` | `Number`                    | same as `x`      | `size(x)`                |
-| [`hvp`](@ref)               | 2     | `AbstractArray` | `Number`                    | same as `x`      | `size(x)`                |
 | [`hessian`](@ref)           | 2     | `AbstractArray` | `Number`                    | `AbstractMatrix` | `(length(x), length(x))` |
 | [`jacobian`](@ref)          | 1     | `AbstractArray` | `AbstractArray`             | `AbstractMatrix` | `(length(y), length(x))` |
 
-They can all be derived from two low-level operators:
+They can be derived from lower-level operators:
 
-| operator                       | order | input  `x` | output   `y` | result type | result shape |
-| :----------------------------- | :---- | :--------- | :----------- | :---------- | :----------- |
-| [`pushforward`](@ref) (or JVP) | 1     | `Any`      | `Any`        | same as `y` | `size(y)`    |
-| [`pullback`](@ref) (or VJP)    | 1     | `Any`      | `Any`        | same as `x` | `size(x)`    |
+| operator                       | order | input  `x`      | output   `y` | seed `v` | result type | result shape |
+| :----------------------------- | :---- | :-------------- | :----------- | :------- | :---------- | :----------- |
+| [`pushforward`](@ref) (or JVP) | 1     | `Any`           | `Any`        | `dx`     | same as `y` | `size(y)`    |
+| [`pullback`](@ref) (or VJP)    | 1     | `Any`           | `Any`        | `dy`     | same as `x` | `size(x)`    |
+| [`hvp`](@ref)                  | 2     | `AbstractArray` | `Number`     | `dx`     | same as `x` | `size(x)`    |
 
 Luckily, most backends have custom implementations, which we reuse if possible instead of relying on fallbacks.
 
@@ -36,26 +36,25 @@ Several variants of each operator are defined:
 | [`derivative`](@ref)        | [`derivative!`](@ref)        | [`value_and_derivative`](@ref)  | [`value_and_derivative!`](@ref)  |
 | [`second_derivative`](@ref) | [`second_derivative!`](@ref) | NA                              | NA                               |
 | [`gradient`](@ref)          | [`gradient!`](@ref)          | [`value_and_gradient`](@ref)    | [`value_and_gradient!`](@ref)    |
-| [`hvp`](@ref)               | [`hvp!`](@ref)               | NA                              | NA                               |
 | [`hessian`](@ref)           | [`hessian!`](@ref)           | NA                              | NA                               |
 | [`jacobian`](@ref)          | [`jacobian!`](@ref)          | [`value_and_jacobian`](@ref)    | [`value_and_jacobian!`](@ref)    |
 | [`pushforward`](@ref)       | [`pushforward!`](@ref)       | [`value_and_pushforward`](@ref) | [`value_and_pushforward!`](@ref) |
 | [`pullback`](@ref)          | [`pullback!`](@ref)          | [`value_and_pullback`](@ref)    | [`value_and_pullback!`](@ref)    |
+| [`hvp`](@ref)               | [`hvp!`](@ref)               | NA                              | NA                               |
 
 ## Mutation and signatures
 
 In order to ensure symmetry between one-argument functions `f(x) = y` and two-argument functions `f!(y, x) = nothing`, we define the same operators for both cases.
 However they have different signatures:
 
-| signature  | out-of-place                       | in-place                                    |
-| :--------- | :--------------------------------- | :------------------------------------------ |
-| `f(x)`     | `operator(f,     backend, x, ...)` | `operator!(f,     result, backend, x, ...)` |
-| `f!(y, x)` | `operator(f!, y, backend, x, ...)` | `operator!(f!, y, result, backend, x, ...)` |
+| signature  | out-of-place                                 | in-place                                              |
+| :--------- | :------------------------------------------- | :---------------------------------------------------- |
+| `f(x)`     | `operator(f,     backend, x, [v], [extras])` | `operator!(f,     result, backend, x, [v], [extras])` |
+| `f!(y, x)` | `operator(f!, y, backend, x, [v], [extras])` | `operator!(f!, y, result, backend, x, [v], [extras])` |
 
 !!! warning
     Our mutation convention is that all positional arguments between `f`/`f!` and `backend` are mutated (the `extras` as well, see below).
     This convention holds regardless of the bang `!` in the operator name, because we assume that a user passing a two-argument function `f!(y, x)` anticipates mutation anyway.
-
     Still, better be careful with two-argument functions, because every variant of the operator will mutate `y`... even if it does not have a `!` in its name (see the bottom left cell in the table).
 
 ## Preparation
@@ -78,8 +77,8 @@ Unsurprisingly, preparation syntax depends on the number of arguments:
 
 | signature  | preparation signature                      |
 | :--------- | :----------------------------------------- |
-| `f(x)`     | `prepare_operator(f,     backend, x, ...)` |
-| `f!(y, x)` | `prepare_operator(f!, y, backend, x, ...)` |
+| `f(x)`     | `prepare_operator(f,     backend, x, [v])` |
+| `f!(y, x)` | `prepare_operator(f!, y, backend, x, [v])` |
 
 The preparation `prepare_operator(f, backend, x)` will create an object called `extras` containing the necessary information to speed up `operator` and its variants.
 This information is specific to `backend` and `f`, as well as the _type and size_ of the input `x` and the _control flow_ within the function, but it should work with different _values_ of `x`.
@@ -101,6 +100,9 @@ We offer two ways to perform second-order differentiation (for [`second_derivati
     There are many possible backend combinations, a lot of which will fail.
     At the moment, trial and error is your best friend.
     Usually, the most efficient approach for Hessians is forward-over-reverse, i.e. a forward-mode outer backend and a reverse-mode inner backend.
+
+!!! warning
+    Preparation does not yet work for the inner differentiation step of a `SecondOrder`, only the outer differentiation is prepared.
 
 ## Experimental
 
@@ -125,9 +127,10 @@ We make this available for all backends with the following operators:
 
 ### Translation
 
-The wrapper [`DifferentiateWith`](@ref) allows you to take a function and specify that it should be differentiated with the backend of your choice.
-In other words, when you try to differentiate `dw = DifferentiateWith(f, backend1)` with `backend2`, then `backend1` steps in and `backend2` does nothing.
-At the moment it only works when `backend2` supports [ChainRules.jl](https://github.com/JuliaDiff/ChainRules.jl).
+The wrapper [`DifferentiateWith`](@ref) allows you to translate between AD backends.
+It takes a function `f` and specifies that `f` should be differentiated with the backend of your choice, instead of whatever other backend the code is trying to use.
+In other words, when someone tries to differentiate `dw = DifferentiateWith(f, backend1)` with `backend2`, then `backend1` steps in and `backend2` does nothing.
+At the moment, `DifferentiateWith` only works when `backend2` supports [ChainRules.jl](https://github.com/JuliaDiff/ChainRules.jl).
 
 ## Going further
 

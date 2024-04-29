@@ -8,14 +8,7 @@ We present a typical workflow with DifferentiationInterface.jl and showcase its 
 
 ```@example tuto
 using DifferentiationInterface
-
-import ForwardDiff, Enzyme  # ⚠️ import the backends you want to use ⚠️
 ```
-
-!!! tip
-    Importing backends with `import` instead of `using` avoids name conflicts and makes sure you are using operators from DifferentiationInterface.jl.
-    This is useful since most backends also export operators like `gradient` and `jacobian`.
-
 
 ## Computing a gradient
 
@@ -25,21 +18,26 @@ Let's define a simple objective and a random input vector
 ```@example tuto
 f(x) = sum(abs2, x)
 
-x = [1.0, 2.0, 3.0]
-nothing # hide
+x = collect(1.0:5.0)
 ```
 
-To compute its gradient, we need to choose a "backend", i.e. an AD package that DifferentiationInterface.jl will call under the hood.
+To compute its gradient, we need to choose a "backend", i.e. an AD package to call under the hood.
 Most backend types are defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl) and re-exported by DifferentiationInterface.jl.
 
 [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl) is very generic and efficient for low-dimensional inputs, so it's a good starting point:
 
 ```@example tuto
+import ForwardDiff
+
 backend = AutoForwardDiff()
 nothing # hide
 ```
 
-Now you can use DifferentiationInterface.jl to get the gradient:
+!!! tip
+    To avoid name conflicts, load AD packages with `import` instead of `using`.
+    Indeed, most AD packages also export operators like `gradient` and `jacobian`, but you only want to use the ones from DifferentiationInterface.jl.
+
+Now you can use the following syntax to compute the gradient:
 
 ```@example tuto
 gradient(f, backend, x)
@@ -48,15 +46,10 @@ gradient(f, backend, x)
 Was that fast?
 [BenchmarkTools.jl](https://github.com/JuliaCI/BenchmarkTools.jl) helps you answer that question.
 
-```@repl tuto
+```@example tuto
 using BenchmarkTools
-@btime gradient($f, $backend, $x);
-```
 
-More or less what you would get if you just used the API from ForwardDiff.jl:
-
-```@repl tuto
-@btime ForwardDiff.gradient($f, $x);
+@benchmark gradient($f, $backend, $x)
 ```
 
 Not bad, but you can do better.
@@ -69,19 +62,18 @@ Some backends get a speed boost from this trick.
 ```@example tuto
 grad = similar(x)
 gradient!(f, grad, backend, x)
-
 grad  # has been mutated
 ```
 
 The bang indicates that one of the arguments of `gradient!` might be mutated.
 More precisely, our convention is that _every positional argument between the function and the backend is mutated (and the `extras` too, see below)_.
 
-```@repl tuto
-@btime gradient!($f, _grad, $backend, $x) evals=1 setup=(_grad=similar($x));
+```@example tuto
+@benchmark gradient!($f, _grad, $backend, $x) evals=1 setup=(_grad=similar($x))
 ```
 
 For some reason the in-place version is not much better than your first attempt.
-However, it has one less allocation, which corresponds to the gradient vector you provided.
+However, it makes fewer allocations, thanks to the gradient vector you provided.
 Don't worry, you can get even more performance.
 
 ## Preparing for multiple gradients
@@ -100,17 +92,16 @@ You don't need to know what this object is, you just need to pass it to the grad
 ```@example tuto
 grad = similar(x)
 gradient!(f, grad, backend, x, extras)
-
 grad  # has been mutated
 ```
 
 Preparation makes the gradient computation much faster, and (in this case) allocation-free.
 
-```@repl tuto
-@btime gradient!($f, _grad, $backend, $x, _extras) evals=1 setup=(
+```@example tuto
+@benchmark gradient!($f, _grad, $backend, $x, _extras) evals=1 setup=(
     _grad=similar($x);
     _extras=prepare_gradient($f, $backend, $x)
-);
+)
 ```
 
 Beware that the `extras` object is nearly always mutated by differentiation operators, even though it is given as the last positional argument.
@@ -118,13 +109,14 @@ Beware that the `extras` object is nearly always mutated by differentiation oper
 ## Switching backends
 
 The whole point of DifferentiationInterface.jl is that you can easily experiment with different AD solutions.
-Typically, for gradients, reverse mode AD might be a better fit.
-So let's try the state-of-the-art [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl)!
+Typically, for gradients, reverse mode AD might be a better fit, so let's try [ReverseDiff.jl](https://github.com/JuliaDiff/ReverseDiff.jl)!
 
-For this one, the backend definition is slightly more involved, because you need to feed the "mode" to the object from ADTypes.jl:
+For this one, the backend definition is slightly more involved, because you can specify whether the tape needs to be compiled:
 
 ```@example tuto
-backend2 = AutoEnzyme(; mode=Enzyme.Reverse)
+import ReverseDiff
+
+backend2 = AutoReverseDiff(; compile=true)
 nothing # hide
 ```
 
@@ -134,16 +126,15 @@ But once it is done, things run smoothly with exactly the same syntax:
 gradient(f, backend2, x)
 ```
 
-And you can run the same benchmarks:
+And you can run the same benchmarks to see what you gained (although such a small input may not be realistic):
 
-```@repl tuto
-@btime gradient!($f, _grad, $backend2, $x, _extras) evals=1 setup=(
+```@example tuto
+@benchmark gradient!($f, _grad, $backend2, $x, _extras) evals=1 setup=(
     _grad=similar($x);
     _extras=prepare_gradient($f, $backend2, $x)
-);
+)
 ```
 
-Not only is it blazingly fast, you achieved this speedup without looking at the docs of either ForwardDiff.jl or Enzyme.jl!
 In short, DifferentiationInterface.jl allows for easy testing and comparison of AD backends.
 If you want to go further, check out the [DifferentiationInterfaceTest.jl tutorial](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterfaceTest/dev/tutorial/).
 It provides benchmarking utilities to compare backends and help you select the one that is best suited for your problem.
