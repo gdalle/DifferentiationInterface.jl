@@ -18,6 +18,7 @@ using JET: JET
 using JuliaFormatter: JuliaFormatter
 using Test
 
+using DataFrames: DataFrame
 using LinearAlgebra
 using SparseArrays
 

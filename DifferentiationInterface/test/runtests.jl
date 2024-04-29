@@ -41,11 +41,15 @@ include("test_imports.jl")
 
     @testset verbose = true "Bonus round" begin
         @testset "Type stability" begin
-            include("type_stability.jl")
+            include("bonus/type_stability.jl")
+        end
+
+        @testset "Efficiency" begin
+            include("bonus/efficiency.jl")
         end
 
         @testset "Weird arrays" begin
-            include("weird_arrays.jl")
+            include("bonus/weird_arrays.jl")
         end
     end
 
