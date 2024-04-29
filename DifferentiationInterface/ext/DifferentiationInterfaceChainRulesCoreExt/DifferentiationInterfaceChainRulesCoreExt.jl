@@ -18,7 +18,7 @@ const AutoForwardChainRules = AutoChainRules{<:RuleConfig{>:HasForwardsMode}}
 const AutoReverseChainRules = AutoChainRules{<:RuleConfig{>:HasReverseMode}}
 
 DI.check_available(::AutoChainRules) = true
-DI.mutation_support(::AutoChainRules) = DI.MutationNotSupported()
+DI.twoarg_support(::AutoChainRules) = DI.TwoArgNotSupported()
 
 include("reverse_onearg.jl")
 include("differentiate_with.jl")

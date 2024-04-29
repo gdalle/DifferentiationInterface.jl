@@ -9,7 +9,7 @@ using FiniteDifferences: FiniteDifferences, grad, jacobian, jvp, j′vp
 using LinearAlgebra: dot
 
 DI.check_available(::AutoFiniteDifferences) = true
-DI.mutation_support(::AutoFiniteDifferences) = DI.MutationNotSupported()
+DI.twoarg_support(::AutoFiniteDifferences) = DI.TwoArgNotSupported()
 
 function FiniteDifferences.to_vec(a::OneElement)  # TODO: remove type piracy (https://github.com/JuliaDiff/FiniteDifferences.jl/issues/141)
     return FiniteDifferences.to_vec(collect(a))

@@ -3,25 +3,25 @@
 abstract type MutationBehavior end
 
 """
-    MutationSupported
+    TwoArgSupported
 
 Trait identifying backends that support two-argument functions `f!(y, x)`.
 """
-struct MutationSupported <: MutationBehavior end
+struct TwoArgSupported <: MutationBehavior end
 
 """
-    MutationNotSupported
+    TwoArgNotSupported
 
 Trait identifying backends that do not support two-argument functions `f!(y, x)`.
 """
-struct MutationNotSupported <: MutationBehavior end
+struct TwoArgNotSupported <: MutationBehavior end
 
 """
-    mutation_support(backend)
+    twoarg_support(backend)
 
-Return [`MutationSupported`](@ref) or [`MutationNotSupported`](@ref) in a statically predictable way.
+Return [`TwoArgSupported`](@ref) or [`TwoArgNotSupported`](@ref) in a statically predictable way.
 """
-mutation_support(::AbstractADType) = MutationSupported()
+twoarg_support(::AbstractADType) = TwoArgSupported()
 
 ## Pushforward
 
@@ -132,8 +132,8 @@ end
 
 ## Conversions
 
-Base.Bool(::MutationSupported) = true
-Base.Bool(::MutationNotSupported) = false
+Base.Bool(::TwoArgSupported) = true
+Base.Bool(::TwoArgNotSupported) = false
 
 Base.Bool(::PushforwardFast) = true
 Base.Bool(::PushforwardSlow) = false
