@@ -94,7 +94,7 @@ function test_differentiation(
                             (:scenario_type, "$st - $j/$(length(grouped_scenarios))"),
                             (:scenario, "$k/$(length(st_group))"),
                             (:arguments, nb_args(scen)),
-                            (:operator, operator_place(scen)),
+                            (:place, operator_place(scen)),
                             (:function, scen.f),
                             (:input_type, typeof(scen.x)),
                             (:input_size, size(scen.x)),
@@ -180,7 +180,7 @@ function benchmark_differentiation(
                         (:scenario_type, "$st - $j/$(length(grouped_scenarios))"),
                         (:scenario, "$k/$(length(st_group))"),
                         (:arguments, nb_args(scen)),
-                        (:operator, operator_place(scen)),
+                        (:place, operator_place(scen)),
                         (:function, scen.f),
                         (:input_type, typeof(scen.x)),
                         (:input_size, size(scen.x)),
@@ -188,7 +188,7 @@ function benchmark_differentiation(
                         (:output_size, size(scen.y)),
                     ],
                 )
-                run_benchmark!(benchmark_data, backend, scen)
+                run_benchmark!(benchmark_data, backend, scen; logging)
             end
         end
     end

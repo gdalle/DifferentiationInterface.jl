@@ -18,12 +18,12 @@ end
 function comp_to_num_scenarios_onearg(x::ComponentVector)
     # pushforward stays out of place
     scens = AbstractScenario[]
-    for op in (:outofplace, :inplace)
+    for place in (:outofplace, :inplace)
         append!(
             scens,
             [
-                PullbackScenario(comp_to_num; x=x, ref=comp_to_num_pullback, operator=op),
-                GradientScenario(comp_to_num; x=x, ref=comp_to_num_gradient, operator=op),
+                PullbackScenario(comp_to_num; x=x, ref=comp_to_num_pullback, place=place),
+                GradientScenario(comp_to_num; x=x, ref=comp_to_num_gradient, place=place),
             ],
         )
     end
@@ -32,7 +32,7 @@ function comp_to_num_scenarios_onearg(x::ComponentVector)
             scens,
             [
                 PushforwardScenario(
-                    comp_to_num; x=x, ref=comp_to_num_pushforward, operator=op
+                    comp_to_num; x=x, ref=comp_to_num_pushforward, place=place
                 ),
             ],
         )

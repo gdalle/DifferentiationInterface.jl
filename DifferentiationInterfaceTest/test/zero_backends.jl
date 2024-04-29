@@ -76,7 +76,7 @@ ADTypes.mode(::FakeBackend) = ADTypes.ForwardMode()
 
 data3 = benchmark_differentiation(
     [FakeBackend()]; logging=get(ENV, "CI", "false") == "false"
-);
+);  # this gives lots of warnings when logging is on, no worries
 
 df3 = DataFrames.DataFrame(data3)
 

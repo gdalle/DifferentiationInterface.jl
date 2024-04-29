@@ -84,9 +84,9 @@ Note that we only compare (possibly) in-place operators, because they are always
 
 ```@example tuto
 function formatter(v, i, j)
-    if j in (14, 15)  # time, bytes
+    if j in (15, 16)  # time, bytes
         return Printf.@sprintf("%.1e", v)
-    elseif j == 16  # allocs
+    elseif j == 17  # allocs
         return Printf.@sprintf("%.1f", v)
     else
         return v
