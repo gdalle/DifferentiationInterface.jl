@@ -42,8 +42,8 @@ There is one scenario per operator, and so here we will use [`GradientScenario`]
 
 ```@repl tuto
 scenarios = [
-    GradientScenario(f; x=rand(Float32, 3), ref=∇f, operator=:inplace),
-    GradientScenario(f; x=rand(Float64, 3, 2), ref=∇f, operator=:inplace)
+    GradientScenario(f; x=rand(Float32, 3), ref=∇f, place=:inplace),
+    GradientScenario(f; x=rand(Float64, 3, 2), ref=∇f, place=:inplace)
 ];
 ```
 
