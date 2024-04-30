@@ -26,7 +26,7 @@ const backend_examples = (
 
 checkmark(x::Bool) = x ? '✅' : '❌'
 unicode_check_available(backend) = checkmark(check_available(backend))
-unicode_check_hessian(backend)   = checkmark(check_hessian(backend))
+unicode_check_hessian(backend)   = checkmark(check_hessian(backend; verbose=false))
 unicode_check_twoarg(backend)    = checkmark(check_twoarg(backend))
 
 io = IOBuffer()
