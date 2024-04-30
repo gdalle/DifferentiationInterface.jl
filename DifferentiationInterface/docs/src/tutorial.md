@@ -150,8 +150,8 @@ To compute sparse Jacobians or Hessians, you need three ingredients (read [this 
 ADTypes.jl v1.0 defines the [`AutoSparse`](@ref) wrapper, which brings together these three ingredients.
 At the moment, this new wrapper is not well-supported in the ecosystem, which is why DifferentiationInterface.jl provides the necessary objects to get you started:
 
-1. [`SymbolicsSparsityDetector`](@ref) (requires [Symbolics.jl](https://github.com/JuliaSymbolics/Symbolics.jl) to be loaded)
-2. [`GreedyColoringAlgorithm`](@ref)
+1. [`DifferentiationInterface.SymbolicsSparsityDetector`](@ref) (requires [Symbolics.jl](https://github.com/JuliaSymbolics/Symbolics.jl) to be loaded)
+2. [`DifferentiationInterface.GreedyColoringAlgorithm`](@ref)
 
 !!! warning
     These objects are not part of the public API, so they can change unexpectedly between versions.
