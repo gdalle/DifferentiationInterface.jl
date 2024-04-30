@@ -2,25 +2,25 @@
 
 ## Operators
 
-Depending on the type of input and output, differentiation operators can have various names.
+The name of the differentiation operators can vary depending on the type of the input `x` and the type of the output `y` of the function being differentiated.
 
 We provide the following high-level operators:
 
-| operator                    | order | input  `x`      | output   `y`                | result type      | result shape             |
-| :-------------------------- | :---- | :-------------- | :-------------------------- | :--------------- | :----------------------- |
-| [`derivative`](@ref)        | 1     | `Number`        | `Number` or `AbstractArray` | same as `y`      | `size(y)`                |
-| [`second_derivative`](@ref) | 2     | `Number`        | `Number` or `AbstractArray` | same as `y`      | `size(y)`                |
-| [`gradient`](@ref)          | 1     | `AbstractArray` | `Number`                    | same as `x`      | `size(x)`                |
-| [`hessian`](@ref)           | 2     | `AbstractArray` | `Number`                    | `AbstractMatrix` | `(length(x), length(x))` |
-| [`jacobian`](@ref)          | 1     | `AbstractArray` | `AbstractArray`             | `AbstractMatrix` | `(length(y), length(x))` |
+| operator                    | order | input  `x`      | output   `y`                | operator result type      | operator result shape    |
+| :-------------------------- | :---- | :-------------- | :-------------------------- | :------------------------ | :----------------------- |
+| [`derivative`](@ref)        | 1     | `Number`        | `Number` or `AbstractArray` | same as `y`               | `size(y)`                |
+| [`second_derivative`](@ref) | 2     | `Number`        | `Number` or `AbstractArray` | same as `y`               | `size(y)`                |
+| [`gradient`](@ref)          | 1     | `AbstractArray` | `Number`                    | same as `x`               | `size(x)`                |
+| [`hessian`](@ref)           | 2     | `AbstractArray` | `Number`                    | `AbstractMatrix`          | `(length(x), length(x))` |
+| [`jacobian`](@ref)          | 1     | `AbstractArray` | `AbstractArray`             | `AbstractMatrix`          | `(length(y), length(x))` |
 
 They can be derived from lower-level operators:
 
-| operator                       | order | input  `x`      | output   `y` | seed `v` | result type | result shape |
-| :----------------------------- | :---- | :-------------- | :----------- | :------- | :---------- | :----------- |
-| [`pushforward`](@ref) (or JVP) | 1     | `Any`           | `Any`        | `dx`     | same as `y` | `size(y)`    |
-| [`pullback`](@ref) (or VJP)    | 1     | `Any`           | `Any`        | `dy`     | same as `x` | `size(x)`    |
-| [`hvp`](@ref)                  | 2     | `AbstractArray` | `Number`     | `dx`     | same as `x` | `size(x)`    |
+| operator                       | order | input  `x`      | output   `y` | seed `v` | operator result type | operator result shape |
+| :----------------------------- | :---- | :-------------- | :----------- | :------- | :------------------- | :-------------------- |
+| [`pushforward`](@ref) (or JVP) | 1     | `Any`           | `Any`        | `dx`     | same as `y`          | `size(y)`             |
+| [`pullback`](@ref) (or VJP)    | 1     | `Any`           | `Any`        | `dy`     | same as `x`          | `size(x)`             |
+| [`hvp`](@ref)                  | 2     | `AbstractArray` | `Number`     | `dx`     | same as `x`          | `size(x)`             |
 
 Luckily, most backends have custom implementations, which we reuse if possible instead of relying on fallbacks.
 
