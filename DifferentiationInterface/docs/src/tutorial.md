@@ -138,3 +138,49 @@ And you can run the same benchmarks to see what you gained (although such a smal
 In short, DifferentiationInterface.jl allows for easy testing and comparison of AD backends.
 If you want to go further, check out the [DifferentiationInterfaceTest.jl tutorial](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterfaceTest/dev/tutorial/).
 It provides benchmarking utilities to compare backends and help you select the one that is best suited for your problem.
+
+## [Handling sparsity](@id sparsity-tutorial)
+
+To compute sparse Jacobians or Hessians, you need three ingredients (read [this survey](https://epubs.siam.org/doi/10.1137/S0036144504444711) to understand why):
+
+1. A sparsity pattern detector
+2. A coloring algorithm
+3. An underlying AD backend
+
+ADTypes.jl v1.0 defines the [`AutoSparse`](@ref) wrapper, which brings together these three ingredients.
+At the moment, this new wrapper is not well-supported in the ecosystem, which is why DifferentiationInterface.jl provides the necessary objects to get you started:
+
+1. [`SymbolicsSparsityDetector`](@ref) (requires [Symbolics.jl](https://github.com/JuliaSymbolics/Symbolics.jl) to be loaded)
+2. [`GreedyColoringAlgorithm`](@ref)
+
+!!! warning
+    These objects are not part of the public API, so they can change unexpectedly between versions.
+
+!!! info
+    The symbolic backends have built-in sparsity handling, so `AutoSparse(AutoSymbolics())` and `AutoSparse(AutoFastDifferentiation())` do not need additional configuration.
+
+Here's an example:
+
+```@example tuto
+import Symbolics
+
+sparsity_detector = DifferentiationInterface.SymbolicsSparsityDetector()
+coloring_algorithm = DifferentiationInterface.GreedyColoringAlgorithm()
+dense_backend = AutoForwardDiff()
+
+sparse_backend = AutoSparse(dense_backend; sparsity_detector, coloring_algorithm)
+```
+
+See how the computed Hessian is sparse, whereas the underlying backend alone would give us a dense matrix:
+
+```@example tuto
+hessian(f, sparse_backend, x)
+```
+
+```@example tuto
+hessian(f, dense_backend, x)
+```
+
+The sparsity detector and coloring algorithm are called during the preparation step, which can be fairly expensive.
+If you plan to compute several Jacobians or Hessians with the same pattern but different input vectors, you should reuse the `extras` object created by `prepare_jacobian` or `prepare_hessian`.
+After preparation, the sparse computation itself will be much faster than the dense one, and require fewer calls to the function. 
