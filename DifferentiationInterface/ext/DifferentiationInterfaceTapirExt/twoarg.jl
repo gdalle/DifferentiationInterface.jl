@@ -29,11 +29,13 @@ function DI.value_and_pullback(f!, y, ::AutoTapir, x, dy, extras::TapirTwoArgPul
 
     # Run the forwards-pass.
     out, pb!! = extras.rrule(
-        CoDual(f!, df!), CoDual(y_copy, dy_righttype), CoDual(x, dx_righttype)
+        CoDual(f!, fdata(df!)),
+        CoDual(y_copy, fdata(dy_righttype)),
+        CoDual(x, fdata(dx_righttype)),
     )
 
     # Verify that the output is non-differentiable.
-    @assert tangent(out) == NoTangent()
+    @assert primal(out) === nothing
 
     # Set the cotangent of `y` to be equal to the requested value.
     dy_righttype = increment!!(dy_righttype, dy_righttype_backup)
@@ -42,7 +44,7 @@ function DI.value_and_pullback(f!, y, ::AutoTapir, x, dy, extras::TapirTwoArgPul
     y = copyto!(y, y_copy)
 
     # Run the reverse-pass.
-    _, _, new_dx = pb!!(NoTangent(), df!, dy_righttype, dx_righttype)
+    _, _, new_dx = pb!!(NoRData())
 
-    return y, new_dx
+    return y, tangent(fdata(dx_righttype), new_dx)
 end
