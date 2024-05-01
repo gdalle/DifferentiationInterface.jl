@@ -5,6 +5,7 @@
 [![Build Status](https://github.com/gdalle/DifferentiationInterface.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/gdalle/DifferentiationInterface.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![Coverage](https://codecov.io/gh/gdalle/DifferentiationInterface.jl/branch/main/graph/badge.svg)](https://app.codecov.io/gh/gdalle/DifferentiationInterface.jl)
 [![Code Style: Blue](https://img.shields.io/badge/code%20style-blue-4495d1.svg)](https://github.com/invenia/BlueStyle)
+[![DOI](https://zenodo.org/badge/740973714.svg)](https://zenodo.org/doi/10.5281/zenodo.11092033)
 
 |           Package            |                                                                                                                                                    Docs                                                                                                                                                    |
 | :--------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
@@ -22,9 +23,10 @@ This package provides a backend-agnostic syntax to differentiate functions of th
 
 ## Features
 
-- First- and second-order operators (gradients, Jacobians, Hessians and [more](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterface/stable/overview/))
+- First- and second-order operators (gradients, Jacobians, Hessians and more)
 - In-place and out-of-place differentiation
 - Preparation mechanism (e.g. to create a config or tape)
+- Built-in sparsity handling
 - Thorough validation on standard inputs and outputs (numbers, vectors, matrices)
 - Testing and benchmarking utilities accessible to users with [DifferentiationInterfaceTest](https://github.com/gdalle/DifferentiationInterface.jl/tree/main/DifferentiationInterfaceTest)
 
