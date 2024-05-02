@@ -118,27 +118,27 @@ function hvp(
 end
 
 function hvp_aux(f::F, backend, x, v, extras::ForwardOverForwardHVPExtras) where {F}
-    @unpack inner_gradient_closure, outer_pushforward_extras = extras
+    @compat (; inner_gradient_closure, outer_pushforward_extras) = extras
     return pushforward(
         inner_gradient_closure, outer(backend), x, v, outer_pushforward_extras
     )
 end
 
 function hvp_aux(f::F, backend, x, v, extras::ForwardOverReverseHVPExtras) where {F}
-    @unpack inner_gradient_closure, outer_pushforward_extras = extras
+    @compat (; inner_gradient_closure, outer_pushforward_extras) = extras
     return pushforward(
         inner_gradient_closure, outer(backend), x, v, outer_pushforward_extras
     )
 end
 
 function hvp_aux(f::F, backend, x, v, extras::ReverseOverForwardHVPExtras) where {F}
-    @unpack inner_pushforward_closure_generator, outer_gradient_extras = extras
+    @compat (; inner_pushforward_closure_generator, outer_gradient_extras) = extras
     inner_pushforward_closure = inner_pushforward_closure_generator(v)
     return gradient(inner_pushforward_closure, outer(backend), x, outer_gradient_extras)
 end
 
 function hvp_aux(f::F, backend, x, v, extras::ReverseOverReverseHVPExtras) where {F}
-    @unpack inner_gradient_closure, outer_pullback_extras = extras
+    @compat (; inner_gradient_closure, outer_pullback_extras) = extras
     return pullback(inner_gradient_closure, outer(backend), x, v, outer_pullback_extras)
 end
 
@@ -157,26 +157,26 @@ function hvp!(
 end
 
 function hvp_aux!(f::F, p, backend, x, v, extras::ForwardOverForwardHVPExtras) where {F}
-    @unpack inner_gradient_closure, outer_pushforward_extras = extras
+    @compat (; inner_gradient_closure, outer_pushforward_extras) = extras
     return pushforward!(
         inner_gradient_closure, p, outer(backend), x, v, outer_pushforward_extras
     )
 end
 
 function hvp_aux!(f::F, p, backend, x, v, extras::ForwardOverReverseHVPExtras) where {F}
-    @unpack inner_gradient_closure, outer_pushforward_extras = extras
+    @compat (; inner_gradient_closure, outer_pushforward_extras) = extras
     return pushforward!(
         inner_gradient_closure, p, outer(backend), x, v, outer_pushforward_extras
     )
 end
 
 function hvp_aux!(f::F, p, backend, x, v, extras::ReverseOverForwardHVPExtras) where {F}
-    @unpack inner_pushforward_closure_generator, outer_gradient_extras = extras
+    @compat (; inner_pushforward_closure_generator, outer_gradient_extras) = extras
     inner_pushforward_closure = inner_pushforward_closure_generator(v)
     return gradient!(inner_pushforward_closure, p, outer(backend), x, outer_gradient_extras)
 end
 
 function hvp_aux!(f::F, p, backend, x, v, extras::ReverseOverReverseHVPExtras) where {F}
-    @unpack inner_gradient_closure, outer_pullback_extras = extras
+    @compat (; inner_gradient_closure, outer_pullback_extras) = extras
     return pullback!(inner_gradient_closure, p, outer(backend), x, v, outer_pullback_extras)
 end

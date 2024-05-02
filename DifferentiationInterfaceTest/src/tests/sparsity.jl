@@ -3,7 +3,7 @@
 function test_sparsity(
     ba::AbstractADType, scen::JacobianScenario{1,:outofplace}; ref_backend
 )
-    @unpack f, x, y = new_scen = deepcopy(scen)
+    @compat (; f, x, y) = new_scen = deepcopy(scen)
     extras = prepare_jacobian(f, ba, x)
     jac_true = if ref_backend isa AbstractADType
         jacobian(f, ref_backend, x)
@@ -22,7 +22,7 @@ function test_sparsity(
 end
 
 function test_sparsity(ba::AbstractADType, scen::JacobianScenario{1,:inplace}; ref_backend)
-    @unpack f, x, y = new_scen = deepcopy(scen)
+    @compat (; f, x, y) = new_scen = deepcopy(scen)
     extras = prepare_jacobian(f, ba, x)
     jac_true = if ref_backend isa AbstractADType
         jacobian(f, ref_backend, x)
@@ -43,7 +43,7 @@ end
 function test_sparsity(
     ba::AbstractADType, scen::JacobianScenario{2,:outofplace}; ref_backend
 )
-    @unpack f, x, y = new_scen = deepcopy(scen)
+    @compat (; f, x, y) = new_scen = deepcopy(scen)
     f! = f
     extras = prepare_jacobian(f!, mysimilar(y), ba, x)
     jac_true = if ref_backend isa AbstractADType
@@ -63,7 +63,7 @@ function test_sparsity(
 end
 
 function test_sparsity(ba::AbstractADType, scen::JacobianScenario{2,:inplace}; ref_backend)
-    @unpack f, x, y = new_scen = deepcopy(scen)
+    @compat (; f, x, y) = new_scen = deepcopy(scen)
     f! = f
     extras = prepare_jacobian(f!, mysimilar(y), ba, x)
     jac_true = if ref_backend isa AbstractADType
@@ -87,7 +87,7 @@ end
 function test_sparsity(
     ba::AbstractADType, scen::HessianScenario{1,:outofplace}; ref_backend
 )
-    @unpack f, x, y = new_scen = deepcopy(scen)
+    @compat (; f, x, y) = new_scen = deepcopy(scen)
     extras = prepare_hessian(f, ba, x)
     hess_true = if ref_backend isa AbstractADType
         hessian(f, ref_backend, x)
@@ -104,7 +104,7 @@ function test_sparsity(
 end
 
 function test_sparsity(ba::AbstractADType, scen::HessianScenario{1,:inplace}; ref_backend)
-    @unpack f, x, y = new_scen = deepcopy(scen)
+    @compat (; f, x, y) = new_scen = deepcopy(scen)
     extras = prepare_hessian(f, ba, x)
     hess_true = if ref_backend isa AbstractADType
         hessian(f, ref_backend, x)

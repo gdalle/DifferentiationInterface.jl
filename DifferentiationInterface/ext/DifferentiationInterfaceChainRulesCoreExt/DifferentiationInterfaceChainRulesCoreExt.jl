@@ -11,7 +11,7 @@ using ChainRulesCore:
     rrule_via_ad
 import DifferentiationInterface as DI
 using DifferentiationInterface: DifferentiateWith, NoPullbackExtras, NoPushforwardExtras
-using SimpleUnPack: @unpack
+using Compat: @compat
 
 ruleconfig(backend::AutoChainRules) = backend.ruleconfig
 

@@ -19,7 +19,7 @@ function test_correctness(
     rtol,
     ref_backend,
 )
-    @unpack f, x, y, dx = new_scen = deepcopy(scen)
+    @compat (; f, x, y, dx) = new_scen = deepcopy(scen)
     extras = prepare_pushforward(f, ba, mysimilar_random(x), mysimilar_random(dx))
     dy_true = if ref_backend isa AbstractADType
         pushforward(f, ref_backend, x, dx)
@@ -54,7 +54,7 @@ function test_correctness(
     rtol,
     ref_backend,
 )
-    @unpack f, x, y, dx = new_scen = deepcopy(scen)
+    @compat (; f, x, y, dx) = new_scen = deepcopy(scen)
     extras = prepare_pushforward(f, ba, mysimilar_random(x), mysimilar_random(dx))
     dy_true = if ref_backend isa AbstractADType
         pushforward(f, ref_backend, x, dx)
@@ -94,7 +94,7 @@ function test_correctness(
     rtol,
     ref_backend,
 )
-    @unpack f, x, y, dx = new_scen = deepcopy(scen)
+    @compat (; f, x, y, dx) = new_scen = deepcopy(scen)
     f! = f
     extras = prepare_pushforward(
         f!, mysimilar(y), ba, mysimilar_random(x), mysimilar_random(dx)
@@ -136,7 +136,7 @@ function test_correctness(
     rtol,
     ref_backend,
 )
-    @unpack f, x, y, dx = new_scen = deepcopy(scen)
+    @compat (; f, x, y, dx) = new_scen = deepcopy(scen)
     f! = f
     extras = prepare_pushforward(
         f!, mysimilar(y), ba, mysimilar_random(x), mysimilar_random(dx)
@@ -182,7 +182,7 @@ function test_correctness(
     rtol,
     ref_backend,
 )
-    @unpack f, x, y, dy = new_scen = deepcopy(scen)
+    @compat (; f, x, y, dy) = new_scen = deepcopy(scen)
     extras = prepare_pullback(f, ba, mysimilar_random(x), mysimilar_random(dy))
     dx_true = if ref_backend isa AbstractADType
         pullback(f, ref_backend, x, dy)
@@ -224,7 +224,7 @@ function test_correctness(
     rtol,
     ref_backend,
 )
-    @unpack f, x, y, dy = new_scen = deepcopy(scen)
+    @compat (; f, x, y, dy) = new_scen = deepcopy(scen)
     extras = prepare_pullback(f, ba, mysimilar_random(x), mysimilar_random(dy))
     dx_true = if ref_backend isa AbstractADType
         pullback(f, ref_backend, x, dy)
@@ -272,7 +272,7 @@ function test_correctness(
     rtol,
     ref_backend,
 )
-    @unpack f, x, y, dy = new_scen = deepcopy(scen)
+    @compat (; f, x, y, dy) = new_scen = deepcopy(scen)
     f! = f
     extras = prepare_pullback(
         f!, mysimilar(y), ba, mysimilar_random(x), mysimilar_random(dy)
@@ -323,7 +323,7 @@ function test_correctness(
     rtol,
     ref_backend,
 )
-    @unpack f, x, y, dy = new_scen = deepcopy(scen)
+    @compat (; f, x, y, dy) = new_scen = deepcopy(scen)
     f! = f
     extras = prepare_pullback(
         f!, mysimilar(y), ba, mysimilar_random(x), mysimilar_random(dy)
@@ -379,7 +379,7 @@ function test_correctness(
     rtol,
     ref_backend,
 )
-    @unpack f, x, y = new_scen = deepcopy(scen)
+    @compat (; f, x, y) = new_scen = deepcopy(scen)
     extras = prepare_derivative(f, ba, mysimilar_random(x))
     der_true = if ref_backend isa AbstractADType
         derivative(f, ref_backend, x)
@@ -415,7 +415,7 @@ function test_correctness(
     rtol,
     ref_backend,
 )
-    @unpack f, x, y = new_scen = deepcopy(scen)
+    @compat (; f, x, y) = new_scen = deepcopy(scen)
     extras = prepare_derivative(f, ba, mysimilar_random(x))
     der_true = if ref_backend isa AbstractADType
         derivative(f, ref_backend, x)
@@ -455,7 +455,7 @@ function test_correctness(
     rtol,
     ref_backend,
 )
-    @unpack f, x, y = new_scen = deepcopy(scen)
+    @compat (; f, x, y) = new_scen = deepcopy(scen)
     f! = f
     extras = prepare_derivative(f!, mysimilar(y), ba, mysimilar_random(x))
     der_true = if ref_backend isa AbstractADType
@@ -495,7 +495,7 @@ function test_correctness(
     rtol,
     ref_backend,
 )
-    @unpack f, x, y = new_scen = deepcopy(scen)
+    @compat (; f, x, y) = new_scen = deepcopy(scen)
     f! = f
     extras = prepare_derivative(f!, mysimilar(y), ba, mysimilar_random(x))
     der_true = if ref_backend isa AbstractADType
@@ -539,7 +539,7 @@ function test_correctness(
     rtol,
     ref_backend,
 )
-    @unpack f, x, y = new_scen = deepcopy(scen)
+    @compat (; f, x, y) = new_scen = deepcopy(scen)
     extras = prepare_gradient(f, ba, mysimilar_random(x))
     grad_true = if ref_backend isa AbstractADType
         gradient(f, ref_backend, x)
@@ -575,7 +575,7 @@ function test_correctness(
     rtol,
     ref_backend,
 )
-    @unpack f, x, y = new_scen = deepcopy(scen)
+    @compat (; f, x, y) = new_scen = deepcopy(scen)
     extras = prepare_gradient(f, ba, mysimilar_random(x))
     grad_true = if ref_backend isa AbstractADType
         gradient(f, ref_backend, x)
@@ -617,7 +617,7 @@ function test_correctness(
     rtol,
     ref_backend,
 )
-    @unpack f, x, y = new_scen = deepcopy(scen)
+    @compat (; f, x, y) = new_scen = deepcopy(scen)
     extras = prepare_jacobian(f, ba, mysimilar_random(x))
     jac_true = if ref_backend isa AbstractADType
         jacobian(f, ref_backend, x)
@@ -653,7 +653,7 @@ function test_correctness(
     rtol,
     ref_backend,
 )
-    @unpack f, x, y = new_scen = deepcopy(scen)
+    @compat (; f, x, y) = new_scen = deepcopy(scen)
     extras = prepare_jacobian(f, ba, mysimilar_random(x))
     jac_true = if ref_backend isa AbstractADType
         jacobian(f, ref_backend, x)
@@ -693,7 +693,7 @@ function test_correctness(
     rtol,
     ref_backend,
 )
-    @unpack f, x, y = new_scen = deepcopy(scen)
+    @compat (; f, x, y) = new_scen = deepcopy(scen)
     f! = f
     extras = prepare_jacobian(f!, mysimilar(y), ba, mysimilar_random(x))
     jac_true = if ref_backend isa AbstractADType
@@ -733,7 +733,7 @@ function test_correctness(
     rtol,
     ref_backend,
 )
-    @unpack f, x, y = new_scen = deepcopy(scen)
+    @compat (; f, x, y) = new_scen = deepcopy(scen)
     f! = f
     extras = prepare_jacobian(f!, mysimilar(y), ba, mysimilar_random(x))
     jac_true = if ref_backend isa AbstractADType
@@ -777,7 +777,7 @@ function test_correctness(
     rtol,
     ref_backend,
 )
-    @unpack f, x, y = new_scen = deepcopy(scen)
+    @compat (; f, x, y) = new_scen = deepcopy(scen)
     extras = prepare_second_derivative(f, ba, mysimilar_random(x))
     der2_true = if ref_backend isa AbstractADType
         second_derivative(f, ref_backend, x)
@@ -807,7 +807,7 @@ function test_correctness(
     rtol,
     ref_backend,
 )
-    @unpack f, x, y = new_scen = deepcopy(scen)
+    @compat (; f, x, y) = new_scen = deepcopy(scen)
     extras = prepare_second_derivative(f, ba, mysimilar_random(x))
     der2_true = if ref_backend isa AbstractADType
         second_derivative(f, ref_backend, x)
@@ -841,7 +841,7 @@ function test_correctness(
     rtol,
     ref_backend,
 )
-    @unpack f, x, dx = new_scen = deepcopy(scen)
+    @compat (; f, x, dx) = new_scen = deepcopy(scen)
     extras = prepare_hvp(f, ba, mysimilar_random(x), mysimilar_random(dx))
     p_true = if ref_backend isa AbstractADType
         hvp(f, ref_backend, x, dx)
@@ -871,7 +871,7 @@ function test_correctness(
     rtol,
     ref_backend,
 )
-    @unpack f, x, dx = new_scen = deepcopy(scen)
+    @compat (; f, x, dx) = new_scen = deepcopy(scen)
     extras = prepare_hvp(f, ba, mysimilar_random(x), mysimilar_random(dx))
     p_true = if ref_backend isa AbstractADType
         hvp(f, ref_backend, x, dx)
@@ -905,7 +905,7 @@ function test_correctness(
     rtol,
     ref_backend,
 )
-    @unpack f, x, y = new_scen = deepcopy(scen)
+    @compat (; f, x, y) = new_scen = deepcopy(scen)
     extras = prepare_hessian(f, ba, mysimilar_random(x))
     hess_true = if ref_backend isa AbstractADType
         hessian(f, ref_backend, x)
@@ -935,7 +935,7 @@ function test_correctness(
     rtol,
     ref_backend,
 )
-    @unpack f, x, y = new_scen = deepcopy(scen)
+    @compat (; f, x, y) = new_scen = deepcopy(scen)
     extras = prepare_hessian(f, ba, mysimilar_random(x))
     hess_true = if ref_backend isa AbstractADType
         hessian(f, ref_backend, x)

@@ -92,7 +92,7 @@ end
 function value_and_pushforward_onearg_aux(
     f::F, backend, x, dx, extras::PullbackPushforwardExtras
 ) where {F}
-    @unpack pullback_extras = extras
+    @compat (; pullback_extras) = extras
     y, pullbackfunc = value_and_pullback_split(f, backend, x, pullback_extras)
     dy = if x isa Number && y isa Number
         dx * pullbackfunc(one(y))
@@ -159,7 +159,7 @@ end
 function value_and_pushforward_twoarg_aux(
     f!::F, y, backend, x, dx, extras::PullbackPushforwardExtras
 ) where {F}
-    @unpack pullback_extras = extras
+    @compat (; pullback_extras) = extras
     dy = if x isa Number && y isa AbstractArray
         map(CartesianIndices(y)) do i
             dx * pullback(f!, y, backend, x, basis(backend, y, i), pullback_extras)

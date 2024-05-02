@@ -33,7 +33,7 @@ using Enzyme:
     gradient!,
     jacobian,
     make_zero
-using SimpleUnPack: @unpack
+using Compat: @compat
 
 const AutoForwardEnzyme = AutoEnzyme{<:ForwardMode}
 const AutoForwardOrNothingEnzyme = Union{AutoEnzyme{<:ForwardMode},AutoEnzyme{Nothing}}

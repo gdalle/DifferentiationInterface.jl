@@ -28,7 +28,7 @@ using FiniteDiff:
     finite_difference_jacobian,
     finite_difference_jacobian!
 using LinearAlgebra: dot, mul!
-using SimpleUnPack: @unpack
+using Compat: @compat
 
 DI.check_available(::AutoFiniteDiff) = true
 

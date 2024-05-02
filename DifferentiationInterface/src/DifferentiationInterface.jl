@@ -32,7 +32,7 @@ using DocStringExtensions
 using FillArrays: OneElement
 using LinearAlgebra: Symmetric, Transpose, dot, parent, transpose
 using PackageExtensionCompat: @require_extensions
-using SimpleUnPack: @unpack
+using Compat: @compat
 using SparseArrays: SparseMatrixCSC, nonzeros, nzrange, rowvals, sparse
 
 abstract type Extras end

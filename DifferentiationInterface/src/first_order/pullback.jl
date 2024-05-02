@@ -103,7 +103,7 @@ end
 function value_and_pullback_onearg_aux(
     f::F, backend, x, dy, extras::PushforwardPullbackExtras
 ) where {F}
-    @unpack pushforward_extras = extras
+    @compat (; pushforward_extras) = extras
     y = f(x)
     dx = if x isa Number && y isa Number
         dy * pushforward(f, backend, x, one(x), pushforward_extras)
@@ -170,7 +170,7 @@ end
 function value_and_pullback_twoarg_aux(
     f!::F, y, backend, x, dy, extras::PushforwardPullbackExtras
 ) where {F}
-    @unpack pushforward_extras = extras
+    @compat (; pushforward_extras) = extras
     dx = if x isa Number && y isa AbstractArray
         dot(dy, pushforward(f!, y, backend, x, one(x), pushforward_extras))
     elseif x isa AbstractArray && y isa AbstractArray
@@ -235,12 +235,12 @@ struct OneArgPullbackFunc!{B,F,X,E}
 end
 
 function (pbf::OneArgPullbackFunc)(dy)
-    @unpack f, backend, x, extras = pbf
+    @compat (; f, backend, x, extras) = pbf
     return pullback(f, backend, x, dy, extras)
 end
 
 function (pbf::OneArgPullbackFunc!)(dx, dy)
-    @unpack f, backend, x, extras = pbf
+    @compat (; f, backend, x, extras) = pbf
     return pullback!(f, dx, backend, x, dy, extras)
 end
 
@@ -279,12 +279,12 @@ struct TwoArgPullbackFunc!{B,F,X,E}
 end
 
 function (pbf::TwoArgPullbackFunc)(y, dy)
-    @unpack f!, backend, x, extras = pbf
+    @compat (; f!, backend, x, extras) = pbf
     return pullback(f!, y, backend, x, dy, extras)
 end
 
 function (pbf::TwoArgPullbackFunc!)(y, dx, dy)
-    @unpack f!, backend, x, extras = pbf
+    @compat (; f!, backend, x, extras) = pbf
     return pullback!(f!, y, dx, backend, x, dy, extras)
 end
 

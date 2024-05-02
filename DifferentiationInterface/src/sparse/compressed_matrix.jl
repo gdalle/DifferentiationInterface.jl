@@ -34,7 +34,7 @@ end
 ## Column decompression
 
 function decompress!(A::AbstractMatrix, compressed::CompressedMatrix{:col})
-    @unpack sparsity, colors, aggregates = compressed
+    @compat (; sparsity, colors, aggregates) = compressed
     A .= zero(eltype(A))
     @views for j in axes(A, 2)
         k = colors[j]
@@ -48,7 +48,7 @@ function decompress!(
     A::SparseMatrixCSC, compressed::CompressedMatrix{:col,<:SparseMatrixCSC}
 )
     # A and compressed.sparsity have the same pattern
-    @unpack colors, aggregates = compressed
+    @compat (; colors, aggregates) = compressed
     Anz, Arv = nonzeros(A), rowvals(A)
     Anz .= zero(eltype(A))
     @views for j in axes(A, 2)
@@ -63,7 +63,7 @@ end
 ## Row decompression
 
 function decompress!(A::AbstractMatrix, compressed::CompressedMatrix{:row})
-    @unpack sparsity, colors, aggregates = compressed
+    @compat (; sparsity, colors, aggregates) = compressed
     A .= zero(eltype(A))
     @views for i in axes(A, 1)
         k = colors[i]
@@ -78,7 +78,7 @@ function decompress!(
     compressed::CompressedMatrix{:row,<:Transpose{<:Any,<:SparseMatrixCSC}},
 )
     # A and compressed.sparsity have the same pattern
-    @unpack colors, aggregates = compressed
+    @compat (; colors, aggregates) = compressed
     PA = parent(A)
     PAnz, PArv = nonzeros(PA), rowvals(PA)
     PAnz .= zero(eltype(A))

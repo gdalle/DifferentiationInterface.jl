@@ -25,7 +25,7 @@ using FastDifferentiation:
 using FillArrays: Fill
 using LinearAlgebra: dot
 using FastDifferentiation.RuntimeGeneratedFunctions: RuntimeGeneratedFunction
-using SimpleUnPack: @unpack
+using Compat: @compat
 
 DI.check_available(::AutoFastDifferentiation) = true
 
