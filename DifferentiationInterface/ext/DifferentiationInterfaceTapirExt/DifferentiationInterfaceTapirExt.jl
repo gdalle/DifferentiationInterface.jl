@@ -19,6 +19,7 @@ using Tapir:
     fdata,
     rdata,
     __value_and_pullback!!
+using SimpleUnPack: @unpack
 
 DI.check_available(::AutoTapir) = true
 

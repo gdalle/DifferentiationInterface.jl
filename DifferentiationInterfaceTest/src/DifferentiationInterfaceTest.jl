@@ -17,7 +17,6 @@ using ADTypes:
     ForwardOrReverseMode,
     ReverseMode,
     SymbolicMode
-using Base: get_extension
 using Chairmarks: @be, Benchmark, Sample
 using ComponentArrays: ComponentVector
 using DifferentiationInterface
@@ -42,10 +41,11 @@ using DifferentiationInterface:
     SecondDerivativeExtras
 using DocStringExtensions
 import DifferentiationInterface as DI
-using JET: @test_call, @test_opt
+using JET: JET
 using JLArrays: jl
 using LinearAlgebra: Diagonal, dot
 using ProgressMeter: ProgressUnknown, next!
+using SimpleUnPack: @unpack
 using SparseArrays: SparseArrays, SparseMatrixCSC, nnz, spdiagm
 using StaticArrays: MMatrix, MVector, SMatrix, SVector
 using Test: @testset, @test
@@ -62,7 +62,9 @@ include("utils/misc.jl")
 include("utils/filter.jl")
 
 include("tests/correctness.jl")
-include("tests/type_stability.jl")
+@static if VERSION >= v"1.9"
+    include("tests/type_stability.jl")
+end
 include("tests/sparsity.jl")
 include("tests/benchmark.jl")
 include("test_differentiation.jl")

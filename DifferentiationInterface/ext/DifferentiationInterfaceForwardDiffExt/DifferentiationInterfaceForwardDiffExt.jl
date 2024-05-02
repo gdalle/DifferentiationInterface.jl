@@ -32,6 +32,7 @@ using ForwardDiff:
     jacobian!,
     value
 using LinearAlgebra: dot, mul!
+using SimpleUnPack: @unpack
 
 DI.check_available(::AutoForwardDiff) = true
 

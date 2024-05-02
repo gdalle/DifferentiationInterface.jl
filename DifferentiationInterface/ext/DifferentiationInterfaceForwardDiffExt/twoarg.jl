@@ -17,7 +17,7 @@ end
 function compute_ydual_twoarg(
     f!::F, y, x::Number, dx, extras::ForwardDiffTwoArgPushforwardExtras{T}
 ) where {F,T}
-    (; ydual_tmp) = extras
+    @unpack ydual_tmp = extras
     xdual_tmp = make_dual(T, x, dx)
     f!(ydual_tmp, xdual_tmp)
     return ydual_tmp
@@ -26,7 +26,7 @@ end
 function compute_ydual_twoarg(
     f!::F, y, x, dx, extras::ForwardDiffTwoArgPushforwardExtras{T}
 ) where {F,T}
-    (; xdual_tmp, ydual_tmp) = extras
+    @unpack xdual_tmp, ydual_tmp = extras
     make_dual!(T, xdual_tmp, x, dx)
     f!(ydual_tmp, xdual_tmp)
     return ydual_tmp

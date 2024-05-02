@@ -27,6 +27,7 @@ using Symbolics:
     variable,
     variables
 using Symbolics.RuntimeGeneratedFunctions: RuntimeGeneratedFunction
+using SimpleUnPack: @unpack
 
 DI.check_available(::AutoSymbolics) = true
 DI.pullback_performance(::AutoSymbolics) = DI.PullbackSlow()

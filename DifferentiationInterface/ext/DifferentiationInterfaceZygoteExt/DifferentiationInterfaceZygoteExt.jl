@@ -7,6 +7,7 @@ using DifferentiationInterface:
 using DocStringExtensions
 using Zygote:
     ZygoteRuleConfig, gradient, hessian, jacobian, pullback, withgradient, withjacobian
+using SimpleUnPack: @unpack
 
 DI.check_available(::AutoZygote) = true
 DI.twoarg_support(::AutoZygote) = DI.TwoArgNotSupported()
@@ -37,7 +38,7 @@ end
 DI.prepare_gradient(f, ::AutoZygote, x) = NoGradientExtras()
 
 function DI.value_and_gradient(f, ::AutoZygote, x, ::NoGradientExtras)
-    (; val, grad) = withgradient(f, x)
+    @unpack val, grad = withgradient(f, x)
     return val, only(grad)
 end
 

@@ -65,7 +65,7 @@ These are not part of the public API.
 
 $(TYPEDFIELDS)
 """
-@kwdef struct BenchmarkDataRow
+Base.@kwdef struct BenchmarkDataRow
     backend::String
     mode::AbstractMode
     scenario::Symbol
@@ -128,8 +128,8 @@ function run_benchmark!(
     scen::PushforwardScenario{1,:outofplace};
     logging::Bool,
 )
-    (; f, x, y, dx) = deepcopy(scen)
-    (; bench0, bench1, bench2, calls0, calls1, calls2) = try
+    @unpack f, x, y, dx = deepcopy(scen)
+    @unpack bench0, bench1, bench2, calls0, calls1, calls2 = try
         # benchmark
         extras = prepare_pushforward(f, ba, x, dx)
         bench0 = @be prepare_pushforward(f, ba, x, dx) samples = 1 evals = 1
@@ -163,8 +163,8 @@ function run_benchmark!(
     scen::PushforwardScenario{1,:inplace};
     logging::Bool,
 )
-    (; f, x, y, dx) = deepcopy(scen)
-    (; bench0, bench1, bench2, calls0, calls1, calls2) = try
+    @unpack f, x, y, dx = deepcopy(scen)
+    @unpack bench0, bench1, bench2, calls0, calls1, calls2 = try
         # benchmark
         extras = prepare_pushforward(f, ba, x, dx)
         bench0 = @be prepare_pushforward(f, ba, x, dx) samples = 1 evals = 1
@@ -202,9 +202,9 @@ function run_benchmark!(
     scen::PushforwardScenario{2,:outofplace};
     logging::Bool,
 )
-    (; f, x, y, dx) = deepcopy(scen)
+    @unpack f, x, y, dx = deepcopy(scen)
     f! = f
-    (; bench0, bench1, bench2, calls0, calls1, calls2) = try
+    @unpack bench0, bench1, bench2, calls0, calls1, calls2 = try
         # benchmark
         extras = prepare_pushforward(f!, mysimilar(y), ba, x, dx)
         bench0 = @be mysimilar(y) prepare_pushforward(f!, _, ba, x, dx) samples = 1 evals =
@@ -243,9 +243,9 @@ function run_benchmark!(
     scen::PushforwardScenario{2,:inplace};
     logging::Bool,
 )
-    (; f, x, y, dx) = deepcopy(scen)
+    @unpack f, x, y, dx = deepcopy(scen)
     f! = f
-    (; bench0, bench1, bench2, calls0, calls1, calls2) = try
+    @unpack bench0, bench1, bench2, calls0, calls1, calls2 = try
         # benchmark
         extras = prepare_pushforward(f!, y, ba, x, dx)
         bench0 = @be mysimilar(y) prepare_pushforward(f!, _, ba, x, dx) evals = 1 samples =
@@ -286,34 +286,57 @@ function run_benchmark!(
     scen::PullbackScenario{1,:outofplace};
     logging::Bool,
 )
-    (; f, x, y, dy) = deepcopy(scen)
-    (; bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4) = try
-        # benchmark
-        extras = prepare_pullback(f, ba, x, dy)
-        bench0 = @be prepare_pullback(f, ba, x, dy) samples = 1 evals = 1
-        bench1 = @be deepcopy(extras) value_and_pullback(f, ba, x, dy, _)
-        bench2 = @be deepcopy(extras) pullback(f, ba, x, dy, _)
-        bench3 = @be deepcopy(extras) value_and_pullback_split(f, ba, x, _)
-        bench4 = @be last(value_and_pullback_split(f, ba, x, deepcopy(extras))) _(dy)
-        # count
-        cc = CallCounter(f)
-        extras = prepare_pullback(cc, ba, x, dy)
-        calls0 = reset_count!(cc)
-        value_and_pullback(cc, ba, x, dy, extras)
-        calls1 = reset_count!(cc)
-        pullback(cc, ba, x, dy, extras)
-        calls2 = reset_count!(cc)
-        _, pullbackfunc = value_and_pullback_split(cc, ba, x, extras)
-        calls3 = reset_count!(cc)
-        pullbackfunc(dy)
-        calls4 = reset_count!(cc)
-        (; bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4)
-    catch e
-        logging && @warn "Error during benchmarking" ba scen e
-        bench0, bench1, bench2, bench3, bench4 = failed_benchs(5)
-        calls0, calls1, calls2, calls3, calls4 = -1, -1, -1, -1, -1
-        (; bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4)
-    end
+    @unpack f, x, y, dy = deepcopy(scen)
+    @unpack bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4 =
+        try
+            # benchmark
+            extras = prepare_pullback(f, ba, x, dy)
+            bench0 = @be prepare_pullback(f, ba, x, dy) samples = 1 evals = 1
+            bench1 = @be deepcopy(extras) value_and_pullback(f, ba, x, dy, _)
+            bench2 = @be deepcopy(extras) pullback(f, ba, x, dy, _)
+            bench3 = @be deepcopy(extras) value_and_pullback_split(f, ba, x, _)
+            bench4 = @be last(value_and_pullback_split(f, ba, x, deepcopy(extras))) _(dy)
+            # count
+            cc = CallCounter(f)
+            extras = prepare_pullback(cc, ba, x, dy)
+            calls0 = reset_count!(cc)
+            value_and_pullback(cc, ba, x, dy, extras)
+            calls1 = reset_count!(cc)
+            pullback(cc, ba, x, dy, extras)
+            calls2 = reset_count!(cc)
+            _, pullbackfunc = value_and_pullback_split(cc, ba, x, extras)
+            calls3 = reset_count!(cc)
+            pullbackfunc(dy)
+            calls4 = reset_count!(cc)
+            (;
+                bench0,
+                bench1,
+                bench2,
+                bench3,
+                bench4,
+                calls0,
+                calls1,
+                calls2,
+                calls3,
+                calls4,
+            )
+        catch e
+            logging && @warn "Error during benchmarking" ba scen e
+            bench0, bench1, bench2, bench3, bench4 = failed_benchs(5)
+            calls0, calls1, calls2, calls3, calls4 = -1, -1, -1, -1, -1
+            (;
+                bench0,
+                bench1,
+                bench2,
+                bench3,
+                bench4,
+                calls0,
+                calls1,
+                calls2,
+                calls3,
+                calls4,
+            )
+        end
     # record
     record!(data, ba, scen, :prepare_pullback, bench0, calls0)
     record!(data, ba, scen, :value_and_pullback, bench1, calls1)
@@ -329,41 +352,64 @@ function run_benchmark!(
     scen::PullbackScenario{1,:inplace};
     logging::Bool,
 )
-    (; f, x, y, dy) = deepcopy(scen)
-    (; bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4) = try
-        # benchmark
-        extras = prepare_pullback(f, ba, x, dy)
-        bench0 = @be prepare_pullback(f, ba, x, dy) samples = 1 evals = 1
-        bench1 = @be (dx=mysimilar(x), ext=deepcopy(extras)) value_and_pullback!(
-            f, _.dx, ba, x, dy, _.ext
-        ) evals = 1
-        bench2 = @be (dx=mysimilar(x), ext=deepcopy(extras)) pullback!(
-            f, _.dx, ba, x, dy, _.ext
-        ) evals = 1
-        bench3 = @be deepcopy(extras) value_and_pullback!_split(f, ba, x, _)
-        bench4 = @be (
-            dx=mysimilar(x),
-            (pullbackfunc!)=last(value_and_pullback!_split(f, ba, x, deepcopy(extras))),
-        ) _.pullbackfunc!(_.dx, dy) evals = 1
-        # count
-        cc = CallCounter(f)
-        extras = prepare_pullback(cc, ba, x, dy)
-        calls0 = reset_count!(cc)
-        value_and_pullback!(cc, mysimilar(x), ba, x, dy, extras)
-        calls1 = reset_count!(cc)
-        pullback!(cc, mysimilar(x), ba, x, dy, extras)
-        calls2 = reset_count!(cc)
-        _, pullbackfunc! = value_and_pullback!_split(cc, ba, x, extras)
-        calls3 = reset_count!(cc)
-        pullbackfunc!(mysimilar(x), dy)
-        calls4 = reset_count!(cc)
-        (; bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4)
-    catch e
-        logging && @warn "Error during benchmarking" ba scen e
-        bench0, bench1, bench2, bench3, bench4 = failed_benchs(5)
-        calls0, calls1, calls2, calls3, calls4 = -1, -1, -1, -1, -1
-        (; bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4)
-    end
+    @unpack f, x, y, dy = deepcopy(scen)
+    @unpack bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4 =
+        try
+            # benchmark
+            extras = prepare_pullback(f, ba, x, dy)
+            bench0 = @be prepare_pullback(f, ba, x, dy) samples = 1 evals = 1
+            bench1 = @be (dx=mysimilar(x), ext=deepcopy(extras)) value_and_pullback!(
+                f, _.dx, ba, x, dy, _.ext
+            ) evals = 1
+            bench2 = @be (dx=mysimilar(x), ext=deepcopy(extras)) pullback!(
+                f, _.dx, ba, x, dy, _.ext
+            ) evals = 1
+            bench3 = @be deepcopy(extras) value_and_pullback!_split(f, ba, x, _)
+            bench4 = @be (
+                dx=mysimilar(x),
+                (pullbackfunc!)=last(value_and_pullback!_split(f, ba, x, deepcopy(extras))),
+            ) _.pullbackfunc!(_.dx, dy) evals = 1
+            # count
+            cc = CallCounter(f)
+            extras = prepare_pullback(cc, ba, x, dy)
+            calls0 = reset_count!(cc)
+            value_and_pullback!(cc, mysimilar(x), ba, x, dy, extras)
+            calls1 = reset_count!(cc)
+            pullback!(cc, mysimilar(x), ba, x, dy, extras)
+            calls2 = reset_count!(cc)
+            _, pullbackfunc! = value_and_pullback!_split(cc, ba, x, extras)
+            calls3 = reset_count!(cc)
+            pullbackfunc!(mysimilar(x), dy)
+            calls4 = reset_count!(cc)
+            (;
+                bench0,
+                bench1,
+                bench2,
+                bench3,
+                bench4,
+                calls0,
+                calls1,
+                calls2,
+                calls3,
+                calls4,
+            )
+        catch e
+            logging && @warn "Error during benchmarking" ba scen e
+            bench0, bench1, bench2, bench3, bench4 = failed_benchs(5)
+            calls0, calls1, calls2, calls3, calls4 = -1, -1, -1, -1, -1
+            (;
+                bench0,
+                bench1,
+                bench2,
+                bench3,
+                bench4,
+                calls0,
+                calls1,
+                calls2,
+                calls3,
+                calls4,
+            )
+        end
     # record
     record!(data, ba, scen, :prepare_pullback, bench0, calls0)
     record!(data, ba, scen, :value_and_pullback!, bench1, calls1)
@@ -379,45 +425,68 @@ function run_benchmark!(
     scen::PullbackScenario{2,:outofplace};
     logging::Bool,
 )
-    (; f, x, y, dy) = deepcopy(scen)
+    @unpack f, x, y, dy = deepcopy(scen)
     f! = f
-    (; bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4) = try
-        # benchmark
-        extras = prepare_pullback(f!, mysimilar(y), ba, x, dy)
-        bench0 = @be mysimilar(y) prepare_pullback(f!, _, ba, x, dy) samples = 1 evals =
-            1
-        bench1 = @be (y=mysimilar(y), ext=deepcopy(extras)) value_and_pullback(
-            f!, _.y, ba, x, dy, _.ext
-        ) evals = 1
-        bench2 = @be (y=mysimilar(y), ext=deepcopy(extras)) pullback(
-            f!, _.y, ba, x, dy, _.ext
-        ) evals = 1
-        bench3 = @be deepcopy(extras) value_and_pullback_split(f!, y, ba, x, _)
-        bench4 = @be (
-            y=mysimilar(y),
-            pullbackfunc=last(
-                value_and_pullback_split(f!, mysimilar(y), ba, x, deepcopy(extras))
-            ),
-        ) _.pullbackfunc(_.y, dy) evals = 1
-        # count
-        cc! = CallCounter(f!)
-        extras = prepare_pullback(cc!, mysimilar(y), ba, x, dy)
-        calls0 = reset_count!(cc!)
-        value_and_pullback(cc!, mysimilar(y), ba, x, dy, extras)
-        calls1 = reset_count!(cc!)
-        pullback(cc!, mysimilar(y), ba, x, dy, extras)
-        calls2 = reset_count!(cc!)
-        _, pullbackfunc = value_and_pullback_split(cc!, y, ba, x, extras)
-        calls3 = reset_count!(cc!)
-        pullbackfunc(y, dy)
-        calls4 = reset_count!(cc!)
-        (; bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4)
-    catch e
-        logging && @warn "Error during benchmarking" ba scen e
-        bench0, bench1, bench2, bench3, bench4 = failed_benchs(5)
-        calls0, calls1, calls2, calls3, calls4 = -1, -1, -1, -1, -1
-        (; bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4)
-    end
+    @unpack bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4 =
+        try
+            # benchmark
+            extras = prepare_pullback(f!, mysimilar(y), ba, x, dy)
+            bench0 = @be mysimilar(y) prepare_pullback(f!, _, ba, x, dy) samples = 1 evals =
+                1
+            bench1 = @be (y=mysimilar(y), ext=deepcopy(extras)) value_and_pullback(
+                f!, _.y, ba, x, dy, _.ext
+            ) evals = 1
+            bench2 = @be (y=mysimilar(y), ext=deepcopy(extras)) pullback(
+                f!, _.y, ba, x, dy, _.ext
+            ) evals = 1
+            bench3 = @be deepcopy(extras) value_and_pullback_split(f!, y, ba, x, _)
+            bench4 = @be (
+                y=mysimilar(y),
+                pullbackfunc=last(
+                    value_and_pullback_split(f!, mysimilar(y), ba, x, deepcopy(extras))
+                ),
+            ) _.pullbackfunc(_.y, dy) evals = 1
+            # count
+            cc! = CallCounter(f!)
+            extras = prepare_pullback(cc!, mysimilar(y), ba, x, dy)
+            calls0 = reset_count!(cc!)
+            value_and_pullback(cc!, mysimilar(y), ba, x, dy, extras)
+            calls1 = reset_count!(cc!)
+            pullback(cc!, mysimilar(y), ba, x, dy, extras)
+            calls2 = reset_count!(cc!)
+            _, pullbackfunc = value_and_pullback_split(cc!, y, ba, x, extras)
+            calls3 = reset_count!(cc!)
+            pullbackfunc(y, dy)
+            calls4 = reset_count!(cc!)
+            (;
+                bench0,
+                bench1,
+                bench2,
+                bench3,
+                bench4,
+                calls0,
+                calls1,
+                calls2,
+                calls3,
+                calls4,
+            )
+        catch e
+            logging && @warn "Error during benchmarking" ba scen e
+            bench0, bench1, bench2, bench3, bench4 = failed_benchs(5)
+            calls0, calls1, calls2, calls3, calls4 = -1, -1, -1, -1, -1
+            (;
+                bench0,
+                bench1,
+                bench2,
+                bench3,
+                bench4,
+                calls0,
+                calls1,
+                calls2,
+                calls3,
+                calls4,
+            )
+        end
     # record
     record!(data, ba, scen, :prepare_pullback, bench0, calls0)
     record!(data, ba, scen, :value_and_pullback, bench1, calls1)
@@ -433,48 +502,71 @@ function run_benchmark!(
     scen::PullbackScenario{2,:inplace};
     logging::Bool,
 )
-    (; f, x, y, dy) = deepcopy(scen)
+    @unpack f, x, y, dy = deepcopy(scen)
     f! = f
-    (; bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4) = try
-        # benchmark
-        extras = prepare_pullback(f!, mysimilar(y), ba, x, dy)
-        bench0 = @be mysimilar(y) prepare_pullback(f!, _, ba, x, dy) samples = 1 evals =
-            1
-        bench1 = @be (y=mysimilar(y), dx=mysimilar(x), ext=deepcopy(extras)) value_and_pullback!(
-            f!, _.y, _.dx, ba, x, dy, _.ext
-        ) evals = 1
-        bench2 = @be (y=mysimilar(y), dx=mysimilar(x), ext=deepcopy(extras)) pullback!(
-            f!, _.y, _.dx, ba, x, dy, _.ext
-        ) evals = 1
-        bench3 = @be (y=mysimilar(y), ext=deepcopy(extras)) value_and_pullback!_split(
-            f!, _.y, ba, x, _.ext
-        )
-        bench4 = @be (
-            y=mysimilar(y),
-            dx=mysimilar(x),
-            (pullbackfunc!)=last(
-                value_and_pullback!_split(f!, mysimilar(y), ba, x, deepcopy(extras))
-            ),
-        ) _.pullbackfunc!(_.y, _.dx, dy) evals = 1
-        # count
-        cc! = CallCounter(f!)
-        extras = prepare_pullback(cc!, mysimilar(y), ba, x, dy)
-        calls0 = reset_count!(cc!)
-        value_and_pullback!(cc!, mysimilar(y), mysimilar(x), ba, x, dy, extras)
-        calls1 = reset_count!(cc!)
-        pullback!(cc!, mysimilar(y), mysimilar(x), ba, x, dy, extras)
-        calls2 = reset_count!(cc!)
-        _, pullbackfunc! = value_and_pullback!_split(cc!, y, ba, x, extras)
-        calls3 = reset_count!(cc!)
-        pullbackfunc!(y, mysimilar(x), dy)
-        calls4 = reset_count!(cc!)
-        (; bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4)
-    catch e
-        logging && @warn "Error during benchmarking" ba scen e
-        bench0, bench1, bench2, bench3, bench4 = failed_benchs(5)
-        calls0, calls1, calls2, calls3, calls4 = -1, -1, -1, -1, -1
-        (; bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4)
-    end
+    @unpack bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4 =
+        try
+            # benchmark
+            extras = prepare_pullback(f!, mysimilar(y), ba, x, dy)
+            bench0 = @be mysimilar(y) prepare_pullback(f!, _, ba, x, dy) samples = 1 evals =
+                1
+            bench1 = @be (y=mysimilar(y), dx=mysimilar(x), ext=deepcopy(extras)) value_and_pullback!(
+                f!, _.y, _.dx, ba, x, dy, _.ext
+            ) evals = 1
+            bench2 = @be (y=mysimilar(y), dx=mysimilar(x), ext=deepcopy(extras)) pullback!(
+                f!, _.y, _.dx, ba, x, dy, _.ext
+            ) evals = 1
+            bench3 = @be (y=mysimilar(y), ext=deepcopy(extras)) value_and_pullback!_split(
+                f!, _.y, ba, x, _.ext
+            )
+            bench4 = @be (
+                y=mysimilar(y),
+                dx=mysimilar(x),
+                (pullbackfunc!)=last(
+                    value_and_pullback!_split(f!, mysimilar(y), ba, x, deepcopy(extras))
+                ),
+            ) _.pullbackfunc!(_.y, _.dx, dy) evals = 1
+            # count
+            cc! = CallCounter(f!)
+            extras = prepare_pullback(cc!, mysimilar(y), ba, x, dy)
+            calls0 = reset_count!(cc!)
+            value_and_pullback!(cc!, mysimilar(y), mysimilar(x), ba, x, dy, extras)
+            calls1 = reset_count!(cc!)
+            pullback!(cc!, mysimilar(y), mysimilar(x), ba, x, dy, extras)
+            calls2 = reset_count!(cc!)
+            _, pullbackfunc! = value_and_pullback!_split(cc!, y, ba, x, extras)
+            calls3 = reset_count!(cc!)
+            pullbackfunc!(y, mysimilar(x), dy)
+            calls4 = reset_count!(cc!)
+            (;
+                bench0,
+                bench1,
+                bench2,
+                bench3,
+                bench4,
+                calls0,
+                calls1,
+                calls2,
+                calls3,
+                calls4,
+            )
+        catch e
+            logging && @warn "Error during benchmarking" ba scen e
+            bench0, bench1, bench2, bench3, bench4 = failed_benchs(5)
+            calls0, calls1, calls2, calls3, calls4 = -1, -1, -1, -1, -1
+            (;
+                bench0,
+                bench1,
+                bench2,
+                bench3,
+                bench4,
+                calls0,
+                calls1,
+                calls2,
+                calls3,
+                calls4,
+            )
+        end
     # record
     record!(data, ba, scen, :prepare_pullback, bench0, calls0)
     record!(data, ba, scen, :value_and_pullback!, bench1, calls1)
@@ -492,8 +584,8 @@ function run_benchmark!(
     scen::DerivativeScenario{1,:outofplace};
     logging::Bool,
 )
-    (; f, x, y) = deepcopy(scen)
-    (; bench0, bench1, bench2, calls0, calls1, calls2) = try
+    @unpack f, x, y = deepcopy(scen)
+    @unpack bench0, bench1, bench2, calls0, calls1, calls2 = try
         # benchmark
         extras = prepare_derivative(f, ba, x)
         bench0 = @be prepare_derivative(f, ba, x) samples = 1 evals = 1
@@ -527,8 +619,8 @@ function run_benchmark!(
     scen::DerivativeScenario{1,:inplace};
     logging::Bool,
 )
-    (; f, x, y) = deepcopy(scen)
-    (; bench0, bench1, bench2, calls0, calls1, calls2) = try
+    @unpack f, x, y = deepcopy(scen)
+    @unpack bench0, bench1, bench2, calls0, calls1, calls2 = try
         # benchmark
         extras = prepare_derivative(f, ba, x)
         bench0 = @be prepare_derivative(f, ba, x) samples = 1 evals = 1
@@ -566,9 +658,9 @@ function run_benchmark!(
     scen::DerivativeScenario{2,:outofplace};
     logging::Bool,
 )
-    (; f, x, y) = deepcopy(scen)
+    @unpack f, x, y = deepcopy(scen)
     f! = f
-    (; bench0, bench1, bench2, calls0, calls1, calls2) = try
+    @unpack bench0, bench1, bench2, calls0, calls1, calls2 = try
         # benchmark
         extras = prepare_derivative(f!, mysimilar(y), ba, x)
         bench0 = @be mysimilar(y) prepare_derivative(f!, _, ba, x) samples = 1 evals = 1
@@ -606,9 +698,9 @@ function run_benchmark!(
     scen::DerivativeScenario{2,:inplace};
     logging::Bool,
 )
-    (; f, x, y) = deepcopy(scen)
+    @unpack f, x, y = deepcopy(scen)
     f! = f
-    (; bench0, bench1, bench2, calls0, calls1, calls2) = try
+    @unpack bench0, bench1, bench2, calls0, calls1, calls2 = try
         # benchmark
         extras = prepare_derivative(f!, mysimilar(y), ba, x)
         bench0 = @be mysimilar(y) prepare_derivative(f!, _, ba, x) samples = 1 evals = 1
@@ -648,8 +740,8 @@ function run_benchmark!(
     scen::GradientScenario{1,:outofplace};
     logging::Bool,
 )
-    (; f, x) = deepcopy(scen)
-    (; bench0, bench1, bench2, calls0, calls1, calls2) = try
+    @unpack f, x = deepcopy(scen)
+    @unpack bench0, bench1, bench2, calls0, calls1, calls2 = try
         # benchmark
         extras = prepare_gradient(f, ba, x)
         bench0 = @be prepare_gradient(f, ba, x) samples = 1 evals = 1
@@ -683,8 +775,8 @@ function run_benchmark!(
     scen::GradientScenario{1,:inplace};
     logging::Bool,
 )
-    (; f, x) = deepcopy(scen)
-    (; bench0, bench1, bench2, calls0, calls1, calls2) = try
+    @unpack f, x = deepcopy(scen)
+    @unpack bench0, bench1, bench2, calls0, calls1, calls2 = try
         # benchmark
         extras = prepare_gradient(f, ba, x)
         bench0 = @be prepare_gradient(f, ba, x) samples = 1 evals = 1
@@ -724,8 +816,8 @@ function run_benchmark!(
     scen::JacobianScenario{1,:outofplace};
     logging::Bool,
 )
-    (; f, x, y) = deepcopy(scen)
-    (; bench0, bench1, bench2, calls0, calls1, calls2) = try
+    @unpack f, x, y = deepcopy(scen)
+    @unpack bench0, bench1, bench2, calls0, calls1, calls2 = try
         # benchmark
         extras = prepare_jacobian(f, ba, x)
         bench0 = @be prepare_jacobian(f, ba, x) samples = 1 evals = 1
@@ -759,8 +851,8 @@ function run_benchmark!(
     scen::JacobianScenario{1,:inplace};
     logging::Bool,
 )
-    (; f, x, y) = deepcopy(scen)
-    (; bench0, bench1, bench2, calls0, calls1, calls2) = try
+    @unpack f, x, y = deepcopy(scen)
+    @unpack bench0, bench1, bench2, calls0, calls1, calls2 = try
         jac_template = mysimilar(jacobian(f, ba, x))
         # benchmark
         extras = prepare_jacobian(f, ba, x)
@@ -799,9 +891,9 @@ function run_benchmark!(
     scen::JacobianScenario{2,:outofplace};
     logging::Bool,
 )
-    (; f, x, y) = deepcopy(scen)
+    @unpack f, x, y = deepcopy(scen)
     f! = f
-    (; bench0, bench1, bench2, calls0, calls1, calls2) = try
+    @unpack bench0, bench1, bench2, calls0, calls1, calls2 = try
         # benchmark
         extras = prepare_jacobian(f!, mysimilar(y), ba, x)
         bench0 = @be mysimilar(y) prepare_jacobian(f!, _, ba, x) samples = 1 evals = 1
@@ -837,9 +929,9 @@ function run_benchmark!(
     scen::JacobianScenario{2,:inplace};
     logging::Bool,
 )
-    (; f, x, y) = deepcopy(scen)
+    @unpack f, x, y = deepcopy(scen)
     f! = f
-    (; bench0, bench1, bench2, calls0, calls1, calls2) = try
+    @unpack bench0, bench1, bench2, calls0, calls1, calls2 = try
         jac_template = mysimilar(jacobian(f!, mysimilar(y), ba, x))
         # benchmark
         extras = prepare_jacobian(f!, mysimilar(y), ba, x)
@@ -880,8 +972,8 @@ function run_benchmark!(
     scen::SecondDerivativeScenario{1,:outofplace};
     logging::Bool,
 )
-    (; f, x, y) = deepcopy(scen)
-    (; bench0, bench1, calls0, calls1) = try
+    @unpack f, x, y = deepcopy(scen)
+    @unpack bench0, bench1, calls0, calls1 = try
         # benchmark
         extras = prepare_second_derivative(f, ba, x)
         bench0 = @be prepare_second_derivative(f, ba, x) samples = 1 evals = 1
@@ -911,8 +1003,8 @@ function run_benchmark!(
     scen::SecondDerivativeScenario{1,:inplace};
     logging::Bool,
 )
-    (; f, x, y) = deepcopy(scen)
-    (; bench0, bench1, calls0, calls1) = try
+    @unpack f, x, y = deepcopy(scen)
+    @unpack bench0, bench1, calls0, calls1 = try
         # benchmark
         extras = prepare_second_derivative(f, ba, x)
         bench0 = @be prepare_second_derivative(f, ba, x) samples = 1 evals = 1
@@ -946,8 +1038,8 @@ function run_benchmark!(
     scen::HVPScenario{1,:outofplace};
     logging::Bool,
 )
-    (; f, x, y, dx) = deepcopy(scen)
-    (; bench0, bench1, calls0, calls1) = try
+    @unpack f, x, y, dx = deepcopy(scen)
+    @unpack bench0, bench1, calls0, calls1 = try
         # benchmark
         extras = prepare_hvp(f, ba, x, dx)
         bench0 = @be prepare_hvp(f, ba, x, dx) samples = 1 evals = 1
@@ -977,8 +1069,8 @@ function run_benchmark!(
     scen::HVPScenario{1,:inplace};
     logging::Bool,
 )
-    (; f, x, y, dx) = deepcopy(scen)
-    (; bench0, bench1, calls0, calls1) = try
+    @unpack f, x, y, dx = deepcopy(scen)
+    @unpack bench0, bench1, calls0, calls1 = try
         # benchmark
         extras = prepare_hvp(f, ba, x, dx)
         bench0 = @be prepare_hvp(f, ba, x, dx) samples = 1 evals = 1
@@ -1010,8 +1102,8 @@ function run_benchmark!(
     scen::HessianScenario{1,:outofplace};
     logging::Bool,
 )
-    (; f, x, y) = deepcopy(scen)
-    (; bench0, bench1, calls0, calls1) = try
+    @unpack f, x, y = deepcopy(scen)
+    @unpack bench0, bench1, calls0, calls1 = try
         # benchmark
         extras = prepare_hessian(f, ba, x)
         bench0 = @be prepare_hessian(f, ba, x) samples = 1 evals = 1
@@ -1041,8 +1133,8 @@ function run_benchmark!(
     scen::HessianScenario{1,:inplace};
     logging::Bool,
 )
-    (; f, x, y) = deepcopy(scen)
-    (; bench0, bench1, calls0, calls1) = try
+    @unpack f, x, y = deepcopy(scen)
+    @unpack bench0, bench1, calls0, calls1 = try
         hess_template = Matrix{typeof(y)}(undef, length(x), length(x))
         # benchmark
         extras = prepare_hessian(f, ba, x)
