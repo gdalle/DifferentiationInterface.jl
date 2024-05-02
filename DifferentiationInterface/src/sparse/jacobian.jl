@@ -55,7 +55,7 @@ function prepare_jacobian(f::F, backend::AutoSparse, x) where {F}
         aggregates = stack(vec, products; dims=1)
         compressed = CompressedMatrix{:row}(sparsity, colors, groups, aggregates)
     end
-    return SparseJacobianExtras{1}(compressed, seeds, products, jp_extras)
+    return SparseJacobianExtras{1}(; compressed, seeds, products, jp_extras)
 end
 
 function jacobian!(
@@ -134,7 +134,7 @@ function prepare_jacobian(f!::F, y, backend::AutoSparse, x) where {F}
         aggregates = stack(vec, products; dims=1)
         compressed = CompressedMatrix{:row}(sparsity, colors, groups, aggregates)
     end
-    return SparseJacobianExtras{2}(compressed, seeds, products, jp_extras)
+    return SparseJacobianExtras{2}(; compressed, seeds, products, jp_extras)
 end
 
 function jacobian!(

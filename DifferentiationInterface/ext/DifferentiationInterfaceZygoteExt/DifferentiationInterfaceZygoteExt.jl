@@ -38,7 +38,7 @@ end
 DI.prepare_gradient(f, ::AutoZygote, x) = NoGradientExtras()
 
 function DI.value_and_gradient(f, ::AutoZygote, x, ::NoGradientExtras)
-    @compat val, grad = withgradient(f, x)
+    @compat (; val, grad) = withgradient(f, x)
     return val, only(grad)
 end
 

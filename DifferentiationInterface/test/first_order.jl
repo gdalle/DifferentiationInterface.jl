@@ -1,6 +1,6 @@
 dense_backends = [
     AutoChainRules(Zygote.ZygoteRuleConfig()),
-    AutoDiffractor(),
+    # AutoDiffractor(),
     AutoEnzyme(; mode=nothing),
     AutoEnzyme(; mode=Enzyme.Forward),
     AutoEnzyme(; mode=Enzyme.Reverse),
