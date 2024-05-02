@@ -51,7 +51,7 @@ end
 function hessian(
     f::F, backend::SecondOrder, x, extras::HessianExtras=prepare_hessian(f, backend, x)
 ) where {F}
-    hess = mapreduce(hcat, vec(CartesianIndices(x))) do j
+    hess = @compat stack(vec(CartesianIndices(x))) do j
         hess_col_j = hvp(f, backend, x, basis(backend, x, j), extras.hvp_extras)
         vec(hess_col_j)
     end

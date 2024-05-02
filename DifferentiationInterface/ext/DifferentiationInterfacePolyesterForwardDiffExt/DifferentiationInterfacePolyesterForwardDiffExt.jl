@@ -17,7 +17,6 @@ using LinearAlgebra: mul!
 using PolyesterForwardDiff: threaded_gradient!, threaded_jacobian!
 using PolyesterForwardDiff.ForwardDiff: Chunk
 using PolyesterForwardDiff.ForwardDiff.DiffResults: DiffResults
-using Compat: @compat
 
 DI.check_available(::AutoPolyesterForwardDiff) = true
 

@@ -23,7 +23,7 @@ function prepare_hessian(f::F, backend::AutoSparse, x) where {F}
     products = map(seeds) do seed
         hvp(f, backend, x, seed, hvp_extras)
     end
-    aggregates = mapreduce(hcat, vec, products)
+    aggregates = @compat stack(vec, products; dims=2)
     compressed = CompressedMatrix{:col}(sparsity, colors, groups, aggregates)
     return SparseHessianExtras(; compressed, seeds, products, hvp_extras)
 end

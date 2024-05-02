@@ -2,6 +2,7 @@ module DifferentiationInterfaceForwardDiffExt
 
 using ADTypes: AbstractADType, AutoForwardDiff
 using Base: Fix1
+using Compat: @compat
 import DifferentiationInterface as DI
 using DifferentiationInterface:
     DerivativeExtras,
@@ -32,7 +33,6 @@ using ForwardDiff:
     jacobian!,
     value
 using LinearAlgebra: dot, mul!
-using Compat: @compat
 
 DI.check_available(::AutoForwardDiff) = true
 

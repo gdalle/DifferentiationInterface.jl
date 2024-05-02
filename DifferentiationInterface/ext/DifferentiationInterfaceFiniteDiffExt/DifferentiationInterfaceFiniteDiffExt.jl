@@ -28,7 +28,6 @@ using FiniteDiff:
     finite_difference_jacobian,
     finite_difference_jacobian!
 using LinearAlgebra: dot, mul!
-using Compat: @compat
 
 DI.check_available(::AutoFiniteDiff) = true
 

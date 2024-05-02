@@ -24,7 +24,6 @@ using ReverseDiff:
     hessian!,
     jacobian,
     jacobian!
-using Compat: @compat
 
 DI.check_available(::AutoReverseDiff) = true
 

@@ -37,7 +37,7 @@ function prepare_jacobian(f::F, backend::AutoSparse, x) where {F}
         products = map(seeds) do seed
             pushforward(f, backend, x, seed, jp_extras)
         end
-        aggregates = mapreduce(hcat, vec, products)
+        aggregates = @compat stack(vec, products; dims=2)
         compressed = CompressedMatrix{:col}(sparsity, colors, groups, aggregates)
     else
         sparsity = row_major(initial_sparsity)
@@ -52,7 +52,7 @@ function prepare_jacobian(f::F, backend::AutoSparse, x) where {F}
         products = map(seeds) do seed
             pullback(f, backend, x, seed, jp_extras)
         end
-        aggregates = mapreduce(transpose, vcat, vec, products)
+        aggregates = @compat stack(vec, products; dims=1)
         compressed = CompressedMatrix{:row}(sparsity, colors, groups, aggregates)
     end
     return SparseJacobianExtras{1}(compressed, seeds, products, jp_extras)
@@ -116,7 +116,7 @@ function prepare_jacobian(f!::F, y, backend::AutoSparse, x) where {F}
         products = map(seeds) do seed
             pushforward(f!, y, backend, x, seed, jp_extras)
         end
-        aggregates = mapreduce(hcat, vec, products)
+        aggregates = @compat stack(vec, products; dims=2)
         compressed = CompressedMatrix{:col}(sparsity, colors, groups, aggregates)
     else
         sparsity = row_major(initial_sparsity)
@@ -131,7 +131,7 @@ function prepare_jacobian(f!::F, y, backend::AutoSparse, x) where {F}
         products = map(seeds) do seed
             pullback(f!, y, backend, x, seed, jp_extras)
         end
-        aggregates = mapreduce(vcat ∘ transpose, vec, products)
+        aggregates = @compat stack(vec, products; dims=1)
         compressed = CompressedMatrix{:row}(sparsity, colors, groups, aggregates)
     end
     return SparseJacobianExtras{2}(compressed, seeds, products, jp_extras)

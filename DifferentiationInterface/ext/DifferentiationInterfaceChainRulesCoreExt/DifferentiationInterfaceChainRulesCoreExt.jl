@@ -9,9 +9,9 @@ using ChainRulesCore:
     RuleConfig,
     frule_via_ad,
     rrule_via_ad
+using Compat: @compat
 import DifferentiationInterface as DI
 using DifferentiationInterface: DifferentiateWith, NoPullbackExtras, NoPushforwardExtras
-using Compat: @compat
 
 ruleconfig(backend::AutoChainRules) = backend.ruleconfig
 
