@@ -14,9 +14,9 @@ SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [weakdeps]
 ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
-Diffractor = "9f5e2b26-1114-432f-b630-d3fe2085c51c"
+# Diffractor = "9f5e2b26-1114-432f-b630-d3fe2085c51c"
 Enzyme = "7da242da-08ed-463a-9acd-ee780be4f1d9"
-FastDifferentiation = "eb9bf01b-bf85-4b60-bf87-ee5de06c00be"
+# FastDifferentiation = "eb9bf01b-bf85-4b60-bf87-ee5de06c00be"
 FiniteDiff = "6a86dc24-6348-571c-b903-95158fe2bd41"
 FiniteDifferences = "26cc04aa-876d-5657-8c51-4c34ba976000"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
@@ -32,7 +32,7 @@ Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 DifferentiationInterfaceChainRulesCoreExt = "ChainRulesCore"
 # DifferentiationInterfaceDiffractorExt = "Diffractor"
 DifferentiationInterfaceEnzymeExt = "Enzyme"
-DifferentiationInterfaceFastDifferentiationExt = "FastDifferentiation"
+# DifferentiationInterfaceFastDifferentiationExt = "FastDifferentiation"
 DifferentiationInterfaceFiniteDiffExt = "FiniteDiff"
 DifferentiationInterfaceFiniteDifferencesExt = "FiniteDifferences"
 DifferentiationInterfaceForwardDiffExt = "ForwardDiff"
@@ -50,7 +50,7 @@ Compat = "4"
 # Diffractor = "=0.2.6"
 DocStringExtensions = "0.9.3"
 Enzyme = "0.11.20,0.12"
-FastDifferentiation = "0.3.9"
+# FastDifferentiation = "0.3.9"
 FillArrays = "1.9.3"
 FiniteDiff = "2.22.0"
 FiniteDifferences = "0.12.31"
@@ -75,7 +75,7 @@ DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 # Diffractor = "9f5e2b26-1114-432f-b630-d3fe2085c51c"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 Enzyme = "7da242da-08ed-463a-9acd-ee780be4f1d9"
-FastDifferentiation = "eb9bf01b-bf85-4b60-bf87-ee5de06c00be"
+# FastDifferentiation = "eb9bf01b-bf85-4b60-bf87-ee5de06c00be"
 FiniteDiff = "6a86dc24-6348-571c-b903-95158fe2bd41"
 FiniteDifferences = "26cc04aa-876d-5657-8c51-4c34ba976000"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
@@ -99,7 +99,7 @@ test = [
     # "Diffractor",
     "Documenter",
     "Enzyme",
-    "FastDifferentiation",
+    # "FastDifferentiation",
     "FiniteDiff",
     "FiniteDifferences",
     "ForwardDiff",

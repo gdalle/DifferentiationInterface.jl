@@ -26,7 +26,7 @@ using SparseArrays
 
 # using Diffractor: Diffractor
 using Enzyme: Enzyme
-using FastDifferentiation: FastDifferentiation
+# using FastDifferentiation: FastDifferentiation
 using FiniteDiff: FiniteDiff
 using FiniteDifferences: FiniteDifferences
 using ForwardDiff: ForwardDiff

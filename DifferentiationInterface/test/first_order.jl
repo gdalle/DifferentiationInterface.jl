@@ -4,7 +4,7 @@ dense_backends = [
     AutoEnzyme(; mode=nothing),
     AutoEnzyme(; mode=Enzyme.Forward),
     AutoEnzyme(; mode=Enzyme.Reverse),
-    AutoFastDifferentiation(),
+    # AutoFastDifferentiation(),
     AutoFiniteDiff(),
     AutoFiniteDifferences(; fdm=FiniteDifferences.central_fdm(3, 1)),
     AutoForwardDiff(),
