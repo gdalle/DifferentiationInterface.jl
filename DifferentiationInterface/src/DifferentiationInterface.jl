@@ -28,11 +28,11 @@ using ADTypes:
     AutoTapir,
     AutoTracker,
     AutoZygote
+using Compat: @compat
 using DocStringExtensions
 using FillArrays: OneElement
 using LinearAlgebra: Symmetric, Transpose, dot, parent, transpose
 using PackageExtensionCompat: @require_extensions
-using Compat: @compat
 using SparseArrays: SparseMatrixCSC, nonzeros, nzrange, rowvals, sparse
 
 abstract type Extras end
