@@ -21,7 +21,7 @@ using Zygote: Zygote
 cp(joinpath(@__DIR__, "..", "README.md"), joinpath(@__DIR__, "src", "index.md"); force=true)
 
 makedocs(;
-    modules=[DifferentiationInterface, ADTypes, extensions...],
+    modules=[DifferentiationInterface, ADTypes],
     authors="Guillaume Dalle, Adrian Hill",
     sitename="DifferentiationInterface.jl",
     format=Documenter.HTML(; assets=["assets/favicon.ico"]),
