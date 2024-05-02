@@ -35,12 +35,12 @@ end
 DI.prepare_gradient(f, ::AutoTracker, x) = NoGradientExtras()
 
 function DI.value_and_gradient(f, ::AutoTracker, x, ::NoGradientExtras)
-    @compat val, grad = withgradient(f, x)
+    @compat (; val, grad) = withgradient(f, x)
     return val, data(only(grad))
 end
 
 function DI.gradient(f, ::AutoTracker, x, ::NoGradientExtras)
-    @compat grad = withgradient(f, x)
+    @compat (; grad) = withgradient(f, x)
     return data(only(grad))
 end
 

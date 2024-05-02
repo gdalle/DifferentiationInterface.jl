@@ -28,7 +28,7 @@ using ADTypes:
     AutoTapir,
     AutoTracker,
     AutoZygote
-using Compat: @compat
+using Compat: @compat, stack
 using DocStringExtensions
 using FillArrays: OneElement
 using LinearAlgebra: Symmetric, Transpose, dot, parent, transpose

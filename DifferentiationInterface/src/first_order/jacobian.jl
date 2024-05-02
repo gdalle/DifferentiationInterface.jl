@@ -98,7 +98,7 @@ function value_and_jacobian_onearg_aux(
     f::F, backend, x::AbstractArray, extras::PushforwardJacobianExtras
 ) where {F}
     y = f(x)
-    jac = @compat stack(CartesianIndices(x); dims=2) do j
+    jac = stack(CartesianIndices(x); dims=2) do j
         dx_j = basis(backend, x, j)
         jac_col_j = pushforward(f, backend, x, dx_j, extras.pushforward_extras)
         vec(jac_col_j)
@@ -110,7 +110,7 @@ function value_and_jacobian_onearg_aux(
     f::F, backend, x::AbstractArray, extras::PullbackJacobianExtras
 ) where {F}
     y, pullbackfunc = value_and_pullback_split(f, backend, x, extras.pullback_extras)
-    jac = @compat stack(CartesianIndices(y); dims=1) do i
+    jac = stack(CartesianIndices(y); dims=1) do i
         dy_i = basis(backend, y, i)
         jac_row_i = pullbackfunc(dy_i)
         vec(jac_row_i)
@@ -183,7 +183,7 @@ end
 function value_and_jacobian_twoarg_aux(
     f!::F, y, backend, x::AbstractArray, extras::PushforwardJacobianExtras
 ) where {F}
-    jac = @compat stack(CartesianIndices(x); dims=2) do j
+    jac = stack(CartesianIndices(x); dims=2) do j
         dx_j = basis(backend, x, j)
         jac_col_j = pushforward(f!, y, backend, x, dx_j, extras.pushforward_extras)
         vec(jac_col_j)
@@ -196,7 +196,7 @@ function value_and_jacobian_twoarg_aux(
     f!::F, y, backend, x::AbstractArray, extras::PullbackJacobianExtras
 ) where {F}
     y, pullbackfunc = value_and_pullback_split(f!, y, backend, x, extras.pullback_extras)
-    jac = @compat stack(CartesianIndices(y); dims=1) do i
+    jac = stack(CartesianIndices(y); dims=1) do i
         dy_i = basis(backend, y, i)
         jac_row_i = pullbackfunc(y, dy_i)
         vec(jac_row_i)

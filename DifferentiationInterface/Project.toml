@@ -96,6 +96,7 @@ test = [
     "ADTypes",
     "Aqua",
     "DataFrames",
+    # "Diffractor",
     "Documenter",
     "Enzyme",
     "FastDifferentiation",
