@@ -118,14 +118,14 @@ function hvp(
 end
 
 function hvp_aux(f::F, backend, x, v, extras::ForwardOverForwardHVPExtras) where {F}
-    @unpack inner_gradient_closure, outer_pushforward_extras= extras
+    @unpack inner_gradient_closure, outer_pushforward_extras = extras
     return pushforward(
         inner_gradient_closure, outer(backend), x, v, outer_pushforward_extras
     )
 end
 
 function hvp_aux(f::F, backend, x, v, extras::ForwardOverReverseHVPExtras) where {F}
-    @unpack inner_gradient_closure, outer_pushforward_extras= extras
+    @unpack inner_gradient_closure, outer_pushforward_extras = extras
     return pushforward(
         inner_gradient_closure, outer(backend), x, v, outer_pushforward_extras
     )
@@ -157,14 +157,14 @@ function hvp!(
 end
 
 function hvp_aux!(f::F, p, backend, x, v, extras::ForwardOverForwardHVPExtras) where {F}
-    @unpack inner_gradient_closure, outer_pushforward_extras= extras
+    @unpack inner_gradient_closure, outer_pushforward_extras = extras
     return pushforward!(
         inner_gradient_closure, p, outer(backend), x, v, outer_pushforward_extras
     )
 end
 
 function hvp_aux!(f::F, p, backend, x, v, extras::ForwardOverReverseHVPExtras) where {F}
-    @unpack inner_gradient_closure, outer_pushforward_extras= extras
+    @unpack inner_gradient_closure, outer_pushforward_extras = extras
     return pushforward!(
         inner_gradient_closure, p, outer(backend), x, v, outer_pushforward_extras
     )

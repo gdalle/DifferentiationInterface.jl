@@ -40,8 +40,10 @@ include("test_imports.jl")
     end
 
     @testset verbose = true "Bonus round" begin
-        @testset "Type stability" begin
-            include("bonus/type_stability.jl")
+        @static if VERSION > v"1.9"
+            @testset "Type stability" begin
+                include("bonus/type_stability.jl")
+            end
         end
 
         @testset "Efficiency" begin
