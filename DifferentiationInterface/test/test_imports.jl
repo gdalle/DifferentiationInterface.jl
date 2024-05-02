@@ -33,6 +33,6 @@ using ForwardDiff: ForwardDiff
 using PolyesterForwardDiff: PolyesterForwardDiff
 using ReverseDiff: ReverseDiff
 using Symbolics: Symbolics
-using Tapir: Tapir
+# using Tapir: Tapir
 using Tracker: Tracker
 using Zygote: Zygote

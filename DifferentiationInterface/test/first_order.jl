@@ -11,7 +11,7 @@ dense_backends = [
     AutoPolyesterForwardDiff(; chunksize=1),
     AutoReverseDiff(; compile=true),
     AutoSymbolics(),
-    AutoTapir(),
+    # AutoTapir(),
     AutoTracker(),
     AutoZygote(),
 ]
