@@ -11,7 +11,7 @@ backends = [AutoSparse(AutoEnzyme(Enzyme.Reverse); sparsity_detector, coloring_a
 for backend in backends
     @test check_available(backend)
     @test check_twoarg(backend)
-    @test !check_hessian(backend)
+    @test !check_hessian(backend; verbose=false)
 end
 
 test_differentiation(

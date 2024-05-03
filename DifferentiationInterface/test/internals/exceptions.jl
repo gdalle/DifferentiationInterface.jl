@@ -1,4 +1,4 @@
-using ADTypes: ADTypes
+using ADTypes: ADTypes, AbstractADType
 import DifferentiationInterface as DI
 
 """
