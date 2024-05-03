@@ -1,3 +1,8 @@
+using DifferentiationInterface, DifferentiationInterfaceTest
+import DifferentiationInterfaceTest as DIT
+using ForwardDiff: ForwardDiff
+using Zygote: Zygote
+
 function zygote_breaking_scenarios()
     onearg_scens = filter(default_scenarios()) do scen
         DIT.nb_args(scen) == 1
@@ -16,8 +21,5 @@ function zygote_breaking_scenarios()
 end
 
 test_differentiation(
-    AutoZygote(),
-    zygote_breaking_scenarios();
-    second_order=false,
-    logging=logging = get(ENV, "CI", "false") == "false",
+    AutoZygote(), zygote_breaking_scenarios(); second_order=false, logging=LOGGING
 )

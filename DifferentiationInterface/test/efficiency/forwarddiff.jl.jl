@@ -1,4 +1,11 @@
-@testset verbose = false "ForwardDiff" begin
+using DataFrames: DataFrame
+using DifferentiationInterface, DifferentiationInterfaceTest
+import DifferentiationInterface as DI
+using ForwardDiff: ForwardDiff
+using Symbolics: Symbolics
+using Test
+
+@testset verbose = false "Dense" begin
     # derivative and gradient for `f(x)`
 
     results1 = benchmark_differentiation(
@@ -39,9 +46,9 @@
     )
         @test row[:allocs] == 0
     end
-end
+end;
 
-@testset verbose = false "Sparse ForwardDiff" begin
+@testset verbose = false "Sparse" begin
     # sparse jacobian for f!(x, y)
 
     b_sparse = AutoSparse(
@@ -74,4 +81,4 @@ end
         @test row[:allocs] == 0
         @test row[:calls] < prod(row[:input_size])
     end
-end
+end;
