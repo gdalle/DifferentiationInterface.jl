@@ -20,24 +20,8 @@ using Zygote: Zygote
 
 cp(joinpath(@__DIR__, "..", "README.md"), joinpath(@__DIR__, "src", "index.md"); force=true)
 
-extensions = [
-    get_extension(DI, :DifferentiationInterfaceChainRulesCoreExt),
-    get_extension(DI, :DifferentiationInterfaceDiffractorExt),
-    get_extension(DI, :DifferentiationInterfaceEnzymeExt),
-    get_extension(DI, :DifferentiationInterfaceFastDifferentiationExt),
-    get_extension(DI, :DifferentiationInterfaceFiniteDiffExt),
-    get_extension(DI, :DifferentiationInterfaceFiniteDifferencesExt),
-    get_extension(DI, :DifferentiationInterfaceForwardDiffExt),
-    get_extension(DI, :DifferentiationInterfacePolyesterForwardDiffExt),
-    get_extension(DI, :DifferentiationInterfaceReverseDiffExt),
-    get_extension(DI, :DifferentiationInterfaceSymbolicsExt),
-    get_extension(DI, :DifferentiationInterfaceTapirExt),
-    get_extension(DI, :DifferentiationInterfaceTrackerExt),
-    get_extension(DI, :DifferentiationInterfaceZygoteExt),
-]
-
 makedocs(;
-    modules=[DifferentiationInterface, ADTypes, extensions...],
+    modules=[DifferentiationInterface, ADTypes],
     authors="Guillaume Dalle, Adrian Hill",
     sitename="DifferentiationInterface.jl",
     format=Documenter.HTML(; assets=["assets/favicon.ico"]),
@@ -45,7 +29,7 @@ makedocs(;
         "Home" => "index.md",
         "Start here" => ["tutorial.md", "overview.md", "backends.md"],
         "API reference" => "api.md",
-        "Advanced" => ["design.md", "extensions.md", "overloads.md"],
+        "Advanced" => ["design.md", "overloads.md"],
     ],
     checkdocs=:exports,
     warnonly=[:missing_docs, :cross_references],

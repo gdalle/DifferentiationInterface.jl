@@ -33,3 +33,11 @@ end
 Return the _outer_ mode of the second-order backend.
 """
 ADTypes.mode(backend::SecondOrder) = mode(outer(backend))
+
+function twoarg_support(backend::SecondOrder)
+    if Bool(twoarg_support(inner(backend))) && Bool(twoarg_support(outer(backend)))
+        return TwoArgSupported()
+    else
+        return TwoArgNotSupported()
+    end
+end

@@ -1,3 +1,8 @@
+using ADTypes: ADTypes
+import DifferentiationInterface as DI
+using LinearAlgebra: I, Symmetric
+using SparseArrays: sprand
+
 alg = DI.GreedyColoringAlgorithm()
 
 A = sprand(Bool, 100, 200, 0.05)
