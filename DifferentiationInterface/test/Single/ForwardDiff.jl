@@ -1,5 +1,6 @@
 using DifferentiationInterface, DifferentiationInterfaceTest
 using ForwardDiff: ForwardDiff
+using DataFrames: DataFrame
 
 for backend in [AutoForwardDiff(), AutoSparse(AutoForwardDiff())]
     @test check_available(backend)
