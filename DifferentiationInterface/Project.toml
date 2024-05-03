@@ -80,6 +80,7 @@ Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 PolyesterForwardDiff = "98d1487c-24ca-40b6-b7ab-df2af84e126b"
 ReverseDiff = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+SparseConnectivityTracer = "9f842d2f-2579-4b1d-911e-f412cf18a3f5"
 Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 Tapir = "07d77754-e150-4737-8c94-cd238a1fb45b"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
@@ -104,6 +105,7 @@ test = [
     "PolyesterForwardDiff",
     "ReverseDiff",
     "SparseArrays",
+    "SparseConnectivityTracer",
     "Symbolics",
     "Tapir",
     "Test",

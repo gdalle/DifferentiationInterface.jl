@@ -1,11 +1,32 @@
-using DataFrames: DataFrame
 using DifferentiationInterface, DifferentiationInterfaceTest
-import DifferentiationInterface as DI
 using ForwardDiff: ForwardDiff
-using Symbolics: Symbolics
-using Test
+using DataFrames: DataFrame
 
-@testset verbose = false "Dense" begin
+for backend in [AutoForwardDiff(), AutoSparse(AutoForwardDiff())]
+    @test check_available(backend)
+    @test check_twoarg(backend)
+    @test check_hessian(backend)
+end
+
+test_differentiation([AutoForwardDiff(), AutoSparse(AutoForwardDiff())]; logging=LOGGING);
+
+test_differentiation(
+    MyAutoSparse(AutoForwardDiff()), sparse_scenarios(); sparsity=true, logging=LOGGING
+);
+
+test_differentiation(
+    AutoForwardDiff(),
+    # ForwardDiff access individual indices
+    vcat(component_scenarios(), static_scenarios());
+    # jacobian is super slow for some reason
+    excluded=[JacobianScenario],
+    second_order=false,
+    logging=LOGGING,
+);
+
+## Efficiency
+
+@testset verbose = false "Dense efficiency" begin
     # derivative and gradient for `f(x)`
 
     results1 = benchmark_differentiation(
@@ -48,14 +69,10 @@ using Test
     end
 end;
 
-@testset verbose = false "Sparse" begin
+@testset verbose = false "Sparse efficiency" begin
     # sparse jacobian for f!(x, y)
 
-    b_sparse = AutoSparse(
-        AutoForwardDiff(; chunksize=1);
-        sparsity_detector=DI.SymbolicsSparsityDetector(),
-        coloring_algorithm=DI.GreedyColoringAlgorithm(),
-    )
+    b_sparse = MyAutoSparse(AutoForwardDiff(; chunksize=1);)
 
     results1 = benchmark_differentiation(
         [b_sparse],

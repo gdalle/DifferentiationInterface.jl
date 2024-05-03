@@ -1,9 +1,7 @@
 using DifferentiationInterface, DifferentiationInterfaceTest
 using Symbolics: Symbolics
 
-backends = [AutoSymbolics(), AutoSparse(AutoSymbolics())]
-
-for backend in backends
+for backend in [AutoSymbolics(), AutoSparse(AutoSymbolics())]
     @test check_available(backend)
     @test check_twoarg(backend)
     @test check_hessian(backend)
