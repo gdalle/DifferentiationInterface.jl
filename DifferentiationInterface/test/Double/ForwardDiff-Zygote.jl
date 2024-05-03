@@ -1,5 +1,6 @@
 using DifferentiationInterface, DifferentiationInterfaceTest
 import DifferentiationInterface as DI
+import DifferentiationInterfaceTest as DIT
 using ForwardDiff: ForwardDiff
 using Zygote: Zygote
 
