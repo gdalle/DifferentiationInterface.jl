@@ -1,7 +1,30 @@
 using DifferentiationInterface, DifferentiationInterfaceTest
-import DifferentiationInterfaceTest as DIT
+import DifferentiationInterface as DI
 using ForwardDiff: ForwardDiff
 using Zygote: Zygote
+
+backends = [
+    SecondOrder(AutoForwardDiff(), AutoZygote()),
+    MyAutoSparse(SecondOrder(AutoForwardDiff(), AutoZygote())),
+]
+
+for backend in backends
+    @test check_available(backend)
+    @test !check_twoarg(backend)
+    @test check_hessian(backend)
+end
+
+test_differentiation(backends; first_order=false, logging=LOGGING);
+
+test_differentiation(
+    MyAutoSparse(SecondOrder(AutoForwardDiff(), AutoZygote())),
+    sparse_scenarios();
+    first_order=false,
+    sparsity=true,
+    logging=LOGGING,
+);
+
+## Translation
 
 function zygote_breaking_scenarios()
     onearg_scens = filter(default_scenarios()) do scen

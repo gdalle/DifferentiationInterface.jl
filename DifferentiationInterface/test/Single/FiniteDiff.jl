@@ -1,14 +1,12 @@
 using DifferentiationInterface, DifferentiationInterfaceTest
 using FiniteDiff: FiniteDiff
 
-backends = [AutoFiniteDiff()]
-
-for backend in backends
+for backend in [AutoFiniteDiff()]
     @test check_available(backend)
     @test check_twoarg(backend)
     @test check_hessian(backend)
 end
 
 test_differentiation(
-    backends; excluded=[SecondDerivativeScenario, HVPScenario], logging=LOGGING
+    AutoFiniteDiff(); excluded=[SecondDerivativeScenario, HVPScenario], logging=LOGGING
 );

@@ -4,8 +4,15 @@ Pkg.develop(
     Pkg.PackageSpec(; path=joinpath(@__DIR__, "..", "..", "DifferentiationInterfaceTest"))
 )
 
+using ADTypes
 using DifferentiationInterface
 using Test
+
+function MyAutoSparse(backend::AbstractADType)
+    coloring_algorithm = DifferentiationInterface.GreedyColoringAlgorithm()
+    sparsity_detector = SparseConnectivityTracer.TracerSparsityDetector()
+    return AutoSparse(backend; sparsity_detector, coloring_algorithm)
+end
 
 LOGGING = get(ENV, "CI", "false") == "false"
 
