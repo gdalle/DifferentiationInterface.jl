@@ -61,6 +61,7 @@ include("utils/zero_backends.jl")
 include("utils/misc.jl")
 include("utils/filter.jl")
 
+include("tests/coloring.jl")
 include("tests/correctness.jl")
 include("tests/type_stability.jl")
 include("tests/sparsity.jl")
