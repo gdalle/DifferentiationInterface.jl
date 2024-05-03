@@ -1,12 +1,14 @@
 using DifferentiationInterface, DifferentiationInterfaceTest
 using Enzyme: Enzyme
 
-for backend in [
+backends = [
     AutoEnzyme(; mode=nothing),
     AutoEnzyme(; mode=Enzyme.Forward),
     AutoEnzyme(; mode=Enzyme.Reverse),
     AutoSparse(AutoEnzyme(; mode=nothing)),
 ]
+
+for backend in backends
     @test check_available(backend)
     @test check_twoarg(backend)
     @test !check_hessian(backend; verbose=false)
