@@ -1,14 +1,24 @@
+ADDITIONAL_BACKENDS_10 = [
+    "Diffractor", "FastDifferentiation", "PolyesterForwardDiff", "Symbolics", "Tapir"
+]
+
+## Weird Pkg mumbo-jumbo
+
 using Pkg
+
+push!(Base.LOAD_PATH, Base.current_project())
+
+Pkg.activate(; temp=true)
+
 Pkg.develop(
     Pkg.PackageSpec(; path=joinpath(@__DIR__, "..", "..", "DifferentiationInterfaceTest"))
 )
 
-BACKENDS_INCOMPATIBLE_WITH_LTS = [
-    "Diffractor", "FastDifferentiation", "PolyesterForwardDiff", "Symbolics", "Tapir"
-]
 @static if VERSION >= v"1.10"
-    Pkg.add(BACKENDS_INCOMPATIBLE_WITH_LTS)
+    Pkg.add(ADDITIONAL_BACKENDS_10)
 end
+
+## Actual stuff that matters
 
 using ADTypes
 using DifferentiationInterface
@@ -38,7 +48,7 @@ LOGGING = get(ENV, "CI", "false") == "false"
         @testset verbose = true "$(file[1:end-3])" for file in readdir(folder_path)
             if (
                 VERSION < v"1.10" &&
-                any(contains(file, name) for name in BACKENDS_INCOMPATIBLE_WITH_LTS)
+                any(contains(file, name) for name in ADDITIONAL_BACKENDS_10)
             )
                 @info "Skipping $folder - $(file[1:end-3])"
             else
