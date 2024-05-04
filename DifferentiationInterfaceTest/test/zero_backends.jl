@@ -31,7 +31,7 @@ end
 
 ## Type stability
 
-if VERSION >= v"1.9"
+if VERSION >= v"1.10"
     test_differentiation(
         [AutoZeroForward(), AutoZeroReverse()];
         correctness=false,

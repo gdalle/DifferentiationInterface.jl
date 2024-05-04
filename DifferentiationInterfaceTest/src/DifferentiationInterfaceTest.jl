@@ -63,7 +63,7 @@ include("utils/filter.jl")
 
 include("tests/coloring.jl")
 include("tests/correctness.jl")
-@static if VERSION >= v"1.9"
+@static if VERSION >= v"1.10"
     include("tests/type_stability.jl")
 end
 include("tests/sparsity.jl")

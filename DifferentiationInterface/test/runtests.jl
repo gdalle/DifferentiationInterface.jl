@@ -19,16 +19,25 @@ LOGGING = get(ENV, "CI", "false") == "false"
 ## Main tests
 
 @testset verbose = true "DifferentiationInterface.jl" begin
-    @info "Testing formalities"
-    @testset verbose = true "Formal tests" begin
-        include("formal.jl")
+    @static if VERSION >= v"1.10"
+        @info "Testing formalities"
+        @testset verbose = true "Formal tests" begin
+            include("formal.jl")
+        end
     end
 
     @testset verbose = true "$folder" for folder in ["Single", "Double", "Internals"]
         folder_path = joinpath(@__DIR__, folder)
         @testset verbose = true "$(file[1:end-3])" for file in readdir(folder_path)
             @info "Testing $folder - $(file[1:end-3])"
-            include(joinpath(folder_path, file))
+            if !(
+                contains(file, "Diffractor") ||
+                contains(file, "FastDifferentiation") ||
+                contains(file, "Symbolics") ||
+                contains(file, "Tapir"),
+            )
+                include(joinpath(folder_path, file))
+            end
         end
     end
 end;

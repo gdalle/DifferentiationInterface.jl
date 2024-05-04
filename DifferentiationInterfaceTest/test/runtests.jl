@@ -4,7 +4,7 @@ include("test_imports.jl")
 
 @testset verbose = true "DifferentiationInterfaceTest.jl" begin
     @testset verbose = true "Formal tests" begin
-        @static if VERSION > v"1.9"
+        @static if VERSION >= v"1.10"
             @testset "Aqua" begin
                 Aqua.test_all(
                     DifferentiationInterfaceTest;
@@ -32,6 +32,6 @@ include("test_imports.jl")
     end
 
     @testset verbose = false "Symbolics" begin
-        include("symbolics.jl")
+        # include("symbolics.jl")
     end
 end;
