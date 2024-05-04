@@ -1,5 +1,19 @@
-ADDITIONAL_BACKENDS_10 = [
-    "Diffractor", "FastDifferentiation", "PolyesterForwardDiff", "Symbolics", "Tapir"
+BACKENDS_1_6 = [
+    "FiniteDiff", #
+    "FiniteDifferences",
+    "ForwardDiff",
+    "ReverseDiff",
+    "Tracker",
+    "Zygote",
+]
+
+BACKENDS_1_10 = [
+    "Diffractor", # 
+    "Enzyme",
+    "FastDifferentiation",
+    "PolyesterForwardDiff",
+    "Symbolics",
+    "Tapir",
 ]
 
 ## Weird Pkg mumbo-jumbo
@@ -16,7 +30,9 @@ Pkg.develop([
 ])
 
 @static if VERSION >= v"1.10"
-    Pkg.add(ADDITIONAL_BACKENDS_10)
+    Pkg.add(vcat(BACKENDS_1_6, BACKENDS_1_10))
+else
+    Pkg.add(vcat(BACKENDS_1_6))
 end
 
 ## Actual stuff that matters
@@ -47,10 +63,7 @@ LOGGING = get(ENV, "CI", "false") == "false"
     @testset verbose = true "$folder" for folder in ["Single", "Double", "Internals"]
         folder_path = joinpath(@__DIR__, folder)
         @testset verbose = true "$(file[1:end-3])" for file in readdir(folder_path)
-            if (
-                VERSION < v"1.10" &&
-                any(contains(file, name) for name in ADDITIONAL_BACKENDS_10)
-            )
+            if (VERSION < v"1.10" && any(contains(file, name) for name in BACKENDS_1_10))
                 @info "Skipping $folder - $(file[1:end-3])"
             else
                 @info "Testing $folder - $(file[1:end-3])"
