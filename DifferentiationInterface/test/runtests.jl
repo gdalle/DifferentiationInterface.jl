@@ -10,9 +10,10 @@ push!(Base.LOAD_PATH, Base.active_project())
 
 Pkg.activate(; temp=true)
 
-Pkg.develop(
-    Pkg.PackageSpec(; path=joinpath(@__DIR__, "..", "..", "DifferentiationInterfaceTest"))
-)
+Pkg.develop([
+    Pkg.PackageSpec(; path=joinpath(@__DIR__, "..", "..", "DifferentiationInterface")),
+    Pkg.PackageSpec(; path=joinpath(@__DIR__, "..", "..", "DifferentiationInterfaceTest")),
+])
 
 @static if VERSION >= v"1.10"
     Pkg.add(ADDITIONAL_BACKENDS_10)
