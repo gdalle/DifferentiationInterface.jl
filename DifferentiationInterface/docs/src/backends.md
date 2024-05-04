@@ -14,7 +14,7 @@ import Enzyme
 import FiniteDiff
 import FiniteDifferences
 import ForwardDiff
-import PolyesterForwardDiff
+# import PolyesterForwardDiff
 import ReverseDiff
 # import Symbolics
 # import Tapir
@@ -29,7 +29,7 @@ const backend_examples = (
     "AutoFiniteDiff()",
     "AutoFiniteDifferences(; fdm=FiniteDifferences.central_fdm(3, 1))",
     "AutoForwardDiff()",
-    "AutoPolyesterForwardDiff(; chunksize=1)",
+    # "AutoPolyesterForwardDiff(; chunksize=1)",
     "AutoReverseDiff()",
     # "AutoSymbolics()",
     # "AutoTapir()",

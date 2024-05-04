@@ -33,7 +33,7 @@ using Enzyme: Enzyme
 using FiniteDiff: FiniteDiff
 using FiniteDifferences: FiniteDifferences
 using ForwardDiff: ForwardDiff
-using PolyesterForwardDiff: PolyesterForwardDiff
+# using PolyesterForwardDiff: PolyesterForwardDiff
 using ReverseDiff: ReverseDiff
 # using Symbolics: Symbolics
 # using Tapir: Tapir
@@ -204,7 +204,7 @@ print_overloads(AutoForwardDiff(), :DifferentiationInterfaceForwardDiffExt) # hi
 
 ## PolyesterForwardDiff (forward)
 ```@example overloads
-print_overloads(AutoPolyesterForwardDiff(; chunksize=1), :DifferentiationInterfacePolyesterForwardDiffExt) # hide
+# print_overloads(AutoPolyesterForwardDiff(; chunksize=1), :DifferentiationInterfacePolyesterForwardDiffExt) # hide
 ```
 
 ## ReverseDiff (reverse)

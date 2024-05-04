@@ -33,6 +33,7 @@ LOGGING = get(ENV, "CI", "false") == "false"
             if !(
                 contains(file, "Diffractor") ||
                 contains(file, "FastDifferentiation") ||
+                contains(file, "PolyesterForwardDiff") ||
                 contains(file, "Symbolics") ||
                 contains(file, "Tapir"),
             )
