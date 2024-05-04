@@ -7,7 +7,19 @@ CollapsedDocStrings = true
 using DifferentiationInterface
 using DifferentiationInterface: backend_str
 import Markdown
-import Diffractor, Enzyme, FastDifferentiation, FiniteDiff, FiniteDifferences, ForwardDiff, PolyesterForwardDiff, ReverseDiff, Tapir, Tracker, Zygote
+
+import Diffractor
+import Enzyme
+import FastDifferentiation
+import FiniteDiff
+import FiniteDifferences
+import ForwardDiff
+import PolyesterForwardDiff
+import ReverseDiff
+import Symbolics
+import Tapir
+import Tracker
+import Zygote
 
 const backend_examples = (
     "AutoDiffractor()",
@@ -19,6 +31,7 @@ const backend_examples = (
     "AutoForwardDiff()",
     "AutoPolyesterForwardDiff(; chunksize=1)",
     "AutoReverseDiff()",
+    "AutoSymbolics()",
     "AutoTapir()",
     "AutoTracker()",
     "AutoZygote()",
