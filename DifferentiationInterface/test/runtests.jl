@@ -3,6 +3,13 @@ Pkg.develop(
     Pkg.PackageSpec(; path=joinpath(@__DIR__, "..", "..", "DifferentiationInterfaceTest"))
 )
 
+BACKENDS_INCOMPATIBLE_WITH_LTS = [
+    "Diffractor", "FastDifferentiation", "PolyesterForwardDiff", "Symbolics", "Tapir"
+]
+@static if VERSION >= v"1.10"
+    Pkg.add(BACKENDS_INCOMPATIBLE_WITH_LTS)
+end
+
 using ADTypes
 using DifferentiationInterface
 using SparseConnectivityTracer: SparseConnectivityTracer
@@ -29,14 +36,13 @@ LOGGING = get(ENV, "CI", "false") == "false"
     @testset verbose = true "$folder" for folder in ["Single", "Double", "Internals"]
         folder_path = joinpath(@__DIR__, folder)
         @testset verbose = true "$(file[1:end-3])" for file in readdir(folder_path)
-            @info "Testing $folder - $(file[1:end-3])"
-            if !(
-                contains(file, "Diffractor") ||
-                contains(file, "FastDifferentiation") ||
-                contains(file, "PolyesterForwardDiff") ||
-                contains(file, "Symbolics") ||
-                contains(file, "Tapir"),
+            if (
+                VERSION < v"1.10" &&
+                any(contains(file, name) for name in BACKENDS_INCOMPATIBLE_WITH_LTS)
             )
+                @info "Skipping $folder - $(file[1:end-3])"
+            else
+                @info "Testing $folder - $(file[1:end-3])"
                 include(joinpath(folder_path, file))
             end
         end
