@@ -9,7 +9,9 @@ include("test_imports.jl")
                 Aqua.test_all(
                     DifferentiationInterfaceTest;
                     ambiguities=false,
-                    deps_compat=(check_extras = false),
+                    deps_compat=(
+                        check_extras=false, ignore=[:LinearAlgebra, :SparseArrays, :Test]
+                    ),
                 )
             end
             @testset "JuliaFormatter" begin
