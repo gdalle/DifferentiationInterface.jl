@@ -107,7 +107,7 @@ test = [
     "JET",
     "JuliaFormatter",
     "Pkg",
-    "PolyesterForwardDiff",
+    # "PolyesterForwardDiff",
     "ReverseDiff",
     "SparseArrays",
     "SparseConnectivityTracer",
