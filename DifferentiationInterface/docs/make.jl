@@ -5,16 +5,16 @@ using Documenter
 using DocumenterMermaid
 
 using ADTypes: ADTypes
-# using Diffractor: Diffractor
+using Diffractor: Diffractor
 using Enzyme: Enzyme
-# using FastDifferentiation: FastDifferentiation
+using FastDifferentiation: FastDifferentiation
 using FiniteDiff: FiniteDiff
 using FiniteDifferences: FiniteDifferences
 using ForwardDiff: ForwardDiff
-# using PolyesterForwardDiff: PolyesterForwardDiff
+using PolyesterForwardDiff: PolyesterForwardDiff
 using ReverseDiff: ReverseDiff
 using Symbolics: Symbolics
-# using Tapir: Tapir
+using Tapir: Tapir
 using Tracker: Tracker
 using Zygote: Zygote
 

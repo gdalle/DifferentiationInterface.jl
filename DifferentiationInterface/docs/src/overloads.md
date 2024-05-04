@@ -28,16 +28,16 @@ using DifferentiationInterface
 using DifferentiationInterface: backend_str, twoarg_support, TwoArgSupported
 using Markdown: Markdown
 
-# using Diffractor: Diffractor
+using Diffractor: Diffractor
 using Enzyme: Enzyme
-# using FastDifferentiation: FastDifferentiation
+using FastDifferentiation: FastDifferentiation
 using FiniteDiff: FiniteDiff
 using FiniteDifferences: FiniteDifferences
 using ForwardDiff: ForwardDiff
-# using PolyesterForwardDiff: PolyesterForwardDiff
+using PolyesterForwardDiff: PolyesterForwardDiff
 using ReverseDiff: ReverseDiff
-# using Symbolics: Symbolics
-# using Tapir: Tapir
+using Symbolics: Symbolics
+using Tapir: Tapir
 using Tracker: Tracker
 using Zygote: Zygote
 
@@ -172,7 +172,7 @@ end
 ## Diffractor (forward/reverse)
 
 ```@example overloads
-# print_overloads(AutoDiffractor(), :DifferentiationInterfaceDiffractorExt) # hide
+print_overloads(AutoDiffractor(), :DifferentiationInterfaceDiffractorExt) # hide
 ```
 
 ## Enzyme (forward)
@@ -190,7 +190,7 @@ print_overloads(AutoEnzyme(; mode=Enzyme.Reverse), :DifferentiationInterfaceEnzy
 ## FastDifferentiation (symbolic)
 
 ```@example overloads
-# print_overloads(AutoFastDifferentiation(), :DifferentiationInterfaceFastDifferentiationExt) # hide
+print_overloads(AutoFastDifferentiation(), :DifferentiationInterfaceFastDifferentiationExt) # hide
 ```
 
 ## FiniteDiff (forward)
@@ -214,7 +214,7 @@ print_overloads(AutoForwardDiff(), :DifferentiationInterfaceForwardDiffExt) # hi
 ## PolyesterForwardDiff (forward)
 
 ```@example overloads
-# print_overloads(AutoPolyesterForwardDiff(; chunksize=1), :DifferentiationInterfacePolyesterForwardDiffExt) # hide
+print_overloads(AutoPolyesterForwardDiff(; chunksize=1), :DifferentiationInterfacePolyesterForwardDiffExt) # hide
 ```
 
 ## ReverseDiff (reverse)
@@ -226,13 +226,13 @@ print_overloads(AutoReverseDiff(), :DifferentiationInterfaceReverseDiffExt) # hi
 ## Symbolics (symbolic)
 
 ```@example overloads
-# print_overloads(AutoSymbolics(), :DifferentiationInterfaceSymbolicsExt) # hide
+print_overloads(AutoSymbolics(), :DifferentiationInterfaceSymbolicsExt) # hide
 ```
 
 ## Tapir (reverse)
 
 ```@example overloads
-# print_overloads(AutoTapir(), :DifferentiationInterfaceTapirExt) # hide
+print_overloads(AutoTapir(), :DifferentiationInterfaceTapirExt) # hide
 ```
 
 ## Tracker (reverse)
