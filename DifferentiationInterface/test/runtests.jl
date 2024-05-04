@@ -1,6 +1,5 @@
 BACKENDS_1_6 = [
-    "FiniteDiff", #
-    "FiniteDifferences",
+    "FiniteDifferences",  #
     "ForwardDiff",
     "ReverseDiff",
     "Tracker",
@@ -8,8 +7,9 @@ BACKENDS_1_6 = [
 ]
 
 BACKENDS_1_10 = [
-    "Diffractor", # 
+    "Diffractor",  # 
     "Enzyme",
+    "FiniteDiff",
     "FastDifferentiation",
     "PolyesterForwardDiff",
     "Symbolics",
