@@ -52,7 +52,7 @@ end
 ## Pullback
 
 function test_jet(ba::AbstractADType, scen::PullbackScenario{1,:outofplace}; ref_backend)
-    @compat (; f, x), dy = deepcopy(scen)
+    @compat (; f, x, dy) = deepcopy(scen)
     extras = prepare_pullback(f, ba, x, dy)
 
     _, pullbackfunc = value_and_pullback_split(f, ba, x, extras)
@@ -66,7 +66,7 @@ function test_jet(ba::AbstractADType, scen::PullbackScenario{1,:outofplace}; ref
 end
 
 function test_jet(ba::AbstractADType, scen::PullbackScenario{1,:inplace}; ref_backend)
-    @compat (; f, x), dy = deepcopy(scen)
+    @compat (; f, x, dy) = deepcopy(scen)
     extras = prepare_pullback(f, ba, x, dy)
     dx_in = mysimilar(x)
 
