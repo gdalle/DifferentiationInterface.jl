@@ -1,77 +1,34 @@
-include("test_imports.jl")
+using Pkg
+Pkg.develop(
+    Pkg.PackageSpec(; path=joinpath(@__DIR__, "..", "..", "DifferentiationInterfaceTest"))
+)
+
+using ADTypes
+using DifferentiationInterface
+using SparseConnectivityTracer: SparseConnectivityTracer
+using Test
+
+function MyAutoSparse(backend::AbstractADType)
+    coloring_algorithm = DifferentiationInterface.GreedyColoringAlgorithm()
+    sparsity_detector = SparseConnectivityTracer.TracerSparsityDetector()
+    return AutoSparse(backend; sparsity_detector, coloring_algorithm)
+end
+
+LOGGING = get(ENV, "CI", "false") == "false"
 
 ## Main tests
 
 @testset verbose = true "DifferentiationInterface.jl" begin
+    @info "Testing formalities"
     @testset verbose = true "Formal tests" begin
-        @static if VERSION > v"1.9"
-            @testset "Aqua" begin
-                Aqua.test_all(
-                    DifferentiationInterface;
-                    ambiguities=false,
-                    deps_compat=(check_extras = false),
-                )
-            end
-            @testset "JuliaFormatter" begin
-                @test JuliaFormatter.format(
-                    DifferentiationInterface; verbose=false, overwrite=false
-                )
-            end
-            @testset verbose = true "JET" begin
-                JET.test_package(DifferentiationInterface; target_defined_modules=true)
-            end
-        end
+        include("formal.jl")
     end
 
-    Documenter.doctest(DifferentiationInterface)
-
-    @testset verbose = true "First order" begin
-        include("first_order.jl")
-    end
-
-    @testset verbose = true "Second order" begin
-        include("second_order.jl")
-    end
-
-    @testset verbose = true "Sparsity" begin
-        include("sparsity.jl")
-    end
-
-    @testset verbose = true "DifferentiateWith" begin
-        include("differentiate_with.jl")
-    end
-
-    @testset verbose = true "Bonus round" begin
-        @static if VERSION > v"1.9"
-            @testset "Type stability" begin
-                include("bonus/type_stability.jl")
-            end
-        end
-
-        @testset "Efficiency" begin
-            include("bonus/efficiency.jl")
-        end
-
-        @testset "Weird arrays" begin
-            include("bonus/weird_arrays.jl")
-        end
-    end
-
-    @testset verbose = true "Internals" begin
-        @testset verbose = true "Exception handling" begin
-            include("internals/exceptions.jl")
-        end
-
-        @testset "Chunks" begin
-            include("internals/chunk.jl")
-        end
-
-        @testset "Matrices" begin
-            include("internals/matrices.jl")
-        end
-
-        @testset verbose = true "Coloring" begin
-            include("internals/coloring.jl")
+    @testset verbose = true "$folder" for folder in ["Single", "Double", "Internals"]
+        folder_path = joinpath(@__DIR__, folder)
+        @testset verbose = true "$(file[1:end-3])" for file in readdir(folder_path)
+            @info "Testing $folder - $(file[1:end-3])"
+            include(joinpath(folder_path, file))
         end
     end
 end;

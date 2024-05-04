@@ -1,3 +1,6 @@
+using ADTypes: ADTypes, AbstractADType
+import DifferentiationInterface as DI
+
 """
     AutoBrokenForward <: ADTypes.AbstractADType
 
@@ -6,7 +9,7 @@ Used to test error messages.
 """
 struct AutoBrokenForward <: AbstractADType end
 ADTypes.mode(::AutoBrokenForward) = ADTypes.ForwardMode()
-DifferentiationInterface.check_available(::AutoBrokenForward) = true
+DI.check_available(::AutoBrokenForward) = true
 
 """
     AutoBrokenReverse <: ADTypes.AbstractADType
@@ -16,7 +19,7 @@ Used to test error messages.
 """
 struct AutoBrokenReverse <: AbstractADType end
 ADTypes.mode(::AutoBrokenReverse) = ADTypes.ReverseMode()
-DifferentiationInterface.check_available(::AutoBrokenReverse) = true
+DI.check_available(::AutoBrokenReverse) = true
 
 ## Test exceptions
 @testset "MissingBackendError" begin
