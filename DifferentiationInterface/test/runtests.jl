@@ -6,7 +6,7 @@ ADDITIONAL_BACKENDS_10 = [
 
 using Pkg
 
-push!(Base.LOAD_PATH, Base.current_project())
+push!(Base.LOAD_PATH, Base.active_project())
 
 Pkg.activate(; temp=true)
 
