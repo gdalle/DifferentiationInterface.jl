@@ -2,7 +2,7 @@ module DifferentiationInterfaceForwardDiffExt
 
 using ADTypes: AbstractADType, AutoForwardDiff
 using Base: Fix1
-using Compat: @compat
+using Compat
 import DifferentiationInterface as DI
 using DifferentiationInterface:
     DerivativeExtras,

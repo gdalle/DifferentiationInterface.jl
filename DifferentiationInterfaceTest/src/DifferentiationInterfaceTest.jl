@@ -45,7 +45,7 @@ using JET: JET
 using JLArrays: jl
 using LinearAlgebra: Diagonal, dot
 using ProgressMeter: ProgressUnknown, next!
-using Compat: @compat
+using Compat
 using SparseArrays: SparseArrays, SparseMatrixCSC, nnz, spdiagm
 using StaticArrays: MMatrix, MVector, SMatrix, SVector
 using Test: @testset, @test

@@ -7,7 +7,7 @@ using DifferentiationInterface:
 using DocStringExtensions
 using Zygote:
     ZygoteRuleConfig, gradient, hessian, jacobian, pullback, withgradient, withjacobian
-using Compat: @compat
+using Compat
 
 DI.check_available(::AutoZygote) = true
 DI.twoarg_support(::AutoZygote) = DI.TwoArgNotSupported()

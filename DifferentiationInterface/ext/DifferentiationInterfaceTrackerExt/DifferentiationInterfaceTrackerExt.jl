@@ -4,7 +4,7 @@ using ADTypes: AutoTracker
 import DifferentiationInterface as DI
 using DifferentiationInterface: NoGradientExtras, NoPullbackExtras
 using Tracker: Tracker, back, data, forward, gradient, jacobian, param, withgradient
-using Compat: @compat
+using Compat
 
 DI.check_available(::AutoTracker) = true
 DI.twoarg_support(::AutoTracker) = DI.TwoArgNotSupported()
