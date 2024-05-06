@@ -1,8 +1,3 @@
-using Pkg
-Pkg.develop(
-    Pkg.PackageSpec(; path=joinpath(@__DIR__, "..", "..", "DifferentiationInterfaceTest"))
-)
-
 using ADTypes
 using DifferentiationInterface
 using SparseConnectivityTracer: SparseConnectivityTracer
