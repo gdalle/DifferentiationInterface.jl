@@ -1,7 +1,7 @@
 name = "DifferentiationInterfaceTest"
 uuid = "a82114a7-5aa3-49a8-9643-716bb13727a3"
 authors = ["Guillaume Dalle", "Adrian Hill"]
-version = "0.3.0"
+version = "0.3.1"
 
 [deps]
 ADTypes = "47edcb42-4c32-4615-8424-f2b9edc5f35b"
@@ -23,7 +23,7 @@ ADTypes = "1.0.0"
 Chairmarks = "1.2.1"
 Compat = "4"
 ComponentArrays = "0.15"
-DifferentiationInterface = "0.3.0"
+DifferentiationInterface = "0.3.4"
 DocStringExtensions = "0.9"
 JET = "0.4 - 0.8"
 JLArrays = "0.1"
