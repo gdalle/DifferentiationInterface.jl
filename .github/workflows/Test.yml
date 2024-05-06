@@ -44,24 +44,11 @@ jobs:
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
-      - uses: julia-actions/cache@v1
-      - name: Install dependencies (replaces buildpkg)
-        run: julia --project=${{ matrix.pkg.dir}}/ -e '
-          using Pkg;
-          Pkg.Registry.update();
-          if "${{ matrix.pkg.name}}" == "DifferentiationInterfaceTest";
-              Pkg.develop(PackageSpec(path="./DifferentiationInterface"));
-              Pkg.instantiate();
-          else;
-              Pkg.activate("${{ matrix.pkg.name}}/test");
-              Pkg.develop(PackageSpec(path="./DifferentiationInterfaceTest"));
-              Pkg.develop(PackageSpec(path="./DifferentiationInterface"));
-              Pkg.instantiate();
-          end;'
+      - uses: julia-actions/cache@v2
+      - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
         with:
           project: ${{ matrix.pkg.dir }}
-          allow_reresolve: false
       - uses: julia-actions/julia-processcoverage@v1
         with:
           directories: ${{ matrix.pkg.dir }}/src,${{ matrix.pkg.dir }}/ext

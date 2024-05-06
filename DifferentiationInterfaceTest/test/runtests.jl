@@ -4,6 +4,11 @@ using DifferentiationInterfaceTest
 using SparseConnectivityTracer: SparseConnectivityTracer
 using Test
 
+DI_PATH = joinpath(@__DIR__, "..", "..", "DifferentiationInterface")
+if isdir(DI_PATH)
+    Pkg.develop(; path=DI_PATH)
+end
+
 function MyAutoSparse(backend::AbstractADType)
     coloring_algorithm = DifferentiationInterface.GreedyColoringAlgorithm()
     sparsity_detector = SparseConnectivityTracer.TracerSparsityDetector()
