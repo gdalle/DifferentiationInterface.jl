@@ -3,6 +3,7 @@ using DifferentiationInterface
 using Documenter: Documenter
 using JET: JET
 using JuliaFormatter: JuliaFormatter
+using Test
 
 @testset "Aqua" begin
     Aqua.test_all(

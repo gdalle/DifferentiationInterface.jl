@@ -1,3 +1,9 @@
+using DifferentiationInterface
+using DifferentiationInterfaceTest
+using DifferentiationInterfaceTest: AutoZeroForward, AutoZeroReverse
+
+using DataFrames: DataFrames
+
 @test check_available(AutoZeroForward())
 @test check_available(AutoZeroReverse())
 @test check_twoarg(AutoZeroForward())
@@ -74,9 +80,7 @@ end
 struct FakeBackend <: ADTypes.AbstractADType end
 ADTypes.mode(::FakeBackend) = ADTypes.ForwardMode()
 
-data3 = benchmark_differentiation(
-    [FakeBackend()]; logging=get(ENV, "CI", "false") == "false"
-);  # this gives lots of warnings when logging is on, no worries
+data3 = benchmark_differentiation([FakeBackend()]; logging=false);
 
 df3 = DataFrames.DataFrame(data3)
 

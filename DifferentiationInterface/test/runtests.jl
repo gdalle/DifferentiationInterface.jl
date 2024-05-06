@@ -1,12 +1,13 @@
-using Pkg
-Pkg.develop(
-    Pkg.PackageSpec(; path=joinpath(@__DIR__, "..", "..", "DifferentiationInterfaceTest"))
-)
-
 using ADTypes
 using DifferentiationInterface
+using Pkg
 using SparseConnectivityTracer: SparseConnectivityTracer
 using Test
+
+DIT_PATH = joinpath(@__DIR__, "..", "..", "DifferentiationInterfaceTest")
+if isdir(DIT_PATH)
+    Pkg.develop(; path=DIT_PATH)
+end
 
 function MyAutoSparse(backend::AbstractADType)
     coloring_algorithm = DifferentiationInterface.GreedyColoringAlgorithm()
