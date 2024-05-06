@@ -1,3 +1,16 @@
+using ADTypes
+using DifferentiationInterface
+using Pkg
+using SparseConnectivityTracer: SparseConnectivityTracer
+using Test
+
+DIT_PATH = joinpath(@__DIR__, "..", "..", "DifferentiationInterfaceTest")
+if isdir(DIT_PATH)
+    Pkg.develop(; path=DIT_PATH)
+end
+
+## Weird Pkg mumbo-jumbo
+
 BACKENDS_1_6 = [
     "FiniteDifferences",  #
     "ForwardDiff",
@@ -16,18 +29,9 @@ BACKENDS_1_10 = [
     "Tapir",
 ]
 
-## Weird Pkg mumbo-jumbo
-
-using Pkg
-
 push!(Base.LOAD_PATH, Base.active_project())
 
 Pkg.activate(; temp=true)
-
-Pkg.develop([
-    Pkg.PackageSpec(; path=joinpath(@__DIR__, "..", "..", "DifferentiationInterface")),
-    Pkg.PackageSpec(; path=joinpath(@__DIR__, "..", "..", "DifferentiationInterfaceTest")),
-])
 
 @static if VERSION >= v"1.10"
     Pkg.add(vcat(BACKENDS_1_6, BACKENDS_1_10))
@@ -36,11 +40,6 @@ else
 end
 
 ## Actual stuff that matters
-
-using ADTypes
-using DifferentiationInterface
-using SparseConnectivityTracer: SparseConnectivityTracer
-using Test
 
 function MyAutoSparse(backend::AbstractADType)
     coloring_algorithm = DifferentiationInterface.GreedyColoringAlgorithm()

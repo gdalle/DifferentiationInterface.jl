@@ -1,3 +1,7 @@
+using DifferentiationInterface
+using DifferentiationInterfaceTest
+using ForwardDiff: ForwardDiff
+
 test_differentiation(AutoForwardDiff(); logging=get(ENV, "CI", "false") == "false")
 
 test_differentiation(
