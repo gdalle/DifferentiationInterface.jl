@@ -55,6 +55,7 @@ jobs:
           else;
               Pkg.activate("${{ matrix.pkg.name}}/test");
               Pkg.develop(PackageSpec(path="./DifferentiationInterfaceTest"));
+              Pkg.develop(PackageSpec(path="./DifferentiationInterface"));
               Pkg.instantiate();
           end;'
       - uses: julia-actions/julia-runtest@v1
