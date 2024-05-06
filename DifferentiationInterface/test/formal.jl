@@ -7,9 +7,7 @@ using Test
 
 @testset "Aqua" begin
     Aqua.test_all(
-        DifferentiationInterface;
-        ambiguities=false,
-        deps_compat=(check_extras=false, ignore=[:LinearAlgebra, :SparseArrays, :Test]),
+        DifferentiationInterface; ambiguities=false, deps_compat=(check_extras = false)
     )
 end
 

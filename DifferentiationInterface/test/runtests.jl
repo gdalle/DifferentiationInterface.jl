@@ -4,12 +4,17 @@ using Pkg
 using SparseConnectivityTracer: SparseConnectivityTracer
 using Test
 
+push!(Base.LOAD_PATH, Base.active_project())
+Pkg.activate(; temp=true)
+
+DI_PATH = joinpath(@__DIR__, "..", "..", "DifferentiationInterface")
 DIT_PATH = joinpath(@__DIR__, "..", "..", "DifferentiationInterfaceTest")
+if isdir(DI_PATH)
+    Pkg.develop(; path=DI_PATH)
+end
 if isdir(DIT_PATH)
     Pkg.develop(; path=DIT_PATH)
 end
-
-## Weird Pkg mumbo-jumbo
 
 BACKENDS_1_6 = [
     "FiniteDifferences",  #
@@ -29,17 +34,11 @@ BACKENDS_1_10 = [
     "Tapir",
 ]
 
-push!(Base.LOAD_PATH, Base.active_project())
-
-Pkg.activate(; temp=true)
-
 @static if VERSION >= v"1.10"
     Pkg.add(vcat(BACKENDS_1_6, BACKENDS_1_10))
 else
     Pkg.add(vcat(BACKENDS_1_6))
 end
-
-## Actual stuff that matters
 
 function MyAutoSparse(backend::AbstractADType)
     coloring_algorithm = DifferentiationInterface.GreedyColoringAlgorithm()
