@@ -57,6 +57,7 @@ jobs:
               Pkg.develop(PackageSpec(path="./DifferentiationInterfaceTest"));
               Pkg.develop(PackageSpec(path="./DifferentiationInterface"));
               Pkg.instantiate();
+              rm("./DifferentiationInterface/Manifest.toml")
           end;'
       - uses: julia-actions/julia-runtest@v1
         with:
