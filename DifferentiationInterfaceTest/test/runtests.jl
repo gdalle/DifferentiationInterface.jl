@@ -1,6 +1,7 @@
 using ADTypes
 using DifferentiationInterface
 using DifferentiationInterfaceTest
+using Pkg
 using SparseConnectivityTracer: SparseConnectivityTracer
 using Test
 
