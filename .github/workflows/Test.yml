@@ -57,11 +57,11 @@ jobs:
               Pkg.develop(PackageSpec(path="./DifferentiationInterfaceTest"));
               Pkg.develop(PackageSpec(path="./DifferentiationInterface"));
               Pkg.instantiate();
-              rm("./DifferentiationInterface/Manifest.toml")
           end;'
       - uses: julia-actions/julia-runtest@v1
         with:
           project: ${{ matrix.pkg.dir }}
+          allow_reresolve: false
       - uses: julia-actions/julia-processcoverage@v1
         with:
           directories: ${{ matrix.pkg.dir }}/src,${{ matrix.pkg.dir }}/ext
