@@ -62,7 +62,7 @@ function second_derivative(
     x,
     extras::ClosureSecondDerivativeExtras=prepare_second_derivative(f, backend, x),
 ) where {F}
-    (; inner_derivative_closure, outer_derivative_extras) = extras
+    @compat (; inner_derivative_closure, outer_derivative_extras) = extras
     return derivative(inner_derivative_closure, outer(backend), x, outer_derivative_extras)
 end
 
@@ -85,7 +85,7 @@ function second_derivative!(
     x,
     extras::SecondDerivativeExtras=prepare_second_derivative(f, backend, x),
 ) where {F}
-    (; inner_derivative_closure, outer_derivative_extras) = extras
+    @compat (; inner_derivative_closure, outer_derivative_extras) = extras
     return derivative!(
         inner_derivative_closure, der2, outer(backend), x, outer_derivative_extras
     )

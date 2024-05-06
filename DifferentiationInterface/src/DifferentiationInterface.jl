@@ -28,9 +28,11 @@ using ADTypes:
     AutoTapir,
     AutoTracker,
     AutoZygote
+using Compat
 using DocStringExtensions
 using FillArrays: OneElement
 using LinearAlgebra: Symmetric, Transpose, dot, parent, transpose
+using PackageExtensionCompat: @require_extensions
 using SparseArrays: SparseMatrixCSC, nonzeros, nzrange, rowvals, sparse
 
 abstract type Extras end
@@ -63,6 +65,10 @@ include("sparse/jacobian.jl")
 include("sparse/hessian.jl")
 
 include("translation/differentiate_with.jl")
+
+function __init__()
+    @require_extensions
+end
 
 export SecondOrder
 

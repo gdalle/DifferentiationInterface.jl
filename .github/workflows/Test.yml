@@ -33,6 +33,7 @@ jobs:
             dir: './DifferentiationInterfaceTest'
         version:
           - '1'
+          - '1.6'
         os:
           - ubuntu-latest
         arch:
@@ -46,6 +47,14 @@ jobs:
           arch: ${{ matrix.arch }}
       - uses: julia-actions/cache@v2
       - uses: julia-actions/julia-buildpkg@v1
+      - name: Dev dependencies (temporary)
+        run: julia --project=${{ matrix.pkg.dir}}/ -e '
+          using Pkg;
+          Pkg.Registry.update();
+          if "${{ matrix.pkg.name}}" == "DifferentiationInterfaceTest";
+              Pkg.develop(PackageSpec(path="./DifferentiationInterface"));
+          end;
+          Pkg.instantiate();'
       - uses: julia-actions/julia-runtest@v1
         with:
           project: ${{ matrix.pkg.dir }}

@@ -37,23 +37,25 @@ end
 
 ## Type stability
 
-test_differentiation(
-    [AutoZeroForward(), AutoZeroReverse()];
-    correctness=false,
-    type_stability=true,
-    logging=get(ENV, "CI", "false") == "false",
-)
+if VERSION >= v"1.10"
+    test_differentiation(
+        [AutoZeroForward(), AutoZeroReverse()];
+        correctness=false,
+        type_stability=true,
+        logging=get(ENV, "CI", "false") == "false",
+    )
 
-test_differentiation(
-    [
-        SecondOrder(AutoZeroForward(), AutoZeroReverse()),
-        SecondOrder(AutoZeroReverse(), AutoZeroForward()),
-    ];
-    correctness=false,
-    type_stability=true,
-    first_order=false,
-    logging=get(ENV, "CI", "false") == "false",
-)
+    test_differentiation(
+        [
+            SecondOrder(AutoZeroForward(), AutoZeroReverse()),
+            SecondOrder(AutoZeroReverse(), AutoZeroForward()),
+        ];
+        correctness=false,
+        type_stability=true,
+        first_order=false,
+        logging=get(ENV, "CI", "false") == "false",
+    )
+end
 
 ## Benchmark
 

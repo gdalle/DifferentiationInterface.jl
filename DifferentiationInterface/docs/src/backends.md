@@ -68,6 +68,16 @@ For sparse backends, only the Jacobian and Hessian operators are implemented dif
 backend_table #hide
 ```
 
+!!! danger "Compatibility with Julia 1.6"
+    As of version 0.3.4, DifferentiationInterface.jl is compatible with Julia 1.6, the Long Term Support (LTS) version of the language.
+    However, we were only able to test the following backends on LTS:
+        - FiniteDifferences.jl
+        - ForwardDiff.jl
+        - ReverseDiff.jl
+        - Tracker.jl
+        - Zygote.jl
+    We strongly recommend that users upgrade to Julia 1.10, where all backends are tested.
+
 ## Checks
 
 ### Availability

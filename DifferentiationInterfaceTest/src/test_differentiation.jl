@@ -12,7 +12,7 @@ Cross-test a list of `backends` on a list of `scenarios`, running a variety of d
 Testing:
 
 - `correctness=true`: whether to compare the differentiation results with the theoretical values specified in each scenario
-- `type_stability=false`: whether to check type stability with JET.jl (thanks to `@test_opt`)
+- `type_stability=false`: whether to check type stability with JET.jl (thanks to `JET.@test_opt`)
 - `sparsity`: whether to check sparsity of the jacobian / hessian
 - `ref_backend`: if not `nothing`, an `ADTypes.AbstractADType` object to use instead of the scenario-specific reference to provide true values
 - `detailed=false`: whether to print a detailed or condensed test log

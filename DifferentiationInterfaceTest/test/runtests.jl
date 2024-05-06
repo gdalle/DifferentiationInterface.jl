@@ -20,7 +20,9 @@ end
 
 @testset verbose = true "DifferentiationInterfaceTest.jl" begin
     @testset verbose = true "Formal tests" begin
-        include("formal.jl")
+        @static if VERSION >= v"1.10"
+            include("formal.jl")
+        end
     end
 
     @testset verbose = false "Zero backends" begin

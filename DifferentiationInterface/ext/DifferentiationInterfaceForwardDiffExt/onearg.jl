@@ -21,7 +21,7 @@ end
 function compute_ydual_onearg(
     f::F, x, dx, extras::ForwardDiffOneArgPushforwardExtras{T}
 ) where {F,T}
-    (; xdual_tmp) = extras
+    @compat (; xdual_tmp) = extras
     make_dual!(T, xdual_tmp, x, dx)
     ydual = f(xdual_tmp)
     return ydual

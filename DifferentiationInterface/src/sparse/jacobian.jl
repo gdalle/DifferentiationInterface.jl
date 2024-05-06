@@ -61,7 +61,7 @@ end
 function jacobian!(
     f::F, jac, backend::AutoSparse, x, extras::SparseJacobianExtras{1,:col}
 ) where {F}
-    (; compressed, seeds, products, jp_extras) = extras
+    @compat (; compressed, seeds, products, jp_extras) = extras
     for k in eachindex(seeds, products)
         pushforward!(f, products[k], backend, x, seeds[k], jp_extras)
         copyto!(view(compressed.aggregates, :, k), vec(products[k]))
@@ -73,7 +73,7 @@ end
 function jacobian!(
     f::F, jac, backend::AutoSparse, x, extras::SparseJacobianExtras{1,:row}
 ) where {F}
-    (; compressed, seeds, products, jp_extras) = extras
+    @compat (; compressed, seeds, products, jp_extras) = extras
     for k in eachindex(seeds, products)
         pullback!(f, products[k], backend, x, seeds[k], jp_extras)
         copyto!(view(compressed.aggregates, k, :), vec(products[k]))
@@ -140,7 +140,7 @@ end
 function jacobian!(
     f!::F, y, jac, backend::AutoSparse, x, extras::SparseJacobianExtras{2,:col}
 ) where {F}
-    (; compressed, seeds, products, jp_extras) = extras
+    @compat (; compressed, seeds, products, jp_extras) = extras
     for k in eachindex(seeds, products)
         pushforward!(f!, y, products[k], backend, x, seeds[k], jp_extras)
         copyto!(view(compressed.aggregates, :, k), vec(products[k]))
@@ -152,7 +152,7 @@ end
 function jacobian!(
     f!::F, y, jac, backend::AutoSparse, x, extras::SparseJacobianExtras{2,:row}
 ) where {F}
-    (; compressed, seeds, products, jp_extras) = extras
+    @compat (; compressed, seeds, products, jp_extras) = extras
     for k in eachindex(seeds, products)
         pullback!(f!, y, products[k], backend, x, seeds[k], jp_extras)
         copyto!(view(compressed.aggregates, k, :), vec(products[k]))

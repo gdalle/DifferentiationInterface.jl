@@ -23,9 +23,11 @@ test_differentiation(
     logging=LOGGING,
 );
 
-test_differentiation(
-    AutoZygote(),
-    vcat(component_scenarios(), gpu_scenarios(), static_scenarios());
-    second_order=false,
-    logging=LOGGING,
-);
+if VERSION >= v"1.10"
+    test_differentiation(
+        AutoZygote(),
+        vcat(component_scenarios(), gpu_scenarios(), static_scenarios());
+        second_order=false,
+        logging=LOGGING,
+    )
+end

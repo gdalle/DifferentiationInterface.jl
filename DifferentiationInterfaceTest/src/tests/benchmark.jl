@@ -65,7 +65,7 @@ These are not part of the public API.
 
 $(TYPEDFIELDS)
 """
-@kwdef struct BenchmarkDataRow
+Base.@kwdef struct BenchmarkDataRow
     backend::String
     mode::AbstractMode
     scenario::Symbol
@@ -128,8 +128,8 @@ function run_benchmark!(
     scen::PushforwardScenario{1,:outofplace};
     logging::Bool,
 )
-    (; f, x, y, dx) = deepcopy(scen)
-    (; bench0, bench1, bench2, calls0, calls1, calls2) = try
+    @compat (; f, x, y, dx) = deepcopy(scen)
+    @compat (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
         extras = prepare_pushforward(f, ba, x, dx)
         bench0 = @be prepare_pushforward(f, ba, x, dx) samples = 1 evals = 1
@@ -163,8 +163,8 @@ function run_benchmark!(
     scen::PushforwardScenario{1,:inplace};
     logging::Bool,
 )
-    (; f, x, y, dx) = deepcopy(scen)
-    (; bench0, bench1, bench2, calls0, calls1, calls2) = try
+    @compat (; f, x, y, dx) = deepcopy(scen)
+    @compat (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
         extras = prepare_pushforward(f, ba, x, dx)
         bench0 = @be prepare_pushforward(f, ba, x, dx) samples = 1 evals = 1
@@ -202,9 +202,9 @@ function run_benchmark!(
     scen::PushforwardScenario{2,:outofplace};
     logging::Bool,
 )
-    (; f, x, y, dx) = deepcopy(scen)
+    @compat (; f, x, y, dx) = deepcopy(scen)
     f! = f
-    (; bench0, bench1, bench2, calls0, calls1, calls2) = try
+    @compat (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
         extras = prepare_pushforward(f!, mysimilar(y), ba, x, dx)
         bench0 = @be mysimilar(y) prepare_pushforward(f!, _, ba, x, dx) samples = 1 evals =
@@ -243,9 +243,9 @@ function run_benchmark!(
     scen::PushforwardScenario{2,:inplace};
     logging::Bool,
 )
-    (; f, x, y, dx) = deepcopy(scen)
+    @compat (; f, x, y, dx) = deepcopy(scen)
     f! = f
-    (; bench0, bench1, bench2, calls0, calls1, calls2) = try
+    @compat (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
         extras = prepare_pushforward(f!, y, ba, x, dx)
         bench0 = @be mysimilar(y) prepare_pushforward(f!, _, ba, x, dx) evals = 1 samples =
@@ -286,8 +286,10 @@ function run_benchmark!(
     scen::PullbackScenario{1,:outofplace};
     logging::Bool,
 )
-    (; f, x, y, dy) = deepcopy(scen)
-    (; bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4) = try
+    @compat (; f, x, y, dy) = deepcopy(scen)
+    @compat (;
+        bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4
+    ) = try
         # benchmark
         extras = prepare_pullback(f, ba, x, dy)
         bench0 = @be prepare_pullback(f, ba, x, dy) samples = 1 evals = 1
@@ -329,8 +331,10 @@ function run_benchmark!(
     scen::PullbackScenario{1,:inplace};
     logging::Bool,
 )
-    (; f, x, y, dy) = deepcopy(scen)
-    (; bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4) = try
+    @compat (; f, x, y, dy) = deepcopy(scen)
+    @compat (;
+        bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4
+    ) = try
         # benchmark
         extras = prepare_pullback(f, ba, x, dy)
         bench0 = @be prepare_pullback(f, ba, x, dy) samples = 1 evals = 1
@@ -379,9 +383,11 @@ function run_benchmark!(
     scen::PullbackScenario{2,:outofplace};
     logging::Bool,
 )
-    (; f, x, y, dy) = deepcopy(scen)
+    @compat (; f, x, y, dy) = deepcopy(scen)
     f! = f
-    (; bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4) = try
+    @compat (;
+        bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4
+    ) = try
         # benchmark
         extras = prepare_pullback(f!, mysimilar(y), ba, x, dy)
         bench0 = @be mysimilar(y) prepare_pullback(f!, _, ba, x, dy) samples = 1 evals =
@@ -433,9 +439,11 @@ function run_benchmark!(
     scen::PullbackScenario{2,:inplace};
     logging::Bool,
 )
-    (; f, x, y, dy) = deepcopy(scen)
+    @compat (; f, x, y, dy) = deepcopy(scen)
     f! = f
-    (; bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4) = try
+    @compat (;
+        bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4
+    ) = try
         # benchmark
         extras = prepare_pullback(f!, mysimilar(y), ba, x, dy)
         bench0 = @be mysimilar(y) prepare_pullback(f!, _, ba, x, dy) samples = 1 evals =
@@ -492,8 +500,8 @@ function run_benchmark!(
     scen::DerivativeScenario{1,:outofplace};
     logging::Bool,
 )
-    (; f, x, y) = deepcopy(scen)
-    (; bench0, bench1, bench2, calls0, calls1, calls2) = try
+    @compat (; f, x, y) = deepcopy(scen)
+    @compat (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
         extras = prepare_derivative(f, ba, x)
         bench0 = @be prepare_derivative(f, ba, x) samples = 1 evals = 1
@@ -527,8 +535,8 @@ function run_benchmark!(
     scen::DerivativeScenario{1,:inplace};
     logging::Bool,
 )
-    (; f, x, y) = deepcopy(scen)
-    (; bench0, bench1, bench2, calls0, calls1, calls2) = try
+    @compat (; f, x, y) = deepcopy(scen)
+    @compat (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
         extras = prepare_derivative(f, ba, x)
         bench0 = @be prepare_derivative(f, ba, x) samples = 1 evals = 1
@@ -566,9 +574,9 @@ function run_benchmark!(
     scen::DerivativeScenario{2,:outofplace};
     logging::Bool,
 )
-    (; f, x, y) = deepcopy(scen)
+    @compat (; f, x, y) = deepcopy(scen)
     f! = f
-    (; bench0, bench1, bench2, calls0, calls1, calls2) = try
+    @compat (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
         extras = prepare_derivative(f!, mysimilar(y), ba, x)
         bench0 = @be mysimilar(y) prepare_derivative(f!, _, ba, x) samples = 1 evals = 1
@@ -606,9 +614,9 @@ function run_benchmark!(
     scen::DerivativeScenario{2,:inplace};
     logging::Bool,
 )
-    (; f, x, y) = deepcopy(scen)
+    @compat (; f, x, y) = deepcopy(scen)
     f! = f
-    (; bench0, bench1, bench2, calls0, calls1, calls2) = try
+    @compat (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
         extras = prepare_derivative(f!, mysimilar(y), ba, x)
         bench0 = @be mysimilar(y) prepare_derivative(f!, _, ba, x) samples = 1 evals = 1
@@ -648,8 +656,8 @@ function run_benchmark!(
     scen::GradientScenario{1,:outofplace};
     logging::Bool,
 )
-    (; f, x) = deepcopy(scen)
-    (; bench0, bench1, bench2, calls0, calls1, calls2) = try
+    @compat (; f, x) = deepcopy(scen)
+    @compat (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
         extras = prepare_gradient(f, ba, x)
         bench0 = @be prepare_gradient(f, ba, x) samples = 1 evals = 1
@@ -683,8 +691,8 @@ function run_benchmark!(
     scen::GradientScenario{1,:inplace};
     logging::Bool,
 )
-    (; f, x) = deepcopy(scen)
-    (; bench0, bench1, bench2, calls0, calls1, calls2) = try
+    @compat (; f, x) = deepcopy(scen)
+    @compat (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
         extras = prepare_gradient(f, ba, x)
         bench0 = @be prepare_gradient(f, ba, x) samples = 1 evals = 1
@@ -724,8 +732,8 @@ function run_benchmark!(
     scen::JacobianScenario{1,:outofplace};
     logging::Bool,
 )
-    (; f, x, y) = deepcopy(scen)
-    (; bench0, bench1, bench2, calls0, calls1, calls2) = try
+    @compat (; f, x, y) = deepcopy(scen)
+    @compat (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
         extras = prepare_jacobian(f, ba, x)
         bench0 = @be prepare_jacobian(f, ba, x) samples = 1 evals = 1
@@ -759,8 +767,8 @@ function run_benchmark!(
     scen::JacobianScenario{1,:inplace};
     logging::Bool,
 )
-    (; f, x, y) = deepcopy(scen)
-    (; bench0, bench1, bench2, calls0, calls1, calls2) = try
+    @compat (; f, x, y) = deepcopy(scen)
+    @compat (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         jac_template = mysimilar(jacobian(f, ba, x))
         # benchmark
         extras = prepare_jacobian(f, ba, x)
@@ -799,9 +807,9 @@ function run_benchmark!(
     scen::JacobianScenario{2,:outofplace};
     logging::Bool,
 )
-    (; f, x, y) = deepcopy(scen)
+    @compat (; f, x, y) = deepcopy(scen)
     f! = f
-    (; bench0, bench1, bench2, calls0, calls1, calls2) = try
+    @compat (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
         extras = prepare_jacobian(f!, mysimilar(y), ba, x)
         bench0 = @be mysimilar(y) prepare_jacobian(f!, _, ba, x) samples = 1 evals = 1
@@ -837,9 +845,9 @@ function run_benchmark!(
     scen::JacobianScenario{2,:inplace};
     logging::Bool,
 )
-    (; f, x, y) = deepcopy(scen)
+    @compat (; f, x, y) = deepcopy(scen)
     f! = f
-    (; bench0, bench1, bench2, calls0, calls1, calls2) = try
+    @compat (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         jac_template = mysimilar(jacobian(f!, mysimilar(y), ba, x))
         # benchmark
         extras = prepare_jacobian(f!, mysimilar(y), ba, x)
@@ -880,8 +888,8 @@ function run_benchmark!(
     scen::SecondDerivativeScenario{1,:outofplace};
     logging::Bool,
 )
-    (; f, x, y) = deepcopy(scen)
-    (; bench0, bench1, calls0, calls1) = try
+    @compat (; f, x, y) = deepcopy(scen)
+    @compat (; bench0, bench1, calls0, calls1) = try
         # benchmark
         extras = prepare_second_derivative(f, ba, x)
         bench0 = @be prepare_second_derivative(f, ba, x) samples = 1 evals = 1
@@ -911,8 +919,8 @@ function run_benchmark!(
     scen::SecondDerivativeScenario{1,:inplace};
     logging::Bool,
 )
-    (; f, x, y) = deepcopy(scen)
-    (; bench0, bench1, calls0, calls1) = try
+    @compat (; f, x, y) = deepcopy(scen)
+    @compat (; bench0, bench1, calls0, calls1) = try
         # benchmark
         extras = prepare_second_derivative(f, ba, x)
         bench0 = @be prepare_second_derivative(f, ba, x) samples = 1 evals = 1
@@ -946,8 +954,8 @@ function run_benchmark!(
     scen::HVPScenario{1,:outofplace};
     logging::Bool,
 )
-    (; f, x, y, dx) = deepcopy(scen)
-    (; bench0, bench1, calls0, calls1) = try
+    @compat (; f, x, y, dx) = deepcopy(scen)
+    @compat (; bench0, bench1, calls0, calls1) = try
         # benchmark
         extras = prepare_hvp(f, ba, x, dx)
         bench0 = @be prepare_hvp(f, ba, x, dx) samples = 1 evals = 1
@@ -977,8 +985,8 @@ function run_benchmark!(
     scen::HVPScenario{1,:inplace};
     logging::Bool,
 )
-    (; f, x, y, dx) = deepcopy(scen)
-    (; bench0, bench1, calls0, calls1) = try
+    @compat (; f, x, y, dx) = deepcopy(scen)
+    @compat (; bench0, bench1, calls0, calls1) = try
         # benchmark
         extras = prepare_hvp(f, ba, x, dx)
         bench0 = @be prepare_hvp(f, ba, x, dx) samples = 1 evals = 1
@@ -1010,8 +1018,8 @@ function run_benchmark!(
     scen::HessianScenario{1,:outofplace};
     logging::Bool,
 )
-    (; f, x, y) = deepcopy(scen)
-    (; bench0, bench1, calls0, calls1) = try
+    @compat (; f, x, y) = deepcopy(scen)
+    @compat (; bench0, bench1, calls0, calls1) = try
         # benchmark
         extras = prepare_hessian(f, ba, x)
         bench0 = @be prepare_hessian(f, ba, x) samples = 1 evals = 1
@@ -1041,8 +1049,8 @@ function run_benchmark!(
     scen::HessianScenario{1,:inplace};
     logging::Bool,
 )
-    (; f, x, y) = deepcopy(scen)
-    (; bench0, bench1, calls0, calls1) = try
+    @compat (; f, x, y) = deepcopy(scen)
+    @compat (; bench0, bench1, calls0, calls1) = try
         hess_template = Matrix{typeof(y)}(undef, length(x), length(x))
         # benchmark
         extras = prepare_hessian(f, ba, x)
