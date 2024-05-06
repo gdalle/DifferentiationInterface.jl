@@ -61,7 +61,10 @@ LOGGING = get(ENV, "CI", "false") == "false"
     @testset verbose = true "$folder" for folder in ["Single", "Double", "Internals"]
         folder_path = joinpath(@__DIR__, folder)
         @testset verbose = true "$(file[1:end-3])" for file in readdir(folder_path)
-            if (VERSION < v"1.10" && any(contains(file, name) for name in BACKENDS_1_10))
+            if (
+                VERSION < v"1.10" &&
+                any(file[1:(end - 3)] == name for name in BACKENDS_1_10)
+            )
                 @info "Skipping $folder - $(file[1:end-3])"
             else
                 @info "Testing $folder - $(file[1:end-3])"
