@@ -51,10 +51,13 @@ jobs:
           Pkg.Registry.update();
           if "${{ matrix.pkg.name}}" == "DifferentiationInterfaceTest";
               Pkg.develop(PackageSpec(path="./DifferentiationInterface"));
+              Pkg.instantiate();
           else;
+              Pkg.activate(; temp=true);
               Pkg.develop(PackageSpec(path="./DifferentiationInterfaceTest"));
-          end;
-          Pkg.instantiate();'
+              push!(Base.LOAD_PATH, Base.active_project());
+              Pkg.instantiate();
+          end;'
       - uses: julia-actions/julia-runtest@v1
         with:
           project: ${{ matrix.pkg.dir }}
