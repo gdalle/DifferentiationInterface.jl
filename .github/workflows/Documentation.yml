@@ -17,7 +17,7 @@ concurrency:
 jobs:
   
   docs:
-    name: Docs - ${{ matrix.pkg.name }}
+    name: ${{ matrix.pkg.name }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
