@@ -2,8 +2,11 @@ struct TapirTwoArgPullbackExtras{R} <: PullbackExtras
     rrule::R
 end
 
-function DI.prepare_pullback(f!, y, ::AutoTapir, x, dy)
-    return TapirTwoArgPullbackExtras(build_rrule(f!, y, x))
+function DI.prepare_pullback(f!, y, backend::AutoTapir, x, dy)
+    rrule = build_rrule(f!, y, x)
+    extras = TapirTwoArgPullbackExtras(rrule)
+    DI.value_and_pullback(f!, y, backend, x, dy, extras)  # warm up
+    return extras
 end
 
 # see https://github.com/withbayes/Tapir.jl/issues/113#issuecomment-2036718992

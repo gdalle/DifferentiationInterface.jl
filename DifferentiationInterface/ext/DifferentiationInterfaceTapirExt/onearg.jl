@@ -3,9 +3,12 @@ struct TapirOneArgPullbackExtras{Y,R} <: PullbackExtras
     rrule::R
 end
 
-function DI.prepare_pullback(f, ::AutoTapir, x, dy)
+function DI.prepare_pullback(f, backend::AutoTapir, x, dy)
     y = f(x)
-    return TapirOneArgPullbackExtras(y, build_rrule(f, x))
+    rrule = build_rrule(f, x)
+    extras = TapirOneArgPullbackExtras(y, rrule)
+    DI.value_and_pullback(f, backend, x, dy, extras)  # warm up
+    return extras
 end
 
 function DI.value_and_pullback(
