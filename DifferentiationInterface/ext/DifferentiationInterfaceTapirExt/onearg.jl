@@ -5,7 +5,9 @@ end
 
 function DI.prepare_pullback(f, ::AutoTapir, x, dy)
     y = f(x)
-    return TapirOneArgPullbackExtras(y, build_rrule(f, x))
+    rrule = build_rrule(f, x)
+    value_and_pullback!!(rrule, zero_tangent(y), f, x)  # warm up
+    return TapirOneArgPullbackExtras(y, rrule)
 end
 
 function DI.value_and_pullback(

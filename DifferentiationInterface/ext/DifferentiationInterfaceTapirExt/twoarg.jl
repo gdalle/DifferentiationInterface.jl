@@ -3,7 +3,9 @@ struct TapirTwoArgPullbackExtras{R} <: PullbackExtras
 end
 
 function DI.prepare_pullback(f!, y, ::AutoTapir, x, dy)
-    return TapirTwoArgPullbackExtras(build_rrule(f!, y, x))
+    rrule = build_rrule(f!, y, x)
+    # how to warm up here?
+    return TapirTwoArgPullbackExtras(rrule)
 end
 
 # see https://github.com/withbayes/Tapir.jl/issues/113#issuecomment-2036718992
