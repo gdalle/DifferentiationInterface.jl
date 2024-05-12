@@ -4,6 +4,9 @@
     prepare_hessian(f, backend, x) -> extras
 
 Create an `extras` object subtyping [`HessianExtras`](@ref) that can be given to Hessian operators.
+
+!!! warning
+    If the function changes in any way, the result of preparation will be invalidated, and you will need to run it again.
 """
 function prepare_hessian end
 

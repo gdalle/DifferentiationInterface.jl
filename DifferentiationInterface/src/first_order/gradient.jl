@@ -4,6 +4,9 @@
     prepare_gradient(f, backend, x) -> extras
 
 Create an `extras` object subtyping [`GradientExtras`](@ref) that can be given to gradient operators.
+
+!!! warning
+    If the function changes in any way, the result of preparation will be invalidated, and you will need to run it again.
 """
 function prepare_gradient end
 
