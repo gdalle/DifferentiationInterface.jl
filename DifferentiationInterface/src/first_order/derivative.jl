@@ -6,7 +6,9 @@
 
 Create an `extras` object subtyping [`DerivativeExtras`](@ref) that can be given to derivative operators.
 
-Beware that in the two-argument case, `y` is mutated by `f!` during preparation.
+!!! warning
+    If the function changes in any way, the result of preparation will be invalidated, and you will need to run it again.
+    In the two-argument case, `y` is mutated by `f!` during preparation.
 """
 function prepare_derivative end
 

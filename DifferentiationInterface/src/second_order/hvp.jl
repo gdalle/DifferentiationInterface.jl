@@ -4,6 +4,9 @@
     prepare_hvp(f, backend, x, v) -> extras
 
 Create an `extras` object subtyping [`HVPExtras`](@ref) that can be given to Hessian-vector product operators.
+
+!!! warning
+    If the function changes in any way, the result of preparation will be invalidated, and you will need to run it again.
 """
 function prepare_hvp end
 
