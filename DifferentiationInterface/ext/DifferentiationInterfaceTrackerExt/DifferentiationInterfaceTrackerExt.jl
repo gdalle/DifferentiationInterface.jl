@@ -13,21 +13,9 @@ DI.twoarg_support(::AutoTracker) = DI.TwoArgNotSupported()
 
 DI.prepare_pullback(f, ::AutoTracker, x, dy) = NoPullbackExtras()
 
-function DI.value_and_pullback_split(f, ::AutoTracker, x, ::NoPullbackExtras)
-    y, back = forward(f, x)
-    pullbackfunc(dy) = data(only(back(dy)))
-    return y, pullbackfunc
-end
-
-function DI.value_and_pullback!_split(f, backend::AutoTracker, x, extras::NoPullbackExtras)
-    y, pullbackfunc = DI.value_and_pullback_split(f, backend, x, extras)
-    pullbackfunc!(dx, dy) = copyto!(dx, pullbackfunc(dy))
-    return y, pullbackfunc!
-end
-
 function DI.value_and_pullback(f, backend::AutoTracker, x, dy, extras::NoPullbackExtras)
-    y, pullbackfunc = DI.value_and_pullback_split(f, backend, x, extras)
-    return y, pullbackfunc(dy)
+    y, back = forward(f, x)
+    return y, data(only(back(dy)))
 end
 
 ## Gradient

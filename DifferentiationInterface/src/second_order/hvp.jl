@@ -11,6 +11,16 @@ Create an `extras` object subtyping [`HVPExtras`](@ref) that can be given to Hes
 function prepare_hvp end
 
 """
+    prepare_hvp_same_point(f, backend, x, v) -> extras_same
+
+Create an `extras_same` object subtyping [`HVPExtras`](@ref) that can be given to Hessian-vector product operators _if they are applied at the same point `x`_.
+
+!!! warning
+    If the function or the point changes in any way, the result of preparation will be invalidated, and you will need to run it again.
+"""
+function prepare_hvp end
+
+"""
     hvp(f, backend, x, v, [extras]) -> p
 """
 function hvp end
@@ -102,6 +112,19 @@ function prepare_hvp_aux(f::F, backend::SecondOrder, x, v, ::ReverseOverReverse)
     inner_gradient_closure(z) = gradient(f, inner(backend), z)
     outer_pullback_extras = prepare_pullback(inner_gradient_closure, outer(backend), x, v)
     return ReverseOverReverseHVPExtras(inner_gradient_closure, outer_pullback_extras)
+end
+
+## Preparation (same point)
+
+function prepare_hvp_same_point(
+    f::F, backend::AbstractADType, x, v, extras::HVPExtras
+) where {F}
+    return extras
+end
+
+function prepare_hvp_same_point(f::F, backend::AbstractADType, x, v) where {F}
+    extras = prepare_hvp(f, backend, x, v)
+    return prepare_hvp_same_point(f, backend, x, v, extras)
 end
 
 ## One argument

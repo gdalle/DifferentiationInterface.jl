@@ -16,21 +16,9 @@ DI.twoarg_support(::AutoZygote) = DI.TwoArgNotSupported()
 
 DI.prepare_pullback(f, ::AutoZygote, x, dy) = NoPullbackExtras()
 
-function DI.value_and_pullback_split(f, ::AutoZygote, x, ::NoPullbackExtras)
-    y, back = pullback(f, x)
-    pullbackfunc(dy) = only(back(dy))
-    return y, pullbackfunc
-end
-
-function DI.value_and_pullback!_split(f, backend::AutoZygote, x, extras::NoPullbackExtras)
-    y, pullbackfunc = DI.value_and_pullback_split(f, backend, x, extras)
-    pullbackfunc!(dx, dy) = copyto!(dx, pullbackfunc(dy))
-    return y, pullbackfunc!
-end
-
 function DI.value_and_pullback(f, backend::AutoZygote, x, dy, extras::NoPullbackExtras)
-    y, pullbackfunc = DI.value_and_pullback_split(f, backend, x, extras)
-    return y, pullbackfunc(dy)
+    y, back = pullback(f, x)
+    return y, only(back(dy))
 end
 
 ## Gradient

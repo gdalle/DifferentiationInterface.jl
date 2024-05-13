@@ -55,12 +55,9 @@ function test_jet(ba::AbstractADType, scen::PullbackScenario{1,:outofplace}; ref
     @compat (; f, x, dy) = deepcopy(scen)
     extras = prepare_pullback(f, ba, x, dy)
 
-    _, pullbackfunc = value_and_pullback_split(f, ba, x, extras)
-
     if Bool(pullback_performance(ba))
         JET.@test_opt value_and_pullback(f, ba, x, dy, extras)
         JET.@test_opt pullback(f, ba, x, dy, extras)
-        JET.@test_opt pullbackfunc(dy)
     end
     return nothing
 end
@@ -70,12 +67,9 @@ function test_jet(ba::AbstractADType, scen::PullbackScenario{1,:inplace}; ref_ba
     extras = prepare_pullback(f, ba, x, dy)
     dx_in = mysimilar(x)
 
-    _, pullbackfunc! = value_and_pullback!_split(f, ba, x, extras)
-
     if Bool(pullback_performance(ba))
         JET.@test_opt value_and_pullback!(f, dx_in, ba, x, dy, extras)
         JET.@test_opt pullback!(f, dx_in, ba, x, dy, extras)
-        JET.@test_opt pullbackfunc!(dx_in, dy)
     end
     return nothing
 end
@@ -86,12 +80,9 @@ function test_jet(ba::AbstractADType, scen::PullbackScenario{2,:outofplace}; ref
     extras = prepare_pullback(f!, mysimilar(y), ba, x, dy)
     y_in = mysimilar(y)
 
-    _, pullbackfunc = value_and_pullback_split(f!, y, ba, x, extras)
-
     if Bool(pullback_performance(ba))
         JET.@test_opt value_and_pullback(f!, y_in, ba, x, dy, extras)
         JET.@test_opt pullback(f!, y_in, ba, x, dy, extras)
-        JET.@test_opt pullbackfunc(y_in, dy)
     end
     return nothing
 end
@@ -102,12 +93,9 @@ function test_jet(ba::AbstractADType, scen::PullbackScenario{2,:inplace}; ref_ba
     extras = prepare_pullback(f!, mysimilar(y), ba, x, dy)
     y_in, dx_in = mysimilar(y), mysimilar(x)
 
-    _, pullbackfunc! = value_and_pullback!_split(f!, y, ba, x, extras)
-
     if Bool(pullback_performance(ba))
         JET.@test_opt value_and_pullback!(f!, y_in, dx_in, ba, x, dy, extras)
         JET.@test_opt pullback!(f!, y_in, dx_in, ba, x, dy, extras)
-        JET.@test_opt pullbackfunc!(y_in, dx_in, dy)
     end
     return nothing
 end

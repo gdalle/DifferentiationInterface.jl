@@ -62,16 +62,16 @@ However they have different signatures:
 In many cases, AD can be accelerated if the function has been run at least once (e.g. to create a config or record a tape) and if some cache objects are provided.
 This is a backend-specific procedure, but we expose a common syntax to achieve it.
 
-| operator            | preparation function                |
-| :------------------ | :---------------------------------- |
-| `derivative`        | [`prepare_derivative`](@ref)        |
-| `gradient`          | [`prepare_gradient`](@ref)          |
-| `jacobian`          | [`prepare_jacobian`](@ref)          |
-| `second_derivative` | [`prepare_second_derivative`](@ref) |
-| `hessian`           | [`prepare_hessian`](@ref)           |
-| `pushforward`       | [`prepare_pushforward`](@ref)       |
-| `pullback`          | [`prepare_pullback`](@ref)          |
-| `hvp`               | [`prepare_hvp`](@ref)               |
+| operator            | preparation function                | preparation function (same point)        |
+| :------------------ | :---------------------------------- | ---------------------------------------- |
+| `derivative`        | [`prepare_derivative`](@ref)        | -                                        |
+| `gradient`          | [`prepare_gradient`](@ref)          | -                                        |
+| `jacobian`          | [`prepare_jacobian`](@ref)          | -                                        |
+| `second_derivative` | [`prepare_second_derivative`](@ref) | -                                        |
+| `hessian`           | [`prepare_hessian`](@ref)           | -                                        |
+| `pushforward`       | [`prepare_pushforward`](@ref)       | [`prepare_pushforward_same_point`](@ref) |
+| `pullback`          | [`prepare_pullback`](@ref)          | [`prepare_pullback_same_point`](@ref)    |
+| `hvp`               | [`prepare_hvp`](@ref)               | [`prepare_hvp_same_point`](@ref)         |
 
 Unsurprisingly, preparation syntax depends on the number of arguments:
 
@@ -88,6 +88,9 @@ This is especially worth it if you plan to call `operator` several times in simi
 
 !!! warning
     The `extras` object is nearly always mutated when given to an operator, even when said operator does not have a bang `!` in its name.
+
+With `pushforward`, `pullback` and `hvp`, you can also choose to prepare for the same point `x`, assuming only the seed `v` will change.
+Such is the purpose of `prepare_operator_same_point(f, backend, x, v)`, which is otherwise similar to standard preparation.
 
 ### Second order
 
@@ -114,15 +117,6 @@ We offer two ways to perform second-order differentiation (for [`second_derivati
 [ADTypes.jl](https://github.com/SciML/ADTypes.jl) provides [`AutoSparse`](@ref) to accelerate the computation of sparse Jacobians and Hessians.
 Just wrap it around any backend, with an appropriate choice of sparsity detector and coloring algorithm, and call `jacobian` or `hessian`: the result will be sparse.
 See the [tutorial section on sparsity](@ref sparsity-tutorial) for details.
-
-### Split reverse mode
-
-Some reverse mode AD backends expose a "split" option, which runs only the forward sweep, and encapsulates the reverse sweep in a closure.
-We make this available for all backends with the following operators:
-
-| out-of-place                       | in-place                            |
-| :--------------------------------- | :---------------------------------- |
-| [`value_and_pullback_split`](@ref) | [`value_and_pullback!_split`](@ref) |
 
 ### Translation
 
