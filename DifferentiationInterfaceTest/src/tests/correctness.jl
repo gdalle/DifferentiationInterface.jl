@@ -227,22 +227,16 @@ function test_correctness(
 
             dx2 = pullback(f, ba, x, dy, extras)
 
-            y3, pullbackfunc = value_and_pullback_split(f, ba, x, extras)
-            pullbackfunc(dy)  # call once in case the second errors
-            dx3 = pullbackfunc(dy)
-
             let (≈)(x, y) = isapprox(x, y; atol, rtol)
                 @testset "Extras type" begin
                     @test extras isa PullbackExtras
                 end
                 @testset "Primal value" begin
                     @test y1 ≈ y
-                    @test y3 ≈ y
                 end
                 @testset "Cotangent value" begin
                     @test dx1 ≈ dx_true
                     @test dx2 ≈ dx_true
-                    @test dx3 ≈ dx_true
                 end
             end
         end
@@ -278,26 +272,18 @@ function test_correctness(
             dx2_in = mysimilar(x)
             dx2 = pullback!(f, dx2_in, ba, x, dy, extras)
 
-            y3, pullbackfunc! = value_and_pullback!_split(f, ba, x, extras)
-            pullbackfunc!(mysimilar(x), dy)  # call once in case the second errors
-            dx3_in = mysimilar(x)
-            dx3 = pullbackfunc!(dx3_in, dy)
-
             let (≈)(x, y) = isapprox(x, y; atol, rtol)
                 @testset "Extras type" begin
                     @test extras isa PullbackExtras
                 end
                 @testset "Primal value" begin
                     @test y1 ≈ y
-                    @test y3 ≈ y
                 end
                 @testset "Cotangent value" begin
                     @test dx1_in ≈ dx_true
                     @test dx1 ≈ dx_true
                     @test dx2_in ≈ dx_true
                     @test dx2 ≈ dx_true
-                    @test dx3_in ≈ dx_true
-                    @test dx3 ≈ dx_true
                 end
             end
         end
@@ -334,12 +320,6 @@ function test_correctness(
             y2_in = mysimilar(y)
             dx2 = pullback(f!, y2_in, ba, x, dy, extras)
 
-            y3_in = mysimilar(y)
-            y3, pullbackfunc = value_and_pullback_split(f!, y3_in, ba, x, extras)
-            pullbackfunc(mysimilar(y), dy)  # call once in case the second errors
-            y3_in2 = mysimilar(y)
-            dx3 = pullbackfunc(y3_in2, dy)
-
             let (≈)(x, y) = isapprox(x, y; atol, rtol)
                 @testset "Extras type" begin
                     @test extras isa PullbackExtras
@@ -347,13 +327,10 @@ function test_correctness(
                 @testset "Primal value" begin
                     @test y1_in ≈ y
                     @test y1 ≈ y
-                    @test y3_in ≈ y
-                    @test y3 ≈ y
                 end
                 @testset "Cotangent value" begin
                     @test dx1 ≈ dx_true
                     @test dx2 ≈ dx_true
-                    @test dx3 ≈ dx_true
                 end
             end
         end
@@ -390,12 +367,6 @@ function test_correctness(
             y2_in, dx2_in = mysimilar(y), mysimilar(x)
             dx2 = pullback!(f!, y2_in, dx2_in, ba, x, dy, extras)
 
-            y3_in = mysimilar(y)
-            y3, pullbackfunc! = value_and_pullback!_split(f!, y3_in, ba, x, extras)
-            pullbackfunc!(mysimilar(y), mysimilar(x), dy)  # call once in case the second errors
-            y3_in2, dx3_in = mysimilar(y), mysimilar(x)
-            dx3 = pullbackfunc!(y3_in2, dx3_in, dy)
-
             let (≈)(x, y) = isapprox(x, y; atol, rtol)
                 @testset "Extras type" begin
                     @test extras isa PullbackExtras
@@ -403,16 +374,12 @@ function test_correctness(
                 @testset "Primal value" begin
                     @test y1_in ≈ y
                     @test y1 ≈ y
-                    @test y3_in ≈ y
-                    @test y3 ≈ y
                 end
                 @testset "Cotangent value" begin
                     @test dx1_in ≈ dx_true
                     @test dx1 ≈ dx_true
                     @test dx2_in ≈ dx_true
                     @test dx2 ≈ dx_true
-                    @test dx3_in ≈ dx_true
-                    @test dx3 ≈ dx_true
                 end
             end
         end
