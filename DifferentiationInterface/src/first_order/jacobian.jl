@@ -99,6 +99,7 @@ end
 function value_and_jacobian_onearg_aux(
     f::F, backend, x::AbstractArray, extras::PushforwardJacobianExtras
 ) where {F}
+    y = f(x)  # TODO: remove
     pushforward_extras_same = prepare_pushforward_same_point(
         f,
         backend,
@@ -106,7 +107,6 @@ function value_and_jacobian_onearg_aux(
         basis(backend, x, first(CartesianIndices(x))),
         extras.pushforward_extras,
     )
-    y = f(x)  # TODO: remove
     jac = stack(CartesianIndices(x); dims=2) do j
         dx_j = basis(backend, x, j)
         jac_col_j = pushforward(f, backend, x, dx_j, pushforward_extras_same)
@@ -118,10 +118,10 @@ end
 function value_and_jacobian_onearg_aux(
     f::F, backend, x::AbstractArray, extras::PullbackJacobianExtras
 ) where {F}
+    y = f(x)  # TODO: remove
     pullback_extras_same = prepare_pullback_same_point(
         f, backend, x, basis(backend, y, first(CartesianIndices(y))), extras.pullback_extras
     )
-    y = f(x)  # TODO: remove
     jac = stack(CartesianIndices(y); dims=1) do i
         dy_i = basis(backend, y, i)
         jac_row_i = pullback(f, backend, x, dy_i, pullback_extras_same)
@@ -143,6 +143,7 @@ end
 function value_and_jacobian_onearg_aux!(
     f::F, jac::AbstractMatrix, backend, x::AbstractArray, extras::PushforwardJacobianExtras
 ) where {F}
+    y = f(x)  # TODO: remove
     pushforward_extras_same = prepare_pushforward_same_point(
         f,
         backend,
@@ -150,7 +151,6 @@ function value_and_jacobian_onearg_aux!(
         basis(backend, x, first(CartesianIndices(x))),
         extras.pushforward_extras,
     )
-    y = f(x)  # TODO: remove
     for (k, j) in enumerate(CartesianIndices(x))
         dx_j = basis(backend, x, j)
         jac_col_j = reshape(view(jac, :, k), size(y))
@@ -162,10 +162,10 @@ end
 function value_and_jacobian_onearg_aux!(
     f::F, jac::AbstractMatrix, backend, x::AbstractArray, extras::PullbackJacobianExtras
 ) where {F}
+    y = f(x)  # TODO: remove
     pullback_extras_same = prepare_pullback_same_point(
         f, backend, x, basis(backend, y, first(CartesianIndices(y))), extras.pullback_extras
     )
-    y = f(x)  # TODO: remove
     for (k, i) in enumerate(CartesianIndices(y))
         dy_i = basis(backend, y, i)
         jac_row_i = reshape(view(jac, k, :), size(x))
