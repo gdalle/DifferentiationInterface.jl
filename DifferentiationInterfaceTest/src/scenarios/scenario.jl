@@ -218,7 +218,7 @@ for S in (:PushforwardScenario, :HVPScenario)
                 y = f(x)
             end
             if isnothing(dx)
-                dx = mysimilar_random(x)
+                dx = mycopy_random(x)
             end
             return ($S){args,place,F,X,typeof(y),typeof(dx),R}(f, x, y, dx, ref)
         end
@@ -247,7 +247,7 @@ for S in (:PullbackScenario,)
                 y = f(x)
             end
             if isnothing(dy)
-                dy = mysimilar_random(y)
+                dy = mycopy_random(y)
             end
             return ($S){args,place,F,X,typeof(y),typeof(dy),R}(f, x, y, dy, ref)
         end

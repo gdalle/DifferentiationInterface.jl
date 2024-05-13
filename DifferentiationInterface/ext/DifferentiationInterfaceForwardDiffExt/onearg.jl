@@ -6,7 +6,7 @@ end
 
 function DI.prepare_pushforward(f::F, backend::AutoForwardDiff, x, dx) where {F}
     T = tag_type(f, backend, x)
-    xdual_tmp = make_dual(T, x, dx)
+    xdual_tmp = make_dual_similar(T, x)
     return ForwardDiffOneArgPushforwardExtras{T,typeof(xdual_tmp)}(xdual_tmp)
 end
 

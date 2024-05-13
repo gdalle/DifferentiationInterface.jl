@@ -27,8 +27,8 @@ function test_correctness(
     end
 
     for (k, extras) in enumerate([
-        prepare_pushforward(f, ba, mysimilar_random(x), mysimilar_random(dx)),
-        prepare_pushforward_same_point(f, ba, x, mysimilar_random(dx)),
+        prepare_pushforward(f, ba, mycopy_random(x), mycopy_random(dx)),
+        prepare_pushforward_same_point(f, ba, x, mycopy_random(dx)),
     ])
         testset_name = k == 1 ? "Different point" : "Same point"
         @testset "$testset_name" begin
@@ -69,8 +69,8 @@ function test_correctness(
     end
 
     for (k, extras) in enumerate([
-        prepare_pushforward(f, ba, mysimilar_random(x), mysimilar_random(dx)),
-        prepare_pushforward_same_point(f, ba, x, mysimilar_random(dx)),
+        prepare_pushforward(f, ba, mycopy_random(x), mycopy_random(dx)),
+        prepare_pushforward_same_point(f, ba, x, mycopy_random(dx)),
     ])
         testset_name = k == 1 ? "Different point" : "Same point"
         @testset "$testset_name" begin
@@ -117,10 +117,8 @@ function test_correctness(
     end
 
     for (k, extras) in enumerate([
-        prepare_pushforward(
-            f!, mysimilar(y), ba, mysimilar_random(x), mysimilar_random(dx)
-        ),
-        prepare_pushforward_same_point(f!, mysimilar(y), ba, x, mysimilar_random(dx)),
+        prepare_pushforward(f!, mysimilar(y), ba, mycopy_random(x), mycopy_random(dx)),
+        prepare_pushforward_same_point(f!, mysimilar(y), ba, x, mycopy_random(dx)),
     ])
         testset_name = k == 1 ? "Different point" : "Same point"
         @testset "$testset_name" begin
@@ -166,10 +164,8 @@ function test_correctness(
     end
 
     for (k, extras) in enumerate([
-        prepare_pushforward(
-            f!, mysimilar(y), ba, mysimilar_random(x), mysimilar_random(dx)
-        ),
-        prepare_pushforward_same_point(f!, mysimilar(y), ba, x, mysimilar_random(dx)),
+        prepare_pushforward(f!, mysimilar(y), ba, mycopy_random(x), mycopy_random(dx)),
+        prepare_pushforward_same_point(f!, mysimilar(y), ba, x, mycopy_random(dx)),
     ])
         testset_name = k == 1 ? "Different point" : "Same point"
         @testset "$testset_name" begin
@@ -218,8 +214,8 @@ function test_correctness(
     end
 
     for (k, extras) in enumerate([
-        prepare_pullback(f, ba, mysimilar_random(x), mysimilar_random(dy)),
-        prepare_pullback_same_point(f, ba, x, mysimilar_random(dy)),
+        prepare_pullback(f, ba, mycopy_random(x), mycopy_random(dy)),
+        prepare_pullback_same_point(f, ba, x, mycopy_random(dy)),
     ])
         testset_name = k == 1 ? "Different point" : "Same point"
         @testset "$testset_name" begin
@@ -261,8 +257,8 @@ function test_correctness(
     end
 
     for (k, extras) in enumerate([
-        prepare_pullback(f, ba, mysimilar_random(x), mysimilar_random(dy)),
-        prepare_pullback_same_point(f, ba, x, mysimilar_random(dy)),
+        prepare_pullback(f, ba, mycopy_random(x), mycopy_random(dy)),
+        prepare_pullback_same_point(f, ba, x, mycopy_random(dy)),
     ])
         testset_name = k == 1 ? "Different point" : "Same point"
         @testset "$testset_name" begin
@@ -309,8 +305,8 @@ function test_correctness(
     end
 
     for (k, extras) in enumerate([
-        prepare_pullback(f!, mysimilar(y), ba, mysimilar_random(x), mysimilar_random(dy)),
-        prepare_pullback_same_point(f!, mysimilar(y), ba, x, mysimilar_random(dy)),
+        prepare_pullback(f!, mysimilar(y), ba, mycopy_random(x), mycopy_random(dy)),
+        prepare_pullback_same_point(f!, mysimilar(y), ba, x, mycopy_random(dy)),
     ])
         testset_name = k == 1 ? "Different point" : "Same point"
         @testset "$testset_name" begin
@@ -356,8 +352,8 @@ function test_correctness(
     end
 
     for (k, extras) in enumerate([
-        prepare_pullback(f!, mysimilar(y), ba, mysimilar_random(x), mysimilar_random(dy)),
-        prepare_pullback_same_point(f!, mysimilar(y), ba, x, mysimilar_random(dy)),
+        prepare_pullback(f!, mysimilar(y), ba, mycopy_random(x), mycopy_random(dy)),
+        prepare_pullback_same_point(f!, mysimilar(y), ba, x, mycopy_random(dy)),
     ])
         testset_name = k == 1 ? "Different point" : "Same point"
         @testset "$testset_name" begin
@@ -399,7 +395,7 @@ function test_correctness(
     ref_backend,
 )
     @compat (; f, x, y) = new_scen = deepcopy(scen)
-    extras = prepare_derivative(f, ba, mysimilar_random(x))
+    extras = prepare_derivative(f, ba, mycopy_random(x))
     der_true = if ref_backend isa AbstractADType
         derivative(f, ref_backend, x)
     else
@@ -435,7 +431,7 @@ function test_correctness(
     ref_backend,
 )
     @compat (; f, x, y) = new_scen = deepcopy(scen)
-    extras = prepare_derivative(f, ba, mysimilar_random(x))
+    extras = prepare_derivative(f, ba, mycopy_random(x))
     der_true = if ref_backend isa AbstractADType
         derivative(f, ref_backend, x)
     else
@@ -476,7 +472,7 @@ function test_correctness(
 )
     @compat (; f, x, y) = new_scen = deepcopy(scen)
     f! = f
-    extras = prepare_derivative(f!, mysimilar(y), ba, mysimilar_random(x))
+    extras = prepare_derivative(f!, mysimilar(y), ba, mycopy_random(x))
     der_true = if ref_backend isa AbstractADType
         derivative(f!, mysimilar(y), ref_backend, x)
     else
@@ -516,7 +512,7 @@ function test_correctness(
 )
     @compat (; f, x, y) = new_scen = deepcopy(scen)
     f! = f
-    extras = prepare_derivative(f!, mysimilar(y), ba, mysimilar_random(x))
+    extras = prepare_derivative(f!, mysimilar(y), ba, mycopy_random(x))
     der_true = if ref_backend isa AbstractADType
         derivative(f!, mysimilar(y), ref_backend, x)
     else
@@ -559,7 +555,7 @@ function test_correctness(
     ref_backend,
 )
     @compat (; f, x, y) = new_scen = deepcopy(scen)
-    extras = prepare_gradient(f, ba, mysimilar_random(x))
+    extras = prepare_gradient(f, ba, mycopy_random(x))
     grad_true = if ref_backend isa AbstractADType
         gradient(f, ref_backend, x)
     else
@@ -595,7 +591,7 @@ function test_correctness(
     ref_backend,
 )
     @compat (; f, x, y) = new_scen = deepcopy(scen)
-    extras = prepare_gradient(f, ba, mysimilar_random(x))
+    extras = prepare_gradient(f, ba, mycopy_random(x))
     grad_true = if ref_backend isa AbstractADType
         gradient(f, ref_backend, x)
     else
@@ -637,7 +633,7 @@ function test_correctness(
     ref_backend,
 )
     @compat (; f, x, y) = new_scen = deepcopy(scen)
-    extras = prepare_jacobian(f, ba, mysimilar_random(x))
+    extras = prepare_jacobian(f, ba, mycopy_random(x))
     jac_true = if ref_backend isa AbstractADType
         jacobian(f, ref_backend, x)
     else
@@ -673,7 +669,7 @@ function test_correctness(
     ref_backend,
 )
     @compat (; f, x, y) = new_scen = deepcopy(scen)
-    extras = prepare_jacobian(f, ba, mysimilar_random(x))
+    extras = prepare_jacobian(f, ba, mycopy_random(x))
     jac_true = if ref_backend isa AbstractADType
         jacobian(f, ref_backend, x)
     else
@@ -714,7 +710,7 @@ function test_correctness(
 )
     @compat (; f, x, y) = new_scen = deepcopy(scen)
     f! = f
-    extras = prepare_jacobian(f!, mysimilar(y), ba, mysimilar_random(x))
+    extras = prepare_jacobian(f!, mysimilar(y), ba, mycopy_random(x))
     jac_true = if ref_backend isa AbstractADType
         jacobian(f!, mysimilar(y), ref_backend, x)
     else
@@ -754,7 +750,7 @@ function test_correctness(
 )
     @compat (; f, x, y) = new_scen = deepcopy(scen)
     f! = f
-    extras = prepare_jacobian(f!, mysimilar(y), ba, mysimilar_random(x))
+    extras = prepare_jacobian(f!, mysimilar(y), ba, mycopy_random(x))
     jac_true = if ref_backend isa AbstractADType
         jacobian(f!, mysimilar(y), ref_backend, x)
     else
@@ -797,7 +793,7 @@ function test_correctness(
     ref_backend,
 )
     @compat (; f, x, y) = new_scen = deepcopy(scen)
-    extras = prepare_second_derivative(f, ba, mysimilar_random(x))
+    extras = prepare_second_derivative(f, ba, mycopy_random(x))
     der2_true = if ref_backend isa AbstractADType
         second_derivative(f, ref_backend, x)
     else
@@ -827,7 +823,7 @@ function test_correctness(
     ref_backend,
 )
     @compat (; f, x, y) = new_scen = deepcopy(scen)
-    extras = prepare_second_derivative(f, ba, mysimilar_random(x))
+    extras = prepare_second_derivative(f, ba, mycopy_random(x))
     der2_true = if ref_backend isa AbstractADType
         second_derivative(f, ref_backend, x)
     else
@@ -868,8 +864,8 @@ function test_correctness(
     end
 
     for (k, extras) in enumerate([
-        prepare_hvp(f, ba, mysimilar_random(x), mysimilar_random(dx)),
-        prepare_hvp_same_point(f, ba, x, mysimilar_random(dx)),
+        prepare_hvp(f, ba, mycopy_random(x), mycopy_random(dx)),
+        prepare_hvp_same_point(f, ba, x, mycopy_random(dx)),
     ])
         testset_name = k == 1 ? "Different point" : "Same point"
         @testset "$testset_name" begin
@@ -905,8 +901,8 @@ function test_correctness(
     end
 
     for (k, extras) in enumerate([
-        prepare_hvp(f, ba, mysimilar_random(x), mysimilar_random(dx)),
-        prepare_hvp_same_point(f, ba, x, mysimilar_random(dx)),
+        prepare_hvp(f, ba, mycopy_random(x), mycopy_random(dx)),
+        prepare_hvp_same_point(f, ba, x, mycopy_random(dx)),
     ])
         testset_name = k == 1 ? "Different point" : "Same point"
         @testset "$testset_name" begin
@@ -939,7 +935,7 @@ function test_correctness(
     ref_backend,
 )
     @compat (; f, x, y) = new_scen = deepcopy(scen)
-    extras = prepare_hessian(f, ba, mysimilar_random(x))
+    extras = prepare_hessian(f, ba, mycopy_random(x))
     hess_true = if ref_backend isa AbstractADType
         hessian(f, ref_backend, x)
     else
@@ -969,7 +965,7 @@ function test_correctness(
     ref_backend,
 )
     @compat (; f, x, y) = new_scen = deepcopy(scen)
-    extras = prepare_hessian(f, ba, mysimilar_random(x))
+    extras = prepare_hessian(f, ba, mycopy_random(x))
     hess_true = if ref_backend isa AbstractADType
         hessian(f, ref_backend, x)
     else
