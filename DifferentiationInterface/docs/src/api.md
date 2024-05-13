@@ -82,8 +82,6 @@ pullback
 pullback!
 value_and_pullback
 value_and_pullback!
-value_and_pullback_split
-value_and_pullback!_split
 ```
 
 ## Backend queries
