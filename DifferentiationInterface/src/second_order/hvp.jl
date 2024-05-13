@@ -18,7 +18,7 @@ Create an `extras_same` object subtyping [`HVPExtras`](@ref) that can be given t
 !!! warning
     If the function or the point changes in any way, the result of preparation will be invalidated, and you will need to run it again.
 """
-function prepare_hvp end
+function prepare_hvp_same_point end
 
 """
     hvp(f, backend, x, v, [extras]) -> p
