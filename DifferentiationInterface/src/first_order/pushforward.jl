@@ -142,7 +142,7 @@ function value_and_pushforward_onearg_aux(
         end
     elseif x isa AbstractArray && y isa AbstractArray
         map(CartesianIndices(y)) do i
-            dot(dx, pullback(f, backend, x, basis(backend, y, i)), pullback_extras)
+            dot(dx, pullback(f, backend, x, basis(backend, y, i), pullback_extras))
         end
     end
     return y, dy
