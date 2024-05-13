@@ -100,7 +100,11 @@ function value_and_jacobian_onearg_aux(
     f::F, backend, x::AbstractArray, extras::PushforwardJacobianExtras
 ) where {F}
     pushforward_extras_same = prepare_pushforward_same_point(
-        f, backend, x, basis(backend, x, 1), extras.pushforward_extras
+        f,
+        backend,
+        x,
+        basis(backend, x, first(CartesianIndices(x))),
+        extras.pushforward_extras,
     )
     y = f(x)  # TODO: remove
     jac = stack(CartesianIndices(x); dims=2) do j
@@ -115,7 +119,7 @@ function value_and_jacobian_onearg_aux(
     f::F, backend, x::AbstractArray, extras::PullbackJacobianExtras
 ) where {F}
     pullback_extras_same = prepare_pullback_same_point(
-        f, backend, x, basis(backend, y, 1), extras.pullback_extras
+        f, backend, x, basis(backend, y, first(CartesianIndices(y))), extras.pullback_extras
     )
     y = f(x)  # TODO: remove
     jac = stack(CartesianIndices(y); dims=1) do i
@@ -140,7 +144,11 @@ function value_and_jacobian_onearg_aux!(
     f::F, jac::AbstractMatrix, backend, x::AbstractArray, extras::PushforwardJacobianExtras
 ) where {F}
     pushforward_extras_same = prepare_pushforward_same_point(
-        f, backend, x, basis(backend, x, 1), extras.pushforward_extras
+        f,
+        backend,
+        x,
+        basis(backend, x, first(CartesianIndices(x))),
+        extras.pushforward_extras,
     )
     y = f(x)  # TODO: remove
     for (k, j) in enumerate(CartesianIndices(x))
@@ -155,7 +163,7 @@ function value_and_jacobian_onearg_aux!(
     f::F, jac::AbstractMatrix, backend, x::AbstractArray, extras::PullbackJacobianExtras
 ) where {F}
     pullback_extras_same = prepare_pullback_same_point(
-        f, backend, x, basis(backend, y, 1), extras.pullback_extras
+        f, backend, x, basis(backend, y, first(CartesianIndices(y))), extras.pullback_extras
     )
     y = f(x)  # TODO: remove
     for (k, i) in enumerate(CartesianIndices(y))
@@ -198,7 +206,12 @@ function value_and_jacobian_twoarg_aux(
     f!::F, y, backend, x::AbstractArray, extras::PushforwardJacobianExtras
 ) where {F}
     pushforward_extras_same = prepare_pushforward_same_point(
-        f!, y, backend, x, basis(backend, x, 1), extras.pushforward_extras
+        f!,
+        y,
+        backend,
+        x,
+        basis(backend, x, first(CartesianIndices(x))),
+        extras.pushforward_extras,
     )
     jac = stack(CartesianIndices(x); dims=2) do j
         dx_j = basis(backend, x, j)
@@ -213,7 +226,12 @@ function value_and_jacobian_twoarg_aux(
     f!::F, y, backend, x::AbstractArray, extras::PullbackJacobianExtras
 ) where {F}
     pullback_extras_same = prepare_pullback_same_point(
-        f!, y, backend, x, basis(backend, y, 1), extras.pullback_extras
+        f!,
+        y,
+        backend,
+        x,
+        basis(backend, y, first(CartesianIndices(y))),
+        extras.pullback_extras,
     )
     jac = stack(CartesianIndices(y); dims=1) do i
         dy_i = basis(backend, y, i)
@@ -244,7 +262,12 @@ function value_and_jacobian_twoarg_aux!(
     extras::PushforwardJacobianExtras,
 ) where {F}
     pushforward_extras_same = prepare_pushforward_same_point(
-        f!, y, backend, x, basis(backend, x, 1), extras.pushforward_extras
+        f!,
+        y,
+        backend,
+        x,
+        basis(backend, x, first(CartesianIndices(x))),
+        extras.pushforward_extras,
     )
     for (k, j) in enumerate(CartesianIndices(x))
         dx_j = basis(backend, x, j)
@@ -259,7 +282,12 @@ function value_and_jacobian_twoarg_aux!(
     f!::F, y, jac::AbstractMatrix, backend, x::AbstractArray, extras::PullbackJacobianExtras
 ) where {F}
     pullback_extras_same = prepare_pullback_same_point(
-        f!, y, backend, x, basis(backend, y, 1), extras.pullback_extras
+        f!,
+        y,
+        backend,
+        x,
+        basis(backend, y, first(CartesianIndices(y))),
+        extras.pullback_extras,
     )
     for (k, i) in enumerate(CartesianIndices(y))
         dy_i = basis(backend, y, i)

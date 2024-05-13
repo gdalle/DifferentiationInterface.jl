@@ -55,7 +55,7 @@ function hessian(
     f::F, backend::SecondOrder, x, extras::HessianExtras=prepare_hessian(f, backend, x)
 ) where {F}
     hvp_extras_same = prepare_hvp_same_point(
-        f, backend, x, basis(backend, x, 1), extras.hvp_extras
+        f, backend, x, basis(backend, x, first(CartesianIndices(x))), extras.hvp_extras
     )
     hess = stack(vec(CartesianIndices(x))) do j
         hess_col_j = hvp(f, backend, x, basis(backend, x, j), hvp_extras_same)
@@ -84,7 +84,7 @@ function hessian!(
     extras::HessianExtras=prepare_hessian(f, backend, x),
 ) where {F}
     hvp_extras_same = prepare_hvp_same_point(
-        f, backend, x, basis(backend, x, 1), extras.hvp_extras
+        f, backend, x, basis(backend, x, first(CartesianIndices(x))), extras.hvp_extras
     )
     for (k, j) in enumerate(CartesianIndices(x))
         hess_col_j = reshape(view(hess, :, k), size(x))
