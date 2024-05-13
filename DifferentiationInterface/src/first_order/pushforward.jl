@@ -131,18 +131,18 @@ function value_and_pushforward_onearg_aux(
     f::F, backend, x, dx, extras::PullbackPushforwardExtras
 ) where {F}
     @compat (; pullback_extras) = extras
-    y, pullbackfunc = value_and_pullback_split(f, backend, x, pullback_extras)
+    y = f(x)
     dy = if x isa Number && y isa Number
-        dx * pullbackfunc(one(y))
+        dx * pullback(f, backend, x, one(y), pullback_extras)
     elseif x isa AbstractArray && y isa Number
-        dot(dx, pullbackfunc(one(y)))
+        dot(dx, pullback(f, backend, x, one(y), pullback_extras))
     elseif x isa Number && y isa AbstractArray
         map(CartesianIndices(y)) do i
-            dx * pullbackfunc(basis(backend, y, i))
+            dx * pullback(f, backend, x, basis(backend, y, i), pullback_extras)
         end
     elseif x isa AbstractArray && y isa AbstractArray
         map(CartesianIndices(y)) do i
-            dot(dx, pullbackfunc(basis(backend, y, i)))
+            dot(dx, pullback(f, backend, x, basis(backend, y, i)), pullback_extras)
         end
     end
     return y, dy

@@ -51,25 +51,6 @@ for op in (:pushforward, :pullback, :hvp)
             f!::F, y, res, ba::AutoSparse, x, v, ex::$E=$prep(f!, y, ba, x, v)
         ) where {F} = $valop!(f!, y, res, dense_ad(ba), x, v, ex)
     end
-
-    ## Split
-    if op == :pullback
-        valop_split = Symbol("value_and_", op, "_split")
-        valop!_split = Symbol("value_and_", op!, "_split")
-
-        @eval begin
-            $valop_split(f::F, ba::AutoSparse, x, ex::$E=$prep(f, ba, x, f(x))) where {F} =
-                $valop_split(f, dense_ad(ba), x, ex)
-            $valop!_split(f::F, ba::AutoSparse, x, ex::$E=$prep(f, ba, x, f(x))) where {F} =
-                $valop!_split(f, dense_ad(ba), x, ex)
-            $valop_split(
-                f!::F, y, ba::AutoSparse, x, ex::$E=$prep(f, ba, x, similar(y))
-            ) where {F} = $valop_split(f!, y, dense_ad(ba), x, ex)
-            $valop!_split(
-                f!::F, y, ba::AutoSparse, x, ex::$E=$prep(f, ba, x, similar(y))
-            ) where {F} = $valop!_split(f!, y, dense_ad(ba), x, ex)
-        end
-    end
 end
 
 for op in (:derivative, :gradient, :second_derivative)
