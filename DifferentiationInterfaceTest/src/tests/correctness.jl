@@ -26,10 +26,10 @@ function test_correctness(
         new_scen.ref(x, dx)
     end
 
-    for (k, extras) in enumerate(
+    for (k, extras) in enumerate([
         prepare_pushforward(f, ba, mysimilar_random(x), mysimilar_random(dx)),
         prepare_pushforward_same_point(f, ba, x, mysimilar_random(dx)),
-    )
+    ])
         testset_name = k == 1 ? "Different point" : "Same point"
         @testset "$testset_name" begin
             y1, dy1 = value_and_pushforward(f, ba, x, dx, extras)
@@ -68,10 +68,10 @@ function test_correctness(
         new_scen.ref(x, dx)
     end
 
-    for (k, extras) in enumerate(
+    for (k, extras) in enumerate([
         prepare_pushforward(f, ba, mysimilar_random(x), mysimilar_random(dx)),
         prepare_pushforward_same_point(f, ba, x, mysimilar_random(dx)),
-    )
+    ])
         testset_name = k == 1 ? "Different point" : "Same point"
         @testset "$testset_name" begin
             dy1_in = mysimilar(y)
@@ -116,12 +116,12 @@ function test_correctness(
         new_scen.ref(x, dx)
     end
 
-    for (k, extras) in enumerate(
+    for (k, extras) in enumerate([
         prepare_pushforward(
             f!, mysimilar(y), ba, mysimilar_random(x), mysimilar_random(dx)
         ),
         prepare_pushforward_same_point(f!, mysimilar(y), ba, x, mysimilar_random(dx)),
-    )
+    ])
         testset_name = k == 1 ? "Different point" : "Same point"
         @testset "$testset_name" begin
             y1_in = mysimilar(y)
@@ -165,12 +165,12 @@ function test_correctness(
         new_scen.ref(x, dx)
     end
 
-    for (k, extras) in enumerate(
+    for (k, extras) in enumerate([
         prepare_pushforward(
             f!, mysimilar(y), ba, mysimilar_random(x), mysimilar_random(dx)
         ),
         prepare_pushforward_same_point(f!, mysimilar(y), ba, x, mysimilar_random(dx)),
-    )
+    ])
         testset_name = k == 1 ? "Different point" : "Same point"
         @testset "$testset_name" begin
             y1_in, dy1_in = mysimilar(y), mysimilar(y)
@@ -217,10 +217,10 @@ function test_correctness(
         new_scen.ref(x, dy)
     end
 
-    for (k, extras) in enumerate(
+    for (k, extras) in enumerate([
         prepare_pullback(f, ba, mysimilar_random(x), mysimilar_random(dy)),
         prepare_pullback_same_point(f, ba, x, mysimilar_random(dy)),
-    )
+    ])
         testset_name = k == 1 ? "Different point" : "Same point"
         @testset "$testset_name" begin
             y1, dx1 = value_and_pullback(f, ba, x, dy, extras)
@@ -266,10 +266,10 @@ function test_correctness(
         new_scen.ref(x, dy)
     end
 
-    for (k, extras) in enumerate(
+    for (k, extras) in enumerate([
         prepare_pullback(f, ba, mysimilar_random(x), mysimilar_random(dy)),
         prepare_pullback_same_point(f, ba, x, mysimilar_random(dy)),
-    )
+    ])
         testset_name = k == 1 ? "Different point" : "Same point"
         @testset "$testset_name" begin
             dx1_in = mysimilar(x)
@@ -322,10 +322,10 @@ function test_correctness(
         new_scen.ref(x, dy)
     end
 
-    for (k, extras) in enumerate(
+    for (k, extras) in enumerate([
         prepare_pullback(f!, mysimilar(y), ba, mysimilar_random(x), mysimilar_random(dy)),
         prepare_pullback_same_point(f!, mysimilar(y), ba, x, mysimilar_random(dy)),
-    )
+    ])
         testset_name = k == 1 ? "Different point" : "Same point"
         @testset "$testset_name" begin
             y1_in = mysimilar(y)
@@ -378,10 +378,10 @@ function test_correctness(
         new_scen.ref(x, dy)
     end
 
-    for (k, extras) in enumerate(
+    for (k, extras) in enumerate([
         prepare_pullback(f!, mysimilar(y), ba, mysimilar_random(x), mysimilar_random(dy)),
         prepare_pullback_same_point(f!, mysimilar(y), ba, x, mysimilar_random(dy)),
-    )
+    ])
         testset_name = k == 1 ? "Different point" : "Same point"
         @testset "$testset_name" begin
             y1_in, dx1_in = mysimilar(y), mysimilar(x)
@@ -900,10 +900,10 @@ function test_correctness(
         new_scen.ref(x, dx)
     end
 
-    for (k, extras) in enumerate(
+    for (k, extras) in enumerate([
         prepare_hvp(f, ba, mysimilar_random(x), mysimilar_random(dx)),
         prepare_hvp_same_point(f, ba, x, mysimilar_random(dx)),
-    )
+    ])
         testset_name = k == 1 ? "Different point" : "Same point"
         @testset "$testset_name" begin
             p1 = hvp(f, ba, x, dx, extras)
@@ -937,10 +937,10 @@ function test_correctness(
         new_scen.ref(x, dx)
     end
 
-    for (k, extras) in enumerate(
+    for (k, extras) in enumerate([
         prepare_hvp(f, ba, mysimilar_random(x), mysimilar_random(dx)),
         prepare_hvp_same_point(f, ba, x, mysimilar_random(dx)),
-    )
+    ])
         testset_name = k == 1 ? "Different point" : "Same point"
         @testset "$testset_name" begin
             p1_in = mysimilar(x)
