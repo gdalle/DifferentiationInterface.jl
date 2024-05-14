@@ -1,7 +1,7 @@
 using ADTypes
 using DifferentiationInterface
 using Pkg
-using SparseConnectivityTracer: SparseConnectivityTracer
+using SparseConnectivityTracer
 using Test
 
 push!(Base.LOAD_PATH, Base.active_project())
@@ -41,8 +41,8 @@ else
 end
 
 function MyAutoSparse(backend::AbstractADType)
-    coloring_algorithm = DifferentiationInterface.GreedyColoringAlgorithm()
-    sparsity_detector = SparseConnectivityTracer.TracerSparsityDetector()
+    coloring_algorithm = GreedyColoringAlgorithm()
+    sparsity_detector = TracerSparsityDetector()
     return AutoSparse(backend; sparsity_detector, coloring_algorithm)
 end
 

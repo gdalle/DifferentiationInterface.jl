@@ -143,32 +143,26 @@ It provides benchmarking utilities to compare backends and help you select the o
 
 To compute sparse Jacobians or Hessians, you need three ingredients (read [this survey](https://epubs.siam.org/doi/10.1137/S0036144504444711) to understand why):
 
-1. A sparsity pattern detector
-2. A coloring algorithm
-3. An underlying AD backend
+1. An underlying (dense) AD backend
+2. A sparsity pattern detector like:
+    - `TracerSparsityDetector`, implemented by [SparseConnectivityTracer.jl](https://github.com/adrhill/SparseConnectivityTracer.jl) (our default recommendation)
+    - [`DifferentiationInterface.SymbolicsSparsityDetector`](@ref), implemented by DifferentiationInterface.jl with [Symbolics.jl](https://github.com/JuliaSymbolics/Symbolics.jl) but not part of the public API (it will soon be [transferred](https://github.com/JuliaSymbolics/Symbolics.jl/pull/1134))
+3. A coloring algorithm like:
+    - [`GreedyColoringAlgorithm`](@ref), implemented by DifferentiationInterface.jl
 
-ADTypes.jl v1.0 defines the [`AutoSparse`](@ref) wrapper, which brings together these three ingredients.
-At the moment, this new wrapper is not well-supported in the ecosystem, which is why DifferentiationInterface.jl provides the necessary objects to get you started:
-
-1. [`DifferentiationInterface.SymbolicsSparsityDetector`](@ref) (requires [Symbolics.jl](https://github.com/JuliaSymbolics/Symbolics.jl) to be loaded)
-2. [`DifferentiationInterface.GreedyColoringAlgorithm`](@ref)
-
-!!! warning
-    These objects are not part of the public API, so they can change unexpectedly between versions.
-
-!!! info
-    The symbolic backends have built-in sparsity handling, so `AutoSparse(AutoSymbolics())` and `AutoSparse(AutoFastDifferentiation())` do not need additional configuration.
-
+ADTypes.jl v1.0 provides the [`AutoSparse`](@ref) wrapper to combine these three ingredients, and DifferentiationInterface.jl re-exports it.
 Here's an example:
 
 ```@example tuto
-import Symbolics
+using SparseConnectivityTracer
 
-sparsity_detector = DifferentiationInterface.SymbolicsSparsityDetector()
-coloring_algorithm = DifferentiationInterface.GreedyColoringAlgorithm()
 dense_backend = AutoForwardDiff()
 
-sparse_backend = AutoSparse(dense_backend; sparsity_detector, coloring_algorithm)
+sparse_backend = AutoSparse(
+    dense_backend;
+    sparsity_detector=TracerSparsityDetector(),
+    coloring_algorithm=GreedyColoringAlgorithm(),
+)
 ```
 
 See how the computed Hessian is sparse, whereas the underlying backend alone would give us a dense matrix:
@@ -183,4 +177,8 @@ hessian(f, dense_backend, x)
 
 The sparsity detector and coloring algorithm are called during the preparation step, which can be fairly expensive.
 If you plan to compute several Jacobians or Hessians with the same pattern but different input vectors, you should reuse the `extras` object created by `prepare_jacobian` or `prepare_hessian`.
-After preparation, the sparse computation itself will be much faster than the dense one, and require fewer calls to the function. 
+After preparation, the sparse computation itself will be much faster than the dense one, and require fewer calls to the function.
+
+!!! info
+    The symbolic backends have built-in sparsity handling, so `AutoSparse(AutoSymbolics())` and `AutoSparse(AutoFastDifferentiation())` do not need additional configuration for detection or coloring.
+    However they still benefit from preparation.
