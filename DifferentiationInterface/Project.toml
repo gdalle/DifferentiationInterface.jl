@@ -43,7 +43,7 @@ DifferentiationInterfaceTrackerExt = "Tracker"
 DifferentiationInterfaceZygoteExt = "Zygote"
 
 [compat]
-ADTypes = "1.0.0"
+ADTypes = "1.2.0"
 ChainRulesCore = "1.23.0"
 Compat = "3,4"
 Diffractor = "=0.2.6"
