@@ -13,6 +13,4 @@ Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 
 [compat]
-DifferentiationInterface = "0.3"
-DifferentiationInterfaceTest = "0.3"
 Documenter = "1"

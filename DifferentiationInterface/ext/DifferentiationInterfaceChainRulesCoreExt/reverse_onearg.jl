@@ -1,27 +1,36 @@
 ## Pullback
 
-DI.prepare_pullback(f, ::AutoReverseChainRules, x, dy) = NoPullbackExtras()
-
-function DI.value_and_pullback_split(
-    f, backend::AutoReverseChainRules, x, ::NoPullbackExtras
-)
-    rc = ruleconfig(backend)
-    y, pullback = rrule_via_ad(rc, f, x)
-    pullbackfunc(dy) = last(pullback(dy))
-    return y, pullbackfunc
+struct ChainRulesPullbackExtrasSamePoint{Y,PB} <: PullbackExtras
+    y::Y
+    pb::PB
 end
 
-function DI.value_and_pullback!_split(
-    f, backend::AutoReverseChainRules, x, extras::NoPullbackExtras
+DI.prepare_pullback(f, ::AutoReverseChainRules, x, dy) = NoPullbackExtras()
+
+function DI.prepare_pullback_same_point(
+    f, backend::AutoReverseChainRules, x, dy, ::PullbackExtras=NoPullbackExtras()
 )
-    y, pullbackfunc = DI.value_and_pullback_split(f, backend, x, extras)
-    pullbackfunc!(dx, dy) = copyto!(dx, pullbackfunc(dy))
-    return y, pullbackfunc!
+    rc = ruleconfig(backend)
+    y, pb = rrule_via_ad(rc, f, x)
+    return ChainRulesPullbackExtrasSamePoint(y, pb)
+end
+
+function DI.value_and_pullback(f, backend::AutoReverseChainRules, x, dy, ::NoPullbackExtras)
+    rc = ruleconfig(backend)
+    y, pb = rrule_via_ad(rc, f, x)
+    return y, last(pb(dy))
 end
 
 function DI.value_and_pullback(
-    f, backend::AutoReverseChainRules, x, dy, extras::NoPullbackExtras
+    f, ::AutoReverseChainRules, x, dy, extras::ChainRulesPullbackExtrasSamePoint
 )
-    y, pullbackfunc = DI.value_and_pullback_split(f, backend, x, extras)
-    return y, pullbackfunc(dy)
+    @compat (; y, pb) = extras
+    return copy(y), last(pb(dy))
+end
+
+function DI.pullback(
+    f, ::AutoReverseChainRules, x, dy, extras::ChainRulesPullbackExtrasSamePoint
+)
+    @compat (; pb) = extras
+    return last(pb(dy))
 end

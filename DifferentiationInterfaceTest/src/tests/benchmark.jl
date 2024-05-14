@@ -287,16 +287,12 @@ function run_benchmark!(
     logging::Bool,
 )
     @compat (; f, x, y, dy) = deepcopy(scen)
-    @compat (;
-        bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4
-    ) = try
+    @compat (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
         extras = prepare_pullback(f, ba, x, dy)
         bench0 = @be prepare_pullback(f, ba, x, dy) samples = 1 evals = 1
         bench1 = @be deepcopy(extras) value_and_pullback(f, ba, x, dy, _)
         bench2 = @be deepcopy(extras) pullback(f, ba, x, dy, _)
-        bench3 = @be deepcopy(extras) value_and_pullback_split(f, ba, x, _)
-        bench4 = @be last(value_and_pullback_split(f, ba, x, deepcopy(extras))) _(dy)
         # count
         cc = CallCounter(f)
         extras = prepare_pullback(cc, ba, x, dy)
@@ -305,23 +301,17 @@ function run_benchmark!(
         calls1 = reset_count!(cc)
         pullback(cc, ba, x, dy, extras)
         calls2 = reset_count!(cc)
-        _, pullbackfunc = value_and_pullback_split(cc, ba, x, extras)
-        calls3 = reset_count!(cc)
-        pullbackfunc(dy)
-        calls4 = reset_count!(cc)
-        (; bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4)
+        (; bench0, bench1, bench2, calls0, calls1, calls2)
     catch e
         logging && @warn "Error during benchmarking" ba scen e
-        bench0, bench1, bench2, bench3, bench4 = failed_benchs(5)
-        calls0, calls1, calls2, calls3, calls4 = -1, -1, -1, -1, -1
-        (; bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4)
+        bench0, bench1, bench2 = failed_benchs(3)
+        calls0, calls1, calls2 = -1, -1, -1
+        (; bench0, bench1, bench2, calls0, calls1, calls2)
     end
     # record
     record!(data, ba, scen, :prepare_pullback, bench0, calls0)
     record!(data, ba, scen, :value_and_pullback, bench1, calls1)
     record!(data, ba, scen, :pullback, bench2, calls2)
-    record!(data, ba, scen, :value_and_pullback_split, bench3, calls3)
-    record!(data, ba, scen, :pullbackfunc, bench4, calls4)
     return nothing
 end
 
@@ -332,9 +322,7 @@ function run_benchmark!(
     logging::Bool,
 )
     @compat (; f, x, y, dy) = deepcopy(scen)
-    @compat (;
-        bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4
-    ) = try
+    @compat (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
         extras = prepare_pullback(f, ba, x, dy)
         bench0 = @be prepare_pullback(f, ba, x, dy) samples = 1 evals = 1
@@ -344,11 +332,6 @@ function run_benchmark!(
         bench2 = @be (dx=mysimilar(x), ext=deepcopy(extras)) pullback!(
             f, _.dx, ba, x, dy, _.ext
         ) evals = 1
-        bench3 = @be deepcopy(extras) value_and_pullback!_split(f, ba, x, _)
-        bench4 = @be (
-            dx=mysimilar(x),
-            (pullbackfunc!)=last(value_and_pullback!_split(f, ba, x, deepcopy(extras))),
-        ) _.pullbackfunc!(_.dx, dy) evals = 1
         # count
         cc = CallCounter(f)
         extras = prepare_pullback(cc, ba, x, dy)
@@ -357,23 +340,17 @@ function run_benchmark!(
         calls1 = reset_count!(cc)
         pullback!(cc, mysimilar(x), ba, x, dy, extras)
         calls2 = reset_count!(cc)
-        _, pullbackfunc! = value_and_pullback!_split(cc, ba, x, extras)
-        calls3 = reset_count!(cc)
-        pullbackfunc!(mysimilar(x), dy)
-        calls4 = reset_count!(cc)
-        (; bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4)
+        (; bench0, bench1, bench2, calls0, calls1, calls2)
     catch e
         logging && @warn "Error during benchmarking" ba scen e
-        bench0, bench1, bench2, bench3, bench4 = failed_benchs(5)
-        calls0, calls1, calls2, calls3, calls4 = -1, -1, -1, -1, -1
-        (; bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4)
+        bench0, bench1, bench2 = failed_benchs(3)
+        calls0, calls1, calls2 = -1, -1, -1
+        (; bench0, bench1, bench2, calls0, calls1, calls2)
     end
     # record
     record!(data, ba, scen, :prepare_pullback, bench0, calls0)
     record!(data, ba, scen, :value_and_pullback!, bench1, calls1)
     record!(data, ba, scen, :pullback!, bench2, calls2)
-    record!(data, ba, scen, :value_and_pullback!_split, bench3, calls3)
-    record!(data, ba, scen, :pullbackfunc!, bench4, calls4)
     return nothing
 end
 
@@ -385,9 +362,7 @@ function run_benchmark!(
 )
     @compat (; f, x, y, dy) = deepcopy(scen)
     f! = f
-    @compat (;
-        bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4
-    ) = try
+    @compat (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
         extras = prepare_pullback(f!, mysimilar(y), ba, x, dy)
         bench0 = @be mysimilar(y) prepare_pullback(f!, _, ba, x, dy) samples = 1 evals =
@@ -398,13 +373,6 @@ function run_benchmark!(
         bench2 = @be (y=mysimilar(y), ext=deepcopy(extras)) pullback(
             f!, _.y, ba, x, dy, _.ext
         ) evals = 1
-        bench3 = @be deepcopy(extras) value_and_pullback_split(f!, y, ba, x, _)
-        bench4 = @be (
-            y=mysimilar(y),
-            pullbackfunc=last(
-                value_and_pullback_split(f!, mysimilar(y), ba, x, deepcopy(extras))
-            ),
-        ) _.pullbackfunc(_.y, dy) evals = 1
         # count
         cc! = CallCounter(f!)
         extras = prepare_pullback(cc!, mysimilar(y), ba, x, dy)
@@ -413,23 +381,17 @@ function run_benchmark!(
         calls1 = reset_count!(cc!)
         pullback(cc!, mysimilar(y), ba, x, dy, extras)
         calls2 = reset_count!(cc!)
-        _, pullbackfunc = value_and_pullback_split(cc!, y, ba, x, extras)
-        calls3 = reset_count!(cc!)
-        pullbackfunc(y, dy)
-        calls4 = reset_count!(cc!)
-        (; bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4)
+        (; bench0, bench1, bench2, calls0, calls1, calls2)
     catch e
         logging && @warn "Error during benchmarking" ba scen e
-        bench0, bench1, bench2, bench3, bench4 = failed_benchs(5)
-        calls0, calls1, calls2, calls3, calls4 = -1, -1, -1, -1, -1
-        (; bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4)
+        bench0, bench1, bench2 = failed_benchs(3)
+        calls0, calls1, calls2 = -1, -1, -1
+        (; bench0, bench1, bench2, calls0, calls1, calls2)
     end
     # record
     record!(data, ba, scen, :prepare_pullback, bench0, calls0)
     record!(data, ba, scen, :value_and_pullback, bench1, calls1)
     record!(data, ba, scen, :pullback, bench2, calls2)
-    record!(data, ba, scen, :value_and_pullback_split, bench3, calls3)
-    record!(data, ba, scen, :pullbackfunc, bench4, calls4)
     return nothing
 end
 
@@ -441,9 +403,7 @@ function run_benchmark!(
 )
     @compat (; f, x, y, dy) = deepcopy(scen)
     f! = f
-    @compat (;
-        bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4
-    ) = try
+    @compat (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
         extras = prepare_pullback(f!, mysimilar(y), ba, x, dy)
         bench0 = @be mysimilar(y) prepare_pullback(f!, _, ba, x, dy) samples = 1 evals =
@@ -454,16 +414,6 @@ function run_benchmark!(
         bench2 = @be (y=mysimilar(y), dx=mysimilar(x), ext=deepcopy(extras)) pullback!(
             f!, _.y, _.dx, ba, x, dy, _.ext
         ) evals = 1
-        bench3 = @be (y=mysimilar(y), ext=deepcopy(extras)) value_and_pullback!_split(
-            f!, _.y, ba, x, _.ext
-        )
-        bench4 = @be (
-            y=mysimilar(y),
-            dx=mysimilar(x),
-            (pullbackfunc!)=last(
-                value_and_pullback!_split(f!, mysimilar(y), ba, x, deepcopy(extras))
-            ),
-        ) _.pullbackfunc!(_.y, _.dx, dy) evals = 1
         # count
         cc! = CallCounter(f!)
         extras = prepare_pullback(cc!, mysimilar(y), ba, x, dy)
@@ -472,23 +422,17 @@ function run_benchmark!(
         calls1 = reset_count!(cc!)
         pullback!(cc!, mysimilar(y), mysimilar(x), ba, x, dy, extras)
         calls2 = reset_count!(cc!)
-        _, pullbackfunc! = value_and_pullback!_split(cc!, y, ba, x, extras)
-        calls3 = reset_count!(cc!)
-        pullbackfunc!(y, mysimilar(x), dy)
-        calls4 = reset_count!(cc!)
-        (; bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4)
+        (; bench0, bench1, bench2, calls0, calls1, calls2)
     catch e
         logging && @warn "Error during benchmarking" ba scen e
-        bench0, bench1, bench2, bench3, bench4 = failed_benchs(5)
-        calls0, calls1, calls2, calls3, calls4 = -1, -1, -1, -1, -1
-        (; bench0, bench1, bench2, bench3, bench4, calls0, calls1, calls2, calls3, calls4)
+        bench0, bench1, bench2 = failed_benchs(3)
+        calls0, calls1, calls2 = -1, -1, -1
+        (; bench0, bench1, bench2, calls0, calls1, calls2)
     end
     # record
     record!(data, ba, scen, :prepare_pullback, bench0, calls0)
     record!(data, ba, scen, :value_and_pullback!, bench1, calls1)
     record!(data, ba, scen, :pullback!, bench2, calls2)
-    record!(data, ba, scen, :value_and_pullback!_split, bench3, calls3)
-    record!(data, ba, scen, :pullbackfunc!, bench4, calls4)
     return nothing
 end
 

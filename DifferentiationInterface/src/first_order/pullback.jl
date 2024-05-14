@@ -13,6 +13,18 @@ Create an `extras` object subtyping [`PullbackExtras`](@ref) that can be given t
 function prepare_pullback end
 
 """
+    prepare_pullback_same_point(f,     backend, x, dy) -> extras_same
+    prepare_pullback_same_point(f!, y, backend, x, dy) -> extras_same
+
+Create an `extras_same` object subtyping [`PullbackExtras`](@ref) that can be given to pullback operators _if they are applied at the same point `x`_.
+
+!!! warning
+    If the function or the point changes in any way, the result of preparation will be invalidated, and you will need to run it again.
+    In the two-argument case, `y` is mutated by `f!` during preparation.
+"""
+function prepare_pullback_same_point end
+
+"""
     value_and_pullback(f,     backend, x, dy, [extras]) -> (y, dx)
     value_and_pullback(f!, y, backend, x, dy, [extras]) -> (y, dx)
 
@@ -89,6 +101,30 @@ end
 # Throw error if backend is missing
 prepare_pullback_aux(f::F, backend, x, dy, ::PullbackFast) where {F}     = throw(MissingBackendError(backend))
 prepare_pullback_aux(f!::F, y, backend, x, dy, ::PullbackFast) where {F} = throw(MissingBackendError(backend))
+
+## Preparation (same point)
+
+function prepare_pullback_same_point(
+    f::F, backend::AbstractADType, x, dy, extras::PullbackExtras
+) where {F}
+    return extras
+end
+
+function prepare_pullback_same_point(
+    f!::F, y, backend::AbstractADType, x, dy, extras::PullbackExtras
+) where {F}
+    return extras
+end
+
+function prepare_pullback_same_point(f::F, backend::AbstractADType, x, dy) where {F}
+    extras = prepare_pullback(f, backend, x, dy)
+    return prepare_pullback_same_point(f, backend, x, dy, extras)
+end
+
+function prepare_pullback_same_point(f!::F, y, backend::AbstractADType, x, dy) where {F}
+    extras = prepare_pullback(f!, y, backend, x, dy)
+    return prepare_pullback_same_point(f!, y, backend, x, dy, extras)
+end
 
 ## One argument
 
@@ -218,96 +254,4 @@ function pullback!(
     extras::PullbackExtras=prepare_pullback(f!, y, backend, x, dy),
 ) where {F}
     return value_and_pullback!(f!, y, dx, backend, x, dy, extras)[2]
-end
-
-## Split one argument
-
-struct OneArgPullbackFunc{B,F,X,E}
-    f::F
-    backend::B
-    x::X
-    extras::E
-end
-
-struct OneArgPullbackFunc!{B,F,X,E}
-    f::F
-    backend::B
-    x::X
-    extras::E
-end
-
-function (pbf::OneArgPullbackFunc)(dy)
-    @compat (; f, backend, x, extras) = pbf
-    return pullback(f, backend, x, dy, extras)
-end
-
-function (pbf::OneArgPullbackFunc!)(dx, dy)
-    @compat (; f, backend, x, extras) = pbf
-    return pullback!(f, dx, backend, x, dy, extras)
-end
-
-function value_and_pullback_split(
-    f::F,
-    backend::AbstractADType,
-    x,
-    extras::PullbackExtras=prepare_pullback(f, backend, x, f(x)),
-) where {F}
-    return f(x), OneArgPullbackFunc(f, backend, x, extras)
-end
-
-function value_and_pullback!_split(
-    f::F,
-    backend::AbstractADType,
-    x,
-    extras::PullbackExtras=prepare_pullback(f, backend, x, f(x)),
-) where {F}
-    return f(x), OneArgPullbackFunc!(f, backend, x, extras)
-end
-
-## Split two argument
-
-struct TwoArgPullbackFunc{B,F,X,E}
-    f!::F
-    backend::B
-    x::X
-    extras::E
-end
-
-struct TwoArgPullbackFunc!{B,F,X,E}
-    f!::F
-    backend::B
-    x::X
-    extras::E
-end
-
-function (pbf::TwoArgPullbackFunc)(y, dy)
-    @compat (; f!, backend, x, extras) = pbf
-    return pullback(f!, y, backend, x, dy, extras)
-end
-
-function (pbf::TwoArgPullbackFunc!)(y, dx, dy)
-    @compat (; f!, backend, x, extras) = pbf
-    return pullback!(f!, y, dx, backend, x, dy, extras)
-end
-
-function value_and_pullback_split(
-    f!::F,
-    y,
-    backend::AbstractADType,
-    x,
-    extras::PullbackExtras=prepare_pullback(f!, y, backend, x, similar(y)),
-) where {F}
-    f!(y, x)
-    return y, TwoArgPullbackFunc(f!, backend, x, extras)
-end
-
-function value_and_pullback!_split(
-    f!::F,
-    y,
-    backend::AbstractADType,
-    x,
-    extras::PullbackExtras=prepare_pullback(f!, y, backend, x, similar(y)),
-) where {F}
-    f!(y, x)
-    return y, TwoArgPullbackFunc!(f!, backend, x, extras)
 end

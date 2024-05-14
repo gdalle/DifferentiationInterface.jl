@@ -6,7 +6,8 @@ end
 
 function ChainRulesCore.rrule(dw::DifferentiateWith, x)
     @compat (; f, backend) = dw
-    y, pullbackfunc = DI.value_and_pullback_split(f, backend, x)
-    pullbackfunc_adjusted(dy) = (NoTangent(), pullbackfunc(dy))
-    return y, pullbackfunc_adjusted
+    y = f(x)
+    extras_same = DI.prepare_pullback_same_point(f, backend, x, y)
+    pullbackfunc(dy) = (NoTangent(), DI.pullback(f, backend, x, dy, extras_same))
+    return y, pullbackfunc
 end

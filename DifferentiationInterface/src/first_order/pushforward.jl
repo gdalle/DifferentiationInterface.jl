@@ -8,8 +8,21 @@ Create an `extras` object subtyping [`PushforwardExtras`](@ref) that can be give
 
 !!! warning
     If the function changes in any way, the result of preparation will be invalidated, and you will need to run it again.
-    In the two-argument case, `y` is mutated by `f!` during preparation."""
+    In the two-argument case, `y` is mutated by `f!` during preparation.
+"""
 function prepare_pushforward end
+
+"""
+    prepare_pushforward_same_point(f,     backend, x, dx) -> extras_same
+    prepare_pushforward_same_point(f!, y, backend, x, dx) -> extras_same
+
+Create an `extras_same` object subtyping [`PushforwardExtras`](@ref) that can be given to pushforward operators _if they are applied at the same point `x`_.
+
+!!! warning
+    If the function or the point changes in any way, the result of preparation will be invalidated, and you will need to run it again.
+    In the two-argument case, `y` is mutated by `f!` during preparation.
+"""
+function prepare_pushforward_same_point end
 
 """
     value_and_pushforward(f,     backend, x, dx, [extras]) -> (y, dy)
@@ -78,6 +91,30 @@ end
 prepare_pushforward_aux(f::F, backend, x, dy, ::PushforwardFast) where {F}     = throw(MissingBackendError(backend))
 prepare_pushforward_aux(f!::F, y, backend, x, dy, ::PushforwardFast) where {F} = throw(MissingBackendError(backend))
 
+## Preparation (same point)
+
+function prepare_pushforward_same_point(
+    f::F, backend::AbstractADType, x, dx, extras::PushforwardExtras
+) where {F}
+    return extras
+end
+
+function prepare_pushforward_same_point(
+    f!::F, y, backend::AbstractADType, x, dx, extras::PushforwardExtras
+) where {F}
+    return extras
+end
+
+function prepare_pushforward_same_point(f::F, backend::AbstractADType, x, dx) where {F}
+    extras = prepare_pushforward(f, backend, x, dx)
+    return prepare_pushforward_same_point(f, backend, x, dx, extras)
+end
+
+function prepare_pushforward_same_point(f!::F, y, backend::AbstractADType, x, dx) where {F}
+    extras = prepare_pushforward(f!, y, backend, x, dx)
+    return prepare_pushforward_same_point(f!, y, backend, x, dx, extras)
+end
+
 ## One argument
 
 function value_and_pushforward(
@@ -94,18 +131,18 @@ function value_and_pushforward_onearg_aux(
     f::F, backend, x, dx, extras::PullbackPushforwardExtras
 ) where {F}
     @compat (; pullback_extras) = extras
-    y, pullbackfunc = value_and_pullback_split(f, backend, x, pullback_extras)
+    y = f(x)
     dy = if x isa Number && y isa Number
-        dx * pullbackfunc(one(y))
+        dx * pullback(f, backend, x, one(y), pullback_extras)
     elseif x isa AbstractArray && y isa Number
-        dot(dx, pullbackfunc(one(y)))
+        dot(dx, pullback(f, backend, x, one(y), pullback_extras))
     elseif x isa Number && y isa AbstractArray
         map(CartesianIndices(y)) do i
-            dx * pullbackfunc(basis(backend, y, i))
+            dx * pullback(f, backend, x, basis(backend, y, i), pullback_extras)
         end
     elseif x isa AbstractArray && y isa AbstractArray
         map(CartesianIndices(y)) do i
-            dot(dx, pullbackfunc(basis(backend, y, i)))
+            dot(dx, pullback(f, backend, x, basis(backend, y, i), pullback_extras))
         end
     end
     return y, dy

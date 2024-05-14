@@ -3,7 +3,7 @@ module DifferentiationInterfaceZygoteExt
 using ADTypes: AutoZygote
 import DifferentiationInterface as DI
 using DifferentiationInterface:
-    NoGradientExtras, NoHessianExtras, NoJacobianExtras, NoPullbackExtras
+    NoGradientExtras, NoHessianExtras, NoJacobianExtras, NoPullbackExtras, PullbackExtras
 using DocStringExtensions
 using Zygote:
     ZygoteRuleConfig, gradient, hessian, jacobian, pullback, withgradient, withjacobian
@@ -14,23 +14,35 @@ DI.twoarg_support(::AutoZygote) = DI.TwoArgNotSupported()
 
 ## Pullback
 
+struct ZygotePullbackExtrasSamePoint{Y,PB} <: PullbackExtras
+    y::Y
+    pb::PB
+end
+
 DI.prepare_pullback(f, ::AutoZygote, x, dy) = NoPullbackExtras()
 
-function DI.value_and_pullback_split(f, ::AutoZygote, x, ::NoPullbackExtras)
-    y, back = pullback(f, x)
-    pullbackfunc(dy) = only(back(dy))
-    return y, pullbackfunc
+function DI.prepare_pullback_same_point(
+    f, ::AutoZygote, x, dy, ::PullbackExtras=NoPullbackExtras()
+)
+    y, pb = pullback(f, x)
+    return ZygotePullbackExtrasSamePoint(y, pb)
 end
 
-function DI.value_and_pullback!_split(f, backend::AutoZygote, x, extras::NoPullbackExtras)
-    y, pullbackfunc = DI.value_and_pullback_split(f, backend, x, extras)
-    pullbackfunc!(dx, dy) = copyto!(dx, pullbackfunc(dy))
-    return y, pullbackfunc!
+function DI.value_and_pullback(f, ::AutoZygote, x, dy, ::NoPullbackExtras)
+    y, pb = pullback(f, x)
+    return y, only(pb(dy))
 end
 
-function DI.value_and_pullback(f, backend::AutoZygote, x, dy, extras::NoPullbackExtras)
-    y, pullbackfunc = DI.value_and_pullback_split(f, backend, x, extras)
-    return y, pullbackfunc(dy)
+function DI.value_and_pullback(
+    f, ::AutoZygote, x, dy, extras::ZygotePullbackExtrasSamePoint
+)
+    @compat (; y, pb) = extras
+    return copy(y), only(pb(dy))
+end
+
+function DI.pullback(f, ::AutoZygote, x, dy, extras::ZygotePullbackExtrasSamePoint)
+    @compat (; pb) = extras
+    return only(pb(dy))
 end
 
 ## Gradient
