@@ -3,7 +3,7 @@ struct TapirTwoArgPullbackExtras{R} <: PullbackExtras
 end
 
 function DI.prepare_pullback(f!, y, backend::AutoTapir, x, dy)
-    rrule = build_rrule(f!, y, x)
+    rrule = build_rrule(f!, y, x; safety_on=backend.safe_mode)
     extras = TapirTwoArgPullbackExtras(rrule)
     DI.value_and_pullback(f!, y, backend, x, dy, extras)  # warm up
     return extras
