@@ -18,7 +18,8 @@ using Tapir:
     NoRData,
     fdata,
     rdata,
-    __value_and_pullback!!
+    __value_and_pullback!!,
+    TapirInterpreter
 
 DI.check_available(::AutoTapir) = true
 
