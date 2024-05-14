@@ -28,9 +28,11 @@ using ADTypes:
     AutoTapir,
     AutoTracker,
     AutoZygote
+using Compat
 using DocStringExtensions
 using FillArrays: OneElement
 using LinearAlgebra: Symmetric, Transpose, dot, parent, transpose
+using PackageExtensionCompat: @require_extensions
 using SparseArrays: SparseMatrixCSC, nonzeros, nzrange, rowvals, sparse
 
 abstract type Extras end
@@ -64,11 +66,14 @@ include("sparse/hessian.jl")
 
 include("translation/differentiate_with.jl")
 
+function __init__()
+    @require_extensions
+end
+
 export SecondOrder
 
 export value_and_pushforward!, value_and_pushforward
 export value_and_pullback!, value_and_pullback
-export value_and_pullback!_split, value_and_pullback_split
 
 export value_and_derivative!, value_and_derivative
 export value_and_gradient!, value_and_gradient
@@ -85,9 +90,11 @@ export second_derivative!, second_derivative
 export hvp!, hvp
 export hessian!, hessian
 
-export prepare_pushforward, prepare_pullback
+export prepare_pushforward, prepare_pushforward_same_point
+export prepare_pullback, prepare_pullback_same_point
+export prepare_hvp, prepare_hvp_same_point
 export prepare_derivative, prepare_gradient, prepare_jacobian
-export prepare_second_derivative, prepare_hvp, prepare_hessian
+export prepare_second_derivative, prepare_hessian
 
 export check_available, check_twoarg, check_hessian
 

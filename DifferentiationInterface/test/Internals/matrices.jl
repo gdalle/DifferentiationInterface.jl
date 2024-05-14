@@ -1,3 +1,7 @@
+import DifferentiationInterface as DI
+using LinearAlgebra: transpose
+using SparseArrays: sprand
+
 @testset "$(typeof(A))" for A in (
     rand(0:1, 10, 10),
     transpose(rand(0:1, 10, 10)),

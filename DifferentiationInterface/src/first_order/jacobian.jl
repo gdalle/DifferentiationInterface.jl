@@ -6,7 +6,9 @@
 
 Create an `extras` object subtyping [`JacobianExtras`](@ref) that can be given to Jacobian operators.
 
-Beware that in the two-argument case, `y` is mutated by `f!` during preparation.
+!!! warning
+    If the function changes in any way, the result of preparation will be invalidated, and you will need to run it again.
+    In the two-argument case, `y` is mutated by `f!` during preparation.
 """
 function prepare_jacobian end
 
@@ -97,10 +99,17 @@ end
 function value_and_jacobian_onearg_aux(
     f::F, backend, x::AbstractArray, extras::PushforwardJacobianExtras
 ) where {F}
-    y = f(x)
+    y = f(x)  # TODO: remove
+    pushforward_extras_same = prepare_pushforward_same_point(
+        f,
+        backend,
+        x,
+        basis(backend, x, first(CartesianIndices(x))),
+        extras.pushforward_extras,
+    )
     jac = stack(CartesianIndices(x); dims=2) do j
         dx_j = basis(backend, x, j)
-        jac_col_j = pushforward(f, backend, x, dx_j, extras.pushforward_extras)
+        jac_col_j = pushforward(f, backend, x, dx_j, pushforward_extras_same)
         vec(jac_col_j)
     end
     return y, jac
@@ -109,10 +118,13 @@ end
 function value_and_jacobian_onearg_aux(
     f::F, backend, x::AbstractArray, extras::PullbackJacobianExtras
 ) where {F}
-    y, pullbackfunc = value_and_pullback_split(f, backend, x, extras.pullback_extras)
+    y = f(x)  # TODO: remove
+    pullback_extras_same = prepare_pullback_same_point(
+        f, backend, x, basis(backend, y, first(CartesianIndices(y))), extras.pullback_extras
+    )
     jac = stack(CartesianIndices(y); dims=1) do i
         dy_i = basis(backend, y, i)
-        jac_row_i = pullbackfunc(dy_i)
+        jac_row_i = pullback(f, backend, x, dy_i, pullback_extras_same)
         vec(jac_row_i)
     end
     return y, jac
@@ -131,11 +143,18 @@ end
 function value_and_jacobian_onearg_aux!(
     f::F, jac::AbstractMatrix, backend, x::AbstractArray, extras::PushforwardJacobianExtras
 ) where {F}
-    y = f(x)
+    y = f(x)  # TODO: remove
+    pushforward_extras_same = prepare_pushforward_same_point(
+        f,
+        backend,
+        x,
+        basis(backend, x, first(CartesianIndices(x))),
+        extras.pushforward_extras,
+    )
     for (k, j) in enumerate(CartesianIndices(x))
         dx_j = basis(backend, x, j)
         jac_col_j = reshape(view(jac, :, k), size(y))
-        pushforward!(f, jac_col_j, backend, x, dx_j, extras.pushforward_extras)
+        pushforward!(f, jac_col_j, backend, x, dx_j, pushforward_extras_same)
     end
     return y, jac
 end
@@ -143,11 +162,14 @@ end
 function value_and_jacobian_onearg_aux!(
     f::F, jac::AbstractMatrix, backend, x::AbstractArray, extras::PullbackJacobianExtras
 ) where {F}
-    y, pullbackfunc! = value_and_pullback!_split(f, backend, x, extras.pullback_extras)
+    y = f(x)  # TODO: remove
+    pullback_extras_same = prepare_pullback_same_point(
+        f, backend, x, basis(backend, y, first(CartesianIndices(y))), extras.pullback_extras
+    )
     for (k, i) in enumerate(CartesianIndices(y))
         dy_i = basis(backend, y, i)
         jac_row_i = reshape(view(jac, k, :), size(x))
-        pullbackfunc!(jac_row_i, dy_i)
+        pullback!(f, jac_row_i, backend, x, dy_i, pullback_extras_same)
     end
     return y, jac
 end
@@ -183,25 +205,40 @@ end
 function value_and_jacobian_twoarg_aux(
     f!::F, y, backend, x::AbstractArray, extras::PushforwardJacobianExtras
 ) where {F}
+    pushforward_extras_same = prepare_pushforward_same_point(
+        f!,
+        y,
+        backend,
+        x,
+        basis(backend, x, first(CartesianIndices(x))),
+        extras.pushforward_extras,
+    )
     jac = stack(CartesianIndices(x); dims=2) do j
         dx_j = basis(backend, x, j)
-        jac_col_j = pushforward(f!, y, backend, x, dx_j, extras.pushforward_extras)
+        jac_col_j = pushforward(f!, y, backend, x, dx_j, pushforward_extras_same)
         vec(jac_col_j)
     end
-    f!(y, x)
+    f!(y, x)  # TODO: remove
     return y, jac
 end
 
 function value_and_jacobian_twoarg_aux(
     f!::F, y, backend, x::AbstractArray, extras::PullbackJacobianExtras
 ) where {F}
-    y, pullbackfunc = value_and_pullback_split(f!, y, backend, x, extras.pullback_extras)
+    pullback_extras_same = prepare_pullback_same_point(
+        f!,
+        y,
+        backend,
+        x,
+        basis(backend, y, first(CartesianIndices(y))),
+        extras.pullback_extras,
+    )
     jac = stack(CartesianIndices(y); dims=1) do i
         dy_i = basis(backend, y, i)
-        jac_row_i = pullbackfunc(y, dy_i)
+        jac_row_i = pullback(f!, y, backend, x, dy_i, pullback_extras_same)
         vec(jac_row_i)
     end
-    f!(y, x)
+    f!(y, x)  # TODO: remove
     return y, jac
 end
 
@@ -224,25 +261,40 @@ function value_and_jacobian_twoarg_aux!(
     x::AbstractArray,
     extras::PushforwardJacobianExtras,
 ) where {F}
+    pushforward_extras_same = prepare_pushforward_same_point(
+        f!,
+        y,
+        backend,
+        x,
+        basis(backend, x, first(CartesianIndices(x))),
+        extras.pushforward_extras,
+    )
     for (k, j) in enumerate(CartesianIndices(x))
         dx_j = basis(backend, x, j)
         jac_col_j = reshape(view(jac, :, k), size(y))
-        pushforward!(f!, y, jac_col_j, backend, x, dx_j, extras.pushforward_extras)
+        pushforward!(f!, y, jac_col_j, backend, x, dx_j, pushforward_extras_same)
     end
-    f!(y, x)
+    f!(y, x)  # TODO: remove
     return y, jac
 end
 
 function value_and_jacobian_twoarg_aux!(
     f!::F, y, jac::AbstractMatrix, backend, x::AbstractArray, extras::PullbackJacobianExtras
 ) where {F}
-    y, pullbackfunc! = value_and_pullback!_split(f!, y, backend, x, extras.pullback_extras)
+    pullback_extras_same = prepare_pullback_same_point(
+        f!,
+        y,
+        backend,
+        x,
+        basis(backend, y, first(CartesianIndices(y))),
+        extras.pullback_extras,
+    )
     for (k, i) in enumerate(CartesianIndices(y))
         dy_i = basis(backend, y, i)
         jac_row_i = reshape(view(jac, k, :), size(x))
-        pullbackfunc!(y, jac_row_i, dy_i)
+        pullback!(f!, y, jac_row_i, backend, x, dy_i, pullback_extras_same)
     end
-    f!(y, x)
+    f!(y, x)  # TODO: remove
     return y, jac
 end
 

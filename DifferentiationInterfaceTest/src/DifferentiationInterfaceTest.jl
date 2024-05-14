@@ -17,8 +17,8 @@ using ADTypes:
     ForwardOrReverseMode,
     ReverseMode,
     SymbolicMode
-using Base: get_extension
 using Chairmarks: @be, Benchmark, Sample
+using Compat
 using ComponentArrays: ComponentVector
 using DifferentiationInterface
 using DifferentiationInterface:
@@ -42,7 +42,7 @@ using DifferentiationInterface:
     SecondDerivativeExtras
 using DocStringExtensions
 import DifferentiationInterface as DI
-using JET: @test_call, @test_opt
+using JET: JET
 using JLArrays: jl
 using LinearAlgebra: Diagonal, dot
 using ProgressMeter: ProgressUnknown, next!
@@ -61,8 +61,11 @@ include("utils/zero_backends.jl")
 include("utils/misc.jl")
 include("utils/filter.jl")
 
+include("tests/coloring.jl")
 include("tests/correctness.jl")
-include("tests/type_stability.jl")
+@static if VERSION >= v"1.10"
+    include("tests/type_stability.jl")
+end
 include("tests/sparsity.jl")
 include("tests/benchmark.jl")
 include("test_differentiation.jl")
@@ -79,5 +82,6 @@ export PushforwardScenario,
 export default_scenarios, sparse_scenarios
 export static_scenarios, component_scenarios, gpu_scenarios
 export test_differentiation, benchmark_differentiation
+export DifferentiationBenchmarkDataRow
 
 end

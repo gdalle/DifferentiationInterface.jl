@@ -1,7 +1,8 @@
 # Table of overloads
 
 As described in the [overview](@ref sec-overview), DifferentiationInterface provides multiple high-level operators like [`jacobian`](@ref),
-each with several variants: 
+each with several variants:
+
 * **out-of-place** or **in-place** return values
 * **with** or **without primal** output value
 * support for **one-argument functions** `y = f(x)` or **two-argument functions** `f!(y, x)`
@@ -14,9 +15,9 @@ When available, DifferentiationInterface **always** calls these backend-specific
 The following tables summarize all implemented overloads for each backend.
 Each cell can have three values:
 
-- ❌: the operator is not overloaded because the backend does not support it
-- ✅: the operator is overloaded
-- NA: the operator does not exist
+* ❌: the operator is not overloaded because the backend does not support it
+* ✅: the operator is overloaded
+* NA: the operator does not exist
 
 !!! tip
     Check marks (✅) are clickable and link to the source code.
@@ -26,6 +27,7 @@ using ADTypes: AbstractADType
 using DifferentiationInterface
 using DifferentiationInterface: backend_str, twoarg_support, TwoArgSupported
 using Markdown: Markdown
+
 using Diffractor: Diffractor
 using Enzyme: Enzyme
 using FastDifferentiation: FastDifferentiation
@@ -34,6 +36,7 @@ using FiniteDifferences: FiniteDifferences
 using ForwardDiff: ForwardDiff
 using PolyesterForwardDiff: PolyesterForwardDiff
 using ReverseDiff: ReverseDiff
+using Symbolics: Symbolics
 using Tapir: Tapir
 using Tracker: Tracker
 using Zygote: Zygote
@@ -88,6 +91,7 @@ function operators_and_types_f(backend::T) where {T<:AbstractADType}
         ),
     )
 end
+
 function operators_and_types_f!(backend::T) where {T<:AbstractADType}
     return (
         (
@@ -166,61 +170,79 @@ end
 ```
 
 ## Diffractor (forward/reverse)
+
 ```@example overloads
 print_overloads(AutoDiffractor(), :DifferentiationInterfaceDiffractorExt) # hide
 ```
 
 ## Enzyme (forward)
+
 ```@example overloads
 print_overloads(AutoEnzyme(; mode=Enzyme.Forward), :DifferentiationInterfaceEnzymeExt) # hide
 ```
 
 ## Enzyme (reverse)
+
 ```@example overloads
 print_overloads(AutoEnzyme(; mode=Enzyme.Reverse), :DifferentiationInterfaceEnzymeExt) # hide
 ```
 
 ## FastDifferentiation (symbolic)
+
 ```@example overloads
 print_overloads(AutoFastDifferentiation(), :DifferentiationInterfaceFastDifferentiationExt) # hide
 ```
 
 ## FiniteDiff (forward)
+
 ```@example overloads
 print_overloads(AutoFiniteDiff(), :DifferentiationInterfaceFiniteDiffExt) # hide
 ```
 
 ## FiniteDifferences (forward)
+
 ```@example overloads
 print_overloads(AutoFiniteDifferences(; fdm=FiniteDifferences.central_fdm(3, 1)), :DifferentiationInterfaceFiniteDifferencesExt) # hide
 ```
 
 ## ForwardDiff (forward)
+
 ```@example overloads
 print_overloads(AutoForwardDiff(), :DifferentiationInterfaceForwardDiffExt) # hide
 ```
 
 ## PolyesterForwardDiff (forward)
+
 ```@example overloads
 print_overloads(AutoPolyesterForwardDiff(; chunksize=1), :DifferentiationInterfacePolyesterForwardDiffExt) # hide
 ```
 
 ## ReverseDiff (reverse)
+
 ```@example overloads
 print_overloads(AutoReverseDiff(), :DifferentiationInterfaceReverseDiffExt) # hide
 ```
 
+## Symbolics (symbolic)
+
+```@example overloads
+print_overloads(AutoSymbolics(), :DifferentiationInterfaceSymbolicsExt) # hide
+```
+
 ## Tapir (reverse)
+
 ```@example overloads
 print_overloads(AutoTapir(), :DifferentiationInterfaceTapirExt) # hide
 ```
 
 ## Tracker (reverse)
+
 ```@example overloads
 print_overloads(AutoTracker(), :DifferentiationInterfaceTrackerExt) # hide
 ```
 
 ## Zygote (reverse)
+
 ```@example overloads
 print_overloads(AutoZygote(), :DifferentiationInterfaceZygoteExt) # hide
 ```

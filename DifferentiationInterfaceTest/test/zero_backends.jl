@@ -1,3 +1,9 @@
+using DifferentiationInterface
+using DifferentiationInterfaceTest
+using DifferentiationInterfaceTest: AutoZeroForward, AutoZeroReverse
+
+using DataFrames: DataFrames
+
 @test check_available(AutoZeroForward())
 @test check_available(AutoZeroReverse())
 @test check_twoarg(AutoZeroForward())
@@ -31,32 +37,37 @@ end
 
 ## Type stability
 
-test_differentiation(
-    [AutoZeroForward(), AutoZeroReverse()];
-    correctness=false,
-    type_stability=true,
-    logging=get(ENV, "CI", "false") == "false",
-)
+if VERSION >= v"1.10"
+    test_differentiation(
+        [AutoZeroForward(), AutoZeroReverse()];
+        correctness=false,
+        type_stability=true,
+        logging=get(ENV, "CI", "false") == "false",
+    )
 
-test_differentiation(
-    [
-        SecondOrder(AutoZeroForward(), AutoZeroReverse()),
-        SecondOrder(AutoZeroReverse(), AutoZeroForward()),
-    ];
-    correctness=false,
-    type_stability=true,
-    first_order=false,
-    logging=get(ENV, "CI", "false") == "false",
-)
+    test_differentiation(
+        [
+            SecondOrder(AutoZeroForward(), AutoZeroReverse()),
+            SecondOrder(AutoZeroReverse(), AutoZeroForward()),
+        ];
+        correctness=false,
+        type_stability=true,
+        first_order=false,
+        logging=get(ENV, "CI", "false") == "false",
+    )
+end
 
 ## Benchmark
 
 data1 = benchmark_differentiation(
-    [AutoZeroForward(), AutoZeroReverse()]; logging=get(ENV, "CI", "false") == "false"
+    [AutoZeroForward(), AutoZeroReverse()],
+    default_scenarios();
+    logging=get(ENV, "CI", "false") == "false",
 );
 
 data2 = benchmark_differentiation(
-    [SecondOrder(AutoZeroForward(), AutoZeroReverse())];
+    [SecondOrder(AutoZeroForward(), AutoZeroReverse())],
+    default_scenarios();
     first_order=false,
     logging=get(ENV, "CI", "false") == "false",
 );
@@ -74,9 +85,7 @@ end
 struct FakeBackend <: ADTypes.AbstractADType end
 ADTypes.mode(::FakeBackend) = ADTypes.ForwardMode()
 
-data3 = benchmark_differentiation(
-    [FakeBackend()]; logging=get(ENV, "CI", "false") == "false"
-);  # this gives lots of warnings when logging is on, no worries
+data3 = benchmark_differentiation([FakeBackend()], default_scenarios(); logging=false);
 
 df3 = DataFrames.DataFrame(data3)
 

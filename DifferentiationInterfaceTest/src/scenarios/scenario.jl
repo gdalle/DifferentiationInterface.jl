@@ -61,8 +61,10 @@ function group_by_scen_type(scenarios)
     )
 end
 
-function Base.string(scen::S) where {args,place,F,X,Y,S<:AbstractScenario{args,place,F,X,Y}}
-    return "$(S.name.name){$args,$place} $(string(scen.f)) : $X -> $Y"
+function Base.print(
+    io::IO, scen::S
+) where {args,place,F,X,Y,S<:AbstractScenario{args,place,F,X,Y}}
+    return print(io, "$(nameof(S)){$args,$place}($(string(scen.f)) : $X -> $Y)")
 end
 
 ## Struct definitions
@@ -218,7 +220,7 @@ for S in (:PushforwardScenario, :HVPScenario)
                 y = f(x)
             end
             if isnothing(dx)
-                dx = mysimilar_random(x)
+                dx = mycopy_random(x)
             end
             return ($S){args,place,F,X,typeof(y),typeof(dx),R}(f, x, y, dx, ref)
         end
@@ -247,7 +249,7 @@ for S in (:PullbackScenario,)
                 y = f(x)
             end
             if isnothing(dy)
-                dy = mysimilar_random(y)
+                dy = mycopy_random(y)
             end
             return ($S){args,place,F,X,typeof(y),typeof(dy),R}(f, x, y, dy, ref)
         end

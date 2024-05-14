@@ -6,7 +6,7 @@ end
 
 function DI.prepare_pushforward(f::F, backend::AutoForwardDiff, x, dx) where {F}
     T = tag_type(f, backend, x)
-    xdual_tmp = make_dual(T, x, dx)
+    xdual_tmp = make_dual_similar(T, x)
     return ForwardDiffOneArgPushforwardExtras{T,typeof(xdual_tmp)}(xdual_tmp)
 end
 
@@ -21,7 +21,7 @@ end
 function compute_ydual_onearg(
     f::F, x, dx, extras::ForwardDiffOneArgPushforwardExtras{T}
 ) where {F,T}
-    (; xdual_tmp) = extras
+    @compat (; xdual_tmp) = extras
     make_dual!(T, xdual_tmp, x, dx)
     ydual = f(xdual_tmp)
     return ydual

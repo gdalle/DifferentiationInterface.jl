@@ -1,8 +1,13 @@
-@testset verbose = false "ForwardDiff" begin
+using DifferentiationInterface, DifferentiationInterfaceTest
+using ForwardDiff: ForwardDiff
+using DataFrames: DataFrame
+
+@testset verbose = false "Dense efficiency" begin
     # derivative and gradient for `f(x)`
 
     results1 = benchmark_differentiation(
-        [AutoForwardDiff()];
+        [AutoForwardDiff()],
+        default_scenarios();
         outofplace=false,
         twoarg=false,
         input_type=Union{Number,AbstractVector},
@@ -15,7 +20,8 @@
     # derivative and jacobian for f!(x, y)
 
     results2 = benchmark_differentiation(
-        [AutoForwardDiff()];
+        [AutoForwardDiff()],
+        default_scenarios();
         outofplace=false,
         onearg=false,
         input_type=Union{Number,AbstractVector},
@@ -33,25 +39,19 @@
 
     useful_data = data[.!useless_rows, :]
 
-    @testset "$(row[:operator]) - $(row[:func]) : $(row[:input_type]) -> $(row[:output_type])" for row in
-                                                                                                   eachrow(
-        useful_data
-    )
-        @test row[:allocs] == 0
+    for row in eachrow(useful_data)
+        scen = row[:scenario]
+        @testset "$(row[:operator]) - $(string(scen.f)) : $(typeof(scen.x)) -> $(typeof(scen.y))" begin
+            @test row[:allocs] == 0
+        end
     end
 end
 
-@testset verbose = false "Sparse ForwardDiff" begin
+@testset verbose = false "Sparse efficiency" begin
     # sparse jacobian for f!(x, y)
 
-    b_sparse = AutoSparse(
-        AutoForwardDiff(; chunksize=1);
-        sparsity_detector=DI.SymbolicsSparsityDetector(),
-        coloring_algorithm=DI.GreedyColoringAlgorithm(),
-    )
-
     results1 = benchmark_differentiation(
-        [b_sparse],
+        [MyAutoSparse(AutoForwardDiff(; chunksize=1);)],
         sparse_scenarios();
         input_type=AbstractVector,
         output_type=AbstractVector,
@@ -67,11 +67,11 @@ end
 
     useful_data = data[.!useless_rows, :]
 
-    @testset "$(row[:operator]) - $(row[:func]) : $(row[:input_type]) -> $(row[:output_type])" for row in
-                                                                                                   eachrow(
-        useful_data
-    )
-        @test row[:allocs] == 0
-        @test row[:calls] < prod(row[:input_size])
+    for row in eachrow(useful_data)
+        scen = row[:scenario]
+        @testset "$(row[:operator]) - $(string(scen.f)) : $(typeof(scen.x)) -> $(typeof(scen.y))" begin
+            @test row[:allocs] == 0
+            @test row[:calls] < prod(size(scen.x))
+        end
     end
 end

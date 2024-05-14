@@ -7,8 +7,8 @@ end
 
 function DI.prepare_pushforward(f!::F, y, backend::AutoForwardDiff, x, dx) where {F}
     T = tag_type(f!, backend, x)
-    xdual_tmp = make_dual(T, x, dx)
-    ydual_tmp = make_dual(T, y, similar(y))
+    xdual_tmp = make_dual_similar(T, x)
+    ydual_tmp = make_dual_similar(T, y)
     return ForwardDiffTwoArgPushforwardExtras{T,typeof(xdual_tmp),typeof(ydual_tmp)}(
         xdual_tmp, ydual_tmp
     )
@@ -17,7 +17,7 @@ end
 function compute_ydual_twoarg(
     f!::F, y, x::Number, dx, extras::ForwardDiffTwoArgPushforwardExtras{T}
 ) where {F,T}
-    (; ydual_tmp) = extras
+    @compat (; ydual_tmp) = extras
     xdual_tmp = make_dual(T, x, dx)
     f!(ydual_tmp, xdual_tmp)
     return ydual_tmp
@@ -26,7 +26,7 @@ end
 function compute_ydual_twoarg(
     f!::F, y, x, dx, extras::ForwardDiffTwoArgPushforwardExtras{T}
 ) where {F,T}
-    (; xdual_tmp, ydual_tmp) = extras
+    @compat (; xdual_tmp, ydual_tmp) = extras
     make_dual!(T, xdual_tmp, x, dx)
     f!(ydual_tmp, xdual_tmp)
     return ydual_tmp

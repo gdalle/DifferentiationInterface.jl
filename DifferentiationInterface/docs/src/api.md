@@ -53,6 +53,7 @@ second_derivative!
 
 ```@docs
 prepare_hvp
+prepare_hvp_same_point
 hvp
 hvp!
 ```
@@ -67,6 +68,7 @@ hessian!
 
 ```@docs
 prepare_pushforward
+prepare_pushforward_same_point
 pushforward
 pushforward!
 value_and_pushforward
@@ -75,12 +77,11 @@ value_and_pushforward!
 
 ```@docs
 prepare_pullback
+prepare_pullback_same_point
 pullback
 pullback!
 value_and_pullback
 value_and_pullback!
-value_and_pullback_split
-value_and_pullback!_split
 ```
 
 ## Backend queries

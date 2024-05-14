@@ -12,7 +12,7 @@ Cross-test a list of `backends` on a list of `scenarios`, running a variety of d
 Testing:
 
 - `correctness=true`: whether to compare the differentiation results with the theoretical values specified in each scenario
-- `type_stability=false`: whether to check type stability with JET.jl (thanks to `@test_opt`)
+- `type_stability=false`: whether to check type stability with JET.jl (thanks to `JET.@test_opt`)
 - `sparsity`: whether to check sparsity of the jacobian / hessian
 - `ref_backend`: if not `nothing`, an `ADTypes.AbstractADType` object to use instead of the scenario-specific reference to provide true values
 - `detailed=false`: whether to print a detailed or condensed test log
@@ -132,14 +132,13 @@ $(TYPEDSIGNATURES)
 
 Benchmark a list of `backends` for a list of `operators` on a list of `scenarios`.
 
-# Keyword arguments
+The object returned is a `Vector` of [`DifferentiationBenchmarkDataRow`](@ref).
 
-- filtering: same as [`test_differentiation`](@ref) for the filtering part.
-- `logging=false`: whether to log progress
+The keyword arguments available here have the same meaning as those in [`test_differentiation`](@ref).
 """
 function benchmark_differentiation(
     backends::Vector{<:AbstractADType},
-    scenarios::Vector{<:AbstractScenario}=default_scenarios();
+    scenarios::Vector{<:AbstractScenario};
     # filtering
     input_type::Type=Any,
     output_type::Type=Any,
@@ -166,7 +165,7 @@ function benchmark_differentiation(
         excluded,
     )
 
-    benchmark_data = BenchmarkDataRow[]
+    benchmark_data = DifferentiationBenchmarkDataRow[]
     prog = ProgressUnknown(; desc="Benchmarking", spinner=true, enabled=logging)
     for (i, backend) in enumerate(backends)
         filtered_scenarios = filter(s -> compatible(backend, s), scenarios)

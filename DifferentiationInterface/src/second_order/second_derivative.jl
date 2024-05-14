@@ -4,6 +4,9 @@
     prepare_second_derivative(f, backend, x) -> extras
 
 Create an `extras` object subtyping [`SecondDerivativeExtras`](@ref) that can be given to second derivative operators.
+
+!!! warning
+    If the function changes in any way, the result of preparation will be invalidated, and you will need to run it again.
 """
 function prepare_second_derivative end
 
@@ -62,7 +65,7 @@ function second_derivative(
     x,
     extras::ClosureSecondDerivativeExtras=prepare_second_derivative(f, backend, x),
 ) where {F}
-    (; inner_derivative_closure, outer_derivative_extras) = extras
+    @compat (; inner_derivative_closure, outer_derivative_extras) = extras
     return derivative(inner_derivative_closure, outer(backend), x, outer_derivative_extras)
 end
 
@@ -85,7 +88,7 @@ function second_derivative!(
     x,
     extras::SecondDerivativeExtras=prepare_second_derivative(f, backend, x),
 ) where {F}
-    (; inner_derivative_closure, outer_derivative_extras) = extras
+    @compat (; inner_derivative_closure, outer_derivative_extras) = extras
     return derivative!(
         inner_derivative_closure, der2, outer(backend), x, outer_derivative_extras
     )

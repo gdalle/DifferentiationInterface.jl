@@ -4,6 +4,9 @@
     prepare_hessian(f, backend, x) -> extras
 
 Create an `extras` object subtyping [`HessianExtras`](@ref) that can be given to Hessian operators.
+
+!!! warning
+    If the function changes in any way, the result of preparation will be invalidated, and you will need to run it again.
 """
 function prepare_hessian end
 
@@ -51,8 +54,11 @@ end
 function hessian(
     f::F, backend::SecondOrder, x, extras::HessianExtras=prepare_hessian(f, backend, x)
 ) where {F}
+    hvp_extras_same = prepare_hvp_same_point(
+        f, backend, x, basis(backend, x, first(CartesianIndices(x))), extras.hvp_extras
+    )
     hess = stack(vec(CartesianIndices(x))) do j
-        hess_col_j = hvp(f, backend, x, basis(backend, x, j), extras.hvp_extras)
+        hess_col_j = hvp(f, backend, x, basis(backend, x, j), hvp_extras_same)
         vec(hess_col_j)
     end
     return hess
@@ -77,9 +83,12 @@ function hessian!(
     x,
     extras::HessianExtras=prepare_hessian(f, backend, x),
 ) where {F}
+    hvp_extras_same = prepare_hvp_same_point(
+        f, backend, x, basis(backend, x, first(CartesianIndices(x))), extras.hvp_extras
+    )
     for (k, j) in enumerate(CartesianIndices(x))
         hess_col_j = reshape(view(hess, :, k), size(x))
-        hvp!(f, hess_col_j, backend, x, basis(backend, x, j), extras.hvp_extras)
+        hvp!(f, hess_col_j, backend, x, basis(backend, x, j), hvp_extras_same)
     end
     return hess
 end

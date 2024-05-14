@@ -2,31 +2,44 @@ module DifferentiationInterfaceTrackerExt
 
 using ADTypes: AutoTracker
 import DifferentiationInterface as DI
-using DifferentiationInterface: NoGradientExtras, NoPullbackExtras
+using DifferentiationInterface: NoGradientExtras, NoPullbackExtras, PullbackExtras
 using Tracker: Tracker, back, data, forward, gradient, jacobian, param, withgradient
+using Compat
 
 DI.check_available(::AutoTracker) = true
 DI.twoarg_support(::AutoTracker) = DI.TwoArgNotSupported()
 
 ## Pullback
 
+struct TrackerPullbackExtrasSamePoint{Y,PB} <: PullbackExtras
+    y::Y
+    pb::PB
+end
+
 DI.prepare_pullback(f, ::AutoTracker, x, dy) = NoPullbackExtras()
 
-function DI.value_and_pullback_split(f, ::AutoTracker, x, ::NoPullbackExtras)
-    y, back = forward(f, x)
-    pullbackfunc(dy) = data(only(back(dy)))
-    return y, pullbackfunc
+function DI.prepare_pullback_same_point(
+    f, ::AutoTracker, x, dy, ::PullbackExtras=NoPullbackExtras()
+)
+    y, pb = forward(f, x)
+    return TrackerPullbackExtrasSamePoint(y, pb)
 end
 
-function DI.value_and_pullback!_split(f, backend::AutoTracker, x, extras::NoPullbackExtras)
-    y, pullbackfunc = DI.value_and_pullback_split(f, backend, x, extras)
-    pullbackfunc!(dx, dy) = copyto!(dx, pullbackfunc(dy))
-    return y, pullbackfunc!
+function DI.value_and_pullback(f, ::AutoTracker, x, dy, ::NoPullbackExtras)
+    y, pb = forward(f, x)
+    return y, data(only(pb(dy)))
 end
 
-function DI.value_and_pullback(f, backend::AutoTracker, x, dy, extras::NoPullbackExtras)
-    y, pullbackfunc = DI.value_and_pullback_split(f, backend, x, extras)
-    return y, pullbackfunc(dy)
+function DI.value_and_pullback(
+    f, ::AutoTracker, x, dy, extras::TrackerPullbackExtrasSamePoint
+)
+    @compat (; y, pb) = extras
+    return copy(y), data(only(pb(dy)))
+end
+
+function DI.pullback(f, ::AutoTracker, x, dy, extras::TrackerPullbackExtrasSamePoint)
+    @compat (; pb) = extras
+    return data(only(pb(dy)))
 end
 
 ## Gradient
@@ -34,12 +47,12 @@ end
 DI.prepare_gradient(f, ::AutoTracker, x) = NoGradientExtras()
 
 function DI.value_and_gradient(f, ::AutoTracker, x, ::NoGradientExtras)
-    (; val, grad) = withgradient(f, x)
+    @compat (; val, grad) = withgradient(f, x)
     return val, data(only(grad))
 end
 
 function DI.gradient(f, ::AutoTracker, x, ::NoGradientExtras)
-    (; grad) = withgradient(f, x)
+    @compat (; grad) = withgradient(f, x)
     return data(only(grad))
 end
 

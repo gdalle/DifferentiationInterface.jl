@@ -1,4 +1,4 @@
-@kwdef struct SparseHessianExtras{
+Base.@kwdef struct SparseHessianExtras{
     C<:CompressedMatrix{:col},S<:AbstractVector,P<:AbstractVector,E<:Extras
 } <: HessianExtras
     compressed::C
@@ -21,7 +21,7 @@ function prepare_hessian(f::F, backend::AutoSparse, x) where {F}
     end
     hvp_extras = prepare_hvp(f, backend, x, first(seeds))
     products = map(seeds) do seed
-        hvp(f, backend, x, seed, hvp_extras)
+        similar(x)
     end
     aggregates = stack(vec, products; dims=2)
     compressed = CompressedMatrix{:col}(sparsity, colors, groups, aggregates)
@@ -29,9 +29,10 @@ function prepare_hessian(f::F, backend::AutoSparse, x) where {F}
 end
 
 function hessian!(f::F, hess, backend::AutoSparse, x, extras::SparseHessianExtras) where {F}
-    (; compressed, seeds, products, hvp_extras) = extras
+    @compat (; compressed, seeds, products, hvp_extras) = extras
+    hvp_extras_same = prepare_hvp_same_point(f, backend, x, seeds[1], hvp_extras)
     for k in eachindex(seeds, products)
-        hvp!(f, products[k], backend, x, seeds[k], hvp_extras)
+        hvp!(f, products[k], backend, x, seeds[k], hvp_extras_same)
         copyto!(view(compressed.aggregates, :, k), vec(products[k]))
     end
     decompress!(hess, compressed)
