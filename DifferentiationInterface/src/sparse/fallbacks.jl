@@ -17,6 +17,7 @@ for op in (:pushforward, :pullback, :hvp)
     valop = Symbol("value_and_", op)
     valop! = Symbol("value_and_", op, "!")
     prep = Symbol("prepare_", op)
+    prepsame = Symbol("prepare_", op, "_same_point")
     E = if op == :pushforward
         :PushforwardExtras
     elseif op == :pullback
@@ -28,6 +29,9 @@ for op in (:pushforward, :pullback, :hvp)
     ## One argument
     @eval begin
         $prep(f::F, ba::AutoSparse, x, v) where {F} = $prep(f, dense_ad(ba), x, v)
+        $prepsame(f::F, ba::AutoSparse, x, v) where {F} = $prepsame(f, dense_ad(ba), x, v)
+        $prepsame(f::F, ba::AutoSparse, x, v, ex::$E) where {F} =
+            $prepsame(f, dense_ad(ba), x, v, ex)
         $op(f::F, ba::AutoSparse, x, v, ex::$E=$prep(f, ba, x, v)) where {F} =
             $op(f, dense_ad(ba), x, v, ex)
         $valop(f::F, ba::AutoSparse, x, v, ex::$E=$prep(f, ba, x, v)) where {F} =
@@ -41,6 +45,10 @@ for op in (:pushforward, :pullback, :hvp)
     ## Two arguments
     @eval begin
         $prep(f!::F, y, ba::AutoSparse, x, v) where {F} = $prep(f!, y, dense_ad(ba), x, v)
+        $prepsame(f!::F, y, ba::AutoSparse, x, v) where {F} =
+            $prepsame(f!, y, dense_ad(ba), x, v)
+        $prepsame(f!::F, y, ba::AutoSparse, x, v, ex::$E) where {F} =
+            $prepsame(f!, y, dense_ad(ba), x, v, ex)
         $op(f!::F, y, ba::AutoSparse, x, v, ex::$E=$prep(f!, y, ba, x, v)) where {F} =
             $op(f!, y, dense_ad(ba), x, v, ex)
         $valop(f!::F, y, ba::AutoSparse, x, v, ex::$E=$prep(f!, y, ba, x, v)) where {F} =

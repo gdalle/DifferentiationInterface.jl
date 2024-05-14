@@ -2,7 +2,7 @@ module DifferentiationInterfaceTrackerExt
 
 using ADTypes: AutoTracker
 import DifferentiationInterface as DI
-using DifferentiationInterface: NoGradientExtras, NoPullbackExtras
+using DifferentiationInterface: NoGradientExtras, NoPullbackExtras, PullbackExtras
 using Tracker: Tracker, back, data, forward, gradient, jacobian, param, withgradient
 using Compat
 
@@ -11,11 +11,35 @@ DI.twoarg_support(::AutoTracker) = DI.TwoArgNotSupported()
 
 ## Pullback
 
+struct TrackerPullbackExtrasSamePoint{Y,PB} <: PullbackExtras
+    y::Y
+    pb::PB
+end
+
 DI.prepare_pullback(f, ::AutoTracker, x, dy) = NoPullbackExtras()
 
-function DI.value_and_pullback(f, backend::AutoTracker, x, dy, extras::NoPullbackExtras)
-    y, back = forward(f, x)
-    return y, data(only(back(dy)))
+function DI.prepare_pullback_same_point(
+    f, ::AutoTracker, x, dy, ::PullbackExtras=NoPullbackExtras()
+)
+    y, pb = forward(f, x)
+    return TrackerPullbackExtrasSamePoint(y, pb)
+end
+
+function DI.value_and_pullback(f, ::AutoTracker, x, dy, ::NoPullbackExtras)
+    y, pb = forward(f, x)
+    return y, data(only(pb(dy)))
+end
+
+function DI.value_and_pullback(
+    f, ::AutoTracker, x, dy, extras::TrackerPullbackExtrasSamePoint
+)
+    @compat (; y, pb) = extras
+    return copy(y), data(only(pb(dy)))
+end
+
+function DI.pullback(f, ::AutoTracker, x, dy, extras::TrackerPullbackExtrasSamePoint)
+    @compat (; pb) = extras
+    return data(only(pb(dy)))
 end
 
 ## Gradient
