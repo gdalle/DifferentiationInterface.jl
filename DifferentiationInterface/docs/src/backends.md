@@ -94,28 +94,3 @@ You can check this compatibility using [`check_twoarg`](@ref).
 
 Only some backends are able to compute Hessians.
 You can use [`check_hessian`](@ref) to check this feature (beware that it will try to compute a small Hessian, so it is not instantaneous).
-
-## API reference
-
-!!! warning
-    The following documentation has been borrowed from ADTypes.jl.
-    Refer to the [ADTypes documentation](https://sciml.github.io/ADTypes.jl/stable/) for more information.
-
-```@docs
-ADTypes
-ADTypes.AbstractADType
-AutoChainRules
-AutoDiffractor
-AutoEnzyme
-AutoFastDifferentiation
-AutoFiniteDiff
-AutoFiniteDifferences
-AutoForwardDiff
-AutoPolyesterForwardDiff
-AutoReverseDiff
-AutoSymbolics
-AutoTapir
-AutoTracker
-AutoZygote
-AutoSparse
-```

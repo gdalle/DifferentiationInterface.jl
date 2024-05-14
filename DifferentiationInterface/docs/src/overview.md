@@ -114,7 +114,7 @@ We offer two ways to perform second-order differentiation (for [`second_derivati
 
 ### Sparsity
 
-[ADTypes.jl](https://github.com/SciML/ADTypes.jl) provides [`AutoSparse`](@ref) to accelerate the computation of sparse Jacobians and Hessians.
+[ADTypes.jl](https://github.com/SciML/ADTypes.jl) provides [`AutoSparse`](@extref ADTypes.AutoSparse) to accelerate the computation of sparse Jacobians and Hessians.
 Just wrap it around any backend, with an appropriate choice of sparsity detector and coloring algorithm, and call `jacobian` or `hessian`: the result will be sparse.
 See the [tutorial section on sparsity](@ref sparsity-tutorial) for details.
 
