@@ -3,6 +3,7 @@ using DifferentiationInterface
 import DifferentiationInterface as DI
 using Documenter
 using DocumenterMermaid
+using DocumenterInterLinks
 
 using ADTypes: ADTypes
 using Diffractor: Diffractor
@@ -18,10 +19,15 @@ using Tapir: Tapir
 using Tracker: Tracker
 using Zygote: Zygote
 
+links = InterLinks(
+    "ADTypes" => "https://sciml.github.io/ADTypes.jl/stable/",
+    "SparseConnectivityTracer" => "https://adrianhill.de/SparseConnectivityTracer.jl/stable/",
+)
+
 cp(joinpath(@__DIR__, "..", "README.md"), joinpath(@__DIR__, "src", "index.md"); force=true)
 
 makedocs(;
-    modules=[DifferentiationInterface, ADTypes],
+    modules=[DifferentiationInterface],
     authors="Guillaume Dalle, Adrian Hill",
     sitename="DifferentiationInterface.jl",
     format=Documenter.HTML(; assets=["assets/favicon.ico"]),
@@ -32,7 +38,7 @@ makedocs(;
         "Advanced" => ["design.md", "overloads.md"],
     ],
     checkdocs=:exports,
-    warnonly=[:missing_docs, :cross_references],
+    plugins=[links],
 )
 
 deploydocs(;
