@@ -61,6 +61,7 @@ LOGGING = get(ENV, "CI", "false") == "false"
     @testset verbose = true "$folder" for folder in ["Single", "Double", "Internals"]
         folder_path = joinpath(@__DIR__, folder)
         @testset verbose = true "$(file[1:end-3])" for file in readdir(folder_path)
+            endswith(file, ".jl") || continue
             if (
                 VERSION < v"1.10" && any(
                     part == backend for part in split(file[1:(end - 3)], '-') for

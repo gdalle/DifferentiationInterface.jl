@@ -60,11 +60,14 @@ end
 ## Benchmark
 
 data1 = benchmark_differentiation(
-    [AutoZeroForward(), AutoZeroReverse()]; logging=get(ENV, "CI", "false") == "false"
+    [AutoZeroForward(), AutoZeroReverse()],
+    default_scenarios();
+    logging=get(ENV, "CI", "false") == "false",
 );
 
 data2 = benchmark_differentiation(
-    [SecondOrder(AutoZeroForward(), AutoZeroReverse())];
+    [SecondOrder(AutoZeroForward(), AutoZeroReverse())],
+    default_scenarios();
     first_order=false,
     logging=get(ENV, "CI", "false") == "false",
 );
@@ -82,7 +85,7 @@ end
 struct FakeBackend <: ADTypes.AbstractADType end
 ADTypes.mode(::FakeBackend) = ADTypes.ForwardMode()
 
-data3 = benchmark_differentiation([FakeBackend()]; logging=false);
+data3 = benchmark_differentiation([FakeBackend()], default_scenarios(); logging=false);
 
 df3 = DataFrames.DataFrame(data3)
 

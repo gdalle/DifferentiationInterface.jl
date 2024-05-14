@@ -61,8 +61,10 @@ function group_by_scen_type(scenarios)
     )
 end
 
-function Base.string(scen::S) where {args,place,F,X,Y,S<:AbstractScenario{args,place,F,X,Y}}
-    return "$(S.name.name){$args,$place} $(string(scen.f)) : $X -> $Y"
+function Base.print(
+    io::IO, scen::S
+) where {args,place,F,X,Y,S<:AbstractScenario{args,place,F,X,Y}}
+    return print(io, "$(nameof(S)){$args,$place}($(string(scen.f)) : $X -> $Y)")
 end
 
 ## Struct definitions
