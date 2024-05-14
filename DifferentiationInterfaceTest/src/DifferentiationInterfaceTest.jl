@@ -18,6 +18,7 @@ using ADTypes:
     ReverseMode,
     SymbolicMode
 using Chairmarks: @be, Benchmark, Sample
+using Compat
 using ComponentArrays: ComponentVector
 using DifferentiationInterface
 using DifferentiationInterface:
@@ -45,7 +46,6 @@ using JET: JET
 using JLArrays: jl
 using LinearAlgebra: Diagonal, dot
 using ProgressMeter: ProgressUnknown, next!
-using Compat
 using SparseArrays: SparseArrays, SparseMatrixCSC, nnz, spdiagm
 using StaticArrays: MMatrix, MVector, SMatrix, SVector
 using Test: @testset, @test
@@ -82,5 +82,6 @@ export PushforwardScenario,
 export default_scenarios, sparse_scenarios
 export static_scenarios, component_scenarios, gpu_scenarios
 export test_differentiation, benchmark_differentiation
+export DifferentiationBenchmarkDataRow
 
 end

@@ -14,6 +14,7 @@ DifferentiationInterfaceTest
 ```@docs
 test_differentiation
 benchmark_differentiation
+DifferentiationBenchmarkDataRow
 ```
 
 ## Pre-made scenario lists

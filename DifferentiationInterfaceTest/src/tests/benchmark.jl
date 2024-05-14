@@ -50,45 +50,53 @@ function failed_benchs(k::Integer)
 end
 
 """
-    BenchmarkDataRow
+    DifferentiationBenchmarkDataRow
 
 Ad-hoc storage type for differentiation benchmarking results.
-If you have a vector `rows::Vector{BenchmarkDataRow}`, you can turn it into a `DataFrame` as follows:
+
+If you have a vector `rows::Vector{DifferentiationBenchmarkDataRow}`, you can turn it into a `DataFrame` as follows:
 
 ```julia
-df = DataFrames.DataFrame(rows)
+using DataFrames
+
+df = DataFrame(rows)
 ```
+
+The resulting `DataFrame` will have one column for each of the following fields.
 
 #  Fields
 
-These are not part of the public API.
-
 $(TYPEDFIELDS)
+
+See the documentation of [Chairmarks.jl](https://github.com/LilithHafner/Chairmarks.jl) for more details on the measurement fields.
 """
-Base.@kwdef struct BenchmarkDataRow
-    backend::String
-    mode::AbstractMode
-    scenario::Symbol
+Base.@kwdef struct DifferentiationBenchmarkDataRow
+    "backend used for benchmarking"
+    backend::AbstractADType
+    "scenario used for benchmarking"
+    scenario::AbstractScenario
+    "differentiation operator used for benchmarking, e.g. `:gradient` or `:hessian`"
     operator::Symbol
-    arguments::Int
-    place::Symbol
-    func::Symbol
-    input_type::Type
-    output_type::Type
-    input_size::Tuple
-    output_size::Tuple
+    "number of calls to the differentiated function for one call to the operator"
     calls::Int
+    "number of benchmarking samples taken"
     samples::Int
+    "number of evaluations used for averaging in each sample"
     evals::Int
+    "minimum runtime over all samples, in seconds"
     time::Float64
-    bytes::Float64
+    "minimum number of allocations over all samples"
     allocs::Float64
-    compile_fraction::Float64
+    "minimum memory allocated over all samples, in bytes"
+    bytes::Float64
+    "minimum fraction of time spent in garbage collection over all samples, between 0.0 and 1.0"
     gc_fraction::Float64
+    "minimum fraction of time spent compiling over all samples, between 0.0 and 1.0"
+    compile_fraction::Float64
 end
 
 function record!(
-    data::Vector{BenchmarkDataRow},
+    data::Vector{DifferentiationBenchmarkDataRow},
     backend::AbstractADType,
     scenario::AbstractScenario,
     operator::Symbol,
@@ -96,26 +104,18 @@ function record!(
     calls::Integer,
 )
     bench_min = minimum(bench)
-    row = BenchmarkDataRow(;
-        backend=backend_str(backend),
-        mode=mode(backend),
-        scenario=typeof(scenario).name.name,
-        operator=Symbol(operator),
-        arguments=nb_args(scenario),
-        place=operator_place(scenario),
-        func=Symbol(scenario.f),
-        input_type=typeof(scenario.x),
-        output_type=typeof(scenario.y),
-        input_size=size(scenario.x),
-        output_size=size(scenario.y),
+    row = DifferentiationBenchmarkDataRow(;
+        backend=backend,
+        scenario=scenario,
+        operator=operator,
         calls=calls,
         samples=length(bench.samples),
         evals=Int(bench_min.evals),
         time=bench_min.time,
-        bytes=bench_min.bytes,
         allocs=bench_min.allocs,
-        compile_fraction=bench_min.compile_fraction,
+        bytes=bench_min.bytes,
         gc_fraction=bench_min.gc_fraction,
+        compile_fraction=bench_min.compile_fraction,
     )
     return push!(data, row)
 end
@@ -123,7 +123,7 @@ end
 ## Pushforward
 
 function run_benchmark!(
-    data::Vector{BenchmarkDataRow},
+    data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
     scen::PushforwardScenario{1,:outofplace};
     logging::Bool,
@@ -158,7 +158,7 @@ function run_benchmark!(
 end
 
 function run_benchmark!(
-    data::Vector{BenchmarkDataRow},
+    data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
     scen::PushforwardScenario{1,:inplace};
     logging::Bool,
@@ -197,7 +197,7 @@ function run_benchmark!(
 end
 
 function run_benchmark!(
-    data::Vector{BenchmarkDataRow},
+    data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
     scen::PushforwardScenario{2,:outofplace};
     logging::Bool,
@@ -238,7 +238,7 @@ function run_benchmark!(
 end
 
 function run_benchmark!(
-    data::Vector{BenchmarkDataRow},
+    data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
     scen::PushforwardScenario{2,:inplace};
     logging::Bool,
@@ -281,7 +281,7 @@ end
 ## Pullback
 
 function run_benchmark!(
-    data::Vector{BenchmarkDataRow},
+    data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
     scen::PullbackScenario{1,:outofplace};
     logging::Bool,
@@ -316,7 +316,7 @@ function run_benchmark!(
 end
 
 function run_benchmark!(
-    data::Vector{BenchmarkDataRow},
+    data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
     scen::PullbackScenario{1,:inplace};
     logging::Bool,
@@ -355,7 +355,7 @@ function run_benchmark!(
 end
 
 function run_benchmark!(
-    data::Vector{BenchmarkDataRow},
+    data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
     scen::PullbackScenario{2,:outofplace};
     logging::Bool,
@@ -396,7 +396,7 @@ function run_benchmark!(
 end
 
 function run_benchmark!(
-    data::Vector{BenchmarkDataRow},
+    data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
     scen::PullbackScenario{2,:inplace};
     logging::Bool,
@@ -439,7 +439,7 @@ end
 ## Derivative
 
 function run_benchmark!(
-    data::Vector{BenchmarkDataRow},
+    data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
     scen::DerivativeScenario{1,:outofplace};
     logging::Bool,
@@ -474,7 +474,7 @@ function run_benchmark!(
 end
 
 function run_benchmark!(
-    data::Vector{BenchmarkDataRow},
+    data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
     scen::DerivativeScenario{1,:inplace};
     logging::Bool,
@@ -513,7 +513,7 @@ function run_benchmark!(
 end
 
 function run_benchmark!(
-    data::Vector{BenchmarkDataRow},
+    data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
     scen::DerivativeScenario{2,:outofplace};
     logging::Bool,
@@ -553,7 +553,7 @@ function run_benchmark!(
 end
 
 function run_benchmark!(
-    data::Vector{BenchmarkDataRow},
+    data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
     scen::DerivativeScenario{2,:inplace};
     logging::Bool,
@@ -595,7 +595,7 @@ end
 ## Gradient
 
 function run_benchmark!(
-    data::Vector{BenchmarkDataRow},
+    data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
     scen::GradientScenario{1,:outofplace};
     logging::Bool,
@@ -630,7 +630,7 @@ function run_benchmark!(
 end
 
 function run_benchmark!(
-    data::Vector{BenchmarkDataRow},
+    data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
     scen::GradientScenario{1,:inplace};
     logging::Bool,
@@ -671,7 +671,7 @@ end
 ## Jacobian
 
 function run_benchmark!(
-    data::Vector{BenchmarkDataRow},
+    data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
     scen::JacobianScenario{1,:outofplace};
     logging::Bool,
@@ -706,7 +706,7 @@ function run_benchmark!(
 end
 
 function run_benchmark!(
-    data::Vector{BenchmarkDataRow},
+    data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
     scen::JacobianScenario{1,:inplace};
     logging::Bool,
@@ -746,7 +746,7 @@ function run_benchmark!(
 end
 
 function run_benchmark!(
-    data::Vector{BenchmarkDataRow},
+    data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
     scen::JacobianScenario{2,:outofplace};
     logging::Bool,
@@ -784,7 +784,7 @@ function run_benchmark!(
 end
 
 function run_benchmark!(
-    data::Vector{BenchmarkDataRow},
+    data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
     scen::JacobianScenario{2,:inplace};
     logging::Bool,
@@ -827,7 +827,7 @@ end
 ## Second derivative
 
 function run_benchmark!(
-    data::Vector{BenchmarkDataRow},
+    data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
     scen::SecondDerivativeScenario{1,:outofplace};
     logging::Bool,
@@ -858,7 +858,7 @@ function run_benchmark!(
 end
 
 function run_benchmark!(
-    data::Vector{BenchmarkDataRow},
+    data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
     scen::SecondDerivativeScenario{1,:inplace};
     logging::Bool,
@@ -893,7 +893,7 @@ end
 ## Hessian-vector product
 
 function run_benchmark!(
-    data::Vector{BenchmarkDataRow},
+    data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
     scen::HVPScenario{1,:outofplace};
     logging::Bool,
@@ -924,7 +924,7 @@ function run_benchmark!(
 end
 
 function run_benchmark!(
-    data::Vector{BenchmarkDataRow},
+    data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
     scen::HVPScenario{1,:inplace};
     logging::Bool,
@@ -957,7 +957,7 @@ end
 ## Hessian
 
 function run_benchmark!(
-    data::Vector{BenchmarkDataRow},
+    data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
     scen::HessianScenario{1,:outofplace};
     logging::Bool,
@@ -988,7 +988,7 @@ function run_benchmark!(
 end
 
 function run_benchmark!(
-    data::Vector{BenchmarkDataRow},
+    data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
     scen::HessianScenario{1,:inplace};
     logging::Bool,

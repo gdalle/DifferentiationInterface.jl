@@ -73,7 +73,7 @@ This is made easy by the [`benchmark_differentiation`](@ref) function, whose syn
 benchmark_result = benchmark_differentiation(backends, scenarios);
 ```
 
-The resulting object is a `Vector` of structs, which can easily be converted into a `DataFrame` from [DataFrames.jl](https://github.com/JuliaData/DataFrames.jl):
+The resulting object is a `Vector` of [`DifferentiationBenchmarkDataRow`](@ref), which can easily be converted into a `DataFrame` from [DataFrames.jl](https://github.com/JuliaData/DataFrames.jl):
 
 ```@repl tuto
 df = DataFrames.DataFrame(benchmark_result)
@@ -83,22 +83,11 @@ Here's what the resulting `DataFrame` looks like with all its columns.
 Note that we only compare (possibly) in-place operators, because they are always more efficient.
 
 ```@example tuto
-function formatter(v, i, j)
-    if j in (15, 16)  # time, bytes
-        return Printf.@sprintf("%.1e", v)
-    elseif j == 17  # allocs
-        return Printf.@sprintf("%.1f", v)
-    else
-        return v
-    end
-end
-
 table = PrettyTables.pretty_table(
     String,
     df;
     backend=Val(:markdown),
     header=names(df),
-    formatters=formatter
 )
 
 Markdown.parse(table)
