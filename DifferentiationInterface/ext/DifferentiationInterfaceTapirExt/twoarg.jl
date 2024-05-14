@@ -4,8 +4,10 @@ end
 
 function DI.prepare_pullback(f!, y, backend::AutoTapir, x, dy)
     rrule = build_rrule(
-        TapirInterpreter(), Tuple{typeof(f!), typeof(y), typeof(x)};
-        safety_on=backend.safe_mode, silence_safety_messages=false,
+        TapirInterpreter(),
+        Tuple{typeof(f!),typeof(y),typeof(x)};
+        safety_on=backend.safe_mode,
+        silence_safety_messages=false,
     )
     extras = TapirTwoArgPullbackExtras(rrule)
     DI.value_and_pullback(f!, y, backend, x, dy, extras)  # warm up
