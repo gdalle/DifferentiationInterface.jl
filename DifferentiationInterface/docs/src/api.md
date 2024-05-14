@@ -92,10 +92,11 @@ check_twoarg
 check_hessian
 ```
 
-## Translation
+## Miscellaneous
 
 ```@docs
 DifferentiateWith
+GreedyColoringAlgorithm
 ```
 
 ## Internals

@@ -100,6 +100,8 @@ export check_available, check_twoarg, check_hessian
 
 export DifferentiateWith
 
+export GreedyColoringAlgorithm
+
 # Re-export backends from ADTypes
 export AutoChainRules
 export AutoDiffractor

@@ -6,7 +6,7 @@ Sparsity detection algorithm based on the [Symbolics.jl tracing system](https://
 Compatible with the [ADTypes.jl sparsity detection framework](https://sciml.github.io/ADTypes.jl/stable/#Sparsity-detector).
 
 !!! danger
-    This functionality is implemented in an extension, and requires Symbolics.jl to be loaded.
+    This functionality is implemented in an extension, and requires [Symbolics.jl](https://github.com/JuliaSymbolics/Symbolics.jl) to be loaded.
 
 # See also
 
