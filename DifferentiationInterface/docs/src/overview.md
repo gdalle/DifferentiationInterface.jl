@@ -6,13 +6,13 @@ The name of the differentiation operators can vary depending on the type of the 
 
 We provide the following high-level operators:
 
-| operator                    | order | input  `x`      | output   `y`                | operator result type      | operator result shape    |
-| :-------------------------- | :---- | :-------------- | :-------------------------- | :------------------------ | :----------------------- |
-| [`derivative`](@ref)        | 1     | `Number`        | `Number` or `AbstractArray` | same as `y`               | `size(y)`                |
-| [`second_derivative`](@ref) | 2     | `Number`        | `Number` or `AbstractArray` | same as `y`               | `size(y)`                |
-| [`gradient`](@ref)          | 1     | `AbstractArray` | `Number`                    | same as `x`               | `size(x)`                |
-| [`hessian`](@ref)           | 2     | `AbstractArray` | `Number`                    | `AbstractMatrix`          | `(length(x), length(x))` |
-| [`jacobian`](@ref)          | 1     | `AbstractArray` | `AbstractArray`             | `AbstractMatrix`          | `(length(y), length(x))` |
+| operator                    | order | input  `x`      | output   `y`                | operator result type | operator result shape    |
+| :-------------------------- | :---- | :-------------- | :-------------------------- | :------------------- | :----------------------- |
+| [`derivative`](@ref)        | 1     | `Number`        | `Number` or `AbstractArray` | same as `y`          | `size(y)`                |
+| [`second_derivative`](@ref) | 2     | `Number`        | `Number` or `AbstractArray` | same as `y`          | `size(y)`                |
+| [`gradient`](@ref)          | 1     | `AbstractArray` | `Number`                    | same as `x`          | `size(x)`                |
+| [`hessian`](@ref)           | 2     | `AbstractArray` | `Number`                    | `AbstractMatrix`     | `(length(x), length(x))` |
+| [`jacobian`](@ref)          | 1     | `AbstractArray` | `AbstractArray`             | `AbstractMatrix`     | `(length(y), length(x))` |
 
 They can be derived from lower-level operators:
 
