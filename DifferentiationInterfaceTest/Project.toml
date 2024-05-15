@@ -23,7 +23,7 @@ ADTypes = "1.0.0"
 Chairmarks = "1.2.1"
 Compat = "4"
 ComponentArrays = "0.15"
-DifferentiationInterface = "0.4.0"
+DifferentiationInterface = "0.4.0, 0.3"
 DocStringExtensions = "0.9"
 JET = "0.4 - 0.8"
 JLArrays = "0.1"
@@ -48,16 +48,4 @@ SparseConnectivityTracer = "9f842d2f-2579-4b1d-911e-f412cf18a3f5"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = [
-    "ADTypes",
-    "Aqua",
-    "DataFrames",
-    "DifferentiationInterface",
-    "ForwardDiff",
-    "JET",
-    "JuliaFormatter",
-    "Pkg",
-    "SparseArrays",
-    "SparseConnectivityTracer",
-    "Test",
-]
+test = ["ADTypes", "Aqua", "DataFrames", "DifferentiationInterface", "ForwardDiff", "JET", "JuliaFormatter", "Pkg", "SparseArrays", "SparseConnectivityTracer", "Test"]
