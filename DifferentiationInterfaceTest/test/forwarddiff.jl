@@ -25,11 +25,3 @@ test_differentiation(
     excluded=[HessianScenario],
     logging=get(ENV, "CI", "false") == "false",
 )
-
-b = MyAutoSparse(AutoForwardDiff())
-
-jacobian(diff, b, rand(5))
-sparse(ForwardDiff.jacobian(diff, rand(5)))
-
-hessian(x -> sum(abs2, diff(x)), b, rand(5))
-ForwardDiff.hessian(x -> sum(abs2, diff(x)), rand(5))
