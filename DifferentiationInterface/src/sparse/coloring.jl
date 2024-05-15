@@ -164,15 +164,18 @@ end
 """
     GreedyColoringAlgorithm <: ADTypes.AbstractColoringAlgorithm
 
-Matrix coloring algorithm for sparse Jacobians and Hessians.
+Matrix coloring algorithm for sparse Jacobians and Hessians, in which vertices are colored sequentially by order of decreasing degree.
 
 Compatible with the [ADTypes.jl coloring framework](https://sciml.github.io/ADTypes.jl/stable/#Coloring-algorithm).
 
-# See also
+# Implements
 
-- `ADTypes.column_coloring`
-- `ADTypes.row_coloring`
-- `ADTypes.symmetric_coloring`
+- [`ADTypes.column_coloring`](@extref ADTypes) with a partial distance-2 coloring of the bipartite graph
+- [`ADTypes.row_coloring`](@extref ADTypes) with a partial distance-2 coloring of the bipartite graph
+- [`ADTypes.symmetric_coloring`](@extref ADTypes) with a star coloring of the adjacency graph
+
+!!! warning
+    Symmetric coloring is not used by DifferentiationInterface.jl at the moment: Hessians are colored by columns just like Jacobians.
 
 # Reference
 
@@ -180,17 +183,17 @@ Compatible with the [ADTypes.jl coloring framework](https://sciml.github.io/ADTy
 """
 struct GreedyColoringAlgorithm <: ADTypes.AbstractColoringAlgorithm end
 
-function ADTypes.column_coloring(A, ::GreedyColoringAlgorithm)
+function ADTypes.column_coloring(A::AbstractMatrix, ::GreedyColoringAlgorithm)
     g = BipartiteGraph(A)
     return distance2_column_coloring(g)
 end
 
-function ADTypes.row_coloring(A, ::GreedyColoringAlgorithm)
+function ADTypes.row_coloring(A::AbstractMatrix, ::GreedyColoringAlgorithm)
     g = BipartiteGraph(A)
     return distance2_row_coloring(g)
 end
 
-function ADTypes.symmetric_coloring(A, ::GreedyColoringAlgorithm)
+function ADTypes.symmetric_coloring(A::AbstractMatrix, ::GreedyColoringAlgorithm)
     g = AdjacencyGraph(A)
     return star_coloring(g)
 end
