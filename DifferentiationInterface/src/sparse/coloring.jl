@@ -49,7 +49,7 @@ function distance2_column_coloring(g::BipartiteGraph)
     n = length(columns(g))
     colors = zeros(Int, n)
     forbidden_colors = zeros(Int, n)
-    for v in columns(g)  # default ordering
+    for v in sort(columns(g); by=j -> length(neighbors_of_column(g, j)), rev=true)
         for w in neighbors_of_column(g, v)
             for x in neighbors_of_row(g, w)
                 if !iszero(colors[x])
@@ -71,7 +71,7 @@ function distance2_row_coloring(g::BipartiteGraph)
     m = length(rows(g))
     colors = zeros(Int, m)
     forbidden_colors = zeros(Int, m)
-    for v in 1:m  # default ordering
+    for v in sort(rows(g); by=i -> length(neighbors_of_row(g, i)), rev=true)
         for w in neighbors_of_row(g, v)
             for x in neighbors_of_column(g, w)
                 if !iszero(colors[x])
@@ -129,7 +129,7 @@ function star_coloring(g::AdjacencyGraph)
     n = length(columns(g))
     colors = zeros(Int, n)
     forbidden_colors = zeros(Int, n)
-    for v in columns(g)  # default ordering
+    for v in sort(columns(g); by=j -> length(neighbors(g, j)), rev=true)
         for w in neighbors(g, v)
             if !iszero(colors[w])  # w is colored
                 forbidden_colors[colors[w]] = v
