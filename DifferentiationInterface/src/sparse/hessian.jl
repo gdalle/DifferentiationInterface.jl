@@ -12,8 +12,8 @@ end
 function prepare_hessian(f::F, backend::AutoSparse, x) where {F}
     initial_sparsity = hessian_sparsity(f, x, sparsity_detector(backend))
     sparsity = col_major(initial_sparsity)
-    colors = column_coloring(sparsity, coloring_algorithm(backend))
-    groups = get_groups(colors)
+    colors = column_coloring(sparsity, coloring_algorithm(backend))  # no star coloring
+    groups = color_groups(colors)
     seeds = map(groups) do group
         seed = zero(x)
         seed[group] .= one(eltype(x))

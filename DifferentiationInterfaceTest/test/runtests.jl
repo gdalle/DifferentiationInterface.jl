@@ -10,12 +10,6 @@ if isdir(DI_PATH)
     Pkg.develop(; path=DI_PATH)
 end
 
-function MyAutoSparse(backend::AbstractADType)
-    coloring_algorithm = GreedyColoringAlgorithm()
-    sparsity_detector = TracerSparsityDetector()
-    return AutoSparse(backend; sparsity_detector, coloring_algorithm)
-end
-
 ## Main tests
 
 @testset verbose = true "DifferentiationInterfaceTest.jl" begin

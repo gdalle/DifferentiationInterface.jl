@@ -27,7 +27,7 @@ function prepare_jacobian(f::F, backend::AutoSparse, x) where {F}
     if Bool(pushforward_performance(backend))
         sparsity = col_major(initial_sparsity)
         colors = column_coloring(sparsity, coloring_algorithm(backend))
-        groups = get_groups(colors)
+        groups = color_groups(colors)
         seeds = map(groups) do group
             seed = zero(x)
             seed[group] .= one(eltype(x))
@@ -42,7 +42,7 @@ function prepare_jacobian(f::F, backend::AutoSparse, x) where {F}
     else
         sparsity = row_major(initial_sparsity)
         colors = row_coloring(sparsity, coloring_algorithm(backend))
-        groups = get_groups(colors)
+        groups = color_groups(colors)
         seeds = map(groups) do group
             seed = zero(y)
             seed[group] .= one(eltype(y))
@@ -110,7 +110,7 @@ function prepare_jacobian(f!::F, y, backend::AutoSparse, x) where {F}
     if Bool(pushforward_performance(backend))
         sparsity = col_major(initial_sparsity)
         colors = column_coloring(sparsity, coloring_algorithm(backend))
-        groups = get_groups(colors)
+        groups = color_groups(colors)
         seeds = map(groups) do group
             seed = zero(x)
             seed[group] .= one(eltype(x))
@@ -125,7 +125,7 @@ function prepare_jacobian(f!::F, y, backend::AutoSparse, x) where {F}
     else
         sparsity = row_major(initial_sparsity)
         colors = row_coloring(sparsity, coloring_algorithm(backend))
-        groups = get_groups(colors)
+        groups = color_groups(colors)
         seeds = map(groups) do group
             seed = zero(y)
             seed[group] .= one(eltype(y))

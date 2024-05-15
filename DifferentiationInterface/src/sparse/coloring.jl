@@ -2,10 +2,21 @@
 Everything in this file is taken from "What color is your Jacobian?"
 =#
 
-function get_groups(colors::AbstractVector{<:Integer})
-    return map(unique(colors)) do c
-        filter(j -> colors[j] == c, eachindex(colors))
+"""
+    color_groups(colors)
+
+Return `groups::Vector{Vector{Int}}` such that `i ∈ groups[c]` iff `colors[i] == c`.
+
+Assumes the colors are contiguously numbered from `1` to some `cmax`.
+"""
+function color_groups(colors::AbstractVector{<:Integer})
+    cmin, cmax = extrema(colors)
+    @assert cmin == 1
+    groups = [Int[] for c in 1:cmax]
+    for (k, c) in enumerate(colors)
+        push!(groups[c], k)
     end
+    return groups
 end
 
 abstract type AbstractMatrixGraph end
@@ -49,7 +60,7 @@ function distance2_column_coloring(g::BipartiteGraph)
     n = length(columns(g))
     colors = zeros(Int, n)
     forbidden_colors = zeros(Int, n)
-    for v in columns(g)  # default ordering
+    for v in sort(columns(g); by=j -> length(neighbors_of_column(g, j)), rev=true)
         for w in neighbors_of_column(g, v)
             for x in neighbors_of_row(g, w)
                 if !iszero(colors[x])
@@ -57,7 +68,7 @@ function distance2_column_coloring(g::BipartiteGraph)
                 end
             end
         end
-        for c in columns(g)
+        for c in eachindex(forbidden_colors)
             if forbidden_colors[c] != v
                 colors[v] = c
                 break
@@ -71,7 +82,7 @@ function distance2_row_coloring(g::BipartiteGraph)
     m = length(rows(g))
     colors = zeros(Int, m)
     forbidden_colors = zeros(Int, m)
-    for v in 1:m  # default ordering
+    for v in sort(rows(g); by=i -> length(neighbors_of_row(g, i)), rev=true)
         for w in neighbors_of_row(g, v)
             for x in neighbors_of_column(g, w)
                 if !iszero(colors[x])
@@ -79,7 +90,7 @@ function distance2_row_coloring(g::BipartiteGraph)
                 end
             end
         end
-        for c in rows(g)
+        for c in eachindex(forbidden_colors)
             if forbidden_colors[c] != v
                 colors[v] = c
                 break
@@ -129,7 +140,7 @@ function star_coloring(g::AdjacencyGraph)
     n = length(columns(g))
     colors = zeros(Int, n)
     forbidden_colors = zeros(Int, n)
-    for v in columns(g)  # default ordering
+    for v in sort(columns(g); by=j -> length(neighbors(g, j)), rev=true)
         for w in neighbors(g, v)
             if !iszero(colors[w])  # w is colored
                 forbidden_colors[colors[w]] = v
@@ -149,7 +160,7 @@ function star_coloring(g::AdjacencyGraph)
                 end
             end
         end
-        for c in columns(g)
+        for c in eachindex(forbidden_colors)
             if forbidden_colors[c] != v
                 colors[v] = c
                 break
@@ -164,15 +175,18 @@ end
 """
     GreedyColoringAlgorithm <: ADTypes.AbstractColoringAlgorithm
 
-Matrix coloring algorithm for sparse Jacobians and Hessians.
+Matrix coloring algorithm for sparse Jacobians and Hessians, in which vertices are colored sequentially by order of decreasing degree.
 
 Compatible with the [ADTypes.jl coloring framework](https://sciml.github.io/ADTypes.jl/stable/#Coloring-algorithm).
 
-# See also
+# Implements
 
-- `ADTypes.column_coloring`
-- `ADTypes.row_coloring`
-- `ADTypes.symmetric_coloring`
+- [`ADTypes.column_coloring`](@extref ADTypes) with a partial distance-2 coloring of the bipartite graph
+- [`ADTypes.row_coloring`](@extref ADTypes) with a partial distance-2 coloring of the bipartite graph
+- [`ADTypes.symmetric_coloring`](@extref ADTypes) with a star coloring of the adjacency graph
+
+!!! warning
+    Symmetric coloring is not used by DifferentiationInterface.jl at the moment: Hessians are colored by columns just like Jacobians.
 
 # Reference
 
@@ -180,17 +194,17 @@ Compatible with the [ADTypes.jl coloring framework](https://sciml.github.io/ADTy
 """
 struct GreedyColoringAlgorithm <: ADTypes.AbstractColoringAlgorithm end
 
-function ADTypes.column_coloring(A, ::GreedyColoringAlgorithm)
+function ADTypes.column_coloring(A::AbstractMatrix, ::GreedyColoringAlgorithm)
     g = BipartiteGraph(A)
     return distance2_column_coloring(g)
 end
 
-function ADTypes.row_coloring(A, ::GreedyColoringAlgorithm)
+function ADTypes.row_coloring(A::AbstractMatrix, ::GreedyColoringAlgorithm)
     g = BipartiteGraph(A)
     return distance2_row_coloring(g)
 end
 
-function ADTypes.symmetric_coloring(A, ::GreedyColoringAlgorithm)
+function ADTypes.symmetric_coloring(A::AbstractMatrix, ::GreedyColoringAlgorithm)
     g = AdjacencyGraph(A)
     return star_coloring(g)
 end
