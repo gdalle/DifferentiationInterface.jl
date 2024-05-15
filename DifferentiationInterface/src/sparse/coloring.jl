@@ -2,10 +2,21 @@
 Everything in this file is taken from "What color is your Jacobian?"
 =#
 
-function get_groups(colors::AbstractVector{<:Integer})
-    return map(unique(colors)) do c
-        filter(j -> colors[j] == c, eachindex(colors))
+"""
+    color_groups(colors)
+
+Return `groups::Vector{Vector{Int}}` such that `i ∈ groups[c]` iff `colors[i] == c`.
+
+Assumes the colors are contiguously numbered from `1` to some `cmax`.
+"""
+function color_groups(colors::AbstractVector{<:Integer})
+    cmin, cmax = extrema(colors)
+    @assert cmin == 1
+    groups = [Int[] for c in 1:cmax]
+    for (k, c) in enumerate(colors)
+        push!(groups[c], k)
     end
+    return groups
 end
 
 abstract type AbstractMatrixGraph end
@@ -57,7 +68,7 @@ function distance2_column_coloring(g::BipartiteGraph)
                 end
             end
         end
-        for c in columns(g)
+        for c in eachindex(forbidden_colors)
             if forbidden_colors[c] != v
                 colors[v] = c
                 break
@@ -79,7 +90,7 @@ function distance2_row_coloring(g::BipartiteGraph)
                 end
             end
         end
-        for c in rows(g)
+        for c in eachindex(forbidden_colors)
             if forbidden_colors[c] != v
                 colors[v] = c
                 break
@@ -149,7 +160,7 @@ function star_coloring(g::AdjacencyGraph)
                 end
             end
         end
-        for c in columns(g)
+        for c in eachindex(forbidden_colors)
             if forbidden_colors[c] != v
                 colors[v] = c
                 break

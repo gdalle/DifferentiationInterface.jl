@@ -1,6 +1,14 @@
+using ADTypes
 using DifferentiationInterface
 using DifferentiationInterfaceTest
 using ForwardDiff: ForwardDiff
+using SparseConnectivityTracer
+
+function MyAutoSparse(backend::AbstractADType)
+    coloring_algorithm = GreedyColoringAlgorithm()
+    sparsity_detector = TracerSparsityDetector()
+    return AutoSparse(backend; sparsity_detector, coloring_algorithm)
+end
 
 test_differentiation(AutoForwardDiff(); logging=get(ENV, "CI", "false") == "false")
 
@@ -17,3 +25,11 @@ test_differentiation(
     excluded=[HessianScenario],
     logging=get(ENV, "CI", "false") == "false",
 )
+
+b = MyAutoSparse(AutoForwardDiff())
+
+jacobian(diff, b, rand(5))
+sparse(ForwardDiff.jacobian(diff, rand(5)))
+
+hessian(x -> sum(abs2, diff(x)), b, rand(5))
+ForwardDiff.hessian(x -> sum(abs2, diff(x)), rand(5))
