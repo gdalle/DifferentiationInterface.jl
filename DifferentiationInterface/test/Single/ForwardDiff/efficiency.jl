@@ -14,7 +14,7 @@ using DataFrames: DataFrame
         output_type=Number,
         second_order=false,
         excluded=[PullbackScenario],
-        logging=LOGGING == "false",
+        logging=LOGGING,
     )
 
     # derivative and jacobian for f!(x, y)
@@ -28,7 +28,7 @@ using DataFrames: DataFrame
         output_type=AbstractVector,
         second_order=false,
         excluded=[PullbackScenario],
-        logging=LOGGING == "false",
+        logging=LOGGING,
     )
 
     data = vcat(DataFrame(results1), DataFrame(results2))
@@ -58,7 +58,7 @@ end
         outofplace=false,
         onearg=false,
         second_order=false,
-        logging=LOGGING == "false",
+        logging=LOGGING,
     )
 
     data = vcat(DataFrame(results1))
