@@ -1,5 +1,7 @@
 using ADTypes: ADTypes, AbstractADType
+using DifferentiationInterface
 import DifferentiationInterface as DI
+using Test
 
 """
     AutoBrokenForward <: ADTypes.AbstractADType
@@ -19,16 +21,20 @@ Used to test error messages.
 """
 struct AutoBrokenReverse <: AbstractADType end
 ADTypes.mode(::AutoBrokenReverse) = ADTypes.ReverseMode()
-DI.check_available(::AutoBrokenReverse) = true
 
 ## Test exceptions
 @testset "MissingBackendError" begin
-    f(x::AbstractArray) = sum(abs2, x)
-    x = [1.0, 2.0, 3.0]
+    x = [1.0]
+    y = similar(x)
+    dx = similar(x)
+    dy = similar(y)
 
-    @test_throws DI.MissingBackendError gradient(f, AutoBrokenForward(), x)
-    @test_throws DI.MissingBackendError gradient(f, AutoBrokenReverse(), x)
+    @test_throws DI.MissingBackendError jacobian(copy, AutoBrokenForward(), x)
+    @test_throws DI.MissingBackendError jacobian(copy, AutoBrokenReverse(), x)
 
-    @test_throws DI.MissingBackendError hvp(f, AutoBrokenForward(), x, x)
-    @test_throws DI.MissingBackendError hvp(f, AutoBrokenReverse(), x, x)
+    @test_throws DI.MissingBackendError jacobian(copyto!, y, AutoBrokenForward(), x)
+    @test_throws DI.MissingBackendError jacobian(copyto!, y, AutoBrokenReverse(), x)
+
+    @test_throws DI.MissingBackendError hessian(sum, AutoBrokenForward(), x)
+    @test_throws DI.MissingBackendError hessian(sum, AutoBrokenReverse(), x)
 end

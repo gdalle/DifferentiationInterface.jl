@@ -17,3 +17,7 @@ test_differentiation(
 test_differentiation(
     AutoSparse(AutoSymbolics()), sparse_scenarios(); sparsity=true, logging=LOGGING
 );
+
+if VERSION >= v"1.10"
+    include("Symbolics/detector.jl")
+end

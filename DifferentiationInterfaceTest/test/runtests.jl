@@ -10,6 +10,8 @@ if isdir(DI_PATH)
     Pkg.develop(; path=DI_PATH)
 end
 
+LOGGING = get(ENV, "CI", "false") == "false"
+
 ## Main tests
 
 @testset verbose = true "DifferentiationInterfaceTest.jl" begin

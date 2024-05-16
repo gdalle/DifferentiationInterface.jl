@@ -13,11 +13,7 @@ using DataFrames: DataFrames
 
 for backend in [AutoZeroForward(), AutoZeroReverse()]
     test_differentiation(
-        backend,
-        default_scenarios();
-        correctness=true,
-        ref_backend=backend,
-        logging=get(ENV, "CI", "false") == "false",
+        backend, default_scenarios(); correctness=true, ref_backend=backend, logging=LOGGING
     )
 end
 
@@ -31,7 +27,7 @@ for backend in [
         correctness=true,
         first_order=false,
         ref_backend=backend,
-        logging=get(ENV, "CI", "false") == "false",
+        logging=LOGGING,
     )
 end
 
@@ -42,7 +38,7 @@ if VERSION >= v"1.10"
         [AutoZeroForward(), AutoZeroReverse()];
         correctness=false,
         type_stability=true,
-        logging=get(ENV, "CI", "false") == "false",
+        logging=LOGGING,
     )
 
     test_differentiation(
@@ -53,23 +49,21 @@ if VERSION >= v"1.10"
         correctness=false,
         type_stability=true,
         first_order=false,
-        logging=get(ENV, "CI", "false") == "false",
+        logging=LOGGING,
     )
 end
 
 ## Benchmark
 
 data1 = benchmark_differentiation(
-    [AutoZeroForward(), AutoZeroReverse()],
-    default_scenarios();
-    logging=get(ENV, "CI", "false") == "false",
+    [AutoZeroForward(), AutoZeroReverse()], default_scenarios(); logging=LOGGING
 );
 
 data2 = benchmark_differentiation(
     [SecondOrder(AutoZeroForward(), AutoZeroReverse())],
     default_scenarios();
     first_order=false,
-    logging=get(ENV, "CI", "false") == "false",
+    logging=LOGGING,
 );
 
 df1 = DataFrames.DataFrame(data1)
@@ -99,18 +93,10 @@ end
 
 for backend in [AutoZeroForward(), AutoZeroReverse()]
     test_differentiation(
-        backend,
-        gpu_scenarios();
-        correctness=true,
-        ref_backend=backend,
-        logging=get(ENV, "CI", "false") == "false",
+        backend, gpu_scenarios(); correctness=true, ref_backend=backend, logging=LOGGING
     )
     test_differentiation(
-        backend,
-        static_scenarios();
-        correctness=true,
-        ref_backend=backend,
-        logging=get(ENV, "CI", "false") == "false",
+        backend, static_scenarios(); correctness=true, ref_backend=backend, logging=LOGGING
     )
     # stack fails on component vectors
     test_differentiation(
@@ -119,6 +105,6 @@ for backend in [AutoZeroForward(), AutoZeroReverse()]
         correctness=true,
         excluded=[HessianScenario],
         ref_backend=backend,
-        logging=get(ENV, "CI", "false") == "false",
+        logging=LOGGING,
     )
 end

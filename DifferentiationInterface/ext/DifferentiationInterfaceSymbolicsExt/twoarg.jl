@@ -23,11 +23,7 @@ function DI.prepare_pushforward(f!, y, ::AutoSymbolics, x, dx)
     pf_var = substitute(step_der_var, Dict(t_var => zero(eltype(x))))
 
     res = build_function(pf_var, vcat(myvec(x_var), myvec(dx_var)); expression=Val(false))
-    (pushforward_exe, pushforward_exe!) = if res isa Tuple
-        res
-    elseif res isa RuntimeGeneratedFunction
-        res, nothing
-    end
+    (pushforward_exe, pushforward_exe!) = res
     return SymbolicsTwoArgPushforwardExtras(pushforward_exe, pushforward_exe!)
 end
 
@@ -77,11 +73,7 @@ function DI.prepare_derivative(f!, y, ::AutoSymbolics, x)
     der_var = derivative(y_var, x_var)
 
     res = build_function(der_var, x_var; expression=Val(false))
-    (der_exe, der_exe!) = if res isa Tuple
-        res
-    elseif res isa RuntimeGeneratedFunction
-        res, nothing
-    end
+    (der_exe, der_exe!) = res
     return SymbolicsTwoArgDerivativeExtras(der_exe, der_exe!)
 end
 
@@ -132,11 +124,7 @@ function DI.prepare_jacobian(
     end
 
     res = build_function(jac_var, x_var; expression=Val(false))
-    (jac_exe, jac_exe!) = if res isa Tuple
-        res
-    elseif res isa RuntimeGeneratedFunction
-        res, nothing
-    end
+    (jac_exe, jac_exe!) = res
     return SymbolicsTwoArgJacobianExtras(jac_exe, jac_exe!)
 end
 

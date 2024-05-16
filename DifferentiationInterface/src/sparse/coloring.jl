@@ -130,12 +130,6 @@ function neighbors(g::AdjacencyGraph, j::Integer)
     return filter(!isequal(j), nz_in_col(g.A_colmajor, j))
 end
 
-function colored_neighbors(g::AdjacencyGraph, j::Integer, colors::AbstractVector{<:Integer})
-    return filter(neighbors(g, j)) do i
-        !iszero(colors[i])
-    end
-end
-
 function star_coloring(g::AdjacencyGraph)
     n = length(columns(g))
     colors = zeros(Int, n)

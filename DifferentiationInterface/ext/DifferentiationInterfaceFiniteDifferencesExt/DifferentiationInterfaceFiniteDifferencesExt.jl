@@ -31,7 +31,7 @@ end
 
 ## Pullback
 
-DI.prepare_pullback(f, ::AutoFiniteDifferences, x) = NoPullbackExtras()
+DI.prepare_pullback(f, ::AutoFiniteDifferences, x, dy) = NoPullbackExtras()
 
 function DI.pullback(f, backend::AutoFiniteDifferences, x, dy, ::NoPullbackExtras)
     return only(j′vp(backend.fdm, f, dy, x))

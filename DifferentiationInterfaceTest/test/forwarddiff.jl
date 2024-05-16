@@ -10,18 +10,12 @@ function MyAutoSparse(backend::AbstractADType)
     return AutoSparse(backend; sparsity_detector, coloring_algorithm)
 end
 
-test_differentiation(AutoForwardDiff(); logging=get(ENV, "CI", "false") == "false")
+test_differentiation(AutoForwardDiff(); logging=LOGGING)
 
 test_differentiation(
-    MyAutoSparse(AutoForwardDiff()),
-    sparse_scenarios();
-    sparsity=true,
-    logging=get(ENV, "CI", "false") == "false",
+    MyAutoSparse(AutoForwardDiff()), sparse_scenarios(); sparsity=true, logging=LOGGING
 )
 
 test_differentiation(
-    AutoForwardDiff(),
-    component_scenarios();
-    excluded=[HessianScenario],
-    logging=get(ENV, "CI", "false") == "false",
+    AutoForwardDiff(), component_scenarios(); excluded=[HessianScenario], logging=LOGGING
 )
