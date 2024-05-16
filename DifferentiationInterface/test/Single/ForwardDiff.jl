@@ -8,7 +8,14 @@ for backend in [AutoForwardDiff(), AutoSparse(AutoForwardDiff())]
     @test check_hessian(backend)
 end
 
-test_differentiation([AutoForwardDiff(), AutoSparse(AutoForwardDiff())]; logging=LOGGING);
+test_differentiation(
+    [
+        AutoForwardDiff(),
+        AutoForwardDiff(; chunksize=2, tag=:hello),
+        AutoSparse(AutoForwardDiff()),
+    ];
+    logging=LOGGING,
+);
 
 test_differentiation(
     MyAutoSparse(AutoForwardDiff()), sparse_scenarios(); sparsity=true, logging=LOGGING

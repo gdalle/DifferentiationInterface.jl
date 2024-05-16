@@ -109,11 +109,7 @@ function DI.prepare_gradient(f, ::AutoSymbolics, x)
     grad_var = gradient(f(x_var), vec(x_var))
 
     res = build_function(grad_var, vec(x_var); expression=Val(false))
-    (grad_exe, grad_exe!) = if res isa Tuple
-        res
-    elseif res isa RuntimeGeneratedFunction
-        res, nothing
-    end
+    (grad_exe, grad_exe!) = res
     return SymbolicsOneArgGradientExtras(grad_exe, grad_exe!)
 end
 
@@ -156,11 +152,7 @@ function DI.prepare_jacobian(
     end
 
     res = build_function(jac_var, x_var; expression=Val(false))
-    (jac_exe, jac_exe!) = if res isa Tuple
-        res
-    elseif res isa RuntimeGeneratedFunction
-        res, nothing
-    end
+    (jac_exe, jac_exe!) = res
     return SymbolicsOneArgJacobianExtras(jac_exe, jac_exe!)
 end
 
@@ -220,11 +212,7 @@ function DI.prepare_hessian(f, backend::Union{AutoSymbolics,AutoSparse{<:AutoSym
     end
 
     res = build_function(hess_var, vec(x_var); expression=Val(false))
-    (hess_exe, hess_exe!) = if res isa Tuple
-        res
-    elseif res isa RuntimeGeneratedFunction
-        res, nothing
-    end
+    (hess_exe, hess_exe!) = res
     return SymbolicsOneArgHessianExtras(hess_exe, hess_exe!)
 end
 

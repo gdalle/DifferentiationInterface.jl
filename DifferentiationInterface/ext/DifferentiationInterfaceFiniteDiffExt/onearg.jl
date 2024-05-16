@@ -42,24 +42,11 @@ function DI.derivative(
     return finite_difference_derivative(f, x, fdtype(backend))
 end
 
-function DI.derivative!(
-    f, der, backend::AutoFiniteDiff, x, extras::FiniteDiffOneArgDerivativeExtras{Nothing}
-)
-    return copyto!(der, DI.derivative(f, backend, x, extras))
-end
-
 function DI.value_and_derivative(
     f, backend::AutoFiniteDiff, x, ::FiniteDiffOneArgDerivativeExtras{Nothing}
 )
     y = f(x)
     return y, finite_difference_derivative(f, x, fdtype(backend), eltype(y), y)
-end
-
-function DI.value_and_derivative!(
-    f, der, backend::AutoFiniteDiff, x, extras::FiniteDiffOneArgDerivativeExtras{Nothing}
-)
-    y, new_der = DI.value_and_derivative(f, backend, x, extras)
-    return y, copyto!(der, new_der)
 end
 
 ### Scalar to array

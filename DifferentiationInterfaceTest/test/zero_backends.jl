@@ -17,7 +17,7 @@ for backend in [AutoZeroForward(), AutoZeroReverse()]
         default_scenarios();
         correctness=true,
         ref_backend=backend,
-        logging=get(ENV, "CI", "false") == "false",
+        logging=LOGGING == "false",
     )
 end
 
@@ -31,7 +31,7 @@ for backend in [
         correctness=true,
         first_order=false,
         ref_backend=backend,
-        logging=get(ENV, "CI", "false") == "false",
+        logging=LOGGING == "false",
     )
 end
 
@@ -42,7 +42,7 @@ if VERSION >= v"1.10"
         [AutoZeroForward(), AutoZeroReverse()];
         correctness=false,
         type_stability=true,
-        logging=get(ENV, "CI", "false") == "false",
+        logging=LOGGING == "false",
     )
 
     test_differentiation(
@@ -53,23 +53,21 @@ if VERSION >= v"1.10"
         correctness=false,
         type_stability=true,
         first_order=false,
-        logging=get(ENV, "CI", "false") == "false",
+        logging=LOGGING == "false",
     )
 end
 
 ## Benchmark
 
 data1 = benchmark_differentiation(
-    [AutoZeroForward(), AutoZeroReverse()],
-    default_scenarios();
-    logging=get(ENV, "CI", "false") == "false",
+    [AutoZeroForward(), AutoZeroReverse()], default_scenarios(); logging=LOGGING == "false"
 );
 
 data2 = benchmark_differentiation(
     [SecondOrder(AutoZeroForward(), AutoZeroReverse())],
     default_scenarios();
     first_order=false,
-    logging=get(ENV, "CI", "false") == "false",
+    logging=LOGGING == "false",
 );
 
 df1 = DataFrames.DataFrame(data1)
@@ -103,14 +101,14 @@ for backend in [AutoZeroForward(), AutoZeroReverse()]
         gpu_scenarios();
         correctness=true,
         ref_backend=backend,
-        logging=get(ENV, "CI", "false") == "false",
+        logging=LOGGING == "false",
     )
     test_differentiation(
         backend,
         static_scenarios();
         correctness=true,
         ref_backend=backend,
-        logging=get(ENV, "CI", "false") == "false",
+        logging=LOGGING == "false",
     )
     # stack fails on component vectors
     test_differentiation(
@@ -119,6 +117,6 @@ for backend in [AutoZeroForward(), AutoZeroReverse()]
         correctness=true,
         excluded=[HessianScenario],
         ref_backend=backend,
-        logging=get(ENV, "CI", "false") == "false",
+        logging=LOGGING == "false",
     )
 end
