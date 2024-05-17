@@ -71,7 +71,7 @@ julia> Pkg.add(
 
 ## Example
 
-```julia
+```jldoctest
 using DifferentiationInterface
 import ForwardDiff, Enzyme, Zygote  # AD backends you want to use 
 
@@ -84,7 +84,7 @@ value_and_gradient(f, AutoEnzyme(),      x) # returns (5.0, [2.0, 4.0]) with Enz
 value_and_gradient(f, AutoZygote(),      x) # returns (5.0, [2.0, 4.0]) with Zygote.jl
 ```
 
-For more performance, take a look at the [DifferentiationInterface tutorial](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterface/stable/tutorial/).
+To improve your performance by up to several orders of magnitude compared to this example, take a look at the [DifferentiationInterface tutorial](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterface/stable/tutorial/) and its section on operator preparation.
 
 ## Related packages
 
