@@ -71,7 +71,7 @@ julia> Pkg.add(
 
 ## Example
 
-```jldoctest
+```julia
 using DifferentiationInterface
 import ForwardDiff, Enzyme, Zygote  # AD backends you want to use 
 
