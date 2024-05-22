@@ -17,7 +17,7 @@ concurrency:
 jobs:
   
   test-DI:
-    name: DifferentiationInterface (${{ matrix.group }}) - Julia ${{ matrix.version }}
+    name: DI (${{ matrix.group }}) - Julia ${{ matrix.version }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions: # needed to allow julia-actions/cache to proactively delete old caches that it has created
@@ -71,7 +71,7 @@ jobs:
           fail_ci_if_error: true
 
   test-DIT:
-    name: DifferentiationInterfaceTest- Julia ${{ matrix.version }}
+    name: DIT - Julia ${{ matrix.version }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions: # needed to allow julia-actions/cache to proactively delete old caches that it has created
