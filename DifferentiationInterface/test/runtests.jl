@@ -42,26 +42,22 @@ end
 
 LOGGING = get(ENV, "CI", "false") == "false"
 
-GROUP = get(ENV, "JULIA_DI_TESTING_GROUP", "All")
+GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "All")
 
 ## Main tests
 
 @testset verbose = true "DifferentiationInterface.jl" begin
     if GROUP == "Formalities" || GROUP == "All"
-        @testset verbose = true "$file" for file in readdir(
-            joinpath(@__DIR__, "Formalities"); join=true
-        )
-            @info "Testing $file"
-            include(file)
+        @testset "$file" for file in readdir(joinpath(@__DIR__, "Formalities"))
+            @info "Testing $(file[end-3:end])"
+            include(joinpath(@__DIR__, "Formalities", file))
         end
     end
 
     if GROUP == "Internals" || GROUP == "All"
-        @testset verbose = true "$file" for file in readdir(
-            joinpath(@__DIR__, "Internals"); join=true
-        )
-            @info "Testing $file"
-            include(file)
+        @testset "$file" for file in readdir(joinpath(@__DIR__, "Internals"))
+            @info "Testing $(file[end-3:end])"
+            include(joinpath(@__DIR__, "Internals", file))
         end
     end
 
@@ -70,12 +66,14 @@ GROUP = get(ENV, "JULIA_DI_TESTING_GROUP", "All")
         nothing
     elseif startswith(GROUP, "Single")
         backend1_str = split(GROUP, '/')[2]
+        @info "Testing Single/$backend_str"
         if VERSION >= v"1.10" || backend1_str in BACKENDS_1_6
             Pkg.add(backend1_str)
             include(joinpath(@__DIR__, "Single", "$backend1_str.jl"))
         end
     elseif startswith(GROUP, "Double")
         backend1_str, backend2_str = split(split(GROUP, '/')[2], '-')
+        @info "Testing Single/$backend1_str-$backend2_str"
         if VERSION >= v"1.10" ||
             (backend1_str in BACKENDS_1_6 && backend2_str in BACKENDS_1_6)
             Pkg.add([backend1_str, backend2_str])
