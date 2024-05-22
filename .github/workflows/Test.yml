@@ -62,8 +62,6 @@ jobs:
         env:
           JULIA_DI_TEST_GROUP: ${{ matrix.group }}
       - uses: julia-actions/julia-processcoverage@v1
-        with:
-          directories: ./DifferentiationInterface/src, ./DifferentiationInterface/ext
       - uses: codecov/codecov-action@v4
         with:
           files: lcov.info
@@ -102,8 +100,6 @@ jobs:
         with:
           project: ./DifferentiationInterfaceTest
       - uses: julia-actions/julia-processcoverage@v1
-        with:
-          directories: ./DifferentiationInterfaceTest/src, ./DifferentiationInterfaceTest/ext
       - uses: codecov/codecov-action@v4
         with:
           files: lcov.info
