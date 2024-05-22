@@ -34,12 +34,6 @@ BACKENDS_1_10 = [
     "Tapir",
 ]
 
-@static if VERSION >= v"1.10"
-    Pkg.add(vcat(BACKENDS_1_6, BACKENDS_1_10))
-else
-    Pkg.add(vcat(BACKENDS_1_6))
-end
-
 function MyAutoSparse(backend::AbstractADType)
     coloring_algorithm = GreedyColoringAlgorithm()
     sparsity_detector = TracerSparsityDetector()
@@ -48,31 +42,44 @@ end
 
 LOGGING = get(ENV, "CI", "false") == "false"
 
+GROUP = get(ENV, "JULIA_DI_TESTING_GROUP", "All")
+
 ## Main tests
 
 @testset verbose = true "DifferentiationInterface.jl" begin
-    @static if VERSION >= v"1.10"
-        @info "Testing formalities"
-        @testset verbose = true "Formal tests" begin
-            include("formal.jl")
+    if GROUP == "Formalities" || GROUP == "All"
+        @testset verbose = true "$file" for file in readdir(
+            joinpath(@__DIR__, "Formalities"); join=true
+        )
+            @info "Testing $file"
+            include(file)
         end
     end
 
-    @testset verbose = true "$folder" for folder in ["Single", "Double", "Internals"]
-        folder_path = joinpath(@__DIR__, folder)
-        @testset verbose = true "$(file[1:end-3])" for file in readdir(folder_path)
-            endswith(file, ".jl") || continue
-            if (
-                VERSION < v"1.10" && any(
-                    part == backend for part in split(file[1:(end - 3)], '-') for
-                    backend in BACKENDS_1_10
-                )
-            )
-                @info "Skipping $folder - $(file[1:end-3])"
-            else
-                @info "Testing $folder - $(file[1:end-3])"
-                include(joinpath(folder_path, file))
-            end
+    if GROUP == "Internals" || GROUP == "All"
+        @testset verbose = true "$file" for file in readdir(
+            joinpath(@__DIR__, "Internals"); join=true
+        )
+            @info "Testing $file"
+            include(file)
+        end
+    end
+
+    if GROUP == "All"
+        # do stuff
+        nothing
+    elseif startswith(GROUP, "Single")
+        backend1_str = split(GROUP, '/')[2]
+        if VERSION >= v"1.10" || backend1_str in BACKENDS_1_6
+            Pkg.add(backend1_str)
+            include(joinpath(@__DIR__, "Single", "$backend1_str.jl"))
+        end
+    elseif startswith(GROUP, "Double")
+        backend1_str, backend2_str = split(split(GROUP, '/')[2], '-')
+        if VERSION >= v"1.10" ||
+            (backend1_str in BACKENDS_1_6 && backend2_str in BACKENDS_1_6)
+            Pkg.add([backend1_str, backend2_str])
+            include(joinpath(@__DIR__, "Double", "$backend1_str-$backend2_str.jl"))
         end
     end
 end;
