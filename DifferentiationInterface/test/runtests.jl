@@ -66,7 +66,7 @@ GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "All")
         nothing
     elseif startswith(GROUP, "Single")
         backend1_str = split(GROUP, '/')[2]
-        @info "Testing Single/$backend_str"
+        @info "Testing Single/$backend1_str"
         if VERSION >= v"1.10" || backend1_str in BACKENDS_1_6
             Pkg.add(backend1_str)
             include(joinpath(@__DIR__, "Single", "$backend1_str.jl"))
