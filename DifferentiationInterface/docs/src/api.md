@@ -96,7 +96,6 @@ check_hessian
 
 ```@docs
 DifferentiateWith
-GreedyColoringAlgorithm
 ```
 
 ## Internals
