@@ -66,6 +66,8 @@ jobs:
             group: Single/Tapir
           - version: '1.6'
             group: Double/Enzyme-ForwardDiff
+          - version: '1.6'
+            group: Double/ReverseDiff-Zygote
     
     steps:
       - uses: actions/checkout@v4
