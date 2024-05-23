@@ -51,19 +51,21 @@ jobs:
           - version: '1.6'
             group: Formalities
           - version: '1.6'
-            group: Diffractor
+            group: Single/Diffractor
           - version: '1.6'
-            group: Enzyme
+            group: Single/Enzyme
           - version: '1.6'
-            group: FiniteDiff
+            group: Single/FiniteDiff
           - version: '1.6'
-            group: FastDifferentiation
+            group: Single/FastDifferentiation
           - version: '1.6'
-            group: PolyesterForwardDiff
+            group: Single/PolyesterForwardDiff
           - version: '1.6'
-            group: Symbolics
+            group: Single/Symbolics
           - version: '1.6'
-            group: Tapir
+            group: Single/Tapir
+          - version: '1.6'
+            group: Double/Enzyme-ForwardDiff
     
     steps:
       - uses: actions/checkout@v4
