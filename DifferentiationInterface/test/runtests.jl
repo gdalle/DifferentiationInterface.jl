@@ -55,7 +55,7 @@ GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "All")
             "Tracker",
             "Zygote",
         ])
-        @testset "$folder" for folder in ("Single", "Double")
+        @testset verbose = true "$folder" for folder in ("Single", "Double")
             files = filter(f -> endswith(f, ".jl"), readdir(joinpath(@__DIR__, folder)))
             @testset "$file" for file in files
                 @info "Testing $folder/$file"
