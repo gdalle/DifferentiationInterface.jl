@@ -16,9 +16,9 @@ concurrency:
 
 jobs:
   
-  test:
-    name: ${{ matrix.pkg.name }} - Julia ${{ matrix.version }}
-    runs-on: ${{ matrix.os }}
+  test-DI:
+    name: DI (${{ matrix.group }}) - Julia ${{ matrix.version }}
+    runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions: # needed to allow julia-actions/cache to proactively delete old caches that it has created
       actions: write
@@ -26,41 +26,105 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        pkg:
-          - name: DifferentiationInterface
-            dir: './DifferentiationInterface'
-          - name: DifferentiationInterfaceTest
-            dir: './DifferentiationInterfaceTest'
         version:
           - '1'
           - '1.6'
-        os:
-          - ubuntu-latest
-        arch:
-          - x64
+        group:
+          - Formalities
+          - Internals
+          - Single/Diffractor
+          - Single/Enzyme
+          - Single/FastDifferentiation
+          - Single/FiniteDiff
+          - Single/FiniteDifferences
+          - Single/ForwardDiff
+          - Single/PolyesterForwardDiff
+          - Single/ReverseDiff
+          - Single/Symbolics
+          - Single/Tapir
+          - Single/Tracker
+          - Single/Zygote
+          - Double/Enzyme-ForwardDiff
+          - Double/ForwardDiff-Zygote
+          - Double/ReverseDiff-Zygote
+        exclude:
+          - version: '1.6'
+            group: Formalities
+          - version: '1.6'
+            group: Single/Diffractor
+          - version: '1.6'
+            group: Single/Enzyme
+          - version: '1.6'
+            group: Single/FiniteDiff
+          - version: '1.6'
+            group: Single/FastDifferentiation
+          - version: '1.6'
+            group: Single/PolyesterForwardDiff
+          - version: '1.6'
+            group: Single/Symbolics
+          - version: '1.6'
+            group: Single/Tapir
+          - version: '1.6'
+            group: Double/Enzyme-ForwardDiff
+          - version: '1.6'
+            group: Double/ReverseDiff-Zygote
     
     steps:
       - uses: actions/checkout@v4
       - uses: julia-actions/setup-julia@v2
         with:
           version: ${{ matrix.version }}
-          arch: ${{ matrix.arch }}
+          arch: x64
+      - uses: julia-actions/cache@v2
+      - uses: julia-actions/julia-buildpkg@v1
+      - uses: julia-actions/julia-runtest@v1
+        with:
+          project: ./DifferentiationInterface
+        env:
+          JULIA_DI_TEST_GROUP: ${{ matrix.group }}
+      - uses: julia-actions/julia-processcoverage@v1
+        with:
+          directories: ./DifferentiationInterface/src,./DifferentiationInterface/ext
+      - uses: codecov/codecov-action@v4
+        with:
+          files: lcov.info
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+
+  test-DIT:
+    name: DIT - Julia ${{ matrix.version }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions: # needed to allow julia-actions/cache to proactively delete old caches that it has created
+      actions: write
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        version:
+          - '1'
+          - '1.6'
+    
+    steps:
+      - uses: actions/checkout@v4
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: ${{ matrix.version }}
+          arch: x64
       - uses: julia-actions/cache@v2
       - uses: julia-actions/julia-buildpkg@v1
       - name: Dev dependencies (temporary)
-        run: julia --project=${{ matrix.pkg.dir}}/ -e '
+        run: julia --project='./DifferentiationInterfaceTest' -e '
           using Pkg;
           Pkg.Registry.update();
-          if "${{ matrix.pkg.name}}" == "DifferentiationInterfaceTest";
-              Pkg.develop(PackageSpec(path="./DifferentiationInterface"));
-          end;
+          Pkg.develop(PackageSpec(path="./DifferentiationInterface"));
           Pkg.instantiate();'
       - uses: julia-actions/julia-runtest@v1
         with:
-          project: ${{ matrix.pkg.dir }}
+          project: ./DifferentiationInterfaceTest
       - uses: julia-actions/julia-processcoverage@v1
         with:
-          directories: ${{ matrix.pkg.dir }}/src,${{ matrix.pkg.dir }}/ext
+          directories: ./DifferentiationInterfaceTest/src,./DifferentiationInterfaceTest/ext
       - uses: codecov/codecov-action@v4
         with:
           files: lcov.info
