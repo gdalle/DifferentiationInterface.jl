@@ -35,13 +35,13 @@ function prepare_hessian(f::F, backend::AutoSparse, x) where {F}
 end
 
 function hessian!(f::F, hess, backend::AutoSparse, x, extras::SparseHessianExtras) where {F}
-    @compat (; compressed, colors, seeds, products, hvp_extras) = extras
+    @compat (; sparsity, compressed, colors, seeds, products, hvp_extras) = extras
     hvp_extras_same = prepare_hvp_same_point(f, backend, x, seeds[1], hvp_extras)
     for k in eachindex(seeds, products)
         hvp!(f, products[k], backend, x, seeds[k], hvp_extras_same)
         copyto!(view(compressed, :, k), vec(products[k]))
     end
-    decompress_columns!(hess, compressed, colors)
+    decompress_columns!(hess, sparsity, compressed, colors)
     return hess
 end
 
