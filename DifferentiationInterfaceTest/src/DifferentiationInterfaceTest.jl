@@ -61,7 +61,6 @@ include("utils/zero_backends.jl")
 include("utils/misc.jl")
 include("utils/filter.jl")
 
-include("tests/coloring.jl")
 include("tests/correctness.jl")
 @static if VERSION >= v"1.10"
     include("tests/type_stability.jl")

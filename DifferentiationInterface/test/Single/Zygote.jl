@@ -2,7 +2,7 @@ using DifferentiationInterface, DifferentiationInterfaceTest
 using Zygote: Zygote
 
 backends = [
-    AutoChainRules(Zygote.ZygoteRuleConfig()), AutoZygote(), AutoSparse(AutoZygote())
+    AutoChainRules(Zygote.ZygoteRuleConfig()), AutoZygote(), MyAutoSparse(AutoZygote())
 ]
 
 for backend in backends
@@ -18,7 +18,7 @@ test_differentiation(
 );
 
 test_differentiation(
-    [AutoZygote(), AutoSparse(AutoZygote())];
+    [AutoZygote(), MyAutoSparse(AutoZygote())];
     excluded=[SecondDerivativeScenario, HVPScenario],
     logging=LOGGING,
 );

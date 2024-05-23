@@ -2,18 +2,20 @@ using DifferentiationInterface, DifferentiationInterfaceTest
 using ForwardDiff: ForwardDiff
 using DataFrames: DataFrame
 
-for backend in [AutoForwardDiff(), AutoSparse(AutoForwardDiff())]
+for backend in [AutoForwardDiff(), MyAutoSparse(AutoForwardDiff())]
     @test check_available(backend)
     @test check_twoarg(backend)
     @test check_hessian(backend)
 end
 
 test_differentiation(
-    [
-        AutoForwardDiff(),
-        AutoForwardDiff(; chunksize=2, tag=:hello),
-        AutoSparse(AutoForwardDiff()),
-    ];
+    [AutoForwardDiff(), AutoForwardDiff(; chunksize=2, tag=:hello)]; logging=LOGGING
+);
+
+test_differentiation(
+    MyAutoSparse(AutoForwardDiff()),
+    default_scenarios();
+    excluded=[JacobianScenario, HessianScenario],
     logging=LOGGING,
 );
 

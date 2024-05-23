@@ -1,22 +1,32 @@
 struct SparseJacobianExtras{
-    args,dir,C<:CompressedMatrix{dir},S<:AbstractVector,P<:AbstractVector,E<:Extras
+    args,
+    dir,
+    S<:AbstractMatrix{Bool},
+    C<:AbstractMatrix{<:Real},
+    K<:AbstractVector{<:Integer},
+    D<:AbstractVector,
+    P<:AbstractVector,
+    E<:Extras,
 } <: JacobianExtras
+    sparsity::S
     compressed::C
-    seeds::S
+    colors::K
+    seeds::D
     products::P
     jp_extras::E
 end
 
-function SparseJacobianExtras{args}(;
-    compressed::CompressedMatrix{dir}, seeds::S, products::P, jp_extras::E
-) where {args,dir,S,P,E}
+function SparseJacobianExtras{args,dir}(;
+    sparsity::S, compressed::C, colors::K, seeds::D, products::P, jp_extras::E
+) where {args,dir,S,C,K,D,P,E}
     if dir == :col
         @assert jp_extras isa PushforwardExtras
     elseif dir == :row
         @assert jp_extras isa PullbackExtras
     end
-    C = typeof(compressed)
-    return SparseJacobianExtras{args,dir,C,S,P,E}(compressed, seeds, products, jp_extras)
+    return SparseJacobianExtras{args,dir,S,C,K,D,P,E}(
+        sparsity, compressed, colors, seeds, products, jp_extras
+    )
 end
 
 ## Jacobian, one argument
@@ -34,11 +44,13 @@ function prepare_jacobian(f::F, backend::AutoSparse, x) where {F}
             seed
         end
         jp_extras = prepare_pushforward(f, backend, x, first(seeds))
-        products = map(seeds) do seed
+        products = map(seeds) do _
             similar(y)
         end
-        aggregates = stack(vec, products; dims=2)
-        compressed = CompressedMatrix{:col}(sparsity, colors, groups, aggregates)
+        compressed = stack(vec, products; dims=2)
+        return SparseJacobianExtras{1,:col}(;
+            sparsity, compressed, colors, seeds, products, jp_extras
+        )
     else
         sparsity = row_major(initial_sparsity)
         colors = row_coloring(sparsity, coloring_algorithm(backend))
@@ -49,45 +61,46 @@ function prepare_jacobian(f::F, backend::AutoSparse, x) where {F}
             seed
         end
         jp_extras = prepare_pullback(f, backend, x, first(seeds))
-        products = map(seeds) do seed
+        products = map(seeds) do _
             similar(x)
         end
-        aggregates = stack(vec, products; dims=1)
-        compressed = CompressedMatrix{:row}(sparsity, colors, groups, aggregates)
+        compressed = stack(vec, products; dims=1)
+        return SparseJacobianExtras{1,:row}(;
+            sparsity, compressed, colors, seeds, products, jp_extras
+        )
     end
-    return SparseJacobianExtras{1}(; compressed, seeds, products, jp_extras)
 end
 
 function jacobian!(
     f::F, jac, backend::AutoSparse, x, extras::SparseJacobianExtras{1,:col}
 ) where {F}
-    @compat (; compressed, seeds, products, jp_extras) = extras
+    @compat (; compressed, colors, seeds, products, jp_extras) = extras
     pushforward_extras_same = prepare_pushforward_same_point(
         f, backend, x, seeds[1], jp_extras
     )
     for k in eachindex(seeds, products)
         pushforward!(f, products[k], backend, x, seeds[k], pushforward_extras_same)
-        copyto!(view(compressed.aggregates, :, k), vec(products[k]))
+        copyto!(view(compressed, :, k), vec(products[k]))
     end
-    decompress!(jac, compressed)
+    decompress_columns!(jac, compressed, colors)
     return jac
 end
 
 function jacobian!(
     f::F, jac, backend::AutoSparse, x, extras::SparseJacobianExtras{1,:row}
 ) where {F}
-    @compat (; compressed, seeds, products, jp_extras) = extras
+    @compat (; compressed, colors, seeds, products, jp_extras) = extras
     pullback_extras_same = prepare_pullback_same_point(f, backend, x, seeds[1], jp_extras)
     for k in eachindex(seeds, products)
         pullback!(f, products[k], backend, x, seeds[k], pullback_extras_same)
-        copyto!(view(compressed.aggregates, k, :), vec(products[k]))
+        copyto!(view(compressed, k, :), vec(products[k]))
     end
-    decompress!(jac, compressed)
+    decompress_rows!(jac, compressed, colors)
     return jac
 end
 
 function jacobian(f::F, backend::AutoSparse, x, extras::SparseJacobianExtras{1}) where {F}
-    jac = major_respecting_similar(extras.compressed.sparsity, eltype(x))
+    jac = major_respecting_similar(extras.sparsity, eltype(x))
     return jacobian!(f, jac, backend, x, extras)
 end
 
@@ -117,11 +130,13 @@ function prepare_jacobian(f!::F, y, backend::AutoSparse, x) where {F}
             seed
         end
         jp_extras = prepare_pushforward(f!, y, backend, x, first(seeds))
-        products = map(seeds) do seed
+        products = map(seeds) do _
             similar(y)
         end
-        aggregates = stack(vec, products; dims=2)
-        compressed = CompressedMatrix{:col}(sparsity, colors, groups, aggregates)
+        compressed = stack(vec, products; dims=2)
+        return SparseJacobianExtras{2,:col}(;
+            sparsity, compressed, colors, seeds, products, jp_extras
+        )
     else
         sparsity = row_major(initial_sparsity)
         colors = row_coloring(sparsity, coloring_algorithm(backend))
@@ -132,49 +147,50 @@ function prepare_jacobian(f!::F, y, backend::AutoSparse, x) where {F}
             seed
         end
         jp_extras = prepare_pullback(f!, y, backend, x, first(seeds))
-        products = map(seeds) do seed
+        products = map(seeds) do _
             similar(x)
         end
-        aggregates = stack(vec, products; dims=1)
-        compressed = CompressedMatrix{:row}(sparsity, colors, groups, aggregates)
+        compressed = stack(vec, products; dims=1)
+        return SparseJacobianExtras{2,:row}(;
+            sparsity, compressed, colors, seeds, products, jp_extras
+        )
     end
-    return SparseJacobianExtras{2}(; compressed, seeds, products, jp_extras)
 end
 
 function jacobian!(
     f!::F, y, jac, backend::AutoSparse, x, extras::SparseJacobianExtras{2,:col}
 ) where {F}
-    @compat (; compressed, seeds, products, jp_extras) = extras
+    @compat (; compressed, colors, seeds, products, jp_extras) = extras
     pushforward_extras_same = prepare_pushforward_same_point(
         f!, y, backend, x, seeds[1], jp_extras
     )
     for k in eachindex(seeds, products)
         pushforward!(f!, y, products[k], backend, x, seeds[k], pushforward_extras_same)
-        copyto!(view(compressed.aggregates, :, k), vec(products[k]))
+        copyto!(view(compressed, :, k), vec(products[k]))
     end
-    decompress!(jac, compressed)
+    decompress_columns!(jac, compressed, colors)
     return jac
 end
 
 function jacobian!(
     f!::F, y, jac, backend::AutoSparse, x, extras::SparseJacobianExtras{2,:row}
 ) where {F}
-    @compat (; compressed, seeds, products, jp_extras) = extras
+    @compat (; compressed, colors, seeds, products, jp_extras) = extras
     pullback_extras_same = prepare_pullback_same_point(
         f!, y, backend, x, seeds[1], jp_extras
     )
     for k in eachindex(seeds, products)
         pullback!(f!, y, products[k], backend, x, seeds[k], pullback_extras_same)
-        copyto!(view(compressed.aggregates, k, :), vec(products[k]))
+        copyto!(view(compressed, k, :), vec(products[k]))
     end
-    decompress!(jac, compressed)
+    decompress_columns!(jac, compressed, colors)
     return jac
 end
 
 function jacobian(
     f!::F, y, backend::AutoSparse, x, extras::SparseJacobianExtras{2}
 ) where {F}
-    jac = major_respecting_similar(extras.compressed.sparsity, eltype(x))
+    jac = major_respecting_similar(extras.sparsity, eltype(x))
     return jacobian!(f!, y, jac, backend, x, extras)
 end
 

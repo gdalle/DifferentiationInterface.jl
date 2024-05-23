@@ -34,6 +34,8 @@ using FillArrays: OneElement
 using LinearAlgebra: Symmetric, Transpose, dot, parent, transpose
 using PackageExtensionCompat: @require_extensions
 using SparseArrays: SparseMatrixCSC, nonzeros, nzrange, rowvals, sparse
+using SparseMatrixColorings:
+    GreedyColoringAlgorithm, color_groups, decompress_columns!, decompress_rows!
 
 abstract type Extras end
 
@@ -57,10 +59,8 @@ include("second_order/hvp.jl")
 include("second_order/hessian.jl")
 
 include("sparse/detector.jl")
-include("sparse/matrices.jl")
-include("sparse/coloring.jl")
-include("sparse/compressed_matrix.jl")
 include("sparse/fallbacks.jl")
+include("sparse/matrices.jl")
 include("sparse/jacobian.jl")
 include("sparse/hessian.jl")
 

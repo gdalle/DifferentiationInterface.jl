@@ -3,6 +3,7 @@ using DifferentiationInterface
 using DifferentiationInterfaceTest
 using ForwardDiff: ForwardDiff
 using SparseConnectivityTracer
+using SparseMatrixColorings
 
 function MyAutoSparse(backend::AbstractADType)
     coloring_algorithm = GreedyColoringAlgorithm()

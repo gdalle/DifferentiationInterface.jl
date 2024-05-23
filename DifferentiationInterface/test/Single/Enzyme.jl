@@ -5,7 +5,7 @@ backends = [
     AutoEnzyme(; mode=nothing),
     AutoEnzyme(; mode=Enzyme.Forward),
     AutoEnzyme(; mode=Enzyme.Reverse),
-    AutoSparse(AutoEnzyme(; mode=nothing)),
+    MyAutoSparse(AutoEnzyme(; mode=nothing)),
 ]
 
 for backend in backends

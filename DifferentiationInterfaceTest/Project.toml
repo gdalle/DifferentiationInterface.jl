@@ -45,7 +45,8 @@ JuliaFormatter = "98e50ef6-434e-11e9-1051-2b60c6c9e899"
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 SparseConnectivityTracer = "9f842d2f-2579-4b1d-911e-f412cf18a3f5"
+SparseMatrixColorings = "0a514795-09f3-496d-8182-132a7b665d35"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["ADTypes", "Aqua", "DataFrames", "DifferentiationInterface", "ForwardDiff", "JET", "JuliaFormatter", "Pkg", "SparseArrays", "SparseConnectivityTracer", "Test"]
+test = ["ADTypes", "Aqua", "DataFrames", "DifferentiationInterface", "ForwardDiff", "JET", "JuliaFormatter", "Pkg", "SparseArrays", "SparseConnectivityTracer", "SparseMatrixColorings", "Test"]
