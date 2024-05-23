@@ -15,7 +15,16 @@ for backend in backends
     @test check_hessian(backend)
 end
 
-test_differentiation(backends; first_order=false, logging=LOGGING);
+test_differentiation(
+    SecondOrder(AutoForwardDiff(), AutoZygote()); first_order=false, logging=LOGGING
+);
+
+test_differentiation(
+    MyAutoSparse(SecondOrder(AutoForwardDiff(), AutoZygote()));
+    first_order=false,
+    excluded=[HessianScenario],
+    logging=LOGGING,
+);
 
 test_differentiation(
     MyAutoSparse(SecondOrder(AutoForwardDiff(), AutoZygote())),
