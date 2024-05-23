@@ -55,11 +55,12 @@ GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "All")
             "Tracker",
             "Zygote",
         ])
-        @testset "$folder/$file" for folder in ("Single", "Double"),
-            file in readdir(joinpath(@__DIR__, folder))
-
-            @info "Testing $folder/$file"
-            include(joinpath(@__DIR__, folder, file))
+        @testset "$folder" for folder in ("Single", "Double")
+            files = filter(f -> endswith(f, ".jl"), readdir(joinpath(@__DIR__, folder)))
+            @testset "$file" for file in files
+                @info "Testing $folder/$file"
+                include(joinpath(@__DIR__, folder, file))
+            end
         end
     elseif startswith(GROUP, "Single")
         b1 = split(GROUP, '/')[2]
