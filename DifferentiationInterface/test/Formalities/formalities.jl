@@ -1,6 +1,5 @@
 using Aqua: Aqua
 using DifferentiationInterface
-using Documenter: Documenter
 using JET: JET
 using JuliaFormatter: JuliaFormatter
 using Test
@@ -16,9 +15,5 @@ end
 end
 
 @testset verbose = true "JET" begin
-    if VERSION >= v"1.10"
-        JET.test_package(DifferentiationInterface; target_defined_modules=true)
-    end
+    JET.test_package(DifferentiationInterface; target_defined_modules=true)
 end
-
-# Documenter.doctest(DifferentiationInterface)

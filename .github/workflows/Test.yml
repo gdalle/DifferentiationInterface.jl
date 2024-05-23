@@ -47,6 +47,23 @@ jobs:
           - Double/Enzyme-ForwardDiff
           - Double/ForwardDiff-Zygote
           - Double/ReverseDiff-Zygote
+        exclude:
+          - version: '1.6'
+            group: Formalities
+          - version: '1.6'
+            group: Diffractor
+          - version: '1.6'
+            group: Enzyme
+          - version: '1.6'
+            group: FiniteDiff
+          - version: '1.6'
+            group: FastDifferentiation
+          - version: '1.6'
+            group: PolyesterForwardDiff
+          - version: '1.6'
+            group: Symbolics
+          - version: '1.6'
+            group: Tapir
     
     steps:
       - uses: actions/checkout@v4

@@ -4,35 +4,14 @@ using Pkg
 using SparseConnectivityTracer
 using Test
 
-push!(Base.LOAD_PATH, Base.active_project())
-Pkg.activate(; temp=true)
-
-DI_PATH = joinpath(@__DIR__, "..", "..", "DifferentiationInterface")
+# DI_PATH = joinpath(@__DIR__, "..", "..", "DifferentiationInterface")
+# if isdir(DI_PATH)
+#     Pkg.develop(; path=DI_PATH)
+# end
 DIT_PATH = joinpath(@__DIR__, "..", "..", "DifferentiationInterfaceTest")
-if isdir(DI_PATH)
-    Pkg.develop(; path=DI_PATH)
-end
 if isdir(DIT_PATH)
     Pkg.develop(; path=DIT_PATH)
 end
-
-BACKENDS_1_6 = [
-    "FiniteDifferences",  #
-    "ForwardDiff",
-    "ReverseDiff",
-    "Tracker",
-    "Zygote",
-]
-
-BACKENDS_1_10 = [
-    "Diffractor",  # 
-    "Enzyme",
-    "FiniteDiff",
-    "FastDifferentiation",
-    "PolyesterForwardDiff",
-    "Symbolics",
-    "Tapir",
-]
 
 function MyAutoSparse(backend::AbstractADType)
     coloring_algorithm = GreedyColoringAlgorithm()
@@ -48,36 +27,53 @@ GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "All")
 
 @testset verbose = true "DifferentiationInterface.jl" begin
     if GROUP == "Formalities" || GROUP == "All"
-        @testset "$file" for file in readdir(joinpath(@__DIR__, "Formalities"))
-            @info "Testing $(file[end-3:end])"
+        @testset "Formalities/$file" for file in readdir(joinpath(@__DIR__, "Formalities"))
+            @info "Testing Formalities/$file)"
             include(joinpath(@__DIR__, "Formalities", file))
         end
     end
 
     if GROUP == "Internals" || GROUP == "All"
-        @testset "$file" for file in readdir(joinpath(@__DIR__, "Internals"))
-            @info "Testing $(file[end-3:end])"
+        @testset "Internals/$file" for file in readdir(joinpath(@__DIR__, "Internals"))
+            @info "Testing Internals/$file"
             include(joinpath(@__DIR__, "Internals", file))
         end
     end
 
     if GROUP == "All"
-        # do stuff
-        nothing
+        Pkg.add([
+            "Diffractor",
+            "Enzyme",
+            "FiniteDiff",
+            "FiniteDifferences",
+            "FastDifferentiation",
+            "ForwardDiff",
+            "PolyesterForwardDiff",
+            "ReverseDiff",
+            "Symbolics",
+            "Tapir",
+            "Tracker",
+            "Zygote",
+        ])
+        @testset "$folder/$file" for folder in ("Single", "Double"),
+            file in readdir(joinpath(@__DIR__, folder))
+
+            @info "Testing $folder/$file"
+            include(joinpath(@__DIR__, folder, file))
+        end
     elseif startswith(GROUP, "Single")
-        backend1_str = split(GROUP, '/')[2]
-        @info "Testing Single/$backend1_str"
-        if VERSION >= v"1.10" || backend1_str in BACKENDS_1_6
-            Pkg.add(backend1_str)
-            include(joinpath(@__DIR__, "Single", "$backend1_str.jl"))
+        b1 = split(GROUP, '/')[2]
+        @testset "Single/$b1" begin
+            @info "Testing Single/$b1"
+            Pkg.add(b1)
+            include(joinpath(@__DIR__, "Single", "$b1.jl"))
         end
     elseif startswith(GROUP, "Double")
-        backend1_str, backend2_str = split(split(GROUP, '/')[2], '-')
-        @info "Testing Single/$backend1_str-$backend2_str"
-        if VERSION >= v"1.10" ||
-            (backend1_str in BACKENDS_1_6 && backend2_str in BACKENDS_1_6)
-            Pkg.add([backend1_str, backend2_str])
-            include(joinpath(@__DIR__, "Double", "$backend1_str-$backend2_str.jl"))
+        b1, b2 = split(split(GROUP, '/')[2], '-')
+        @testset "Single/$b1-$b2" begin
+            @info "Testing Double/$b1-$b2"
+            Pkg.add([b1, b2])
+            include(joinpath(@__DIR__, "Double", "$b1-$b2.jl"))
         end
     end
 end;
