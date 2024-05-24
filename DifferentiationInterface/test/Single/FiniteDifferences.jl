@@ -1,5 +1,5 @@
 using DifferentiationInterface, DifferentiationInterfaceTest
-using FiniteDifferences: FiniteDifference
+using FiniteDifferences: FiniteDifferences
 using Test
 
 for backend in [AutoFiniteDifferences(; fdm=FiniteDifferences.central_fdm(3, 1))]
