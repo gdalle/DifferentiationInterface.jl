@@ -35,7 +35,12 @@ using LinearAlgebra: Symmetric, Transpose, dot, parent, transpose
 using PackageExtensionCompat: @require_extensions
 using SparseArrays: SparseMatrixCSC, nonzeros, nzrange, rowvals, sparse
 using SparseMatrixColorings:
-    GreedyColoringAlgorithm, color_groups, decompress_columns!, decompress_rows!
+    GreedyColoringAlgorithm,
+    color_groups,
+    decompress_columns!,
+    decompress_columns,
+    decompress_rows!,
+    decompress_rows
 
 abstract type Extras end
 

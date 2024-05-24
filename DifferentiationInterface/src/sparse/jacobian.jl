@@ -99,9 +99,28 @@ function jacobian!(
     return jac
 end
 
-function jacobian(f::F, backend::AutoSparse, x, extras::SparseJacobianExtras{1}) where {F}
-    jac = major_respecting_similar(extras.sparsity, eltype(x))
-    return jacobian!(f, jac, backend, x, extras)
+function jacobian(
+    f::F, backend::AutoSparse, x, extras::SparseJacobianExtras{1,:col}
+) where {F}
+    @compat (; sparsity, compressed, colors, seeds, products, jp_extras) = extras
+    pushforward_extras_same = prepare_pushforward_same_point(
+        f, backend, x, seeds[1], jp_extras
+    )
+    compressed = stack(eachindex(seeds, products); dims=2) do k
+        vec(pushforward(f, backend, x, seeds[k], pushforward_extras_same))
+    end
+    return decompress_columns(sparsity, compressed, colors)
+end
+
+function jacobian(
+    f::F, backend::AutoSparse, x, extras::SparseJacobianExtras{1,:row}
+) where {F}
+    @compat (; sparsity, compressed, colors, seeds, products, jp_extras) = extras
+    pullback_extras_same = prepare_pullback_same_point(f, backend, x, seeds[1], jp_extras)
+    compressed = stack(eachindex(seeds, products); dims=1) do k
+        vec(pullback(f, backend, x, seeds[k], pullback_extras_same))
+    end
+    return decompress_rows(sparsity, compressed, colors)
 end
 
 function value_and_jacobian!(
@@ -188,10 +207,29 @@ function jacobian!(
 end
 
 function jacobian(
-    f!::F, y, backend::AutoSparse, x, extras::SparseJacobianExtras{2}
+    f!::F, y, backend::AutoSparse, x, extras::SparseJacobianExtras{2,:col}
 ) where {F}
-    jac = major_respecting_similar(extras.sparsity, eltype(x))
-    return jacobian!(f!, y, jac, backend, x, extras)
+    @compat (; sparsity, compressed, colors, seeds, products, jp_extras) = extras
+    pushforward_extras_same = prepare_pushforward_same_point(
+        f!, y, backend, x, seeds[1], jp_extras
+    )
+    compressed = stack(eachindex(seeds, products); dims=2) do k
+        vec(pushforward(f!, y, backend, x, seeds[k], pushforward_extras_same))
+    end
+    return decompress_columns(sparsity, compressed, colors)
+end
+
+function jacobian(
+    f!::F, y, backend::AutoSparse, x, extras::SparseJacobianExtras{2,:row}
+) where {F}
+    @compat (; sparsity, compressed, colors, seeds, products, jp_extras) = extras
+    pullback_extras_same = prepare_pullback_same_point(
+        f!, y, backend, x, seeds[1], jp_extras
+    )
+    compressed = stack(eachindex(seeds, products); dims=1) do k
+        vec(pullback(f!, y, backend, x, seeds[k], pullback_extras_same))
+    end
+    return decompress_rows(sparsity, compressed, colors)
 end
 
 function value_and_jacobian!(

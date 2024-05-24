@@ -46,6 +46,10 @@ function hessian!(f::F, hess, backend::AutoSparse, x, extras::SparseHessianExtra
 end
 
 function hessian(f::F, backend::AutoSparse, x, extras::SparseHessianExtras) where {F}
-    hess = major_respecting_similar(extras.sparsity, eltype(x))
-    return hessian!(f, hess, backend, x, extras)
+    @compat (; sparsity, compressed, colors, seeds, products, hvp_extras) = extras
+    hvp_extras_same = prepare_hvp_same_point(f, backend, x, seeds[1], hvp_extras)
+    compressed = stack(eachindex(seeds, products); dims=2) do k
+        vec(hvp(f, backend, x, seeds[k], hvp_extras_same))
+    end
+    return decompress_columns(sparsity, compressed, colors)
 end
