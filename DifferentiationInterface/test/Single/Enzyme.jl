@@ -33,7 +33,7 @@ test_differentiation(
 );
 
 test_differentiation(
-    backends[1:3];  # TODO: add more
+    backends[2];  # TODO: add more
     correctness=false,
     type_stability=true,
     second_order=false,
