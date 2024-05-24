@@ -148,7 +148,7 @@ To compute sparse Jacobians or Hessians, you need three ingredients (read [this 
     - [`TracerSparsityDetector`](@extref SparseConnectivityTracer.TracerSparsityDetector), implemented by [SparseConnectivityTracer.jl](https://github.com/adrhill/SparseConnectivityTracer.jl) (our default recommendation)
     - [`SymbolicsSparsityDetector`](@ref DifferentiationInterface.SymbolicsSparsityDetector), implemented by DifferentiationInterface.jl with [Symbolics.jl](https://github.com/JuliaSymbolics/Symbolics.jl) but not exported nor part of the public API (it will soon be [transferred](https://github.com/JuliaSymbolics/Symbolics.jl/pull/1134))
 3. A coloring algorithm like:
-    - [`GreedyColoringAlgorithm`](@extref SparseMatrixColorings), implemented by [SparseMatrixColorings.jl](https://github.com/gdalle/SparseMatrixColorings.jl) and re-exported by DifferentiationInterface.jl
+    - `GreedyColoringAlgorithm`, implemented by [SparseMatrixColorings.jl](https://github.com/gdalle/SparseMatrixColorings.jl) and re-exported by DifferentiationInterface.jl
 
 ADTypes.jl v1.0 provides the [`AutoSparse`](@extref ADTypes.AutoSparse) wrapper to combine these three ingredients, and DifferentiationInterface.jl re-exports it.
 Here's an example:

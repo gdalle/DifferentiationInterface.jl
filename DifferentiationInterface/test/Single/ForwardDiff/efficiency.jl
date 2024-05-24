@@ -1,6 +1,8 @@
+using DataFrames: DataFrame
 using DifferentiationInterface, DifferentiationInterfaceTest
 using ForwardDiff: ForwardDiff
-using DataFrames: DataFrame
+using SparseConnectivityTracer
+using SparseMatrixColorings
 
 @testset verbose = false "Dense efficiency" begin
     # derivative and gradient for `f(x)`
@@ -51,7 +53,13 @@ end
     # sparse jacobian for f!(x, y)
 
     results1 = benchmark_differentiation(
-        [MyAutoSparse(AutoForwardDiff(; chunksize=1);)],
+        [
+            AutoSparse(
+                AutoForwardDiff(; chunksize=1);
+                sparsity_detector=TracerSparsityDetector(),
+                coloring_algorithm=GreedyColoringAlgorithm(),
+            ),
+        ],
         sparse_scenarios();
         input_type=AbstractVector,
         output_type=AbstractVector,
