@@ -1,7 +1,5 @@
-using ADTypes
 using DifferentiationInterface
 using Pkg
-using SparseConnectivityTracer
 using Test
 
 # DI_PATH = joinpath(@__DIR__, "..", "..", "DifferentiationInterface")
@@ -11,12 +9,6 @@ using Test
 DIT_PATH = joinpath(@__DIR__, "..", "..", "DifferentiationInterfaceTest")
 if isdir(DIT_PATH)
     Pkg.develop(; path=DIT_PATH)
-end
-
-function MyAutoSparse(backend::AbstractADType)
-    coloring_algorithm = GreedyColoringAlgorithm()
-    sparsity_detector = TracerSparsityDetector()
-    return AutoSparse(backend; sparsity_detector, coloring_algorithm)
 end
 
 LOGGING = get(ENV, "CI", "false") == "false"

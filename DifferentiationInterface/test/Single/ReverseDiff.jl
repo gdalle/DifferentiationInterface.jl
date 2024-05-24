@@ -1,5 +1,6 @@
 using DifferentiationInterface, DifferentiationInterfaceTest
 using ReverseDiff: ReverseDiff
+using Test
 
 backends = [AutoReverseDiff(; compile=false), AutoReverseDiff(; compile=true)]
 

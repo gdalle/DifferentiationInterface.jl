@@ -1,8 +1,15 @@
 Base.@kwdef struct SparseHessianExtras{
-    C<:CompressedMatrix{:col},S<:AbstractVector,P<:AbstractVector,E<:Extras
+    S<:AbstractMatrix{Bool},
+    C<:AbstractMatrix{<:Real},
+    K<:AbstractVector{<:Integer},
+    D<:AbstractVector,
+    P<:AbstractVector,
+    E<:Extras,
 } <: HessianExtras
+    sparsity::S
     compressed::C
-    seeds::S
+    colors::K
+    seeds::D
     products::P
     hvp_extras::E
 end
@@ -20,26 +27,29 @@ function prepare_hessian(f::F, backend::AutoSparse, x) where {F}
         seed
     end
     hvp_extras = prepare_hvp(f, backend, x, first(seeds))
-    products = map(seeds) do seed
+    products = map(seeds) do _
         similar(x)
     end
-    aggregates = stack(vec, products; dims=2)
-    compressed = CompressedMatrix{:col}(sparsity, colors, groups, aggregates)
-    return SparseHessianExtras(; compressed, seeds, products, hvp_extras)
+    compressed = stack(vec, products; dims=2)
+    return SparseHessianExtras(; sparsity, compressed, colors, seeds, products, hvp_extras)
 end
 
 function hessian!(f::F, hess, backend::AutoSparse, x, extras::SparseHessianExtras) where {F}
-    @compat (; compressed, seeds, products, hvp_extras) = extras
+    @compat (; sparsity, compressed, colors, seeds, products, hvp_extras) = extras
     hvp_extras_same = prepare_hvp_same_point(f, backend, x, seeds[1], hvp_extras)
     for k in eachindex(seeds, products)
         hvp!(f, products[k], backend, x, seeds[k], hvp_extras_same)
-        copyto!(view(compressed.aggregates, :, k), vec(products[k]))
+        copyto!(view(compressed, :, k), vec(products[k]))
     end
-    decompress!(hess, compressed)
+    decompress_columns!(hess, sparsity, compressed, colors)
     return hess
 end
 
 function hessian(f::F, backend::AutoSparse, x, extras::SparseHessianExtras) where {F}
-    hess = similar(extras.compressed.sparsity, eltype(x))
-    return hessian!(f, hess, backend, x, extras)
+    @compat (; sparsity, compressed, colors, seeds, products, hvp_extras) = extras
+    hvp_extras_same = prepare_hvp_same_point(f, backend, x, seeds[1], hvp_extras)
+    compressed = stack(eachindex(seeds, products); dims=2) do k
+        vec(hvp(f, backend, x, seeds[k], hvp_extras_same))
+    end
+    return decompress_columns(sparsity, compressed, colors)
 end

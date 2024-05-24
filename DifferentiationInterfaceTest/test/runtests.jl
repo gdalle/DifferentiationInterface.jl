@@ -12,20 +12,26 @@ end
 
 LOGGING = get(ENV, "CI", "false") == "false"
 
+GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "All")
+
 ## Main tests
 
 @testset verbose = true "DifferentiationInterfaceTest.jl" begin
-    @testset verbose = true "Formal tests" begin
-        @static if VERSION >= v"1.10"
-            include("formal.jl")
+    if GROUP == "Formalities" || GROUP == "All"
+        @testset verbose = true "Formalities" begin
+            include("formalities.jl")
         end
     end
 
-    @testset verbose = false "Zero backends" begin
-        include("zero_backends.jl")
+    if GROUP == "Zero" || GROUP == "All"
+        @testset verbose = false "Zero" begin
+            include("zero.jl")
+        end
     end
 
-    @testset verbose = false "ForwardDiff" begin
-        include("forwarddiff.jl")
+    if GROUP == "ForwardDiff" || GROUP == "All"
+        @testset verbose = false "ForwardDiff" begin
+            include("forwarddiff.jl")
+        end
     end
 end;

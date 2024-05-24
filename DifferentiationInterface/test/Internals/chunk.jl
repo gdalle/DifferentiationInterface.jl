@@ -1,4 +1,5 @@
 import DifferentiationInterface as DI
+using Test
 
 @test DI.pick_chunksize.(1:(DI.DEFAULT_CHUNKSIZE)) == 1:(DI.DEFAULT_CHUNKSIZE)
 @test all(

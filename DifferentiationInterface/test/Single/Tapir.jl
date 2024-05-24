@@ -1,5 +1,6 @@
 using DifferentiationInterface, DifferentiationInterfaceTest
 using Tapir: Tapir
+using Test
 
 for backend in [AutoTapir(; safe_mode=false)]
     @test check_available(backend)

@@ -2,11 +2,18 @@ using DifferentiationInterface, DifferentiationInterfaceTest
 import DifferentiationInterface as DI
 import DifferentiationInterfaceTest as DIT
 using ForwardDiff: ForwardDiff
+using SparseConnectivityTracer
+using SparseMatrixColorings
 using Zygote: Zygote
+using Test
 
 backends = [
     SecondOrder(AutoForwardDiff(), AutoZygote()),
-    MyAutoSparse(SecondOrder(AutoForwardDiff(), AutoZygote())),
+    AutoSparse(
+        SecondOrder(AutoForwardDiff(), AutoZygote());
+        sparsity_detector=TracerSparsityDetector(),
+        coloring_algorithm=GreedyColoringAlgorithm(),
+    ),
 ]
 
 for backend in backends
@@ -18,11 +25,7 @@ end
 test_differentiation(backends; first_order=false, logging=LOGGING);
 
 test_differentiation(
-    MyAutoSparse(SecondOrder(AutoForwardDiff(), AutoZygote())),
-    sparse_scenarios();
-    first_order=false,
-    sparsity=true,
-    logging=LOGGING,
+    backends[2], sparse_scenarios(); first_order=false, sparsity=true, logging=LOGGING
 );
 
 ## Translation

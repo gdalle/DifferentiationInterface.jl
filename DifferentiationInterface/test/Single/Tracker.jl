@@ -1,5 +1,6 @@
 using DifferentiationInterface, DifferentiationInterfaceTest
 using Tracker: Tracker
+using Test
 
 for backend in [AutoTracker()]
     @test check_available(backend)
