@@ -183,7 +183,7 @@ function jacobian!(
         pullback!(f!, y, products[k], backend, x, seeds[k], pullback_extras_same)
         copyto!(view(compressed, k, :), vec(products[k]))
     end
-    decompress_columns!(jac, sparsity, compressed, colors)
+    decompress_rows!(jac, sparsity, compressed, colors)
     return jac
 end
 

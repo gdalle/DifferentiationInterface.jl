@@ -1,5 +1,6 @@
 using DifferentiationInterface, DifferentiationInterfaceTest
 using PolyesterForwardDiff: PolyesterForwardDiff
+using Test
 
 for backend in [AutoPolyesterForwardDiff(; chunksize=1)]
     @test check_available(backend)

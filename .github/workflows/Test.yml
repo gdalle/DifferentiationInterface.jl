@@ -104,6 +104,13 @@ jobs:
         version:
           - '1'
           - '1.6'
+        group:
+          - Formalities
+          - Zero
+          - ForwardDiff
+        exclude:
+          - version: '1.6'
+            group: Formalities
     
     steps:
       - uses: actions/checkout@v4
@@ -122,6 +129,8 @@ jobs:
       - uses: julia-actions/julia-runtest@v1
         with:
           project: ./DifferentiationInterfaceTest
+        env:
+          JULIA_DI_TEST_GROUP: ${{ matrix.group }}
       - uses: julia-actions/julia-processcoverage@v1
         with:
           directories: ./DifferentiationInterfaceTest/src,./DifferentiationInterfaceTest/ext

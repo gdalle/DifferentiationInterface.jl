@@ -2,6 +2,7 @@ using DifferentiationInterface, DifferentiationInterfaceTest
 import DifferentiationInterface as DI
 using Enzyme: Enzyme
 using ForwardDiff: ForwardDiff
+using Test
 
 backends = [
     SecondOrder(AutoForwardDiff(), AutoEnzyme(Enzyme.Forward)),

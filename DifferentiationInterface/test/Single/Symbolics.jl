@@ -1,5 +1,6 @@
 using DifferentiationInterface, DifferentiationInterfaceTest
 using Symbolics: Symbolics
+using Test
 
 for backend in [AutoSymbolics(), AutoSparse(AutoSymbolics())]
     @test check_available(backend)
@@ -8,6 +9,7 @@ for backend in [AutoSymbolics(), AutoSparse(AutoSymbolics())]
 end
 
 test_differentiation(AutoSymbolics(); logging=LOGGING);
+
 test_differentiation(
     AutoSparse(AutoSymbolics());
     excluded=[JacobianScenario, HessianScenario],

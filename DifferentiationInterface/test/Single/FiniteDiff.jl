@@ -1,5 +1,6 @@
 using DifferentiationInterface, DifferentiationInterfaceTest
 using FiniteDiff: FiniteDiff
+using Test
 
 for backend in [AutoFiniteDiff()]
     @test check_available(backend)

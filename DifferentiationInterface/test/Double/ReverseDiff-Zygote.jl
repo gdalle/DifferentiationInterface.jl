@@ -2,6 +2,7 @@ using DifferentiationInterface, DifferentiationInterfaceTest
 import DifferentiationInterface as DI
 using ReverseDiff: ReverseDiff
 using Zygote: Zygote
+using Test
 
 backends = [SecondOrder(AutoReverseDiff(), AutoZygote())]
 

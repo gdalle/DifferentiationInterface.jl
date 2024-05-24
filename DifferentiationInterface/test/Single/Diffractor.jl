@@ -1,5 +1,6 @@
 using DifferentiationInterface, DifferentiationInterfaceTest
 using Diffractor: Diffractor
+using Test
 
 for backend in [AutoDiffractor()]
     @test check_available(backend)

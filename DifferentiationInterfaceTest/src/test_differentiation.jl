@@ -106,7 +106,9 @@ function test_differentiation(
                         test_correctness(backend, scen; isapprox, atol, rtol, ref_backend)
                     end
                     type_stability && @testset "Type stability" begin
-                        test_jet(backend, scen; ref_backend)
+                        @static if VERSION >= v"1.7"
+                            test_jet(backend, scen; ref_backend)
+                        end
                     end
                     sparsity && @testset "Sparsity" begin
                         test_sparsity(backend, scen; ref_backend)

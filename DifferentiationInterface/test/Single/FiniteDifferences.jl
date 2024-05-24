@@ -1,5 +1,6 @@
 using DifferentiationInterface, DifferentiationInterfaceTest
-using FiniteDifferences: FiniteDifferences
+using FiniteDifferences: FiniteDifference
+using Test
 
 for backend in [AutoFiniteDifferences(; fdm=FiniteDifferences.central_fdm(3, 1))]
     @test check_available(backend)
