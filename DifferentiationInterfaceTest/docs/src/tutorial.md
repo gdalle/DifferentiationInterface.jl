@@ -1,7 +1,3 @@
-```@meta
-CurrentModule = Main
-```
-
 # Tutorial
 
 We present a typical workflow with DifferentiationInterfaceTest.jl, building on the tutorial of the [DifferentiationInterface.jl documentation](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterface) (which we encourage you to read first).
