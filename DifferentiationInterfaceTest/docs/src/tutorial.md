@@ -4,7 +4,7 @@ CurrentModule = Main
 
 # Tutorial
 
-We present a typical workflow with DifferentiationInterfaceTest.jl, building on the [DifferentiationInterface.jl tutorial](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterface/dev/tutorial/) (which we encourage you to read first).
+We present a typical workflow with DifferentiationInterfaceTest.jl, building on the tutorial of the [DifferentiationInterface.jl documentation](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterface) (which we encourage you to read first).
 
 ```@repl tuto
 using DifferentiationInterface, DifferentiationInterfaceTest
