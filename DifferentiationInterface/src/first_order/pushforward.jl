@@ -4,7 +4,7 @@
     prepare_pushforward(f,     backend, x, dx) -> extras
     prepare_pushforward(f!, y, backend, x, dx) -> extras
 
-Create an `extras` object subtyping [`PushforwardExtras`](@ref) that can be given to pushforward operators.
+Create an `extras` object that can be given to [`pushforward`](@ref) and its variants.
 
 !!! warning
     If the function changes in any way, the result of preparation will be invalidated, and you will need to run it again.
@@ -16,7 +16,7 @@ function prepare_pushforward end
     prepare_pushforward_same_point(f,     backend, x, dx) -> extras_same
     prepare_pushforward_same_point(f!, y, backend, x, dx) -> extras_same
 
-Create an `extras_same` object subtyping [`PushforwardExtras`](@ref) that can be given to pushforward operators _if they are applied at the same point `x`_.
+Create an `extras_same` object that can be given to [`pushforward`](@ref) and its variants _if they are applied at the same point `x`_.
 
 !!! warning
     If the function or the point changes in any way, the result of preparation will be invalidated, and you will need to run it again.
@@ -28,6 +28,8 @@ function prepare_pushforward_same_point end
     value_and_pushforward(f,     backend, x, dx, [extras]) -> (y, dy)
     value_and_pushforward(f!, y, backend, x, dx, [extras]) -> (y, dy)
 
+Compute the value and the pushforward of the function `f` at point `x` with seed `dx`.
+
 !!! info
     Required primitive for forward mode backends.
 """
@@ -36,18 +38,24 @@ function value_and_pushforward end
 """
     value_and_pushforward!(f,     dy, backend, x, dx, [extras]) -> (y, dy)
     value_and_pushforward!(f!, y, dy, backend, x, dx, [extras]) -> (y, dy)
+
+Compute the value and the pushforward of the function `f` at point `x` with seed `dx`, overwriting `dy`.
 """
 function value_and_pushforward! end
 
 """
     pushforward(f,     backend, x, dx, [extras]) -> dy
     pushforward(f!, y, backend, x, dx, [extras]) -> dy
+
+Compute the pushforward of the function `f` at point `x` with seed `dx`.
 """
 function pushforward end
 
 """
     pushforward!(f,     dy, backend, x, dx, [extras]) -> dy
     pushforward!(f!, y, dy, backend, x, dx, [extras]) -> dy
+
+Compute the pushforward of the function `f` at point `x` with seed `dx`, overwriting `dy`.
 """
 function pushforward! end
 
@@ -56,7 +64,7 @@ function pushforward! end
 """
     PushforwardExtras
 
-Abstract type for additional information needed by pushforward operators.
+Abstract type for additional information needed by [`pushforward`](@ref) and its variants.
 """
 abstract type PushforwardExtras <: Extras end
 

@@ -1,10 +1,6 @@
-```@meta
-CurrentModule = Main
-```
-
 # Tutorial
 
-We present a typical workflow with DifferentiationInterfaceTest.jl, building on the [DifferentiationInterface.jl tutorial](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterface/dev/tutorial/) (which we encourage you to read first).
+We present a typical workflow with DifferentiationInterfaceTest.jl, building on the tutorial of the [DifferentiationInterface.jl documentation](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterface) (which we encourage you to read first).
 
 ```@repl tuto
 using DifferentiationInterface, DifferentiationInterfaceTest
@@ -16,19 +12,19 @@ import DataFrames, Markdown, PrettyTables, Printf
 
 The AD backends we want to compare are [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl) and [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl).
 
-```@repl tuto
+```@example tuto
 backends = [AutoForwardDiff(), AutoEnzyme(; mode=Enzyme.Reverse)]
 ```
 
 To do that, we are going to take gradients of a simple function:
 
-```@repl tuto
+```@example tuto
 f(x::AbstractArray) = sum(sin, x)
 ```
 
 Of course we know the true gradient mapping:
 
-```@repl tuto
+```@example tuto
 ∇f(x::AbstractArray) = cos.(x)
 ```
 
@@ -40,11 +36,12 @@ DifferentiationInterfaceTest.jl relies with so-called "scenarios", in which you 
 
 There is one scenario per operator, and so here we will use [`GradientScenario`](@ref):
 
-```@repl tuto
+```@example tuto
 scenarios = [
     GradientScenario(f; x=rand(Float32, 3), ref=∇f, place=:inplace),
     GradientScenario(f; x=rand(Float64, 3, 2), ref=∇f, place=:inplace)
 ];
+nothing  # hide
 ```
 
 ## Testing
@@ -69,13 +66,13 @@ If you are too lazy to manually specify the reference, you can also provide an A
 Once you are confident that your backends give the correct answers, you probably want to compare their performance.
 This is made easy by the [`benchmark_differentiation`](@ref) function, whose syntax should feel familiar:
 
-```@repl tuto
+```@example tuto
 benchmark_result = benchmark_differentiation(backends, scenarios);
 ```
 
 The resulting object is a `Vector` of [`DifferentiationBenchmarkDataRow`](@ref), which can easily be converted into a `DataFrame` from [DataFrames.jl](https://github.com/JuliaData/DataFrames.jl):
 
-```@repl tuto
+```@example tuto
 df = DataFrames.DataFrame(benchmark_result)
 ```
 

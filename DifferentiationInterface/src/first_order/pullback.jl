@@ -4,7 +4,7 @@
     prepare_pullback(f,     backend, x, dy) -> extras
     prepare_pullback(f!, y, backend, x, dy) -> extras
 
-Create an `extras` object subtyping [`PullbackExtras`](@ref) that can be given to pullback operators.
+Create an `extras` object that can be given to [`pullback`](@ref) and its variants.
 
 !!! warning
     If the function changes in any way, the result of preparation will be invalidated, and you will need to run it again.
@@ -16,7 +16,7 @@ function prepare_pullback end
     prepare_pullback_same_point(f,     backend, x, dy) -> extras_same
     prepare_pullback_same_point(f!, y, backend, x, dy) -> extras_same
 
-Create an `extras_same` object subtyping [`PullbackExtras`](@ref) that can be given to pullback operators _if they are applied at the same point `x`_.
+Create an `extras_same` object that can be given to [`pullback`](@ref) and its variants _if they are applied at the same point `x`_.
 
 !!! warning
     If the function or the point changes in any way, the result of preparation will be invalidated, and you will need to run it again.
@@ -28,6 +28,8 @@ function prepare_pullback_same_point end
     value_and_pullback(f,     backend, x, dy, [extras]) -> (y, dx)
     value_and_pullback(f!, y, backend, x, dy, [extras]) -> (y, dx)
 
+Compute the value and the pullback of the function `f` at point `x` with seed `dy`.
+
 !!! info
     Required primitive for reverse mode backends.
 """
@@ -36,39 +38,33 @@ function value_and_pullback end
 """
     value_and_pullback!(f,     dx, backend, x, dy, [extras]) -> (y, dx)
     value_and_pullback!(f!, y, dx, backend, x, dy, [extras]) -> (y, dx)
+
+Compute the value and the pullback of the function `f` at point `x` with seed `dy`, overwriting `dx`.
 """
 function value_and_pullback! end
 
 """
     pullback(f,     backend, x, dy, [extras]) -> dx
     pullback(f!, y, backend, x, dy, [extras]) -> dx
+
+Compute the pullback of the function `f` at point `x` with seed `dy`.
 """
 function pullback end
 
 """
     pullback!(f,     dx, backend, x, dy, [extras]) -> dx
     pullback!(f!, y, dx, backend, x, dy, [extras]) -> dx
+
+Compute the pullback of the function `f` at point `x` with seed `dy`, overwriting `dx`.
 """
 function pullback! end
-
-"""
-    value_and_pullback_split(f,     backend, x, [extras]) -> (y, pbf(   dy) -> dx)
-    value_and_pullback_split(f!, y, backend, x, [extras]) -> (y, pbf(y, dy) -> dx)
-"""
-function value_and_pullback_split end
-
-"""
-    value_and_pullback!_split(f,     backend, x, [extras]) -> (y, pbf!(   dx, dy) -> dx)
-    value_and_pullback!_split(f!, y, backend, x, [extras]) -> (y, pbf!(y, dx, dy) -> dx)
-"""
-function value_and_pullback!_split end
 
 ## Preparation
 
 """
     PullbackExtras
 
-Abstract type for additional information needed by pullback operators.
+Abstract type for additional information needed by [`pullback`](@ref) and its variants.
 """
 abstract type PullbackExtras <: Extras end
 

@@ -1,15 +1,38 @@
+# API
+
 ```@meta
-CurrentModule = Main
 CollapsedDocStrings = true
 ```
-
-# API reference
 
 ```@docs
 DifferentiationInterface
 ```
 
-## Derivative
+## First order
+
+### Pushforward
+
+```@docs
+prepare_pushforward
+prepare_pushforward_same_point
+pushforward
+pushforward!
+value_and_pushforward
+value_and_pushforward!
+```
+
+### Pullback
+
+```@docs
+prepare_pullback
+prepare_pullback_same_point
+pullback
+pullback!
+value_and_pullback
+value_and_pullback!
+```
+
+### Derivative
 
 ```@docs
 prepare_derivative
@@ -19,7 +42,7 @@ value_and_derivative
 value_and_derivative!
 ```
 
-## Gradient
+### Gradient
 
 ```@docs
 prepare_gradient
@@ -29,7 +52,7 @@ value_and_gradient
 value_and_gradient!
 ```
 
-## Jacobian
+### Jacobian
 
 ```@docs
 prepare_jacobian
@@ -45,11 +68,15 @@ value_and_jacobian!
 SecondOrder
 ```
 
+### Second derivative
+
 ```@docs
 prepare_second_derivative
 second_derivative
 second_derivative!
 ```
+
+### Hessian-vector product
 
 ```@docs
 prepare_hvp
@@ -58,33 +85,17 @@ hvp
 hvp!
 ```
 
+### Hessian
+
 ```@docs
 prepare_hessian
 hessian
 hessian!
 ```
 
-## Primitives
+## Utilities
 
-```@docs
-prepare_pushforward
-prepare_pushforward_same_point
-pushforward
-pushforward!
-value_and_pushforward
-value_and_pushforward!
-```
-
-```@docs
-prepare_pullback
-prepare_pullback_same_point
-pullback
-pullback!
-value_and_pullback
-value_and_pullback!
-```
-
-## Backend queries
+### Backend queries
 
 ```@docs
 check_available
@@ -92,7 +103,7 @@ check_twoarg
 check_hessian
 ```
 
-## Miscellaneous
+### Backend switch
 
 ```@docs
 DifferentiateWith
@@ -100,7 +111,7 @@ DifferentiateWith
 
 ## Internals
 
-This is not part of the public API.
+The following is not part of the public API.
 
 ```@autodocs
 Modules = [DifferentiationInterface]

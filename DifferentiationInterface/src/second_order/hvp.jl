@@ -3,7 +3,7 @@
 """
     prepare_hvp(f, backend, x, v) -> extras
 
-Create an `extras` object subtyping [`HVPExtras`](@ref) that can be given to Hessian-vector product operators.
+Create an `extras` object that can be given to [`hvp`](@ref) and its variants.
 
 !!! warning
     If the function changes in any way, the result of preparation will be invalidated, and you will need to run it again.
@@ -13,7 +13,7 @@ function prepare_hvp end
 """
     prepare_hvp_same_point(f, backend, x, v) -> extras_same
 
-Create an `extras_same` object subtyping [`HVPExtras`](@ref) that can be given to Hessian-vector product operators _if they are applied at the same point `x`_.
+Create an `extras_same` object that can be given to [`hvp`](@ref) and its variants _if they are applied at the same point `x`_.
 
 !!! warning
     If the function or the point changes in any way, the result of preparation will be invalidated, and you will need to run it again.
@@ -22,11 +22,15 @@ function prepare_hvp_same_point end
 
 """
     hvp(f, backend, x, v, [extras]) -> p
+
+Compute the Hessian-vector product of `f` at point `x` with seed `v`.
 """
 function hvp end
 
 """
     hvp!(f, p, backend, x, v, [extras]) -> p
+
+Compute the Hessian-vector product of `f` at point `x` with seed `v`, overwriting `p`.
 """
 function hvp! end
 
@@ -35,7 +39,7 @@ function hvp! end
 """
     HVPExtras
 
-Abstract type for additional information needed by Hessian-vector product operators.
+Abstract type for additional information needed by [`hvp`](@ref) and its variants.
 """
 abstract type HVPExtras <: Extras end
 

@@ -4,7 +4,7 @@
     prepare_derivative(f,     backend, x) -> extras
     prepare_derivative(f!, y, backend, x) -> extras
 
-Create an `extras` object subtyping [`DerivativeExtras`](@ref) that can be given to derivative operators.
+Create an `extras` object that can be given to [`derivative`](@ref) and its variants.
 
 !!! warning
     If the function changes in any way, the result of preparation will be invalidated, and you will need to run it again.
@@ -15,24 +15,32 @@ function prepare_derivative end
 """
     value_and_derivative(f,     backend, x, [extras]) -> (y, der)
     value_and_derivative(f!, y, backend, x, [extras]) -> (y, der)
+
+Compute the value and the derivative of the function `f` at point `x`.
 """
 function value_and_derivative end
 
 """
     value_and_derivative!(f,     der, backend, x, [extras]) -> (y, der)
     value_and_derivative!(f!, y, der, backend, x, [extras]) -> (y, der)
-"""
+
+Compute the value and the derivative of the function `f` at point `x`, overwriting `der`.
+    """
 function value_and_derivative! end
 
 """
     derivative(f,     backend, x, [extras]) -> der
     derivative(f!, y, backend, x, [extras]) -> der
+
+Compute the derivative of the function `f` at point `x`.
 """
 function derivative end
 
 """
     derivative!(f,     der, backend, x, [extras]) -> der
     derivative!(f!, y, der, backend, x, [extras]) -> der
+
+Compute the derivative of the function `f` at point `x`, overwriting `der`.
 """
 function derivative! end
 
@@ -41,7 +49,7 @@ function derivative! end
 """
     DerivativeExtras
 
-Abstract type for additional information needed by derivative operators.
+Abstract type for additional information needed by [`derivative`](@ref) and its variants.
 """
 abstract type DerivativeExtras <: Extras end
 

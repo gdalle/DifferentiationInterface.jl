@@ -34,9 +34,9 @@ makedocs(;
     format=Documenter.HTML(; assets=["assets/favicon.ico"]),
     pages=[
         "Home" => "index.md",
-        "Start here" => ["tutorial.md", "overview.md", "backends.md"],
-        "API reference" => "api.md",
-        "Advanced" => ["design.md", "overloads.md"],
+        "Tutorials" => ["tutorial1.md", "tutorial2.md"],
+        "Reference" => ["operators.md", "backends.md", "api.md"],
+        "Advanced" => ["preparation.md", "overloads.md"],
     ],
     checkdocs=:exports,
     plugins=[links],
