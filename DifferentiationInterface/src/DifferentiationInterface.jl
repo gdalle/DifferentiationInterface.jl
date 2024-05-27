@@ -37,10 +37,12 @@ using SparseArrays: SparseMatrixCSC, nonzeros, nzrange, rowvals, sparse
 using SparseMatrixColorings:
     GreedyColoringAlgorithm,
     color_groups,
-    decompress_columns!,
     decompress_columns,
+    decompress_columns!,
+    decompress_rows,
     decompress_rows!,
-    decompress_rows
+    decompress_symmetric,
+    decompress_symmetric!
 
 abstract type Extras end
 
