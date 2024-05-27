@@ -83,7 +83,7 @@ In many cases, AD can be accelerated if the function has been called at least on
 This preparation procedure is backend-specific, but we expose a common syntax to achieve it.
 
 | operator            | preparation function (different point) | preparation function (same point)        |
-| :------------------ | :------------------------------------- | ---------------------------------------- |
+| :------------------ | :------------------------------------- | :--------------------------------------- |
 | `derivative`        | [`prepare_derivative`](@ref)           | -                                        |
 | `gradient`          | [`prepare_gradient`](@ref)             | -                                        |
 | `jacobian`          | [`prepare_jacobian`](@ref)             | -                                        |
