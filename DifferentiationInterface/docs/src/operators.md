@@ -177,6 +177,10 @@ But after preparation, the more zeros are present in the matrix, the greater the
     The symbolic backends have built-in sparsity handling, so `AutoSparse(AutoSymbolics())` and `AutoSparse(AutoFastDifferentiation())` do not need additional configuration for pattern detection or coloring.
     However they still benefit from preparation.
 
+!!! warning
+    At the moment, `AutoSparse` backends can be used with operators other than `jacobian` and `hessian`.
+    This possibility will be removed in the next breaking release.
+
 ## Going further
 
 ### Non-standard types
