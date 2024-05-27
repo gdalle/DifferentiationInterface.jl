@@ -33,23 +33,23 @@ Make it easy to know, for a given function:
 To install the stable version of the package, run the following code in a Julia REPL:
 
 ```julia
-julia> using Pkg
+using Pkg
 
-julia> Pkg.add("DifferentiationInterfaceTest")
+Pkg.add("DifferentiationInterfaceTest")
 ```
 
 To install the development version, run this instead:
 
 ```julia
-julia> using Pkg
+using Pkg
 
-julia> Pkg.add(
-        url="https://github.com/gdalle/DifferentiationInterface.jl",
-        subdir="DifferentiationInterface"
-    )
+Pkg.add(
+    url="https://github.com/gdalle/DifferentiationInterface.jl",
+    subdir="DifferentiationInterface"
+)
     
-julia> Pkg.add(
-        url="https://github.com/gdalle/DifferentiationInterface.jl",
-        subdir="DifferentiationInterfaceTest"
-    )
+Pkg.add(
+    url="https://github.com/gdalle/DifferentiationInterface.jl",
+    subdir="DifferentiationInterfaceTest"
+)
 ```
