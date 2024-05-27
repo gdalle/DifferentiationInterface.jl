@@ -53,20 +53,20 @@ We support all of the backends defined by [ADTypes.jl](https://github.com/SciML/
 To install the stable version of the package, run the following code in a Julia REPL:
 
 ```julia
-julia> using Pkg
+using Pkg
 
-julia> Pkg.add("DifferentiationInterface")
+Pkg.add("DifferentiationInterface")
 ```
 
 To install the development version, run this instead:
 
 ```julia
-julia> using Pkg
+using Pkg
 
-julia> Pkg.add(
-        url="https://github.com/gdalle/DifferentiationInterface.jl",
-        subdir="DifferentiationInterface"
-    )
+Pkg.add(
+    url="https://github.com/gdalle/DifferentiationInterface.jl",
+    subdir="DifferentiationInterface"
+)
 ```
 
 ## Example
