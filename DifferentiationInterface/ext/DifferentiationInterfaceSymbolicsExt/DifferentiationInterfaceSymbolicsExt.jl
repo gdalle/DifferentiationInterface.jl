@@ -38,6 +38,5 @@ myvec(x::AbstractArray) = vec(x)
 
 include("onearg.jl")
 include("twoarg.jl")
-include("detector.jl")
 
 end

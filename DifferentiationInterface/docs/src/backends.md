@@ -1,7 +1,11 @@
-```@meta
-CurrentModule = Main
-CollapsedDocStrings = true
-```
+# Backends
+
+DifferentiationInterface.jl is based on two concepts: **operators** and **backends**.
+This page is about the latter, check out [that page](@ref "Operators") to learn about the former.
+
+## List of backends
+
+We support all dense backend choices from [ADTypes.jl](https://github.com/SciML/ADTypes.jl), as well as their sparse wrapper [`AutoSparse`](@extref ADTypes.AutoSparse).
 
 ```@setup backends
 using DifferentiationInterface
@@ -32,7 +36,7 @@ const backend_examples = (
     "AutoPolyesterForwardDiff(; chunksize=1)",
     "AutoReverseDiff()",
     "AutoSymbolics()",
-    "AutoTapir()",
+    "AutoTapir(; safe_mode=false)",
     "AutoTracker()",
     "AutoZygote()",
 )
@@ -55,14 +59,6 @@ for example in backend_examples
 end
 backend_table = Markdown.parse(String(take!(io)))
 ```
-
-# Backends
-
-## Types
-
-We support all dense backend choices from [ADTypes.jl](https://github.com/SciML/ADTypes.jl), as well as their sparse wrapper [`AutoSparse`](@ref).
-
-For sparse backends, only the Jacobian and Hessian operators are implemented differently, the other operators behave the same as for the corresponding dense backend.
 
 ```@example backends
 backend_table #hide
@@ -88,9 +84,30 @@ You can use [`check_available`](@ref) to verify whether a given backend is loade
 
 All backends are compatible with one-argument functions `f(x) = y`.
 Only some are compatible with two-argument functions `f!(y, x) = nothing`.
-You can check this compatibility using [`check_twoarg`](@ref).
+You can use [`check_twoarg`](@ref) to verify this compatibility.
 
 ### Support for Hessian
 
 Only some backends are able to compute Hessians.
-You can use [`check_hessian`](@ref) to check this feature (beware that it will try to compute a small Hessian, so it is not instantaneous).
+You can use [`check_hessian`](@ref) to verify this feature (beware that it will try to compute a small Hessian, so it is not instantaneous like the other checks).
+
+## Backend switch
+
+The wrapper [`DifferentiateWith`](@ref) allows you to switch between backends.
+It takes a function `f` and specifies that `f` should be differentiated with the backend of your choice, instead of whatever other backend the code is trying to use.
+In other words, when someone tries to differentiate `dw = DifferentiateWith(f, backend1)` with `backend2`, then `backend1` steps in and `backend2` does nothing.
+At the moment, `DifferentiateWith` only works when `backend2` supports [ChainRules.jl](https://github.com/JuliaDiff/ChainRules.jl).
+
+## Defining your own
+
+To work with DifferentiationInterface.jl, a new AD system would need to create an object subtyping [`ADTypes.AbstractADType`](@extref ADTypes).
+In addition, some low-level operators would need to be defined at the very least:
+
+| backend subtype                           | pushforward necessary | pullback necessary |
+| :---------------------------------------- | :-------------------- | :----------------- |
+| [`ADTypes.ForwardMode`](@extref ADTypes)  | yes                   | no                 |
+| [`ADTypes.ReverseMode`](@extref ADTypes)  | no                    | yes                |
+| [`ADTypes.SymbolicMode`](@extref ADTypes) | yes                   | yes                |
+
+Every backend we support corresponds to a package extension of DifferentiationInterface.jl (located in the `ext` subfolder).
+If you need to implement your own backend, take a look in there for inspiration, or reach out to us in the GitHub issues.

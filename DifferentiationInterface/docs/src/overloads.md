@@ -1,23 +1,20 @@
-# Table of overloads
+# Overloads
 
-As described in the [overview](@ref sec-overview), DifferentiationInterface provides multiple high-level operators like [`jacobian`](@ref),
-each with several variants:
+DifferentiationInterface.jl provides a handful of [operators](@ref "Operators") like [`gradient`](@ref) or [`jacobian`](@ref), each with several variants:
 
-* **out-of-place** or **in-place** return values
-* **with** or **without primal** output value
-* support for **one-argument functions** `y = f(x)` or **two-argument functions** `f!(y, x)`
+- **out-of-place** or **in-place** behavior
+- **with** or **without primal** output value
+- support for **one-argument functions** `y = f(x)` or **two-argument functions** `f!(y, x)`
 
-To support a new backend, it is only required to [define either a pushforward or a pullback function](@ref ssec-requirements),
-since DifferentiationInterface provides default implementations of all operators using just these two primitives.
-However, backends sometimes provide their own implementations of operators, which can be more performant.
-When available, DifferentiationInterface **always** calls these backend-specific implementations, which we call *"overloads"*.
+While it is possible to define every operator using just [`pushforward`](@ref) and [`pullback`](@ref), some backends have more efficient implementations of high-level operators.
+When they are available, we **always** call these backend-specific overloads.
 
 The following tables summarize all implemented overloads for each backend.
-Each cell can have three values:
+The cells can have three values:
 
-* ❌: the operator is not overloaded because the backend does not support it
-* ✅: the operator is overloaded
-* NA: the operator does not exist
+- ❌: the operator is not overloaded because the backend does not support it
+- ✅: the operator is overloaded
+- NA: the operator does not exist
 
 !!! tip
     Check marks (✅) are clickable and link to the source code.
