@@ -4,7 +4,7 @@
     prepare_jacobian(f,     backend, x) -> extras
     prepare_jacobian(f!, y, backend, x) -> extras
 
-Create an `extras` object subtyping [`JacobianExtras`](@ref) that can be given to Jacobian operators.
+Create an `extras` object that can be given to [`jacobian`](@ref) and its variants.
 
 !!! warning
     If the function changes in any way, the result of preparation will be invalidated, and you will need to run it again.
@@ -15,24 +15,32 @@ function prepare_jacobian end
 """
     value_and_jacobian(f,     backend, x, [extras]) -> (y, jac)
     value_and_jacobian(f!, y, backend, x, [extras]) -> (y, jac)
+
+Compute the value and the Jacobian matrix of the function `f` at point `x`.
 """
 function value_and_jacobian end
 
 """
     value_and_jacobian!(f,     jac, backend, x, [extras]) -> (y, jac)
     value_and_jacobian!(f!, y, jac, backend, x, [extras]) -> (y, jac)
+
+Compute the value and the Jacobian matrix of the function `f` at point `x`, overwriting `jac`.
 """
 function value_and_jacobian! end
 
 """
     jacobian(f,     backend, x, [extras]) -> jac
     jacobian(f!, y, backend, x, [extras]) -> jac
+
+Compute the Jacobian matrix of the function `f` at point `x`.
 """
 function jacobian end
 
 """
     jacobian!(f,     jac, backend, x, [extras]) -> jac
     jacobian!(f!, y, jac, backend, x, [extras]) -> jac
+
+Compute the Jacobian matrix of the function `f` at point `x`, overwriting `jac`.
 """
 function jacobian! end
 
@@ -41,7 +49,7 @@ function jacobian! end
 """
     JacobianExtras
 
-Abstract type for additional information needed by Jacobian operators.
+Abstract type for additional information needed by [`jacobian`](@ref) and its variants.
 """
 abstract type JacobianExtras <: Extras end
 

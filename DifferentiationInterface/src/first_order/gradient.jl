@@ -3,7 +3,7 @@
 """
     prepare_gradient(f, backend, x) -> extras
 
-Create an `extras` object subtyping [`GradientExtras`](@ref) that can be given to gradient operators.
+Create an `extras` object that can be given to [`gradient`](@ref) and its variants.
 
 !!! warning
     If the function changes in any way, the result of preparation will be invalidated, and you will need to run it again.
@@ -12,21 +12,29 @@ function prepare_gradient end
 
 """
     value_and_gradient(f, backend, x, [extras]) -> (y, grad)
+
+Compute the value and the gradient of the function `f` at point `x`.
 """
 function value_and_gradient end
 
 """
     value_and_gradient!(f, grad, backend, x, [extras]) -> (y, grad)
+
+Compute the value and the gradient of the function `f` at point `x`, overwriting `grad`.
 """
 function value_and_gradient! end
 
 """
     gradient(f, backend, x, [extras]) -> grad
+
+Compute the gradient of the function `f` at point `x`.
 """
 function gradient end
 
 """
     gradient!(f, grad, backend, x, [extras]) -> grad
+
+Compute the gradient of the function `f` at point `x`, overwriting `grad`.
 """
 function gradient! end
 
@@ -35,7 +43,7 @@ function gradient! end
 """
     GradientExtras
 
-Abstract type for additional information needed by gradient operators.
+Abstract type for additional information needed by [`gradient`](@ref) and its variants.
 """
 abstract type GradientExtras <: Extras end
 

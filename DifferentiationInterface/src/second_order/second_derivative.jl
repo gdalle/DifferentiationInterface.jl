@@ -3,7 +3,7 @@
 """
     prepare_second_derivative(f, backend, x) -> extras
 
-Create an `extras` object subtyping [`SecondDerivativeExtras`](@ref) that can be given to second derivative operators.
+Create an `extras` object that can be given to [`second_derivative`](@ref) and its variants.
 
 !!! warning
     If the function changes in any way, the result of preparation will be invalidated, and you will need to run it again.
@@ -12,11 +12,15 @@ function prepare_second_derivative end
 
 """
     second_derivative(f, backend, x, [extras]) -> der2
+
+Compute the second derivative of the function `f` at point `x`.
 """
 function second_derivative end
 
 """
     second_derivative!(f, der2, backend, x, [extras]) -> der2
+
+Compute the second derivative of the function `f` at point `x`, overwriting `der2`.
 """
 function second_derivative! end
 
@@ -25,7 +29,7 @@ function second_derivative! end
 """
     SecondDerivativeExtras
 
-Abstract type for additional information needed by second derivative operators.
+Abstract type for additional information needed by [`second_derivative`](@ref) and its variants.
 """
 abstract type SecondDerivativeExtras <: Extras end
 

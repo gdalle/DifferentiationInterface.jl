@@ -3,7 +3,7 @@
 """
     prepare_hessian(f, backend, x) -> extras
 
-Create an `extras` object subtyping [`HessianExtras`](@ref) that can be given to Hessian operators.
+Create an `extras` object that can be given to [`hessian`](@ref) and its variants.
 
 !!! warning
     If the function changes in any way, the result of preparation will be invalidated, and you will need to run it again.
@@ -12,11 +12,15 @@ function prepare_hessian end
 
 """
     hessian(f, backend, x, [extras]) -> hess
+
+Compute the Hessian matrix of the function `f` at point `x`.
 """
 function hessian end
 
 """
     hessian!(f, hess, backend, x, [extras]) -> hess
+
+Compute the Hessian matrix of the function `f` at point `x`, overwriting `hess`.
 """
 function hessian! end
 
@@ -25,7 +29,7 @@ function hessian! end
 """
     HessianExtras
 
-Abstract type for additional information needed by Hessian operators.
+Abstract type for additional information needed by [`hessian`](@ref) and its variants.
 """
 abstract type HessianExtras <: Extras end
 

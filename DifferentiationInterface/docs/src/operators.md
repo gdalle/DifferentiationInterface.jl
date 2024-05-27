@@ -93,8 +93,6 @@ This preparation procedure is backend-specific, but we expose a common syntax to
 | `pullback`          | [`prepare_pullback`](@ref)             | [`prepare_pullback_same_point`](@ref)    |
 | `hvp`               | [`prepare_hvp`](@ref)                  | [`prepare_hvp_same_point`](@ref)         |
 
-High-level operators are prepared using a "typical" input `x`.
-Low-level operators are prepared using either a "typical" input `x`, or an "exact" input `x` and a typical seed `v` (this is what "same point" means, see below).
 In addition, the preparation syntax depends on the number of arguments accepted by the function.
 
 | signature  | preparation signature                      |
@@ -114,16 +112,16 @@ operator(f, backend, x, [v], extras)  # fast because it skips preparation
     The `extras` object is always mutated when given to an operator, even though it is the last argument.
     This convention holds regardless of the bang `!` in the operator name.
 
-### Caveats
+### Reusing preparation
 
 Deciding whether it is safe to reuse the results of preparation is not easy.
 Here are the general rules that we strive to implement:
 
-|                   | different point                              | same point                                         |
-| :---------------- | :------------------------------------------- | :------------------------------------------------- |
-| the output of...  | `extras = prepare_operator(f, b, x)`         | `extras = prepare_operator_same_point(f, b, x, v)` |
-| can be used in... | `operator(f, b, other_x, extras)`            | `operator(f, b, x, other_v, extras)`               |
-| provided that...  | `other_x` has the same type and shape as `x` | `other_v` has the same type and shape as `v`       |
+|                           | different point                              | same point                                   |
+| :------------------------ | :------------------------------------------- | :------------------------------------------- |
+| the output `extras` of... | `prepare_operator(f, b, x)`                  | `prepare_operator_same_point(f, b, x, v)`    |
+| can be used in...         | `operator(f, b, other_x, extras)`            | `operator(f, b, x, other_v, extras)`         |
+| provided that...          | `other_x` has the same type and shape as `x` | `other_v` has the same type and shape as `v` |
 
 These rules hold for the majority of backends, but there are some exceptions: see [this page](@ref "Preparation") to know more.
 
@@ -140,7 +138,7 @@ If the operator is not supported natively, we will fall back on `SecondOrder(bac
 !!! warning
     Whenever the fallback on `SecondOrder(backend, backend)` occurs, the results of any preparation will be discarded.
 
-### Combinations
+### Combining backends
 
 In general, you can use [`SecondOrder`](@ref) to combine different backends.
 
@@ -159,7 +157,7 @@ The inner backend will be called first, and the outer backend will differentiate
 
 ## Sparsity
 
-When computing Jacobians or Hessians, it is possibe to take advantage of sparsity.
+When computing sparse Jacobians or Hessians, it is possible to take advantage of their sparsity pattern to speed things up.
 For this to work, three ingredients are needed (read [this survey](https://epubs.siam.org/doi/10.1137/S0036144504444711) to understand why):
 
 1. An underlying (dense) backend
