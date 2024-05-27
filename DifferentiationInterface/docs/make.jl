@@ -36,7 +36,7 @@ makedocs(;
         "Home" => "index.md",
         "Tutorials" => ["tutorial1.md", "tutorial2.md"],
         "Reference" => ["operators.md", "backends.md", "api.md"],
-        "Going further" => ["preparation.md", "overloads.md"],
+        "Advanced" => ["preparation.md", "overloads.md"],
     ],
     checkdocs=:exports,
     plugins=[links],
