@@ -19,7 +19,7 @@ end
 function prepare_hessian(f::F, backend::AutoSparse, x) where {F}
     initial_sparsity = hessian_sparsity(f, x, sparsity_detector(backend))
     sparsity = col_major(initial_sparsity)
-    colors = column_coloring(sparsity, coloring_algorithm(backend))  # no star coloring
+    colors = symmetric_coloring(sparsity, coloring_algorithm(backend))
     groups = color_groups(colors)
     seeds = map(groups) do group
         seed = zero(x)
@@ -41,7 +41,7 @@ function hessian!(f::F, hess, backend::AutoSparse, x, extras::SparseHessianExtra
         hvp!(f, products[k], backend, x, seeds[k], hvp_extras_same)
         copyto!(view(compressed, :, k), vec(products[k]))
     end
-    decompress_columns!(hess, sparsity, compressed, colors)
+    decompress_symmetric!(hess, sparsity, compressed, colors)
     return hess
 end
 
@@ -51,5 +51,5 @@ function hessian(f::F, backend::AutoSparse, x, extras::SparseHessianExtras) wher
     compressed = stack(eachindex(seeds, products); dims=2) do k
         vec(hvp(f, backend, x, seeds[k], hvp_extras_same))
     end
-    return decompress_columns(sparsity, compressed, colors)
+    return decompress_symmetric(sparsity, compressed, colors)
 end
