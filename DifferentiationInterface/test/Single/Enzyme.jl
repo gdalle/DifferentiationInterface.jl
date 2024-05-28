@@ -32,7 +32,7 @@ end
 ## Dense backends
 
 test_differentiation(
-    dense_backends[1];  # TODO: add more
+    AutoEnzyme(; mode=Enzyme.Forward);  # TODO: add more
     type_stability=true,
     second_order=false,
     logging=LOGGING,
