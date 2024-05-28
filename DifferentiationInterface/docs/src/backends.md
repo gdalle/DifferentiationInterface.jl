@@ -9,7 +9,7 @@ We support all dense backend choices from [ADTypes.jl](https://github.com/SciML/
 
 ```@setup backends
 using DifferentiationInterface
-using DifferentiationInterface: backend_str, check_available, check_twoarg, check_hessian
+using DifferentiationInterface: backend_str
 import Markdown
 
 import Diffractor
@@ -78,18 +78,18 @@ backend_table #hide
 
 ### Availability
 
-You can use [`DifferentiationInterface.check_available`](@ref) to verify whether a given backend is loaded.
+You can use [`check_available`](@ref) to verify whether a given backend is loaded.
 
 ### Support for two-argument functions
 
 All backends are compatible with one-argument functions `f(x) = y`.
 Only some are compatible with two-argument functions `f!(y, x) = nothing`.
-You can use [`DifferentiationInterface.check_twoarg`](@ref) to verify this compatibility.
+You can use [`check_twoarg`](@ref) to verify this compatibility.
 
 ### Support for Hessian
 
 Only some backends are able to compute Hessians.
-You can use [`DifferentiationInterface.check_hessian`](@ref) to verify this feature (beware that it will try to compute a small Hessian, so it is not instantaneous like the other checks).
+You can use [`check_hessian`](@ref) to verify this feature (beware that it will try to compute a small Hessian, so it is not instantaneous like the other checks).
 
 ## Backend switch
 

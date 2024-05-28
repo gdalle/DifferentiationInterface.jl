@@ -1,14 +1,13 @@
 using DifferentiationInterface
-import DifferentiationInterface as DI
 using DifferentiationInterfaceTest
 using DifferentiationInterfaceTest: AutoZeroForward, AutoZeroReverse
 
 using DataFrames: DataFrames
 
-@test DI.check_available(AutoZeroForward())
-@test DI.check_available(AutoZeroReverse())
-@test DI.check_twoarg(AutoZeroForward())
-@test DI.check_twoarg(AutoZeroReverse())
+@test check_available(AutoZeroForward())
+@test check_available(AutoZeroReverse())
+@test check_twoarg(AutoZeroForward())
+@test check_twoarg(AutoZeroReverse())
 
 ## Correctness (vs oneself)
 

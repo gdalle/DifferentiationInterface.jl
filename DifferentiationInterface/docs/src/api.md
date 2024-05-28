@@ -98,9 +98,9 @@ hessian!
 ### Backend queries
 
 ```@docs
-DifferentiationInterface.check_available
-DifferentiationInterface.check_twoarg
-DifferentiationInterface.check_hessian
+check_available
+check_twoarg
+check_hessian
 DifferentiationInterface.outer
 DifferentiationInterface.inner
 ```
@@ -118,5 +118,5 @@ The following is not part of the public API.
 ```@autodocs
 Modules = [DifferentiationInterface]
 Public = false
-Filter = t -> !(Symbol(t) in [:check_available, :check_twoarg, :check_hessian, :outer, :inner])
+Filter = t -> !(Symbol(t) in [:outer, :inner])
 ```

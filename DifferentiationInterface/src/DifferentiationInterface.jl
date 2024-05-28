@@ -105,6 +105,8 @@ export prepare_hvp, prepare_hvp_same_point
 export prepare_derivative, prepare_gradient, prepare_jacobian
 export prepare_second_derivative, prepare_hessian
 
+export check_available, check_twoarg, check_hessian
+
 export DifferentiateWith
 
 ## Re-exported from ADTypes
@@ -131,7 +133,6 @@ export GreedyColoringAlgorithm
 
 ## Public but not exported
 
-@compat public check_available, check_twoarg, check_hessian
 @compat public inner, outer
 
 end # module
