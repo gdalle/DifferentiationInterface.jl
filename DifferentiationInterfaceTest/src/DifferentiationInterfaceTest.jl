@@ -44,7 +44,7 @@ using DocStringExtensions
 import DifferentiationInterface as DI
 using JET: JET
 using JLArrays: jl
-using LinearAlgebra: Diagonal, dot
+using LinearAlgebra: Diagonal, dot, parent
 using ProgressMeter: ProgressUnknown, next!
 using SparseArrays: SparseArrays, SparseMatrixCSC, nnz, spdiagm
 using StaticArrays: MMatrix, MVector, SMatrix, SVector
