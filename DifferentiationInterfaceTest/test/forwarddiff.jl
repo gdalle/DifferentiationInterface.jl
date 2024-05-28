@@ -6,7 +6,7 @@ using SparseConnectivityTracer
 using SparseMatrixColorings
 
 sparse_backend = AutoSparse(
-    backend;
+    AutoForwardDiff();
     sparsity_detector=TracerSparsityDetector(),
     coloring_algorithm=GreedyColoringAlgorithm(),
 )
