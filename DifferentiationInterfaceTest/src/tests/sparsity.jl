@@ -1,5 +1,5 @@
-mynnz(A::AbstractMatrix) == nnz(A)
-mynnz(A::Union{Transpose,Adjoint}) == nnz(parent(A))  # fix for Julia 1.6
+mynnz(A::AbstractMatrix) = nnz(A)
+mynnz(A::Union{Transpose,Adjoint}) = nnz(parent(A))  # fix for Julia 1.6
 
 ## Jacobian
 
