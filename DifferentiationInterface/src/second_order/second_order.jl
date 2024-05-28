@@ -5,7 +5,7 @@ Combination of two backends for second-order differentiation.
 
 # Constructor
 
-    SecondOrder(outer, inner)
+    SecondOrder(outer_backend, inner_backend)
 
 # Fields
 
@@ -18,14 +18,23 @@ struct SecondOrder{ADO<:AbstractADType,ADI<:AbstractADType} <: AbstractADType
     inner::ADI
 end
 
-SecondOrder(backend::AbstractADType) = SecondOrder(backend, backend)
-
-inner(backend::SecondOrder) = backend.inner
-outer(backend::SecondOrder) = backend.outer
-
 function Base.show(io::IO, backend::SecondOrder)
     return print(io, "SecondOrder($(outer(backend)) / $(inner(backend)))")
 end
+
+"""
+    inner(backend::SecondOrder)
+
+Return the inner backend of a [`SecondOrder`](@ref) object, tasked with differentiation at the first order.
+"""
+inner(backend::SecondOrder) = backend.inner
+
+"""
+    outer(backend::SecondOrder)
+
+Return the outer backend of a [`SecondOrder`](@ref) object, tasked with differentiation at the second order.
+"""
+outer(backend::SecondOrder) = backend.outer
 
 """
     mode(backend::SecondOrder)
@@ -33,11 +42,3 @@ end
 Return the _outer_ mode of the second-order backend.
 """
 ADTypes.mode(backend::SecondOrder) = mode(outer(backend))
-
-function twoarg_support(backend::SecondOrder)
-    if Bool(twoarg_support(inner(backend))) && Bool(twoarg_support(outer(backend)))
-        return TwoArgSupported()
-    else
-        return TwoArgNotSupported()
-    end
-end
