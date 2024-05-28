@@ -23,6 +23,14 @@ Return [`TwoArgSupported`](@ref) or [`TwoArgNotSupported`](@ref) in a statically
 """
 twoarg_support(::AbstractADType) = TwoArgSupported()
 
+function twoarg_support(backend::SecondOrder)
+    if Bool(twoarg_support(inner(backend))) && Bool(twoarg_support(outer(backend)))
+        return TwoArgSupported()
+    else
+        return TwoArgNotSupported()
+    end
+end
+
 ## Pushforward
 
 abstract type PushforwardPerformance end

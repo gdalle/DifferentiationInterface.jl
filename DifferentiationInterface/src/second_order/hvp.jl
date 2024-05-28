@@ -136,7 +136,7 @@ end
 function hvp(
     f::F, backend::AbstractADType, x, v, extras::HVPExtras=prepare_hvp(f, backend, x, v)
 ) where {F}
-    new_backend = SecondOrder(backend)
+    new_backend = SecondOrder(backend, backend)
     new_extras = prepare_hvp(f, new_backend, x, v)
     return hvp(f, new_backend, x, v, new_extras)
 end
@@ -175,7 +175,7 @@ end
 function hvp!(
     f::F, p, backend::AbstractADType, x, v, extras::HVPExtras=prepare_hvp(f, backend, x, v)
 ) where {F}
-    new_backend = SecondOrder(backend)
+    new_backend = SecondOrder(backend, backend)
     new_extras = prepare_hvp(f, new_backend, x, v)
     return hvp!(f, p, new_backend, x, v, new_extras)
 end

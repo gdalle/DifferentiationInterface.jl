@@ -1,3 +1,6 @@
+mynnz(A::AbstractMatrix) = nnz(A)
+mynnz(A::Union{Transpose,Adjoint}) = nnz(parent(A))  # fix for Julia 1.6
+
 ## Jacobian
 
 function test_sparsity(
@@ -15,8 +18,8 @@ function test_sparsity(
     jac2 = jacobian(f, ba, x, extras)
 
     @testset "Sparsity pattern" begin
-        @test nnz(jac1) == nnz(jac_true)
-        @test nnz(jac2) == nnz(jac_true)
+        @test mynnz(jac1) == mynnz(jac_true)
+        @test mynnz(jac2) == mynnz(jac_true)
     end
     return nothing
 end
@@ -34,8 +37,8 @@ function test_sparsity(ba::AbstractADType, scen::JacobianScenario{1,:inplace}; r
     jac2 = jacobian!(f, mysimilar(jac_true), ba, x, extras)
 
     @testset "Sparsity pattern" begin
-        @test nnz(jac1) == nnz(jac_true)
-        @test nnz(jac2) == nnz(jac_true)
+        @test mynnz(jac1) == mynnz(jac_true)
+        @test mynnz(jac2) == mynnz(jac_true)
     end
     return nothing
 end
@@ -56,8 +59,8 @@ function test_sparsity(
     jac2 = jacobian(f!, mysimilar(y), ba, x, extras)
 
     @testset "Sparsity pattern" begin
-        @test nnz(jac1) == nnz(jac_true)
-        @test nnz(jac2) == nnz(jac_true)
+        @test mynnz(jac1) == mynnz(jac_true)
+        @test mynnz(jac2) == mynnz(jac_true)
     end
     return nothing
 end
@@ -76,8 +79,8 @@ function test_sparsity(ba::AbstractADType, scen::JacobianScenario{2,:inplace}; r
     jac2 = jacobian!(f!, mysimilar(y), mysimilar(jac_true), ba, x, extras)
 
     @testset "Sparsity pattern" begin
-        @test nnz(jac1) == nnz(jac_true)
-        @test nnz(jac2) == nnz(jac_true)
+        @test mynnz(jac1) == mynnz(jac_true)
+        @test mynnz(jac2) == mynnz(jac_true)
     end
     return nothing
 end
@@ -98,7 +101,7 @@ function test_sparsity(
     hess1 = hessian(f, ba, x, extras)
 
     @testset "Sparsity pattern" begin
-        @test nnz(hess1) == nnz(hess_true)
+        @test mynnz(hess1) == mynnz(hess_true)
     end
     return nothing
 end
@@ -115,7 +118,7 @@ function test_sparsity(ba::AbstractADType, scen::HessianScenario{1,:inplace}; re
     hess1 = hessian!(f, mysimilar(hess_true), ba, x, extras)
 
     @testset "Sparsity pattern" begin
-        @test nnz(hess1) == nnz(hess_true)
+        @test mynnz(hess1) == mynnz(hess_true)
     end
     return nothing
 end

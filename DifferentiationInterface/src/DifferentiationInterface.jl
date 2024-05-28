@@ -77,6 +77,8 @@ function __init__()
     @require_extensions
 end
 
+## Exported
+
 export SecondOrder
 
 export value_and_pushforward!, value_and_pushforward
@@ -107,9 +109,8 @@ export check_available, check_twoarg, check_hessian
 
 export DifferentiateWith
 
-export GreedyColoringAlgorithm
+## Re-exported from ADTypes
 
-# Re-export backends from ADTypes
 export AutoChainRules
 export AutoDiffractor
 export AutoEnzyme
@@ -125,5 +126,13 @@ export AutoTracker
 export AutoZygote
 
 export AutoSparse
+
+## Re-exported from SparseMatrixColorings
+
+export GreedyColoringAlgorithm
+
+## Public but not exported
+
+@compat public inner, outer
 
 end # module

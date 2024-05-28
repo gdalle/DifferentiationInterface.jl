@@ -7,8 +7,9 @@ using SparseMatrixColorings
 using Zygote: Zygote
 using Test
 
-backends = [
-    SecondOrder(AutoForwardDiff(), AutoZygote()),
+dense_backends = [SecondOrder(AutoForwardDiff(), AutoZygote())]
+
+sparse_backends = [
     AutoSparse(
         SecondOrder(AutoForwardDiff(), AutoZygote());
         sparsity_detector=TracerSparsityDetector(),
@@ -16,16 +17,20 @@ backends = [
     ),
 ]
 
-for backend in backends
+for backend in vcat(dense_backends, sparse_backends)
     @test check_available(backend)
     @test !check_twoarg(backend)
     @test check_hessian(backend)
 end
 
-test_differentiation(backends; first_order=false, logging=LOGGING);
+## Dense backends
+
+test_differentiation(dense_backends; first_order=false, logging=LOGGING);
+
+## Sparse backends
 
 test_differentiation(
-    backends[2], sparse_scenarios(); first_order=false, sparsity=true, logging=LOGGING
+    sparse_backends, sparse_scenarios(); first_order=false, sparsity=true, logging=LOGGING
 );
 
 ## Translation

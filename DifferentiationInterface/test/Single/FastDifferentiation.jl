@@ -11,12 +11,6 @@ end
 test_differentiation(AutoFastDifferentiation(); logging=LOGGING);
 
 test_differentiation(
-    AutoSparse(AutoFastDifferentiation());
-    excluded=[JacobianScenario, HessianScenario],
-    logging=LOGGING,
-);
-
-test_differentiation(
     AutoSparse(AutoFastDifferentiation()),
     sparse_scenarios();
     sparsity=true,

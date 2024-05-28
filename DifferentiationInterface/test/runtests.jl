@@ -2,13 +2,11 @@ using DifferentiationInterface
 using Pkg
 using Test
 
-# DI_PATH = joinpath(@__DIR__, "..", "..", "DifferentiationInterface")
-# if isdir(DI_PATH)
-#     Pkg.develop(; path=DI_PATH)
-# end
 DIT_PATH = joinpath(@__DIR__, "..", "..", "DifferentiationInterfaceTest")
 if isdir(DIT_PATH)
     Pkg.develop(; path=DIT_PATH)
+else
+    Pkg.add("DifferentiationInterfaceTest")
 end
 
 LOGGING = get(ENV, "CI", "false") == "false"
