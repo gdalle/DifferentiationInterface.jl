@@ -3,6 +3,9 @@
 
 Combination of two backends for second-order differentiation.
 
+!!! danger
+    `SecondOrder` backends do not support first-order operators.
+
 # Constructor
 
     SecondOrder(outer_backend, inner_backend)

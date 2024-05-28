@@ -148,9 +148,11 @@ backend = SecondOrder(outer_backend, inner_backend)
 
 The inner backend will be called first, and the outer backend will differentiate the generated code.
 
-!!! warning
-    There are many possible backend combinations, a lot of which will fail.
-    Usually, the most efficient approach for Hessians is forward-over-reverse, i.e. a forward-mode outer backend and a reverse-mode inner backend.
+There are many possible backend combinations, a lot of which will fail.
+Usually, the most efficient approach for Hessians is forward-over-reverse, i.e. a forward-mode outer backend and a reverse-mode inner backend.
+
+!!! danger
+    `SecondOrder` backends do not support first-order operators.
 
 !!! warning
     Preparation does not yet work for the inner differentiation step of a `SecondOrder`, only the outer differentiation is prepared.
@@ -170,16 +172,15 @@ Note that for sparse Hessians, you need to put the `SecondOrder` backend inside 
 The preparation step of `jacobian` or `hessian` with an `AutoSparse` backend can be long, because it needs to detect the sparsity pattern and color the resulting sparse matrix.
 But after preparation, the more zeros are present in the matrix, the greater the speedup will be compared to dense differentiation.
 
+!!! danger
+    `AutoSparse` backends only support operators [`jacobian`](@ref) and [`hessian`](@ref) (as well as their variants).
+
 !!! warning
     The result of preparation for an `AutoSparse` backend cannot be reused if the sparsity pattern changes.
 
 !!! info
-    The symbolic backends have built-in sparsity handling, so `AutoSparse(AutoSymbolics())` and `AutoSparse(AutoFastDifferentiation())` do not need additional configuration for pattern detection or coloring.
+    Symbolic backends have built-in sparsity handling, so `AutoSparse(AutoSymbolics())` and `AutoSparse(AutoFastDifferentiation())` do not need additional configuration for pattern detection or coloring.
     However they still benefit from preparation.
-
-!!! warning
-    At the moment, `AutoSparse` backends can be used with operators other than `jacobian` and `hessian`.
-    This possibility will be removed in the next breaking release.
 
 ## Going further
 
