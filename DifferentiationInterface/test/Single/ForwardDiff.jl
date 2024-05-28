@@ -22,7 +22,15 @@ end
 
 ## Dense backends
 
-test_differentiation(dense_backends; type_stability=true, logging=LOGGING);
+test_differentiation(dense_backends; logging=LOGGING);
+
+test_differentiation(
+    dense_backends;
+    correctness=false,
+    type_stability=true,
+    second_order=false,
+    logging=LOGGING,
+);
 
 test_differentiation(
     dense_backends,

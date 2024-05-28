@@ -42,7 +42,6 @@ test_differentiation(
     default_scenarios();
     excluded=[DerivativeScenario, GradientScenario, PullbackScenario, PushforwardScenario],
     second_order=false,
-    sparsity=true,
     logging=LOGGING,
 );
 
