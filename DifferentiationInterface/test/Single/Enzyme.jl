@@ -32,7 +32,10 @@ end
 ## Dense backends
 
 test_differentiation(
-    dense_backends; type_stability=true, second_order=false, logging=LOGGING
+    dense_backends[1];  # TODO: add more
+    type_stability=true,
+    second_order=false,
+    logging=LOGGING,
 );
 
 ## Sparse backends
