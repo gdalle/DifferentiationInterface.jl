@@ -40,7 +40,7 @@ makedocs(;
         ],
         "Reference" => [
             "operators.md",  #
-            "backends.md",
+            # "backends.md",
             "api.md",
         ],
         "Advanced" => [
