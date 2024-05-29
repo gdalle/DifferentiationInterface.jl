@@ -143,9 +143,18 @@ end
 const DEFAULT_α = 4
 const DEFAULT_β = 6
 
-arr_to_num_aux(x; α, β) = sum(vec(x .^ α) * transpose(vec(x .^ β)))
+arr_to_num_aux_linalg(x; α, β) = sum(vec(x .^ α) .* transpose(vec(x .^ β)))
+
+function arr_to_num_aux_no_linalg(x; α, β)
+    s = zero(eltype(x))
+    for i in eachindex(x), j in eachindex(x)
+        s += x[i]^α * x[j]^β
+    end
+    return s
+end
 
 function arr_to_num_aux_gradient(x; α, β)
+    x = Array(x)  # GPU arrays don't like indexing
     g = similar(x)
     for k in eachindex(g, x)
         g[k] = (
@@ -158,6 +167,7 @@ function arr_to_num_aux_gradient(x; α, β)
 end
 
 function arr_to_num_aux_hessian(x; α, β)
+    x = Array(x)  # GPU arrays don't like indexing
     H = similar(x, length(x), length(x))
     for k in axes(H, 1), l in axes(H, 2)
         if k == l
@@ -173,14 +183,19 @@ function arr_to_num_aux_hessian(x; α, β)
     return H
 end
 
-arr_to_num(x::AbstractArray)::Number = arr_to_num_aux(x; α=DEFAULT_α, β=DEFAULT_β)
+arr_to_num_linalg(x::AbstractArray)::Number =
+    arr_to_num_aux_linalg(x; α=DEFAULT_α, β=DEFAULT_β)
+arr_to_num_no_linalg(x::AbstractArray)::Number =
+    arr_to_num_aux_no_linalg(x; α=DEFAULT_α, β=DEFAULT_β)
+
 arr_to_num_gradient(x) = arr_to_num_aux_gradient(x; α=DEFAULT_α, β=DEFAULT_β)
 arr_to_num_hessian(x) = arr_to_num_aux_hessian(x; α=DEFAULT_α, β=DEFAULT_β)
 arr_to_num_pushforward(x, dx) = dot(arr_to_num_gradient(x), dx)
 arr_to_num_pullback(x, dy) = arr_to_num_gradient(x) .* dy
 arr_to_num_hvp(x, v) = reshape(arr_to_num_hessian(x) * vec(v), size(x))
 
-function arr_to_num_scenarios_onearg(x::AbstractArray)
+function arr_to_num_scenarios_onearg(x::AbstractArray; linalg=true)
+    arr_to_num = linalg ? arr_to_num_linalg : arr_to_num_no_linalg
     # pushforward stays out of place
     scens = AbstractScenario[]
     for place in (:outofplace, :inplace)
@@ -480,14 +495,14 @@ const IMAT = Matrix((1:2) .* transpose(1:3))
 
 Create a vector of [`AbstractScenario`](@ref)s with standard array types.
 """
-function default_scenarios()
+function default_scenarios(; linalg=true)
     return vcat(
         # one argument
         num_to_num_scenarios_onearg(rand()),
         num_to_arr_scenarios_onearg(rand(), IVEC),
         num_to_arr_scenarios_onearg(rand(), IMAT),
-        arr_to_num_scenarios_onearg(rand(6)),
-        arr_to_num_scenarios_onearg(rand(2, 3)),
+        arr_to_num_scenarios_onearg(rand(6); linalg),
+        arr_to_num_scenarios_onearg(rand(2, 3); linalg),
         vec_to_vec_scenarios_onearg(rand(6)),
         vec_to_mat_scenarios_onearg(rand(6)),
         mat_to_vec_scenarios_onearg(rand(2, 3)),

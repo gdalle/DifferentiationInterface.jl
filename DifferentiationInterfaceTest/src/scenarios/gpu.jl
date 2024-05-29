@@ -6,13 +6,13 @@ const JLMAT = jl(IMAT)
 
 Create a vector of [`AbstractScenario`](@ref)s with GPU array types from [JLArrays.jl](https://github.com/JuliaGPU/GPUArrays.jl/tree/master/lib/JLArrays).
 """
-function gpu_scenarios()
+function gpu_scenarios(; linalg=true)
     return vcat(
         # one argument
         num_to_arr_scenarios_onearg(rand(), JLVEC),
         num_to_arr_scenarios_onearg(rand(), JLMAT),
-        arr_to_num_scenarios_onearg(jl(rand(6))),
-        arr_to_num_scenarios_onearg(jl(rand(2, 3))),
+        arr_to_num_scenarios_onearg(jl(rand(6)); linalg),
+        arr_to_num_scenarios_onearg(jl(rand(2, 3)); linalg),
         vec_to_vec_scenarios_onearg(jl(rand(6))),
         vec_to_mat_scenarios_onearg(jl(rand(6))),
         mat_to_vec_scenarios_onearg(jl(rand(2, 3))),
