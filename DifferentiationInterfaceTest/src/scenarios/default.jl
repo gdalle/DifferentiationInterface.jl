@@ -146,8 +146,9 @@ const DEFAULT_β = 6
 arr_to_num_aux_linalg(x; α, β) = sum(vec(x .^ α) .* transpose(vec(x .^ β)))
 
 function arr_to_num_aux_no_linalg(x; α, β)
+    n = length(x)
     s = zero(eltype(x))
-    for i in eachindex(x), j in eachindex(x)
+    for i in 1:n, j in 1:n
         s += x[i]^α * x[j]^β
     end
     return s
