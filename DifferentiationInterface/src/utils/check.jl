@@ -16,7 +16,7 @@ Check whether `backend` supports differentiation of two-argument functions.
 """
 check_twoarg(backend::AbstractADType) = Bool(twoarg_support(backend))
 
-sqnorm(x::AbstractArray) = sum(abs2, x)
+sqnorm(x::AbstractArray) = sum(abs2.(x))
 
 """
     check_hessian(backend)
