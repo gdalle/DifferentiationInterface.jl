@@ -1,23 +1,30 @@
 module DifferentiationInterfaceEnzymeExt
 
 using ADTypes: ADTypes, AutoEnzyme
+using Compat
 import DifferentiationInterface as DI
 using DifferentiationInterface:
     DerivativeExtras,
     GradientExtras,
+    HessianExtras,
     JacobianExtras,
     PullbackExtras,
     PushforwardExtras,
+    SecondDerivativeExtras,
     NoDerivativeExtras,
     NoGradientExtras,
+    NoHessianExtras,
+    NoHVPExtras,
     NoJacobianExtras,
     NoPullbackExtras,
     NoPushforwardExtras,
+    NoSecondDerivativeExtras,
     pick_chunksize
 using DocStringExtensions
 using Enzyme:
     Active,
     Const,
+    Mode,
     Duplicated,
     DuplicatedNoNeed,
     Forward,
@@ -27,6 +34,7 @@ using Enzyme:
     ReverseSplitWithPrimal,
     ReverseMode,
     autodiff,
+    autodiff_deferred,
     autodiff_thunk,
     chunkedonehot,
     gradient,
@@ -34,15 +42,18 @@ using Enzyme:
     jacobian,
     make_zero
 
+const AutoMixedEnzyme = AutoEnzyme{Nothing}
 const AutoForwardEnzyme = AutoEnzyme{<:ForwardMode}
 const AutoForwardOrNothingEnzyme = Union{AutoEnzyme{<:ForwardMode},AutoEnzyme{Nothing}}
 const AutoReverseEnzyme = AutoEnzyme{<:ReverseMode}
 const AutoReverseOrNothingEnzyme = Union{AutoEnzyme{<:ReverseMode},AutoEnzyme{Nothing}}
 
-forward_mode(backend::AutoEnzyme{<:ForwardMode}) = backend.mode
+# forward mode if possible
+forward_mode(backend::AutoEnzyme{<:Mode}) = backend.mode
 forward_mode(::AutoEnzyme{Nothing}) = Forward
 
-reverse_mode(backend::AutoEnzyme{<:ReverseMode}) = backend.mode
+# reverse mode if possible
+reverse_mode(backend::AutoEnzyme{<:Mode}) = backend.mode
 reverse_mode(::AutoEnzyme{Nothing}) = Reverse
 
 DI.check_available(::AutoEnzyme) = true
@@ -60,10 +71,14 @@ function zero_sametype!(x_target, x)
     return x_sametype
 end
 
+include("utils.jl")
+
 include("forward_onearg.jl")
 include("forward_twoarg.jl")
 
 include("reverse_onearg.jl")
 include("reverse_twoarg.jl")
+
+include("common_onearg.jl")
 
 end # module

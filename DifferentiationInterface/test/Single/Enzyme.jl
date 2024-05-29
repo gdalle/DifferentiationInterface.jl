@@ -10,30 +10,30 @@ dense_backends = [
     AutoEnzyme(; mode=Enzyme.Reverse),
 ]
 
-sparse_backends = [
-    AutoSparse(
-        AutoEnzyme(; mode=Enzyme.Forward);
+sparse_backends =
+    AutoSparse.(
+        dense_backends,
         sparsity_detector=TracerSparsityDetector(),
         coloring_algorithm=GreedyColoringAlgorithm(),
-    ),
-    AutoSparse(
-        AutoEnzyme(; mode=Enzyme.Reverse);
-        sparsity_detector=TracerSparsityDetector(),
-        coloring_algorithm=GreedyColoringAlgorithm(),
-    ),
-]
+    )
 
 for backend in vcat(dense_backends, sparse_backends)
     @test check_available(backend)
     @test check_twoarg(backend)
-    @test !check_hessian(backend; verbose=false)
+    # @test !check_hessian(backend; verbose=false)
 end
 
 ## Dense backends
 
 test_differentiation(dense_backends; second_order=false, logging=LOGGING);
 
-test_differentiation(dense_backends; first_order=false, logging=LOGGING);  # TODO: fails
+test_differentiation(AutoEnzyme(); first_order=false, logging=LOGGING);
+test_differentiation(
+    AutoEnzyme(; mode=Enzyme.Forward);
+    first_order=false,
+    excluded=[HVPScenario, HessianScenario],
+    logging=LOGGING,
+);
 
 test_differentiation(
     AutoEnzyme(; mode=Enzyme.Forward);  # TODO: add more

@@ -7,7 +7,7 @@ DI.prepare_pullback(f, ::AutoReverseOrNothingEnzyme, x, dy) = NoPullbackExtras()
 function DI.value_and_pullback(
     f, ::AutoReverseOrNothingEnzyme, x::Number, dy::Number, ::NoPullbackExtras
 )
-    der, y = autodiff(ReverseWithPrimal, f, Active, Active(x))
+    der, y = autodiff(ReverseWithPrimal, Const(f), Active, Active(x))
     new_dx = dy * only(der)
     return y, new_dx
 end
@@ -43,7 +43,7 @@ function DI.value_and_pullback!(
     f, dx, ::AutoReverseOrNothingEnzyme, x::AbstractArray, dy::Number, ::NoPullbackExtras
 )
     dx_sametype = zero_sametype!(dx, x)
-    _, y = autodiff(ReverseWithPrimal, f, Active, Duplicated(x, dx_sametype))
+    _, y = autodiff(ReverseWithPrimal, Const(f), Active, Duplicated(x, dx_sametype))
     dx_sametype .*= dy
     return y, copyto!(dx, dx_sametype)
 end
@@ -155,3 +155,17 @@ function DI.value_and_jacobian!(
 end
 
 =#
+
+## HVP
+
+DI.prepare_hvp(f, ::AutoReverseEnzyme, x, v) = NoHVPExtras()
+
+function DI.hvp(f, backend::AutoReverseEnzyme, x, v, ::NoHVPExtras)
+    ∇f = DeferredGradient(f, reverse_mode(backend))
+    return DI.pullback(∇f, backend, x, v)
+end
+
+function DI.hvp!(f, p, backend::AutoReverseEnzyme, x, v, ::NoHVPExtras)
+    ∇f = DeferredGradient(f, reverse_mode(backend))
+    return DI.pullback!(∇f, p, backend, x, v)
+end

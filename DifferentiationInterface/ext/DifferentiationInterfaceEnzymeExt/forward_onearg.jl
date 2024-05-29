@@ -6,7 +6,9 @@ function DI.value_and_pushforward(
     f, backend::AutoForwardOrNothingEnzyme, x, dx, ::NoPushforwardExtras
 )
     dx_sametype = convert(typeof(x), dx)
-    y, new_dy = autodiff(forward_mode(backend), f, Duplicated, Duplicated(x, dx_sametype))
+    y, new_dy = autodiff(
+        forward_mode(backend), Const(f), Duplicated, Duplicated(x, dx_sametype)
+    )
     return y, new_dy
 end
 
@@ -15,7 +17,9 @@ function DI.pushforward(
 )
     dx_sametype = convert(typeof(x), dx)
     new_dy = only(
-        autodiff(forward_mode(backend), f, DuplicatedNoNeed, Duplicated(x, dx_sametype))
+        autodiff(
+            forward_mode(backend), Const(f), DuplicatedNoNeed, Duplicated(x, dx_sametype)
+        ),
     )
     return new_dy
 end
@@ -120,4 +124,18 @@ function DI.value_and_jacobian!(
 )
     y, new_jac = DI.value_and_jacobian(f, backend, x, extras)
     return y, copyto!(jac, new_jac)
+end
+
+## HVP
+
+DI.prepare_hvp(f, ::AutoForwardOrNothingEnzyme, x, v) = NoHVPExtras()
+
+function DI.hvp(f, backend::AutoForwardOrNothingEnzyme, x, v, ::NoHVPExtras)
+    ∇f = DeferredGradient(f, reverse_mode(backend))
+    return DI.pushforward(∇f, AutoEnzyme(forward_mode(backend)), x, v)
+end
+
+function DI.hvp!(f, p, backend::AutoForwardOrNothingEnzyme, x, v, ::NoHVPExtras)
+    ∇f = DeferredGradient(f, reverse_mode(backend))
+    return DI.pushforward!(∇f, p, AutoEnzyme(forward_mode(backend)), x, v)
 end
