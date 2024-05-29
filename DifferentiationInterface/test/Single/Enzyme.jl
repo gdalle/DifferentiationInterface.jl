@@ -33,6 +33,8 @@ end
 
 test_differentiation(backends; second_order=false, logging=LOGGING);
 
+test_differentiation(backends; first_order=false, logging=LOGGING);
+
 test_differentiation(
     AutoEnzyme(; mode=Enzyme.Forward);  # TODO: add more
     correctness=false,
