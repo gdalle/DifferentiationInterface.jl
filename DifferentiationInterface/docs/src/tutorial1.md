@@ -12,7 +12,13 @@ A common use case of automatic differentiation (AD) is optimizing real-valued fu
 Let's define a simple objective and a random input vector
 
 ```@example tuto1
-f(x) = sum(abs2, x)
+function f(x::AbstractVector{T}) where {T}
+    y = zero(T)
+    for i in eachindex(x)
+        y += abs2(x[i])
+    end
+    return y
+end
 
 x = collect(1.0:5.0)
 ```
