@@ -1,7 +1,7 @@
 ## Vector to scalar
 
 function comp_to_num(x::ComponentVector)::Number
-    return sum(sin, x.a) + sum(cos, x.b)
+    return sum(sin.(x.a)) + sum(cos.(x.b))
 end
 
 comp_to_num_gradient(x) = ComponentVector(; a=cos.(x.a), b=-sin.(x.b))

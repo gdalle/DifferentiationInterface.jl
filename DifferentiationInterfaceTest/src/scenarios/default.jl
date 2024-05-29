@@ -1,6 +1,5 @@
 #=
 Constraints on the scenarios:
-- non-allocating whenever possible
 - type-stable
 - GPU-compatible (no scalar indexing)
 - vary shapes to be tricky
@@ -140,7 +139,7 @@ end
 
 ## Array to scalar
 
-arr_to_num(x::AbstractArray)::Number = sum(sin, x)
+arr_to_num(x::AbstractArray)::Number = sum(sin.(x))
 
 arr_to_num_gradient(x) = cos.(x)
 arr_to_num_hvp(x, v) = -sin.(x) .* v
