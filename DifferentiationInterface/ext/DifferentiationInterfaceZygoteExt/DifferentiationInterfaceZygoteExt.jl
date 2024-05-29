@@ -1,9 +1,14 @@
 module DifferentiationInterfaceZygoteExt
 
-using ADTypes: AutoZygote
+using ADTypes: AutoForwardDiff, AutoZygote
 import DifferentiationInterface as DI
 using DifferentiationInterface:
-    NoGradientExtras, NoHessianExtras, NoJacobianExtras, NoPullbackExtras, PullbackExtras
+    HVPExtras,
+    NoGradientExtras,
+    NoHessianExtras,
+    NoJacobianExtras,
+    NoPullbackExtras,
+    PullbackExtras
 using DocStringExtensions
 using Zygote:
     ZygoteRuleConfig, gradient, hessian, jacobian, pullback, withgradient, withjacobian
@@ -86,6 +91,31 @@ end
 
 function DI.jacobian!(f, jac, backend::AutoZygote, x, extras::NoJacobianExtras)
     return copyto!(jac, DI.jacobian(f, backend, x, extras))
+end
+
+## HVP (with ForwardDiff)
+
+# TODO: find a way to do this without cheating?
+
+struct ZygoteHVPExtras{G,PE} <: HVPExtras
+    ∇f::G
+    pushforward_extras::PE
+end
+
+function DI.prepare_hvp(f, ::AutoZygote, x, v)
+    ∇f(x) = only(gradient(f, x))
+    pushforward_extras = DI.prepare_pushforward(∇f, AutoForwardDiff(), x, v)
+    return ZygoteHVPExtras(∇f, pushforward_extras)
+end
+
+function DI.hvp(f, ::AutoZygote, x, v, extras::ZygoteHVPExtras)
+    @compat (; ∇f, pushforward_extras) = extras
+    return DI.pushforward(∇f, AutoForwardDiff(), x, v, pushforward_extras)
+end
+
+function DI.hvp!(f, ::AutoZygote, x, v, extras::ZygoteHVPExtras)
+    @compat (; ∇f, pushforward_extras) = extras
+    return DI.pushforward!(∇f, v, AutoForwardDiff(), x, v, pushforward_extras)
 end
 
 ## Hessian

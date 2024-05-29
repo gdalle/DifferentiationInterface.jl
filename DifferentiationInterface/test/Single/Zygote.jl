@@ -22,7 +22,14 @@ end
 
 ## Dense backends
 
-test_differentiation(dense_backends; excluded=[SecondDerivativeScenario], logging=LOGGING);
+test_differentiation(
+    AutoChainRules(Zygote.ZygoteRuleConfig());
+    excluded=[SecondDerivativeScenario],
+    second_order=VERSION >= v"1.10",
+    logging=LOGGING,
+);
+
+test_differentiation(AutoZygote(); excluded=[SecondDerivativeScenario], logging=LOGGING);
 
 test_differentiation(
     AutoZygote(),
