@@ -31,7 +31,7 @@ end
 
 ## Dense backends
 
-test_differentiation(backends; second_order=false, logging=LOGGING);
+test_differentiation(dense_backends; second_order=false, logging=LOGGING);
 
 test_differentiation(
     AutoEnzyme(; mode=Enzyme.Forward);  # TODO: add more
