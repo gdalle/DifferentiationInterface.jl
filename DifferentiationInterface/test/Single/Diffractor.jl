@@ -8,4 +8,6 @@ for backend in [AutoDiffractor()]
     @test !check_hessian(backend; verbose=false)
 end
 
-test_differentiation(AutoDiffractor(); second_order=false, logging=LOGGING);
+test_differentiation(
+    AutoDiffractor(), default_scenarios(; linalg=false); second_order=false, logging=LOGGING
+);

@@ -1,14 +1,14 @@
 ## Vector to scalar
 
 function comp_to_num(x::ComponentVector)::Number
-    return sum(sin, x.a) + sum(cos, x.b)
+    return sum(sin.(x.a)) + sum(cos.(x.b))
 end
 
 comp_to_num_gradient(x) = ComponentVector(; a=cos.(x.a), b=-sin.(x.b))
 
 function comp_to_num_pushforward(x, dx)
     g = comp_to_num_gradient(x)
-    return dot(g.a, dx.a) + dot(g.b, dx.b)
+    return sum(g.a .* dx.a) + sum(g.b .* dx.b)
 end
 
 function comp_to_num_pullback(x, dy)
