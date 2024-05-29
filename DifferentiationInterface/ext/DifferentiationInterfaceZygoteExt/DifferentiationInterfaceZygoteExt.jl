@@ -113,9 +113,9 @@ function DI.hvp(f, ::AutoZygote, x, v, extras::ZygoteHVPExtras)
     return DI.pushforward(∇f, AutoForwardDiff(), x, v, pushforward_extras)
 end
 
-function DI.hvp!(f, ::AutoZygote, x, v, extras::ZygoteHVPExtras)
+function DI.hvp!(f, p, ::AutoZygote, x, v, extras::ZygoteHVPExtras)
     @compat (; ∇f, pushforward_extras) = extras
-    return DI.pushforward!(∇f, v, AutoForwardDiff(), x, v, pushforward_extras)
+    return DI.pushforward!(∇f, p, AutoForwardDiff(), x, v, pushforward_extras)
 end
 
 ## Hessian
