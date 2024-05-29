@@ -140,6 +140,9 @@ end
 
 ## Array to scalar
 
+const DEFAULT_α = 4
+const DEFAULT_β = 6
+
 arr_to_num_aux(x; α, β) = sum(vec(x .^ α) * transpose(vec(x .^ β)))
 
 function arr_to_num_aux_gradient(x; α, β)
@@ -170,9 +173,9 @@ function arr_to_num_aux_hessian(x; α, β)
     return H
 end
 
-arr_to_num(x::AbstractArray)::Number = arr_to_num_aux(x; α=2, β=3)
-arr_to_num_gradient(x) = arr_to_num_aux_gradient(x; α=2, β=3)
-arr_to_num_hessian(x) = arr_to_num_aux_hessian(x; α=2, β=3)
+arr_to_num(x::AbstractArray)::Number = arr_to_num_aux(x; α=DEFAULT_α, β=DEFAULT_β)
+arr_to_num_gradient(x) = arr_to_num_aux_gradient(x; α=DEFAULT_α, β=DEFAULT_β)
+arr_to_num_hessian(x) = arr_to_num_aux_hessian(x; α=DEFAULT_α, β=DEFAULT_β)
 arr_to_num_pushforward(x, dx) = dot(arr_to_num_gradient(x), dx)
 arr_to_num_pullback(x, dy) = arr_to_num_gradient(x) .* dy
 arr_to_num_hvp(x, v) = reshape(arr_to_num_hessian(x) * vec(v), size(x))
