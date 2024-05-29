@@ -22,11 +22,16 @@ end
 
 ## Dense backends
 
-test_differentiation(dense_backends; excluded=[SecondDerivativeScenario], logging=LOGGING);
+test_differentiation(
+    dense_backends,
+    default_scenarios(; linalg=VERSION >= v"1.10");
+    excluded=[SecondDerivativeScenario],
+    logging=LOGGING,
+);
 
 test_differentiation(
     AutoZygote(),
-    vcat(component_scenarios(), static_scenarios());
+    vcat(component_scenarios(), static_scenarios(; linalg=VERSION >= v"1.10"));
     second_order=false,
     logging=LOGGING,
 )
