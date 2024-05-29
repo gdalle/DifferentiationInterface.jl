@@ -3,19 +3,24 @@ using DifferentiationInterface, DifferentiationInterfaceTest
 using ForwardDiff: ForwardDiff
 using SparseConnectivityTracer
 using SparseMatrixColorings
+using Test
+
+function vecexp!(y, x)
+    y .= exp.(x)
+    return nothing
+end
+
+sumexp(x) = sum(exp, x)
 
 @testset verbose = false "Dense efficiency" begin
     # derivative and gradient for `f(x)`
 
     results1 = benchmark_differentiation(
         [AutoForwardDiff()],
-        default_scenarios();
-        outofplace=false,
-        twoarg=false,
-        input_type=Union{Number,AbstractVector},
-        output_type=Number,
-        second_order=false,
-        excluded=[PullbackScenario],
+        [
+            DerivativeScenario(exp; x=1.0, place=:outofplace),
+            GradientScenario(sumexp; x=rand(10), place=:inplace),
+        ];
         logging=LOGGING,
     )
 
@@ -23,13 +28,10 @@ using SparseMatrixColorings
 
     results2 = benchmark_differentiation(
         [AutoForwardDiff()],
-        default_scenarios();
-        outofplace=false,
-        onearg=false,
-        input_type=Union{Number,AbstractVector},
-        output_type=AbstractVector,
-        second_order=false,
-        excluded=[PullbackScenario],
+        [
+            DerivativeScenario(vecexp!; x=1.0, y=zeros(10), place=:inplace),
+            JacobianScenario(vecexp!; x=rand(10), y=zeros(10), place=:inplace),
+        ];
         logging=LOGGING,
     )
 
