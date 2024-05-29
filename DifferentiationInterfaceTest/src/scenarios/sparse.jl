@@ -229,11 +229,11 @@ Create a vector of [`AbstractScenario`](@ref)s with sparse array types, focused 
 """
 function sparse_scenarios()
     return vcat(
-        sparse_vec_to_vec_scenarios(randn(6)),
-        sparse_vec_to_mat_scenarios(randn(6)),
-        sparse_mat_to_vec_scenarios(randn(2, 3)),
-        sparse_mat_to_mat_scenarios(randn(2, 3)),
-        sparse_vec_to_num_scenarios(randn(6)),
-        sparse_mat_to_num_scenarios(randn(2, 3)),
+        sparse_vec_to_vec_scenarios(rand(6)),
+        sparse_vec_to_mat_scenarios(rand(6)),
+        sparse_mat_to_vec_scenarios(rand(2, 3)),
+        sparse_mat_to_mat_scenarios(rand(2, 3)),
+        sparse_vec_to_num_scenarios(rand(6)),
+        sparse_mat_to_num_scenarios(rand(2, 3)),
     )
 end
