@@ -18,7 +18,7 @@ end
 
 ## Hessian
 
-struct Enzyme1HessianExtras{G,JE} <: HessianExtras
+struct EnzymeHessianExtras{G,JE} <: HessianExtras
     ∇f::G
     jac_extras::JE
 end
@@ -26,15 +26,15 @@ end
 function DI.prepare_hessian(f, backend::AutoEnzyme, x)
     ∇f = DeferredGradient(f, reverse_mode(backend))
     jac_extras = DI.prepare_jacobian(∇f, AutoEnzyme(forward_mode(backend)), x)
-    return Enzyme1HessianExtras(∇f, jac_extras)
+    return EnzymeHessianExtras(∇f, jac_extras)
 end
 
-function DI.hessian(f, backend::AutoEnzyme, x, extras::Enzyme1HessianExtras)
+function DI.hessian(f, backend::AutoEnzyme, x, extras::EnzymeHessianExtras)
     @compat (; ∇f, jac_extras) = extras
     return DI.jacobian(∇f, AutoEnzyme(forward_mode(backend)), x, jac_extras)
 end
 
-function DI.hessian!(f, hess, backend::AutoEnzyme, x, extras::Enzyme1HessianExtras)
+function DI.hessian!(f, hess, backend::AutoEnzyme, x, extras::EnzymeHessianExtras)
     @compat (; ∇f, jac_extras) = extras
     return DI.jacobian!(∇f, hess, AutoEnzyme(forward_mode(backend)), x, jac_extras)
 end
