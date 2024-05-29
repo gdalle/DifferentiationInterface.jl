@@ -45,7 +45,7 @@ makedocs(;
         ],
         "Advanced" => [
             "preparation.md",  #
-            # "overloads.md"
+            "overloads.md"
         ],
     ],
     checkdocs=:exports,
