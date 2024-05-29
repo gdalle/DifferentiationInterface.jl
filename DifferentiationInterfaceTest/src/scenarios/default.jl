@@ -140,13 +140,42 @@ end
 
 ## Array to scalar
 
-arr_to_num(x::AbstractArray)::Number = sum(sin, x)
+arr_to_num_aux(x; α, β) = sum(vec(x .^ α) * transpose(vec(x .^ β)))
 
-arr_to_num_gradient(x) = cos.(x)
-arr_to_num_hvp(x, v) = -sin.(x) .* v
+function arr_to_num_aux_gradient(x; α, β)
+    g = similar(x)
+    for k in eachindex(g, x)
+        g[k] = (
+            α * x[k]^(α - 1) * sum(x[j]^β for j in eachindex(x) if j != k) +
+            β * x[k]^(β - 1) * sum(x[i]^α for i in eachindex(x) if i != k) +
+            (α + β) * x[k]^(α + β - 1)
+        )
+    end
+    return g
+end
+
+function arr_to_num_aux_hessian(x; α, β)
+    H = similar(x, length(x), length(x))
+    for k in axes(H, 1), l in axes(H, 2)
+        if k == l
+            H[k, k] = (
+                α * (α - 1) * x[k]^(α - 2) * sum(x[j]^β for j in eachindex(x) if j != k) +
+                β * (β - 1) * x[k]^(β - 2) * sum(x[i]^α for i in eachindex(x) if i != k) +
+                (α + β) * (α + β - 1) * x[k]^(α + β - 2)
+            )
+        else
+            H[k, l] = α * β * (x[k]^(α - 1) * x[l]^(β - 1) + x[k]^(β - 1) * x[l]^(α - 1))
+        end
+    end
+    return H
+end
+
+arr_to_num(x::AbstractArray)::Number = arr_to_num_aux(x; α=2, β=3)
+arr_to_num_gradient(x) = arr_to_num_aux_gradient(x; α=2, β=3)
+arr_to_num_hessian(x) = arr_to_num_aux_hessian(x; α=2, β=3)
 arr_to_num_pushforward(x, dx) = dot(arr_to_num_gradient(x), dx)
 arr_to_num_pullback(x, dy) = arr_to_num_gradient(x) .* dy
-arr_to_num_hessian(x) = Matrix(Diagonal(-sin.(vec(x))))
+arr_to_num_hvp(x, v) = reshape(arr_to_num_hessian(x) * vec(v), size(x))
 
 function arr_to_num_scenarios_onearg(x::AbstractArray)
     # pushforward stays out of place
