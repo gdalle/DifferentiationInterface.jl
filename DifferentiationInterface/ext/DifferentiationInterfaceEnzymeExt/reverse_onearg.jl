@@ -8,26 +8,33 @@ end
 
 function DI.value_and_pullback(
     f,
-    ::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
     x::Number,
     dy::Number,
     ::NoPullbackExtras,
 )
-    der, y = autodiff(ReverseWithPrimal, Const(f), Active, Active(x))
+    der, y = if backend isa AutoDeferredEnzyme
+        autodiff_deferred(ReverseWithPrimal, f, Active, Active(x))
+    else
+        autodiff(ReverseWithPrimal, Const(f), Active, Active(x))
+    end
     new_dx = dy * only(der)
     return y, new_dx
 end
 
 function DI.value_and_pullback(
     f,
-    ::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
     x::Number,
     dy::AbstractArray,
     ::NoPullbackExtras,
 )
-    forw, rev = autodiff_thunk(
-        ReverseSplitWithPrimal, Const{typeof(f)}, Duplicated, Active{typeof(x)}
-    )
+    tf, tx = typeof(f), typeof(x)
+    forw, rev = if backend isa AutoDeferredEnzyme
+        autodiff_deferred_thunk(ReverseSplitWithPrimal, Const{tf}, Duplicated, Active{tx})
+    else
+        autodiff_thunk(ReverseSplitWithPrimal, Const{tf}, Duplicated, Active{tx})
+    end
     tape, y, new_dy = forw(Const(f), Active(x))
     copyto!(new_dy, dy)
     new_dx = only(only(rev(Const(f), Active(x), tape)))
@@ -56,13 +63,18 @@ end
 function DI.value_and_pullback!(
     f,
     dx,
-    ::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
     x::AbstractArray,
     dy::Number,
     ::NoPullbackExtras,
 )
     dx_sametype = zero_sametype!(dx, x)
-    _, y = autodiff(ReverseWithPrimal, Const(f), Active, Duplicated(x, dx_sametype))
+    x_and_dx = Duplicated(x, dx_sametype)
+    _, y = if backend isa AutoDeferredEnzyme
+        autodiff_deferred(ReverseWithPrimal, Const(f), Active, x_and_dx)
+    else
+        autodiff(ReverseWithPrimal, Const(f), Active, x_and_dx)
+    end
     dx_sametype .*= dy
     return y, copyto!(dx, dx_sametype)
 end
@@ -70,15 +82,18 @@ end
 function DI.value_and_pullback!(
     f,
     dx,
-    ::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
     x::AbstractArray,
     dy::AbstractArray,
     ::NoPullbackExtras,
 )
+    tf, tx = typeof(f), typeof(x)
+    forw, rev = if backend isa AutoDeferredEnzyme
+        autodiff_deferred_thunk(ReverseSplitWithPrimal, Const{tf}, Duplicated, Duplicated{tx})
+    else
+        autodiff_thunk(ReverseSplitWithPrimal, Const{tf}, Duplicated, Duplicated{tx})
+    end
     dx_sametype = zero_sametype!(dx, x)
-    forw, rev = autodiff_thunk(
-        ReverseSplitWithPrimal, Const{typeof(f)}, Duplicated, Duplicated{typeof(x)}
-    )
     tape, y, new_dy = forw(Const(f), Duplicated(x, dx_sametype))
     copyto!(new_dy, dy)
     rev(Const(f), Duplicated(x, dx_sametype), tape)
@@ -106,6 +121,7 @@ function DI.gradient(
     f, backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, ::NoGradientExtras
 )
     if backend isa AutoDeferredEnzyme
+        @info "Deferred gradient with $(backend.mode)"
         grad = make_zero(x)
         autodiff_deferred(reverse_mode(backend), f, Active, Duplicated(x, grad))
         return grad

@@ -20,11 +20,7 @@ sparse_backends =
 @testset "Check $(typeof(backend))" for backend in vcat(dense_backends, sparse_backends)
     @test check_available(backend)
     @test check_twoarg(backend)
-    if ADTypes.mode(backend) isa ADTypes.ForwardOrReverseMode
-        @test check_hessian(backend; verbose=false)
-    else
-        @test_broken check_hessian(backend; verbose=false)
-    end
+    @test check_hessian(backend; verbose=false)
 end
 
 ## Dense backends
