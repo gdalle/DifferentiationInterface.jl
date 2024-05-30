@@ -64,7 +64,8 @@ function DI.value_and_pullback!(
     dy::Number,
     ::NoPullbackExtras,
 )
-    dx_sametype = zero_sametype!(dx, x)
+    dx_sametype = convert(typeof(x), dx)
+    dx_sametype .= zero(eltype(x))
     x_and_dx = Duplicated(x, dx_sametype)
     _, y = if backend isa AutoDeferredEnzyme
         autodiff_deferred(ReverseWithPrimal, Const(f), Active, x_and_dx)
@@ -87,7 +88,8 @@ function DI.value_and_pullback!(
     forw, rev = autodiff_thunk(
         ReverseSplitWithPrimal, Const{tf}, Duplicated, Duplicated{tx}
     )
-    dx_sametype = zero_sametype!(dx, x)
+    dx_sametype = convert(typeof(x), dx)
+    dx_sametype .= zero(eltype(x))
     tape, y, new_dy = forw(Const(f), Duplicated(x, dx_sametype))
     copyto!(new_dy, dy)
     rev(Const(f), Duplicated(x, dx_sametype), tape)
@@ -131,10 +133,9 @@ function DI.gradient!(
     extras::NoGradientExtras,
 )
     grad_sametype = convert(typeof(x), grad)
+    grad_sametype .= zero(eltype(x))
     if backend isa AutoDeferredEnzyme
-        copyto!(grad_sametype, DI.gradient(f, backend, x, extras))
-        # TODO: below is a Heisenbug that fails independently of the random seed, figure it out
-        # autodiff_deferred(reverse_mode(backend), f, Active, Duplicated(x, grad_sametype))
+        autodiff_deferred(reverse_mode(backend), f, Active, Duplicated(x, grad_sametype))
     else
         gradient!(reverse_mode(backend), grad_sametype, f, x)
     end

@@ -13,7 +13,7 @@ function DI.value_and_pushforward(
     ::NoPushforwardExtras,
 )
     dx_sametype = convert(typeof(x), dx)
-    dy_sametype = zero(y)
+    dy_sametype = make_zero(y)
     y_and_dy = Duplicated(y, dy_sametype)
     x_and_dx = Duplicated(x, dx_sametype)
     if backend isa AutoDeferredEnzyme

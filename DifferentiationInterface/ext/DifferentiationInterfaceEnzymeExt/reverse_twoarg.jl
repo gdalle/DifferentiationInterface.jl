@@ -30,7 +30,7 @@ function DI.value_and_pullback(
     dy,
     ::NoPullbackExtras,
 )
-    dx_sametype = zero(x)
+    dx_sametype = make_zero(x)
     dy_sametype = convert(typeof(y), copy(dy))
     y_and_dy = Duplicated(y, dy_sametype)
     x_and_dx = Duplicated(x, dx_sametype)
