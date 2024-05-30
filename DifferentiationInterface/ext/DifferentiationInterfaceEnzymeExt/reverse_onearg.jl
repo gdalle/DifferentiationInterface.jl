@@ -124,11 +124,17 @@ function DI.gradient(
 end
 
 function DI.gradient!(
-    f, grad, backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, ::NoGradientExtras
+    f,
+    grad,
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
+    x,
+    extras::NoGradientExtras,
 )
     grad_sametype = convert(typeof(x), grad)
     if backend isa AutoDeferredEnzyme
-        autodiff_deferred(reverse_mode(backend), f, Active, Duplicated(x, grad_sametype))
+        copyto!(grad_sametype, DI.gradient(f, backend, x, extras))
+        # TODO: below is a Heisenbug that fails independently of the random seed, figure it out
+        # autodiff_deferred(reverse_mode(backend), f, Active, Duplicated(x, grad_sametype))
     else
         gradient!(reverse_mode(backend), grad_sametype, f, x)
     end

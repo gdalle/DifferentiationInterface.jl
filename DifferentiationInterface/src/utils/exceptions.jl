@@ -9,7 +9,7 @@ function Base.showerror(io::IO, e::MissingBackendError)
             io,
             """Backend package is not loaded. To fix, run
 
-              using $(backend_package_name(e.backend))
+              import $(backend_package_name(e.backend))
             """,
         )
     else

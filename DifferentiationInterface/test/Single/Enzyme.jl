@@ -2,6 +2,7 @@ using ADTypes: ADTypes
 using DifferentiationInterface, DifferentiationInterfaceTest
 using Enzyme: Enzyme
 using SparseConnectivityTracer, SparseMatrixColorings
+using StableRNGs
 using Test
 
 dense_backends = [
@@ -33,7 +34,10 @@ end
 ## Dense backends
 
 test_differentiation(
-    vcat(dense_backends, nested_dense_backends); second_order=false, logging=LOGGING
+    vcat(dense_backends, nested_dense_backends),
+    default_scenarios();
+    second_order=false,
+    logging=LOGGING,
 );
 
 test_differentiation(
