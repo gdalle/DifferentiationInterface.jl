@@ -121,7 +121,6 @@ function DI.gradient(
     f, backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, ::NoGradientExtras
 )
     if backend isa AutoDeferredEnzyme
-        @info "Deferred gradient with $(backend.mode)"
         grad = make_zero(x)
         autodiff_deferred(reverse_mode(backend), f, Active, Duplicated(x, grad))
         return grad
