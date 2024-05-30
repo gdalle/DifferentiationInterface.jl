@@ -1,7 +1,7 @@
 name = "DifferentiationInterface"
 uuid = "a0c0ee7d-e4b9-4e03-894e-1c5f64a51d63"
 authors = ["Guillaume Dalle", "Adrian Hill"]
-version = "0.5.2"
+version = "0.5.1"
 
 [deps]
 ADTypes = "47edcb42-4c32-4615-8424-f2b9edc5f35b"
@@ -88,6 +88,7 @@ ReverseDiff = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 SparseConnectivityTracer = "9f842d2f-2579-4b1d-911e-f412cf18a3f5"
 SparseMatrixColorings = "0a514795-09f3-496d-8182-132a7b665d35"
+StableRNGs = "860ef19b-820b-49d6-a774-d7a799459cd3"
 Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 Tapir = "07d77754-e150-4737-8c94-cd238a1fb45b"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
@@ -106,5 +107,6 @@ test = [
     "SparseArrays",
     "SparseConnectivityTracer",
     "SparseMatrixColorings",
+    "StableRNGs",
     "Test",
 ]

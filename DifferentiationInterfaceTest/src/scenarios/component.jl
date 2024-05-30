@@ -45,17 +45,17 @@ end
 const CVEC = ComponentVector(; a=collect(1:4), b=collect(5:6))
 
 """
-    component_scenarios()
+    component_scenarios(rng=Random.default_rng())
 
 Create a vector of [`AbstractScenario`](@ref)s with component array types from [ComponentArrays.jl](https://github.com/jonniedie/ComponentArrays.jl).
 """
-function component_scenarios()
-    x = ComponentVector(; a=randn(4), b=randn(2))
+function component_scenarios(rng::AbstractRNG=default_rng())
+    x = ComponentVector(; a=randn(rng, 4), b=randn(rng, 2))
     return vcat(
         # one argument
-        num_to_arr_scenarios_onearg(randn(), CVEC),
+        num_to_arr_scenarios_onearg(randn(rng), CVEC),
         comp_to_num_scenarios_onearg(x::ComponentVector),
         # two arguments
-        num_to_arr_scenarios_twoarg(randn(), CVEC),
+        num_to_arr_scenarios_twoarg(randn(rng), CVEC),
     )
 end

@@ -83,7 +83,8 @@ end
 
 function prepare_hvp_aux(f::F, backend::SecondOrder, x, v, ::ForwardOverForward) where {F}
     # pushforward of many pushforwards in theory, but pushforward of gradient in practice
-    inner_gradient_closure(z) = gradient(f, inner(backend), z)
+    inner_backend = nested(inner(backend))
+    inner_gradient_closure(z) = gradient(f, inner_backend, z)
     outer_pushforward_extras = prepare_pushforward(
         inner_gradient_closure, outer(backend), x, v
     )
@@ -92,7 +93,8 @@ end
 
 function prepare_hvp_aux(f::F, backend::SecondOrder, x, v, ::ForwardOverReverse) where {F}
     # pushforward of gradient
-    inner_gradient_closure(z) = gradient(f, inner(backend), z)
+    inner_backend = nested(inner(backend))
+    inner_gradient_closure(z) = gradient(f, inner_backend, z)
     outer_pushforward_extras = prepare_pushforward(
         inner_gradient_closure, outer(backend), x, v
     )
@@ -102,7 +104,11 @@ end
 function prepare_hvp_aux(f::F, backend::SecondOrder, x, v, ::ReverseOverForward) where {F}
     # gradient of pushforward
     # uses v in the closure
-    inner_pushforward_closure_generator(v) = z -> pushforward(f, inner(backend), z, v)
+    inner_backend = nested(inner(backend))
+    function inner_pushforward_closure_generator(v)
+        inner_pushforward_closure(z) = pushforward(f, inner_backend, z, v)
+        return inner_pushforward_closure
+    end
     outer_gradient_extras = prepare_gradient(
         inner_pushforward_closure_generator(v), outer(backend), x
     )
@@ -113,7 +119,8 @@ end
 
 function prepare_hvp_aux(f::F, backend::SecondOrder, x, v, ::ReverseOverReverse) where {F}
     # pullback of the gradient
-    inner_gradient_closure(z) = gradient(f, inner(backend), z)
+    inner_backend = nested(inner(backend))
+    inner_gradient_closure(z) = gradient(f, inner_backend, z)
     outer_pullback_extras = prepare_pullback(inner_gradient_closure, outer(backend), x, v)
     return ReverseOverReverseHVPExtras(inner_gradient_closure, outer_pullback_extras)
 end

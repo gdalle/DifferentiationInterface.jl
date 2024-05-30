@@ -1,6 +1,5 @@
 using DifferentiationInterface, DifferentiationInterfaceTest
-using SparseConnectivityTracer
-using SparseMatrixColorings
+using SparseConnectivityTracer, SparseMatrixColorings
 using Test
 using Zygote: Zygote
 

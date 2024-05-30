@@ -205,7 +205,6 @@ function arr_to_num_scenarios_onearg(x::AbstractArray; linalg=true)
             [
                 PullbackScenario(arr_to_num; x=x, ref=arr_to_num_pullback, place=place),
                 GradientScenario(arr_to_num; x=x, ref=arr_to_num_gradient, place=place),
-                GradientScenario(arr_to_num; x=x, ref=arr_to_num_gradient, place=place),
                 HVPScenario(arr_to_num; x=x, ref=arr_to_num_hvp, place=place),
                 HessianScenario(arr_to_num; x=x, ref=arr_to_num_hessian, place=place),
             ],
@@ -492,28 +491,28 @@ const IVEC = Vector(1:6)
 const IMAT = Matrix((1:2) .* transpose(1:3))
 
 """
-    default_scenarios()
+    default_scenarios(rng=Random.default_rng())
 
 Create a vector of [`AbstractScenario`](@ref)s with standard array types.
 """
-function default_scenarios(; linalg=true)
+function default_scenarios(rng::AbstractRNG=default_rng(); linalg=true)
     return vcat(
         # one argument
-        num_to_num_scenarios_onearg(rand()),
-        num_to_arr_scenarios_onearg(rand(), IVEC),
-        num_to_arr_scenarios_onearg(rand(), IMAT),
-        arr_to_num_scenarios_onearg(rand(6); linalg),
-        arr_to_num_scenarios_onearg(rand(2, 3); linalg),
-        vec_to_vec_scenarios_onearg(rand(6)),
-        vec_to_mat_scenarios_onearg(rand(6)),
-        mat_to_vec_scenarios_onearg(rand(2, 3)),
-        mat_to_mat_scenarios_onearg(rand(2, 3)),
+        num_to_num_scenarios_onearg(rand(rng)),
+        num_to_arr_scenarios_onearg(rand(rng), IVEC),
+        num_to_arr_scenarios_onearg(rand(rng), IMAT),
+        arr_to_num_scenarios_onearg(rand(rng, 6); linalg),
+        arr_to_num_scenarios_onearg(rand(rng, 2, 3); linalg),
+        vec_to_vec_scenarios_onearg(rand(rng, 6)),
+        vec_to_mat_scenarios_onearg(rand(rng, 6)),
+        mat_to_vec_scenarios_onearg(rand(rng, 2, 3)),
+        mat_to_mat_scenarios_onearg(rand(rng, 2, 3)),
         # two arguments
-        num_to_arr_scenarios_twoarg(rand(), IVEC),
-        num_to_arr_scenarios_twoarg(rand(), IMAT),
-        vec_to_vec_scenarios_twoarg(rand(6)),
-        vec_to_mat_scenarios_twoarg(rand(6)),
-        mat_to_vec_scenarios_twoarg(rand(2, 3)),
-        mat_to_mat_scenarios_twoarg(rand(2, 3)),
+        num_to_arr_scenarios_twoarg(rand(rng), IVEC),
+        num_to_arr_scenarios_twoarg(rand(rng), IMAT),
+        vec_to_vec_scenarios_twoarg(rand(rng, 6)),
+        vec_to_mat_scenarios_twoarg(rand(rng, 6)),
+        mat_to_vec_scenarios_twoarg(rand(rng, 2, 3)),
+        mat_to_mat_scenarios_twoarg(rand(rng, 2, 3)),
     )
 end

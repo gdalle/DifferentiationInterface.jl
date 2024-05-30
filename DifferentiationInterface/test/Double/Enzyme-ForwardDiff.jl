@@ -5,8 +5,8 @@ using ForwardDiff: ForwardDiff
 using Test
 
 backends = [
-    SecondOrder(AutoForwardDiff(), AutoEnzyme(Enzyme.Forward)),
-    SecondOrder(AutoEnzyme(Enzyme.Reverse), AutoForwardDiff()),
+    SecondOrder(AutoForwardDiff(), AutoEnzyme(; mode=Enzyme.Forward)),
+    SecondOrder(AutoEnzyme(; mode=Enzyme.Reverse), AutoForwardDiff()),
 ]
 
 for backend in backends

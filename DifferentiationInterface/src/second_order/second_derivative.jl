@@ -43,7 +43,8 @@ end
 prepare_second_derivative(f::F, ::AbstractADType, x) where {F} = NoSecondDerivativeExtras()
 
 function prepare_second_derivative(f::F, backend::SecondOrder, x) where {F}
-    inner_derivative_closure(z) = derivative(f, inner(backend), z)
+    inner_backend = nested(inner(backend))
+    inner_derivative_closure(z) = derivative(f, inner_backend, z)
     outer_derivative_extras = prepare_derivative(
         inner_derivative_closure, outer(backend), x
     )

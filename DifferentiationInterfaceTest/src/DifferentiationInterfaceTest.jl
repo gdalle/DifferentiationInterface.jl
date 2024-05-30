@@ -46,6 +46,7 @@ using JET: JET
 using JLArrays: jl
 using LinearAlgebra: Adjoint, Diagonal, Transpose, dot, parent
 using ProgressMeter: ProgressUnknown, next!
+using Random: AbstractRNG, default_rng
 using SparseArrays: SparseArrays, SparseMatrixCSC, nnz, spdiagm
 using StaticArrays: MMatrix, MVector, SMatrix, SVector
 using Test: @testset, @test

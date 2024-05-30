@@ -16,7 +16,7 @@ Check whether `backend` supports differentiation of two-argument functions.
 """
 check_twoarg(backend::AbstractADType) = Bool(twoarg_support(backend))
 
-hess_checker(x::AbstractArray) = abs2(x[1]) * abs2(x[2])
+hess_checker(x::AbstractArray) = x[1] * x[1] * x[2] * x[2]
 
 """
     check_hessian(backend)

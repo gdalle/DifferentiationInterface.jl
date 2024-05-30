@@ -22,11 +22,14 @@ using Enzyme:
     DuplicatedNoNeed,
     Forward,
     ForwardMode,
+    Mode,
     Reverse,
     ReverseWithPrimal,
     ReverseSplitWithPrimal,
     ReverseMode,
     autodiff,
+    autodiff_deferred,
+    autodiff_deferred_thunk,
     autodiff_thunk,
     chunkedonehot,
     gradient,
@@ -34,16 +37,25 @@ using Enzyme:
     jacobian,
     make_zero
 
-const AutoForwardEnzyme = AutoEnzyme{<:ForwardMode}
-const AutoForwardOrNothingEnzyme = Union{AutoEnzyme{<:ForwardMode},AutoEnzyme{Nothing}}
-const AutoReverseEnzyme = AutoEnzyme{<:ReverseMode}
-const AutoReverseOrNothingEnzyme = Union{AutoEnzyme{<:ReverseMode},AutoEnzyme{Nothing}}
+struct AutoDeferredEnzyme{M} <: ADTypes.AbstractADType
+    mode::M
+end
 
-forward_mode(backend::AutoEnzyme{<:ForwardMode}) = backend.mode
-forward_mode(::AutoEnzyme{Nothing}) = Forward
+ADTypes.mode(backend::AutoDeferredEnzyme) = ADTypes.mode(AutoEnzyme(backend.mode))
 
-reverse_mode(backend::AutoEnzyme{<:ReverseMode}) = backend.mode
-reverse_mode(::AutoEnzyme{Nothing}) = Reverse
+DI.backend_package_name(::AutoDeferredEnzyme) = "DeferredEnzyme"
+
+DI.nested(backend::AutoEnzyme) = AutoDeferredEnzyme(backend.mode)
+
+const AnyAutoEnzyme{M} = Union{AutoEnzyme{M},AutoDeferredEnzyme{M}}
+
+# forward mode if possible
+forward_mode(backend::AnyAutoEnzyme{<:Mode}) = backend.mode
+forward_mode(::AnyAutoEnzyme{Nothing}) = Forward
+
+# reverse mode if possible
+reverse_mode(backend::AnyAutoEnzyme{<:Mode}) = backend.mode
+reverse_mode(::AnyAutoEnzyme{Nothing}) = Reverse
 
 DI.check_available(::AutoEnzyme) = true
 
@@ -52,12 +64,6 @@ function DI.basis(::AutoEnzyme, a::AbstractArray{T}, i::CartesianIndex) where {T
     b = zero(a)
     b[i] = one(T)
     return b
-end
-
-function zero_sametype!(x_target, x)
-    x_sametype = convert(typeof(x), x_target)
-    x_sametype .= zero(eltype(x_sametype))
-    return x_sametype
 end
 
 include("forward_onearg.jl")

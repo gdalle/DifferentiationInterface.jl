@@ -223,17 +223,17 @@ end
 ## Gather
 
 """
-    sparse_scenarios()
+    sparse_scenarios(rng=Random.default_rng())
 
 Create a vector of [`AbstractScenario`](@ref)s with sparse array types, focused on sparse Jacobians and Hessians.
 """
-function sparse_scenarios()
+function sparse_scenarios(rng::AbstractRNG=default_rng())
     return vcat(
-        sparse_vec_to_vec_scenarios(rand(6)),
-        sparse_vec_to_mat_scenarios(rand(6)),
-        sparse_mat_to_vec_scenarios(rand(2, 3)),
-        sparse_mat_to_mat_scenarios(rand(2, 3)),
-        sparse_vec_to_num_scenarios(rand(6)),
-        sparse_mat_to_num_scenarios(rand(2, 3)),
+        sparse_vec_to_vec_scenarios(rand(rng, 6)),
+        sparse_vec_to_mat_scenarios(rand(rng, 6)),
+        sparse_mat_to_vec_scenarios(rand(rng, 2, 3)),
+        sparse_mat_to_mat_scenarios(rand(rng, 2, 3)),
+        sparse_vec_to_num_scenarios(rand(rng, 6)),
+        sparse_mat_to_num_scenarios(rand(rng, 2, 3)),
     )
 end
