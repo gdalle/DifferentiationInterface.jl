@@ -22,6 +22,7 @@ using Enzyme:
     DuplicatedNoNeed,
     Forward,
     ForwardMode,
+    Mode,
     Reverse,
     ReverseWithPrimal,
     ReverseSplitWithPrimal,
