@@ -9,7 +9,7 @@ function DI.value_and_pushforward(
     dy_sametype = zero(y)
     autodiff(
         forward_mode(backend),
-        f!,
+        Const(f!),
         Const,
         Duplicated(y, dy_sametype),
         Duplicated(x, dx_sametype),

@@ -7,7 +7,9 @@ function DI.value_and_pullback(
 )
     dy_sametype = convert(typeof(y), copy(dy))
     _, new_dx = only(
-        autodiff(reverse_mode(backend), f!, Const, Duplicated(y, dy_sametype), Active(x))
+        autodiff(
+            reverse_mode(backend), Const(f!), Const, Duplicated(y, dy_sametype), Active(x)
+        ),
     )
     return y, new_dx
 end
@@ -19,7 +21,7 @@ function DI.value_and_pullback(
     dy_sametype = convert(typeof(y), copy(dy))
     autodiff(
         reverse_mode(backend),
-        f!,
+        Const(f!),
         Const,
         Duplicated(y, dy_sametype),
         Duplicated(x, dx_sametype),
