@@ -40,7 +40,7 @@ struct ClosureSecondDerivativeExtras{C,E} <: SecondDerivativeExtras
     outer_derivative_extras::E
 end
 
-function prepare_second_derivative(f::F, ::AbstractADType, x) where {F}
+function prepare_second_derivative(f::F, backend::AbstractADType, x) where {F}
     return prepare_second_derivative(f, SecondOrder(backend, backend), x)
 end
 
