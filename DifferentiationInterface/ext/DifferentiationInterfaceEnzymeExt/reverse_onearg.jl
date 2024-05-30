@@ -81,7 +81,14 @@ function DI.value_and_pullback!(
     return y, copyto!(dx, dx_sametype)
 end
 
-function DI.pullback!(f, dx, backend::AutoReverseEnzyme, x, dy, extras::NoPullbackExtras)
+function DI.pullback!(
+    f,
+    dx,
+    backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
+    x,
+    dy,
+    extras::NoPullbackExtras,
+)
     return DI.value_and_pullback!(f, dx, backend, x, dy, extras)[2]
 end
 
