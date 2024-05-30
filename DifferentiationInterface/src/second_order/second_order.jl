@@ -45,3 +45,12 @@ outer(backend::SecondOrder) = backend.outer
 Return the _outer_ mode of the second-order backend.
 """
 ADTypes.mode(backend::SecondOrder) = mode(outer(backend))
+
+"""
+    nested(operator, backend)
+
+Return a possibly modified `backend` that can call `operator` while nested inside another differentiation procedure.
+
+At the moment, this is only useful for Enzyme, which needs `autodiff_deferred` to be compatible with higher-order differentiation.
+"""
+nested(operator::Function, backend::AbstractADType) = backend

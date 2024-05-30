@@ -1,11 +1,13 @@
 ## Pullback
 
-DI.prepare_pullback(f, ::AutoReverseOrNothingEnzyme, x, dy) = NoPullbackExtras()
+function DI.prepare_pullback(f, ::AutoEnzyme{<:Union{ReverseMode,Nothing}}, x, dy)
+    return NoPullbackExtras()
+end
 
 ### Out-of-place
 
 function DI.value_and_pullback(
-    f, ::AutoReverseOrNothingEnzyme, x::Number, dy::Number, ::NoPullbackExtras
+    f, ::AutoEnzyme{<:Union{ReverseMode,Nothing}}, x::Number, dy::Number, ::NoPullbackExtras
 )
     der, y = autodiff(ReverseWithPrimal, Const(f), Active, Active(x))
     new_dx = dy * only(der)
@@ -13,7 +15,11 @@ function DI.value_and_pullback(
 end
 
 function DI.value_and_pullback(
-    f, ::AutoReverseOrNothingEnzyme, x::Number, dy::AbstractArray, ::NoPullbackExtras
+    f,
+    ::AutoEnzyme{<:Union{ReverseMode,Nothing}},
+    x::Number,
+    dy::AbstractArray,
+    ::NoPullbackExtras,
 )
     forw, rev = autodiff_thunk(
         ReverseSplitWithPrimal, Const{typeof(f)}, Duplicated, Active{typeof(x)}
@@ -25,14 +31,18 @@ function DI.value_and_pullback(
 end
 
 function DI.value_and_pullback(
-    f, backend::AutoReverseOrNothingEnzyme, x::AbstractArray, dy, extras::NoPullbackExtras
+    f,
+    backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
+    x::AbstractArray,
+    dy,
+    extras::NoPullbackExtras,
 )
     dx = similar(x)
     return DI.value_and_pullback!(f, dx, backend, x, dy, extras)
 end
 
 function DI.pullback(
-    f, backend::AutoReverseOrNothingEnzyme, x, dy, extras::NoPullbackExtras
+    f, backend::AutoEnzyme{<:Union{ReverseMode,Nothing}}, x, dy, extras::NoPullbackExtras
 )
     return DI.value_and_pullback(f, backend, x, dy, extras)[2]
 end
@@ -40,7 +50,12 @@ end
 ### In-place
 
 function DI.value_and_pullback!(
-    f, dx, ::AutoReverseOrNothingEnzyme, x::AbstractArray, dy::Number, ::NoPullbackExtras
+    f,
+    dx,
+    ::AutoEnzyme{<:Union{ReverseMode,Nothing}},
+    x::AbstractArray,
+    dy::Number,
+    ::NoPullbackExtras,
 )
     dx_sametype = zero_sametype!(dx, x)
     _, y = autodiff(ReverseWithPrimal, Const(f), Active, Duplicated(x, dx_sametype))
@@ -51,7 +66,7 @@ end
 function DI.value_and_pullback!(
     f,
     dx,
-    ::AutoReverseOrNothingEnzyme,
+    ::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x::AbstractArray,
     dy::AbstractArray,
     ::NoPullbackExtras,
@@ -72,28 +87,60 @@ end
 
 ## Gradient
 
-DI.prepare_gradient(f, ::AutoReverseOrNothingEnzyme, x) = NoGradientExtras()
+### Normal
 
-function DI.gradient(f, backend::AutoReverseOrNothingEnzyme, x, ::NoGradientExtras)
+DI.prepare_gradient(f, ::AutoEnzyme{<:Union{ReverseMode,Nothing}}, x) = NoGradientExtras()
+
+function DI.gradient(
+    f, backend::AutoEnzyme{<:Union{ReverseMode,Nothing}}, x, ::NoGradientExtras
+)
     return gradient(reverse_mode(backend), f, x)
 end
 
-function DI.gradient!(f, grad, backend::AutoReverseOrNothingEnzyme, x, ::NoGradientExtras)
+function DI.gradient!(
+    f, grad, backend::AutoEnzyme{<:Union{ReverseMode,Nothing}}, x, ::NoGradientExtras
+)
     grad_sametype = convert(typeof(x), grad)
     gradient!(reverse_mode(backend), grad_sametype, f, x)
     return copyto!(grad, grad_sametype)
 end
 
 function DI.value_and_gradient(
-    f, backend::AutoReverseOrNothingEnzyme, x, ::NoGradientExtras
+    f, backend::AutoEnzyme{<:Union{ReverseMode,Nothing}}, x, ::NoGradientExtras
 )
     return DI.value_and_pullback(f, backend, x, one(eltype(x)), NoPullbackExtras())
 end
 
 function DI.value_and_gradient!(
-    f, grad, backend::AutoReverseOrNothingEnzyme, x, ::NoGradientExtras
+    f, grad, backend::AutoEnzyme{<:Union{ReverseMode,Nothing}}, x, ::NoGradientExtras
 )
     return DI.value_and_pullback!(f, grad, backend, x, one(eltype(x)), NoPullbackExtras())
+end
+
+### Deferred
+
+function DI.prepare_gradient(f, ::AutoDeferredEnzyme{<:Union{ReverseMode,Nothing}}, x)
+    return NoGradientExtras()
+end
+
+function DI.gradient(
+    f, backend::AutoDeferredEnzyme{<:Union{ReverseMode,Nothing}}, x, ::NoGradientExtras
+)
+    grad = make_zero(z)
+    autodiff_deferred(reverse_mode(backend), Const(f), Active, Duplicated(z, grad))
+    return grad
+end
+
+function DI.gradient!(
+    f,
+    grad,
+    backend::AutoDeferredEnzyme{<:Union{ReverseMode,Nothing}},
+    x,
+    ::NoGradientExtras,
+)
+    grad_sametype = convert(typeof(x), grad)
+    autodiff_deferred(reverse_mode(backend), Const(f), Active, Duplicated(z, grad_sametype))
+    return copyto!(grad, grad_sametype)
 end
 
 ## Jacobian

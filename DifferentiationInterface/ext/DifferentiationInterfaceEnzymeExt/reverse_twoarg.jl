@@ -1,9 +1,16 @@
 ## Pullback
 
-DI.prepare_pullback(f!, y, ::AutoReverseOrNothingEnzyme, x, dy) = NoPullbackExtras()
+function DI.prepare_pullback(f!, y, ::AutoEnzyme{<:Union{ReverseMode,Nothing}}, x, dy)
+    return NoPullbackExtras()
+end
 
 function DI.value_and_pullback(
-    f!, y, backend::AutoReverseOrNothingEnzyme, x::Number, dy, ::NoPullbackExtras
+    f!,
+    y,
+    backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
+    x::Number,
+    dy,
+    ::NoPullbackExtras,
 )
     dy_sametype = convert(typeof(y), copy(dy))
     _, new_dx = only(
@@ -15,7 +22,12 @@ function DI.value_and_pullback(
 end
 
 function DI.value_and_pullback(
-    f!, y, backend::AutoReverseOrNothingEnzyme, x::AbstractArray, dy, ::NoPullbackExtras
+    f!,
+    y,
+    backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
+    x::AbstractArray,
+    dy,
+    ::NoPullbackExtras,
 )
     dx_sametype = zero(x)
     dy_sametype = convert(typeof(y), copy(dy))

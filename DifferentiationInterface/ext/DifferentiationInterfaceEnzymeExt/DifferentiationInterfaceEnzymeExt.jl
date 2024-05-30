@@ -34,16 +34,23 @@ using Enzyme:
     jacobian,
     make_zero
 
-const AutoForwardEnzyme = AutoEnzyme{<:ForwardMode}
-const AutoForwardOrNothingEnzyme = Union{AutoEnzyme{<:ForwardMode},AutoEnzyme{Nothing}}
-const AutoReverseEnzyme = AutoEnzyme{<:ReverseMode}
-const AutoReverseOrNothingEnzyme = Union{AutoEnzyme{<:ReverseMode},AutoEnzyme{Nothing}}
+struct AutoDeferredEnzyme{M}
+    mode::M
+end
 
-forward_mode(backend::AutoEnzyme{<:ForwardMode}) = backend.mode
-forward_mode(::AutoEnzyme{Nothing}) = Forward
+function DI.nested(::Union{typeof(DI.gradient),typeof(DI.gradient!)}, backend::AutoEnzyme)
+    return AutoDeferredEnzyme(backend.mode)
+end
 
-reverse_mode(backend::AutoEnzyme{<:ReverseMode}) = backend.mode
-reverse_mode(::AutoEnzyme{Nothing}) = Reverse
+const AnyAutoEnzyme{M} = Union{AutoEnzyme{M},AutoDeferredEnzyme{M}}
+
+# forward mode if possible
+forward_mode(backend::AnyAutoEnzyme{<:Mode}) = backend.mode
+forward_mode(::AnyAutoEnzyme{Nothing}) = Forward
+
+# reverse mode if possible
+reverse_mode(backend::AnyAutoEnzyme{<:Mode}) = backend.mode
+reverse_mode(::AnyAutoEnzyme{Nothing}) = Reverse
 
 DI.check_available(::AutoEnzyme) = true
 
