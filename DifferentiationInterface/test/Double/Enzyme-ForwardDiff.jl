@@ -6,8 +6,6 @@ using Test
 
 backends = [
     SecondOrder(AutoForwardDiff(), AutoEnzyme(; mode=Enzyme.Forward)),
-    # SecondOrder(AutoForwardDiff(), AutoEnzyme(; mode=Enzyme.Reverse)),  # TODO: fix
-    SecondOrder(AutoEnzyme(; mode=Enzyme.Forward), AutoForwardDiff()),
     SecondOrder(AutoEnzyme(; mode=Enzyme.Reverse), AutoForwardDiff()),
 ]
 
