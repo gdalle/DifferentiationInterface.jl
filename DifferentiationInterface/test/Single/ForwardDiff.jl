@@ -1,7 +1,6 @@
 using DifferentiationInterface, DifferentiationInterfaceTest
 using ForwardDiff: ForwardDiff
-using SparseConnectivityTracer
-using SparseMatrixColorings
+using SparseConnectivityTracer, SparseMatrixColorings
 using Test
 
 dense_backends = [AutoForwardDiff(), AutoForwardDiff(; chunksize=2, tag=:hello)]

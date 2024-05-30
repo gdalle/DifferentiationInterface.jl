@@ -28,6 +28,7 @@ using Enzyme:
     ReverseSplitWithPrimal,
     ReverseMode,
     autodiff,
+    autodiff_deferred,
     autodiff_thunk,
     chunkedonehot,
     gradient,
@@ -35,13 +36,13 @@ using Enzyme:
     jacobian,
     make_zero
 
-struct AutoDeferredEnzyme{M}
+struct AutoDeferredEnzyme{M} <: ADTypes.AbstractADType
     mode::M
 end
 
-function DI.nested(::Union{typeof(DI.gradient),typeof(DI.gradient!)}, backend::AutoEnzyme)
-    return AutoDeferredEnzyme(backend.mode)
-end
+ADTypes.mode(backend::AutoDeferredEnzyme) = ADTypes.mode(AutoEnzyme(backend.mode))
+
+DI.nested(backend::AutoEnzyme) = AutoDeferredEnzyme(backend.mode)
 
 const AnyAutoEnzyme{M} = Union{AutoEnzyme{M},AutoDeferredEnzyme{M}}
 

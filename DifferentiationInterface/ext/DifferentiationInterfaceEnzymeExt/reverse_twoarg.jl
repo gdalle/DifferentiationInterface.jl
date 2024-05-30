@@ -1,13 +1,13 @@
 ## Pullback
 
-function DI.prepare_pullback(f!, y, ::AutoEnzyme{<:Union{ReverseMode,Nothing}}, x, dy)
+function DI.prepare_pullback(f!, y, ::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, dy)
     return NoPullbackExtras()
 end
 
 function DI.value_and_pullback(
     f!,
     y,
-    backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
     x::Number,
     dy,
     ::NoPullbackExtras,
@@ -24,7 +24,7 @@ end
 function DI.value_and_pullback(
     f!,
     y,
-    backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
     x::AbstractArray,
     dy,
     ::NoPullbackExtras,

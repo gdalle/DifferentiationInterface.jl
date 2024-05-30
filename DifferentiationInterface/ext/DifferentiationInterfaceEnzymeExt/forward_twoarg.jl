@@ -1,11 +1,16 @@
 ## Pushforward
 
-function DI.prepare_pushforward(f!, y, ::AutoEnzyme{<:Union{ForwardMode,Nothing}}, x, dx)
+function DI.prepare_pushforward(f!, y, ::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}}, x, dx)
     return NoPushforwardExtras()
 end
 
 function DI.value_and_pushforward(
-    f!, y, backend::AutoEnzyme{<:Union{ForwardMode,Nothing}}, x, dx, ::NoPushforwardExtras
+    f!,
+    y,
+    backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}},
+    x,
+    dx,
+    ::NoPushforwardExtras,
 )
     dx_sametype = convert(typeof(x), dx)
     dy_sametype = zero(y)

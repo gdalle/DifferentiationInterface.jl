@@ -24,7 +24,7 @@ function backend_str(backend::AbstractADType)
     elseif mode(backend) isa SymbolicMode
         return "$bs (symbolic)"
     elseif mode(backend) isa ForwardOrReverseMode
-        return "$bs (forward/reverse)"
+        return "$bs (forward|reverse)"
     else
         error("Unknown mode")
     end
