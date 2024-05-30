@@ -6,7 +6,9 @@ function DI.value_and_pushforward(
     f, backend::AutoForwardOrNothingEnzyme, x, dx, ::NoPushforwardExtras
 )
     dx_sametype = convert(typeof(x), dx)
-    y, new_dy = autodiff(forward_mode(backend), f, Duplicated, Duplicated(x, dx_sametype))
+    y, new_dy = autodiff(
+        forward_mode(backend), Const(f), Duplicated, Duplicated(x, dx_sametype)
+    )
     return y, new_dy
 end
 
@@ -15,7 +17,9 @@ function DI.pushforward(
 )
     dx_sametype = convert(typeof(x), dx)
     new_dy = only(
-        autodiff(forward_mode(backend), f, DuplicatedNoNeed, Duplicated(x, dx_sametype))
+        autodiff(
+            forward_mode(backend), Const(f), DuplicatedNoNeed, Duplicated(x, dx_sametype)
+        ),
     )
     return new_dy
 end

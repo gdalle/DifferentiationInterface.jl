@@ -16,7 +16,7 @@ Check whether `backend` supports differentiation of two-argument functions.
 """
 check_twoarg(backend::AbstractADType) = Bool(twoarg_support(backend))
 
-sqnorm(x::AbstractArray) = sum(abs2, x)
+hess_checker(x::AbstractArray) = abs2(x[1]) * abs2(x[2])
 
 """
     check_hessian(backend)
@@ -29,8 +29,12 @@ Check whether `backend` supports second order differentiation by trying to compu
 function check_hessian(backend::AbstractADType; verbose=true)
     try
         x = [1.0, 3.0]
-        hess = hessian(sqnorm, backend, x)
-        return isapprox(hess, [2.0 0.0; 0.0 2.0]; rtol=1e-3)
+        hess = hess_checker(sqnorm, backend, x)
+        hess_th = [
+            2*x[2] 4*x[1]*x[2]
+            4*x[1]*x[2] 2*x[1]
+        ]
+        return isapprox(hess, hess_th; rtol=1e-3)
     catch exception
         if verbose
             @warn "Backend $backend does not support hessian" exception
