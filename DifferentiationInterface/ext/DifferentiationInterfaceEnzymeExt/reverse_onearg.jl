@@ -30,11 +30,7 @@ function DI.value_and_pullback(
     ::NoPullbackExtras,
 )
     tf, tx = typeof(f), typeof(x)
-    forw, rev = if backend isa AutoDeferredEnzyme
-        autodiff_deferred_thunk(ReverseSplitWithPrimal, Const{tf}, Duplicated, Active{tx})
-    else
-        autodiff_thunk(ReverseSplitWithPrimal, Const{tf}, Duplicated, Active{tx})
-    end
+    forw, rev = autodiff_thunk(ReverseSplitWithPrimal, Const{tf}, Duplicated, Active{tx})
     tape, y, new_dy = forw(Const(f), Active(x))
     copyto!(new_dy, dy)
     new_dx = only(only(rev(Const(f), Active(x), tape)))
@@ -88,11 +84,9 @@ function DI.value_and_pullback!(
     ::NoPullbackExtras,
 )
     tf, tx = typeof(f), typeof(x)
-    forw, rev = if backend isa AutoDeferredEnzyme
-        autodiff_deferred_thunk(ReverseSplitWithPrimal, Const{tf}, Duplicated, Duplicated{tx})
-    else
-        autodiff_thunk(ReverseSplitWithPrimal, Const{tf}, Duplicated, Duplicated{tx})
-    end
+    forw, rev = autodiff_thunk(
+        ReverseSplitWithPrimal, Const{tf}, Duplicated, Duplicated{tx}
+    )
     dx_sametype = zero_sametype!(dx, x)
     tape, y, new_dy = forw(Const(f), Duplicated(x, dx_sametype))
     copyto!(new_dy, dy)

@@ -29,6 +29,7 @@ using Enzyme:
     ReverseMode,
     autodiff,
     autodiff_deferred,
+    autodiff_deferred_thunk,
     autodiff_thunk,
     chunkedonehot,
     gradient,

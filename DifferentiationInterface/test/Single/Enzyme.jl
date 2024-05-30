@@ -10,6 +10,11 @@ dense_backends = [
     AutoEnzyme(; mode=Enzyme.Reverse),
 ]
 
+nested_dense_backends = [
+    DifferentiationInterface.nested(AutoEnzyme(; mode=Enzyme.Forward)),
+    DifferentiationInterface.nested(AutoEnzyme(; mode=Enzyme.Reverse)),
+]
+
 sparse_backends =
     AutoSparse.(
         dense_backends,
@@ -17,15 +22,19 @@ sparse_backends =
         coloring_algorithm=GreedyColoringAlgorithm(),
     )
 
-@testset "Check $(typeof(backend))" for backend in vcat(dense_backends, sparse_backends)
-    @test check_available(backend)
-    @test check_twoarg(backend)
-    @test check_hessian(backend; verbose=false)
+@testset "Checks" begin
+    @testset "Check $(typeof(backend))" for backend in vcat(dense_backends, sparse_backends)
+        @test check_available(backend)
+        @test check_twoarg(backend)
+        @test check_hessian(backend; verbose=false)
+    end
 end
 
 ## Dense backends
 
-test_differentiation(dense_backends; second_order=false, logging=LOGGING);
+test_differentiation(
+    vcat(dense_backends, nested_dense_backends); second_order=false, logging=LOGGING
+);
 
 test_differentiation(
     [
