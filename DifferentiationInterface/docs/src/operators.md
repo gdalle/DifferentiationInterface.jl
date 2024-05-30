@@ -135,9 +135,6 @@ Some backends natively support a set of second-order operators (typically only t
 In that case, it can be advantageous to use the backend on its own.
 If the operator is not supported natively, we will fall back on `SecondOrder(backend, backend)` (see below).
 
-!!! warning
-    Whenever the fallback on `SecondOrder(backend, backend)` occurs, the results of any preparation will be discarded.
-
 ### Combining backends
 
 In general, you can use [`SecondOrder`](@ref) to combine different backends.

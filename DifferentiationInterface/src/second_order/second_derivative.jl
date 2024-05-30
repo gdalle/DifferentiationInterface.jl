@@ -40,7 +40,9 @@ struct ClosureSecondDerivativeExtras{C,E} <: SecondDerivativeExtras
     outer_derivative_extras::E
 end
 
-prepare_second_derivative(f::F, ::AbstractADType, x) where {F} = NoSecondDerivativeExtras()
+function prepare_second_derivative(f::F, backend::AbstractADType, x) where {F}
+    return prepare_second_derivative(f, SecondOrder(backend, backend), x)
+end
 
 function prepare_second_derivative(f::F, backend::SecondOrder, x) where {F}
     inner_backend = nested(inner(backend))
@@ -59,9 +61,7 @@ function second_derivative(
     x,
     extras::SecondDerivativeExtras=prepare_second_derivative(f, backend, x),
 ) where {F}
-    new_backend = SecondOrder(backend, backend)
-    new_extras = prepare_second_derivative(f, new_backend, x)
-    return second_derivative(f, new_backend, x, new_extras)
+    return second_derivative(f, SecondOrder(backend, backend), x, extras)
 end
 
 function second_derivative(

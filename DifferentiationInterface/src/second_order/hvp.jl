@@ -75,7 +75,9 @@ struct ReverseOverReverseHVPExtras{C,E} <: HVPExtras
     outer_pullback_extras::E
 end
 
-prepare_hvp(f, ::AbstractADType, x, v) = NoHVPExtras()
+function prepare_hvp(f::F, backend::AbstractADType, x, v) where {F}
+    return prepare_hvp(f, SecondOrder(backend, backend), x, v)
+end
 
 function prepare_hvp(f::F, backend::SecondOrder, x, v) where {F}
     return prepare_hvp_aux(f, backend, x, v, hvp_mode(backend))
@@ -143,9 +145,7 @@ end
 function hvp(
     f::F, backend::AbstractADType, x, v, extras::HVPExtras=prepare_hvp(f, backend, x, v)
 ) where {F}
-    new_backend = SecondOrder(backend, backend)
-    new_extras = prepare_hvp(f, new_backend, x, v)
-    return hvp(f, new_backend, x, v, new_extras)
+    return hvp(f, SecondOrder(backend, backend), x, v, extras)
 end
 
 function hvp(

@@ -40,6 +40,10 @@ struct HVPHessianExtras{E<:HVPExtras} <: HessianExtras
 end
 
 function prepare_hessian(f::F, backend::AbstractADType, x) where {F}
+    return prepare_hessian(f, SecondOrder(backend, backend), x)
+end
+
+function prepare_hessian(f::F, backend::SecondOrder, x) where {F}
     v = basis(backend, x, first(CartesianIndices(x)))
     hvp_extras = prepare_hvp(f, backend, x, v)
     return HVPHessianExtras(hvp_extras)
@@ -50,9 +54,7 @@ end
 function hessian(
     f::F, backend::AbstractADType, x, extras::HessianExtras=prepare_hessian(f, backend, x)
 ) where {F}
-    new_backend = SecondOrder(backend, backend)
-    new_extras = prepare_hessian(f, new_backend, x)
-    return hessian(f, new_backend, x, new_extras)
+    return hessian(f, SecondOrder(backend, backend), x, extras)
 end
 
 function hessian(
