@@ -45,6 +45,7 @@ jobs:
           - Single/Tracker
           - Single/Zygote
           - Double/Enzyme-ForwardDiff
+          - Double/ForwardDiff-ReverseDiff
           - Double/ForwardDiff-Zygote
           - Double/ReverseDiff-Zygote
         exclude:

@@ -36,6 +36,43 @@ function hvp! end
 
 ## Preparation
 
+struct SelfPreparingGradient{F,B}
+    f::F
+    backend::B
+    extras_dict::Dict{Type,GradientExtras}
+
+    function SelfPreparingGradient(f::F, backend::B) where {F,B}
+        return new{F,B}(f, backend, Dict{Type,GradientExtras}())
+    end
+end
+
+function (self_prep_gradient::SelfPreparingGradient)(x::X) where {X}
+    @compat (; f, backend, extras_dict) = self_prep_gradient
+    if !haskey(extras_dict, X)
+        extras_dict[X] = prepare_gradient(f, backend, x)
+    end
+    return gradient(f, backend, x, extras_dict[X])
+end
+
+struct SelfPreparingPushforwardFixedSeed{F,B,V}
+    f::F
+    backend::B
+    v::V
+    extras_dict::Dict{Type,PushforwardExtras}
+
+    function SelfPreparingPushforwardFixedSeed(f::F, backend::B, v::V) where {F,B,V}
+        return new{F,B,V}(f, backend, v, Dict{Type,PushforwardExtras}())
+    end
+end
+
+function (self_prep_pushforward::SelfPreparingPushforwardFixedSeed)(x::X) where {X}
+    @compat (; f, backend, extras_dict, v) = self_prep_pushforward
+    if !haskey(extras_dict, X)
+        extras_dict[X] = prepare_pushforward(f, backend, x, v)
+    end
+    return pushforward(f, backend, x, v, extras_dict[X])
+end
+
 """
     HVPExtras
 
@@ -44,16 +81,6 @@ Abstract type for additional information needed by [`hvp`](@ref) and its variant
 abstract type HVPExtras <: Extras end
 
 struct NoHVPExtras <: HVPExtras end
-
-#=
-Source: https://arxiv.org/abs/2403.14606 (section 8.1)
-
-By order of preference:
-- forward on reverse
-- reverse on forward
-- reverse on reverse
-- forward on forward
-=#
 
 struct ForwardOverForwardHVPExtras{C,E} <: HVPExtras
     inner_gradient_closure::C
@@ -66,7 +93,7 @@ struct ForwardOverReverseHVPExtras{C,E} <: HVPExtras
 end
 
 struct ReverseOverForwardHVPExtras{C,E} <: HVPExtras
-    inner_pushforward_closure_generator::C
+    inner_pushforward_closure::C
     outer_gradient_extras::E
 end
 
@@ -86,7 +113,7 @@ end
 function prepare_hvp_aux(f::F, backend::SecondOrder, x, v, ::ForwardOverForward) where {F}
     # pushforward of many pushforwards in theory, but pushforward of gradient in practice
     inner_backend = nested(inner(backend))
-    inner_gradient_closure(z) = gradient(f, inner_backend, z)
+    inner_gradient_closure = SelfPreparingGradient(f, inner_backend)
     outer_pushforward_extras = prepare_pushforward(
         inner_gradient_closure, outer(backend), x, v
     )
@@ -96,7 +123,7 @@ end
 function prepare_hvp_aux(f::F, backend::SecondOrder, x, v, ::ForwardOverReverse) where {F}
     # pushforward of gradient
     inner_backend = nested(inner(backend))
-    inner_gradient_closure(z) = gradient(f, inner_backend, z)
+    inner_gradient_closure = SelfPreparingGradient(f, inner_backend)
     outer_pushforward_extras = prepare_pushforward(
         inner_gradient_closure, outer(backend), x, v
     )
@@ -104,25 +131,17 @@ function prepare_hvp_aux(f::F, backend::SecondOrder, x, v, ::ForwardOverReverse)
 end
 
 function prepare_hvp_aux(f::F, backend::SecondOrder, x, v, ::ReverseOverForward) where {F}
-    # gradient of pushforward
-    # uses v in the closure
+    # gradient of pushforward with fixed v
     inner_backend = nested(inner(backend))
-    function inner_pushforward_closure_generator(v)
-        inner_pushforward_closure(z) = pushforward(f, inner_backend, z, v)
-        return inner_pushforward_closure
-    end
-    outer_gradient_extras = prepare_gradient(
-        inner_pushforward_closure_generator(v), outer(backend), x
-    )
-    return ReverseOverForwardHVPExtras(
-        inner_pushforward_closure_generator, outer_gradient_extras
-    )
+    inner_pushforward_closure = SelfPreparingPushforwardFixedSeed(f, inner_backend, v)
+    outer_gradient_extras = prepare_gradient(inner_pushforward_closure, outer(backend), x)
+    return ReverseOverForwardHVPExtras(inner_pushforward_closure, outer_gradient_extras)
 end
 
 function prepare_hvp_aux(f::F, backend::SecondOrder, x, v, ::ReverseOverReverse) where {F}
-    # pullback of the gradient
+    # pullback of gradient
     inner_backend = nested(inner(backend))
-    inner_gradient_closure(z) = gradient(f, inner_backend, z)
+    inner_gradient_closure = SelfPreparingGradient(f, inner_backend)
     outer_pullback_extras = prepare_pullback(inner_gradient_closure, outer(backend), x, v)
     return ReverseOverReverseHVPExtras(inner_gradient_closure, outer_pullback_extras)
 end

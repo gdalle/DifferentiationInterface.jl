@@ -94,33 +94,43 @@ pullback_performance(::SymbolicMode) = PullbackFast()
 abstract type HVPMode end
 
 """
+    ForwardOverForward
+
+Trait identifying second-order backends that compute HVPs in forward over forward mode (inefficient).
+"""
+struct ForwardOverForward <: HVPMode end
+
+"""
     ForwardOverReverse
 
-Traits identifying second-order backends that compute HVPs in forward over reverse mode.
+Trait identifying second-order backends that compute HVPs in forward over reverse mode.
 """
 struct ForwardOverReverse <: HVPMode end
 
 """
     ReverseOverForward
 
-Traits identifying second-order backends that compute HVPs in reverse over forward mode.
+Trait identifying second-order backends that compute HVPs in reverse over forward mode.
 """
 struct ReverseOverForward <: HVPMode end
 
 """
     ReverseOverReverse
 
-Traits identifying second-order backends that compute HVPs in reverse over reverse mode.
+Trait identifying second-order backends that compute HVPs in reverse over reverse mode.
 """
 struct ReverseOverReverse <: HVPMode end
 
 """
-    ForwardOverForward
+    hvp_mode(backend)
 
-Traits identifying second-order backends that compute HVPs in forward over forward mode (inefficient).
+Return, by order of preference and depending on `backend`:
+
+1. [`ForwardOverReverse`](@ref)
+2. [`ReverseOverForward`](@ref)
+3. [`ReverseOverReverse`](@ref)
+4. [`ForwardOverForward`](@ref)
 """
-struct ForwardOverForward <: HVPMode end
-
 hvp_mode(::AbstractADType) = error("HVP mode undefined for first order backend")
 
 function hvp_mode(ba::SecondOrder)

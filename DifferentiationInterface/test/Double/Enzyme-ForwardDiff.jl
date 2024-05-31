@@ -1,5 +1,4 @@
 using DifferentiationInterface, DifferentiationInterfaceTest
-import DifferentiationInterface as DI
 using Enzyme: Enzyme
 using ForwardDiff: ForwardDiff
 using Test

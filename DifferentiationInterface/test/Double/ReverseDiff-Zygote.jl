@@ -1,8 +1,7 @@
 using DifferentiationInterface, DifferentiationInterfaceTest
-import DifferentiationInterface as DI
 using ReverseDiff: ReverseDiff
-using Zygote: Zygote
 using Test
+using Zygote: Zygote
 
 backends = [SecondOrder(AutoReverseDiff(), AutoZygote())]
 

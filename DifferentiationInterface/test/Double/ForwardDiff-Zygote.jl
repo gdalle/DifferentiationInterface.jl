@@ -2,10 +2,9 @@ using DifferentiationInterface, DifferentiationInterfaceTest
 import DifferentiationInterface as DI
 import DifferentiationInterfaceTest as DIT
 using ForwardDiff: ForwardDiff
-using SparseConnectivityTracer
-using SparseMatrixColorings
-using Zygote: Zygote
+using SparseConnectivityTracer, SparseMatrixColorings
 using Test
+using Zygote: Zygote
 
 dense_backends = [SecondOrder(AutoForwardDiff(), AutoZygote())]
 

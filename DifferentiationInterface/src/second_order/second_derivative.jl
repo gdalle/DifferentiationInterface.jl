@@ -26,6 +26,24 @@ function second_derivative! end
 
 ## Preparation
 
+struct SelfPreparingDerivative{F,B}
+    f::F
+    backend::B
+    extras_dict::Dict{Type,DerivativeExtras}
+
+    function SelfPreparingDerivative(f::F, backend::B) where {F,B}
+        return new{F,B}(f, backend, Dict{Type,DerivativeExtras}())
+    end
+end
+
+function (self_prep_derivative::SelfPreparingDerivative)(x::X) where {X}
+    @compat (; f, backend, extras_dict) = self_prep_derivative
+    if !haskey(extras_dict, X)
+        extras_dict[X] = prepare_derivative(f, backend, x)
+    end
+    return derivative(f, backend, x, extras_dict[X])
+end
+
 """
     SecondDerivativeExtras
 
@@ -46,7 +64,7 @@ end
 
 function prepare_second_derivative(f::F, backend::SecondOrder, x) where {F}
     inner_backend = nested(inner(backend))
-    inner_derivative_closure(z) = derivative(f, inner_backend, z)
+    inner_derivative_closure = SelfPreparingDerivative(f, inner_backend)
     outer_derivative_extras = prepare_derivative(
         inner_derivative_closure, outer(backend), x
     )
