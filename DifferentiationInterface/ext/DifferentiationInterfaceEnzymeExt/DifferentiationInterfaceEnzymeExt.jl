@@ -1,6 +1,7 @@
 module DifferentiationInterfaceEnzymeExt
 
 using ADTypes: ADTypes, AutoEnzyme
+using Compat
 import DifferentiationInterface as DI
 using DifferentiationInterface:
     DerivativeExtras,
