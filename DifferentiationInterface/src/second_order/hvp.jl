@@ -36,37 +36,37 @@ function hvp! end
 
 ## Preparation
 
-struct SelfPreparingGradient{F,B}
+struct SelfPreparingInnerGradient{F,B}
     f::F
     backend::B
     extras_dict::Dict{Type,GradientExtras}
 
-    function SelfPreparingGradient(f::F, backend::B) where {F,B}
+    function SelfPreparingInnerGradient(f::F, backend::B) where {F,B}
         return new{F,B}(f, backend, Dict{Type,GradientExtras}())
     end
 end
 
-function (self_prep_gradient::SelfPreparingGradient)(x::X) where {X}
-    @compat (; f, backend, extras_dict) = self_prep_gradient
+function (spig::SelfPreparingInnerGradient)(x::X) where {X}
+    @compat (; f, backend, extras_dict) = spig
     if !haskey(extras_dict, X)
         extras_dict[X] = prepare_gradient(f, backend, x)
     end
     return gradient(f, backend, x, extras_dict[X])
 end
 
-struct SelfPreparingPushforwardFixedSeed{F,B,V}
+struct SelfPreparingInnerPushforwardFixedSeed{F,B,V}
     f::F
     backend::B
     v::V
     extras_dict::Dict{Type,PushforwardExtras}
 
-    function SelfPreparingPushforwardFixedSeed(f::F, backend::B, v::V) where {F,B,V}
+    function SelfPreparingInnerPushforwardFixedSeed(f::F, backend::B, v::V) where {F,B,V}
         return new{F,B,V}(f, backend, v, Dict{Type,PushforwardExtras}())
     end
 end
 
-function (self_prep_pushforward::SelfPreparingPushforwardFixedSeed)(x::X) where {X}
-    @compat (; f, backend, extras_dict, v) = self_prep_pushforward
+function (spipfs::SelfPreparingInnerPushforwardFixedSeed)(x::X) where {X}
+    @compat (; f, backend, extras_dict, v) = spipfs
     if !haskey(extras_dict, X)
         extras_dict[X] = prepare_pushforward(f, backend, x, v)
     end
@@ -113,7 +113,7 @@ end
 function prepare_hvp_aux(f::F, backend::SecondOrder, x, v, ::ForwardOverForward) where {F}
     # pushforward of many pushforwards in theory, but pushforward of gradient in practice
     inner_backend = nested(inner(backend))
-    inner_gradient_closure = SelfPreparingGradient(f, inner_backend)
+    inner_gradient_closure = SelfPreparingInnerGradient(f, inner_backend)
     outer_pushforward_extras = prepare_pushforward(
         inner_gradient_closure, outer(backend), x, v
     )
@@ -123,7 +123,7 @@ end
 function prepare_hvp_aux(f::F, backend::SecondOrder, x, v, ::ForwardOverReverse) where {F}
     # pushforward of gradient
     inner_backend = nested(inner(backend))
-    inner_gradient_closure = SelfPreparingGradient(f, inner_backend)
+    inner_gradient_closure = SelfPreparingInnerGradient(f, inner_backend)
     outer_pushforward_extras = prepare_pushforward(
         inner_gradient_closure, outer(backend), x, v
     )
@@ -133,7 +133,7 @@ end
 function prepare_hvp_aux(f::F, backend::SecondOrder, x, v, ::ReverseOverForward) where {F}
     # gradient of pushforward with fixed v
     inner_backend = nested(inner(backend))
-    inner_pushforward_closure = SelfPreparingPushforwardFixedSeed(f, inner_backend, v)
+    inner_pushforward_closure = SelfPreparingInnerPushforwardFixedSeed(f, inner_backend, v)
     outer_gradient_extras = prepare_gradient(inner_pushforward_closure, outer(backend), x)
     return ReverseOverForwardHVPExtras(inner_pushforward_closure, outer_gradient_extras)
 end
@@ -141,7 +141,7 @@ end
 function prepare_hvp_aux(f::F, backend::SecondOrder, x, v, ::ReverseOverReverse) where {F}
     # pullback of gradient
     inner_backend = nested(inner(backend))
-    inner_gradient_closure = SelfPreparingGradient(f, inner_backend)
+    inner_gradient_closure = SelfPreparingInnerGradient(f, inner_backend)
     outer_pullback_extras = prepare_pullback(inner_gradient_closure, outer(backend), x, v)
     return ReverseOverReverseHVPExtras(inner_gradient_closure, outer_pullback_extras)
 end

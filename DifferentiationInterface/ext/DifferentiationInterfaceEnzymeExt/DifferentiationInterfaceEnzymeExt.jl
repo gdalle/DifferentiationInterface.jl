@@ -66,6 +66,21 @@ function DI.basis(::AutoEnzyme, a::AbstractArray{T}, i::CartesianIndex) where {T
     return b
 end
 
+function (spig::DI.SelfPreparingInnerGradient{F,<:AnyAutoEnzyme})(x) where {F}
+    @compat (; f, backend) = spig
+    return DI.gradient(f, backend, x)
+end
+
+function (spid::DI.SelfPreparingInnerDerivative{F,<:AnyAutoEnzyme})(x) where {F}
+    @compat (; f, backend) = spid
+    return DI.derivative(f, backend, x)
+end
+
+function (spipfs::DI.SelfPreparingInnerPushforwardFixedSeed{F,<:AnyAutoEnzyme})(x) where {F}
+    @compat (; f, backend, v) = spipfs
+    return DI.pushforward(f, backend, x, v)
+end
+
 include("forward_onearg.jl")
 include("forward_twoarg.jl")
 
