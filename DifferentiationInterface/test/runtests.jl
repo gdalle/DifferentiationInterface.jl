@@ -67,7 +67,7 @@ ALL_BACKENDS = [
         end
     elseif startswith(GROUP, "Double")
         b1, b2 = split(split(GROUP, '/')[2], '-')
-        @testset verbose = true "Single/$b1-$b2" begin
+        @testset verbose = true "Double/$b1-$b2" begin
             Pkg.add([b1, b2])
             @testset "$file" for file in readdir(joinpath(@__DIR__, "Double", "$b1-$b2"))
                 @info "Testing Double/$b1-$b2/$file"
