@@ -71,7 +71,7 @@ include("sparse/matrices.jl")
 include("sparse/jacobian.jl")
 include("sparse/hessian.jl")
 
-include("translation/differentiate_with.jl")
+include("misc/differentiate_with.jl")
 
 function __init__()
     @require_extensions
