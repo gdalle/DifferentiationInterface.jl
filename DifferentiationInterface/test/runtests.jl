@@ -13,6 +13,21 @@ LOGGING = get(ENV, "CI", "false") == "false"
 
 GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "All")
 
+ALL_BACKENDS = [
+    "Diffractor",
+    "Enzyme",
+    "FiniteDiff",
+    "FiniteDifferences",
+    "FastDifferentiation",
+    "ForwardDiff",
+    "PolyesterForwardDiff",
+    "ReverseDiff",
+    "Symbolics",
+    "Tapir",
+    "Tracker",
+    "Zygote",
+]
+
 ## Main tests
 
 @testset verbose = true "DifferentiationInterface.jl" begin
@@ -31,40 +46,33 @@ GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "All")
     end
 
     if GROUP == "All"
-        Pkg.add([
-            "Diffractor",
-            "Enzyme",
-            "FiniteDiff",
-            "FiniteDifferences",
-            "FastDifferentiation",
-            "ForwardDiff",
-            "PolyesterForwardDiff",
-            "ReverseDiff",
-            "Symbolics",
-            "Tapir",
-            "Tracker",
-            "Zygote",
-        ])
+        Pkg.add(ALL_BACKENDS)
         @testset verbose = true "$folder" for folder in ("Single", "Double")
-            files = filter(f -> endswith(f, ".jl"), readdir(joinpath(@__DIR__, folder)))
-            @testset "$file" for file in files
-                @info "Testing $folder/$file"
-                include(joinpath(@__DIR__, folder, file))
+            @testset verbose = true "$subfolder" for subfolder in
+                                                     readdir(joinpath(@__DIR__, folder))
+                @testset "$file" for file in readdir(joinpath(@__DIR__, folder, subfolder))
+                    @info "Testing $folder/$subfolder/$file"
+                    include(joinpath(@__DIR__, folder, subfolder, file))
+                end
             end
         end
     elseif startswith(GROUP, "Single")
         b1 = split(GROUP, '/')[2]
-        @testset "Single/$b1" begin
-            @info "Testing Single/$b1"
+        @testset verbose = true "Single/$b1" begin
             Pkg.add(b1)
-            include(joinpath(@__DIR__, "Single", "$b1.jl"))
+            @testset "$file" for file in readdir(joinpath(@__DIR__, "Single", "$b1"))
+                @info "Testing Single/$b1/$file"
+                include(joinpath(@__DIR__, "Single", "$b1", file))
+            end
         end
     elseif startswith(GROUP, "Double")
         b1, b2 = split(split(GROUP, '/')[2], '-')
-        @testset "Single/$b1-$b2" begin
-            @info "Testing Double/$b1-$b2"
+        @testset verbose = true "Double/$b1-$b2" begin
             Pkg.add([b1, b2])
-            include(joinpath(@__DIR__, "Double", "$b1-$b2.jl"))
+            @testset "$file" for file in readdir(joinpath(@__DIR__, "Double", "$b1-$b2"))
+                @info "Testing Double/$b1-$b2/$file"
+                include(joinpath(@__DIR__, "Double", "$b1-$b2", file))
+            end
         end
     end
 end;

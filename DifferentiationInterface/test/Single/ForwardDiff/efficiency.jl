@@ -46,7 +46,7 @@ sumexp(x) = sum(exp, x)
     for row in eachrow(useful_data)
         scen = row[:scenario]
         @testset "$(row[:operator]) - $(string(scen.f)) : $(typeof(scen.x)) -> $(typeof(scen.y))" begin
-            @test row[:allocs] == 0
+            VERSION >= v"1.10" && @test row[:allocs] == 0
         end
     end
 end
@@ -80,7 +80,7 @@ end
     for row in eachrow(useful_data)
         scen = row[:scenario]
         @testset "$(row[:operator]) - $(string(scen.f)) : $(typeof(scen.x)) -> $(typeof(scen.y))" begin
-            @test row[:allocs] == 0
+            VERSION >= v"1.10" && @test row[:allocs] == 0
             @test row[:calls] < prod(size(scen.x))
         end
     end
