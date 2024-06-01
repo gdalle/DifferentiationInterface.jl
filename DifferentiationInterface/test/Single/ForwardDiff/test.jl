@@ -58,9 +58,3 @@ test_differentiation(
 );
 
 test_differentiation(sparse_backends, sparse_scenarios(); sparsity=true, logging=LOGGING);
-
-## Bonus
-
-if VERSION >= v"1.10"
-    include("ForwardDiff/efficiency.jl")
-end
