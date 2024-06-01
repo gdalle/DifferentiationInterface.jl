@@ -69,7 +69,7 @@ ALL_BACKENDS = [
         @testset "Single/$b1-$b2" begin
             @info "Testing Double/$b1-$b2"
             Pkg.add([b1, b2])
-            @testset "$file" for file in readdir(joinpath(@__DIR__, "Single", "$b1-$b2"))
+            @testset "$file" for file in readdir(joinpath(@__DIR__, "Double", "$b1-$b2"))
                 include(joinpath(@__DIR__, "Double", "$b1-$b2", file))
             end
         end
