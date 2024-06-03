@@ -23,6 +23,7 @@ links = InterLinks(
     "ADTypes" => "https://sciml.github.io/ADTypes.jl/stable/",
     "SparseConnectivityTracer" => "https://adrianhill.de/SparseConnectivityTracer.jl/stable/",
     "SparseMatrixColorings" => "https://gdalle.github.io/SparseMatrixColorings.jl/stable/",
+    "Symbolics" => "https://symbolics.juliasymbolics.org/stable/",
 )
 
 cp(joinpath(@__DIR__, "..", "README.md"), joinpath(@__DIR__, "src", "index.md"); force=true)

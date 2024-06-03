@@ -160,8 +160,11 @@ When computing sparse Jacobians or Hessians, it is possible to take advantage of
 For this to work, three ingredients are needed (read [this survey](https://epubs.siam.org/doi/10.1137/S0036144504444711) to understand why):
 
 1. An underlying (dense) backend
-2. A sparsity pattern detector like [`TracerSparsityDetector`](@extref SparseConnectivityTracer.TracerSparsityDetector) from [SparseConnectivityTracer.jl](https://github.com/adrhill/SparseConnectivityTracer.jl)
-3. A coloring algorithm like [`GreedyColoringAlgorithm`](@extref SparseMatrixColorings.GreedyColoringAlgorithm) from [SparseMatrixColorings.jl](https://github.com/gdalle/SparseMatrixColorings.jl)
+2. A sparsity pattern detector like:
+   - [`TracerSparsityDetector`](@extref SparseConnectivityTracer.TracerSparsityDetector) from [SparseConnectivityTracer.jl](https://github.com/adrhill/SparseConnectivityTracer.jl)
+   - [`SymbolicsSparsityDetector`](https://symbolics.juliasymbolics.org/dev/manual/sparsity_detection/) from [Symbolics.jl](https://github.com/JuliaSymbolics/Symbolics.jl)
+3. A coloring algorithm like:
+   - [`GreedyColoringAlgorithm`](@extref SparseMatrixColorings.GreedyColoringAlgorithm) from [SparseMatrixColorings.jl](https://github.com/gdalle/SparseMatrixColorings.jl)
 
 These ingredients can be combined within the [`AutoSparse`](@extref ADTypes.AutoSparse) wrapper, which DifferentiationInterface.jl re-exports.
 Note that for sparse Hessians, you need to put the `SecondOrder` backend inside `AutoSparse`, and not the other way around.
