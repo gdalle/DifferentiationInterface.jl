@@ -179,7 +179,19 @@ end
 
 sumdiffcube(x::AbstractVector)::Number = sum(diffcube(x))
 
-sumdiffcube_gradient(x::AbstractVector) = nothing
+function sumdiffcube_gradient(x::AbstractVector)
+    g = similar(x)
+    for j in eachindex(x)
+        if j == firstindex(x)
+            g[j] = -3(x[j + 1] - x[j])^2
+        elseif j == lastindex(x)
+            g[j] = +3(x[j] - x[j - 1])^2
+        else
+            g[j] = 3(x[j] - x[j - 1])^2 - 3(x[j + 1] - x[j])^2
+        end
+    end
+    return g
+end
 
 function sumdiffcube_hessian(x::AbstractVector)
     T = eltype(x)
@@ -210,7 +222,7 @@ end
 
 sumdiffcube_mat(x::AbstractMatrix)::Number = sum(diffcube(vec(x)))
 
-sumdiffcube_mat_gradient(x::AbstractMatrix) = nothing
+sumdiffcube_mat_gradient(x::AbstractMatrix) = reshape(sumdiffcube_gradient(vec(x)), size(x))
 
 function sumdiffcube_mat_hessian(x::AbstractMatrix)
     T = eltype(x)
