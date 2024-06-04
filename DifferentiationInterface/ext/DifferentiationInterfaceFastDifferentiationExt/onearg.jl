@@ -323,16 +323,16 @@ function DI.prepare_second_derivative(f, ::AutoFastDifferentiation, x)
 
     x_vec_var = monovec(x_var)
     y_vec_var = y_var isa Number ? monovec(y_var) : vec(y_var)
-    
+
     der_vec_var = derivative(y_vec_var, x_var)
     der2_vec_var = derivative(y_vec_var, x_var, x_var)
-    
+
     der_exe = make_function(der_vec_var, x_vec_var; in_place=false)
     der_exe! = make_function(der_vec_var, x_vec_var; in_place=true)
-    
+
     der2_exe = make_function(der2_vec_var, x_vec_var; in_place=false)
     der2_exe! = make_function(der2_vec_var, x_vec_var; in_place=true)
-    
+
     return FastDifferentiationAllocatingSecondDerivativeExtras(
         y_prototype, der_exe, der_exe!, der2_exe, der2_exe!
     )
