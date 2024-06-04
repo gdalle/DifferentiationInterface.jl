@@ -25,7 +25,11 @@ function num_to_num_scenarios_onearg(x::Number)
         PullbackScenario(num_to_num; x=x, ref=num_to_num_pullback, place=:outofplace),
         DerivativeScenario(num_to_num; x=x, ref=num_to_num_derivative, place=:outofplace),
         SecondDerivativeScenario(
-            num_to_num; x=x, ref=num_to_num_second_derivative, place=:outofplace
+            num_to_num;
+            x=x,
+            ref=num_to_num_second_derivative,
+            first_order_ref=num_to_num_derivative,
+            place=:outofplace,
         ),
     ]
 end
@@ -82,7 +86,7 @@ function num_to_arr_scenarios_onearg(x::Number, a::AbstractArray)
                     _num_to_arr(a);
                     x=x,
                     ref=_num_to_arr_second_derivative(a),
-                    first_order_ref=_num_to_num_derivative(a),
+                    first_order_ref=_num_to_arr_derivative(a),
                     place=place,
                 ),
             ],
