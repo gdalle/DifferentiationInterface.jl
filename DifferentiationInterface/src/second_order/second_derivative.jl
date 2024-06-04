@@ -34,7 +34,7 @@ function value_derivative_and_second_derivative end
 """
     value_derivative_and_second_derivative!(f, der, der2, backend, x, [extras]) -> (y, der, der2)
 
-Compute the value, first derivative and second derivative of the function `f` at point `x`, overwriting `der1` and `der2`.
+Compute the value, first derivative and second derivative of the function `f` at point `x`, overwriting `der` and `der2`.
 """
 function value_derivative_and_second_derivative! end
 
