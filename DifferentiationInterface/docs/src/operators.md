@@ -48,7 +48,7 @@ Several variants of each operator are defined.
 | out-of-place                | in-place                     | out-of-place + primal                            | in-place + primal                                |
 | :-------------------------- | :--------------------------- | :----------------------------------------------- | :----------------------------------------------- |
 | [`derivative`](@ref)        | [`derivative!`](@ref)        | [`value_and_derivative`](@ref)                   | [`value_and_derivative!`](@ref)                  |
-| [`second_derivative`](@ref) | [`second_derivative!`](@ref) | [`value_derivative_and_second_derivative`](@ref) | [`value_derivative_and_second_derivative!](@ref) |
+| [`second_derivative`](@ref) | [`second_derivative!`](@ref) | [`value_derivative_and_second_derivative`](@ref) | [`value_derivative_and_second_derivative!`](@ref) |
 | [`gradient`](@ref)          | [`gradient!`](@ref)          | [`value_and_gradient`](@ref)                     | [`value_and_gradient!`](@ref)                    |
 | [`hessian`](@ref)           | [`hessian!`](@ref)           | NA                                               | NA                                               |
 | [`jacobian`](@ref)          | [`jacobian!`](@ref)          | [`value_and_jacobian`](@ref)                     | [`value_and_jacobian!`](@ref)                    |

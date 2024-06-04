@@ -54,14 +54,14 @@ test_differentiation(
 ## Benchmark
 
 data1 = benchmark_differentiation(
-    [AutoZeroForward(), AutoZeroReverse()], default_scenarios(); logging=true
+    [AutoZeroForward(), AutoZeroReverse()], default_scenarios(); logging=LOGGING
 );
 
 data2 = benchmark_differentiation(
     [SecondOrder(AutoZeroForward(), AutoZeroReverse())],
     default_scenarios();
     first_order=false,
-    logging=true,
+    logging=LOGGING,
 );
 
 df1 = DataFrames.DataFrame(data1)
