@@ -65,7 +65,6 @@ include("second_order/second_derivative.jl")
 include("second_order/hvp.jl")
 include("second_order/hessian.jl")
 
-include("sparse/detector.jl")
 include("sparse/fallbacks.jl")
 include("sparse/matrices.jl")
 include("sparse/jacobian.jl")
