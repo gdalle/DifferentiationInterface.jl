@@ -54,14 +54,14 @@ test_differentiation(
 ## Benchmark
 
 data1 = benchmark_differentiation(
-    [AutoZeroForward(), AutoZeroReverse()], default_scenarios(); logging=LOGGING
+    [AutoZeroForward(), AutoZeroReverse()], default_scenarios(); logging=true
 );
 
 data2 = benchmark_differentiation(
     [SecondOrder(AutoZeroForward(), AutoZeroReverse())],
     default_scenarios();
     first_order=false,
-    logging=LOGGING,
+    logging=true,
 );
 
 df1 = DataFrames.DataFrame(data1)
@@ -71,7 +71,7 @@ df = vcat(df1, df2)
 struct FakeBackend <: ADTypes.AbstractADType end
 ADTypes.mode(::FakeBackend) = ADTypes.ForwardMode()
 
-data3 = benchmark_differentiation([FakeBackend()], default_scenarios(); logging=false);
+data3 = benchmark_differentiation([FakeBackend()], default_scenarios(); logging=true);
 
 df3 = DataFrames.DataFrame(data3)
 
