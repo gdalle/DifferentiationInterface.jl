@@ -833,7 +833,7 @@ function run_benchmark!(
     logging::Bool,
 )
     @compat (; f, x, y) = deepcopy(scen)
-    @compat (; bench0, bench1, calls0, calls1) = try
+    @compat (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
         extras = prepare_second_derivative(f, ba, x)
         bench0 = @be prepare_second_derivative(f, ba, x) samples = 1 evals = 1
@@ -868,7 +868,7 @@ function run_benchmark!(
     logging::Bool,
 )
     @compat (; f, x, y) = deepcopy(scen)
-    @compat (; bench0, bench1, calls0, calls1) = try
+    @compat (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
         extras = prepare_second_derivative(f, ba, x)
         bench0 = @be prepare_second_derivative(f, ba, x) samples = 1 evals = 1
