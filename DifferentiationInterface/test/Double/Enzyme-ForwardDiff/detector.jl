@@ -29,12 +29,12 @@ g(x::AbstractMatrix) = g(vec(x))
     @testset "$method" for method in (:iterative, :direct)
         detector = DenseSparsityDetector(backend; atol=1e-5, method)
         for (x, y) in ((rand(20), zeros(10)), (rand(2, 10), zeros(5, 2)))
-            @test J == jacobian_sparsity(f, x, detector)
-            @test J == jacobian_sparsity(f!, copy(y), x, detector)
+            @test Jc == jacobian_sparsity(f, x, detector)
+            @test Jc == jacobian_sparsity(f!, copy(y), x, detector)
         end
         if backend isa AutoForwardDiff
             for x in (rand(20), rand(2, 10))
-                @test H == hessian_sparsity(g, x, detector)
+                @test Hc == hessian_sparsity(g, x, detector)
             end
         end
     end
