@@ -838,22 +838,26 @@ function run_benchmark!(
         extras = prepare_second_derivative(f, ba, x)
         bench0 = @be prepare_second_derivative(f, ba, x) samples = 1 evals = 1
         bench1 = @be deepcopy(extras) second_derivative(f, ba, x, _)
+        bench2 = @be deepcopy(extras) value_derivative_and_second_derivative(f, ba, x, _)
         # count
         cc = CallCounter(f)
         extras = prepare_second_derivative(cc, ba, x)
         calls0 = reset_count!(cc)
         second_derivative(cc, ba, x, extras)
         calls1 = reset_count!(cc)
-        (; bench0, bench1, calls0, calls1)
+        value_derivative_and_second_derivative(cc, ba, x, extras)
+        call2 = reset_count!(cc)
+        (; bench0, bench1, bench2, calls0, calls1, calls2)
     catch e
         logging && @warn "Error during benchmarking" ba scen e
-        bench0, bench1 = failed_benchs(2)
-        calls0, calls1 = -1, -1
-        (; bench0, bench1, calls0, calls1)
+        bench0, bench1, bench2 = failed_benchs(3)
+        calls0, calls1, calls2 = -1, -1, -1
+        (; bench0, bench1, bench2, calls0, calls1, calls2)
     end
     # record
     record!(data, ba, scen, :prepare_second_derivative, bench0, calls0)
     record!(data, ba, scen, :second_derivative, bench1, calls1)
+    record!(data, ba, scen, :value_derivative_and_second_derivative, bench2, calls2)
     return nothing
 end
 
@@ -868,8 +872,11 @@ function run_benchmark!(
         # benchmark
         extras = prepare_second_derivative(f, ba, x)
         bench0 = @be prepare_second_derivative(f, ba, x) samples = 1 evals = 1
-        bench1 = @be (der=mysimilar(y), ext=deepcopy(extras)) second_derivative!(
-            f, _.der, ba, x, _.ext
+        bench1 = @be (der2=mysimilar(y), ext=deepcopy(extras)) second_derivative!(
+            f, _.der2, ba, x, _.ext
+        ) evals = 1
+        bench2 = @be (der=mysimilar(y), der2=mysimilar(y), ext=deepcopy(extras)) value_derivative_and_second_derivative!(
+            f, _.der, _.der2, ba, x, _.ext
         ) evals = 1
         # count
         cc = CallCounter(f)
@@ -877,16 +884,21 @@ function run_benchmark!(
         calls0 = reset_count!(cc)
         second_derivative!(cc, mysimilar(y), ba, x, extras)
         calls1 = reset_count!(cc)
-        (; bench0, bench1, calls0, calls1)
+        value_derivative_and_second_derivative!(
+            cc, mysimilar(y), mysimilar(y), ba, x, extras
+        )
+        calls2 = reset_count!(cc)
+        (; bench0, bench1, bench2, calls0, calls1, calls2)
     catch e
         logging && @warn "Error during benchmarking" ba scen e
-        bench0, bench1 = failed_benchs(2)
-        calls0, calls1 = -1, -1
-        (; bench0, bench1, calls0, calls1)
+        bench0, bench1, bench2 = failed_benchs(3)
+        calls0, calls1, calls2 = -1, -1, -1
+        (; bench0, bench1, bench2, calls0, calls1, calls2)
     end
     # record
     record!(data, ba, scen, :prepare_second_derivative, bench0, calls0)
     record!(data, ba, scen, :second_derivative!, bench1, calls1)
+    record!(data, ba, scen, :value_derivative_and_second_derivative!, bench2, calls2)
     return nothing
 end
 

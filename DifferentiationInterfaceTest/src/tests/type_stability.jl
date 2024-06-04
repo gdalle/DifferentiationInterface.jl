@@ -236,6 +236,9 @@ function test_jet(
     extras = prepare_second_derivative(f, ba, x)
 
     JET.@test_opt function_filter = filt second_derivative(f, ba, x, extras)
+    JET.@test_opt function_filter = filt value_derivative_and_second_derivative(
+        f, ba, x, extras
+    )
     return nothing
 end
 
@@ -244,9 +247,13 @@ function test_jet(
 )
     @compat (; f, x, y) = deepcopy(scen)
     extras = prepare_second_derivative(f, ba, x)
+    der1_in = mysimilar(y)
     der2_in = mysimilar(y)
 
     JET.@test_opt function_filter = filt second_derivative!(f, der2_in, ba, x, extras)
+    JET.@test_opt function_filter = filt value_derivative_and_second_derivative!(
+        f, der1_in, der2_in, ba, x, extras
+    )
     return nothing
 end
 

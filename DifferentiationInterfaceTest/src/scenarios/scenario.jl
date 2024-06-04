@@ -25,23 +25,26 @@ All subtypes have the following fields:
 - `y`: primal output
 - `ref`: reference to compare against
 
-In addition, some subtypes contain an additional seed (`dx` or `dy`).
+Some scenarios have the following fields:
+
+- `dx` or `dy`: seed for the low-level operators
+- `first_order_ref`: reference to compare against for second order scenarios when the operator also computes a first-order quantity
 
 # Constructor
 
 If `y` is provided, `f` is interpreted as a 2-argument function `f!(y, x) = nothing`.
 Otherwise, `f` is interpreted as an 1-argument function `f(x) = y`.
 
-The reference keyword `ref` should be a function that takes `x` (and a potential seed `dx` or `dy`) to return the correct object.
+The reference keyword `ref` (as well as `first_order_ref`) should be a function that takes `x` (and a potential seed `dx` or `dy`) to return the correct object.
 
 The keyword `place` should be either `:inplace` or `:outofplace` depending on what kind of operator must be tested.
 """
-abstract type AbstractScenario{args,place,F,X,Y,R} end
+abstract type AbstractScenario{args,place,F,X,Y} end
 
 abstract type AbstractFirstOrderScenario{args,place,F,X,Y,R} <:
-              AbstractScenario{args,place,F,X,Y,R} end
-abstract type AbstractSecondOrderScenario{args,place,F,X,Y,R} <:
-              AbstractScenario{args,place,F,X,Y,R} end
+              AbstractScenario{args,place,F,X,Y} end
+abstract type AbstractSecondOrderScenario{args,place,F,X,Y,R2,R1} <:
+              AbstractScenario{args,place,F,X,Y} end
 
 scen_type(scenario::AbstractScenario) = nameof(typeof(scenario))
 nb_args(::AbstractScenario{args}) where {args} = args
@@ -137,131 +140,162 @@ struct JacobianScenario{args,place,F,X<:AbstractArray,Y<:AbstractArray,R} <:
 end
 
 """
-    SecondDerivativeScenario(f; x, y, ref, place)
+    SecondDerivativeScenario(f; x, y, ref, first_order_ref, place)
 
 See [`AbstractScenario`](@ref) for details.
 """
-struct SecondDerivativeScenario{args,place,F,X<:Number,Y,R} <:
-       AbstractSecondOrderScenario{args,place,F,X,Y,R}
+struct SecondDerivativeScenario{args,place,F,X<:Number,Y,R2,R1} <:
+       AbstractSecondOrderScenario{args,place,F,X,Y,R2,R1}
     f::F
     x::X
     y::Y
-    ref::R
+    ref::R2
+    first_order_ref::R1
 end
 
 """
-    HVPScenario(f; x, y, dx, ref, place)
+    HVPScenario(f; x, y, dx, ref, first_order_ref, place)
 
 See [`AbstractScenario`](@ref) for details.
 """
-struct HVPScenario{args,place,F,X,Y<:Number,DX,R} <:
-       AbstractSecondOrderScenario{args,place,F,X,Y,R}
+struct HVPScenario{args,place,F,X,Y<:Number,DX,R2,R1} <:
+       AbstractSecondOrderScenario{args,place,F,X,Y,R2,R1}
     f::F
     x::X
     y::Y
     dx::DX
-    ref::R
+    ref::R2
+    first_order_ref::R1
 end
 
 """
-    HessianScenario(f; x, y, ref, place)
+    HessianScenario(f; x, y, ref, first_order_ref, place)
 
 See [`AbstractScenario`](@ref) for details.
 """
-struct HessianScenario{args,place,F,X<:AbstractArray,Y<:Number,R} <:
-       AbstractSecondOrderScenario{args,place,F,X,Y,R}
+struct HessianScenario{args,place,F,X<:AbstractArray,Y<:Number,R2,R1} <:
+       AbstractSecondOrderScenario{args,place,F,X,Y,R2,R1}
     f::F
     x::X
     y::Y
-    ref::R
+    ref::R2
+    first_order_ref::R1
 end
 
 ## Constructors
+
+### First order
+
+for S in (:DerivativeScenario, :GradientScenario, :JacobianScenario)
+    @eval function $S(f::F; x::X, y=nothing, ref::R=nothing, place=:inplace) where {F,X,R}
+        args = isnothing(y) ? 1 : 2
+        if args == 2
+            f(y, x)
+        else
+            y = f(x)
+        end
+        return ($S){args,place,F,X,typeof(y),R}(f, x, y, ref)
+    end
+end
+
+function PushforwardScenario(
+    f::F; x::X, y=nothing, ref::R=nothing, dx=nothing, place=:inplace
+) where {F,X,R}
+    args = isnothing(y) ? 1 : 2
+    if args == 2
+        f(y, x)
+    else
+        y = f(x)
+    end
+    if isnothing(dx)
+        dx = mycopy_random(x)
+    end
+    return PushforwardScenario{args,place,F,X,typeof(y),typeof(dx),R}(f, x, y, dx, ref)
+end
+
+function PullbackScenario(
+    f::F; x::X, y=nothing, ref::R=nothing, dy=nothing, place=:inplace
+) where {F,X,R}
+    args = isnothing(y) ? 1 : 2
+    if args == 2
+        f(y, x)
+    else
+        y = f(x)
+    end
+    if isnothing(dy)
+        dy = mycopy_random(y)
+    end
+    return PullbackScenario{args,place,F,X,typeof(y),typeof(dy),R}(f, x, y, dy, ref)
+end
+
+### Second order
+
+for S in (:SecondDerivativeScenario, :HessianScenario)
+    @eval function $S(
+        f::F; x::X, y=nothing, ref::R2=nothing, first_order_ref::R1=nothing, place=:inplace
+    ) where {F,X,R2,R1}
+        args = isnothing(y) ? 1 : 2
+        if args == 2
+            f(y, x)
+        else
+            y = f(x)
+        end
+        return ($S){args,place,F,X,typeof(y),R2,R1}(f, x, y, ref, first_order_ref)
+    end
+end
+
+function HVPScenario(
+    f::F;
+    x::X,
+    y=nothing,
+    ref::R2=nothing,
+    first_order_ref::R1=nothing,
+    dx=nothing,
+    place=:inplace,
+) where {F,X,R2,R1}
+    args = isnothing(y) ? 1 : 2
+    if args == 2
+        f(y, x)
+    else
+        y = f(x)
+    end
+    if isnothing(dx)
+        dx = mycopy_random(x)
+    end
+    return HVPScenario{args,place,F,X,typeof(y),typeof(dx),R2,R1}(
+        f, x, y, dx, ref, first_order_ref
+    )
+end
+
+## Change function
 
 for S in (
     :DerivativeScenario,
     :GradientScenario,
     :JacobianScenario,
-    :SecondDerivativeScenario,
-    :HessianScenario,
+    :PullbackScenario,
+    :PushforwardScenario,
 )
-    @eval begin
-        function $S(f::F; x::X, y=nothing, ref::R=nothing, place=:inplace) where {F,X,R}
-            args = isnothing(y) ? 1 : 2
-            if args == 2
-                f(y, x)
-            else
-                y = f(x)
-            end
-            return ($S){args,place,F,X,typeof(y),R}(f, x, y, ref)
-        end
-
-        function change_function(s::($S), f)
-            return ($S)(
-                f;
-                x=s.x,
-                y=(nb_args(s) == 1 ? nothing : s.y),
-                ref=s.ref,
-                place=operator_place(s),
-            )
-        end
+    @eval function change_function(s::($S), f)
+        return ($S)(
+            f;
+            x=s.x,
+            y=(nb_args(s) == 1 ? nothing : s.y),
+            ref=s.ref,
+            place=operator_place(s),
+        )
     end
 end
 
-for S in (:PushforwardScenario, :HVPScenario)
-    @eval begin
-        function $S(
-            f::F; x::X, y=nothing, ref::R=nothing, dx=nothing, place=:inplace
-        ) where {F,X,R}
-            args = isnothing(y) ? 1 : 2
-            if args == 2
-                f(y, x)
-            else
-                y = f(x)
-            end
-            if isnothing(dx)
-                dx = mycopy_random(x)
-            end
-            return ($S){args,place,F,X,typeof(y),typeof(dx),R}(f, x, y, dx, ref)
-        end
-
-        function change_function(s::($S), f)
-            return ($S)(
-                f;
-                x=s.x,
-                y=(nb_args(s) == 1 ? nothing : s.y),
-                ref=s.ref,
-                place=operator_place(s),
-            )
-        end
-    end
-end
-
-for S in (:PullbackScenario,)
-    @eval begin
-        function $S(
-            f::F; x::X, y=nothing, ref::R=nothing, dy=nothing, place=:inplace
-        ) where {F,X,R}
-            args = isnothing(y) ? 1 : 2
-            if args == 2
-                f(y, x)
-            else
-                y = f(x)
-            end
-            if isnothing(dy)
-                dy = mycopy_random(y)
-            end
-            return ($S){args,place,F,X,typeof(y),typeof(dy),R}(f, x, y, dy, ref)
-        end
-
-        function change_function(s::($S), f)
-            return ($S)(
-                f;
-                x=s.x,
-                y=(nb_args(s) == 1 ? nothing : s.y),
-                ref=s.ref,
-                place=operator_place(s),
-            )
-        end
+for S in (:SecondDerivativeScenario, :HessianScenario, :HVPScenario)
+    @eval function change_function(s::($S), f)
+        return ($S)(
+            f;
+            x=s.x,
+            y=(nb_args(s) == 1 ? nothing : s.y),
+            ref=s.ref,
+            first_order_ref=s.first_order_ref,
+            place=operator_place(s),
+        )
     end
 end

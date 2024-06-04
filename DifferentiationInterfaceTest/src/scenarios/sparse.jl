@@ -179,7 +179,9 @@ end
 
 sumdiffcube(x::AbstractVector)::Number = sum(diffcube(x))
 
-function sumdiffcube_hessian(x)
+sumdiffcube_gradient(x::AbstractVector) = nothing
+
+function sumdiffcube_hessian(x::AbstractVector)
     T = eltype(x)
     d = 6 * diff(x)
     return spdiagm(0 => vcat(d, zero(T)) + vcat(zero(T), d), 1 => -d, -1 => -d)
@@ -189,7 +191,16 @@ function sparse_vec_to_num_scenarios(x::AbstractVector)
     scens = AbstractScenario[]
     for place in (:outofplace, :inplace)
         append!(
-            scens, [HessianScenario(sumdiffcube; x=x, ref=sumdiffcube_hessian, place=place)]
+            scens,
+            [
+                HessianScenario(
+                    sumdiffcube;
+                    x=x,
+                    ref=sumdiffcube_hessian,
+                    first_order_ref=sumdiffcube_gradient,
+                    place=place,
+                ),
+            ],
         )
     end
     return scens
@@ -198,6 +209,8 @@ end
 ## Matrix to scalar
 
 sumdiffcube_mat(x::AbstractMatrix)::Number = sum(diffcube(vec(x)))
+
+sumdiffcube_mat_gradient(x::AbstractMatrix) = nothing
 
 function sumdiffcube_mat_hessian(x::AbstractMatrix)
     T = eltype(x)
@@ -212,7 +225,11 @@ function sparse_mat_to_num_scenarios(x::AbstractMatrix)
             scens,
             [
                 HessianScenario(
-                    sumdiffcube_mat; x=x, ref=sumdiffcube_mat_hessian, place=place
+                    sumdiffcube_mat;
+                    x=x,
+                    ref=sumdiffcube_mat_hessian,
+                    first_order_ref=sumdiffcube_mat_gradient,
+                    place=place,
                 ),
             ],
         )

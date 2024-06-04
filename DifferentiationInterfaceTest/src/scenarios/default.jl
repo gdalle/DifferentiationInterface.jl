@@ -79,7 +79,11 @@ function num_to_arr_scenarios_onearg(x::Number, a::AbstractArray)
                     _num_to_arr(a); x=x, ref=_num_to_arr_derivative(a), place=place
                 ),
                 SecondDerivativeScenario(
-                    _num_to_arr(a); x=x, ref=_num_to_arr_second_derivative(a), place=place
+                    _num_to_arr(a);
+                    x=x,
+                    ref=_num_to_arr_second_derivative(a),
+                    first_order_ref=_num_to_num_derivative(a),
+                    place=place,
                 ),
             ],
         )
@@ -205,8 +209,20 @@ function arr_to_num_scenarios_onearg(x::AbstractArray; linalg=true)
             [
                 PullbackScenario(arr_to_num; x=x, ref=arr_to_num_pullback, place=place),
                 GradientScenario(arr_to_num; x=x, ref=arr_to_num_gradient, place=place),
-                HVPScenario(arr_to_num; x=x, ref=arr_to_num_hvp, place=place),
-                HessianScenario(arr_to_num; x=x, ref=arr_to_num_hessian, place=place),
+                HVPScenario(
+                    arr_to_num;
+                    x=x,
+                    ref=arr_to_num_hvp,
+                    first_order_ref=arr_to_num_gradient,
+                    place=place,
+                ),
+                HessianScenario(
+                    arr_to_num;
+                    x=x,
+                    ref=arr_to_num_hessian,
+                    first_order_ref=arr_to_num_gradient,
+                    place=place,
+                ),
             ],
         )
     end
