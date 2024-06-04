@@ -81,9 +81,7 @@ function second_derivative!(
     x,
     extras::SecondDerivativeExtras=prepare_second_derivative(f, backend, x),
 ) where {F}
-    new_backend = SecondOrder(backend, backend)
-    new_extras = prepare_second_derivative(f, new_backend, x)
-    return second_derivative!(f, der2, new_backend, x, new_extras)
+    return second_derivative!(f, der2, SecondOrder(backend, backend), x, extras)
 end
 
 function second_derivative!(

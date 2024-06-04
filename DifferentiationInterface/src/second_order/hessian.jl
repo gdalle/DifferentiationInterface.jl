@@ -77,9 +77,7 @@ function hessian!(
     x,
     extras::HessianExtras=prepare_hessian(f, backend, x),
 ) where {F}
-    new_backend = SecondOrder(backend, backend)
-    new_extras = prepare_hessian(f, new_backend, x)
-    return hessian!(f, hess, new_backend, x, new_extras)
+    return hessian!(f, hess, SecondOrder(backend, backend), x, extras)
 end
 
 function hessian!(
