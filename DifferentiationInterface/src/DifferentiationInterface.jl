@@ -72,6 +72,7 @@ include("sparse/jacobian.jl")
 include("sparse/hessian.jl")
 
 include("misc/differentiate_with.jl")
+include("misc/sparsity_detector.jl")
 
 function __init__()
     @require_extensions
@@ -108,6 +109,7 @@ export prepare_second_derivative, prepare_hessian
 export check_available, check_twoarg, check_hessian
 
 export DifferentiateWith
+export DenseSparsityDetector
 
 ## Re-exported from ADTypes
 

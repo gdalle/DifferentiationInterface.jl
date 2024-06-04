@@ -111,6 +111,12 @@ DifferentiationInterface.inner
 DifferentiateWith
 ```
 
+### Sparsity detection
+
+```@docs
+DenseSparsityDetector
+```
+
 ## Internals
 
 The following is not part of the public API.
