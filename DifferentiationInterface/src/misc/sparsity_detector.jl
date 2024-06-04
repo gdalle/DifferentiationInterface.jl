@@ -116,8 +116,11 @@ function ADTypes.jacobian_sparsity(f, x, detector::DenseSparsityDetector{:iterat
     I, J = Int[], Int[]
     if pushforward_performance(backend) isa PushforwardFast
         p = similar(y)
+        extras = prepare_pushforward_same_point(
+            f, backend, x, basis(backend, x, first(CartesianIndices(x)))
+        )
         for (kj, j) in enumerate(CartesianIndices(x))
-            pushforward!(f, p, backend, x, basis(backend, x, j))
+            pushforward!(f, p, backend, x, basis(backend, x, j), extras)
             for ki in LinearIndices(p)
                 if abs(p[ki]) > atol
                     push!(I, ki)
@@ -127,8 +130,11 @@ function ADTypes.jacobian_sparsity(f, x, detector::DenseSparsityDetector{:iterat
         end
     else
         p = similar(x)
+        extras = prepare_pullback_same_point(
+            f, backend, x, basis(backend, y, first(CartesianIndices(y)))
+        )
         for (ki, i) in enumerate(CartesianIndices(y))
-            pullback!(f, p, backend, x, basis(backend, y, i))
+            pullback!(f, p, backend, x, basis(backend, y, i), extras)
             for kj in LinearIndices(p)
                 if abs(p[kj]) > atol
                     push!(I, ki)
@@ -146,8 +152,11 @@ function ADTypes.jacobian_sparsity(f!, y, x, detector::DenseSparsityDetector{:it
     I, J = Int[], Int[]
     if pushforward_performance(backend) isa PushforwardFast
         p = similar(y)
+        extras = prepare_pushforward_same_point(
+            f!, y, backend, x, basis(backend, x, first(CartesianIndices(x)))
+        )
         for (kj, j) in enumerate(CartesianIndices(x))
-            pushforward!(f!, y, p, backend, x, basis(backend, x, j))
+            pushforward!(f!, y, p, backend, x, basis(backend, x, j), extras)
             for ki in LinearIndices(p)
                 if abs(p[ki]) > atol
                     push!(I, ki)
@@ -157,8 +166,11 @@ function ADTypes.jacobian_sparsity(f!, y, x, detector::DenseSparsityDetector{:it
         end
     else
         p = similar(x)
+        extras = prepare_pullback_same_point(
+            f!, y, backend, x, basis(backend, y, first(CartesianIndices(y)))
+        )
         for (ki, i) in enumerate(CartesianIndices(y))
-            pullback!(f!, y, p, backend, x, basis(backend, y, i))
+            pullback!(f!, y, p, backend, x, basis(backend, y, i), extras)
             for kj in LinearIndices(p)
                 if abs(p[kj]) > atol
                     push!(I, ki)
@@ -175,8 +187,11 @@ function ADTypes.hessian_sparsity(f, x, detector::DenseSparsityDetector{:iterati
     n = length(x)
     I, J = Int[], Int[]
     p = similar(x)
+    extras = prepare_hvp_same_point(
+        f, backend, x, basis(backend, x, first(CartesianIndices(x)))
+    )
     for (kj, j) in enumerate(CartesianIndices(x))
-        hvp!(f, p, backend, x, basis(backend, x, j))
+        hvp!(f, p, backend, x, basis(backend, x, j), extras)
         for ki in LinearIndices(p)
             if abs(p[ki]) > atol
                 push!(I, ki)

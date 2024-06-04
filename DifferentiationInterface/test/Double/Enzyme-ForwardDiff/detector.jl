@@ -12,24 +12,30 @@ rng = StableRNG(63)
 const Jc = sprand(rng, Bool, 10, 20, 0.3)
 const Hc = sparse(Symmetric(sprand(rng, Bool, 20, 20, 0.3)))
 
-f(x) = Jc * x
+f(x::AbstractVector) = Jc * x
+f(x::AbstractMatrix) = reshape(f(vec(x)), (5, 2))
 
 function f!(y, x)
-    mul!(y, Jc, x)
+    y .= f(x)
     return nothing
 end
 
-g(x) = dot(x, Hc, x)
+g(x::AbstractVector) = dot(x, Hc, x)
+g(x::AbstractMatrix) = g(vec(x))
 
 @testset verbose = true "$(typeof(backend))" for backend in [
     AutoEnzyme(; mode=Enzyme.Reverse), AutoForwardDiff()
 ]
     @testset "$method" for method in (:iterative, :direct)
         detector = DenseSparsityDetector(backend; atol=1e-5, method)
-        @test J == jacobian_sparsity(f, rand(size(J, 2)), detector)
-        @test J == jacobian_sparsity(f!, zeros(size(J, 1)), rand(size(J, 2)), detector)
+        for (x, y) in ((rand(20), zeros(10)), (rand(2, 10), zeros(5, 2)))
+            @test J == jacobian_sparsity(f, x, detector)
+            @test J == jacobian_sparsity(f!, copy(y), x, detector)
+        end
         if backend isa AutoForwardDiff
-            @test H == hessian_sparsity(g, rand(size(H, 2)), detector)
+            for x in (rand(20), rand(2, 10))
+                @test H == hessian_sparsity(g, x, detector)
+            end
         end
     end
 end
