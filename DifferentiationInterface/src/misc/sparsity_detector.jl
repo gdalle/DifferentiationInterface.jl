@@ -27,7 +27,7 @@ Note that the constructor is type-unstable because `method` ends up being a type
 # Example
 
 ```jldoctest
-using ADTypes, DifferentiationInterface
+using ADTypes, DifferentiationInterface, SparseArrays
 import ForwardDiff
 
 detector = DenseSparsityDetector(AutoForwardDiff(); atol=1e-5, method=:direct)
