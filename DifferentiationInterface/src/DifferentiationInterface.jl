@@ -96,6 +96,7 @@ export gradient!, gradient
 export jacobian!, jacobian
 
 export second_derivative!, second_derivative
+export value_derivative_and_second_derivative, value_derivative_and_second_derivative!
 export hvp!, hvp
 export hessian!, hessian
 

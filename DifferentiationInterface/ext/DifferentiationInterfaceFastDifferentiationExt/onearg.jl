@@ -307,11 +307,13 @@ end
 
 ## Second derivative
 
-struct FastDifferentiationAllocatingSecondDerivativeExtras{Y,E1,E2} <:
+struct FastDifferentiationAllocatingSecondDerivativeExtras{Y,E1,E1!,E2,E2!} <:
        SecondDerivativeExtras
     y_prototype::Y
-    der2_exe::E1
-    der2_exe!::E2
+    der_exe::E1
+    der_exe!::E1!
+    der2_exe::E2
+    der2_exe!::E2!
 end
 
 function DI.prepare_second_derivative(f, ::AutoFastDifferentiation, x)
@@ -321,11 +323,18 @@ function DI.prepare_second_derivative(f, ::AutoFastDifferentiation, x)
 
     x_vec_var = monovec(x_var)
     y_vec_var = y_var isa Number ? monovec(y_var) : vec(y_var)
+
+    der_vec_var = derivative(y_vec_var, x_var)
     der2_vec_var = derivative(y_vec_var, x_var, x_var)
+
+    der_exe = make_function(der_vec_var, x_vec_var; in_place=false)
+    der_exe! = make_function(der_vec_var, x_vec_var; in_place=true)
+
     der2_exe = make_function(der2_vec_var, x_vec_var; in_place=false)
     der2_exe! = make_function(der2_vec_var, x_vec_var; in_place=true)
+
     return FastDifferentiationAllocatingSecondDerivativeExtras(
-        y_prototype, der2_exe, der2_exe!
+        y_prototype, der_exe, der_exe!, der2_exe, der2_exe!
     )
 end
 
@@ -351,6 +360,38 @@ function DI.second_derivative!(
 )
     extras.der2_exe!(vec(der2), monovec(x))
     return der2
+end
+
+function DI.value_derivative_and_second_derivative(
+    f,
+    ::AutoFastDifferentiation,
+    x,
+    extras::FastDifferentiationAllocatingSecondDerivativeExtras,
+)
+    y = f(x)
+    if extras.y_prototype isa Number
+        der = only(extras.der_exe(monovec(x)))
+        der2 = only(extras.der2_exe(monovec(x)))
+        return y, der, der2
+    else
+        der = reshape(extras.der_exe(monovec(x)), size(extras.y_prototype))
+        der2 = reshape(extras.der2_exe(monovec(x)), size(extras.y_prototype))
+        return y, der, der2
+    end
+end
+
+function DI.value_derivative_and_second_derivative!(
+    f,
+    der,
+    der2,
+    backend::AutoFastDifferentiation,
+    x,
+    extras::FastDifferentiationAllocatingSecondDerivativeExtras,
+)
+    y = f(x)
+    extras.der_exe!(vec(der), monovec(x))
+    extras.der2_exe!(vec(der2), monovec(x))
+    return y, der, der2
 end
 
 ## HVP

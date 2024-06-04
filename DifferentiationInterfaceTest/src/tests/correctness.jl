@@ -3,7 +3,7 @@
 function test_scen_intact(new_scen, scen)
     @testset "Scenario intact" begin
         for n in fieldnames(typeof(scen))
-            n in (:f, :ref) && continue
+            n in (:f, :ref, :first_order_ref) && continue
             @test getfield(new_scen, n) == getfield(scen, n)
         end
     end
@@ -794,6 +794,13 @@ function test_correctness(
 )
     @compat (; f, x, y) = new_scen = deepcopy(scen)
     extras = prepare_second_derivative(f, ba, mycopy_random(x))
+    der1_true = if ref_backend isa SecondOrder
+        derivative(f, inner(ref_backend), x)
+    elseif ref_backend isa AbstractADType
+        derivative(f, ref_backend, x)
+    else
+        new_scen.first_order_ref(x)
+    end
     der2_true = if ref_backend isa AbstractADType
         second_derivative(f, ref_backend, x)
     else
@@ -801,13 +808,21 @@ function test_correctness(
     end
 
     der21 = second_derivative(f, ba, x, extras)
+    y2, der12, der22 = value_derivative_and_second_derivative(f, ba, x, extras)
 
     let (≈)(x, y) = isapprox(x, y; atol, rtol)
         @testset "Extras type" begin
             @test extras isa SecondDerivativeExtras
         end
+        @testset "Primal value" begin
+            @test y2 ≈ y
+        end
+        @testset "First derivative value" begin
+            @test der12 ≈ der1_true
+        end
         @testset "Second derivative value" begin
             @test der21 ≈ der2_true
+            @test der22 ≈ der2_true
         end
     end
     test_scen_intact(new_scen, scen)
@@ -824,6 +839,13 @@ function test_correctness(
 )
     @compat (; f, x, y) = new_scen = deepcopy(scen)
     extras = prepare_second_derivative(f, ba, mycopy_random(x))
+    der1_true = if ref_backend isa SecondOrder
+        derivative(f, inner(ref_backend), x)
+    elseif ref_backend isa AbstractADType
+        derivative(f, ref_backend, x)
+    else
+        new_scen.first_order_ref(x)
+    end
     der2_true = if ref_backend isa AbstractADType
         second_derivative(f, ref_backend, x)
     else
@@ -833,13 +855,27 @@ function test_correctness(
     der21_in = mysimilar(y)
     der21 = second_derivative!(f, der21_in, ba, x, extras)
 
+    der12_in, der22_in = mysimilar(y), mysimilar(y)
+    y2, der12, der22 = value_derivative_and_second_derivative!(
+        f, der12_in, der22_in, ba, x, extras
+    )
+
     let (≈)(x, y) = isapprox(x, y; atol, rtol)
         @testset "Extras type" begin
             @test extras isa SecondDerivativeExtras
         end
+        @testset "Primal value" begin
+            @test y2 ≈ y
+        end
+        @testset "Derivative value" begin
+            @test der12_in ≈ der1_true
+            @test der12 ≈ der1_true
+        end
         @testset "Second derivative value" begin
             @test der21_in ≈ der2_true
+            @test der22_in ≈ der2_true
             @test der21 ≈ der2_true
+            @test der22 ≈ der2_true
         end
     end
     test_scen_intact(new_scen, scen)
