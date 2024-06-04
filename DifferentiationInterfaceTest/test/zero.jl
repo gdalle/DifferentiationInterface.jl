@@ -71,7 +71,7 @@ df = vcat(df1, df2)
 struct FakeBackend <: ADTypes.AbstractADType end
 ADTypes.mode(::FakeBackend) = ADTypes.ForwardMode()
 
-data3 = benchmark_differentiation([FakeBackend()], default_scenarios(); logging=true);
+data3 = benchmark_differentiation([FakeBackend()], default_scenarios(); logging=false);
 
 df3 = DataFrames.DataFrame(data3)
 
