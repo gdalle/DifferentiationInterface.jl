@@ -18,7 +18,7 @@ The nonzeros in a Jacobian or Hessian are detected by computing the relevant mat
 
 # Constructor
 
-    DenseSparsityDetector(backend; atol, method)
+    DenseSparsityDetector(backend; atol, method=:iterative)
 
 The keyword argument `method::Symbol` can be either:
 
