@@ -794,7 +794,9 @@ function test_correctness(
 )
     @compat (; f, x, y) = new_scen = deepcopy(scen)
     extras = prepare_second_derivative(f, ba, mycopy_random(x))
-    der1_true = if ref_backend isa AbstractADType
+    der1_true = if ref_backend isa SecondOrder
+        derivative(f, inner(ref_backend), x)
+    elseif ref_backend isa AbstractADType
         derivative(f, ref_backend, x)
     else
         new_scen.first_order_ref(x)
@@ -837,7 +839,9 @@ function test_correctness(
 )
     @compat (; f, x, y) = new_scen = deepcopy(scen)
     extras = prepare_second_derivative(f, ba, mycopy_random(x))
-    der1_true = if ref_backend isa AbstractADType
+    der1_true = if ref_backend isa SecondOrder
+        derivative(f, inner(ref_backend), x)
+    elseif ref_backend isa AbstractADType
         derivative(f, ref_backend, x)
     else
         new_scen.first_order_ref(x)
