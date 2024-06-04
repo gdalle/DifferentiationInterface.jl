@@ -846,7 +846,7 @@ function run_benchmark!(
         second_derivative(cc, ba, x, extras)
         calls1 = reset_count!(cc)
         value_derivative_and_second_derivative(cc, ba, x, extras)
-        call2 = reset_count!(cc)
+        calls2 = reset_count!(cc)
         (; bench0, bench1, bench2, calls0, calls1, calls2)
     catch e
         logging && @warn "Error during benchmarking" ba scen e

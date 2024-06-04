@@ -74,6 +74,8 @@ SecondOrder
 prepare_second_derivative
 second_derivative
 second_derivative!
+value_derivative_and_second_derivative
+value_derivative_and_second_derivative!
 ```
 
 ### Hessian-vector product
