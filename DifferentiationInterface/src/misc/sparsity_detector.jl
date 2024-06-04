@@ -8,6 +8,9 @@ The nonzeros in a Jacobian or Hessian are detected by computing the relevant mat
 !!! warning
     This detector can be very slow, and should only be used if its output can be exploited multiple times to compute many sparse matrices. 
 
+!!! danger
+    In general, the sparsity pattern you obtain can depend on the provided input `x`. If you want to reuse the pattern, make sure that it is input-agnostic.
+
 # Fields
 
 - `backend::AbstractADType` is the dense AD backend used under the hood
@@ -24,9 +27,9 @@ The keyword argument `method::Symbol` can be either:
 
 Note that the constructor is type-unstable because `method` ends up being a type parameter of the `DenseSparsityDetector` object (this is not part of the API and might change).
 
-# Example
+# Examples
 
-```jldoctest
+```jldoctest detector
 using ADTypes, DifferentiationInterface, SparseArrays
 import ForwardDiff
 
@@ -41,6 +44,26 @@ ADTypes.jacobian_sparsity(diff, rand(5), detector)
  ⋅  1  1  ⋅  ⋅
  ⋅  ⋅  1  1  ⋅
  ⋅  ⋅  ⋅  1  1
+```
+
+Sometimes the sparsity pattern is input-dependent:
+
+```jldoctest detector
+ADTypes.jacobian_sparsity(x -> [prod(x)], rand(2), detector)
+
+# output
+
+1×2 SparseMatrixCSC{Bool, Int64} with 2 stored entries:
+ 1  1
+```
+
+```jldoctest detector
+ADTypes.jacobian_sparsity(x -> [prod(x)], [0, 1], detector)
+
+# output
+
+1×2 SparseMatrixCSC{Bool, Int64} with 1 stored entry:
+ 1  ⋅
 ```
 """
 struct DenseSparsityDetector{method,B} <: ADTypes.AbstractSparsityDetector
