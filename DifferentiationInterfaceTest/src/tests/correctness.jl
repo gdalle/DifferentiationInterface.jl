@@ -3,7 +3,7 @@
 function test_scen_intact(new_scen, scen)
     @testset "Scenario intact" begin
         for n in fieldnames(typeof(scen))
-            n in (:f, :ref) && continue
+            n in (:f, :ref, :first_order_ref) && continue
             @test getfield(new_scen, n) == getfield(scen, n)
         end
     end
