@@ -49,19 +49,15 @@ abstract type HessianExtras <: Extras end
 
 struct NoHessianExtras <: HessianExtras end
 
-struct HVPGradientHessianExtras{E1<:HVPExtras,E2<:GradientExtras} <: HessianExtras
+struct HVPGradientHessianExtras{E2<:HVPExtras,E1<:GradientExtras} <: HessianExtras
     hvp_extras::E1
     gradient_extras::E2
 end
 
 function prepare_hessian(f::F, backend::AbstractADType, x) where {F}
-    return prepare_hessian(f, SecondOrder(backend, backend), x)
-end
-
-function prepare_hessian(f::F, backend::SecondOrder, x) where {F}
     v = basis(backend, x, first(CartesianIndices(x)))
     hvp_extras = prepare_hvp(f, backend, x, v)
-    gradient_extras = prepare_gradient(f, inner(backend), x)
+    gradient_extras = prepare_gradient(f, maybe_inner(backend), x)
     return HVPGradientHessianExtras(hvp_extras, gradient_extras)
 end
 
@@ -69,12 +65,6 @@ end
 
 function hessian(
     f::F, backend::AbstractADType, x, extras::HessianExtras=prepare_hessian(f, backend, x)
-) where {F}
-    return hessian(f, SecondOrder(backend, backend), x, extras)
-end
-
-function hessian(
-    f::F, backend::SecondOrder, x, extras::HessianExtras=prepare_hessian(f, backend, x)
 ) where {F}
     hvp_extras_same = prepare_hvp_same_point(
         f, backend, x, basis(backend, x, first(CartesianIndices(x))), extras.hvp_extras
@@ -93,16 +83,6 @@ function hessian!(
     x,
     extras::HessianExtras=prepare_hessian(f, backend, x),
 ) where {F}
-    return hessian!(f, hess, SecondOrder(backend, backend), x, extras)
-end
-
-function hessian!(
-    f::F,
-    hess,
-    backend::SecondOrder,
-    x,
-    extras::HessianExtras=prepare_hessian(f, backend, x),
-) where {F}
     hvp_extras_same = prepare_hvp_same_point(
         f, backend, x, basis(backend, x, first(CartesianIndices(x))), extras.hvp_extras
     )
@@ -116,13 +96,7 @@ end
 function value_gradient_and_hessian(
     f::F, backend::AbstractADType, x, extras::HessianExtras=prepare_hessian(f, backend, x)
 ) where {F}
-    return value_gradient_and_hessian(f, SecondOrder(backend, backend), x, extras)
-end
-
-function value_gradient_and_hessian(
-    f::F, backend::SecondOrder, x, extras::HessianExtras=prepare_hessian(f, backend, x)
-) where {F}
-    y, grad = value_and_gradient(f, inner(backend), x, extras.gradient_extras)
+    y, grad = value_and_gradient(f, maybe_inner(backend), x, extras.gradient_extras)
     hess = hessian(f, backend, x, extras)
     return y, grad, hess
 end
@@ -135,20 +109,7 @@ function value_gradient_and_hessian!(
     x,
     extras::HessianExtras=prepare_hessian(f, backend, x),
 ) where {F}
-    return value_gradient_and_hessian!(
-        f, grad, hess, SecondOrder(backend, backend), x, extras
-    )
-end
-
-function value_gradient_and_hessian!(
-    f::F,
-    grad,
-    hess,
-    backend::SecondOrder,
-    x,
-    extras::HessianExtras=prepare_hessian(f, backend, x),
-) where {F}
-    y, _ = value_and_gradient!(f, grad, inner(backend), x, extras.gradient_extras)
+    y, _ = value_and_gradient!(f, grad, maybe_inner(backend), x, extras.gradient_extras)
     hessian!(f, hess, backend, extras)
     return y, grad, hess
 end
