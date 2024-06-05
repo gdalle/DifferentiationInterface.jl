@@ -10,6 +10,7 @@ using DifferentiationInterface:
     NoPullbackExtras,
     PullbackExtras
 using DocStringExtensions
+using ForwardDiff: ForwardDiff
 using Zygote:
     ZygoteRuleConfig, gradient, hessian, jacobian, pullback, withgradient, withjacobian
 using Compat
@@ -93,9 +94,9 @@ function DI.jacobian!(f, jac, backend::AutoZygote, x, extras::NoJacobianExtras)
     return copyto!(jac, DI.jacobian(f, backend, x, extras))
 end
 
-## HVP (with ForwardDiff)
+## HVP
 
-# TODO: find a way to do this without cheating?
+# Beware, this uses ForwardDiff for the inner differentiation
 
 struct ZygoteHVPExtras{G,PE} <: HVPExtras
     ∇f::G

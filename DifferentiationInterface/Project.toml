@@ -41,7 +41,7 @@ DifferentiationInterfaceReverseDiffExt = "ReverseDiff"
 DifferentiationInterfaceSymbolicsExt = "Symbolics"
 DifferentiationInterfaceTapirExt = "Tapir"
 DifferentiationInterfaceTrackerExt = "Tracker"
-DifferentiationInterfaceZygoteExt = "Zygote"
+DifferentiationInterfaceZygoteExt = ["Zygote", "ForwardDiff"]
 
 [compat]
 ADTypes = "1.2.0"
