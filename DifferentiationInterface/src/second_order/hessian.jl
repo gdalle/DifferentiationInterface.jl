@@ -50,8 +50,8 @@ abstract type HessianExtras <: Extras end
 struct NoHessianExtras <: HessianExtras end
 
 struct HVPGradientHessianExtras{E2<:HVPExtras,E1<:GradientExtras} <: HessianExtras
-    hvp_extras::E1
-    gradient_extras::E2
+    hvp_extras::E2
+    gradient_extras::E1
 end
 
 function prepare_hessian(f::F, backend::AbstractADType, x) where {F}
