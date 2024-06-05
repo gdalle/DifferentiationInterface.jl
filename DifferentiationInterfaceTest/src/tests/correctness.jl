@@ -972,6 +972,13 @@ function test_correctness(
 )
     @compat (; f, x, y) = new_scen = deepcopy(scen)
     extras = prepare_hessian(f, ba, mycopy_random(x))
+    grad_true = if ref_backend isa SecondOrder
+        gradient(f, inner(ref_backend), x)
+    elseif ref_backend isa AbstractADType
+        gradient(f, ref_backend, x)
+    else
+        new_scen.ref(x)
+    end
     hess_true = if ref_backend isa AbstractADType
         hessian(f, ref_backend, x)
     else
@@ -979,13 +986,21 @@ function test_correctness(
     end
 
     hess1 = hessian(f, ba, x, extras)
+    y2, grad2, hess2 = value_gradient_and_hessian(f, ba, x, extras)
 
     let (≈)(x, y) = isapprox(x, y; atol, rtol)
         @testset "Extras type" begin
             @test extras isa HessianExtras
         end
+        @testset "Primal value" begin
+            @test y2 ≈ y_true
+        end
+        @testset "Gradient value" begin
+            @test grad2 ≈ grad_true
+        end
         @testset "Hessian value" begin
             @test hess1 ≈ hess_true
+            @test hess2 ≈ hess_true
         end
     end
     test_scen_intact(new_scen, scen)
@@ -1002,6 +1017,13 @@ function test_correctness(
 )
     @compat (; f, x, y) = new_scen = deepcopy(scen)
     extras = prepare_hessian(f, ba, mycopy_random(x))
+    grad_true = if ref_backend isa SecondOrder
+        gradient(f, inner(ref_backend), x)
+    elseif ref_backend isa AbstractADType
+        gradient(f, ref_backend, x)
+    else
+        new_scen.ref(x)
+    end
     hess_true = if ref_backend isa AbstractADType
         hessian(f, ref_backend, x)
     else
@@ -1010,14 +1032,25 @@ function test_correctness(
 
     hess1_in = mysimilar(hess_true)
     hess1 = hessian!(f, hess1_in, ba, x, extras)
+    grad2_in, hess2_in = mysimilar(grad_true), mysimilar(hess_true)
+    y2, grad2, hess2 = value_gradient_and_hessian!(f, grad2_in, hess2_in, ba, x, extras)
 
     let (≈)(x, y) = isapprox(x, y; atol, rtol)
         @testset "Extras type" begin
             @test extras isa HessianExtras
         end
+        @testset "Primal value" begin
+            @test y2 ≈ y_true
+        end
+        @testset "Gradient value" begin
+            @test grad2_in ≈ grad_true
+            @test grad2 ≈ grad_true
+        end
         @testset "Hessian value" begin
             @test hess1_in ≈ hess_true
+            @test hess2_in ≈ hess_true
             @test hess1 ≈ hess_true
+            @test hess2 ≈ hess_true
         end
     end
     test_scen_intact(new_scen, scen)

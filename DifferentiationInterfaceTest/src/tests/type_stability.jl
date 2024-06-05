@@ -283,14 +283,19 @@ function test_jet(ba::AbstractADType, scen::HessianScenario{1,:outofplace}; ref_
     extras = prepare_hessian(f, ba, x)
 
     JET.@test_opt function_filter = filt hessian(f, ba, x, extras)
+    JET.@test_opt function_filter = filt value_gradient_and_hessian(f, ba, x, extras)
     return nothing
 end
 
 function test_jet(ba::AbstractADType, scen::HessianScenario{1,:inplace}; ref_backend)
     @compat (; f, x, y) = deepcopy(scen)
     extras = prepare_hessian(f, ba, x)
+    grad_in = mysimilar(x)
     hess_in = Matrix{typeof(y)}(undef, length(x), length(x))
 
     JET.@test_opt function_filter = filt hessian!(f, hess_in, ba, x, extras)
+    JET.@test_opt function_filter = filt value_gradient_and_hessian!(
+        f, grad_in, hess_in, ba, x, extras
+    )
     return nothing
 end

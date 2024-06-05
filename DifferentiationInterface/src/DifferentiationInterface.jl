@@ -99,6 +99,7 @@ export second_derivative!, second_derivative
 export value_derivative_and_second_derivative, value_derivative_and_second_derivative!
 export hvp!, hvp
 export hessian!, hessian
+export value_gradient_and_hessian, value_gradient_and_hessian!
 
 export prepare_pushforward, prepare_pushforward_same_point
 export prepare_pullback, prepare_pullback_same_point

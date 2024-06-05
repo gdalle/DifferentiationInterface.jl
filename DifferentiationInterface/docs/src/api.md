@@ -93,6 +93,8 @@ hvp!
 prepare_hessian
 hessian
 hessian!
+value_gradient_and_hessian
+value_gradient_and_hessian!
 ```
 
 ## Utilities
