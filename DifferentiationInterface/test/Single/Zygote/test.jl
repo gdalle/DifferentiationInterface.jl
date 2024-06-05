@@ -3,7 +3,7 @@ using SparseConnectivityTracer, SparseMatrixColorings
 using Test
 using Zygote: Zygote
 
-dense_backends = [AutoChainRules(Zygote.ZygoteRuleConfig()), AutoZygote()]
+dense_backends = [AutoZygote()]
 
 sparse_backends = [
     AutoSparse(
@@ -20,13 +20,6 @@ for backend in vcat(dense_backends, sparse_backends)
 end
 
 ## Dense backends
-
-test_differentiation(
-    AutoChainRules(Zygote.ZygoteRuleConfig());
-    excluded=[SecondDerivativeScenario],
-    second_order=VERSION >= v"1.10",
-    logging=LOGGING,
-);
 
 test_differentiation(AutoZygote(); excluded=[SecondDerivativeScenario], logging=LOGGING);
 

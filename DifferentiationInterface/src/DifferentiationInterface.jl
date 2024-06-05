@@ -135,6 +135,7 @@ export GreedyColoringAlgorithm
 
 ## Public but not exported
 
-@compat public inner, outer
+@compat public inner
+@compat public outer
 
 end # module
