@@ -110,6 +110,6 @@ function value_gradient_and_hessian!(
     extras::HessianExtras=prepare_hessian(f, backend, x),
 ) where {F}
     y, _ = value_and_gradient!(f, grad, maybe_inner(backend), x, extras.gradient_extras)
-    hessian!(f, hess, backend, extras)
+    hessian!(f, hess, backend, x, extras)
     return y, grad, hess
 end
