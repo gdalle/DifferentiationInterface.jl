@@ -19,7 +19,7 @@ function DI.value_and_pushforward(
     if backend isa AutoDeferredEnzyme
         autodiff_deferred(forward_mode(backend), f!, Const, y_and_dy, x_and_dx)
     else
-        autodiff(forward_mode(backend), Const(f!), Const, y_and_dy, x_and_dx)
+        autodiff(forward_mode(backend), f!, Const, y_and_dy, x_and_dx)
     end
     return y, dy_sametype
 end

@@ -17,7 +17,7 @@ function DI.value_and_pullback(
     _, new_dx = if backend isa AutoDeferredEnzyme
         only(autodiff_deferred(reverse_mode(backend), f!, Const, y_and_dy, Active(x)))
     else
-        only(autodiff(reverse_mode(backend), Const(f!), Const, y_and_dy, Active(x)))
+        only(autodiff(reverse_mode(backend), f!, Const, y_and_dy, Active(x)))
     end
     return y, new_dx
 end
@@ -37,7 +37,7 @@ function DI.value_and_pullback(
     if backend isa AutoDeferredEnzyme
         autodiff_deferred(reverse_mode(backend), f!, Const, y_and_dy, x_and_dx)
     else
-        autodiff(reverse_mode(backend), Const(f!), Const, y_and_dy, x_and_dx)
+        autodiff(reverse_mode(backend), f!, Const, y_and_dy, x_and_dx)
     end
     return y, dx_sametype
 end

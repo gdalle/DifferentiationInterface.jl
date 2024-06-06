@@ -16,7 +16,7 @@ function DI.value_and_pullback(
     der, y = if backend isa AutoDeferredEnzyme
         autodiff_deferred(ReverseWithPrimal, f, Active, Active(x))
     else
-        autodiff(ReverseWithPrimal, Const(f), Active, Active(x))
+        autodiff(ReverseWithPrimal, f, Active, Active(x))
     end
     new_dx = dy * only(der)
     return y, new_dx
@@ -31,9 +31,9 @@ function DI.value_and_pullback(
 )
     tf, tx = typeof(f), typeof(x)
     forw, rev = autodiff_thunk(ReverseSplitWithPrimal, Const{tf}, Duplicated, Active{tx})
-    tape, y, new_dy = forw(Const(f), Active(x))
+    tape, y, new_dy = forw(f, Active(x))
     copyto!(new_dy, dy)
-    new_dx = only(only(rev(Const(f), Active(x), tape)))
+    new_dx = only(only(rev(f, Active(x), tape)))
     return y, new_dx
 end
 
@@ -68,9 +68,9 @@ function DI.value_and_pullback!(
     dx_sametype .= zero(eltype(x))
     x_and_dx = Duplicated(x, dx_sametype)
     _, y = if backend isa AutoDeferredEnzyme
-        autodiff_deferred(ReverseWithPrimal, Const(f), Active, x_and_dx)
+        autodiff_deferred(ReverseWithPrimal, f, Active, x_and_dx)
     else
-        autodiff(ReverseWithPrimal, Const(f), Active, x_and_dx)
+        autodiff(ReverseWithPrimal, f, Active, x_and_dx)
     end
     dx_sametype .*= dy
     return y, copyto!(dx, dx_sametype)
@@ -90,9 +90,9 @@ function DI.value_and_pullback!(
     )
     dx_sametype = convert(typeof(x), dx)
     dx_sametype .= zero(eltype(x))
-    tape, y, new_dy = forw(Const(f), Duplicated(x, dx_sametype))
+    tape, y, new_dy = forw(f, Duplicated(x, dx_sametype))
     copyto!(new_dy, dy)
-    rev(Const(f), Duplicated(x, dx_sametype), tape)
+    rev(f, Duplicated(x, dx_sametype), tape)
     return y, copyto!(dx, dx_sametype)
 end
 
