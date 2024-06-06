@@ -197,8 +197,8 @@ function DI.value_derivative_and_second_derivative(
     xdual = make_dual(T, x, one(x))
     T2 = tag_type(f, backend, xdual)
     ydual = f(make_dual(T2, xdual, one(xdual)))
-    v = myvalue(T, value(T2, ydual))
-    d = myderivative(T, value(T2, ydual))
+    v = myvalue(T, myvalue(T2, ydual))
+    d = myderivative(T, myvalue(T2, ydual))
     d2 = myderivative(T, myderivative(T2, ydual))
     return v, d, d2
 end
