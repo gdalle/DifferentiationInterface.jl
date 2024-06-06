@@ -436,7 +436,7 @@ function DI.prepare_hessian(
     hess_exe = make_function(hess_var, x_vec_var; in_place=false)
     hess_exe! = make_function(hess_var, x_vec_var; in_place=true)
 
-    gradient_extras = DI.prepare_gradient(f, dense_ad(backend), x)
+    gradient_extras = DI.prepare_gradient(f, maybe_dense_ad(backend), x)
     return FastDifferentiationHessianExtras(gradient_extras, hess_exe, hess_exe!)
 end
 
@@ -466,7 +466,7 @@ function DI.value_gradient_and_hessian(
     x,
     extras::FastDifferentiationHessianExtras,
 )
-    y, grad = DI.value_and_gradient(f, dense_ad(backend), x, extras.gradient_extras)
+    y, grad = DI.value_and_gradient(f, maybe_dense_ad(backend), x, extras.gradient_extras)
     hess = DI.hessian(f, backend, x, extras)
     return y, grad, hess
 end
@@ -479,7 +479,9 @@ function DI.value_gradient_and_hessian!(
     x,
     extras::FastDifferentiationHessianExtras,
 )
-    y, _ = DI.value_and_gradient!(f, grad, dense_ad(backend), x, extras.gradient_extras)
+    y, _ = DI.value_and_gradient!(
+        f, grad, maybe_dense_ad(backend), x, extras.gradient_extras
+    )
     DI.hessian!(f, hess, backend, x, extras)
     return y, grad, hess
 end

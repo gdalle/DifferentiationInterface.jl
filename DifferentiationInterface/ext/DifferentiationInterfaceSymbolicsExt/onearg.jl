@@ -215,7 +215,7 @@ function DI.prepare_hessian(f, backend::Union{AutoSymbolics,AutoSparse{<:AutoSym
     res = build_function(hess_var, vec(x_var); expression=Val(false))
     (hess_exe, hess_exe!) = res
 
-    gradient_extras = DI.prepare_gradient(f, dense_ad(backend), x)
+    gradient_extras = DI.prepare_gradient(f, maybe_dense_ad(backend), x)
     return SymbolicsOneArgHessianExtras(gradient_extras, hess_exe, hess_exe!)
 end
 
@@ -245,7 +245,7 @@ function DI.value_gradient_and_hessian(
     x,
     extras::SymbolicsOneArgHessianExtras,
 )
-    y, grad = DI.value_and_gradient(f, dense_ad(backend), x, extras.gradient_extras)
+    y, grad = DI.value_and_gradient(f, maybe_dense_ad(backend), x, extras.gradient_extras)
     hess = DI.hessian(f, backend, x, extras)
     return y, grad, hess
 end
@@ -258,7 +258,9 @@ function DI.value_gradient_and_hessian!(
     x,
     extras::SymbolicsOneArgHessianExtras,
 )
-    y, _ = DI.value_and_gradient!(f, grad, dense_ad(backend), x, extras.gradient_extras)
+    y, _ = DI.value_and_gradient!(
+        f, grad, maybe_dense_ad(backend), x, extras.gradient_extras
+    )
     DI.hessian!(f, hess, backend, x, extras)
     return y, grad, hess
 end

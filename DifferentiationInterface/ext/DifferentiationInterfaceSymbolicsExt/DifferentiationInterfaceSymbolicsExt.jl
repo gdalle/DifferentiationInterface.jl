@@ -1,6 +1,6 @@
 module DifferentiationInterfaceSymbolicsExt
 
-using ADTypes: ADTypes, AutoSymbolics, AutoSparse, dense_ad
+using ADTypes: ADTypes, AutoSymbolics, AutoSparse
 import DifferentiationInterface as DI
 using DifferentiationInterface:
     DerivativeExtras,
@@ -10,7 +10,8 @@ using DifferentiationInterface:
     JacobianExtras,
     PullbackExtras,
     PushforwardExtras,
-    SecondDerivativeExtras
+    SecondDerivativeExtras,
+    maybe_dense_ad
 using FillArrays: Fill
 using LinearAlgebra: dot
 using Symbolics:

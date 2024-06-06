@@ -172,7 +172,7 @@ function DI.value_gradient_and_hessian!(
     x::AbstractArray,
     extras::ReverseDiffHessianExtras,
 )
-    result = MutableDiffResult(y, (grad, hess))
+    result = MutableDiffResult(one(eltype(x)), (grad, hess))
     result = hessian!(result, extras.tape, x)
     return (
         DiffResults.value(result), DiffResults.gradient(result), DiffResults.hessian(result)
@@ -182,7 +182,9 @@ end
 function DI.value_gradient_and_hessian(
     _f, ::AutoReverseDiff, x::AbstractArray, extras::ReverseDiffHessianExtras
 )
-    result = MutableDiffResult(y, (similar(x), similar(x, length(x), length(x))))
+    result = MutableDiffResult(
+        one(eltype(x)), (similar(x), similar(x, length(x), length(x)))
+    )
     result = hessian!(result, extras.tape, x)
     return (
         DiffResults.value(result), DiffResults.gradient(result), DiffResults.hessian(result)
