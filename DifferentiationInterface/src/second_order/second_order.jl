@@ -54,8 +54,3 @@ Return a possibly modified `backend` that can work while nested inside another d
 At the moment, this is only useful for Enzyme, which needs `autodiff_deferred` to be compatible with higher-order differentiation.
 """
 nested(backend::AbstractADType) = backend
-
-maybe_inner(backend::SecondOrder) = inner(backend)
-maybe_outer(backend::SecondOrder) = outer(backend)
-maybe_inner(backend::AbstractADType) = backend
-maybe_outer(backend::AbstractADType) = backend

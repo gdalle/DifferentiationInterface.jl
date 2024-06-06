@@ -24,6 +24,8 @@ using DifferentiationInterface
 using DifferentiationInterface:
     backend_str,
     inner,
+    maybe_inner,
+    maybe_dense_ad,
     mode,
     outer,
     twoarg_support,

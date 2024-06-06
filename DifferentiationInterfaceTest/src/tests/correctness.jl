@@ -794,10 +794,8 @@ function test_correctness(
 )
     @compat (; f, x, y) = new_scen = deepcopy(scen)
     extras = prepare_second_derivative(f, ba, mycopy_random(x))
-    der1_true = if ref_backend isa SecondOrder
-        derivative(f, inner(ref_backend), x)
-    elseif ref_backend isa AbstractADType
-        derivative(f, ref_backend, x)
+    der1_true = if ref_backend isa AbstractADType
+        derivative(f, maybe_inner(ref_backend), x)
     else
         new_scen.first_order_ref(x)
     end
@@ -839,10 +837,8 @@ function test_correctness(
 )
     @compat (; f, x, y) = new_scen = deepcopy(scen)
     extras = prepare_second_derivative(f, ba, mycopy_random(x))
-    der1_true = if ref_backend isa SecondOrder
-        derivative(f, inner(ref_backend), x)
-    elseif ref_backend isa AbstractADType
-        derivative(f, ref_backend, x)
+    der1_true = if ref_backend isa AbstractADType
+        derivative(f, maybe_inner(ref_backend), x)
     else
         new_scen.first_order_ref(x)
     end
@@ -972,10 +968,8 @@ function test_correctness(
 )
     @compat (; f, x, y) = new_scen = deepcopy(scen)
     extras = prepare_hessian(f, ba, mycopy_random(x))
-    grad_true = if ref_backend isa SecondOrder
-        gradient(f, inner(ref_backend), x)
-    elseif ref_backend isa AbstractADType
-        gradient(f, ref_backend, x)
+    grad_true = if ref_backend isa AbstractADType
+        gradient(f, maybe_dense_ad(maybe_inner(ref_backend)), x)
     else
         new_scen.ref(x)
     end
@@ -1017,10 +1011,8 @@ function test_correctness(
 )
     @compat (; f, x, y) = new_scen = deepcopy(scen)
     extras = prepare_hessian(f, ba, mycopy_random(x))
-    grad_true = if ref_backend isa SecondOrder
-        gradient(f, inner(ref_backend), x)
-    elseif ref_backend isa AbstractADType
-        gradient(f, ref_backend, x)
+    grad_true = if ref_backend isa AbstractADType
+        gradient(f, maybe_dense_ad(maybe_inner(ref_backend)), x)
     else
         new_scen.ref(x)
     end

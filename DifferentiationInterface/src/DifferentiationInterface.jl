@@ -54,6 +54,7 @@ include("utils/printing.jl")
 include("utils/chunk.jl")
 include("utils/check.jl")
 include("utils/exceptions.jl")
+include("utils/maybe.jl")
 
 include("first_order/pushforward.jl")
 include("first_order/pullback.jl")
