@@ -166,7 +166,7 @@ end
 
 function DI.value_gradient_and_hessian!(
     _f,
-    grad::AbstractVector,
+    grad,
     hess::AbstractMatrix,
     ::AutoReverseDiff,
     x::AbstractArray,

@@ -78,6 +78,6 @@ function value_gradient_and_hessian(
     y, grad = value_and_gradient(
         f, maybe_inner(dense_ad(backend)), x, extras.gradient_extras
     )
-    hess = hessian(f, hess, backend, x, extras)
+    hess = hessian(f, backend, x, extras)
     return y, grad, hess
 end

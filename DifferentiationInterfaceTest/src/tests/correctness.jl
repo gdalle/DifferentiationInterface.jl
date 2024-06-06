@@ -1040,7 +1040,7 @@ function test_correctness(
             @test extras isa HessianExtras
         end
         @testset "Primal value" begin
-            @test y2 ≈ y_true
+            @test y2 ≈ y
         end
         @testset "Gradient value" begin
             @test grad2_in ≈ grad_true

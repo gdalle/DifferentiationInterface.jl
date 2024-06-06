@@ -1,6 +1,6 @@
 module DifferentiationInterfaceSymbolicsExt
 
-using ADTypes: ADTypes, AutoSymbolics, AutoSparse
+using ADTypes: ADTypes, AutoSymbolics, AutoSparse, dense_ad
 import DifferentiationInterface as DI
 using DifferentiationInterface:
     DerivativeExtras,
