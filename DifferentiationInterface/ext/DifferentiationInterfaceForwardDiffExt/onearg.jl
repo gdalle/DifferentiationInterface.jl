@@ -184,19 +184,21 @@ function DI.value_gradient_and_hessian(
     )
 end
 
-function DI.value_and_derivative(f::F, ::AutoForwardDiff, x) where {F}
-    T = typeof(Tag(f, typeof(x)))
-    ydual = f(Dual{T}(x, one(x)))
-    return value(T, ydual), extract_derivative(T, ydual)
+function DI.value_and_derivative(f::F, backend::AutoForwardDiff, x) where {F}
+    T = tag_type(f, backend, x)
+    ydual = f(make_dual(T, x, one(x)))
+    return myvalue(T, ydual), myderivative(T, ydual)
 end
 
-function DI.value_derivative_and_second_derivative(f::F, ::AutoForwardDiff, x) where {F}
-    T = typeof(Tag(f, typeof(x)))
-    xdual = Dual{T}(x, one(x))
-    T2 = typeof(Tag(f, typeof(xdual)))
-    ydual = f(Dual{T2}(xdual, one(xdual)))
-    v = value(T, value(T2, ydual))
-    d = extract_derivative(T, value(T2, ydual))
-    d2 = extract_derivative(T, extract_derivative(T2, ydual))
+function DI.value_derivative_and_second_derivative(
+    f::F, backend::AutoForwardDiff, x
+) where {F}
+    T = tag_type(f, backend, x)
+    xdual = make_dual(T, x, one(x))
+    T2 = tag_type(f, backend, xdual)
+    ydual = f(make_dual(T2, xdual, one(xdual)))
+    v = myvalue(T, value(T2, ydual))
+    d = myderivative(T, value(T2, ydual))
+    d2 = myderivative(T, myderivative(T2, ydual))
     return v, d, d2
 end
