@@ -10,7 +10,8 @@ using DifferentiationInterface:
     JacobianExtras,
     PullbackExtras,
     PushforwardExtras,
-    SecondDerivativeExtras
+    SecondDerivativeExtras,
+    maybe_dense_ad
 using FastDifferentiation:
     derivative,
     hessian,

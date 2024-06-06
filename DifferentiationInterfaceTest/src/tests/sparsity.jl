@@ -99,9 +99,11 @@ function test_sparsity(
     end
 
     hess1 = hessian(f, ba, x, extras)
+    _, _, hess2 = value_gradient_and_hessian(f, ba, x, extras)
 
     @testset "Sparsity pattern" begin
         @test mynnz(hess1) == mynnz(hess_true)
+        @test mynnz(hess2) == mynnz(hess_true)
     end
     return nothing
 end
@@ -116,9 +118,13 @@ function test_sparsity(ba::AbstractADType, scen::HessianScenario{1,:inplace}; re
     end
 
     hess1 = hessian!(f, mysimilar(hess_true), ba, x, extras)
+    _, _, hess2 = value_gradient_and_hessian!(
+        f, mysimilar(x), mysimilar(hess_true), ba, x, extras
+    )
 
     @testset "Sparsity pattern" begin
         @test mynnz(hess1) == mynnz(hess_true)
+        @test mynnz(hess2) == mynnz(hess_true)
     end
     return nothing
 end

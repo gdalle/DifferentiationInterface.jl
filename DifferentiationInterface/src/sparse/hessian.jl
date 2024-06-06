@@ -4,14 +4,16 @@ Base.@kwdef struct SparseHessianExtras{
     K<:AbstractVector{<:Integer},
     D<:AbstractVector,
     P<:AbstractVector,
-    E<:Extras,
+    E2<:HVPExtras,
+    E1<:GradientExtras,
 } <: HessianExtras
     sparsity::S
     compressed::C
     colors::K
     seeds::D
     products::P
-    hvp_extras::E
+    hvp_extras::E2
+    gradient_extras::E1
 end
 
 ## Hessian, one argument
@@ -32,7 +34,10 @@ function prepare_hessian(f::F, backend::AutoSparse, x) where {F}
         similar(x)
     end
     compressed = stack(vec, products; dims=2)
-    return SparseHessianExtras(; sparsity, compressed, colors, seeds, products, hvp_extras)
+    gradient_extras = prepare_gradient(f, maybe_inner(dense_backend), x)
+    return SparseHessianExtras(;
+        sparsity, compressed, colors, seeds, products, hvp_extras, gradient_extras
+    )
 end
 
 function hessian!(f::F, hess, backend::AutoSparse, x, extras::SparseHessianExtras) where {F}
@@ -55,4 +60,24 @@ function hessian(f::F, backend::AutoSparse, x, extras::SparseHessianExtras) wher
         vec(hvp(f, dense_backend, x, seeds[k], hvp_extras_same))
     end
     return decompress_symmetric(sparsity, compressed, colors)
+end
+
+function value_gradient_and_hessian!(
+    f::F, grad, hess, backend::AutoSparse, x, extras::SparseHessianExtras
+) where {F}
+    y, _ = value_and_gradient!(
+        f, grad, maybe_inner(dense_ad(backend)), x, extras.gradient_extras
+    )
+    hessian!(f, hess, backend, x, extras)
+    return y, grad, hess
+end
+
+function value_gradient_and_hessian(
+    f::F, backend::AutoSparse, x, extras::SparseHessianExtras
+) where {F}
+    y, grad = value_and_gradient(
+        f, maybe_inner(dense_ad(backend)), x, extras.gradient_extras
+    )
+    hess = hessian(f, backend, x, extras)
+    return y, grad, hess
 end

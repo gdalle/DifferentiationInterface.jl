@@ -42,9 +42,9 @@ function DI.value_and_derivative(
 end
 
 function DI.value_and_derivative!(
-    f, dy, backend::AutoPolyesterForwardDiff, x, extras::DerivativeExtras
+    f, der, backend::AutoPolyesterForwardDiff, x, extras::DerivativeExtras
 )
-    return DI.value_and_derivative!(f, dy, single_threaded(backend), x, extras)
+    return DI.value_and_derivative!(f, der, single_threaded(backend), x, extras)
 end
 
 function DI.derivative(f, backend::AutoPolyesterForwardDiff, x, extras::DerivativeExtras)
@@ -52,9 +52,9 @@ function DI.derivative(f, backend::AutoPolyesterForwardDiff, x, extras::Derivati
 end
 
 function DI.derivative!(
-    f, dy, backend::AutoPolyesterForwardDiff, x, extras::DerivativeExtras
+    f, der, backend::AutoPolyesterForwardDiff, x, extras::DerivativeExtras
 )
-    return DI.derivative!(f, dy, single_threaded(backend), x, extras)
+    return DI.derivative!(f, der, single_threaded(backend), x, extras)
 end
 
 ## Gradient
@@ -149,6 +149,20 @@ function DI.hessian(f, backend::AutoPolyesterForwardDiff, x, extras::HessianExtr
     return DI.hessian(f, single_threaded(backend), x, extras)
 end
 
-function DI.hessian!(f, dy, backend::AutoPolyesterForwardDiff, x, extras::HessianExtras)
-    return DI.hessian!(f, dy, single_threaded(backend), x, extras)
+function DI.hessian!(f, hess, backend::AutoPolyesterForwardDiff, x, extras::HessianExtras)
+    return DI.hessian!(f, hess, single_threaded(backend), x, extras)
+end
+
+function DI.value_gradient_and_hessian(
+    f, backend::AutoPolyesterForwardDiff, x, extras::HessianExtras
+)
+    return DI.value_gradient_and_hessian(f, single_threaded(backend), x, extras)
+end
+
+function DI.value_gradient_and_hessian!(
+    f, grad, hess, backend::AutoPolyesterForwardDiff, x, extras::HessianExtras
+)
+    return DI.value_gradient_and_hessian!(
+        f, grad, hess, single_threaded(backend), x, extras
+    )
 end

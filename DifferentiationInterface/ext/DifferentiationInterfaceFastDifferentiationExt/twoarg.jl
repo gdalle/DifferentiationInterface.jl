@@ -1,8 +1,8 @@
 ## Pushforward
 
-struct FastDifferentiationTwoArgPushforwardExtras{E1,E2} <: PushforwardExtras
+struct FastDifferentiationTwoArgPushforwardExtras{E1,E1!} <: PushforwardExtras
     jvp_exe::E1
-    jvp_exe!::E2
+    jvp_exe!::E1!
 end
 
 function DI.prepare_pushforward(f!, y, ::AutoFastDifferentiation, x, dx)
@@ -80,9 +80,9 @@ end
 
 ## Pullback
 
-struct FastDifferentiationTwoArgPullbackExtras{E1,E2} <: PullbackExtras
+struct FastDifferentiationTwoArgPullbackExtras{E1,E1!} <: PullbackExtras
     vjp_exe::E1
-    vjp_exe!::E2
+    vjp_exe!::E1!
 end
 
 function DI.prepare_pullback(f!, y, ::AutoFastDifferentiation, x, dy)
@@ -156,9 +156,9 @@ end
 
 ## Derivative
 
-struct FastDifferentiationTwoArgDerivativeExtras{E1,E2} <: DerivativeExtras
+struct FastDifferentiationTwoArgDerivativeExtras{E1,E1!} <: DerivativeExtras
     der_exe::E1
-    der_exe!::E2
+    der_exe!::E1!
 end
 
 function DI.prepare_derivative(f!, y, ::AutoFastDifferentiation, x)
@@ -216,9 +216,9 @@ end
 
 ## Jacobian
 
-struct FastDifferentiationTwoArgJacobianExtras{E1,E2} <: JacobianExtras
+struct FastDifferentiationTwoArgJacobianExtras{E1,E1!} <: JacobianExtras
     jac_exe::E1
-    jac_exe!::E2
+    jac_exe!::E1!
 end
 
 function DI.prepare_jacobian(

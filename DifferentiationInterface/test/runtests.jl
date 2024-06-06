@@ -33,7 +33,7 @@ ALL_BACKENDS = [
 @testset verbose = true "DifferentiationInterface.jl" begin
     if GROUP == "Formalities" || GROUP == "All"
         @testset "Formalities/$file" for file in readdir(joinpath(@__DIR__, "Formalities"))
-            @info "Testing Formalities/$file)"
+            @info "Testing Formalities/$file"
             include(joinpath(@__DIR__, "Formalities", file))
         end
     end

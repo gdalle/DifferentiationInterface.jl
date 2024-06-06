@@ -975,27 +975,31 @@ function run_benchmark!(
     logging::Bool,
 )
     @compat (; f, x, y) = deepcopy(scen)
-    @compat (; bench0, bench1, calls0, calls1) = try
+    @compat (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
         extras = prepare_hessian(f, ba, x)
         bench0 = @be prepare_hessian(f, ba, x) samples = 1 evals = 1
         bench1 = @be deepcopy(extras) hessian(f, ba, x, _)
+        bench2 = @be deepcopy(extras) value_gradient_and_hessian(f, ba, x, _)
         # count
         cc = CallCounter(f)
         extras = prepare_hessian(cc, ba, x)
         calls0 = reset_count!(cc)
         hessian(cc, ba, x, extras)
         calls1 = reset_count!(cc)
-        (; bench0, bench1, calls0, calls1)
+        value_gradient_and_hessian(cc, ba, x, extras)
+        calls2 = reset_count!(cc)
+        (; bench0, bench1, bench2, calls0, calls1, calls2)
     catch e
         logging && @warn "Error during benchmarking" ba scen e
-        bench0, bench1 = failed_benchs(2)
-        calls0, calls1 = -1, -1
-        (; bench0, bench1, calls0, calls1)
+        bench0, bench1, bench2 = failed_benchs(3)
+        calls0, calls1, calls2 = -1, -1, -1
+        (; bench0, bench1, bench2, calls0, calls1, calls2)
     end
     # record
     record!(data, ba, scen, :prepare_hessian, bench0, calls0)
     record!(data, ba, scen, :hessian, bench1, calls1)
+    record!(data, ba, scen, :value_gradient_and_hessian, bench2, calls2)
     return nothing
 end
 
@@ -1006,7 +1010,7 @@ function run_benchmark!(
     logging::Bool,
 )
     @compat (; f, x, y) = deepcopy(scen)
-    @compat (; bench0, bench1, calls0, calls1) = try
+    @compat (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         hess_template = Matrix{typeof(y)}(undef, length(x), length(x))
         # benchmark
         extras = prepare_hessian(f, ba, x)
@@ -1014,21 +1018,29 @@ function run_benchmark!(
         bench1 = @be (hess=mysimilar(hess_template), ext=deepcopy(extras)) hessian!(
             f, _.hess, ba, x, _.ext
         ) evals = 1
+        bench2 = @be (
+            grad=mysimilar(x), hess=mysimilar(hess_template), ext=deepcopy(extras)
+        ) value_gradient_and_hessian!(f, _.grad, _.hess, ba, x, _.ext) evals = 1
         # count
         cc = CallCounter(f)
         extras = prepare_hessian(cc, ba, x)
         calls0 = reset_count!(cc)
         hessian!(cc, mysimilar(hess_template), ba, x, extras)
         calls1 = reset_count!(cc)
-        (; bench0, bench1, calls0, calls1)
+        value_gradient_and_hessian!(
+            cc, mysimilar(x), mysimilar(hess_template), ba, x, extras
+        )
+        calls2 = reset_count!(cc)
+        (; bench0, bench1, bench2, calls0, calls1, calls2)
     catch e
         logging && @warn "Error during benchmarking" ba scen e
-        bench0, bench1 = failed_benchs(2)
-        calls0, calls1 = -1, -1
-        (; bench0, bench1, calls0, calls1)
+        bench0, bench1, bench2 = failed_benchs(3)
+        calls0, calls1, calls2 = -1, -1, -1
+        (; bench0, bench1, bench2, calls0, calls1, calls2)
     end
     # record
     record!(data, ba, scen, :prepare_hessian, bench0, calls0)
     record!(data, ba, scen, :hessian!, bench1, calls1)
+    record!(data, ba, scen, :value_gradient_and_hessian!, bench2, calls2)
     return nothing
 end
