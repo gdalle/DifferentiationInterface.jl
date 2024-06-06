@@ -50,7 +50,7 @@ Several variants of each operator are defined.
 | [`derivative`](@ref)        | [`derivative!`](@ref)        | [`value_and_derivative`](@ref)                   | [`value_and_derivative!`](@ref)                   |
 | [`second_derivative`](@ref) | [`second_derivative!`](@ref) | [`value_derivative_and_second_derivative`](@ref) | [`value_derivative_and_second_derivative!`](@ref) |
 | [`gradient`](@ref)          | [`gradient!`](@ref)          | [`value_and_gradient`](@ref)                     | [`value_and_gradient!`](@ref)                     |
-| [`hessian`](@ref)           | [`hessian!`](@ref)           | [`value_gradient_and_hessian`](@ref)             | [`value_gradient_and_hessian!`](@ref) NA          |
+| [`hessian`](@ref)           | [`hessian!`](@ref)           | [`value_gradient_and_hessian`](@ref)             | [`value_gradient_and_hessian!`](@ref)             |
 | [`jacobian`](@ref)          | [`jacobian!`](@ref)          | [`value_and_jacobian`](@ref)                     | [`value_and_jacobian!`](@ref)                     |
 | [`pushforward`](@ref)       | [`pushforward!`](@ref)       | [`value_and_pushforward`](@ref)                  | [`value_and_pushforward!`](@ref)                  |
 | [`pullback`](@ref)          | [`pullback!`](@ref)          | [`value_and_pullback`](@ref)                     | [`value_and_pullback!`](@ref)                     |
