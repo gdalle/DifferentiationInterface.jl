@@ -971,7 +971,7 @@ function test_correctness(
     grad_true = if ref_backend isa AbstractADType
         gradient(f, maybe_dense_ad(maybe_inner(ref_backend)), x)
     else
-        new_scen.ref(x)
+        new_scen.first_order_ref(x)
     end
     hess_true = if ref_backend isa AbstractADType
         hessian(f, ref_backend, x)
@@ -1014,7 +1014,7 @@ function test_correctness(
     grad_true = if ref_backend isa AbstractADType
         gradient(f, maybe_dense_ad(maybe_inner(ref_backend)), x)
     else
-        new_scen.ref(x)
+        new_scen.first_order_ref(x)
     end
     hess_true = if ref_backend isa AbstractADType
         hessian(f, ref_backend, x)
