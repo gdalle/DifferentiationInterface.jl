@@ -166,7 +166,7 @@ function DI.value_gradient_and_hessian!(
     f::F, grad, hess, ::AutoForwardDiff, x, extras::ForwardDiffHessianExtras
 ) where {F}
     result = MutableDiffResult(one(eltype(x)), (grad, hess))
-    result = hessian!(result, f, x, extras.config)
+    result = hessian!(result, f, x, extras.result_config)
     return (
         DiffResults.value(result), DiffResults.gradient(result), DiffResults.hessian(result)
     )
@@ -178,7 +178,7 @@ function DI.value_gradient_and_hessian(
     result = MutableDiffResult(
         one(eltype(x)), (similar(x), similar(x, length(x), length(x)))
     )
-    result = hessian!(result, f, x, extras.config)
+    result = hessian!(result, f, x, extras.result_config)
     return (
         DiffResults.value(result), DiffResults.gradient(result), DiffResults.hessian(result)
     )
