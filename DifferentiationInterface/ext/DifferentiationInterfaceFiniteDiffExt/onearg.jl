@@ -153,21 +153,39 @@ end
 
 ## Hessian
 
-struct FiniteDiffHessianExtras{C} <: HessianExtras
-    cache::C
+struct FiniteDiffHessianExtras{C1,C2} <: HessianExtras
+    gradient_cache::C1
+    hessian_cache::C2
 end
 
 function DI.prepare_hessian(f, backend::AutoFiniteDiff, x)
-    cache = HessianCache(x, fdhtype(backend))
-    return FiniteDiffHessianExtras(cache)
+    y = f(x)
+    df = zero(y) .* x
+    gradient_cache = GradientCache(df, x, fdtype(backend))
+    hessian_cache = HessianCache(x, fdhtype(backend))
+    return FiniteDiffHessianExtras(gradient_cache, hessian_cache)
 end
 
-# cache cannot be reused because of https://github.com/JuliaDiff/FiniteDiff.jl/issues/185
-
 function DI.hessian(f, backend::AutoFiniteDiff, x, extras::FiniteDiffHessianExtras)
-    return finite_difference_hessian(f, x, extras.cache)
+    return finite_difference_hessian(f, x, extras.hessian_cache)
 end
 
 function DI.hessian!(f, hess, backend::AutoFiniteDiff, x, extras::FiniteDiffHessianExtras)
-    return finite_difference_hessian!(hess, f, x, extras.cache)
+    return finite_difference_hessian!(hess, f, x, extras.hessian_cache)
+end
+
+function DI.value_gradient_and_hessian(
+    f, backend::AutoFiniteDiff, x, extras::FiniteDiffHessianExtras
+)
+    grad = finite_difference_gradient(f, x, extras.gradient_cache)
+    hess = finite_difference_hessian(f, x, extras.hessian_cache)
+    return f(x), grad, hess
+end
+
+function DI.value_gradient_and_hessian!(
+    f, grad, hess, backend::AutoFiniteDiff, x, extras::FiniteDiffHessianExtras
+)
+    finite_difference_gradient!(grad, f, x, extras.gradient_cache)
+    finite_difference_hessian!(hess, f, x, extras.hessian_cache)
+    return f(x), grad, hess
 end

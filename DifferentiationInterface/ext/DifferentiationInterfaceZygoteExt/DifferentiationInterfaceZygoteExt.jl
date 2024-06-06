@@ -131,4 +131,18 @@ function DI.hessian!(f, hess, backend::AutoZygote, x, extras::NoHessianExtras)
     return copyto!(hess, DI.hessian(f, backend, x, extras))
 end
 
+function DI.value_gradient_and_hessian(f, ::AutoZygote, x, ::NoHessianExtras)
+    y, grad = DI.value_and_gradient(f, backend, x, NoGradientExtras())
+    hess = DI.hessian(f, backend, x, extras)
+    return y, grad, hess
+end
+
+function DI.value_gradient_and_hessian!(
+    f, grad, hess, backend::AutoZygote, x, extras::NoHessianExtras
+)
+    y, _ = DI.value_and_gradient!(f, backend, x, NoGradientExtras())
+    DI.hessian!(f, hess, backend, x, extras)
+    return y, grad, hess
+end
+
 end

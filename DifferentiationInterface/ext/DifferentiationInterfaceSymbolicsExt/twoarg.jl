@@ -1,8 +1,8 @@
 ## Pushforward
 
-struct SymbolicsTwoArgPushforwardExtras{E1,E2} <: PushforwardExtras
+struct SymbolicsTwoArgPushforwardExtras{E1,E1!} <: PushforwardExtras
     pushforward_exe::E1
-    pushforward_exe!::E2
+    pushforward_exe!::E1!
 end
 
 function DI.prepare_pushforward(f!, y, ::AutoSymbolics, x, dx)
@@ -61,9 +61,9 @@ end
 
 ## Derivative
 
-struct SymbolicsTwoArgDerivativeExtras{E1,E2} <: DerivativeExtras
+struct SymbolicsTwoArgDerivativeExtras{E1,E1!} <: DerivativeExtras
     der_exe::E1
-    der_exe!::E2
+    der_exe!::E1!
 end
 
 function DI.prepare_derivative(f!, y, ::AutoSymbolics, x)
@@ -106,9 +106,9 @@ end
 
 ## Jacobian
 
-struct SymbolicsTwoArgJacobianExtras{E1,E2} <: JacobianExtras
+struct SymbolicsTwoArgJacobianExtras{E1,E1!} <: JacobianExtras
     jac_exe::E1
-    jac_exe!::E2
+    jac_exe!::E1!
 end
 
 function DI.prepare_jacobian(

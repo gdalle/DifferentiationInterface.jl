@@ -1,8 +1,8 @@
 ## Pushforward
 
-struct SymbolicsOneArgPushforwardExtras{E1,E2} <: PushforwardExtras
+struct SymbolicsOneArgPushforwardExtras{E1,E1!} <: PushforwardExtras
     pf_exe::E1
-    pf_exe!::E2
+    pf_exe!::E1!
 end
 
 function DI.prepare_pushforward(f, ::AutoSymbolics, x, dx)
@@ -57,9 +57,9 @@ end
 
 ## Derivative
 
-struct SymbolicsOneArgDerivativeExtras{E1,E2} <: DerivativeExtras
+struct SymbolicsOneArgDerivativeExtras{E1,E1!} <: DerivativeExtras
     der_exe::E1
-    der_exe!::E2
+    der_exe!::E1!
 end
 
 function DI.prepare_derivative(f, ::AutoSymbolics, x)
@@ -98,9 +98,9 @@ end
 
 ## Gradient
 
-struct SymbolicsOneArgGradientExtras{E1,E2} <: GradientExtras
+struct SymbolicsOneArgGradientExtras{E1,E1!} <: GradientExtras
     grad_exe::E1
-    grad_exe!::E2
+    grad_exe!::E1!
 end
 
 function DI.prepare_gradient(f, ::AutoSymbolics, x)
@@ -136,9 +136,9 @@ end
 
 ## Jacobian
 
-struct SymbolicsOneArgJacobianExtras{E1,E2} <: JacobianExtras
+struct SymbolicsOneArgJacobianExtras{E1,E1!} <: JacobianExtras
     jac_exe::E1
-    jac_exe!::E2
+    jac_exe!::E1!
 end
 
 function DI.prepare_jacobian(
@@ -197,9 +197,10 @@ end
 
 ## Hessian
 
-struct SymbolicsOneArgHessianExtras{E1,E2} <: HessianExtras
-    hess_exe::E1
-    hess_exe!::E2
+struct SymbolicsOneArgHessianExtras{G,E2,E2!} <: HessianExtras
+    gradient_extras::G
+    hess_exe::E2
+    hess_exe!::E2!
 end
 
 function DI.prepare_hessian(f, backend::Union{AutoSymbolics,AutoSparse{<:AutoSymbolics}}, x)
@@ -213,7 +214,9 @@ function DI.prepare_hessian(f, backend::Union{AutoSymbolics,AutoSparse{<:AutoSym
 
     res = build_function(hess_var, vec(x_var); expression=Val(false))
     (hess_exe, hess_exe!) = res
-    return SymbolicsOneArgHessianExtras(hess_exe, hess_exe!)
+
+    gradient_extras = DI.prepare_gradient(f, backend, x)
+    return SymbolicsOneArgHessianExtras(gradient_extras, hess_exe, hess_exe!)
 end
 
 function DI.hessian(
@@ -234,4 +237,28 @@ function DI.hessian!(
 )
     extras.hess_exe!(hess, vec(x))
     return hess
+end
+
+function DI.value_gradient_and_hessian(
+    f,
+    backend::Union{AutoSymbolics,AutoSparse{<:AutoSymbolics}},
+    x,
+    extras::SymbolicsOneArgHessianExtras,
+)
+    y, grad = DI.value_and_gradient(f, backend, x, extras.gradient_extras)
+    hess = DI.hessian(f, backend, x, extras)
+    return y, grad, hess
+end
+
+function DI.value_gradient_and_hessian!(
+    f,
+    grad,
+    hess,
+    backend::Union{AutoSymbolics,AutoSparse{<:AutoSymbolics}},
+    x,
+    extras::SymbolicsOneArgHessianExtras,
+)
+    y, _ = DI.value_and_gradient!(f, grad, backend, x, extras.gradient_extras)
+    DI.hessian!(f, hess, backend, x, extras)
+    return y, grad, hess
 end

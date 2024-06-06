@@ -137,20 +137,47 @@ end
 
 ## Hessian
 
-struct ForwardDiffHessianExtras{C} <: HessianExtras
-    config::C
+struct ForwardDiffHessianExtras{C1,C2} <: HessianExtras
+    array_config::C1
+    result_config::C2
 end
 
 function DI.prepare_hessian(f, backend::AutoForwardDiff, x)
-    return ForwardDiffHessianExtras(HessianConfig(f, x, choose_chunk(backend, x)))
+    example_result = MutableDiffResult(
+        one(eltype(x)), (similar(x), similar(x, length(x), length(x)))
+    )
+    chunk = choose_chunk(backend, x)
+    array_config = HessianConfig(f, x, chunk)
+    result_config = HessianConfig(f, example_result, x, chunk)
+    return ForwardDiffHessianExtras(array_config, result_config)
 end
 
 function DI.hessian!(
     f::F, hess, ::AutoForwardDiff, x, extras::ForwardDiffHessianExtras
 ) where {F}
-    return hessian!(hess, f, x, extras.config)
+    return hessian!(hess, f, x, extras.array_config)
 end
 
 function DI.hessian(f::F, ::AutoForwardDiff, x, extras::ForwardDiffHessianExtras) where {F}
-    return hessian(f, x, extras.config)
+    return hessian(f, x, extras.array_config)
+end
+
+function DI.value_gradient_and_hessian!(
+    f::F, grad, hess, ::AutoForwardDiff, x, extras::ForwardDiffHessianExtras
+) where {F}
+    result = MutableDiffResult(y, (grad, hess))
+    result = hessian!(result, f, x, extras.config)
+    return (
+        DiffResults.value(result), DiffResults.gradient(result), DiffResults.hessian(result)
+    )
+end
+
+function DI.value_gradient_and_hessian(
+    f::F, ::AutoForwardDiff, x, extras::ForwardDiffHessianExtras
+) where {F}
+    result = MutableDiffResult(y, (similar(x), similar(x, length(x), length(x))))
+    result = hessian!(result, f, x, extras.config)
+    return (
+        DiffResults.value(result), DiffResults.gradient(result), DiffResults.hessian(result)
+    )
 end
