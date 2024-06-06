@@ -415,7 +415,7 @@ end
 ## Hessian
 
 struct FastDifferentiationHessianExtras{G,E2,E2!} <: HessianExtras
-    grad_extras::G
+    gradient_extras::G
     hess_exe::E2
     hess_exe!::E2!
 end
