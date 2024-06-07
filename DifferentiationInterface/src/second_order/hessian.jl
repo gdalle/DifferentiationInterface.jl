@@ -27,14 +27,14 @@ function hessian! end
 """
     value_gradient_and_hessian(f, backend, x, [extras]) -> (y, grad, hess)
 
-Compute the value, hessian vector and Hessian matrix of the function `f` at point `x`.
+Compute the value, gradient vector and Hessian matrix of the function `f` at point `x`.
 """
 function value_gradient_and_hessian end
 
 """
     value_gradient_and_hessian!(f, grad, hess, backend, x, [extras]) -> (y, grad, hess)
 
-Compute the value, hessian vector and Hessian matrix of the function `f` at point `x`, overwriting `grad` and `hess`.
+Compute the value, gradient vector and Hessian matrix of the function `f` at point `x`, overwriting `grad` and `hess`.
 """
 function value_gradient_and_hessian! end
 
