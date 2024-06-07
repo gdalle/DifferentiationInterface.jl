@@ -873,7 +873,7 @@ function test_correctness(
 
         der12_in, der22_in = mysimilar(y), mysimilar(y)
         y2, der12, der22 = value_derivative_and_second_derivative!(
-            f, der12_in, der22_in, ba, x, extras_tup
+            f, der12_in, der22_in, ba, x, extras_tup...
         )
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
