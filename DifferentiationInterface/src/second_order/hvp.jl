@@ -143,11 +143,11 @@ end
 ## One argument
 
 function hvp(f::F, backend::AbstractADType, x, v) where {F}
-    return hvp(f, backend, x, prepare_hvp(f, backend, x, v))
+    return hvp(f, backend, x, v, prepare_hvp(f, backend, x, v))
 end
 
 function hvp!(f::F, p, backend::AbstractADType, x, v) where {F}
-    return hvp!(f, p, backend, x, prepare_hvp(f, backend, x, v))
+    return hvp!(f, p, backend, x, v, prepare_hvp(f, backend, x, v))
 end
 
 function hvp(f::F, backend::AbstractADType, x, v, extras::HVPExtras) where {F}
