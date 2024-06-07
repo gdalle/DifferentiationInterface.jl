@@ -28,17 +28,17 @@ function test_correctness(
         new_scen.ref(x, dx)
     end
 
-    @testset "$(testset_name(k))" for (k, extras) in enumerate([
+    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate([
         (),
         (prepare_pushforward(f, ba, mycopy_random(x), mycopy_random(dx)),),
         (prepare_pushforward_same_point(f, ba, x, mycopy_random(dx)),),
     ])
-        y1, dy1 = value_and_pushforward(f, ba, x, dx, extras...)
-        dy2 = pushforward(f, ba, x, dx, extras...)
+        y1, dy1 = value_and_pushforward(f, ba, x, dx, extras_tup...)
+        dy2 = pushforward(f, ba, x, dx, extras_tup...)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
-                @test extras isa PushforwardExtras
+                @test isempty(extras_tup) || only(extras_tup) isa PushforwardExtras
             end
             @testset "Primal value" begin
                 @test y1 ≈ y
@@ -68,20 +68,20 @@ function test_correctness(
         new_scen.ref(x, dx)
     end
 
-    @testset "$(testset_name(k))" for (k, extras) in enumerate([
+    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate([
         (),
         (prepare_pushforward(f, ba, mycopy_random(x), mycopy_random(dx)),),
         (prepare_pushforward_same_point(f, ba, x, mycopy_random(dx)),),
     ])
         dy1_in = mysimilar(y)
-        y1, dy1 = value_and_pushforward!(f, dy1_in, ba, x, dx, extras...)
+        y1, dy1 = value_and_pushforward!(f, dy1_in, ba, x, dx, extras_tup...)
 
         dy2_in = mysimilar(y)
-        dy2 = pushforward!(f, dy2_in, ba, x, dx, extras...)
+        dy2 = pushforward!(f, dy2_in, ba, x, dx, extras_tup...)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
-                @test extras isa PushforwardExtras
+                @test isempty(extras_tup) || only(extras_tup) isa PushforwardExtras
             end
             @testset "Primal value" begin
                 @test y1 ≈ y
@@ -114,20 +114,20 @@ function test_correctness(
         new_scen.ref(x, dx)
     end
 
-    @testset "$(testset_name(k))" for (k, extras) in enumerate([
+    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate([
         (),
         (prepare_pushforward(f!, mysimilar(y), ba, mycopy_random(x), mycopy_random(dx)),),
         (prepare_pushforward_same_point(f!, mysimilar(y), ba, x, mycopy_random(dx)),),
     ])
         y1_in = mysimilar(y)
-        y1, dy1 = value_and_pushforward(f!, y1_in, ba, x, dx, extras...)
+        y1, dy1 = value_and_pushforward(f!, y1_in, ba, x, dx, extras_tup...)
 
         y2_in = mysimilar(y)
-        dy2 = pushforward(f!, y2_in, ba, x, dx, extras...)
+        dy2 = pushforward(f!, y2_in, ba, x, dx, extras_tup...)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
-                @test extras isa PushforwardExtras
+                @test isempty(extras_tup) || only(extras_tup) isa PushforwardExtras
             end
             @testset "Primal value" begin
                 @test y1_in ≈ y
@@ -159,20 +159,20 @@ function test_correctness(
         new_scen.ref(x, dx)
     end
 
-    @testset "$(testset_name(k))" for (k, extras) in enumerate([
+    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate([
         (),
         (prepare_pushforward(f!, mysimilar(y), ba, mycopy_random(x), mycopy_random(dx)),),
         (prepare_pushforward_same_point(f!, mysimilar(y), ba, x, mycopy_random(dx)),),
     ])
         y1_in, dy1_in = mysimilar(y), mysimilar(y)
-        y1, dy1 = value_and_pushforward!(f!, y1_in, dy1_in, ba, x, dx, extras...)
+        y1, dy1 = value_and_pushforward!(f!, y1_in, dy1_in, ba, x, dx, extras_tup...)
 
         y2_in, dy2_in = mysimilar(y), mysimilar(y)
-        dy2 = pushforward!(f!, y2_in, dy2_in, ba, x, dx, extras...)
+        dy2 = pushforward!(f!, y2_in, dy2_in, ba, x, dx, extras_tup...)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
-                @test extras isa PushforwardExtras
+                @test isempty(extras_tup) || only(extras_tup) isa PushforwardExtras
             end
             @testset "Primal value" begin
                 @test y1_in ≈ y
@@ -207,18 +207,18 @@ function test_correctness(
         new_scen.ref(x, dy)
     end
 
-    @testset "$(testset_name(k))" for (k, extras) in enumerate([
+    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate([
         (),
         (prepare_pullback(f, ba, mycopy_random(x), mycopy_random(dy)),),
         (prepare_pullback_same_point(f, ba, x, mycopy_random(dy)),),
     ])
-        y1, dx1 = value_and_pullback(f, ba, x, dy, extras...)
+        y1, dx1 = value_and_pullback(f, ba, x, dy, extras_tup...)
 
-        dx2 = pullback(f, ba, x, dy, extras...)
+        dx2 = pullback(f, ba, x, dy, extras_tup...)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
-                @test extras isa PullbackExtras
+                @test isempty(extras_tup) || only(extras_tup) isa PullbackExtras
             end
             @testset "Primal value" begin
                 @test y1 ≈ y
@@ -248,20 +248,20 @@ function test_correctness(
         new_scen.ref(x, dy)
     end
 
-    @testset "$(testset_name(k))" for (k, extras) in enumerate([
+    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate([
         (),
         (prepare_pullback(f, ba, mycopy_random(x), mycopy_random(dy)),),
         (prepare_pullback_same_point(f, ba, x, mycopy_random(dy)),),
     ])
         dx1_in = mysimilar(x)
-        y1, dx1 = value_and_pullback!(f, dx1_in, ba, x, dy, extras...)
+        y1, dx1 = value_and_pullback!(f, dx1_in, ba, x, dy, extras_tup...)
 
         dx2_in = mysimilar(x)
-        dx2 = pullback!(f, dx2_in, ba, x, dy, extras...)
+        dx2 = pullback!(f, dx2_in, ba, x, dy, extras_tup...)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
-                @test extras isa PullbackExtras
+                @test isempty(extras_tup) || only(extras_tup) isa PullbackExtras
             end
             @testset "Primal value" begin
                 @test y1 ≈ y
@@ -294,20 +294,20 @@ function test_correctness(
         new_scen.ref(x, dy)
     end
 
-    @testset "$(testset_name(k))" for (k, extras) in enumerate([
+    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate([
         (),
         (prepare_pullback(f!, mysimilar(y), ba, mycopy_random(x), mycopy_random(dy)),),
         (prepare_pullback_same_point(f!, mysimilar(y), ba, x, mycopy_random(dy)),),
     ])
         y1_in = mysimilar(y)
-        y1, dx1 = value_and_pullback(f!, y1_in, ba, x, dy, extras...)
+        y1, dx1 = value_and_pullback(f!, y1_in, ba, x, dy, extras_tup...)
 
         y2_in = mysimilar(y)
-        dx2 = pullback(f!, y2_in, ba, x, dy, extras...)
+        dx2 = pullback(f!, y2_in, ba, x, dy, extras_tup...)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
-                @test extras isa PullbackExtras
+                @test isempty(extras_tup) || only(extras_tup) isa PullbackExtras
             end
             @testset "Primal value" begin
                 @test y1_in ≈ y
@@ -339,20 +339,20 @@ function test_correctness(
         new_scen.ref(x, dy)
     end
 
-    @testset "$(testset_name(k))" for (k, extras) in enumerate([
+    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate([
         (),
         (prepare_pullback(f!, mysimilar(y), ba, mycopy_random(x), mycopy_random(dy)),),
         (prepare_pullback_same_point(f!, mysimilar(y), ba, x, mycopy_random(dy)),),
     ])
         y1_in, dx1_in = mysimilar(y), mysimilar(x)
-        y1, dx1 = value_and_pullback!(f!, y1_in, dx1_in, ba, x, dy, extras...)
+        y1, dx1 = value_and_pullback!(f!, y1_in, dx1_in, ba, x, dy, extras_tup...)
 
         y2_in, dx2_in = mysimilar(y), mysimilar(x)
-        dx2 = pullback!(f!, y2_in, dx2_in, ba, x, dy, extras...)
+        dx2 = pullback!(f!, y2_in, dx2_in, ba, x, dy, extras_tup...)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
-                @test extras isa PullbackExtras
+                @test isempty(extras_tup) || only(extras_tup) isa PullbackExtras
             end
             @testset "Primal value" begin
                 @test y1_in ≈ y
@@ -387,15 +387,15 @@ function test_correctness(
         new_scen.ref(x)
     end
 
-    @testset "$(testset_name(k))" for (k, extras) in enumerate([
+    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate([
         (), (prepare_derivative(f, ba, mycopy_random(x)),)
     ])
-        y1, der1 = value_and_derivative(f, ba, x, extras...)
-        der2 = derivative(f, ba, x, extras...)
+        y1, der1 = value_and_derivative(f, ba, x, extras_tup...)
+        der2 = derivative(f, ba, x, extras_tup...)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
-                @test extras isa DerivativeExtras
+                @test isempty(extras_tup) || only(extras_tup) isa DerivativeExtras
             end
             @testset "Primal value" begin
                 @test y1 ≈ y
@@ -425,18 +425,18 @@ function test_correctness(
         new_scen.ref(x)
     end
 
-    @testset "$(testset_name(k))" for (k, extras) in enumerate([
+    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate([
         (), (prepare_derivative(f, ba, mycopy_random(x)),)
     ])
         der1_in = mysimilar(y)
-        y1, der1 = value_and_derivative!(f, der1_in, ba, x, extras...)
+        y1, der1 = value_and_derivative!(f, der1_in, ba, x, extras_tup...)
 
         der2_in = mysimilar(y)
-        der2 = derivative!(f, der2_in, ba, x, extras...)
+        der2 = derivative!(f, der2_in, ba, x, extras_tup...)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
-                @test extras isa DerivativeExtras
+                @test isempty(extras_tup) || only(extras_tup) isa DerivativeExtras
             end
             @testset "Primal value" begin
                 @test y1 ≈ y
@@ -469,18 +469,18 @@ function test_correctness(
         new_scen.ref(x)
     end
 
-    @testset "$(testset_name(k))" for (k, extras) in enumerate([
+    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate([
         (), (prepare_derivative(f!, mysimilar(y), ba, mycopy_random(x)),)
     ])
         y1_in = mysimilar(y)
-        y1, der1 = value_and_derivative(f!, y1_in, ba, x, extras...)
+        y1, der1 = value_and_derivative(f!, y1_in, ba, x, extras_tup...)
 
         y2_in = mysimilar(y)
-        der2 = derivative(f!, y2_in, ba, x, extras...)
+        der2 = derivative(f!, y2_in, ba, x, extras_tup...)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
-                @test extras isa DerivativeExtras
+                @test isempty(extras_tup) || only(extras_tup) isa DerivativeExtras
             end
             @testset "Primal value" begin
                 @test y1_in ≈ y
@@ -512,18 +512,18 @@ function test_correctness(
         new_scen.ref(x)
     end
 
-    @testset "$(testset_name(k))" for (k, extras) in enumerate([
+    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate([
         (), (prepare_derivative(f!, mysimilar(y), ba, mycopy_random(x)),)
     ])
         y1_in, der1_in = mysimilar(y), mysimilar(y)
-        y1, der1 = value_and_derivative!(f!, y1_in, der1_in, ba, x, extras...)
+        y1, der1 = value_and_derivative!(f!, y1_in, der1_in, ba, x, extras_tup...)
 
         y2_in, der2_in = mysimilar(y), mysimilar(y)
-        der2 = derivative!(f!, y2_in, der2_in, ba, x, extras...)
+        der2 = derivative!(f!, y2_in, der2_in, ba, x, extras_tup...)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
-                @test extras isa DerivativeExtras
+                @test isempty(extras_tup) || only(extras_tup) isa DerivativeExtras
             end
             @testset "Primal value" begin
                 @test y1_in ≈ y
@@ -558,16 +558,16 @@ function test_correctness(
         new_scen.ref(x)
     end
 
-    @testset "$(testset_name(k))" for (k, extras) in enumerate([
+    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate([
         (), (prepare_gradient(f, ba, mycopy_random(x)),)
     ])
-        y1, grad1 = value_and_gradient(f, ba, x, extras...)
+        y1, grad1 = value_and_gradient(f, ba, x, extras_tup...)
 
-        grad2 = gradient(f, ba, x, extras...)
+        grad2 = gradient(f, ba, x, extras_tup...)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
-                @test extras isa GradientExtras
+                @test isempty(extras_tup) || only(extras_tup) isa GradientExtras
             end
             @testset "Primal value" begin
                 @test y1 ≈ y
@@ -597,18 +597,18 @@ function test_correctness(
         new_scen.ref(x)
     end
 
-    @testset "$(testset_name(k))" for (k, extras) in enumerate([
+    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate([
         (), (prepare_gradient(f, ba, mycopy_random(x)),)
     ])
         grad1_in = mysimilar(x)
-        y1, grad1 = value_and_gradient!(f, grad1_in, ba, x, extras...)
+        y1, grad1 = value_and_gradient!(f, grad1_in, ba, x, extras_tup...)
 
         grad2_in = mysimilar(x)
-        grad2 = gradient!(f, grad2_in, ba, x, extras...)
+        grad2 = gradient!(f, grad2_in, ba, x, extras_tup...)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
-                @test extras isa GradientExtras
+                @test isempty(extras_tup) || only(extras_tup) isa GradientExtras
             end
             @testset "Primal value" begin
                 @test y1 ≈ y
@@ -642,16 +642,16 @@ function test_correctness(
         new_scen.ref(x)
     end
 
-    @testset "$(testset_name(k))" for (k, extras) in enumerate([
+    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate([
         (), (prepare_jacobian(f, ba, mycopy_random(x)),)
     ])
-        y1, jac1 = value_and_jacobian(f, ba, x, extras...)
+        y1, jac1 = value_and_jacobian(f, ba, x, extras_tup...)
 
-        jac2 = jacobian(f, ba, x, extras...)
+        jac2 = jacobian(f, ba, x, extras_tup...)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
-                @test extras isa JacobianExtras
+                @test isempty(extras_tup) || only(extras_tup) isa JacobianExtras
             end
             @testset "Primal value" begin
                 @test y1 ≈ y
@@ -681,18 +681,18 @@ function test_correctness(
         new_scen.ref(x)
     end
 
-    @testset "$(testset_name(k))" for (k, extras) in enumerate([
+    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate([
         (), (prepare_jacobian(f, ba, mycopy_random(x)),)
     ])
         jac1_in = mysimilar(jac_true)
-        y1, jac1 = value_and_jacobian!(f, jac1_in, ba, x, extras...)
+        y1, jac1 = value_and_jacobian!(f, jac1_in, ba, x, extras_tup...)
 
         jac2_in = mysimilar(jac_true)
-        jac2 = jacobian!(f, jac2_in, ba, x, extras...)
+        jac2 = jacobian!(f, jac2_in, ba, x, extras_tup...)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
-                @test extras isa JacobianExtras
+                @test isempty(extras_tup) || only(extras_tup) isa JacobianExtras
             end
             @testset "Primal value" begin
                 @test y1 ≈ y
@@ -725,18 +725,18 @@ function test_correctness(
         new_scen.ref(x)
     end
 
-    @testset "$(testset_name(k))" for (k, extras) in enumerate([
+    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate([
         (), (prepare_jacobian(f!, mysimilar(y), ba, mycopy_random(x)),)
     ])
         y1_in = mysimilar(y)
-        y1, jac1 = value_and_jacobian(f!, y1_in, ba, x, extras...)
+        y1, jac1 = value_and_jacobian(f!, y1_in, ba, x, extras_tup...)
 
         y2_in = mysimilar(y)
-        jac2 = jacobian(f!, y2_in, ba, x, extras...)
+        jac2 = jacobian(f!, y2_in, ba, x, extras_tup...)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
-                @test extras isa JacobianExtras
+                @test isempty(extras_tup) || only(extras_tup) isa JacobianExtras
             end
             @testset "Primal value" begin
                 @test y1_in ≈ y
@@ -768,18 +768,18 @@ function test_correctness(
         new_scen.ref(x)
     end
 
-    @testset "$(testset_name(k))" for (k, extras) in enumerate([
+    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate([
         (), (prepare_jacobian(f!, mysimilar(y), ba, mycopy_random(x)),)
     ])
         y1_in, jac1_in = mysimilar(y), mysimilar(jac_true)
-        y1, jac1 = value_and_jacobian!(f!, y1_in, jac1_in, ba, x, extras...)
+        y1, jac1 = value_and_jacobian!(f!, y1_in, jac1_in, ba, x, extras_tup...)
 
         y2_in, jac2_in = mysimilar(y), mysimilar(jac_true)
-        jac2 = jacobian!(f!, y2_in, jac2_in, ba, x, extras...)
+        jac2 = jacobian!(f!, y2_in, jac2_in, ba, x, extras_tup...)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
-                @test extras isa JacobianExtras
+                @test isempty(extras_tup) || only(extras_tup) isa JacobianExtras
             end
             @testset "Primal value" begin
                 @test y1_in ≈ y
@@ -819,15 +819,15 @@ function test_correctness(
         new_scen.ref(x)
     end
 
-    @testset "$(testset_name(k))" for (k, extras) in enumerate([
+    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate([
         (), (prepare_second_derivative(f, ba, mycopy_random(x)),)
     ])
-        der21 = second_derivative(f, ba, x, extras...)
-        y2, der12, der22 = value_derivative_and_second_derivative(f, ba, x, extras...)
+        der21 = second_derivative(f, ba, x, extras_tup...)
+        y2, der12, der22 = value_derivative_and_second_derivative(f, ba, x, extras_tup...)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
-                @test extras isa SecondDerivativeExtras
+                @test isempty(extras_tup) || only(extras_tup) isa SecondDerivativeExtras
             end
             @testset "Primal value" begin
                 @test y2 ≈ y
@@ -865,20 +865,20 @@ function test_correctness(
         new_scen.ref(x)
     end
 
-    @testset "$(testset_name(k))" for (k, extras) in enumerate([
+    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate([
         (), (prepare_second_derivative(f, ba, mycopy_random(x)),)
     ])
         der21_in = mysimilar(y)
-        der21 = second_derivative!(f, der21_in, ba, x, extras...)
+        der21 = second_derivative!(f, der21_in, ba, x, extras_tup...)
 
         der12_in, der22_in = mysimilar(y), mysimilar(y)
         y2, der12, der22 = value_derivative_and_second_derivative!(
-            f, der12_in, der22_in, ba, x, extras
+            f, der12_in, der22_in, ba, x, extras_tup
         )
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
-                @test extras isa SecondDerivativeExtras
+                @test isempty(extras_tup) || only(extras_tup) isa SecondDerivativeExtras
             end
             @testset "Primal value" begin
                 @test y2 ≈ y
@@ -916,16 +916,16 @@ function test_correctness(
         new_scen.ref(x, dx)
     end
 
-    @testset "$(testset_name(k))" for (k, extras) in enumerate([
+    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate([
         (),
         (prepare_hvp(f, ba, mycopy_random(x), mycopy_random(dx)),),
         (prepare_hvp_same_point(f, ba, x, mycopy_random(dx)),),
     ])
-        p1 = hvp(f, ba, x, dx, extras...)
+        p1 = hvp(f, ba, x, dx, extras_tup...)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
-                @test extras isa HVPExtras
+                @test isempty(extras_tup) || only(extras_tup) isa HVPExtras
             end
             @testset "HVP value" begin
                 @test p1 ≈ p_true
@@ -951,17 +951,17 @@ function test_correctness(
         new_scen.ref(x, dx)
     end
 
-    @testset "$(testset_name(k))" for (k, extras) in enumerate([
+    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate([
         (),
         (prepare_hvp(f, ba, mycopy_random(x), mycopy_random(dx)),),
         (prepare_hvp_same_point(f, ba, x, mycopy_random(dx)),),
     ])
         p1_in = mysimilar(x)
-        p1 = hvp!(f, p1_in, ba, x, dx, extras...)
+        p1 = hvp!(f, p1_in, ba, x, dx, extras_tup...)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
-                @test extras isa HVPExtras
+                @test isempty(extras_tup) || only(extras_tup) isa HVPExtras
             end
             @testset "HVP value" begin
                 @test p1_in ≈ p_true
@@ -995,15 +995,15 @@ function test_correctness(
         new_scen.ref(x)
     end
 
-    @testset "$(testset_name(k))" for (k, extras) in enumerate([
+    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate([
         (), (prepare_hessian(f, ba, mycopy_random(x)),)
     ])
-        hess1 = hessian(f, ba, x, extras...)
-        y2, grad2, hess2 = value_gradient_and_hessian(f, ba, x, extras...)
+        hess1 = hessian(f, ba, x, extras_tup...)
+        y2, grad2, hess2 = value_gradient_and_hessian(f, ba, x, extras_tup...)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
-                @test extras isa HessianExtras
+                @test isempty(extras_tup) || only(extras_tup) isa HessianExtras
             end
             @testset "Primal value" begin
                 @test y2 ≈ y
@@ -1041,19 +1041,19 @@ function test_correctness(
         new_scen.ref(x)
     end
 
-    @testset "$(testset_name(k))" for (k, extras) in enumerate([
+    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate([
         (), (prepare_hessian(f, ba, mycopy_random(x)),)
     ])
         hess1_in = mysimilar(hess_true)
-        hess1 = hessian!(f, hess1_in, ba, x, extras...)
+        hess1 = hessian!(f, hess1_in, ba, x, extras_tup...)
         grad2_in, hess2_in = mysimilar(grad_true), mysimilar(hess_true)
         y2, grad2, hess2 = value_gradient_and_hessian!(
-            f, grad2_in, hess2_in, ba, x, extras...
+            f, grad2_in, hess2_in, ba, x, extras_tup...
         )
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
-                @test extras isa HessianExtras
+                @test isempty(extras_tup) || only(extras_tup) isa HessianExtras
             end
             @testset "Primal value" begin
                 @test y2 ≈ y
