@@ -84,7 +84,7 @@ function DI.value_and_derivative(
 end
 
 function DI.value_and_derivative!(
-    f::F, der, ::AutoForwardDiff, x, ::NoDerivativeExtras
+    f::F, der, backend::AutoForwardDiff, x, ::NoDerivativeExtras
 ) where {F}
     T = tag_type(f, backend, x)
     xdual = make_dual(T, x, one(x))
