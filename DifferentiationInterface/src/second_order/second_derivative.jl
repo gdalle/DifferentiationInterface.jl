@@ -69,30 +69,43 @@ end
 
 ## One argument
 
+function value_derivative_and_second_derivative(f::F, backend::AbstractADType, x) where {F}
+    return value_derivative_and_second_derivative(
+        f, backend, x, prepare_second_derivative(f, backend, x)
+    )
+end
+
+function value_derivative_and_second_derivative!(
+    f::F, der, der2, backend::AbstractADType, x
+) where {F}
+    return value_derivative_and_second_derivative!(
+        f, der, der2, backend, x, prepare_second_derivative(f, backend, x)
+    )
+end
+
+function second_derivative(f::F, backend::AbstractADType, x) where {F}
+    return second_derivative(f, backend, x, prepare_second_derivative(f, backend, x))
+end
+
+function second_derivative!(f::F, der2, backend::AbstractADType, x) where {F}
+    return second_derivative!(f, der2, backend, x, prepare_second_derivative(f, backend, x))
+end
+
 function second_derivative(
-    f::F,
-    backend::AbstractADType,
-    x,
-    extras::SecondDerivativeExtras=prepare_second_derivative(f, backend, x),
+    f::F, backend::AbstractADType, x, extras::SecondDerivativeExtras
 ) where {F}
     return second_derivative(f, SecondOrder(backend, backend), x, extras)
 end
 
 function second_derivative(
-    f::F,
-    backend::SecondOrder,
-    x,
-    extras::ClosureSecondDerivativeExtras=prepare_second_derivative(f, backend, x),
+    f::F, backend::SecondOrder, x, extras::ClosureSecondDerivativeExtras
 ) where {F}
     @compat (; inner_derivative_closure, outer_derivative_extras) = extras
     return derivative(inner_derivative_closure, outer(backend), x, outer_derivative_extras)
 end
 
 function value_derivative_and_second_derivative(
-    f::F,
-    backend::AbstractADType,
-    x,
-    extras::SecondDerivativeExtras=prepare_second_derivative(f, backend, x),
+    f::F, backend::AbstractADType, x, extras::SecondDerivativeExtras
 ) where {F}
     return value_derivative_and_second_derivative(
         f, SecondOrder(backend, backend), x, extras
@@ -100,10 +113,7 @@ function value_derivative_and_second_derivative(
 end
 
 function value_derivative_and_second_derivative(
-    f::F,
-    backend::SecondOrder,
-    x,
-    extras::ClosureSecondDerivativeExtras=prepare_second_derivative(f, backend, x),
+    f::F, backend::SecondOrder, x, extras::ClosureSecondDerivativeExtras
 ) where {F}
     @compat (; inner_derivative_closure, outer_derivative_extras) = extras
     y = f(x)
@@ -114,21 +124,13 @@ function value_derivative_and_second_derivative(
 end
 
 function second_derivative!(
-    f::F,
-    der2,
-    backend::AbstractADType,
-    x,
-    extras::SecondDerivativeExtras=prepare_second_derivative(f, backend, x),
+    f::F, der2, backend::AbstractADType, x, extras::SecondDerivativeExtras
 ) where {F}
     return second_derivative!(f, der2, SecondOrder(backend, backend), x, extras)
 end
 
 function second_derivative!(
-    f::F,
-    der2,
-    backend::SecondOrder,
-    x,
-    extras::SecondDerivativeExtras=prepare_second_derivative(f, backend, x),
+    f::F, der2, backend::SecondOrder, x, extras::SecondDerivativeExtras
 ) where {F}
     @compat (; inner_derivative_closure, outer_derivative_extras) = extras
     return derivative!(
@@ -137,12 +139,7 @@ function second_derivative!(
 end
 
 function value_derivative_and_second_derivative!(
-    f::F,
-    der,
-    der2,
-    backend::AbstractADType,
-    x,
-    extras::SecondDerivativeExtras=prepare_second_derivative(f, backend, x),
+    f::F, der, der2, backend::AbstractADType, x, extras::SecondDerivativeExtras
 ) where {F}
     return value_derivative_and_second_derivative!(
         f, der, der2, SecondOrder(backend, backend), x, extras
@@ -150,12 +147,7 @@ function value_derivative_and_second_derivative!(
 end
 
 function value_derivative_and_second_derivative!(
-    f::F,
-    der,
-    der2,
-    backend::SecondOrder,
-    x,
-    extras::SecondDerivativeExtras=prepare_second_derivative(f, backend, x),
+    f::F, der, der2, backend::SecondOrder, x, extras::SecondDerivativeExtras
 ) where {F}
     @compat (; inner_derivative_closure, outer_derivative_extras) = extras
     y = f(x)

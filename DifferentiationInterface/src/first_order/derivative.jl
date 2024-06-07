@@ -72,84 +72,86 @@ end
 
 ## One argument
 
+function value_and_derivative(f::F, backend::AbstractADType, x) where {F}
+    return value_and_derivative(f, backend, x, prepare_derivative(f, backend, x))
+end
+
+function value_and_derivative!(f::F, der, backend::AbstractADType, x) where {F}
+    return value_and_derivative!(f, der, backend, x, prepare_derivative(f, backend, x))
+end
+
+function derivative(f::F, backend::AbstractADType, x) where {F}
+    return derivative(f, backend, x, prepare_derivative(f, backend, x))
+end
+
+function derivative!(f::F, der, backend::AbstractADType, x) where {F}
+    return derivative!(f, der, backend, x, prepare_derivative(f, backend, x))
+end
+
 function value_and_derivative(
-    f::F,
-    backend::AbstractADType,
-    x,
-    extras::DerivativeExtras=prepare_derivative(f, backend, x),
+    f::F, backend::AbstractADType, x, extras::PushforwardDerivativeExtras
 ) where {F}
     return value_and_pushforward(f, backend, x, one(x), extras.pushforward_extras)
 end
 
 function value_and_derivative!(
-    f::F,
-    der,
-    backend::AbstractADType,
-    x,
-    extras::DerivativeExtras=prepare_derivative(f, backend, x),
+    f::F, der, backend::AbstractADType, x, extras::PushforwardDerivativeExtras
 ) where {F}
     return value_and_pushforward!(f, der, backend, x, one(x), extras.pushforward_extras)
 end
 
 function derivative(
-    f::F,
-    backend::AbstractADType,
-    x,
-    extras::DerivativeExtras=prepare_derivative(f, backend, x),
+    f::F, backend::AbstractADType, x, extras::PushforwardDerivativeExtras
 ) where {F}
     return pushforward(f, backend, x, one(x), extras.pushforward_extras)
 end
 
 function derivative!(
-    f::F,
-    der,
-    backend::AbstractADType,
-    x,
-    extras::DerivativeExtras=prepare_derivative(f, backend, x),
+    f::F, der, backend::AbstractADType, x, extras::PushforwardDerivativeExtras
 ) where {F}
     return pushforward!(f, der, backend, x, one(x), extras.pushforward_extras)
 end
 
 ## Two arguments
 
+function value_and_derivative(f!::F, y, backend::AbstractADType, x) where {F}
+    return value_and_derivative(f!, y, backend, x, prepare_derivative(f!, y, backend, x))
+end
+
+function value_and_derivative!(f!::F, y, der, backend::AbstractADType, x) where {F}
+    return value_and_derivative!(
+        f!, y, der, backend, x, prepare_derivative(f!, y, backend, x)
+    )
+end
+
+function derivative(f!::F, y, backend::AbstractADType, x) where {F}
+    return derivative(f!, y, backend, x, prepare_derivative(f!, y, backend, x))
+end
+
+function derivative!(f!::F, y, der, backend::AbstractADType, x) where {F}
+    return derivative!(f!, y, der, backend, x, prepare_derivative(f!, y, backend, x))
+end
+
 function value_and_derivative(
-    f!::F,
-    y,
-    backend::AbstractADType,
-    x,
-    extras::DerivativeExtras=prepare_derivative(f!, y, backend, x),
+    f!::F, y, backend::AbstractADType, x, extras::PushforwardDerivativeExtras
 ) where {F}
     return value_and_pushforward(f!, y, backend, x, one(x), extras.pushforward_extras)
 end
 
 function value_and_derivative!(
-    f!::F,
-    y,
-    der,
-    backend::AbstractADType,
-    x,
-    extras::DerivativeExtras=prepare_derivative(f!, y, backend, x),
+    f!::F, y, der, backend::AbstractADType, x, extras::PushforwardDerivativeExtras
 ) where {F}
     return value_and_pushforward!(f!, y, der, backend, x, one(x), extras.pushforward_extras)
 end
 
 function derivative(
-    f!::F,
-    y,
-    backend::AbstractADType,
-    x,
-    extras::DerivativeExtras=prepare_derivative(f!, y, backend, x),
+    f!::F, y, backend::AbstractADType, x, extras::PushforwardDerivativeExtras
 ) where {F}
     return pushforward(f!, y, backend, x, one(x), extras.pushforward_extras)
 end
 
 function derivative!(
-    f!::F,
-    y,
-    der,
-    backend::AbstractADType,
-    x,
-    extras::DerivativeExtras=prepare_derivative(f!, y, backend, x),
+    f!::F, y, der, backend::AbstractADType, x, extras::PushforwardDerivativeExtras
 ) where {F}
     return pushforward!(f!, y, der, backend, x, one(x), extras.pushforward_extras)
 end

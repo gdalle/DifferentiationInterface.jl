@@ -31,28 +31,32 @@ end
 
 ## Derivative
 
-function DI.prepare_derivative(f, backend::AutoPolyesterForwardDiff, x)
+function DI.prepare_derivative(
+    f, backend::AutoPolyesterForwardDiff, x
+)::PushforwardDerivativeExtras
     return DI.prepare_derivative(f, single_threaded(backend), x)
 end
 
 function DI.value_and_derivative(
-    f, backend::AutoPolyesterForwardDiff, x, extras::DerivativeExtras
+    f, backend::AutoPolyesterForwardDiff, x, extras::PushforwardDerivativeExtras
 )
     return DI.value_and_derivative(f, single_threaded(backend), x, extras)
 end
 
 function DI.value_and_derivative!(
-    f, der, backend::AutoPolyesterForwardDiff, x, extras::DerivativeExtras
+    f, der, backend::AutoPolyesterForwardDiff, x, extras::PushforwardDerivativeExtras
 )
     return DI.value_and_derivative!(f, der, single_threaded(backend), x, extras)
 end
 
-function DI.derivative(f, backend::AutoPolyesterForwardDiff, x, extras::DerivativeExtras)
+function DI.derivative(
+    f, backend::AutoPolyesterForwardDiff, x, extras::PushforwardDerivativeExtras
+)
     return DI.derivative(f, single_threaded(backend), x, extras)
 end
 
 function DI.derivative!(
-    f, der, backend::AutoPolyesterForwardDiff, x, extras::DerivativeExtras
+    f, der, backend::AutoPolyesterForwardDiff, x, extras::PushforwardDerivativeExtras
 )
     return DI.derivative!(f, der, single_threaded(backend), x, extras)
 end
