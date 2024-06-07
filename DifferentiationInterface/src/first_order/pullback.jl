@@ -135,7 +135,7 @@ function value_and_pullback(f::F, backend::AbstractADType, x, dy) where {F}
 end
 
 function value_and_pullback!(f::F, dx, backend::AbstractADType, x, dy) where {F}
-    return value_and_pullback!(f, dx, backend, dy, x, prepare_pullback(f, backend, x, dy))
+    return value_and_pullback!(f, dx, backend, x, dy, prepare_pullback(f, backend, x, dy))
 end
 
 function pullback(f::F, backend::AbstractADType, x, dy) where {F}
