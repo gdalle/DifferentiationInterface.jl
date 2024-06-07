@@ -25,18 +25,18 @@ Compute the Hessian matrix of the function `f` at point `x`, overwriting `hess`.
 function hessian! end
 
 """
-    value_hessian_and_hessian(f, backend, x, [extras]) -> (y, grad, hess)
+    value_gradient_and_hessian(f, backend, x, [extras]) -> (y, grad, hess)
 
 Compute the value, hessian vector and Hessian matrix of the function `f` at point `x`.
 """
-function value_hessian_and_hessian end
+function value_gradient_and_hessian end
 
 """
-    value_hessian_and_hessian!(f, grad, hess, backend, x, [extras]) -> (y, grad, hess)
+    value_gradient_and_hessian!(f, grad, hess, backend, x, [extras]) -> (y, grad, hess)
 
 Compute the value, hessian vector and Hessian matrix of the function `f` at point `x`, overwriting `grad` and `hess`.
 """
-function value_hessian_and_hessian! end
+function value_gradient_and_hessian! end
 
 ## Preparation
 
