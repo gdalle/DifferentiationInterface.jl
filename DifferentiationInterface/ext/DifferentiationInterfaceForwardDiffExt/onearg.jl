@@ -61,6 +61,27 @@ function DI.pushforward!(
     return dy
 end
 
+## Derivative
+
+function DI.value_and_derivative(f::F, backend::AutoForwardDiff, x) where {F}
+    T = tag_type(f, backend, x)
+    ydual = f(make_dual(T, x, one(x)))
+    return myvalue(T, ydual), myderivative(T, ydual)
+end
+
+function DI.value_derivative_and_second_derivative(
+    f::F, backend::AutoForwardDiff, x
+) where {F}
+    T = tag_type(f, backend, x)
+    xdual = make_dual(T, x, one(x))
+    T2 = tag_type(f, backend, xdual)
+    ydual = f(make_dual(T2, xdual, one(xdual)))
+    v = myvalue(T, myvalue(T2, ydual))
+    d = myderivative(T, myvalue(T2, ydual))
+    d2 = myderivative(T, myderivative(T2, ydual))
+    return v, d, d2
+end
+
 ## Gradient
 
 struct ForwardDiffGradientExtras{C} <: GradientExtras
@@ -182,23 +203,4 @@ function DI.value_gradient_and_hessian(
     return (
         DiffResults.value(result), DiffResults.gradient(result), DiffResults.hessian(result)
     )
-end
-
-function DI.value_and_derivative(f::F, backend::AutoForwardDiff, x) where {F}
-    T = tag_type(f, backend, x)
-    ydual = f(make_dual(T, x, one(x)))
-    return myvalue(T, ydual), myderivative(T, ydual)
-end
-
-function DI.value_derivative_and_second_derivative(
-    f::F, backend::AutoForwardDiff, x
-) where {F}
-    T = tag_type(f, backend, x)
-    xdual = make_dual(T, x, one(x))
-    T2 = tag_type(f, backend, xdual)
-    ydual = f(make_dual(T2, xdual, one(xdual)))
-    v = myvalue(T, myvalue(T2, ydual))
-    d = myderivative(T, myvalue(T2, ydual))
-    d2 = myderivative(T, myderivative(T2, ydual))
-    return v, d, d2
 end
