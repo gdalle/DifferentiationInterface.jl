@@ -63,6 +63,10 @@ end
 
 ## Derivative
 
+function DI.prepare_derivative(f::F, backend::AutoForwardDiff, x) where {F}
+    return NoDerivativeExtras()
+end
+
 function DI.value_and_derivative(f::F, backend::AutoForwardDiff, x) where {F}
     T = tag_type(f, backend, x)
     ydual = f(make_dual(T, x, one(x)))
