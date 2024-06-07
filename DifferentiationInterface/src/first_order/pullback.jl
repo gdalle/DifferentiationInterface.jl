@@ -147,11 +147,7 @@ function pullback!(f::F, dx, backend::AbstractADType, x, dy) where {F}
 end
 
 function value_and_pullback(
-    f::F,
-    backend::AbstractADType,
-    x,
-    dy,
-    extras::PullbackExtras=prepare_pullback(f, backend, x, dy),
+    f::F, backend::AbstractADType, x, dy, extras::PullbackExtras
 ) where {F}
     return value_and_pullback(f, backend, x, dy, extras)
 end
@@ -178,34 +174,18 @@ function value_and_pullback(
 end
 
 function value_and_pullback!(
-    f::F,
-    dx,
-    backend::AbstractADType,
-    x,
-    dy,
-    extras::PullbackExtras=prepare_pullback(f, backend, x, dy),
+    f::F, dx, backend::AbstractADType, x, dy, extras::PullbackExtras
 ) where {F}
     y, new_dx = value_and_pullback(f, backend, x, dy, extras)
     return y, copyto!(dx, new_dx)
 end
 
-function pullback(
-    f::F,
-    backend::AbstractADType,
-    x,
-    dy,
-    extras::PullbackExtras=prepare_pullback(f, backend, x, dy),
-) where {F}
+function pullback(f::F, backend::AbstractADType, x, dy, extras::PullbackExtras) where {F}
     return value_and_pullback(f, backend, x, dy, extras)[2]
 end
 
 function pullback!(
-    f::F,
-    dx,
-    backend::AbstractADType,
-    x,
-    dy,
-    extras::PullbackExtras=prepare_pullback(f, backend, x, dy),
+    f::F, dx, backend::AbstractADType, x, dy, extras::PullbackExtras
 ) where {F}
     return value_and_pullback!(f, dx, backend, x, dy, extras)[2]
 end

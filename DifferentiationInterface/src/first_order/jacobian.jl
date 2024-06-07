@@ -98,20 +98,20 @@ end
 
 ## One argument
 
-function value_and_jacobian(f!::F, y, backend::AbstractADType, x) where {F}
-    return value_and_jacobian(f!, y, backend, x, prepare_jacobian(f, backend, x))
+function value_and_jacobian(f::F, backend::AbstractADType, x) where {F}
+    return value_and_jacobian(f, backend, x, prepare_jacobian(f, backend, x))
 end
 
-function value_and_jacobian!(f!::F, y, jac, backend::AbstractADType, x) where {F}
-    return value_and_jacobian!(f!, y, jac, backend, x, prepare_jacobian(f, backend, x))
+function value_and_jacobian!(f::F, jac, backend::AbstractADType, x) where {F}
+    return value_and_jacobian!(f, jac, backend, x, prepare_jacobian(f, backend, x))
 end
 
-function jacobian(f!::F, y, backend::AbstractADType, x) where {F}
-    return jacobian(f!, y, backend, x, prepare_jacobian(f, backend, x))
+function jacobian(f::F, backend::AbstractADType, x) where {F}
+    return jacobian(f, backend, x, prepare_jacobian(f, backend, x))
 end
 
-function jacobian!(f!::F, y, jac, backend::AbstractADType, x) where {F}
-    return jacobian!(f!, y, jac, backend, x, prepare_jacobian(f, backend, x))
+function jacobian!(f::F, jac, backend::AbstractADType, x) where {F}
+    return jacobian!(f, jac, backend, x, prepare_jacobian(f, backend, x))
 end
 
 function value_and_jacobian(

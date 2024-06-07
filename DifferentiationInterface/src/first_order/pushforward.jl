@@ -231,37 +231,20 @@ function value_and_pushforward(
 end
 
 function value_and_pushforward!(
-    f!::F,
-    y,
-    dy,
-    backend::AbstractADType,
-    x,
-    dx,
-    extras::PushforwardExtras=prepare_pushforward(f!, y, backend, x, dx),
+    f!::F, y, dy, backend::AbstractADType, x, dx, extras::PushforwardExtras
 ) where {F}
     y, new_dy = value_and_pushforward(f!, y, backend, x, dx, extras)
     return y, copyto!(dy, new_dy)
 end
 
 function pushforward(
-    f!::F,
-    y,
-    backend::AbstractADType,
-    x,
-    dx,
-    extras::PushforwardExtras=prepare_pushforward(f!, y, backend, x, dx),
+    f!::F, y, backend::AbstractADType, x, dx, extras::PushforwardExtras
 ) where {F}
     return value_and_pushforward(f!, y, backend, x, dx, extras)[2]
 end
 
 function pushforward!(
-    f!::F,
-    y,
-    dy,
-    backend::AbstractADType,
-    x,
-    dx,
-    extras::PushforwardExtras=prepare_pushforward(f!, y, backend, x, dx),
+    f!::F, y, dy, backend::AbstractADType, x, dx, extras::PushforwardExtras
 ) where {F}
     return value_and_pushforward!(f!, y, dy, backend, x, dx, extras)[2]
 end
