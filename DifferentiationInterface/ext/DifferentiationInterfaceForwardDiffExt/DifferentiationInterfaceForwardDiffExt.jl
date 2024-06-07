@@ -10,6 +10,7 @@ using DifferentiationInterface:
     HessianExtras,
     JacobianExtras,
     NoDerivativeExtras,
+    NoSecondDerivativeExtras,
     PushforwardExtras
 using ForwardDiff.DiffResults: DiffResults, DiffResult, GradientResult, MutableDiffResult
 using ForwardDiff:
