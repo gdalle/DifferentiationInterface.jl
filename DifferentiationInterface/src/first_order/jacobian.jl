@@ -98,13 +98,23 @@ end
 
 ## One argument
 
-function value_and_jacobian(
-    f::F, backend::AbstractADType, x, extras::JacobianExtras=prepare_jacobian(f, backend, x)
-) where {F}
-    return value_and_jacobian_onearg_aux(f, backend, x, extras)
+function value_and_jacobian(f::F, backend::AbstractADType, x) where {F}
+    return value_and_jacobian(f, backend, x, prepare_jacobian(f, backend, x))
 end
 
-function value_and_jacobian_onearg_aux(
+function value_and_jacobian!(f::F, jac, backend::AbstractADType, x) where {F}
+    return value_and_jacobian!(f, jac, backend, x, prepare_jacobian(f, backend, x))
+end
+
+function jacobian(f::F, backend::AbstractADType, x) where {F}
+    return jacobian(f, backend, x, prepare_jacobian(f, backend, x))
+end
+
+function jacobian!(f::F, jac, backend::AbstractADType, x) where {F}
+    return jacobian!(f, jac, backend, x, prepare_jacobian(f, backend, x))
+end
+
+function value_and_jacobian(
     f::F, backend, x::AbstractArray, extras::PushforwardJacobianExtras
 ) where {F}
     y = f(x)  # TODO: remove
@@ -123,7 +133,7 @@ function value_and_jacobian_onearg_aux(
     return y, jac
 end
 
-function value_and_jacobian_onearg_aux(
+function value_and_jacobian(
     f::F, backend, x::AbstractArray, extras::PullbackJacobianExtras
 ) where {F}
     y = f(x)  # TODO: remove
@@ -139,16 +149,6 @@ function value_and_jacobian_onearg_aux(
 end
 
 function value_and_jacobian!(
-    f::F,
-    jac,
-    backend::AbstractADType,
-    x,
-    extras::JacobianExtras=prepare_jacobian(f, backend, x),
-) where {F}
-    return value_and_jacobian_onearg_aux!(f, jac, backend, x, extras)
-end
-
-function value_and_jacobian_onearg_aux!(
     f::F, jac::AbstractMatrix, backend, x::AbstractArray, extras::PushforwardJacobianExtras
 ) where {F}
     y = f(x)  # TODO: remove
@@ -167,7 +167,7 @@ function value_and_jacobian_onearg_aux!(
     return y, jac
 end
 
-function value_and_jacobian_onearg_aux!(
+function value_and_jacobian!(
     f::F, jac::AbstractMatrix, backend, x::AbstractArray, extras::PullbackJacobianExtras
 ) where {F}
     y = f(x)  # TODO: remove
@@ -182,35 +182,33 @@ function value_and_jacobian_onearg_aux!(
     return y, jac
 end
 
-function jacobian(
-    f::F, backend::AbstractADType, x, extras::JacobianExtras=prepare_jacobian(f, backend, x)
-) where {F}
+function jacobian(f::F, backend::AbstractADType, x, extras::JacobianExtras) where {F}
     return value_and_jacobian(f, backend, x, extras)[2]
 end
 
-function jacobian!(
-    f::F,
-    jac,
-    backend::AbstractADType,
-    x,
-    extras::JacobianExtras=prepare_jacobian(f, backend, x),
-) where {F}
+function jacobian!(f::F, jac, backend::AbstractADType, x, extras::JacobianExtras) where {F}
     return value_and_jacobian!(f, jac, backend, x, extras)[2]
 end
 
 ## Two arguments
 
-function value_and_jacobian(
-    f!::F,
-    y,
-    backend::AbstractADType,
-    x,
-    extras::JacobianExtras=prepare_jacobian(f!, y, backend, x),
-) where {F}
-    return value_and_jacobian_twoarg_aux(f!, y, backend, x, extras)
+function value_and_jacobian(f!::F, y, backend::AbstractADType, x) where {F}
+    return value_and_jacobian(f!, y, backend, x, prepare_jacobian(f!, y, backend, x))
 end
 
-function value_and_jacobian_twoarg_aux(
+function value_and_jacobian!(f!::F, y, jac, backend::AbstractADType, x) where {F}
+    return value_and_jacobian!(f!, y, jac, backend, x, prepare_jacobian(f!, y, backend, x))
+end
+
+function jacobian(f!::F, y, backend::AbstractADType, x) where {F}
+    return jacobian(f!, y, backend, x, prepare_jacobian(f!, y, backend, x))
+end
+
+function jacobian!(f!::F, y, jac, backend::AbstractADType, x) where {F}
+    return jacobian!(f!, y, jac, backend, x, prepare_jacobian(f!, y, backend, x))
+end
+
+function value_and_jacobian(
     f!::F, y, backend, x::AbstractArray, extras::PushforwardJacobianExtras
 ) where {F}
     pushforward_extras_same = prepare_pushforward_same_point(
@@ -230,7 +228,7 @@ function value_and_jacobian_twoarg_aux(
     return y, jac
 end
 
-function value_and_jacobian_twoarg_aux(
+function value_and_jacobian(
     f!::F, y, backend, x::AbstractArray, extras::PullbackJacobianExtras
 ) where {F}
     pullback_extras_same = prepare_pullback_same_point(
@@ -251,17 +249,6 @@ function value_and_jacobian_twoarg_aux(
 end
 
 function value_and_jacobian!(
-    f!::F,
-    y,
-    jac,
-    backend::AbstractADType,
-    x,
-    extras::JacobianExtras=prepare_jacobian(f!, y, backend, x),
-) where {F}
-    return value_and_jacobian_twoarg_aux!(f!, y, jac, backend, x, extras)
-end
-
-function value_and_jacobian_twoarg_aux!(
     f!::F,
     y,
     jac::AbstractMatrix,
@@ -286,7 +273,7 @@ function value_and_jacobian_twoarg_aux!(
     return y, jac
 end
 
-function value_and_jacobian_twoarg_aux!(
+function value_and_jacobian!(
     f!::F, y, jac::AbstractMatrix, backend, x::AbstractArray, extras::PullbackJacobianExtras
 ) where {F}
     pullback_extras_same = prepare_pullback_same_point(
@@ -306,23 +293,12 @@ function value_and_jacobian_twoarg_aux!(
     return y, jac
 end
 
-function jacobian(
-    f!::F,
-    y,
-    backend::AbstractADType,
-    x,
-    extras::JacobianExtras=prepare_jacobian(f!, y, backend, x),
-) where {F}
+function jacobian(f!::F, y, backend::AbstractADType, x, extras::JacobianExtras) where {F}
     return value_and_jacobian(f!, y, backend, x, extras)[2]
 end
 
 function jacobian!(
-    f!::F,
-    y,
-    jac,
-    backend::AbstractADType,
-    x,
-    extras::JacobianExtras=prepare_jacobian(f!, y, backend, x),
+    f!::F, y, jac, backend::AbstractADType, x, extras::JacobianExtras
 ) where {F}
     return value_and_jacobian!(f!, y, jac, backend, x, extras)[2]
 end

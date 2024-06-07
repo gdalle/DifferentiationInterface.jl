@@ -62,34 +62,42 @@ end
 
 ## One argument
 
+function value_and_gradient(f::F, backend::AbstractADType, x) where {F}
+    return value_and_gradient(f, backend, x, prepare_gradient(f, backend, x))
+end
+
+function value_and_gradient!(f::F, der, backend::AbstractADType, x) where {F}
+    return value_and_gradient!(f, der, backend, x, prepare_gradient(f, backend, x))
+end
+
+function gradient(f::F, backend::AbstractADType, x) where {F}
+    return gradient(f, backend, x, prepare_gradient(f, backend, x))
+end
+
+function gradient!(f::F, der, backend::AbstractADType, x) where {F}
+    return gradient!(f, der, backend, x, prepare_gradient(f, backend, x))
+end
+
 function value_and_gradient(
-    f::F, backend::AbstractADType, x, extras::GradientExtras=prepare_gradient(f, backend, x)
+    f::F, backend::AbstractADType, x, extras::PullbackGradientExtras
 ) where {F}
     return value_and_pullback(f, backend, x, one(eltype(x)), extras.pullback_extras)
 end
 
 function value_and_gradient!(
-    f::F,
-    grad,
-    backend::AbstractADType,
-    x,
-    extras::GradientExtras=prepare_gradient(f, backend, x),
+    f::F, grad, backend::AbstractADType, x, extras::PullbackGradientExtras
 ) where {F}
     return value_and_pullback!(f, grad, backend, x, one(eltype(x)), extras.pullback_extras)
 end
 
 function gradient(
-    f::F, backend::AbstractADType, x, extras::GradientExtras=prepare_gradient(f, backend, x)
+    f::F, backend::AbstractADType, x, extras::PullbackGradientExtras
 ) where {F}
     return pullback(f, backend, x, one(eltype(x)), extras.pullback_extras)
 end
 
 function gradient!(
-    f::F,
-    grad,
-    backend::AbstractADType,
-    x,
-    extras::GradientExtras=prepare_gradient(f, backend, x),
+    f::F, grad, backend::AbstractADType, x, extras::PullbackGradientExtras
 ) where {F}
     return pullback!(f, grad, backend, x, one(eltype(x)), extras.pullback_extras)
 end

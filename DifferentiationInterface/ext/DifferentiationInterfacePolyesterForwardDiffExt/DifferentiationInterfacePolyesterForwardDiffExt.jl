@@ -11,7 +11,8 @@ using DifferentiationInterface:
     NoGradientExtras,
     NoHessianExtras,
     NoJacobianExtras,
-    PushforwardExtras
+    PushforwardExtras,
+    PushforwardDerivativeExtras
 using DocStringExtensions
 using LinearAlgebra: mul!
 using PolyesterForwardDiff: threaded_gradient!, threaded_jacobian!
