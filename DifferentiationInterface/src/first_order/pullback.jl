@@ -194,7 +194,7 @@ end
 
 function value_and_pullback!(f!::F, y, dx, backend::AbstractADType, x, dy) where {F}
     return value_and_pullback!(
-        f!, y, dx, backend, dy, x, prepare_pullback(f!, y, backend, x, dy)
+        f!, y, dx, backend, x, dy, prepare_pullback(f!, y, backend, x, dy)
     )
 end
 
