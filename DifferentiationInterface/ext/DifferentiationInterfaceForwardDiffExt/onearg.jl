@@ -67,14 +67,6 @@ function DI.prepare_derivative(f::F, backend::AutoForwardDiff, x) where {F}
     return NoDerivativeExtras()
 end
 
-function DI.derivative(f::F, ::AutoForwardDiff, x, ::NoDerivativeExtras) where {F}
-    return derivative(f, x)
-end
-
-function DI.derivative!(f::F, der, ::AutoForwardDiff, x, ::NoDerivativeExtras) where {F}
-    return derivative!(der, f, x)
-end
-
 function DI.value_and_derivative(
     f::F, backend::AutoForwardDiff, x, ::NoDerivativeExtras
 ) where {F}
