@@ -95,8 +95,14 @@ function prepare_pullback_aux(f!::F, y, backend, x, dy, ::PullbackSlow) where {F
 end
 
 # Throw error if backend is missing
-prepare_pullback_aux(f::F, backend, x, dy, ::PullbackFast) where {F}     = throw(MissingBackendError(backend))
-prepare_pullback_aux(f!::F, y, backend, x, dy, ::PullbackFast) where {F} = throw(MissingBackendError(backend))
+
+function prepare_pullback_aux(f, backend, x, dy, ::PullbackFast)
+    throw(MissingBackendError(backend))
+end
+
+function prepare_pullback_aux(f!, y, backend, x, dy, ::PullbackFast)
+    throw(MissingBackendError(backend))
+end
 
 ## Preparation (same point)
 
@@ -124,6 +130,22 @@ end
 
 ## One argument
 
+function value_and_pullback(f::F, backend::AbstractADType, x, dy) where {F}
+    return value_and_pullback(f, backend, x, dy, prepare_pullback(f, backend, x, dy))
+end
+
+function value_and_pullback!(f::F, dx, backend::AbstractADType, x, dy) where {F}
+    return value_and_pullback!(f, dx, backend, dy, x, prepare_pullback(f, backend, x, dy))
+end
+
+function pullback(f::F, backend::AbstractADType, x, dy) where {F}
+    return pullback(f, backend, x, dy, prepare_pullback(f, backend, x, dy))
+end
+
+function pullback!(f::F, dx, backend::AbstractADType, x, dy) where {F}
+    return pullback!(f, dx, backend, x, dy, prepare_pullback(f, backend, x, dy))
+end
+
 function value_and_pullback(
     f::F,
     backend::AbstractADType,
@@ -131,10 +153,10 @@ function value_and_pullback(
     dy,
     extras::PullbackExtras=prepare_pullback(f, backend, x, dy),
 ) where {F}
-    return value_and_pullback_onearg_aux(f, backend, x, dy, extras)
+    return value_and_pullback(f, backend, x, dy, extras)
 end
 
-function value_and_pullback_onearg_aux(
+function value_and_pullback(
     f::F, backend, x, dy, extras::PushforwardPullbackExtras
 ) where {F}
     @compat (; pushforward_extras) = extras
@@ -190,18 +212,27 @@ end
 
 ## Two arguments
 
-function value_and_pullback(
-    f!::F,
-    y,
-    backend::AbstractADType,
-    x,
-    dy,
-    extras::PullbackExtras=prepare_pullback(f!, y, backend, x, dy),
-) where {F}
-    return value_and_pullback_twoarg_aux(f!, y, backend, x, dy, extras)
+function value_and_pullback(f!::F, y, backend::AbstractADType, x, dy) where {F}
+    return value_and_pullback(
+        f!, y, backend, x, dy, prepare_pullback(f!, y, backend, x, dy)
+    )
 end
 
-function value_and_pullback_twoarg_aux(
+function value_and_pullback!(f!::F, y, dx, backend::AbstractADType, x, dy) where {F}
+    return value_and_pullback!(
+        f!, y, dx, backend, dy, x, prepare_pullback(f!, y, backend, x, dy)
+    )
+end
+
+function pullback(f!::F, y, backend::AbstractADType, x, dy) where {F}
+    return pullback(f!, y, backend, x, dy, prepare_pullback(f!, y, backend, x, dy))
+end
+
+function pullback!(f!::F, y, dx, backend::AbstractADType, x, dy) where {F}
+    return pullback!(f!, y, dx, backend, x, dy, prepare_pullback(f!, y, backend, x, dy))
+end
+
+function value_and_pullback(
     f!::F, y, backend, x, dy, extras::PushforwardPullbackExtras
 ) where {F}
     @compat (; pushforward_extras) = extras
@@ -217,37 +248,20 @@ function value_and_pullback_twoarg_aux(
 end
 
 function value_and_pullback!(
-    f!::F,
-    y,
-    dx,
-    backend::AbstractADType,
-    x,
-    dy,
-    extras::PullbackExtras=prepare_pullback(f!, y, backend, x, dy),
+    f!::F, y, dx, backend::AbstractADType, x, dy, extras::PullbackExtras
 ) where {F}
     y, new_dx = value_and_pullback(f!, y, backend, x, dy, extras)
     return y, copyto!(dx, new_dx)
 end
 
 function pullback(
-    f!::F,
-    y,
-    backend::AbstractADType,
-    x,
-    dy,
-    extras::PullbackExtras=prepare_pullback(f!, y, backend, x, dy),
+    f!::F, y, backend::AbstractADType, x, dy, extras::PullbackExtras
 ) where {F}
     return value_and_pullback(f!, y, backend, x, dy, extras)[2]
 end
 
 function pullback!(
-    f!::F,
-    y,
-    dx,
-    backend::AbstractADType,
-    x,
-    dy,
-    extras::PullbackExtras=prepare_pullback(f!, y, backend, x, dy),
+    f!::F, y, dx, backend::AbstractADType, x, dy, extras::PullbackExtras
 ) where {F}
     return value_and_pullback!(f!, y, dx, backend, x, dy, extras)[2]
 end

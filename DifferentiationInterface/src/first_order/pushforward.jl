@@ -96,8 +96,14 @@ function prepare_pushforward_aux(f!::F, y, backend, x, dx, ::PushforwardSlow) wh
 end
 
 # Throw error if backend is missing
-prepare_pushforward_aux(f::F, backend, x, dy, ::PushforwardFast) where {F}     = throw(MissingBackendError(backend))
-prepare_pushforward_aux(f!::F, y, backend, x, dy, ::PushforwardFast) where {F} = throw(MissingBackendError(backend))
+
+function prepare_pushforward_aux(f, backend, x, dy, ::PushforwardFast)
+    throw(MissingBackendError(backend))
+end
+
+function prepare_pushforward_aux(f!, y, backend, x, dy, ::PushforwardFast)
+    throw(MissingBackendError(backend))
+end
 
 ## Preparation (same point)
 
@@ -125,17 +131,25 @@ end
 
 ## One argument
 
-function value_and_pushforward(
-    f::F,
-    backend::AbstractADType,
-    x,
-    dx,
-    extras::PushforwardExtras=prepare_pushforward(f, backend, x, dx),
-) where {F}
-    return value_and_pushforward_onearg_aux(f, backend, x, dx, extras)
+function value_and_pushforward(f::F, backend::AbstractADType, x, dx) where {F}
+    return value_and_pushforward(f, backend, x, dx, prepare_pushforward(f, backend, x, dx))
 end
 
-function value_and_pushforward_onearg_aux(
+function value_and_pushforward!(f::F, dy, backend::AbstractADType, x, dx) where {F}
+    return value_and_pushforward!(
+        f, dy, backend, x, dx, prepare_pushforward(f, backend, x, dx)
+    )
+end
+
+function pushforward(f::F, backend::AbstractADType, x, dx) where {F}
+    return pushforward(f, backend, x, dx, prepare_pushforward(f, backend, x, dx))
+end
+
+function pushforward!(f::F, dy, backend::AbstractADType, x, dx) where {F}
+    return pushforward!(f, dy, backend, x, dx, prepare_pushforward(f, backend, x, dx))
+end
+
+function value_and_pushforward(
     f::F, backend, x, dx, extras::PullbackPushforwardExtras
 ) where {F}
     @compat (; pullback_extras) = extras
@@ -157,52 +171,49 @@ function value_and_pushforward_onearg_aux(
 end
 
 function value_and_pushforward!(
-    f::F,
-    dy,
-    backend::AbstractADType,
-    x,
-    dx,
-    extras::PushforwardExtras=prepare_pushforward(f, backend, x, dx),
+    f::F, dy, backend::AbstractADType, x, dx, extras::PushforwardExtras
 ) where {F}
     y, new_dy = value_and_pushforward(f, backend, x, dx, extras)
     return y, copyto!(dy, new_dy)
 end
 
 function pushforward(
-    f::F,
-    backend::AbstractADType,
-    x,
-    dx,
-    extras::PushforwardExtras=prepare_pushforward(f, backend, x, dx),
+    f::F, backend::AbstractADType, x, dx, extras::PushforwardExtras
 ) where {F}
     return value_and_pushforward(f, backend, x, dx, extras)[2]
 end
 
 function pushforward!(
-    f::F,
-    dy,
-    backend::AbstractADType,
-    x,
-    dx,
-    extras::PushforwardExtras=prepare_pushforward(f, backend, x, dx),
+    f::F, dy, backend::AbstractADType, x, dx, extras::PushforwardExtras
 ) where {F}
     return value_and_pushforward!(f, dy, backend, x, dx, extras)[2]
 end
 
 ## Two arguments
 
-function value_and_pushforward(
-    f!::F,
-    y,
-    backend::AbstractADType,
-    x,
-    dx,
-    extras::PushforwardExtras=prepare_pushforward(f!, y, backend, x, dx),
-) where {F}
-    return value_and_pushforward_twoarg_aux(f!, y, backend, x, dx, extras)
+function value_and_pushforward(f!::F, y, backend::AbstractADType, x, dx) where {F}
+    return value_and_pushforward(
+        f!, y, backend, x, dx, prepare_pushforward(f!, y, backend, x, dx)
+    )
 end
 
-function value_and_pushforward_twoarg_aux(
+function value_and_pushforward!(f!::F, y, dy, backend::AbstractADType, x, dx) where {F}
+    return value_and_pushforward!(
+        f!, y, dy, backend, x, dx, prepare_pushforward(f!, y, backend, x, dx)
+    )
+end
+
+function pushforward(f!::F, y, backend::AbstractADType, x, dx) where {F}
+    return pushforward(f!, y, backend, x, dx, prepare_pushforward(f!, y, backend, x, dx))
+end
+
+function pushforward!(f!::F, y, dy, backend::AbstractADType, x, dx) where {F}
+    return pushforward!(
+        f!, y, dy, backend, x, dx, prepare_pushforward(f!, y, backend, x, dx)
+    )
+end
+
+function value_and_pushforward(
     f!::F, y, backend, x, dx, extras::PullbackPushforwardExtras
 ) where {F}
     @compat (; pullback_extras) = extras
