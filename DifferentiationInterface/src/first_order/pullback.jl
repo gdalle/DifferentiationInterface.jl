@@ -147,12 +147,6 @@ function pullback!(f::F, dx, backend::AbstractADType, x, dy) where {F}
 end
 
 function value_and_pullback(
-    f::F, backend::AbstractADType, x, dy, extras::PullbackExtras
-) where {F}
-    return value_and_pullback(f, backend, x, dy, extras)
-end
-
-function value_and_pullback(
     f::F, backend, x, dy, extras::PushforwardPullbackExtras
 ) where {F}
     @compat (; pushforward_extras) = extras
