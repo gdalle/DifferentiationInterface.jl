@@ -68,7 +68,7 @@ function DI.prepare_second_derivative(f::F, backend::AutoForwardDiff, x) where {
 end
 
 function DI.second_derivative(
-    f::F, ::AutoForwardDiff, x, dx, ::NoSecondDerivativeExtras
+    f::F, ::AutoForwardDiff, x, ::NoSecondDerivativeExtras
 ) where {F}
     T = tag_type(f, backend, x)
     xdual = make_dual(T, x, one(x))
@@ -78,7 +78,7 @@ function DI.second_derivative(
 end
 
 function DI.second_derivative!(
-    f::F, der2, ::AutoForwardDiff, x, dx, ::NoSecondDerivativeExtras
+    f::F, der2, ::AutoForwardDiff, x, ::NoSecondDerivativeExtras
 ) where {F}
     T = tag_type(f, backend, x)
     xdual = make_dual(T, x, one(x))
