@@ -61,29 +61,6 @@ function DI.pushforward!(
     return dy
 end
 
-## Derivative
-
-function DI.prepare_derivative(f::F, backend::AutoForwardDiff, x) where {F}
-    return NoDerivativeExtras()
-end
-
-function DI.value_and_derivative(
-    f::F, backend::AutoForwardDiff, x, ::NoDerivativeExtras
-) where {F}
-    T = tag_type(f, backend, x)
-    ydual = f(make_dual(T, x, one(x)))
-    return myvalue(T, ydual), myderivative(T, ydual)
-end
-
-function DI.value_and_derivative!(
-    f::F, der, backend::AutoForwardDiff, x, ::NoDerivativeExtras
-) where {F}
-    T = tag_type(f, backend, x)
-    xdual = make_dual(T, x, one(x))
-    ydual = f(xdual)
-    return myvalue(T, ydual), myderivative!(T, der, ydual)
-end
-
 ## Second derivative
 
 function DI.prepare_second_derivative(f::F, backend::AutoForwardDiff, x) where {F}
