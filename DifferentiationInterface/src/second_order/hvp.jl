@@ -185,34 +185,28 @@ end
 function hvp!(
     f::F, p, backend::SecondOrder, x, dx, extras::ForwardOverForwardHVPExtras
 ) where {F}
-    @compat (; inner_gradient_closure, outer_pushforward_extras) = extras
-    return pushforward!(
-        inner_gradient_closure, p, outer(backend), x, dx, outer_pushforward_extras
-    )
+    @compat (; inner_gradient, outer_pushforward_extras) = extras
+    return pushforward!(inner_gradient, p, outer(backend), x, dx, outer_pushforward_extras)
 end
 
 function hvp!(
     f::F, p, backend::SecondOrder, x, dx, extras::ForwardOverReverseHVPExtras
 ) where {F}
-    @compat (; inner_gradient_closure, outer_pushforward_extras) = extras
-    return pushforward!(
-        inner_gradient_closure, p, outer(backend), x, dx, outer_pushforward_extras
-    )
+    @compat (; inner_gradient, outer_pushforward_extras) = extras
+    return pushforward!(inner_gradient, p, outer(backend), x, dx, outer_pushforward_extras)
 end
 
 function hvp!(
     f::F, p, backend::SecondOrder, x, dx, extras::ReverseOverForwardHVPExtras
 ) where {F}
-    @compat (; inner_pushforward_closure_generator, outer_gradient_extras) = extras
-    inner_pushforward_closure = inner_pushforward_closure_generator(dx)
-    return gradient!(inner_pushforward_closure, p, outer(backend), x, outer_gradient_extras)
+    @compat (; outer_gradient_extras) = extras
+    inner_pushforward = InnerPushforwardFixedSeed(f, nested(inner(backend)), dx)
+    return gradient!(inner_pushforward, p, outer(backend), x, outer_gradient_extras)
 end
 
 function hvp!(
     f::F, p, backend::SecondOrder, x, dx, extras::ReverseOverReverseHVPExtras
 ) where {F}
-    @compat (; inner_gradient_closure, outer_pullback_extras) = extras
-    return pullback!(
-        inner_gradient_closure, p, outer(backend), x, dx, outer_pullback_extras
-    )
+    @compat (; inner_gradient, outer_pullback_extras) = extras
+    return pullback!(inner_gradient, p, outer(backend), x, dx, outer_pullback_extras)
 end
