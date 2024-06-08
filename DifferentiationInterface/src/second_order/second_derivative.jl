@@ -49,8 +49,19 @@ abstract type SecondDerivativeExtras <: Extras end
 
 struct NoSecondDerivativeExtras <: SecondDerivativeExtras end
 
-struct ClosureSecondDerivativeExtras{C,E} <: SecondDerivativeExtras
-    inner_derivative_closure::C
+struct InnerDerivative{F,B}
+    f::F
+    backend::B
+end
+
+function (id::InnerDerivative)(x)
+    @compat (; f, backend) = id
+    return derivative(f, backend, x)
+end
+
+struct ClosureSecondDerivativeExtras{ID<:InnerDerivative,E<:DerivativeExtras} <:
+       SecondDerivativeExtras
+    inner_derivative::ID
     outer_derivative_extras::E
 end
 
@@ -59,12 +70,9 @@ function prepare_second_derivative(f::F, backend::AbstractADType, x) where {F}
 end
 
 function prepare_second_derivative(f::F, backend::SecondOrder, x) where {F}
-    inner_backend = nested(inner(backend))
-    inner_derivative_closure(z) = derivative(f, inner_backend, z)
-    outer_derivative_extras = prepare_derivative(
-        inner_derivative_closure, outer(backend), x
-    )
-    return ClosureSecondDerivativeExtras(inner_derivative_closure, outer_derivative_extras)
+    inner_derivative = InnerDerivative(f, nested(inner(backend)))
+    outer_derivative_extras = prepare_derivative(inner_derivative, outer(backend), x)
+    return ClosureSecondDerivativeExtras(inner_derivative, outer_derivative_extras)
 end
 
 ## One argument
@@ -100,8 +108,8 @@ end
 function second_derivative(
     f::F, backend::SecondOrder, x, extras::ClosureSecondDerivativeExtras
 ) where {F}
-    @compat (; inner_derivative_closure, outer_derivative_extras) = extras
-    return derivative(inner_derivative_closure, outer(backend), x, outer_derivative_extras)
+    @compat (; inner_derivative, outer_derivative_extras) = extras
+    return derivative(inner_derivative, outer(backend), x, outer_derivative_extras)
 end
 
 function value_derivative_and_second_derivative(
@@ -115,10 +123,10 @@ end
 function value_derivative_and_second_derivative(
     f::F, backend::SecondOrder, x, extras::ClosureSecondDerivativeExtras
 ) where {F}
-    @compat (; inner_derivative_closure, outer_derivative_extras) = extras
+    @compat (; inner_derivative, outer_derivative_extras) = extras
     y = f(x)
     der, der2 = value_and_derivative(
-        inner_derivative_closure, outer(backend), x, outer_derivative_extras
+        inner_derivative, outer(backend), x, outer_derivative_extras
     )
     return y, der, der2
 end
@@ -132,10 +140,8 @@ end
 function second_derivative!(
     f::F, der2, backend::SecondOrder, x, extras::SecondDerivativeExtras
 ) where {F}
-    @compat (; inner_derivative_closure, outer_derivative_extras) = extras
-    return derivative!(
-        inner_derivative_closure, der2, outer(backend), x, outer_derivative_extras
-    )
+    @compat (; inner_derivative, outer_derivative_extras) = extras
+    return derivative!(inner_derivative, der2, outer(backend), x, outer_derivative_extras)
 end
 
 function value_derivative_and_second_derivative!(
@@ -149,10 +155,10 @@ end
 function value_derivative_and_second_derivative!(
     f::F, der, der2, backend::SecondOrder, x, extras::SecondDerivativeExtras
 ) where {F}
-    @compat (; inner_derivative_closure, outer_derivative_extras) = extras
+    @compat (; inner_derivative, outer_derivative_extras) = extras
     y = f(x)
     new_der, _ = value_and_derivative!(
-        inner_derivative_closure, der2, outer(backend), x, outer_derivative_extras
+        inner_derivative, der2, outer(backend), x, outer_derivative_extras
     )
     return y, copyto!(der, new_der), der2
 end
