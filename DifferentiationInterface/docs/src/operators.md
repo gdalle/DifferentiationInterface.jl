@@ -58,10 +58,13 @@ Several variants of each operator are defined.
 
 ## Mutation and signatures
 
-We support two types of functions:
+Some operators support two types of functions:
 
 - one-argument functions `f(x) = y`
 - two-argument functions `f!(y, x) = nothing`
+
+!!! warning
+    Only [`pushforward`](@ref), [`pullback`](@ref), [`derivative`](@ref) and [`jacobian`](@ref) support two-argument functions at the moment.
 
 The same operators are defined for both cases, but they have different signatures (they take different arguments):
 
@@ -75,7 +78,7 @@ The same operators are defined for both cases, but they have different signature
     This convention holds regardless of the bang `!` in the operator name.
     In particular, for two-argument functions `f!(y, x)`, every variant of every operator will mutate `y`.
 
-## [Preparation](@id Operators-Preparation)
+## Preparation
 
 ### Principle
 
