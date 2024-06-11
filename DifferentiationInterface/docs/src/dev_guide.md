@@ -29,7 +29,7 @@ For first-order operators, you may also want to support [two-argument functions]
 
 The method `prepare_operator` must output an `extras` object of the correct type.
 For instance, `prepare_gradient(f, backend, x)` must return a [`DifferentiationInterface.GradientExtras`](@ref).
-Assuming you don't need any preparation for said operator, you can use the trivial extras defined in the package, like `DifferentiationInterface.NoGradientExtras`.
+Assuming you don't need any preparation for said operator, you can use the trivial extras that are already defined, like `DifferentiationInterface.NoGradientExtras`.
 Otherwise, define a custom struct like `MyGradientExtras <: DifferentiationInterface.GradientExtras` and put the necessary storage in there.
 
 ### New backend
@@ -62,7 +62,7 @@ Every other operator can be deduced from these two, but you can gain efficiency 
 
 Once that is done, you need to add your new backend to the test suite.
 Test files should be gathered in a folder named `SuperDiff` inside [`DifferentiationInterface/test/Single`](https://github.com/gdalle/DifferentiationInterface.jl/tree/main/DifferentiationInterface/test/Single).
-They should use [DifferentiationInterfaceTest.jl](@ref) to check correctness against the default scenarios.
+They should use [DifferentiationInterfaceTest.jl](https://github.com/gdalle/DifferentiationInterface.jl/tree/main/DifferentiationInterfaceTest) to check correctness against the default scenarios.
 Take inspiration from the tests of other backends to write your own.
 To activate tests in CI, modify the [test workflow](https://github.com/gdalle/DifferentiationInterface.jl/blob/main/.github/workflows/Test.yml) and add your package to the list.
 To run the tests locally, replace the following line in [`DifferentiationInterface/test/runtests.jl`](https://github.com/gdalle/DifferentiationInterface.jl/blob/main/DifferentiationInterface/test/runtests.jl)
