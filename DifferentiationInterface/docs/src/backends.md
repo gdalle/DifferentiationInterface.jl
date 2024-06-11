@@ -100,17 +100,3 @@ The wrapper [`DifferentiateWith`](@ref) allows you to switch between backends.
 It takes a function `f` and specifies that `f` should be differentiated with the backend of your choice, instead of whatever other backend the code is trying to use.
 In other words, when someone tries to differentiate `dw = DifferentiateWith(f, backend1)` with `backend2`, then `backend1` steps in and `backend2` does nothing.
 At the moment, `DifferentiateWith` only works when `backend2` supports [ChainRules.jl](https://github.com/JuliaDiff/ChainRules.jl).
-
-## Defining your own
-
-To work with DifferentiationInterface.jl, a new AD system would need to create an object subtyping [`ADTypes.AbstractADType`](@extref ADTypes).
-In addition, some low-level operators would need to be defined at the very least:
-
-| backend subtype                           | pushforward necessary | pullback necessary |
-| :---------------------------------------- | :-------------------- | :----------------- |
-| [`ADTypes.ForwardMode`](@extref ADTypes)  | yes                   | no                 |
-| [`ADTypes.ReverseMode`](@extref ADTypes)  | no                    | yes                |
-| [`ADTypes.SymbolicMode`](@extref ADTypes) | yes                   | yes                |
-
-Every backend we support corresponds to a package extension of DifferentiationInterface.jl (located in the `ext` subfolder).
-If you need to implement your own backend, take a look in there for inspiration, or reach out to us in the GitHub issues.
