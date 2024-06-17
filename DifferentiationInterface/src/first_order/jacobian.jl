@@ -293,7 +293,7 @@ function jacobian(
         stack(vec, dy_batch.elements; dims=2)
     end
 
-    return y, jac[:, 1:N]
+    return jac[:, 1:N]
 end
 
 function jacobian(
@@ -319,7 +319,7 @@ function jacobian(
         stack(vec, dx_batch.elements; dims=1)
     end
 
-    return y, jac[1:M, :]
+    return jac[1:M, :]
 end
 
 function jacobian!(
