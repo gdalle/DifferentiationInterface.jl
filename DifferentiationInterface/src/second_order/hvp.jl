@@ -247,6 +247,10 @@ end
 
 ### Batched
 
+function hvp_batched(f::F, backend::AbstractADType, x, dx, extras::HVPExtras) where {F}
+    return hvp_batched(f, SecondOrder(backend, backend), x, dx, extras)
+end
+
 function hvp_batched(
     f::F, backend::SecondOrder, x, dx::Batch{B}, extras::HVPExtras
 ) where {F,B}
@@ -254,6 +258,10 @@ function hvp_batched(
         hvp(f, backend, x, dx.elements[l], extras)
     end
     return Batch(dg_elements)
+end
+
+function hvp_batched!(f::F, dg, backend::AbstractADType, x, dx, extras::HVPExtras) where {F}
+    return hvp_batched!(f, dg, SecondOrder(backend, backend), x, dx, extras)
 end
 
 function hvp_batched!(

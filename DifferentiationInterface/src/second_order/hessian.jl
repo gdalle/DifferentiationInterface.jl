@@ -50,7 +50,7 @@ abstract type HessianExtras <: Extras end
 struct NoHessianExtras <: HessianExtras end
 
 struct HVPGradientHessianExtras{N,E2<:HVPExtras,E1<:GradientExtras} <: HessianExtras
-    hvp_extras_batched::E2
+    hvp_batched_extras::E2
     gradient_extras::E1
 end
 
@@ -58,11 +58,11 @@ function prepare_hessian(f::F, backend::AbstractADType, x) where {F}
     N = length(x)
     B = pick_batchsize(N)
     dx = basis(backend, x, first(CartesianIndices(x)))
-    dx_batch = Batch(ntuple(Val{B}(), Returns(dx)))
-    hvp_extras_batched = prepare_hvp_batched(f, backend, x, dx_batch)
+    dx_batch = Batch(ntuple(Returns(dx), Val{B}()))
+    hvp_batched_extras = prepare_hvp_batched(f, backend, x, dx_batch)
     gradient_extras = prepare_gradient(f, maybe_inner(backend), x)
-    E2, E1 = typeof(hvp_extras), typeof(gradient_extras)
-    return HVPGradientHessianExtras{B,E2,E1}(hvp_extras_batched, gradient_extras)
+    E2, E1 = typeof(hvp_batched_extras), typeof(gradient_extras)
+    return HVPGradientHessianExtras{B,E2,E1}(hvp_batched_extras, gradient_extras)
 end
 
 ## One argument
@@ -86,8 +86,8 @@ function hessian!(f::F, hess, backend::AbstractADType, x) where {F}
 end
 
 function hessian(
-    f::F, backend::AbstractADType, x, extras::HVPGradientHessianExtras
-) where {F}
+    f::F, backend::AbstractADType, x, extras::HVPGradientHessianExtras{B}
+) where {F,B}
     xinds = CartesianIndices(x)
     N = length(x)
 
@@ -106,12 +106,12 @@ function hessian(
         stack(vec, dg_batch.elements; dims=2)
     end
 
-    return y, hess[:, 1:N]
+    return hess[:, 1:N]
 end
 
 function hessian!(
-    f::F, hess, backend::AbstractADType, x, extras::HVPGradientHessianExtras
-) where {F}
+    f::F, hess, backend::AbstractADType, x, extras::HVPGradientHessianExtras{B}
+) where {F,B}
     xinds = CartesianIndices(x)
     N = length(x)
 
