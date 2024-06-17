@@ -57,20 +57,20 @@ end
 
 ## Gradient
 
-struct EnzymeForwardGradientExtras{C,O} <: GradientExtras
+struct EnzymeForwardGradientExtras{B,O} <: GradientExtras
     shadow::O
 end
 
 function DI.prepare_gradient(f, ::AutoEnzyme{<:ForwardMode}, x)
-    C = pick_chunksize(length(x))
-    shadow = chunkedonehot(x, Val(C))
-    return EnzymeForwardGradientExtras{C,typeof(shadow)}(shadow)
+    B = pick_batchsize(length(x))
+    shadow = chunkedonehot(x, Val(B))
+    return EnzymeForwardGradientExtras{B,typeof(shadow)}(shadow)
 end
 
 function DI.gradient(
     f, backend::AutoEnzyme{<:ForwardMode}, x, extras::EnzymeForwardGradientExtras{C}
-) where {C}
-    grad_tup = gradient(forward_mode(backend), f, x, Val{C}(); shadow=extras.shadow)
+) where {B}
+    grad_tup = gradient(forward_mode(backend), f, x, Val{B}(); shadow=extras.shadow)
     return reshape(collect(grad_tup), size(x))
 end
 
@@ -82,27 +82,27 @@ end
 
 function DI.gradient!(
     f, grad, backend::AutoEnzyme{<:ForwardMode}, x, extras::EnzymeForwardGradientExtras{C}
-) where {C}
-    grad_tup = gradient(forward_mode(backend), f, x, Val{C}(); shadow=extras.shadow)
+) where {B}
+    grad_tup = gradient(forward_mode(backend), f, x, Val{B}(); shadow=extras.shadow)
     return copyto!(grad, grad_tup)
 end
 
 function DI.value_and_gradient!(
     f, grad, backend::AutoEnzyme{<:ForwardMode}, x, extras::EnzymeForwardGradientExtras{C}
-) where {C}
-    grad_tup = gradient(forward_mode(backend), f, x, Val{C}(); shadow=extras.shadow)
+) where {B}
+    grad_tup = gradient(forward_mode(backend), f, x, Val{B}(); shadow=extras.shadow)
     return f(x), copyto!(grad, grad_tup)
 end
 
 ## Jacobian
 
-struct EnzymeForwardOneArgJacobianExtras{C,O} <: JacobianExtras
+struct EnzymeForwardOneArgJacobianExtras{B,O} <: JacobianExtras
     shadow::O
 end
 
 function DI.prepare_jacobian(f, ::AutoEnzyme{<:Union{ForwardMode,Nothing}}, x)
-    C = pick_chunksize(length(x))
-    shadow = chunkedonehot(x, Val(C))
+    B = pick_batchsize(length(x))
+    shadow = chunkedonehot(x, Val(B))
     return EnzymeForwardOneArgJacobianExtras{C,typeof(shadow)}(shadow)
 end
 
@@ -111,8 +111,8 @@ function DI.jacobian(
     backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
     extras::EnzymeForwardOneArgJacobianExtras{C},
-) where {C}
-    jac_wrongshape = jacobian(forward_mode(backend), f, x, Val{C}(); shadow=extras.shadow)
+) where {B}
+    jac_wrongshape = jacobian(forward_mode(backend), f, x, Val{B}(); shadow=extras.shadow)
     nx = length(x)
     ny = length(jac_wrongshape) ÷ length(x)
     return reshape(jac_wrongshape, ny, nx)

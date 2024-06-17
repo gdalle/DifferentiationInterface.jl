@@ -12,6 +12,8 @@ Create an `extras` object that can be given to [`pushforward`](@ref) and its var
 """
 function prepare_pushforward end
 
+function prepare_pushforward_batched end
+
 """
     prepare_pushforward_same_point(f,     backend, x, dx) -> extras_same
     prepare_pushforward_same_point(f!, y, backend, x, dx) -> extras_same
@@ -23,6 +25,8 @@ Create an `extras_same` object that can be given to [`pushforward`](@ref) and it
     In the two-argument case, `y` is mutated by `f!` during preparation.
 """
 function prepare_pushforward_same_point end
+
+function prepare_pushforward_same_point_batched end
 
 """
     value_and_pushforward(f,     backend, x, dx, [extras]) -> (y, dy)
@@ -51,6 +55,8 @@ Compute the pushforward of the function `f` at point `x` with seed `dx`.
 """
 function pushforward end
 
+function pushforward_batched end
+
 """
     pushforward!(f,     dy, backend, x, dx, [extras]) -> dy
     pushforward!(f!, y, dy, backend, x, dx, [extras]) -> dy
@@ -59,7 +65,11 @@ Compute the pushforward of the function `f` at point `x` with seed `dx`, overwri
 """
 function pushforward! end
 
+function pushforward_batched! end
+
 ## Preparation
+
+### Extras types
 
 """
     PushforwardExtras
@@ -73,6 +83,8 @@ struct NoPushforwardExtras <: PushforwardExtras end
 struct PullbackPushforwardExtras{E} <: PushforwardExtras
     pullback_extras::E
 end
+
+### Standard
 
 function prepare_pushforward(f::F, backend::AbstractADType, x, dx) where {F}
     return prepare_pushforward_aux(f, backend, x, dx, pushforward_performance(backend))
@@ -95,8 +107,6 @@ function prepare_pushforward_aux(f!::F, y, backend, x, dx, ::PushforwardSlow) wh
     return PullbackPushforwardExtras(pullback_extras)
 end
 
-# Throw error if backend is missing
-
 function prepare_pushforward_aux(f, backend, x, dy, ::PushforwardFast)
     throw(MissingBackendError(backend))
 end
@@ -105,7 +115,7 @@ function prepare_pushforward_aux(f!, y, backend, x, dy, ::PushforwardFast)
     throw(MissingBackendError(backend))
 end
 
-## Preparation (same point)
+### Standard, same point
 
 function prepare_pushforward_same_point(
     f::F, backend::AbstractADType, x, dx, extras::PushforwardExtras
@@ -129,7 +139,49 @@ function prepare_pushforward_same_point(f!::F, y, backend::AbstractADType, x, dx
     return prepare_pushforward_same_point(f!, y, backend, x, dx, extras)
 end
 
+### Batched
+
+function prepare_pushforward_batched(
+    f::F, backend::AbstractADType, x, dx::Batch{B}
+) where {F,B}
+    return prepare_pushforward(f, backend, x, first(dx.elements))
+end
+
+function prepare_pushforward_batched(
+    f!::F, y, backend::AbstractADType, x, dx::Batch{B}
+) where {F,B}
+    return prepare_pushforward(f!, y, backend, x, first(dx.elements))
+end
+
+### Batched, same point
+
+function prepare_pushforward_batched_same_point(
+    f::F, backend::AbstractADType, x, dx::Batch{B}, extras::PushforwardExtras
+) where {F,B}
+    return prepare_pushforward_same_point(f, backend, x, first(dx.elements), extras)
+end
+
+function prepare_pushforward_batched_same_point(
+    f!::F, y, backend::AbstractADType, x, dx::Batch{B}, extras::PushforwardExtras
+) where {F,B}
+    return prepare_pushforward_same_point(f!, y, backend, x, first(dx.elements), extras)
+end
+
+function prepare_pushforward_batched_same_point(
+    f::F, backend::AbstractADType, x, dx::Batch{B}
+) where {F,B}
+    return prepare_pushforward_same_point(f, backend, x, first(dx.elements))
+end
+
+function prepare_pushforward_batched_same_point(
+    f!::F, y, backend::AbstractADType, x, dx::Batch{B}
+) where {F,B}
+    return prepare_pushforward_same_point(f!, y, backend, x, first(dx.elements))
+end
+
 ## One argument
+
+### Standard
 
 function value_and_pushforward(f::F, backend::AbstractADType, x, dx) where {F}
     return value_and_pushforward(f, backend, x, dx, prepare_pushforward(f, backend, x, dx))
@@ -189,7 +241,29 @@ function pushforward!(
     return value_and_pushforward!(f, dy, backend, x, dx, extras)[2]
 end
 
+### Batched
+
+function pushforward_batched(
+    f::F, backend::AbstractADType, x, dx::Batch{B}, extras::PushforwardExtras
+) where {F,B}
+    dy_elements = ntuple(Val{B}()) do l
+        pushforward(f, backend, x, dx.elements[l], extras)
+    end
+    return Batch(dy_elements)
+end
+
+function pushforward_batched!(
+    f::F, dy::Batch{B}, backend::AbstractADType, x, dx::Batch{B}, extras::PushforwardExtras
+) where {F,B}
+    for l in 1:B
+        pushforward!(f, dy.elements[l], backend, x, dx.elements[l], extras)
+    end
+    return dy
+end
+
 ## Two arguments
+
+### Standard
 
 function value_and_pushforward(f!::F, y, backend::AbstractADType, x, dx) where {F}
     return value_and_pushforward(
@@ -247,4 +321,30 @@ function pushforward!(
     f!::F, y, dy, backend::AbstractADType, x, dx, extras::PushforwardExtras
 ) where {F}
     return value_and_pushforward!(f!, y, dy, backend, x, dx, extras)[2]
+end
+
+### Batched
+
+function pushforward_batched(
+    f!::F, y, backend::AbstractADType, x, dx::Batch{B}, extras::PushforwardExtras
+) where {F,B}
+    dy_elements = ntuple(Val{B}()) do l
+        pushforward(f!, y, backend, x, dx.elements[l], extras)
+    end
+    return Batch(dy_elements)
+end
+
+function pushforward_batched!(
+    f!::F,
+    y,
+    dy::Batch{B},
+    backend::AbstractADType,
+    x,
+    dx::Batch{B},
+    extras::PushforwardExtras,
+) where {F,B}
+    for l in 1:B
+        pushforward!(f!, y, dy.elements[l], backend, x, dx.elements[l], extras)
+    end
+    return dy
 end
