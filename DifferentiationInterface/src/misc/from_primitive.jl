@@ -18,20 +18,26 @@ function prepare_pushforward(f!, y, fromprim::AutoFromForwardPrimitive, x, dx)
     return prepare_pushforward(f!, y, fromprim.backend, x, dx)
 end
 
-function value_and_pushforward(f, fromprim::AutoFromForwardPrimitive, x, dx, extras)
+function value_and_pushforward(
+    f, fromprim::AutoFromForwardPrimitive, x, dx, extras::PushforwardExtras
+)
     return value_and_pushforward(f, fromprim.backend, x, dx, extras)
 end
 
-function value_and_pushforward(f!, y, fromprim::AutoFromForwardPrimitive, x, dx, extras)
+function value_and_pushforward(
+    f!, y, fromprim::AutoFromForwardPrimitive, x, dx, extras::PushforwardExtras
+)
     return value_and_pushforward(f!, y, fromprim.backend, x, dx, extras)
 end
 
-function value_and_pushforward!(f, dy, fromprim::AutoFromForwardPrimitive, x, dx, extras)
+function value_and_pushforward!(
+    f, dy, fromprim::AutoFromForwardPrimitive, x, dx, extras::PushforwardExtras
+)
     return value_and_pushforward!(f, dy, fromprim.backend, x, dx, extras)
 end
 
 function value_and_pushforward!(
-    f!, y, dy, fromprim::AutoFromForwardPrimitive, x, dx, extras
+    f!, y, dy, fromprim::AutoFromForwardPrimitive, x, dx, extras::PushforwardExtras
 )
     return value_and_pushforward!(f!, y, dy, fromprim.backend, x, dx, extras)
 end
@@ -46,26 +52,30 @@ function prepare_pullback(f, fromprim::AutoFromReversePrimitive, x, dy)
     return prepare_pullback(f, fromprim.backend, x, dy)
 end
 
-function prepare_pullback(f!, y, fromprim::AutoFromReversePrimitive, x, dy, extras)
-    return prepare_pullback(f!, y, fromprim.backend, x, dy, extras)
+function prepare_pullback(f!, y, fromprim::AutoFromReversePrimitive, x, dy)
+    return prepare_pullback(f!, y, fromprim.backend, x, dy)
 end
 
-function value_and_pullback(f, fromprim::AutoFromReversePrimitive, x, dy, extras)
+function value_and_pullback(
+    f, fromprim::AutoFromReversePrimitive, x, dy, extras::PullbackExtras
+)
     return value_and_pullback(f, fromprim.backend, x, dy, extras)
 end
 
-function value_and_pullback(f!, y, fromprim::AutoFromReversePrimitive, x, dy, extras)
+function value_and_pullback(
+    f!, y, fromprim::AutoFromReversePrimitive, x, dy, extras::PullbackExtras
+)
     return value_and_pullback(f!, y, fromprim.backend, x, dy, extras)
 end
 
 function value_and_pullback!(
-    f, dx, fromprim::AutoFromReversePrimitive, x, dy, ::NoPullbackExtras
+    f, dx, fromprim::AutoFromReversePrimitive, x, dy, extras::PullbackExtras
 )
     return value_and_pullback!(f, dx, fromprim.backend, x, dy, extras)
 end
 
 function value_and_pullback!(
-    f!, y, dx, fromprim::AutoFromReversePrimitive, x, dy, ::NoPullbackExtras
+    f!, y, dx, fromprim::AutoFromReversePrimitive, x, dy, extras::PullbackExtras
 )
     return value_and_pullback!(f!, y, dx, fromprim.backend, x, dy, extras)
 end

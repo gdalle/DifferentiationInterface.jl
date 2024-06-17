@@ -229,7 +229,7 @@ function value_and_jacobian!(
         f, backend, x, example_dy_batch, extras.pullback_batched_extras
     )
 
-    for k in div(M, B, RoundUp)
+    for k in 1:div(M, B, RoundUp)
         dy_batch_elements = ntuple(Val{B}()) do l
             basis(backend, y, yinds[1 + ((k - 1) * B + (l - 1)) % M])
         end
@@ -373,7 +373,7 @@ function jacobian!(
         f!, y, backend, x, example_dy_batch, extras.pullback_batched_extras
     )
 
-    for k in div(M, B, RoundUp)
+    for k in 1:div(M, B, RoundUp)
         dy_batch_elements = ntuple(Val{B}()) do l
             basis(backend, y, yinds[1 + ((k - 1) * B + (l - 1)) % M])
         end
