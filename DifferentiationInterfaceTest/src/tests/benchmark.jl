@@ -946,7 +946,7 @@ function run_benchmark!(
         # benchmark
         extras = prepare_hvp(f, ba, x, dx)
         bench0 = @be prepare_hvp(f, ba, x, dx) samples = 1 evals = 1
-        bench1 = @be (p=mysimilar(x), ext=deepcopy(extras)) hvp!(f, _.p, ba, x, dx, _.ext) evals = 1
+        bench1 = @be (dg=mysimilar(x), ext=deepcopy(extras)) hvp!(f, _.dg, ba, x, dx, _.ext) evals = 1
         # count
         cc = CallCounter(f)
         extras = prepare_hvp(cc, ba, x, dx)

@@ -910,7 +910,7 @@ function test_correctness(
     ref_backend,
 )
     @compat (; f, x, dx) = new_scen = deepcopy(scen)
-    p_true = if ref_backend isa AbstractADType
+    dg_true = if ref_backend isa AbstractADType
         hvp(f, ref_backend, x, dx)
     else
         new_scen.ref(x, dx)
@@ -921,14 +921,14 @@ function test_correctness(
         (prepare_hvp(f, ba, mycopy_random(x), mycopy_random(dx)),),
         (prepare_hvp_same_point(f, ba, x, mycopy_random(dx)),),
     ])
-        p1 = hvp(f, ba, x, dx, extras_tup...)
+        dg1 = hvp(f, ba, x, dx, extras_tup...)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
                 @test isempty(extras_tup) || only(extras_tup) isa HVPExtras
             end
             @testset "HVP value" begin
-                @test p1 ≈ p_true
+                @test dg1 ≈ dg_true
             end
         end
     end
@@ -945,7 +945,7 @@ function test_correctness(
     ref_backend,
 )
     @compat (; f, x, dx) = new_scen = deepcopy(scen)
-    p_true = if ref_backend isa AbstractADType
+    dg_true = if ref_backend isa AbstractADType
         hvp(f, ref_backend, x, dx)
     else
         new_scen.ref(x, dx)
@@ -956,16 +956,16 @@ function test_correctness(
         (prepare_hvp(f, ba, mycopy_random(x), mycopy_random(dx)),),
         (prepare_hvp_same_point(f, ba, x, mycopy_random(dx)),),
     ])
-        p1_in = mysimilar(x)
-        p1 = hvp!(f, p1_in, ba, x, dx, extras_tup...)
+        dg1_in = mysimilar(x)
+        dg1 = hvp!(f, dg1_in, ba, x, dx, extras_tup...)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
                 @test isempty(extras_tup) || only(extras_tup) isa HVPExtras
             end
             @testset "HVP value" begin
-                @test p1_in ≈ p_true
-                @test p1 ≈ p_true
+                @test dg1_in ≈ dg_true
+                @test dg1 ≈ dg_true
             end
         end
     end

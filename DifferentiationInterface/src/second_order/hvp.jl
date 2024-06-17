@@ -21,16 +21,16 @@ Create an `extras_same` object that can be given to [`hvp`](@ref) and its varian
 function prepare_hvp_same_point end
 
 """
-    hvp(f, backend, x, dx, [extras]) -> p
+    hvp(f, backend, x, dx, [extras]) -> dg
 
 Compute the Hessian-vector product of `f` at point `x` with seed `dx`.
 """
 function hvp end
 
 """
-    hvp!(f, p, backend, x, dx, [extras]) -> p
+    hvp!(f, dg, backend, x, dx, [extras]) -> dg
 
-Compute the Hessian-vector product of `f` at point `x` with seed `dx`, overwriting `p`.
+Compute the Hessian-vector product of `f` at point `x` with seed `dx`, overwriting `dg`.
 """
 function hvp! end
 
@@ -141,8 +141,8 @@ function hvp(f::F, backend::AbstractADType, x, dx) where {F}
     return hvp(f, backend, x, dx, prepare_hvp(f, backend, x, dx))
 end
 
-function hvp!(f::F, p, backend::AbstractADType, x, dx) where {F}
-    return hvp!(f, p, backend, x, dx, prepare_hvp(f, backend, x, dx))
+function hvp!(f::F, dg, backend::AbstractADType, x, dx) where {F}
+    return hvp!(f, dg, backend, x, dx, prepare_hvp(f, backend, x, dx))
 end
 
 function hvp(f::F, backend::AbstractADType, x, dx, extras::HVPExtras) where {F}
@@ -178,35 +178,35 @@ function hvp(
     return pullback(inner_gradient, outer(backend), x, dx, outer_pullback_extras)
 end
 
-function hvp!(f::F, p, backend::AbstractADType, x, dx, extras::HVPExtras) where {F}
-    return hvp!(f, p, SecondOrder(backend, backend), x, dx, extras)
+function hvp!(f::F, dg, backend::AbstractADType, x, dx, extras::HVPExtras) where {F}
+    return hvp!(f, dg, SecondOrder(backend, backend), x, dx, extras)
 end
 
 function hvp!(
-    f::F, p, backend::SecondOrder, x, dx, extras::ForwardOverForwardHVPExtras
+    f::F, dg, backend::SecondOrder, x, dx, extras::ForwardOverForwardHVPExtras
 ) where {F}
     @compat (; inner_gradient, outer_pushforward_extras) = extras
-    return pushforward!(inner_gradient, p, outer(backend), x, dx, outer_pushforward_extras)
+    return pushforward!(inner_gradient, dg, outer(backend), x, dx, outer_pushforward_extras)
 end
 
 function hvp!(
-    f::F, p, backend::SecondOrder, x, dx, extras::ForwardOverReverseHVPExtras
+    f::F, dg, backend::SecondOrder, x, dx, extras::ForwardOverReverseHVPExtras
 ) where {F}
     @compat (; inner_gradient, outer_pushforward_extras) = extras
-    return pushforward!(inner_gradient, p, outer(backend), x, dx, outer_pushforward_extras)
+    return pushforward!(inner_gradient, dg, outer(backend), x, dx, outer_pushforward_extras)
 end
 
 function hvp!(
-    f::F, p, backend::SecondOrder, x, dx, extras::ReverseOverForwardHVPExtras
+    f::F, dg, backend::SecondOrder, x, dx, extras::ReverseOverForwardHVPExtras
 ) where {F}
     @compat (; outer_gradient_extras) = extras
     inner_pushforward = InnerPushforwardFixedSeed(f, nested(inner(backend)), dx)
-    return gradient!(inner_pushforward, p, outer(backend), x, outer_gradient_extras)
+    return gradient!(inner_pushforward, dg, outer(backend), x, outer_gradient_extras)
 end
 
 function hvp!(
-    f::F, p, backend::SecondOrder, x, dx, extras::ReverseOverReverseHVPExtras
+    f::F, dg, backend::SecondOrder, x, dx, extras::ReverseOverReverseHVPExtras
 ) where {F}
     @compat (; inner_gradient, outer_pullback_extras) = extras
-    return pullback!(inner_gradient, p, outer(backend), x, dx, outer_pullback_extras)
+    return pullback!(inner_gradient, dg, outer(backend), x, dx, outer_pullback_extras)
 end
