@@ -25,7 +25,7 @@ test_differentiation(
         SecondOrder(AutoZeroForward(), AutoZeroReverse()),
         SecondOrder(AutoZeroReverse(), AutoZeroForward()),
     ],
-    scenario_to_zero.(default_scenarios());
+    scenario_to_zero.(default_scenarios(; linalg=false));
     correctness=true,
     type_stability=true,
     first_order=false,

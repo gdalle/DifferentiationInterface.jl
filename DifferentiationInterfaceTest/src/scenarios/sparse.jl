@@ -150,7 +150,6 @@ function sparse_mat_to_mat_scenarios(x::AbstractMatrix)
         )
     end
     return scens
-    return scens
 end
 
 ## Vector to scalar

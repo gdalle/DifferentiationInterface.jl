@@ -48,12 +48,10 @@ end
 
 num_to_arr_vector(x) = num_to_arr(x, Vector{Float64})
 num_to_arr_svector(x) = num_to_arr(x, SVector{6,Float64})
-num_to_arr_mvector(x) = num_to_arr(x, SVector{6,Float64})
 num_to_arr_jlvector(x) = num_to_arr(x, JLArray{Float64,1})
 
 num_to_arr_matrix(x) = num_to_arr(x, Matrix{Float64})
 num_to_arr_smatrix(x) = num_to_arr(x, SMatrix{2,3,Float64,6})
-num_to_arr_mmatrix(x) = num_to_arr(x, MMatrix{2,3,Float64,6})
 num_to_arr_jlmatrix(x) = num_to_arr(x, JLArray{Float64,2})
 
 function pick_num_to_arr(::Type{A}) where {A<:AbstractArray}
@@ -61,20 +59,14 @@ function pick_num_to_arr(::Type{A}) where {A<:AbstractArray}
         return num_to_arr_vector
     elseif A <: SVector
         return num_to_arr_svector
-    elseif A <: MVector
-        return num_to_arr_mvector
     elseif A <: JLArray{<:Any,1}
         return num_to_arr_jlvector
     elseif A <: Matrix
         return num_to_arr_matrix
     elseif A <: SMatrix
         return num_to_arr_smatrix
-    elseif A <: MMatrix
-        return num_to_arr_mmatrix
     elseif A <: JLArray{<:Any,2}
         return num_to_arr_jlmatrix
-    else
-        throw(ArgumentError("Unsupported array type $A"))
     end
 end
 
