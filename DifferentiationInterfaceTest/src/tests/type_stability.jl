@@ -198,7 +198,7 @@ end
 function test_jet(ba::AbstractADType, scen::Scenario{:jacobian,1,:inplace})
     @compat (; f, x, y) = deepcopy(scen)
     extras = prepare_jacobian(f, ba, x)
-    jac_in = Matrix{eltype(y)}(undef, length(y), length(x))
+    jac_in = mysimilar(jacobian(f, ba, x))
 
     JET.@test_opt function_filter = filt value_and_jacobian!(f, jac_in, ba, x, extras)
     JET.@test_opt function_filter = filt jacobian!(f, jac_in, ba, x, extras)
@@ -220,7 +220,7 @@ function test_jet(ba::AbstractADType, scen::Scenario{:jacobian,2,:inplace})
     @compat (; f, x, y) = deepcopy(scen)
     f! = f
     extras = prepare_jacobian(f!, mysimilar(y), ba, x)
-    y_in, jac_in = mysimilar(y), Matrix{eltype(y)}(undef, length(y), length(x))
+    y_in, jac_in = mysimilar(y), mysimilar(jacobian(f, ba, x))
 
     JET.@test_opt function_filter = filt value_and_jacobian!(
         f!, y_in, jac_in, ba, x, extras
@@ -289,7 +289,7 @@ function test_jet(ba::AbstractADType, scen::Scenario{:hessian,1,:inplace})
     @compat (; f, x, y) = deepcopy(scen)
     extras = prepare_hessian(f, ba, x)
     grad_in = mysimilar(x)
-    hess_in = Matrix{typeof(y)}(undef, length(x), length(x))
+    hess_in = mysimilar(hessian(f, ba, x))
 
     JET.@test_opt function_filter = filt hessian!(f, hess_in, ba, x, extras)
     JET.@test_opt function_filter = filt value_gradient_and_hessian!(

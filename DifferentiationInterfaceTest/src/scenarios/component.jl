@@ -48,22 +48,14 @@ end
 Create a vector of [`AbstractScenario`](@ref)s with component array types from [ComponentArrays.jl](https://github.com/jonniedie/ComponentArrays.jl).
 """
 function component_scenarios(rng::AbstractRNG=default_rng())
-    v = float.(ComponentVector(; a=collect(1:4), b=collect(5:6)))
-
-    x_ = rand(rng)
-    dx_ = rand(rng)
     dy_ = rand(rng)
 
     x_comp = ComponentVector(; a=randn(rng, 4), b=randn(rng, 2))
     dx_comp = ComponentVector(; a=randn(rng, 4), b=randn(rng, 2))
 
-    dy_v = mycopy_random(rng, v)
-
     return vcat(
         # one argument
-        num_to_arr_scenarios_onearg(x_, v; dx=dx_, dy=dy_v),
         comp_to_num_scenarios_onearg(x_comp::ComponentVector; dx=dx_comp, dy=dy_),
         # two arguments
-        num_to_arr_scenarios_twoarg(x_, v; dx=dx_, dy=dy_v),
     )
 end

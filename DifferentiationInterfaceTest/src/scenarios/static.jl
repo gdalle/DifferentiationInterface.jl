@@ -4,9 +4,6 @@
 Create a vector of [`Scenario`](@ref)s with static array types from [StaticArrays.jl](https://github.com/JuliaArrays/StaticArrays.jl).
 """
 function static_scenarios(rng::AbstractRNG=default_rng(); linalg=true)
-    v = float.(Vector(1:6))
-    m = float.(Matrix((1:2) .* transpose(1:3)))
-
     x_ = rand(rng)
     dx_ = rand(rng)
     dy_ = rand(rng)
@@ -17,47 +14,38 @@ function static_scenarios(rng::AbstractRNG=default_rng(); linalg=true)
     x_2_3 = rand(rng, 2, 3)
     dx_2_3 = rand(rng, 2, 3)
 
+    dy_6 = rand(rng, 6)
     dy_12 = rand(rng, 12)
+    dy_2_3 = rand(rng, 2, 3)
     dy_6_2 = rand(rng, 6, 2)
 
-    dy_v = mycopy_random(rng, v)
-    dy_m = mycopy_random(rng, m)
+    SV_6 = SVector{6}
+    MV_6 = MVector{6}
+    SV_12 = SVector{12}
+    MV_12 = MVector{12}
+
+    SM_2_3 = SMatrix{2,3}
+    MM_2_3 = MMatrix{2,3}
+    SM_6_2 = SMatrix{6,2}
+    MM_6_2 = MMatrix{6,2}
 
     scens = vcat(
         # one argument
-        num_to_arr_scenarios_onearg(x_, SVector{6}(v); dx=dx_, dy=SVector{6}(v)),
-        num_to_arr_scenarios_onearg(x_, SMatrix{2,3}(m); dx=dx_, dy=SMatrix{2,3}(dy_m)),
-        arr_to_num_scenarios_onearg(SVector{6}(x_6); dx=SVector{6}(dx_6), dy=dy_, linalg),
-        arr_to_num_scenarios_onearg(
-            SMatrix{2,3}(x_2_3); dx=SMatrix{2,3}(dx_2_3), dy=dy_, linalg
-        ),
-        vec_to_vec_scenarios_onearg(
-            SVector{6}(x_6); dx=SVector{6}(dx_6), dy=SVector{12}(dy_12)
-        ),
-        vec_to_mat_scenarios_onearg(
-            SVector{6}(x_6); dx=SVector{6}(dx_6), dy=SMatrix{6,2}(dy_6_2)
-        ),
-        mat_to_vec_scenarios_onearg(
-            SMatrix{2,3}(x_2_3); dx=SMatrix{2,3}(dx_2_3), dy=SVector{12}(dy_12)
-        ),
-        mat_to_mat_scenarios_onearg(
-            SMatrix{2,3}(x_2_3); dx=SMatrix{2,3}(dx_2_3), dy=SMatrix{6,2}(dy_6_2)
-        ),
+        num_to_arr_scenarios_onearg(x_, SV_6; dx=dx_, dy=SV_6(dy_6)),
+        num_to_arr_scenarios_onearg(x_, SM_2_3; dx=dx_, dy=SM_2_3(dy_2_3)),
+        arr_to_num_scenarios_onearg(SV_6(x_6); dx=SV_6(dx_6), dy=dy_, linalg),
+        arr_to_num_scenarios_onearg(SM_2_3(x_2_3); dx=SM_2_3(dx_2_3), dy=dy_, linalg),
+        vec_to_vec_scenarios_onearg(SV_6(x_6); dx=SV_6(dx_6), dy=SV_12(dy_12)),
+        vec_to_mat_scenarios_onearg(SV_6(x_6); dx=SV_6(dx_6), dy=SM_6_2(dy_6_2)),
+        mat_to_vec_scenarios_onearg(SM_2_3(x_2_3); dx=SM_2_3(dx_2_3), dy=SV_12(dy_12)),
+        mat_to_mat_scenarios_onearg(SM_2_3(x_2_3); dx=SM_2_3(dx_2_3), dy=SM_6_2(dy_6_2)),
         # two arguments
-        num_to_arr_scenarios_twoarg(x_, MVector{6}(v); dx=dx_, dy=MVector{6}(dy_v)),
-        num_to_arr_scenarios_twoarg(x_, MMatrix{2,3}(m); dx=dx_, dy=MMatrix{2,3}(dy_m)),
-        vec_to_vec_scenarios_twoarg(
-            MVector{6}(x_6); dx=MVector{6}(dx_6), dy=MVector{12}(dy_12)
-        ),
-        vec_to_mat_scenarios_twoarg(
-            MVector{6}(x_6); dx=MVector{6}(dx_6), dy=MMatrix{6,2}(dy_6_2)
-        ),
-        mat_to_vec_scenarios_twoarg(
-            MMatrix{2,3}(x_2_3); dx=MMatrix{2,3}(dx_2_3), dy=MVector{12}(dy_12)
-        ),
-        mat_to_mat_scenarios_twoarg(
-            MMatrix{2,3}(x_2_3); dx=MMatrix{2,3}(dx_2_3), dy=MMatrix{6,2}(dy_6_2)
-        ),
+        num_to_arr_scenarios_twoarg(x_, MV_6; dx=dx_, dy=MV_6(dy_6)),
+        num_to_arr_scenarios_twoarg(x_, MM_2_3; dx=dx_, dy=MM_2_3(dy_2_3)),
+        vec_to_vec_scenarios_twoarg(MV_6(x_6); dx=MV_6(dx_6), dy=MV_12(dy_12)),
+        vec_to_mat_scenarios_twoarg(MV_6(x_6); dx=MV_6(dx_6), dy=MM_6_2(dy_6_2)),
+        mat_to_vec_scenarios_twoarg(MM_2_3(x_2_3); dx=MM_2_3(dx_2_3), dy=MV_12(dy_12)),
+        mat_to_mat_scenarios_twoarg(MM_2_3(x_2_3); dx=MM_2_3(dx_2_3), dy=MM_6_2(dy_6_2)),
     )
     scens = filter(scens) do s
         place(s) == :outofplace || s.x isa Union{Number,MArray}

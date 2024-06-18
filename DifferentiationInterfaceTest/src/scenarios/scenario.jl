@@ -109,21 +109,21 @@ end
 """
 $(SIGNATURES)
 """
-function PushforwardScenario(f; x, y, dx, dy, nb_args, place=:inplace)
+function PushforwardScenario(f; x, y, dx, dy=nothing, nb_args, place=:inplace)
     return Scenario{:pushforward,nb_args,place}(f; x, y, seed=dx, res1=dy, res2=nothing)
 end
 
 """
 $(SIGNATURES)
 """
-function PullbackScenario(f; x, y, dx, dy, nb_args, place=:inplace)
+function PullbackScenario(f; x, y, dy, dx=nothing, nb_args, place=:inplace)
     return Scenario{:pullback,nb_args,place}(f; x, y, seed=dy, res1=dx, res2=nothing)
 end
 
 """
 $(SIGNATURES)
 """
-function DerivativeScenario(f; x, y, der, nb_args, place=:inplace)
+function DerivativeScenario(f; x, y, der=nothing, nb_args, place=:inplace)
     return Scenario{:derivative,nb_args,place}(
         f; x, y, seed=nothing, res1=der, res2=nothing
     )
@@ -132,21 +132,23 @@ end
 """
 $(SIGNATURES)
 """
-function GradientScenario(f; x, y, grad, nb_args, place=:inplace)
+function GradientScenario(f; x, y, grad=nothing, nb_args, place=:inplace)
     return Scenario{:gradient,nb_args,place}(f; x, y, seed=nothing, res1=grad, res2=nothing)
 end
 
 """
 $(SIGNATURES)
 """
-function JacobianScenario(f; x, y, jac, nb_args, place=:inplace)
+function JacobianScenario(f; x, y, jac=nothing, nb_args, place=:inplace)
     return Scenario{:jacobian,nb_args,place}(f; x, y, seed=nothing, res1=jac, res2=nothing)
 end
 
 """
 $(SIGNATURES)
 """
-function SecondDerivativeScenario(f; x, y, der, der2, nb_args, place=:inplace)
+function SecondDerivativeScenario(
+    f; x, y, der=nothing, der2=nothing, nb_args, place=:inplace
+)
     return Scenario{:second_derivative,nb_args,place}(
         f; x, y, seed=nothing, res1=der, res2=der2
     )
@@ -155,13 +157,13 @@ end
 """
 $(SIGNATURES)
 """
-function HVPScenario(f; x, y, dx, grad, dg, nb_args, place=:inplace)
+function HVPScenario(f; x, y, dx, grad=nothing, dg=nothing, nb_args, place=:inplace)
     return Scenario{:hvp,nb_args,place}(f; x, y, seed=dx, res1=grad, res2=dg)
 end
 
 """
 $(SIGNATURES)
 """
-function HessianScenario(f; x, y, grad, hess, nb_args, place=:inplace)
+function HessianScenario(f; x, y, grad=nothing, hess=nothing, nb_args, place=:inplace)
     return Scenario{:hessian,nb_args,place}(f; x, y, seed=nothing, res1=grad, res2=hess)
 end

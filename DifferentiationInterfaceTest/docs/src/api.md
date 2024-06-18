@@ -30,7 +30,6 @@ static_scenarios
 ## Scenario types
 
 ```@docs
-DifferentiationInterfaceTest.Scenario
 PushforwardScenario
 PullbackScenario
 DerivativeScenario

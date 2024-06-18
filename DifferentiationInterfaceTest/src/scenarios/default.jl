@@ -8,7 +8,7 @@ Constraints on the scenarios:
 first_half(v::AbstractVector) = @view v[1:(length(v) ÷ 2)]
 second_half(v::AbstractVector) = @view v[(length(v) ÷ 2 + 1):end]
 
-## Scalar to scalar
+## Number to number
 
 num_to_num(x::Number)::Number = sin(x)
 
@@ -36,51 +36,52 @@ function num_to_num_scenarios_onearg(x::Number; dx::Number, dy::Number)
     ]
 end
 
-## Scalar to array
+## Number to array
 
-num_to_arr_aux(x::Number, a::AbstractArray)::AbstractArray = sin.(a .* x)
+multiplicator(::Type{V}) where {V<:AbstractVector} = V(1:6)
+multiplicator(::Type{M}) where {M<:AbstractMatrix} = M(reshape(1:6, 2, 3))
 
-function num_to_arr_aux!(y::AbstractArray, x::Number, a::AbstractArray)::Nothing
-    y .= sin.(a .* x)
+function num_to_arr(x::Number, ::Type{A}) where {A<:AbstractArray}
+    a = multiplicator(A)
+    return sin.(x .* a)
+end
+
+function num_to_arr!(y::AbstractArray, x::Number)::Nothing
+    a = multiplicator(typeof(y))
+    y .= sin.(x .* a)
     return nothing
 end
 
-function _num_to_arr(a::AbstractArray)
-    num_to_arr(x::Number) = num_to_arr_aux(x, a)
-    return num_to_arr
+function num_to_arr_derivative(x, ::Type{A}) where {A}
+    a = multiplicator(A)
+    return a .* cos.(a .* x)
 end
 
-function _num_to_arr!(a::AbstractArray)
-    num_to_arr!(y::AbstractArray, x::Number) = num_to_arr_aux!(y, x, a)
-    return num_to_arr!
+function num_to_arr_second_derivative(x, ::Type{A}) where {A}
+    a = multiplicator(A)
+    return -(a .^ 2) .* sin.(a .* x)
 end
 
-function _num_to_arr_derivative(a)
-    return (x) -> a .* cos.(a .* x)
+function num_to_arr_pushforward(x, dx, ::Type{A}) where {A}
+    a = multiplicator(A)
+    return a .* cos.(a .* x) .* dx
 end
 
-function _num_to_arr_second_derivative(a)
-    return (x) -> -(a .^ 2) .* sin.(a .* x)
-end
-
-function _num_to_arr_pushforward(a)
-    return (x, dx) -> a .* cos.(a .* x) .* dx
-end
-
-function _num_to_arr_pullback(a)
-    return (x, dy) -> dot(a .* cos.(a .* x), dy)
+function num_to_arr_pullback(x, dy, ::Type{A}) where {A}
+    a = multiplicator(A)
+    return dot(a .* cos.(a .* x), dy)
 end
 
 function num_to_arr_scenarios_onearg(
-    x::Number, a::AbstractArray; dx::Number, dy::AbstractArray
-)
+    x::Number, ::Type{A}; dx::Number, dy::AbstractArray
+) where {A<:AbstractArray}
     nb_args = 1
-    f = _num_to_arr(a)
+    f = Base.Fix2(num_to_arr, A)
     y = f(x)
-    der = _num_to_arr_derivative(a)(x)
-    der2 = _num_to_arr_second_derivative(a)(x)
-    dy_from_dx = _num_to_arr_pushforward(a)(x, dx)
-    dx_from_dy = _num_to_arr_pullback(a)(x, dy)
+    dy_from_dx = num_to_arr_pushforward(x, dx, A)
+    dx_from_dy = num_to_arr_pullback(x, dy, A)
+    der = num_to_arr_derivative(x, A)
+    der2 = num_to_arr_second_derivative(x, A)
 
     # pullback stays out of place
     scens = Scenario[]
@@ -101,15 +102,15 @@ function num_to_arr_scenarios_onearg(
 end
 
 function num_to_arr_scenarios_twoarg(
-    x::Number, a::AbstractArray; dx::Number, dy::AbstractArray
-)
+    x::Number, ::Type{A}; dx::Number, dy::AbstractArray
+) where {A<:AbstractArray}
     nb_args = 2
-    f! = _num_to_arr!(a)
-    y = similar(float.(a))
+    f! = num_to_arr!
+    y = similar(num_to_arr(x, A))
     f!(y, x)
-    dy_from_dx = _num_to_arr_pushforward(a)(x, dx)
-    dx_from_dy = _num_to_arr_pullback(a)(x, dy)
-    der = _num_to_arr_derivative(a)(x)
+    dy_from_dx = num_to_arr_pushforward(x, dx, A)
+    dx_from_dy = num_to_arr_pullback(x, dy, A)
+    der = num_to_arr_derivative(x, A)
 
     # pullback stays out of place
     scens = Scenario[]
@@ -128,10 +129,9 @@ function num_to_arr_scenarios_twoarg(
     return scens
 end
 
-## Array to scalar
+### Number to matrix
 
-const DEFAULT_α = 4
-const DEFAULT_β = 6
+## Array to number
 
 arr_to_num_aux_linalg(x; α, β) = sum(vec(x .^ α) .* transpose(vec(x .^ β)))
 
@@ -173,6 +173,9 @@ function arr_to_num_aux_hessian(x; α, β)
     end
     return H
 end
+
+const DEFAULT_α = 4
+const DEFAULT_β = 6
 
 arr_to_num_linalg(x::AbstractArray)::Number =
     arr_to_num_aux_linalg(x; α=DEFAULT_α, β=DEFAULT_β)
@@ -233,6 +236,8 @@ function all_array_to_array_scenarios(f; x, y, dx, dy, dy_from_dx, dx_from_dy, j
     return scens
 end
 
+### Vector to vector
+
 vec_to_vec(x::AbstractVector)::AbstractVector = vcat(sin.(x), cos.(x))
 
 function vec_to_vec!(y::AbstractVector, x::AbstractVector)
@@ -276,6 +281,8 @@ function vec_to_vec_scenarios_twoarg(
     )
 end
 
+### Vector to matrix
+
 vec_to_mat(x::AbstractVector)::AbstractMatrix = hcat(sin.(x), cos.(x))
 
 function vec_to_mat!(y::AbstractMatrix, x::AbstractVector)
@@ -318,6 +325,8 @@ function vec_to_mat_scenarios_twoarg(
         f!; x, y, dx, dy, dy_from_dx, dx_from_dy, jac, nb_args
     )
 end
+
+### Matrix to vector
 
 mat_to_vec(x::AbstractMatrix)::AbstractVector = vcat(vec(sin.(x)), vec(cos.(x)))
 
@@ -369,6 +378,8 @@ function mat_to_vec_scenarios_twoarg(
         f!; x, y, dx, dy, dy_from_dx, dx_from_dy, jac, nb_args
     )
 end
+
+### Matrix to matrix
 
 mat_to_mat(x::AbstractMatrix)::AbstractMatrix = hcat(vec(sin.(x)), vec(cos.(x)))
 
@@ -428,9 +439,6 @@ end
 Create a vector of [`Scenario`](@ref)s with standard array types.
 """
 function default_scenarios(rng::AbstractRNG=default_rng(); linalg=true)
-    v = float.(Vector(1:6))
-    m = float.(Matrix((1:2) .* transpose(1:3)))
-
     x_ = rand(rng)
     dx_ = rand(rng)
     dy_ = rand(rng)
@@ -441,17 +449,19 @@ function default_scenarios(rng::AbstractRNG=default_rng(); linalg=true)
     x_2_3 = rand(rng, 2, 3)
     dx_2_3 = rand(rng, 2, 3)
 
+    dy_6 = rand(rng, 6)
     dy_12 = rand(rng, 12)
+    dy_2_3 = rand(rng, 2, 3)
     dy_6_2 = rand(rng, 6, 2)
 
-    dy_v = mycopy_random(rng, v)
-    dy_m = mycopy_random(rng, m)
+    V = Vector{Float64}
+    M = Matrix{Float64}
 
     return vcat(
         # one argument
         num_to_num_scenarios_onearg(x_; dx=dx_, dy=dy_),
-        num_to_arr_scenarios_onearg(x_, v; dx=dx_, dy=dy_v),
-        num_to_arr_scenarios_onearg(x_, m; dx=dx_, dy=dy_m),
+        num_to_arr_scenarios_onearg(x_, V; dx=dx_, dy=dy_6),
+        num_to_arr_scenarios_onearg(x_, M; dx=dx_, dy=dy_2_3),
         arr_to_num_scenarios_onearg(x_6; dx=dx_6, dy=dy_, linalg),
         arr_to_num_scenarios_onearg(x_2_3; dx=dx_2_3, dy=dy_, linalg),
         vec_to_vec_scenarios_onearg(x_6; dx=dx_6, dy=dy_12),
@@ -459,8 +469,8 @@ function default_scenarios(rng::AbstractRNG=default_rng(); linalg=true)
         mat_to_vec_scenarios_onearg(x_2_3; dx=dx_2_3, dy=dy_12),
         mat_to_mat_scenarios_onearg(x_2_3; dx=dx_2_3, dy=dy_6_2),
         # two arguments
-        num_to_arr_scenarios_twoarg(x_, v; dx=dx_, dy=dy_v),
-        num_to_arr_scenarios_twoarg(x_, m; dx=dx_, dy=dy_m),
+        num_to_arr_scenarios_twoarg(x_, V; dx=dx_, dy=dy_6),
+        num_to_arr_scenarios_twoarg(x_, M; dx=dx_, dy=dy_2_3),
         vec_to_vec_scenarios_twoarg(x_6; dx=dx_6, dy=dy_12),
         vec_to_mat_scenarios_twoarg(x_6; dx=dx_6, dy=dy_6_2),
         mat_to_vec_scenarios_twoarg(x_2_3; dx=dx_2_3, dy=dy_12),
