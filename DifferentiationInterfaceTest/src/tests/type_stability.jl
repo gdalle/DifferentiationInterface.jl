@@ -198,7 +198,7 @@ end
 function test_jet(ba::AbstractADType, scen::Scenario{:jacobian,1,:inplace})
     @compat (; f, x, y) = deepcopy(scen)
     extras = prepare_jacobian(f, ba, x)
-    jac_in = mysimilar(jacobian(f, ba, x))
+    jac_in = mysimilar(jacobian(f!, mysimilar(y), ba, x))
 
     JET.@test_opt function_filter = filt value_and_jacobian!(f, jac_in, ba, x, extras)
     JET.@test_opt function_filter = filt jacobian!(f, jac_in, ba, x, extras)

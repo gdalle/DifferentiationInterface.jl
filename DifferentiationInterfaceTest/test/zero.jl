@@ -1,8 +1,8 @@
 using DifferentiationInterface
 using DifferentiationInterfaceTest
-using DifferentiationInterfaceTest: AutoZeroForward, AutoZeroReverse, scenario_to_zero
+using DifferentiationInterfaceTest:
+    AutoZeroForward, AutoZeroReverse, scenario_to_zero, test_allocfree
 
-using DataFrames: DataFrames
 using Test
 
 @test check_available(AutoZeroForward())
@@ -71,3 +71,22 @@ test_differentiation(
     correctness=true,
     logging=LOGGING,
 )
+
+## Allocations
+
+data_allocfree = vcat(
+    benchmark_differentiation(
+        [AutoZeroForward()],
+        allocfree_scenarios();
+        excluded=[:pullback, :gradient],
+        logging=LOGGING,
+    ),
+    benchmark_differentiation(
+        [AutoZeroReverse()],
+        allocfree_scenarios();
+        excluded=[:pushforward, :derivative],
+        logging=LOGGING,
+    ),
+)
+
+test_allocfree(data_allocfree);

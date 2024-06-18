@@ -13,6 +13,6 @@ test_differentiation(
     AutoZygote(),
     vcat(component_scenarios(), static_scenarios(), gpu_scenarios());
     correctness=true,
-    excluded=[:second_derivative],
+    second_order=false,
     logging=LOGGING,
 )

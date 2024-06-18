@@ -194,15 +194,17 @@ function benchmark_differentiation(
     return DataFrame(benchmark_data)
 end
 
-function test_noallocs(benchmark_data::DataFrame)
-    useless_rows =
-        startswith.(string.(benchmark_data[!, :operator]), Ref("prepare")) .|
-        startswith.(string.(benchmark_data[!, :operator]), Ref("value_and"))
+"""
+    test_allocfree(benchmark_data::DataFrame)
 
-    useful_data = benchmark_data[.!useless_rows, :]
+Test that every row in `benchmark_data` which is not a preparation row has zero allocation.
+"""
+function test_allocfree(benchmark_data::DataFrame)
+    preparation_rows = startswith.(string.(benchmark_data[!, :operator]), Ref("prepare"))
+    useful_data = benchmark_data[.!preparation_rows, :]
 
-    for row in eachrow(useful_data)
-        @testset "$(row[:operator]) - $(row[:scenario])" begin
+    @testset verbose = true "No allocations" begin
+        @testset "$(row[:scenario]) - $(row[:operator])" for row in eachrow(useful_data)
             @test row[:allocs] == 0
         end
     end

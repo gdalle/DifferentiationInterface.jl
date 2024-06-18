@@ -46,7 +46,7 @@ using DifferentiationInterface:
 using DocStringExtensions
 import DifferentiationInterface as DI
 using JET: JET
-using JLArrays: jl
+using JLArrays: JLArray, jl
 using LinearAlgebra: Adjoint, Diagonal, Transpose, dot, parent
 using ProgressMeter: ProgressUnknown, next!
 using Random: AbstractRNG, default_rng, rand!
@@ -84,7 +84,6 @@ export PushforwardScenario,
     HessianScenario
 export default_scenarios, sparse_scenarios
 export static_scenarios, component_scenarios, gpu_scenarios
-export allocfree_scenarios
 export test_differentiation, benchmark_differentiation
 export DifferentiationBenchmarkDataRow
 

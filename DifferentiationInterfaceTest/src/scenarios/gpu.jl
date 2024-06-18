@@ -7,13 +7,13 @@ function gpu_scenarios(rng::AbstractRNG=default_rng(); linalg=true)
     x_ = rand(rng)
     dx_ = rand(rng)
     dy_ = rand(rng)
-    
+
     x_6 = jl(rand(rng, 6))
     dx_6 = jl(rand(rng, 6))
-    
+
     x_2_3 = jl(rand(rng, 2, 3))
     dx_2_3 = jl(rand(rng, 2, 3))
-    
+
     dy_12 = jl(rand(rng, 12))
     dy_6_2 = jl(rand(rng, 6, 2))
     dy_6 = jl(rand(rng, 6))

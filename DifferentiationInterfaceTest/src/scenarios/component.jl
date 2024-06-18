@@ -45,7 +45,7 @@ end
 """
     component_scenarios(rng=Random.default_rng())
 
-Create a vector of [`AbstractScenario`](@ref)s with component array types from [ComponentArrays.jl](https://github.com/jonniedie/ComponentArrays.jl).
+Create a vector of [`Scenario`](@ref)s with component array types from [ComponentArrays.jl](https://github.com/jonniedie/ComponentArrays.jl).
 """
 function component_scenarios(rng::AbstractRNG=default_rng())
     dy_ = rand(rng)
