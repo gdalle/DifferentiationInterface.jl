@@ -74,7 +74,7 @@ Base.@kwdef struct DifferentiationBenchmarkDataRow
     "backend used for benchmarking"
     backend::AbstractADType
     "scenario used for benchmarking"
-    scenario::AbstractScenario
+    scenario::Scenario
     "differentiation operator used for benchmarking, e.g. `:gradient` or `:hessian`"
     operator::Symbol
     "number of calls to the differentiated function for one call to the operator"
@@ -98,7 +98,7 @@ end
 function record!(
     data::Vector{DifferentiationBenchmarkDataRow},
     backend::AbstractADType,
-    scenario::AbstractScenario,
+    scenario::Scenario,
     operator::Symbol,
     bench::Benchmark,
     calls::Integer,
@@ -125,23 +125,23 @@ end
 function run_benchmark!(
     data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
-    scen::PushforwardScenario{1,:outofplace};
+    scen::Scenario{:pushforward,1,:outofplace};
     logging::Bool,
 )
-    @compat (; f, x, y, dx) = deepcopy(scen)
+    @compat (; f, x, y, seed) = deepcopy(scen)
     @compat (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
-        extras = prepare_pushforward(f, ba, x, dx)
-        bench0 = @be prepare_pushforward(f, ba, x, dx) samples = 1 evals = 1
-        bench1 = @be deepcopy(extras) value_and_pushforward(f, ba, x, dx, _) evals = 1
-        bench2 = @be deepcopy(extras) pushforward(f, ba, x, dx, _) evals = 1
+        extras = prepare_pushforward(f, ba, x, seed)
+        bench0 = @be prepare_pushforward(f, ba, x, seed) samples = 1 evals = 1
+        bench1 = @be deepcopy(extras) value_and_pushforward(f, ba, x, seed, _) evals = 1
+        bench2 = @be deepcopy(extras) pushforward(f, ba, x, seed, _) evals = 1
         # count
         cc = CallCounter(f)
-        extras = prepare_pushforward(cc, ba, x, dx)
+        extras = prepare_pushforward(cc, ba, x, seed)
         calls0 = reset_count!(cc)
-        value_and_pushforward(cc, ba, x, dx, extras)
+        value_and_pushforward(cc, ba, x, seed, extras)
         calls1 = reset_count!(cc)
-        pushforward(cc, ba, x, dx, extras)
+        pushforward(cc, ba, x, seed, extras)
         calls2 = reset_count!(cc)
         (; bench0, bench1, bench2, calls0, calls1, calls2)
     catch e
@@ -160,27 +160,27 @@ end
 function run_benchmark!(
     data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
-    scen::PushforwardScenario{1,:inplace};
+    scen::Scenario{:pushforward,1,:inplace};
     logging::Bool,
 )
-    @compat (; f, x, y, dx) = deepcopy(scen)
+    @compat (; f, x, y, seed) = deepcopy(scen)
     @compat (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
-        extras = prepare_pushforward(f, ba, x, dx)
-        bench0 = @be prepare_pushforward(f, ba, x, dx) samples = 1 evals = 1
+        extras = prepare_pushforward(f, ba, x, seed)
+        bench0 = @be prepare_pushforward(f, ba, x, seed) samples = 1 evals = 1
         bench1 = @be (dy=mysimilar(y), ext=deepcopy(extras)) value_and_pushforward!(
-            f, _.dy, ba, x, dx, _.ext
+            f, _.dy, ba, x, seed, _.ext
         ) evals = 1
         bench2 = @be (dy=mysimilar(y), ext=deepcopy(extras)) pushforward!(
-            f, _.dy, ba, x, dx, _.ext
+            f, _.dy, ba, x, seed, _.ext
         ) evals = 1
         # count
         cc = CallCounter(f)
-        extras = prepare_pushforward(cc, ba, x, dx)
+        extras = prepare_pushforward(cc, ba, x, seed)
         calls0 = reset_count!(cc)
-        value_and_pushforward!(cc, mysimilar(y), ba, x, dx, extras)
+        value_and_pushforward!(cc, mysimilar(y), ba, x, seed, extras)
         calls1 = reset_count!(cc)
-        pushforward!(cc, mysimilar(y), ba, x, dx, extras)
+        pushforward!(cc, mysimilar(y), ba, x, seed, extras)
         calls2 = reset_count!(cc)
         (; bench0, bench1, bench2, calls0, calls1, calls2)
     catch e
@@ -199,29 +199,29 @@ end
 function run_benchmark!(
     data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
-    scen::PushforwardScenario{2,:outofplace};
+    scen::Scenario{:pushforward,2,:outofplace};
     logging::Bool,
 )
-    @compat (; f, x, y, dx) = deepcopy(scen)
+    @compat (; f, x, y, seed) = deepcopy(scen)
     f! = f
     @compat (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
-        extras = prepare_pushforward(f!, mysimilar(y), ba, x, dx)
-        bench0 = @be mysimilar(y) prepare_pushforward(f!, _, ba, x, dx) samples = 1 evals =
+        extras = prepare_pushforward(f!, mysimilar(y), ba, x, seed)
+        bench0 = @be mysimilar(y) prepare_pushforward(f!, _, ba, x, seed) samples = 1 evals =
             1
         bench1 = @be (y=mysimilar(y), ext=deepcopy(extras)) value_and_pushforward(
-            f!, _.y, ba, x, dx, _.ext
+            f!, _.y, ba, x, seed, _.ext
         ) evals = 1
         bench2 = @be (y=mysimilar(y), ext=deepcopy(extras)) pushforward(
-            f!, _.y, ba, x, dx, _.ext
+            f!, _.y, ba, x, seed, _.ext
         ) evals = 1
         # count
         cc! = CallCounter(f!)
-        extras = prepare_pushforward(cc!, mysimilar(y), ba, x, dx)
+        extras = prepare_pushforward(cc!, mysimilar(y), ba, x, seed)
         calls0 = reset_count!(cc!)
-        value_and_pushforward(cc!, mysimilar(y), ba, x, dx, extras)
+        value_and_pushforward(cc!, mysimilar(y), ba, x, seed, extras)
         calls1 = reset_count!(cc!)
-        pushforward(cc!, mysimilar(y), ba, x, dx, extras)
+        pushforward(cc!, mysimilar(y), ba, x, seed, extras)
         calls2 = reset_count!(cc!)
         (; bench0, bench1, bench2, calls0, calls1, calls2)
     catch e
@@ -240,29 +240,29 @@ end
 function run_benchmark!(
     data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
-    scen::PushforwardScenario{2,:inplace};
+    scen::Scenario{:pushforward,2,:inplace};
     logging::Bool,
 )
-    @compat (; f, x, y, dx) = deepcopy(scen)
+    @compat (; f, x, y, seed) = deepcopy(scen)
     f! = f
     @compat (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
-        extras = prepare_pushforward(f!, y, ba, x, dx)
-        bench0 = @be mysimilar(y) prepare_pushforward(f!, _, ba, x, dx) evals = 1 samples =
+        extras = prepare_pushforward(f!, y, ba, x, seed)
+        bench0 = @be mysimilar(y) prepare_pushforward(f!, _, ba, x, seed) evals = 1 samples =
             1
         bench1 = @be (y=mysimilar(y), dy=mysimilar(y), ext=deepcopy(extras)) value_and_pushforward!(
-            f!, _.y, _.dy, ba, x, dx, _.ext
+            f!, _.y, _.dy, ba, x, seed, _.ext
         ) evals = 1
         bench2 = @be (y=mysimilar(y), dy=mysimilar(y), ext=deepcopy(extras)) pushforward!(
-            f!, _.y, _.dy, ba, x, dx, _.ext
+            f!, _.y, _.dy, ba, x, seed, _.ext
         ) evals = 1
         # count
         cc! = CallCounter(f!)
-        extras = prepare_pushforward(cc!, mysimilar(y), ba, x, dx)
+        extras = prepare_pushforward(cc!, mysimilar(y), ba, x, seed)
         calls0 = reset_count!(cc!)
-        value_and_pushforward!(cc!, mysimilar(y), mysimilar(y), ba, x, dx, extras)
+        value_and_pushforward!(cc!, mysimilar(y), mysimilar(y), ba, x, seed, extras)
         calls1 = reset_count!(cc!)
-        pushforward!(cc!, mysimilar(y), mysimilar(y), ba, x, dx, extras)
+        pushforward!(cc!, mysimilar(y), mysimilar(y), ba, x, seed, extras)
         calls2 = reset_count!(cc!)
         (; bench0, bench1, bench2, calls0, calls1, calls2)
     catch e
@@ -283,23 +283,23 @@ end
 function run_benchmark!(
     data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
-    scen::PullbackScenario{1,:outofplace};
+    scen::Scenario{:pullback,1,:outofplace};
     logging::Bool,
 )
-    @compat (; f, x, y, dy) = deepcopy(scen)
+    @compat (; f, x, y, seed) = deepcopy(scen)
     @compat (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
-        extras = prepare_pullback(f, ba, x, dy)
-        bench0 = @be prepare_pullback(f, ba, x, dy) samples = 1 evals = 1
-        bench1 = @be deepcopy(extras) value_and_pullback(f, ba, x, dy, _)
-        bench2 = @be deepcopy(extras) pullback(f, ba, x, dy, _)
+        extras = prepare_pullback(f, ba, x, seed)
+        bench0 = @be prepare_pullback(f, ba, x, seed) samples = 1 evals = 1
+        bench1 = @be deepcopy(extras) value_and_pullback(f, ba, x, seed, _)
+        bench2 = @be deepcopy(extras) pullback(f, ba, x, seed, _)
         # count
         cc = CallCounter(f)
-        extras = prepare_pullback(cc, ba, x, dy)
+        extras = prepare_pullback(cc, ba, x, seed)
         calls0 = reset_count!(cc)
-        value_and_pullback(cc, ba, x, dy, extras)
+        value_and_pullback(cc, ba, x, seed, extras)
         calls1 = reset_count!(cc)
-        pullback(cc, ba, x, dy, extras)
+        pullback(cc, ba, x, seed, extras)
         calls2 = reset_count!(cc)
         (; bench0, bench1, bench2, calls0, calls1, calls2)
     catch e
@@ -318,27 +318,27 @@ end
 function run_benchmark!(
     data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
-    scen::PullbackScenario{1,:inplace};
+    scen::Scenario{:pullback,1,:inplace};
     logging::Bool,
 )
-    @compat (; f, x, y, dy) = deepcopy(scen)
+    @compat (; f, x, y, seed) = deepcopy(scen)
     @compat (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
-        extras = prepare_pullback(f, ba, x, dy)
-        bench0 = @be prepare_pullback(f, ba, x, dy) samples = 1 evals = 1
+        extras = prepare_pullback(f, ba, x, seed)
+        bench0 = @be prepare_pullback(f, ba, x, seed) samples = 1 evals = 1
         bench1 = @be (dx=mysimilar(x), ext=deepcopy(extras)) value_and_pullback!(
-            f, _.dx, ba, x, dy, _.ext
+            f, _.dx, ba, x, seed, _.ext
         ) evals = 1
         bench2 = @be (dx=mysimilar(x), ext=deepcopy(extras)) pullback!(
-            f, _.dx, ba, x, dy, _.ext
+            f, _.dx, ba, x, seed, _.ext
         ) evals = 1
         # count
         cc = CallCounter(f)
-        extras = prepare_pullback(cc, ba, x, dy)
+        extras = prepare_pullback(cc, ba, x, seed)
         calls0 = reset_count!(cc)
-        value_and_pullback!(cc, mysimilar(x), ba, x, dy, extras)
+        value_and_pullback!(cc, mysimilar(x), ba, x, seed, extras)
         calls1 = reset_count!(cc)
-        pullback!(cc, mysimilar(x), ba, x, dy, extras)
+        pullback!(cc, mysimilar(x), ba, x, seed, extras)
         calls2 = reset_count!(cc)
         (; bench0, bench1, bench2, calls0, calls1, calls2)
     catch e
@@ -357,29 +357,29 @@ end
 function run_benchmark!(
     data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
-    scen::PullbackScenario{2,:outofplace};
+    scen::Scenario{:pullback,2,:outofplace};
     logging::Bool,
 )
-    @compat (; f, x, y, dy) = deepcopy(scen)
+    @compat (; f, x, y, seed) = deepcopy(scen)
     f! = f
     @compat (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
-        extras = prepare_pullback(f!, mysimilar(y), ba, x, dy)
-        bench0 = @be mysimilar(y) prepare_pullback(f!, _, ba, x, dy) samples = 1 evals =
+        extras = prepare_pullback(f!, mysimilar(y), ba, x, seed)
+        bench0 = @be mysimilar(y) prepare_pullback(f!, _, ba, x, seed) samples = 1 evals =
             1
         bench1 = @be (y=mysimilar(y), ext=deepcopy(extras)) value_and_pullback(
-            f!, _.y, ba, x, dy, _.ext
+            f!, _.y, ba, x, seed, _.ext
         ) evals = 1
         bench2 = @be (y=mysimilar(y), ext=deepcopy(extras)) pullback(
-            f!, _.y, ba, x, dy, _.ext
+            f!, _.y, ba, x, seed, _.ext
         ) evals = 1
         # count
         cc! = CallCounter(f!)
-        extras = prepare_pullback(cc!, mysimilar(y), ba, x, dy)
+        extras = prepare_pullback(cc!, mysimilar(y), ba, x, seed)
         calls0 = reset_count!(cc!)
-        value_and_pullback(cc!, mysimilar(y), ba, x, dy, extras)
+        value_and_pullback(cc!, mysimilar(y), ba, x, seed, extras)
         calls1 = reset_count!(cc!)
-        pullback(cc!, mysimilar(y), ba, x, dy, extras)
+        pullback(cc!, mysimilar(y), ba, x, seed, extras)
         calls2 = reset_count!(cc!)
         (; bench0, bench1, bench2, calls0, calls1, calls2)
     catch e
@@ -398,29 +398,29 @@ end
 function run_benchmark!(
     data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
-    scen::PullbackScenario{2,:inplace};
+    scen::Scenario{:pullback,2,:inplace};
     logging::Bool,
 )
-    @compat (; f, x, y, dy) = deepcopy(scen)
+    @compat (; f, x, y, seed) = deepcopy(scen)
     f! = f
     @compat (; bench0, bench1, bench2, calls0, calls1, calls2) = try
         # benchmark
-        extras = prepare_pullback(f!, mysimilar(y), ba, x, dy)
-        bench0 = @be mysimilar(y) prepare_pullback(f!, _, ba, x, dy) samples = 1 evals =
+        extras = prepare_pullback(f!, mysimilar(y), ba, x, seed)
+        bench0 = @be mysimilar(y) prepare_pullback(f!, _, ba, x, seed) samples = 1 evals =
             1
         bench1 = @be (y=mysimilar(y), dx=mysimilar(x), ext=deepcopy(extras)) value_and_pullback!(
-            f!, _.y, _.dx, ba, x, dy, _.ext
+            f!, _.y, _.dx, ba, x, seed, _.ext
         ) evals = 1
         bench2 = @be (y=mysimilar(y), dx=mysimilar(x), ext=deepcopy(extras)) pullback!(
-            f!, _.y, _.dx, ba, x, dy, _.ext
+            f!, _.y, _.dx, ba, x, seed, _.ext
         ) evals = 1
         # count
         cc! = CallCounter(f!)
-        extras = prepare_pullback(cc!, mysimilar(y), ba, x, dy)
+        extras = prepare_pullback(cc!, mysimilar(y), ba, x, seed)
         calls0 = reset_count!(cc!)
-        value_and_pullback!(cc!, mysimilar(y), mysimilar(x), ba, x, dy, extras)
+        value_and_pullback!(cc!, mysimilar(y), mysimilar(x), ba, x, seed, extras)
         calls1 = reset_count!(cc!)
-        pullback!(cc!, mysimilar(y), mysimilar(x), ba, x, dy, extras)
+        pullback!(cc!, mysimilar(y), mysimilar(x), ba, x, seed, extras)
         calls2 = reset_count!(cc!)
         (; bench0, bench1, bench2, calls0, calls1, calls2)
     catch e
@@ -441,7 +441,7 @@ end
 function run_benchmark!(
     data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
-    scen::DerivativeScenario{1,:outofplace};
+    scen::Scenario{:derivative,1,:outofplace};
     logging::Bool,
 )
     @compat (; f, x, y) = deepcopy(scen)
@@ -476,7 +476,7 @@ end
 function run_benchmark!(
     data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
-    scen::DerivativeScenario{1,:inplace};
+    scen::Scenario{:derivative,1,:inplace};
     logging::Bool,
 )
     @compat (; f, x, y) = deepcopy(scen)
@@ -515,7 +515,7 @@ end
 function run_benchmark!(
     data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
-    scen::DerivativeScenario{2,:outofplace};
+    scen::Scenario{:derivative,2,:outofplace};
     logging::Bool,
 )
     @compat (; f, x, y) = deepcopy(scen)
@@ -555,7 +555,7 @@ end
 function run_benchmark!(
     data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
-    scen::DerivativeScenario{2,:inplace};
+    scen::Scenario{:derivative,2,:inplace};
     logging::Bool,
 )
     @compat (; f, x, y) = deepcopy(scen)
@@ -597,7 +597,7 @@ end
 function run_benchmark!(
     data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
-    scen::GradientScenario{1,:outofplace};
+    scen::Scenario{:gradient,1,:outofplace};
     logging::Bool,
 )
     @compat (; f, x) = deepcopy(scen)
@@ -632,7 +632,7 @@ end
 function run_benchmark!(
     data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
-    scen::GradientScenario{1,:inplace};
+    scen::Scenario{:gradient,1,:inplace};
     logging::Bool,
 )
     @compat (; f, x) = deepcopy(scen)
@@ -673,7 +673,7 @@ end
 function run_benchmark!(
     data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
-    scen::JacobianScenario{1,:outofplace};
+    scen::Scenario{:jacobian,1,:outofplace};
     logging::Bool,
 )
     @compat (; f, x, y) = deepcopy(scen)
@@ -708,7 +708,7 @@ end
 function run_benchmark!(
     data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
-    scen::JacobianScenario{1,:inplace};
+    scen::Scenario{:jacobian,1,:inplace};
     logging::Bool,
 )
     @compat (; f, x, y) = deepcopy(scen)
@@ -748,7 +748,7 @@ end
 function run_benchmark!(
     data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
-    scen::JacobianScenario{2,:outofplace};
+    scen::Scenario{:jacobian,2,:outofplace};
     logging::Bool,
 )
     @compat (; f, x, y) = deepcopy(scen)
@@ -786,7 +786,7 @@ end
 function run_benchmark!(
     data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
-    scen::JacobianScenario{2,:inplace};
+    scen::Scenario{:jacobian,2,:inplace};
     logging::Bool,
 )
     @compat (; f, x, y) = deepcopy(scen)
@@ -829,7 +829,7 @@ end
 function run_benchmark!(
     data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
-    scen::SecondDerivativeScenario{1,:outofplace};
+    scen::Scenario{:second_derivative,1,:outofplace};
     logging::Bool,
 )
     @compat (; f, x, y) = deepcopy(scen)
@@ -864,7 +864,7 @@ end
 function run_benchmark!(
     data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
-    scen::SecondDerivativeScenario{1,:inplace};
+    scen::Scenario{:second_derivative,1,:inplace};
     logging::Bool,
 )
     @compat (; f, x, y) = deepcopy(scen)
@@ -907,20 +907,20 @@ end
 function run_benchmark!(
     data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
-    scen::HVPScenario{1,:outofplace};
+    scen::Scenario{:hvp,1,:outofplace};
     logging::Bool,
 )
-    @compat (; f, x, y, dx) = deepcopy(scen)
+    @compat (; f, x, y, seed) = deepcopy(scen)
     @compat (; bench0, bench1, calls0, calls1) = try
         # benchmark
-        extras = prepare_hvp(f, ba, x, dx)
-        bench0 = @be prepare_hvp(f, ba, x, dx) samples = 1 evals = 1
-        bench1 = @be deepcopy(extras) hvp(f, ba, x, dx, _)
+        extras = prepare_hvp(f, ba, x, seed)
+        bench0 = @be prepare_hvp(f, ba, x, seed) samples = 1 evals = 1
+        bench1 = @be deepcopy(extras) hvp(f, ba, x, seed, _)
         # count
         cc = CallCounter(f)
-        extras = prepare_hvp(cc, ba, x, dx)
+        extras = prepare_hvp(cc, ba, x, seed)
         calls0 = reset_count!(cc)
-        hvp(cc, ba, x, dx, extras)
+        hvp(cc, ba, x, seed, extras)
         calls1 = reset_count!(cc)
         (; bench0, bench1, calls0, calls1)
     catch e
@@ -938,20 +938,22 @@ end
 function run_benchmark!(
     data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
-    scen::HVPScenario{1,:inplace};
+    scen::Scenario{:hvp,1,:inplace};
     logging::Bool,
 )
-    @compat (; f, x, y, dx) = deepcopy(scen)
+    @compat (; f, x, y, seed) = deepcopy(scen)
     @compat (; bench0, bench1, calls0, calls1) = try
         # benchmark
-        extras = prepare_hvp(f, ba, x, dx)
-        bench0 = @be prepare_hvp(f, ba, x, dx) samples = 1 evals = 1
-        bench1 = @be (dg=mysimilar(x), ext=deepcopy(extras)) hvp!(f, _.dg, ba, x, dx, _.ext) evals = 1
+        extras = prepare_hvp(f, ba, x, seed)
+        bench0 = @be prepare_hvp(f, ba, x, seed) samples = 1 evals = 1
+        bench1 = @be (dg=mysimilar(x), ext=deepcopy(extras)) hvp!(
+            f, _.dg, ba, x, seed, _.ext
+        ) evals = 1
         # count
         cc = CallCounter(f)
-        extras = prepare_hvp(cc, ba, x, dx)
+        extras = prepare_hvp(cc, ba, x, seed)
         calls0 = reset_count!(cc)
-        hvp!(cc, mysimilar(x), ba, x, dx, extras)
+        hvp!(cc, mysimilar(x), ba, x, seed, extras)
         calls1 = reset_count!(cc)
         (; bench0, bench1, calls0, calls1)
     catch e
@@ -971,7 +973,7 @@ end
 function run_benchmark!(
     data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
-    scen::HessianScenario{1,:outofplace};
+    scen::Scenario{:hessian,1,:outofplace};
     logging::Bool,
 )
     @compat (; f, x, y) = deepcopy(scen)
@@ -1006,7 +1008,7 @@ end
 function run_benchmark!(
     data::Vector{DifferentiationBenchmarkDataRow},
     ba::AbstractADType,
-    scen::HessianScenario{1,:inplace};
+    scen::Scenario{:hessian,1,:inplace};
     logging::Bool,
 )
     @compat (; f, x, y) = deepcopy(scen)

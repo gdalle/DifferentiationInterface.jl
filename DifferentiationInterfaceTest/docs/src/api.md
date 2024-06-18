@@ -30,7 +30,7 @@ static_scenarios
 ## Scenario types
 
 ```@docs
-AbstractScenario
+Scenario
 PushforwardScenario
 PullbackScenario
 DerivativeScenario

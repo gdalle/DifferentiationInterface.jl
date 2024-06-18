@@ -48,14 +48,14 @@ test_differentiation(
         SecondOrder(AutoEnzyme(; mode=Enzyme.Forward), AutoEnzyme(; mode=Enzyme.Reverse)),
     ];
     first_order=false,
-    excluded=[SecondDerivativeScenario],
+    excluded=[:second_derivative],
     logging=LOGGING,
 );
 
 test_differentiation(
     [AutoEnzyme(; mode=nothing), AutoEnzyme(; mode=Enzyme.Forward)];
     first_order=false,
-    excluded=[HessianScenario, HVPScenario],
+    excluded=[:hessian, :hvp],
     logging=LOGGING,
 );
 
@@ -72,7 +72,7 @@ test_differentiation(
 test_differentiation(
     sparse_backends,
     default_scenarios();
-    excluded=[DerivativeScenario, GradientScenario, PullbackScenario, PushforwardScenario],
+    excluded=[:derivative, :gradient, :pullback, :pushforward],
     second_order=false,
     logging=LOGGING,
 );

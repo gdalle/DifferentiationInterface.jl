@@ -1,7 +1,7 @@
 name = "DifferentiationInterfaceTest"
 uuid = "a82114a7-5aa3-49a8-9643-716bb13727a3"
 authors = ["Guillaume Dalle", "Adrian Hill"]
-version = "0.4.4"
+version = "0.5.0"
 
 [deps]
 ADTypes = "47edcb42-4c32-4615-8424-f2b9edc5f35b"
@@ -50,6 +50,7 @@ SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 SparseConnectivityTracer = "9f842d2f-2579-4b1d-911e-f412cf18a3f5"
 SparseMatrixColorings = "0a514795-09f3-496d-8182-132a7b665d35"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [targets]
-test = ["ADTypes", "Aqua", "DataFrames", "DifferentiationInterface", "ForwardDiff", "JET", "JuliaFormatter", "Pkg", "SparseArrays", "SparseConnectivityTracer", "SparseMatrixColorings", "Test"]
+test = ["ADTypes", "Aqua", "DataFrames", "DifferentiationInterface", "ForwardDiff", "JET", "JuliaFormatter", "Pkg", "SparseArrays", "SparseConnectivityTracer", "SparseMatrixColorings", "Test", "Zygote"]

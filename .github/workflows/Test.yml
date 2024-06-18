@@ -123,6 +123,7 @@ jobs:
           - Formalities
           - Zero
           - ForwardDiff
+          - Zygote
         exclude:
           - version: '1.6'
             group: Formalities

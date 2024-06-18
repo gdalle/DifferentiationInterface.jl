@@ -4,58 +4,58 @@ end
 
 ## Pushforward
 
-function test_jet(ba::AbstractADType, scen::PushforwardScenario{1,:outofplace}; ref_backend)
-    @compat (; f, x, y, dx) = deepcopy(scen)
-    extras = prepare_pushforward(f, ba, x, dx)
+function test_jet(ba::AbstractADType, scen::Scenario{:pushforward,1,:outofplace})
+    @compat (; f, x, y, seed) = deepcopy(scen)
+    extras = prepare_pushforward(f, ba, x, seed)
 
     if Bool(pushforward_performance(ba))
-        JET.@test_opt function_filter = filt value_and_pushforward(f, ba, x, dx, extras)
-        JET.@test_opt function_filter = filt pushforward(f, ba, x, dx, extras)
+        JET.@test_opt function_filter = filt value_and_pushforward(f, ba, x, seed, extras)
+        JET.@test_opt function_filter = filt pushforward(f, ba, x, seed, extras)
     end
     return nothing
 end
 
-function test_jet(ba::AbstractADType, scen::PushforwardScenario{1,:inplace}; ref_backend)
-    @compat (; f, x, y, dx) = deepcopy(scen)
-    extras = prepare_pushforward(f, ba, x, dx)
+function test_jet(ba::AbstractADType, scen::Scenario{:pushforward,1,:inplace})
+    @compat (; f, x, y, seed) = deepcopy(scen)
+    extras = prepare_pushforward(f, ba, x, seed)
     dy_in = mysimilar(y)
 
     if Bool(pushforward_performance(ba))
         JET.@test_opt function_filter = filt value_and_pushforward!(
-            f, dy_in, ba, x, dx, extras
+            f, dy_in, ba, x, seed, extras
         )
-        JET.@test_opt function_filter = filt pushforward!(f, dy_in, ba, x, dx, extras)
+        JET.@test_opt function_filter = filt pushforward!(f, dy_in, ba, x, seed, extras)
     end
     return nothing
 end
 
-function test_jet(ba::AbstractADType, scen::PushforwardScenario{2,:outofplace}; ref_backend)
-    @compat (; f, x, y, dx) = deepcopy(scen)
+function test_jet(ba::AbstractADType, scen::Scenario{:pushforward,2,:outofplace})
+    @compat (; f, x, y, seed) = deepcopy(scen)
     f! = f
-    extras = prepare_pushforward(f!, mysimilar(y), ba, x, dx)
+    extras = prepare_pushforward(f!, mysimilar(y), ba, x, seed)
     y_in = mysimilar(y)
 
     if Bool(pushforward_performance(ba))
         JET.@test_opt function_filter = filt value_and_pushforward(
-            f!, y_in, ba, x, dx, extras
+            f!, y_in, ba, x, seed, extras
         )
-        JET.@test_opt function_filter = filt pushforward(f!, y_in, ba, x, dx, extras)
+        JET.@test_opt function_filter = filt pushforward(f!, y_in, ba, x, seed, extras)
     end
     return nothing
 end
 
-function test_jet(ba::AbstractADType, scen::PushforwardScenario{2,:inplace}; ref_backend)
-    @compat (; f, x, y, dx) = deepcopy(scen)
+function test_jet(ba::AbstractADType, scen::Scenario{:pushforward,2,:inplace})
+    @compat (; f, x, y, seed) = deepcopy(scen)
     f! = f
-    extras = prepare_pushforward(f!, mysimilar(y), ba, x, dx)
+    extras = prepare_pushforward(f!, mysimilar(y), ba, x, seed)
     y_in, dy_in = mysimilar(y), mysimilar(y)
 
     if Bool(pushforward_performance(ba))
         JET.@test_opt function_filter = filt value_and_pushforward!(
-            f!, y_in, dy_in, ba, x, dx, extras
+            f!, y_in, dy_in, ba, x, seed, extras
         )
         JET.@test_opt function_filter = filt pushforward!(
-            f!, y_in, dy_in, ba, x, dx, extras
+            f!, y_in, dy_in, ba, x, seed, extras
         )
     end
     return nothing
@@ -63,62 +63,64 @@ end
 
 ## Pullback
 
-function test_jet(ba::AbstractADType, scen::PullbackScenario{1,:outofplace}; ref_backend)
-    @compat (; f, x, dy) = deepcopy(scen)
-    extras = prepare_pullback(f, ba, x, dy)
+function test_jet(ba::AbstractADType, scen::Scenario{:pullback,1,:outofplace})
+    @compat (; f, x, seed) = deepcopy(scen)
+    extras = prepare_pullback(f, ba, x, seed)
 
     if Bool(pullback_performance(ba))
-        JET.@test_opt function_filter = filt value_and_pullback(f, ba, x, dy, extras)
-        JET.@test_opt function_filter = filt pullback(f, ba, x, dy, extras)
+        JET.@test_opt function_filter = filt value_and_pullback(f, ba, x, seed, extras)
+        JET.@test_opt function_filter = filt pullback(f, ba, x, seed, extras)
     end
     return nothing
 end
 
-function test_jet(ba::AbstractADType, scen::PullbackScenario{1,:inplace}; ref_backend)
-    @compat (; f, x, dy) = deepcopy(scen)
-    extras = prepare_pullback(f, ba, x, dy)
+function test_jet(ba::AbstractADType, scen::Scenario{:pullback,1,:inplace})
+    @compat (; f, x, seed) = deepcopy(scen)
+    extras = prepare_pullback(f, ba, x, seed)
     dx_in = mysimilar(x)
 
     if Bool(pullback_performance(ba))
         JET.@test_opt function_filter = filt value_and_pullback!(
-            f, dx_in, ba, x, dy, extras
+            f, dx_in, ba, x, seed, extras
         )
-        JET.@test_opt function_filter = filt pullback!(f, dx_in, ba, x, dy, extras)
+        JET.@test_opt function_filter = filt pullback!(f, dx_in, ba, x, seed, extras)
     end
     return nothing
 end
 
-function test_jet(ba::AbstractADType, scen::PullbackScenario{2,:outofplace}; ref_backend)
-    @compat (; f, x, y, dy) = deepcopy(scen)
+function test_jet(ba::AbstractADType, scen::Scenario{:pullback,2,:outofplace})
+    @compat (; f, x, y, seed) = deepcopy(scen)
     f! = f
-    extras = prepare_pullback(f!, mysimilar(y), ba, x, dy)
+    extras = prepare_pullback(f!, mysimilar(y), ba, x, seed)
     y_in = mysimilar(y)
 
     if Bool(pullback_performance(ba))
-        JET.@test_opt function_filter = filt value_and_pullback(f!, y_in, ba, x, dy, extras)
-        JET.@test_opt function_filter = filt pullback(f!, y_in, ba, x, dy, extras)
+        JET.@test_opt function_filter = filt value_and_pullback(
+            f!, y_in, ba, x, seed, extras
+        )
+        JET.@test_opt function_filter = filt pullback(f!, y_in, ba, x, seed, extras)
     end
     return nothing
 end
 
-function test_jet(ba::AbstractADType, scen::PullbackScenario{2,:inplace}; ref_backend)
-    @compat (; f, x, y, dy) = deepcopy(scen)
+function test_jet(ba::AbstractADType, scen::Scenario{:pullback,2,:inplace})
+    @compat (; f, x, y, seed) = deepcopy(scen)
     f! = f
-    extras = prepare_pullback(f!, mysimilar(y), ba, x, dy)
+    extras = prepare_pullback(f!, mysimilar(y), ba, x, seed)
     y_in, dx_in = mysimilar(y), mysimilar(x)
 
     if Bool(pullback_performance(ba))
         JET.@test_opt function_filter = filt value_and_pullback!(
-            f!, y_in, dx_in, ba, x, dy, extras
+            f!, y_in, dx_in, ba, x, seed, extras
         )
-        JET.@test_opt function_filter = filt pullback!(f!, y_in, dx_in, ba, x, dy, extras)
+        JET.@test_opt function_filter = filt pullback!(f!, y_in, dx_in, ba, x, seed, extras)
     end
     return nothing
 end
 
 ## Derivative
 
-function test_jet(ba::AbstractADType, scen::DerivativeScenario{1,:outofplace}; ref_backend)
+function test_jet(ba::AbstractADType, scen::Scenario{:derivative,1,:outofplace})
     @compat (; f, x, y) = deepcopy(scen)
     extras = prepare_derivative(f, ba, x)
 
@@ -127,7 +129,7 @@ function test_jet(ba::AbstractADType, scen::DerivativeScenario{1,:outofplace}; r
     return nothing
 end
 
-function test_jet(ba::AbstractADType, scen::DerivativeScenario{1,:inplace}; ref_backend)
+function test_jet(ba::AbstractADType, scen::Scenario{:derivative,1,:inplace})
     @compat (; f, x, y) = deepcopy(scen)
     extras = prepare_derivative(f, ba, x)
     der_in = mysimilar(y)
@@ -137,7 +139,7 @@ function test_jet(ba::AbstractADType, scen::DerivativeScenario{1,:inplace}; ref_
     return nothing
 end
 
-function test_jet(ba::AbstractADType, scen::DerivativeScenario{2,:outofplace}; ref_backend)
+function test_jet(ba::AbstractADType, scen::Scenario{:derivative,2,:outofplace})
     @compat (; f, x, y) = deepcopy(scen)
     f! = f
     extras = prepare_derivative(f!, mysimilar(y), ba, x)
@@ -148,7 +150,7 @@ function test_jet(ba::AbstractADType, scen::DerivativeScenario{2,:outofplace}; r
     return nothing
 end
 
-function test_jet(ba::AbstractADType, scen::DerivativeScenario{2,:inplace}; ref_backend)
+function test_jet(ba::AbstractADType, scen::Scenario{:derivative,2,:inplace})
     @compat (; f, x, y) = deepcopy(scen)
     f! = f
     extras = prepare_derivative(f!, mysimilar(y), ba, x)
@@ -163,7 +165,7 @@ end
 
 ## Gradient
 
-function test_jet(ba::AbstractADType, scen::GradientScenario{1,:outofplace}; ref_backend)
+function test_jet(ba::AbstractADType, scen::Scenario{:gradient,1,:outofplace})
     @compat (; f, x) = deepcopy(scen)
     extras = prepare_gradient(f, ba, x)
 
@@ -172,7 +174,7 @@ function test_jet(ba::AbstractADType, scen::GradientScenario{1,:outofplace}; ref
     return nothing
 end
 
-function test_jet(ba::AbstractADType, scen::GradientScenario{1,:inplace}; ref_backend)
+function test_jet(ba::AbstractADType, scen::Scenario{:gradient,1,:inplace})
     @compat (; f, x) = deepcopy(scen)
     extras = prepare_gradient(f, ba, x)
     grad_in = mysimilar(x)
@@ -184,7 +186,7 @@ end
 
 ## Jacobian
 
-function test_jet(ba::AbstractADType, scen::JacobianScenario{1,:outofplace}; ref_backend)
+function test_jet(ba::AbstractADType, scen::Scenario{:jacobian,1,:outofplace})
     @compat (; f, x, y) = deepcopy(scen)
     extras = prepare_jacobian(f, ba, x)
 
@@ -193,7 +195,7 @@ function test_jet(ba::AbstractADType, scen::JacobianScenario{1,:outofplace}; ref
     return nothing
 end
 
-function test_jet(ba::AbstractADType, scen::JacobianScenario{1,:inplace}; ref_backend)
+function test_jet(ba::AbstractADType, scen::Scenario{:jacobian,1,:inplace})
     @compat (; f, x, y) = deepcopy(scen)
     extras = prepare_jacobian(f, ba, x)
     jac_in = Matrix{eltype(y)}(undef, length(y), length(x))
@@ -203,7 +205,7 @@ function test_jet(ba::AbstractADType, scen::JacobianScenario{1,:inplace}; ref_ba
     return nothing
 end
 
-function test_jet(ba::AbstractADType, scen::JacobianScenario{2,:outofplace}; ref_backend)
+function test_jet(ba::AbstractADType, scen::Scenario{:jacobian,2,:outofplace})
     @compat (; f, x, y) = deepcopy(scen)
     f! = f
     extras = prepare_jacobian(f!, mysimilar(y), ba, x)
@@ -214,7 +216,7 @@ function test_jet(ba::AbstractADType, scen::JacobianScenario{2,:outofplace}; ref
     return nothing
 end
 
-function test_jet(ba::AbstractADType, scen::JacobianScenario{2,:inplace}; ref_backend)
+function test_jet(ba::AbstractADType, scen::Scenario{:jacobian,2,:inplace})
     @compat (; f, x, y) = deepcopy(scen)
     f! = f
     extras = prepare_jacobian(f!, mysimilar(y), ba, x)
@@ -229,9 +231,7 @@ end
 
 ## Second derivative
 
-function test_jet(
-    ba::AbstractADType, scen::SecondDerivativeScenario{1,:outofplace}; ref_backend
-)
+function test_jet(ba::AbstractADType, scen::Scenario{:second_derivative,1,:outofplace})
     @compat (; f, x, y) = deepcopy(scen)
     extras = prepare_second_derivative(f, ba, x)
 
@@ -242,9 +242,7 @@ function test_jet(
     return nothing
 end
 
-function test_jet(
-    ba::AbstractADType, scen::SecondDerivativeScenario{1,:inplace}; ref_backend
-)
+function test_jet(ba::AbstractADType, scen::Scenario{:second_derivative,1,:inplace})
     @compat (; f, x, y) = deepcopy(scen)
     extras = prepare_second_derivative(f, ba, x)
     der1_in = mysimilar(y)
@@ -259,26 +257,26 @@ end
 
 ## HVP
 
-function test_jet(ba::AbstractADType, scen::HVPScenario{1,:outofplace}; ref_backend)
-    @compat (; f, x, dx) = deepcopy(scen)
-    extras = prepare_hvp(f, ba, x, dx)
+function test_jet(ba::AbstractADType, scen::Scenario{:hvp,1,:outofplace})
+    @compat (; f, x, seed) = deepcopy(scen)
+    extras = prepare_hvp(f, ba, x, seed)
 
-    JET.@test_opt function_filter = filt hvp(f, ba, x, dx, extras)
+    JET.@test_opt function_filter = filt hvp(f, ba, x, seed, extras)
     return nothing
 end
 
-function test_jet(ba::AbstractADType, scen::HVPScenario{1,:inplace}; ref_backend)
-    @compat (; f, x, dx) = deepcopy(scen)
-    extras = prepare_hvp(f, ba, x, dx)
+function test_jet(ba::AbstractADType, scen::Scenario{:hvp,1,:inplace})
+    @compat (; f, x, seed) = deepcopy(scen)
+    extras = prepare_hvp(f, ba, x, seed)
     p_in = mysimilar(x)
 
-    JET.@test_opt function_filter = filt hvp!(f, p_in, ba, x, dx, extras)
+    JET.@test_opt function_filter = filt hvp!(f, p_in, ba, x, seed, extras)
     return nothing
 end
 
 ## Hessian
 
-function test_jet(ba::AbstractADType, scen::HessianScenario{1,:outofplace}; ref_backend)
+function test_jet(ba::AbstractADType, scen::Scenario{:hessian,1,:outofplace})
     @compat (; f, x, y) = deepcopy(scen)
     extras = prepare_hessian(f, ba, x)
 
@@ -287,7 +285,7 @@ function test_jet(ba::AbstractADType, scen::HessianScenario{1,:outofplace}; ref_
     return nothing
 end
 
-function test_jet(ba::AbstractADType, scen::HessianScenario{1,:inplace}; ref_backend)
+function test_jet(ba::AbstractADType, scen::Scenario{:hessian,1,:inplace})
     @compat (; f, x, y) = deepcopy(scen)
     extras = prepare_hessian(f, ba, x)
     grad_in = mysimilar(x)

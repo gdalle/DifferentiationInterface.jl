@@ -1,11 +1,11 @@
 """
-    AbstractScenario
+    Scenario{op,args,pl}
 
-Store a testing scenario composed of a function and its input + output.
+Store a testing scenario composed of a function and its input + output for a given operator.
 
-This abstract type should never be used directly: construct one of the subtypes corresponding to the operator you want to test.
-    
-# Subtypes
+This generic type should never be used directly: use the specific constructor corresponding to the operator you want to test, or a predefined list of scenarios.
+
+# Constructors
 
 - [`PushforwardScenario`](@ref)
 - [`PullbackScenario`](@ref)
@@ -15,287 +15,153 @@ This abstract type should never be used directly: construct one of the subtypes 
 - [`SecondDerivativeScenario`](@ref)
 - [`HVPScenario`](@ref)
 - [`HessianScenario`](@ref)
-    
+
+# Type parameters
+
+- `op`: one  of `:pushforward`, `:pullback`, `:derivative`, `:gradient`, `:jacobian`,`:second_derivative`, `:hvp`, `:hessian`
+- `args`: either `1` (for `f(x) = y`) or `2` (for `f!(y, x) = nothing`)
+- `pl`: either `:inplace` or `:outofplace`
+
 # Fields
 
-All subtypes have the following fields:
-
-- `f`: function to apply
-- `x`: primal input
-- `y`: primal output
-- `ref`: reference to compare against
-
-Some scenarios have the following fields:
-
-- `dx` or `dy`: seed for the low-level operators
-- `first_order_ref`: reference to compare against for second order scenarios when the operator also computes a first-order quantity
-
-# Constructor
-
-If `y` is provided, `f` is interpreted as a 2-argument function `f!(y, x) = nothing`.
-Otherwise, `f` is interpreted as an 1-argument function `f(x) = y`.
-
-The reference keyword `ref` (as well as `first_order_ref`) should be a function that takes `x` (and a potential seed `dx` or `dy`) to return the correct object.
-
-The keyword `place` should be either `:inplace` or `:outofplace` depending on what kind of operator must be tested.
+$(TYPEDFIELDS)
 """
-abstract type AbstractScenario{args,place,F,X,Y} end
+struct Scenario{op,args,pl,F,X,Y,D,R1,R2}
+    "function `f` (if `args==1`) or `f!` (if `args==2`) to apply"
+    f::F
+    "primal input"
+    x::X
+    "primal output"
+    y::Y
+    "seed for pushforward, pullback or HVP"
+    seed::D
+    "first-order result"
+    res1::R1
+    "second-order result"
+    res2::R2
 
-abstract type AbstractFirstOrderScenario{args,place,F,X,Y,R} <:
-              AbstractScenario{args,place,F,X,Y} end
-abstract type AbstractSecondOrderScenario{args,place,F,X,Y,R2,R1} <:
-              AbstractScenario{args,place,F,X,Y} end
+    function Scenario{op,args,pl}(
+        f::F; x::X, y::Y, seed::D, res1::R1, res2::R2
+    ) where {op,args,pl,F,X,Y,D,R1,R2}
+        return new{op,args,pl,F,X,Y,D,R1,R2}(f, x, y, seed, res1, res2)
+    end
+end
 
-scen_type(scenario::AbstractScenario) = nameof(typeof(scenario))
-nb_args(::AbstractScenario{args}) where {args} = args
-operator_place(::AbstractScenario{args,place}) where {args,place} = place
+operator(::Scenario{op}) where {op} = op
+nb_args(::Scenario{op,args}) where {op,args} = args
+place(::Scenario{op,args,pl}) where {op,args,pl} = pl
 
-function compatible(backend::AbstractADType, scen::AbstractScenario)
+function order(
+    ::Union{
+        Scenario{:pushforward},
+        Scenario{:pullback},
+        Scenario{:derivative},
+        Scenario{:gradient},
+        Scenario{:jacobian},
+    },
+)
+    return 1
+end
+
+function order(::Union{Scenario{:second_derivative},Scenario{:hvp},Scenario{:hessian}})
+    return 2
+end
+
+function change_function(scen::Scenario{op,args,pl}, new_f) where {op,args,pl}
+    return Scenario{op,args,pl}(
+        new_f; x=scen.x, y=scen.y, seed=scen.seed, res1=scen.res1, res2=scen.res2
+    )
+end
+
+maybe_zero(x::Number) = zero(x)
+maybe_zero(x::AbstractArray) = zero(x)
+maybe_zero(::Nothing) = nothing
+
+function scenario_to_zero(scen::Scenario{op,args,pl}) where {op,args,pl}
+    return Scenario{op,args,pl}(
+        scen.f;
+        x=scen.x,
+        y=scen.y,
+        seed=scen.seed,
+        res1=maybe_zero(scen.res1),
+        res2=maybe_zero(scen.res2),
+    )
+end
+
+function compatible(backend::AbstractADType, scen::Scenario)
     if nb_args(scen) == 2
         return Bool(twoarg_support(backend))
     end
     return true
 end
 
-function group_by_scen_type(scenarios)
+function group_by_operator(scenarios::AbstractVector{<:Scenario})
     return Dict(
-        st => filter(s -> scen_type(s) == st, scenarios) for
-        st in unique(scen_type.(scenarios))
+        op => filter(s -> operator(s) == op, scenarios) for
+        op in unique(operator.(scenarios))
     )
 end
 
-function Base.print(
-    io::IO, scen::S
-) where {args,place,F,X,Y,S<:AbstractScenario{args,place,F,X,Y}}
-    return print(io, "$(nameof(S)){$args,$place}($(string(scen.f)) : $X -> $Y)")
-end
-
-## Struct definitions
-
-"""
-    PushforwardScenario(f; x, y, dx, ref, place)
-
-See [`AbstractScenario`](@ref) for details.
-"""
-struct PushforwardScenario{args,place,F,X,Y,DX,R} <:
-       AbstractFirstOrderScenario{args,place,F,X,Y,R}
-    f::F
-    x::X
-    y::Y
-    dx::DX
-    ref::R
+function Base.print(io::IO, scen::S) where {op,args,pl,F,X,Y,S<:Scenario{op,args,pl,F,X,Y}}
+    return print(io, "Scenario{$op,$args,$pl}($(string(scen.f)) : $X -> $Y)")
 end
 
 """
-    PullbackScenario(f; x, y, dy, ref, place)
-
-See [`AbstractScenario`](@ref) for details.
+$(SIGNATURES)
 """
-struct PullbackScenario{args,place,F,X,Y,DY,R} <:
-       AbstractFirstOrderScenario{args,place,F,X,Y,R}
-    f::F
-    x::X
-    y::Y
-    dy::DY
-    ref::R
+function PushforwardScenario(f; x, y, dx, dy, nb_args, place=:inplace)
+    return Scenario{:pushforward,nb_args,place}(f; x, y, seed=dx, res1=dy, res2=nothing)
 end
 
 """
-    DerivativeScenario(f; x, y, ref, place)
-
-See [`AbstractScenario`](@ref) for details.
+$(SIGNATURES)
 """
-struct DerivativeScenario{args,place,F,X<:Number,Y,R} <:
-       AbstractFirstOrderScenario{args,place,F,X,Y,R}
-    f::F
-    x::X
-    y::Y
-    ref::R
+function PullbackScenario(f; x, y, dx, dy, nb_args, place=:inplace)
+    return Scenario{:pullback,nb_args,place}(f; x, y, seed=dy, res1=dx, res2=nothing)
 end
 
 """
-    GradientScenario(f; x, y, ref, place)
-
-See [`AbstractScenario`](@ref) for details.
+$(SIGNATURES)
 """
-struct GradientScenario{args,place,F,X,Y<:Number,R} <:
-       AbstractFirstOrderScenario{args,place,F,X,Y,R}
-    f::F
-    x::X
-    y::Y
-    ref::R
-end
-
-"""
-    JacobianScenario(f; x, y, ref, place)
-
-See [`AbstractScenario`](@ref) for details.
-"""
-struct JacobianScenario{args,place,F,X<:AbstractArray,Y<:AbstractArray,R} <:
-       AbstractFirstOrderScenario{args,place,F,X,Y,R}
-    f::F
-    x::X
-    y::Y
-    ref::R
-end
-
-"""
-    SecondDerivativeScenario(f; x, y, ref, first_order_ref, place)
-
-See [`AbstractScenario`](@ref) for details.
-"""
-struct SecondDerivativeScenario{args,place,F,X<:Number,Y,R2,R1} <:
-       AbstractSecondOrderScenario{args,place,F,X,Y,R2,R1}
-    f::F
-    x::X
-    y::Y
-    ref::R2
-    first_order_ref::R1
-end
-
-"""
-    HVPScenario(f; x, y, dx, ref, first_order_ref, place)
-
-See [`AbstractScenario`](@ref) for details.
-"""
-struct HVPScenario{args,place,F,X,Y<:Number,DX,R2,R1} <:
-       AbstractSecondOrderScenario{args,place,F,X,Y,R2,R1}
-    f::F
-    x::X
-    y::Y
-    dx::DX
-    ref::R2
-    first_order_ref::R1
-end
-
-"""
-    HessianScenario(f; x, y, ref, first_order_ref, place)
-
-See [`AbstractScenario`](@ref) for details.
-"""
-struct HessianScenario{args,place,F,X<:AbstractArray,Y<:Number,R2,R1} <:
-       AbstractSecondOrderScenario{args,place,F,X,Y,R2,R1}
-    f::F
-    x::X
-    y::Y
-    ref::R2
-    first_order_ref::R1
-end
-
-## Constructors
-
-### First order
-
-for S in (:DerivativeScenario, :GradientScenario, :JacobianScenario)
-    @eval function $S(f::F; x::X, y=nothing, ref::R=nothing, place=:inplace) where {F,X,R}
-        args = isnothing(y) ? 1 : 2
-        if args == 2
-            f(y, x)
-        else
-            y = f(x)
-        end
-        return ($S){args,place,F,X,typeof(y),R}(f, x, y, ref)
-    end
-end
-
-function PushforwardScenario(
-    f::F; x::X, y=nothing, ref::R=nothing, dx=nothing, place=:inplace
-) where {F,X,R}
-    args = isnothing(y) ? 1 : 2
-    if args == 2
-        f(y, x)
-    else
-        y = f(x)
-    end
-    if isnothing(dx)
-        dx = mycopy_random(x)
-    end
-    return PushforwardScenario{args,place,F,X,typeof(y),typeof(dx),R}(f, x, y, dx, ref)
-end
-
-function PullbackScenario(
-    f::F; x::X, y=nothing, ref::R=nothing, dy=nothing, place=:inplace
-) where {F,X,R}
-    args = isnothing(y) ? 1 : 2
-    if args == 2
-        f(y, x)
-    else
-        y = f(x)
-    end
-    if isnothing(dy)
-        dy = mycopy_random(y)
-    end
-    return PullbackScenario{args,place,F,X,typeof(y),typeof(dy),R}(f, x, y, dy, ref)
-end
-
-### Second order
-
-for S in (:SecondDerivativeScenario, :HessianScenario)
-    @eval function $S(
-        f::F; x::X, y=nothing, ref::R2=nothing, first_order_ref::R1=nothing, place=:inplace
-    ) where {F,X,R2,R1}
-        args = isnothing(y) ? 1 : 2
-        if args == 2
-            f(y, x)
-        else
-            y = f(x)
-        end
-        return ($S){args,place,F,X,typeof(y),R2,R1}(f, x, y, ref, first_order_ref)
-    end
-end
-
-function HVPScenario(
-    f::F;
-    x::X,
-    y=nothing,
-    ref::R2=nothing,
-    first_order_ref::R1=nothing,
-    dx=nothing,
-    place=:inplace,
-) where {F,X,R2,R1}
-    args = isnothing(y) ? 1 : 2
-    if args == 2
-        f(y, x)
-    else
-        y = f(x)
-    end
-    if isnothing(dx)
-        dx = mycopy_random(x)
-    end
-    return HVPScenario{args,place,F,X,typeof(y),typeof(dx),R2,R1}(
-        f, x, y, dx, ref, first_order_ref
+function DerivativeScenario(f; x, y, der, nb_args, place=:inplace)
+    return Scenario{:derivative,nb_args,place}(
+        f; x, y, seed=nothing, res1=der, res2=nothing
     )
 end
 
-## Change function
-
-for S in (
-    :DerivativeScenario,
-    :GradientScenario,
-    :JacobianScenario,
-    :PullbackScenario,
-    :PushforwardScenario,
-)
-    @eval function change_function(s::($S), f)
-        return ($S)(
-            f;
-            x=s.x,
-            y=(nb_args(s) == 1 ? nothing : s.y),
-            ref=s.ref,
-            place=operator_place(s),
-        )
-    end
+"""
+$(SIGNATURES)
+"""
+function GradientScenario(f; x, y, grad, nb_args, place=:inplace)
+    return Scenario{:gradient,nb_args,place}(f; x, y, seed=nothing, res1=grad, res2=nothing)
 end
 
-for S in (:SecondDerivativeScenario, :HessianScenario, :HVPScenario)
-    @eval function change_function(s::($S), f)
-        return ($S)(
-            f;
-            x=s.x,
-            y=(nb_args(s) == 1 ? nothing : s.y),
-            ref=s.ref,
-            first_order_ref=s.first_order_ref,
-            place=operator_place(s),
-        )
-    end
+"""
+$(SIGNATURES)
+"""
+function JacobianScenario(f; x, y, jac, nb_args, place=:inplace)
+    return Scenario{:jacobian,nb_args,place}(f; x, y, seed=nothing, res1=jac, res2=nothing)
+end
+
+"""
+$(SIGNATURES)
+"""
+function SecondDerivativeScenario(f; x, y, der, der2, nb_args, place=:inplace)
+    return Scenario{:second_derivative,nb_args,place}(
+        f; x, y, seed=nothing, res1=der, res2=der2
+    )
+end
+
+"""
+$(SIGNATURES)
+"""
+function HVPScenario(f; x, y, dx, grad, dg, nb_args, place=:inplace)
+    return Scenario{:hvp,nb_args,place}(f; x, y, seed=dx, res1=grad, res2=dg)
+end
+
+"""
+$(SIGNATURES)
+"""
+function HessianScenario(f; x, y, grad, hess, nb_args, place=:inplace)
+    return Scenario{:hessian,nb_args,place}(f; x, y, seed=nothing, res1=grad, res2=hess)
 end

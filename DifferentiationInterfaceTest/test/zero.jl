@@ -1,41 +1,21 @@
 using DifferentiationInterface
 using DifferentiationInterfaceTest
-using DifferentiationInterfaceTest: AutoZeroForward, AutoZeroReverse
+using DifferentiationInterfaceTest: AutoZeroForward, AutoZeroReverse, scenario_to_zero
 
 using DataFrames: DataFrames
+using Test
 
 @test check_available(AutoZeroForward())
 @test check_available(AutoZeroReverse())
 @test check_twoarg(AutoZeroForward())
 @test check_twoarg(AutoZeroReverse())
 
-## Correctness (vs oneself)
-
-for backend in [AutoZeroForward(), AutoZeroReverse()]
-    test_differentiation(
-        backend, default_scenarios(); correctness=true, ref_backend=backend, logging=LOGGING
-    )
-end
-
-for backend in [
-    SecondOrder(AutoZeroForward(), AutoZeroReverse()),
-    SecondOrder(AutoZeroReverse(), AutoZeroForward()),
-]
-    test_differentiation(
-        backend,
-        default_scenarios();
-        correctness=true,
-        first_order=false,
-        ref_backend=backend,
-        logging=LOGGING,
-    )
-end
-
-## Type stability
+## Correctness + type stability
 
 test_differentiation(
-    [AutoZeroForward(), AutoZeroReverse()];
-    correctness=false,
+    [AutoZeroForward(), AutoZeroReverse()],
+    scenario_to_zero.(default_scenarios());
+    correctness=true,
     type_stability=true,
     logging=LOGGING,
 )
@@ -44,8 +24,9 @@ test_differentiation(
     [
         SecondOrder(AutoZeroForward(), AutoZeroReverse()),
         SecondOrder(AutoZeroReverse(), AutoZeroForward()),
-    ];
-    correctness=false,
+    ],
+    scenario_to_zero.(default_scenarios());
+    correctness=true,
     type_stability=true,
     first_order=false,
     logging=LOGGING,
@@ -90,20 +71,9 @@ end
 
 ## Weird arrays
 
-for backend in [AutoZeroForward(), AutoZeroReverse()]
-    test_differentiation(
-        backend, gpu_scenarios(); correctness=true, ref_backend=backend, logging=LOGGING
-    )
-    test_differentiation(
-        backend, static_scenarios(); correctness=true, ref_backend=backend, logging=LOGGING
-    )
-    # stack fails on component vectors
-    test_differentiation(
-        backend,
-        component_scenarios();
-        correctness=true,
-        excluded=[HessianScenario],
-        ref_backend=backend,
-        logging=LOGGING,
-    )
-end
+test_differentiation(
+    [AutoZeroForward(), AutoZeroReverse()],
+    scenario_to_zero.(vcat(component_scenarios(), gpu_scenarios(), static_scenarios()));
+    correctness=true,
+    logging=LOGGING,
+)

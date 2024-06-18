@@ -48,9 +48,9 @@ using JET: JET
 using JLArrays: jl
 using LinearAlgebra: Adjoint, Diagonal, Transpose, dot, parent
 using ProgressMeter: ProgressUnknown, next!
-using Random: AbstractRNG, default_rng
+using Random: AbstractRNG, default_rng, rand!
 using SparseArrays: SparseArrays, SparseMatrixCSC, nnz, spdiagm
-using StaticArrays: MMatrix, MVector, SMatrix, SVector
+using StaticArrays: MArray, MMatrix, MVector, SArray, SMatrix, SVector
 using Test: @testset, @test
 
 include("scenarios/scenario.jl")
@@ -72,7 +72,6 @@ include("tests/sparsity.jl")
 include("tests/benchmark.jl")
 include("test_differentiation.jl")
 
-export AbstractScenario
 export PushforwardScenario,
     PullbackScenario,
     DerivativeScenario,

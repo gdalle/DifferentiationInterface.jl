@@ -21,7 +21,7 @@ end
 
 ## Dense backends
 
-test_differentiation(AutoZygote(); excluded=[SecondDerivativeScenario], logging=LOGGING);
+test_differentiation(AutoZygote(); excluded=[:second_derivative], logging=LOGGING);
 
 test_differentiation(
     AutoZygote(),
@@ -39,14 +39,7 @@ end
 test_differentiation(
     sparse_backends,
     default_scenarios();
-    excluded=[
-        DerivativeScenario,
-        GradientScenario,
-        HVPScenario,
-        PullbackScenario,
-        PushforwardScenario,
-        SecondDerivativeScenario,
-    ],
+    excluded=[:derivative, :gradient, :hvp, :pullback, :pushforward, :second_derivative],
     logging=LOGGING,
 );
 

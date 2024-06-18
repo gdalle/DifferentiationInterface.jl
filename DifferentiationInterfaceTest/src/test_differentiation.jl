@@ -5,7 +5,7 @@ Cross-test a list of `backends` on a list of `scenarios`, running a variety of d
 
 # Default arguments
 
-- `scenarios::Vector{<:AbstractScenario}`: the output of [`default_scenarios()`](@ref)
+- `scenarios::Vector{<:Scenario}`: the output of [`default_scenarios()`](@ref)
 
 # Keyword arguments
 
@@ -14,7 +14,6 @@ Testing:
 - `correctness=true`: whether to compare the differentiation results with the theoretical values specified in each scenario
 - `type_stability=false`: whether to check type stability with JET.jl (thanks to `JET.@test_opt`)
 - `sparsity`: whether to check sparsity of the jacobian / hessian
-- `ref_backend`: if not `nothing`, an `ADTypes.AbstractADType` object to use instead of the scenario-specific reference to provide true values
 - `detailed=false`: whether to print a detailed or condensed test log
 
 Filtering:
@@ -33,29 +32,28 @@ Options:
 """
 function test_differentiation(
     backends::Vector{<:AbstractADType},
-    scenarios::Vector{<:AbstractScenario}=default_scenarios();
+    scenarios::Vector{<:Scenario}=default_scenarios();
     # testing
     correctness::Bool=true,
     type_stability::Bool=false,
     call_count::Bool=false,
     sparsity::Bool=false,
-    ref_backend=nothing,
     detailed=false,
     # filtering
     input_type::Type=Any,
     output_type::Type=Any,
-    first_order=true,
-    second_order=true,
-    onearg=true,
-    twoarg=true,
-    inplace=true,
-    outofplace=true,
-    excluded=[],
+    first_order::Bool=true,
+    second_order::Bool=true,
+    onearg::Bool=true,
+    twoarg::Bool=true,
+    inplace::Bool=true,
+    outofplace::Bool=true,
+    excluded::Vector{Symbol}=Symbol[],
     # options
-    logging=false,
+    logging::Bool=false,
     isapprox=isapprox,
-    atol=0,
-    rtol=1e-3,
+    atol::Real=0,
+    rtol::Real=1e-3,
 )
     scenarios = filter_scenarios(
         scenarios;
@@ -83,18 +81,18 @@ function test_differentiation(
         @testset verbose = detailed "$(backend_str(backend))" for (i, backend) in
                                                                   enumerate(backends)
             filtered_scenarios = filter(s -> compatible(backend, s), scenarios)
-            grouped_scenarios = group_by_scen_type(filtered_scenarios)
-            @testset verbose = detailed "$st" for (j, (st, st_group)) in
+            grouped_scenarios = group_by_operator(filtered_scenarios)
+            @testset verbose = detailed "$op" for (j, (op, op_group)) in
                                                   enumerate(pairs(grouped_scenarios))
-                @testset "$scen" for (k, scen) in enumerate(st_group)
+                @testset "$scen" for (k, scen) in enumerate(op_group)
                     next!(
                         prog;
                         showvalues=[
                             (:backend, "$(backend_str(backend)) - $i/$(length(backends))"),
-                            (:scenario_type, "$st - $j/$(length(grouped_scenarios))"),
-                            (:scenario, "$k/$(length(st_group))"),
+                            (:scenario_type, "$op - $j/$(length(grouped_scenarios))"),
+                            (:scenario, "$k/$(length(op_group))"),
                             (:arguments, nb_args(scen)),
-                            (:place, operator_place(scen)),
+                            (:place, place(scen)),
                             (:function, scen.f),
                             (:input_type, typeof(scen.x)),
                             (:input_size, size(scen.x)),
@@ -103,15 +101,15 @@ function test_differentiation(
                         ],
                     )
                     correctness && @testset "Correctness" begin
-                        test_correctness(backend, scen; isapprox, atol, rtol, ref_backend)
+                        test_correctness(backend, scen; isapprox, atol, rtol)
                     end
                     type_stability && @testset "Type stability" begin
                         @static if VERSION >= v"1.7"
-                            test_jet(backend, scen; ref_backend)
+                            test_jet(backend, scen)
                         end
                     end
                     sparsity && @testset "Sparsity" begin
-                        test_sparsity(backend, scen; ref_backend)
+                        test_sparsity(backend, scen)
                     end
                 end
             end
@@ -140,19 +138,19 @@ The keyword arguments available here have the same meaning as those in [`test_di
 """
 function benchmark_differentiation(
     backends::Vector{<:AbstractADType},
-    scenarios::Vector{<:AbstractScenario};
+    scenarios::Vector{<:Scenario};
     # filtering
     input_type::Type=Any,
     output_type::Type=Any,
-    first_order=true,
-    second_order=true,
-    onearg=true,
-    twoarg=true,
-    inplace=true,
-    outofplace=true,
-    excluded=[],
+    first_order::Bool=true,
+    second_order::Bool=true,
+    onearg::Bool=true,
+    twoarg::Bool=true,
+    inplace::Bool=true,
+    outofplace::Bool=true,
+    excluded::Vector{Symbol}=Symbol[],
     # options
-    logging=false,
+    logging::Bool=false,
 )
     scenarios = filter_scenarios(
         scenarios;
@@ -171,17 +169,17 @@ function benchmark_differentiation(
     prog = ProgressUnknown(; desc="Benchmarking", spinner=true, enabled=logging)
     for (i, backend) in enumerate(backends)
         filtered_scenarios = filter(s -> compatible(backend, s), scenarios)
-        grouped_scenarios = group_by_scen_type(filtered_scenarios)
-        for (j, (st, st_group)) in enumerate(pairs(grouped_scenarios))
-            for (k, scen) in enumerate(st_group)
+        grouped_scenarios = group_by_operator(filtered_scenarios)
+        for (j, (op, op_group)) in enumerate(pairs(grouped_scenarios))
+            for (k, scen) in enumerate(op_group)
                 next!(
                     prog;
                     showvalues=[
                         (:backend, "$(backend_str(backend)) - $i/$(length(backends))"),
-                        (:scenario_type, "$st - $j/$(length(grouped_scenarios))"),
-                        (:scenario, "$k/$(length(st_group))"),
+                        (:scenario_type, "$op - $j/$(length(grouped_scenarios))"),
+                        (:scenario, "$k/$(length(op_group))"),
                         (:arguments, nb_args(scen)),
-                        (:place, operator_place(scen)),
+                        (:place, place(scen)),
                         (:function, scen.f),
                         (:input_type, typeof(scen.x)),
                         (:input_size, size(scen.x)),
