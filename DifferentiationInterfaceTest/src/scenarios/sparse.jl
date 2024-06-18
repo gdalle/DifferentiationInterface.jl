@@ -30,20 +30,18 @@ function diffcube_jacobian(x)
 end
 
 function sparse_vec_to_vec_scenarios(x::AbstractVector)
-    n = length(x)
-    scens = AbstractScenario[]
+    f = diffsquare
+    f! = diffsquare!
+    y = f(x)
+    jac = diffsquare_jacobian(x)
+
+    scens = Scenario[]
     for place in (:outofplace, :inplace)
         append!(
             scens,
             [
-                JacobianScenario(diffsquare; x=x, ref=diffsquare_jacobian, place=place),
-                JacobianScenario(
-                    diffsquare!;
-                    x=x,
-                    y=similar(x, n - 1),
-                    ref=diffsquare_jacobian,
-                    place=place,
-                ),
+                JacobianScenario(f; x, y, jac, nb_args=1, place),
+                JacobianScenario(f!; x, y, jac, nb_args=2, place),
             ],
         )
     end
@@ -68,25 +66,18 @@ function diffsquarecube_matvec_jacobian(x)
 end
 
 function sparse_mat_to_vec_scenarios(x::AbstractMatrix)
-    m, n = size(x)
-    scens = AbstractScenario[]
+    f = diffsquarecube_matvec
+    f! = diffsquarecube_matvec!
+    y = f(x)
+    jac = diffsquarecube_matvec_jacobian(x)
+
+    scens = Scenario[]
     for place in (:outofplace, :inplace)
         append!(
             scens,
             [
-                JacobianScenario(
-                    diffsquarecube_matvec;
-                    x=x,
-                    ref=diffsquarecube_matvec_jacobian,
-                    place=place,
-                ),
-                JacobianScenario(
-                    diffsquarecube_matvec!;
-                    x=x,
-                    y=similar(x, 2(m * n) - 2),
-                    ref=diffsquarecube_matvec_jacobian,
-                    place=place,
-                ),
+                JacobianScenario(f; x, y, jac, nb_args=1, place),
+                JacobianScenario(f!; x, y, jac, nb_args=2, place),
             ],
         )
     end
@@ -108,25 +99,18 @@ function diffsquarecube_vecmat_jacobian(x::AbstractVector)
 end
 
 function sparse_vec_to_mat_scenarios(x::AbstractVector)
-    n = length(x)
-    scens = AbstractScenario[]
+    f = diffsquarecube_vecmat
+    f! = diffsquarecube_vecmat!
+    y = f(x)
+    jac = diffsquarecube_vecmat_jacobian(vec(x))
+
+    scens = Scenario[]
     for place in (:outofplace, :inplace)
         append!(
             scens,
             [
-                JacobianScenario(
-                    diffsquarecube_vecmat;
-                    x=x,
-                    ref=diffsquarecube_vecmat_jacobian,
-                    place=place,
-                ),
-                JacobianScenario(
-                    diffsquarecube_vecmat!;
-                    x=x,
-                    y=similar(x, n - 1, 2),
-                    ref=diffsquarecube_vecmat_jacobian,
-                    place=place,
-                ),
+                JacobianScenario(f; x, y, jac, nb_args=1, place),
+                JacobianScenario(f!; x, y, jac, nb_args=2, place),
             ],
         )
     end
@@ -150,25 +134,18 @@ function diffsquarecube_matmat_jacobian(x::AbstractMatrix)
 end
 
 function sparse_mat_to_mat_scenarios(x::AbstractMatrix)
-    m, n = size(x)
-    scens = AbstractScenario[]
+    f = diffsquarecube_matmat
+    f! = diffsquarecube_matmat!
+    y = f(x)
+    jac = diffsquarecube_matmat_jacobian(x)
+
+    scens = Scenario[]
     for place in (:outofplace, :inplace)
         append!(
             scens,
             [
-                JacobianScenario(
-                    diffsquarecube_matmat;
-                    x=x,
-                    ref=diffsquarecube_matmat_jacobian,
-                    place=place,
-                ),
-                JacobianScenario(
-                    diffsquarecube_matmat!;
-                    x=x,
-                    y=similar(x, m * n - 1, 2),
-                    ref=diffsquarecube_matmat_jacobian,
-                    place=place,
-                ),
+                JacobianScenario(f; x, y, jac, nb_args=1, place),
+                JacobianScenario(f!; x, y, jac, nb_args=2, place),
             ],
         )
     end
@@ -200,20 +177,15 @@ function sumdiffcube_hessian(x::AbstractVector)
 end
 
 function sparse_vec_to_num_scenarios(x::AbstractVector)
-    scens = AbstractScenario[]
+    nb_args = 1
+    f = sumdiffcube
+    y = f(x)
+    grad = sumdiffcube_gradient(x)
+    hess = sumdiffcube_hessian(x)
+
+    scens = Scenario[]
     for place in (:outofplace, :inplace)
-        append!(
-            scens,
-            [
-                HessianScenario(
-                    sumdiffcube;
-                    x=x,
-                    ref=sumdiffcube_hessian,
-                    first_order_ref=sumdiffcube_gradient,
-                    place=place,
-                ),
-            ],
-        )
+        append!(scens, [HessianScenario(f; x, y, grad, hess, nb_args, place)])
     end
     return scens
 end
@@ -231,20 +203,15 @@ function sumdiffcube_mat_hessian(x::AbstractMatrix)
 end
 
 function sparse_mat_to_num_scenarios(x::AbstractMatrix)
-    scens = AbstractScenario[]
+    nb_args = 1
+    f = sumdiffcube_mat
+    y = f(x)
+    grad = sumdiffcube_mat_gradient(x)
+    hess = sumdiffcube_mat_hessian(x)
+
+    scens = Scenario[]
     for place in (:outofplace, :inplace)
-        append!(
-            scens,
-            [
-                HessianScenario(
-                    sumdiffcube_mat;
-                    x=x,
-                    ref=sumdiffcube_mat_hessian,
-                    first_order_ref=sumdiffcube_mat_gradient,
-                    place=place,
-                ),
-            ],
-        )
+        append!(scens, [HessianScenario(f; x, y, grad, hess, nb_args, place)])
     end
     return scens
 end
@@ -254,7 +221,7 @@ end
 """
     sparse_scenarios(rng=Random.default_rng())
 
-Create a vector of [`AbstractScenario`](@ref)s with sparse array types, focused on sparse Jacobians and Hessians.
+Create a vector of [`Scenario`](@ref)s with sparse array types, focused on sparse Jacobians and Hessians.
 """
 function sparse_scenarios(rng::AbstractRNG=default_rng())
     return vcat(

@@ -20,6 +20,7 @@ using ADTypes:
 using Chairmarks: @be, Benchmark, Sample
 using Compat
 using ComponentArrays: ComponentVector
+using DataFrames: DataFrame
 using DifferentiationInterface
 using DifferentiationInterface:
     backend_str,
@@ -45,12 +46,12 @@ using DifferentiationInterface:
 using DocStringExtensions
 import DifferentiationInterface as DI
 using JET: JET
-using JLArrays: jl
+using JLArrays: JLArray, jl
 using LinearAlgebra: Adjoint, Diagonal, Transpose, dot, parent
 using ProgressMeter: ProgressUnknown, next!
-using Random: AbstractRNG, default_rng
+using Random: AbstractRNG, default_rng, rand!
 using SparseArrays: SparseArrays, SparseMatrixCSC, nnz, spdiagm
-using StaticArrays: MMatrix, MVector, SMatrix, SVector
+using StaticArrays: MArray, MMatrix, MVector, SArray, SMatrix, SVector
 using Test: @testset, @test
 
 include("scenarios/scenario.jl")
@@ -59,6 +60,7 @@ include("scenarios/sparse.jl")
 include("scenarios/static.jl")
 include("scenarios/component.jl")
 include("scenarios/gpu.jl")
+include("scenarios/allocfree.jl")
 
 include("utils/zero_backends.jl")
 include("utils/misc.jl")
@@ -72,7 +74,6 @@ include("tests/sparsity.jl")
 include("tests/benchmark.jl")
 include("test_differentiation.jl")
 
-export AbstractScenario
 export PushforwardScenario,
     PullbackScenario,
     DerivativeScenario,

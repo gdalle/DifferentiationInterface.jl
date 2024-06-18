@@ -11,7 +11,7 @@ end
 
 test_differentiation(
     AutoChainRules(ZygoteRuleConfig());
-    excluded=[SecondDerivativeScenario],
+    excluded=[:second_derivative],
     second_order=VERSION >= v"1.10",
     logging=LOGGING,
 );

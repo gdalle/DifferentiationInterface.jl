@@ -1,9 +1,9 @@
+# API reference
+
 ```@meta
 CurrentModule = Main
 CollapsedDocStrings = true
 ```
-
-# API reference
 
 ```@docs
 DifferentiationInterfaceTest
@@ -30,7 +30,6 @@ static_scenarios
 ## Scenario types
 
 ```@docs
-AbstractScenario
 PushforwardScenario
 PullbackScenario
 DerivativeScenario

@@ -36,7 +36,7 @@ test_differentiation(
     # ForwardDiff accesses individual indices
     vcat(component_scenarios(), static_scenarios());
     # jacobian is super slow for some reason
-    excluded=[JacobianScenario],
+    excluded=[:jacobian],
     second_order=false,
     logging=LOGGING,
 );
@@ -46,14 +46,7 @@ test_differentiation(
 test_differentiation(
     sparse_backends,
     default_scenarios();
-    excluded=[
-        DerivativeScenario,
-        GradientScenario,
-        HVPScenario,
-        PullbackScenario,
-        PushforwardScenario,
-        SecondDerivativeScenario,
-    ],
+    excluded=[:derivative, :gradient, :hvp, :pullback, :pushforward, :second_derivative],
     logging=LOGGING,
 );
 
