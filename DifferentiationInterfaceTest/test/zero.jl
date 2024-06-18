@@ -1,7 +1,7 @@
 using DifferentiationInterface
 using DifferentiationInterfaceTest
 using DifferentiationInterfaceTest:
-    AutoZeroForward, AutoZeroReverse, scenario_to_zero, test_allocfree
+    AutoZeroForward, AutoZeroReverse, scenario_to_zero, test_allocfree, allocfree_scenarios
 
 using Test
 
