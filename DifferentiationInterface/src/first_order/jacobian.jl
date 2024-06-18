@@ -353,7 +353,7 @@ function jacobian!(
         )
     end
 
-    return y, jac
+    return jac
 end
 
 function jacobian!(
@@ -387,7 +387,7 @@ function jacobian!(
         )
     end
 
-    return y, jac
+    return jac
 end
 
 function value_and_jacobian(
