@@ -14,7 +14,7 @@ function DI.prepare_derivative(f, backend::AutoGTPSA{D}, x) where {D}
   return GTPSADerivativeExtras(t)
 end
 
-function DI.derivative(f, backend::AutoGTPSA, x, extras::GTPSADerivativeExtras)
+function DI.derivative(f, ::AutoGTPSA, x, extras::GTPSADerivativeExtras)
   extras.t[0] = x
   yt = f(extras.t)
   if yt isa Number
@@ -28,7 +28,7 @@ function DI.derivative(f, backend::AutoGTPSA, x, extras::GTPSADerivativeExtras)
   end
 end
 
-function DI.derivative!(f, der, backend::AutoGTPSA, x, extras::GTPSADerivativeExtras)
+function DI.derivative!(f, der, ::AutoGTPSA, x, extras::GTPSADerivativeExtras)
   extras.t[0] = x
   yt = f(extras.t)
   if yt isa Number # This should never be reached
@@ -41,7 +41,7 @@ function DI.derivative!(f, der, backend::AutoGTPSA, x, extras::GTPSADerivativeEx
   end
 end
 
-function DI.value_and_derivative(f, backend::AutoGTPSA, x, extras::GTPSADerivativeExtras)
+function DI.value_and_derivative(f, ::AutoGTPSA, x, extras::GTPSADerivativeExtras)
   extras.t[0] = x
   yt = f(extras.t)
   if yt isa Number
@@ -56,7 +56,7 @@ function DI.value_and_derivative(f, backend::AutoGTPSA, x, extras::GTPSADerivati
   end
 end
 
-function DI.value_and_derivative!(f, der, backend::AutoGTPSA, x, extras::GTPSADerivativeExtras)
+function DI.value_and_derivative!(f, der, ::AutoGTPSA, x, extras::GTPSADerivativeExtras)
   extras.t[0] = x
   yt = f(extras.t)
   if yt isa Number # This should never be reached
@@ -86,7 +86,7 @@ function DI.prepare_second_derivative(f, backend::AutoGTPSA{D}, x) where {D}
   return GTPSASecondDerivativeExtras(t)
 end
 
-function DI.second_derivative(f, backend::AutoGTPSA, x, extras::GTPSADerivativeExtras)
+function DI.second_derivative(f, ::AutoGTPSA, x, extras::GTPSASecondDerivativeExtras)
   extras.t[0] = x
   yt = f(extras.t)
   if yt isa Number
@@ -100,7 +100,7 @@ function DI.second_derivative(f, backend::AutoGTPSA, x, extras::GTPSADerivativeE
   end
 end
 
-function DI.second_derivative!(f, der2, backend::AutoGTPSA, x, extras::GTPSADerivativeExtras)
+function DI.second_derivative!(f, der2, ::AutoGTPSA, x, extras::GTPSASecondDerivativeExtras)
   extras.t[0] = x
   yt = f(extras.t)
   if yt isa Number # This should never be reached
@@ -113,7 +113,7 @@ function DI.second_derivative!(f, der2, backend::AutoGTPSA, x, extras::GTPSADeri
   end
 end
 
-function DI.value_derivative_and_second_derivative(f, backend::AutoGTPSA, x, extras::GTPSADerivativeExtras)
+function DI.value_derivative_and_second_derivative(f, ::AutoGTPSA, x, extras::GTPSASecondDerivativeExtras)
   extras.t[0] = x
   yt = f(extras.t)
   if yt isa Number
@@ -130,7 +130,7 @@ function DI.value_derivative_and_second_derivative(f, backend::AutoGTPSA, x, ext
   end
 end
 
-function DI.value_derivative_and_second_derivative!(f, der, der2, backend::AutoGTPSA, x, extras::GTPSADerivativeExtras)
+function DI.value_derivative_and_second_derivative!(f, der, der2, ::AutoGTPSA, x, extras::GTPSASecondDerivativeExtras)
   extras.t[0] = x
   yt = f(extras.t)
   if yt isa Number # This should never be reached
@@ -173,7 +173,7 @@ function DI.prepare_gradient(f, backend::AutoGTPSA{D}, x) where {D}
   return GTPSAGradientExtras(v)
 end
 
-function DI.gradient(f, backend::AutoGTPSA, x, extras::GTPSAGradientExtras)
+function DI.gradient(f, ::AutoGTPSA, x, extras::GTPSAGradientExtras)
   foreach((t,xi)->t[0]=xi, extras.v, x) # Set the scalar part
   yt = f(extras.v)
   grad = similar(x, GTPSA.numtype(eltype(yt)))
@@ -181,14 +181,14 @@ function DI.gradient(f, backend::AutoGTPSA, x, extras::GTPSAGradientExtras)
   return grad
 end
 
-function DI.gradient!(f, grad, backend::AutoGTPSA, x, extras::GTPSAGradientExtras)
+function DI.gradient!(f, grad, ::AutoGTPSA, x, extras::GTPSAGradientExtras)
   foreach((t,xi)->t[0]=xi, extras.v, x) # Set the scalar part
   yt = f(extras.v)
   GTPSA.gradient!(grad, yt, include_params=true)
   return grad
 end
 
-function DI.value_and_gradient(f, backend::AutoGTPSA, x, extras::GTPSAGradientExtras)
+function DI.value_and_gradient(f, ::AutoGTPSA, x, extras::GTPSAGradientExtras)
   foreach((t,xi)->t[0]=xi, extras.v, x) # Set the scalar part
   yt = f(extras.v)
   grad = similar(x, GTPSA.numtype(eltype(yt)))
@@ -197,7 +197,7 @@ function DI.value_and_gradient(f, backend::AutoGTPSA, x, extras::GTPSAGradientEx
   return y, grad
 end
 
-function DI.value_and_gradient!(f, grad, backend::AutoGTPSA, x, extras::GTPSAGradientExtras)
+function DI.value_and_gradient!(f, grad, ::AutoGTPSA, x, extras::GTPSAGradientExtras)
   foreach((t,xi)->t[0]=xi, extras.v, x) # Set the scalar part
   yt = f(extras.v)
   GTPSA.gradient!(grad, yt, include_params=true)
@@ -210,137 +210,125 @@ struct GTPSAJacobianExtras <: JacobianExtras
   v::Vector{TPS}
 end
 
-
-
-
-# --- pushforward ---
-
-"""
-    GTPSAPushforwardExtras{T} <: PushforwardExtras
-
-This struct contains pre-allocated TPS(s) corresponding to `x` with seed
-`dx` for the derivative. If taking derivative of single-variable function, 
-then T is a TPS, else T is some vector of TPSs. 
-"""
-struct GTPSAPushforwardExtras{T} <: PushforwardExtras
-  v::T
-end
-
-function DI.prepare_pushforward(f, backend::AutoGTPSA, x, dx)
-  if x isa Number
-    d = Descriptor(1,1)
-    t = TPS(use=d)
-    t[0] = x
-    t[1] = dx
-    return GTPSAPushforwardExtras(t)
+function DI.prepare_jacobian(f, backend::AutoGTPSA{D}, x) where {D}
+  if D != Nothing
+    d = backend.descriptor
+    nn = GTPSA.numnn(d)
   else
-    NV = length(x)
-    d = Descriptor(NV,1) # only first order
-    v = similar(x, TPS)
-
-    # v and x have same indexing because of similar
-    # Setting the first derivatives must be 1-based 
-    # linear with the variables.
-    j = 1
-    for i in eachindex(v)
-      v[i] = TPS(use=d) # allocate
-      v[i][0] = x[i]
-      v[i][j] = dx[i]
-      j += 1
-    end
-    return GTPSAPushforwardExtras(v)
+    nn = length(x)
+    d = Descriptor(nn,1)
   end
+  v = similar(x, TPS)
+
+  # v and x have same indexing because of similar
+  # Setting the first derivatives must be 1-based 
+  # linear with the variables.
+  j = 1
+  for i in eachindex(v)
+    v[i] = TPS(use=d)
+    v[i][j] = 1
+    j += 1
+  end
+
+  return GTPSAJacobianExtras(v)
 end
 
-function DI.pushforward(f, ::AutoGTPSA, x, dx, extras::GTPSAPushforwardExtras{T}) where {T}
-  w = f(extras.v)
-
-  if w isa Number
-    if x isa Number # Single variable scalar function derivative
-      return w[1]
-    else            # Multivariable scalar function derivative (gradient)
-      dy = similar(w, GTPSA.numtype(eltype(w)))
-      return GTPSA.gradient!(dy, w, include_params=true)
-    end
-  else 
-    if x isa Number # Single variable vector function derivative
-      
-    else            # Multivariable vector function derivative (Jacobian) 
-      dy = similar(w, GTPSA.numtype(eltype(w)), Size(length(w),length(x)))
-    end
-    dy = similar(extras.v, GTPSA.numtype(eltype(w)))
-    # once again, derivatives in TPSs must be
-    # 1-based linear indexing
-    j = 1
-    for i in eachindex(dy)
-      dy[i] = w[i][j]
-      j += 1
-    end
-    return dy
-    
-  end
+function DI.jacobian(f, ::AutoGTPSA, x, extras::GTPSAJacobianExtras)
+  foreach((t,xi)->t[0]=xi, extras.v, x) # Set the scalar part
+  yt = f(extras.v)
+  jac = similar(x, GTPSA.numtype(eltype(yt)), (length(yt),length(x)))
+  GTPSA.jacobian!(jac, yt, include_params=true)
+  return jac
 end
 
-function DI.value_and_pushforward(f, ::AutoGTPSA, x, dx, extras::GTPSAPushforwardExtras{T}) where {T}
-  w = f(extras.v)
-
-  if w isa Number
-    return w[0], w[1]
-  else  
-    dy = similar(extras.v, GTPSA.numtype(eltype(w)))
-    # once again, derivatives in TPSs must be
-    # 1-based linear indexing
-    j = 1
-    for i in eachindex(dy)
-      dy[i] = w[i][j]
-      j += 1
-    end
-    return map(t->t[0], w), dy
-  end
+function DI.jacobian!(f, jac, ::AutoGTPSA, x, extras::GTPSAJacobianExtras)
+  foreach((t,xi)->t[0]=xi, extras.v, x) # Set the scalar part
+  yt = f(extras.v)
+  GTPSA.jacobian!(jac, yt, include_params=true)
+  return jac
 end
 
-function DI.pushforward!(f, dy, ::AutoGTPSA, x, dx, extras::GTPSAPushforwardExtras{T}) where {T}
-  w = f(extras.v)
+function DI.value_and_jacobian(f, ::AutoGTPSA, x, extras::GTPSAJacobianExtras)
+  foreach((t,xi)->t[0]=xi, extras.v, x) # Set the scalar part
+  yt = f(extras.v)
+  jac = similar(x, GTPSA.numtype(eltype(yt)), (length(yt),length(x)))
+  GTPSA.jacobian!(jac, yt, include_params=true)
+  y = map(t->t[0], yt)
+  return y, jac
+end
 
-  if w isa Number
-    return w[1] # this should never be reached when this ! function is called
+function DI.value_and_jacobian!(f, jac, ::AutoGTPSA, x, extras::GTPSAJacobianExtras)
+  foreach((t,xi)->t[0]=xi, extras.v, x) # Set the scalar part
+  yt = f(extras.v)
+  GTPSA.jacobian!(jac, yt, include_params=true)
+  y = map(t->t[0], yt)
+  return y, jac
+end
+
+
+# --- hessian ---
+struct GTPSAHessianExtras <: HessianExtras
+  v::Vector{TPS}
+end
+
+function DI.prepare_hessian(f, backend::AutoGTPSA{D}, x) where {D}
+  if D != Nothing
+    d = backend.descriptor
+    nn = GTPSA.numnn(d)
   else
-    # once again, derivatives in TPSs must be
-    # 1-based linear indexing
-    j = 1
-    for i in eachindex(dy)
-      dy[i] = w[i][j]
-      j += 1
-    end
-    return dy
+    nn = length(x)
+    d = Descriptor(nn,2)
   end
-end
+  v = similar(x, TPS)
 
-function DI.value_and_pushforward!(f, dy, ::AutoGTPSA, x, dx, extras::GTPSAPushforwardExtras{T}) where {T}
-  w = f(extras.v)
-
-  if w isa Number
-    return w[0], w[1] # this should never be reached when this ! function is called
-  else
-    # once again, derivatives in TPSs must be
-    # 1-based linear indexing
-    j = 1
-    for i in eachindex(dy)
-      dy[i] = w[i][j]
-      j += 1
-    end
-    return map(t->t[0], w), dy
+  # v and x have same indexing because of similar
+  # Setting the first derivatives must be 1-based 
+  # linear with the variables.
+  j = 1
+  for i in eachindex(v)
+    v[i] = TPS(use=d)
+    v[i][j] = 1
+    j += 1
   end
+
+  return GTPSAHessianExtras(v)
 end
 
-# --- derivative ---
-"""
-    GTPSADerivativeExtras{T} <: PushforwardExtras
-
-This struct contains pre-allocated TPS(s) corresponding to `x` with seed
-`dx` for the derivative. If taking derivative of single-variable function, 
-then T is a TPS, else T is some vector of TPSs. 
-"""
-struct GTPSAPushforwardExtras{T} <: PushforwardExtras
-  v::T
+function DI.hessian(f, ::AutoGTPSA, x, extras::GTPSAHessianExtras)
+  foreach((t,xi)->t[0]=xi, extras.v, x) # Set the scalar part
+  yt = f(extras.v)
+  hess = similar(x, GTPSA.numtype(eltype(yt)), (length(x),length(x)))
+  GTPSA.hessian!(hess, yt, include_params=true)
+  return hess
 end
+
+function DI.hessian!(f, hess, ::AutoGTPSA, x, extras::GTPSAHessianExtras)
+  foreach((t,xi)->t[0]=xi, extras.v, x) # Set the scalar part
+  yt = f(extras.v)
+  GTPSA.hessian!(hess, yt, include_params=true)
+  return hess
+end
+
+function DI.value_gradient_and_hessian(f, ::AutoGTPSA, x, extras::GTPSAHessianExtras)
+  foreach((t,xi)->t[0]=xi, extras.v, x) # Set the scalar part
+  yt = f(extras.v)
+  y = map(t->t[0], yt)
+  grad = similar(x, GTPSA.numtype(eltype(yt)))
+  GTPSA.gradient!(grad, yt, include_params=true)
+  hess = similar(x, GTPSA.numtype(eltype(yt)), (length(x),length(x)))
+  GTPSA.hessian!(hess, yt, include_params=true)
+  return y, grad, hess
+end
+
+function DI.value_gradient_and_hessian!(f, grad, hess, ::AutoGTPSA, x, extras::GTPSAHessianExtras)
+  foreach((t,xi)->t[0]=xi, extras.v, x) # Set the scalar part
+  yt = f(extras.v)
+  y = map(t->t[0], yt)
+  GTPSA.gradient!(grad, yt, include_params=true)
+  GTPSA.hessian!(hess, yt, include_params=true)
+  return y, grad, hess
+end
+
+
+
+
