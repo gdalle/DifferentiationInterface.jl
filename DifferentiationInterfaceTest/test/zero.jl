@@ -45,24 +45,18 @@ data2 = benchmark_differentiation(
     logging=LOGGING,
 );
 
-df1 = DataFrames.DataFrame(data1)
-df2 = DataFrames.DataFrame(data2)
-df = vcat(df1, df2)
-
 struct FakeBackend <: ADTypes.AbstractADType end
 ADTypes.mode(::FakeBackend) = ADTypes.ForwardMode()
 
 data3 = benchmark_differentiation([FakeBackend()], default_scenarios(); logging=false);
 
-df3 = DataFrames.DataFrame(data3)
-
 @testset "Benchmarking DataFrame" begin
-    for col in eachcol(vcat(df1, df2))
+    for col in eachcol(vcat(data1, data2))
         if eltype(col) <: AbstractFloat
             @test !any(isnan, col)
         end
     end
-    for col in eachcol(df3)
+    for col in eachcol(data3)
         if eltype(col) <: AbstractFloat
             @test all(isnan, col)
         end

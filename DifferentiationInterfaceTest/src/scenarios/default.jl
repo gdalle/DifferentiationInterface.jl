@@ -1,6 +1,5 @@
 #=
 Constraints on the scenarios:
-- non-allocating whenever possible
 - type-stable
 - GPU-compatible (no scalar indexing)
 - vary shapes to be tricky
@@ -424,11 +423,9 @@ end
 ## Gather
 
 """
-    default_scenarios(rng=Random.default_rng(); linalg::Bool=true)
+    default_scenarios(rng=Random.default_rng())
 
 Create a vector of [`Scenario`](@ref)s with standard array types.
-
-The option `linalg` controls whether scenarios are allowed to use functions from the LinearAlgebra standard library.
 """
 function default_scenarios(rng::AbstractRNG=default_rng(); linalg=true)
     v = float.(Vector(1:6))

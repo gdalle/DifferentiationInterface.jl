@@ -20,6 +20,7 @@ using ADTypes:
 using Chairmarks: @be, Benchmark, Sample
 using Compat
 using ComponentArrays: ComponentVector
+using DataFrames: DataFrame
 using DifferentiationInterface
 using DifferentiationInterface:
     backend_str,
@@ -59,6 +60,7 @@ include("scenarios/sparse.jl")
 include("scenarios/static.jl")
 include("scenarios/component.jl")
 include("scenarios/gpu.jl")
+include("scenarios/allocfree.jl")
 
 include("utils/zero_backends.jl")
 include("utils/misc.jl")
@@ -82,6 +84,7 @@ export PushforwardScenario,
     HessianScenario
 export default_scenarios, sparse_scenarios
 export static_scenarios, component_scenarios, gpu_scenarios
+export allocfree_scenarios
 export test_differentiation, benchmark_differentiation
 export DifferentiationBenchmarkDataRow
 

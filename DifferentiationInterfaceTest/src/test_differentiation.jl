@@ -132,7 +132,7 @@ $(TYPEDSIGNATURES)
 
 Benchmark a list of `backends` for a list of `operators` on a list of `scenarios`.
 
-The object returned is a `Vector` of [`DifferentiationBenchmarkDataRow`](@ref).
+The object returned is a `DataFrames.DataFrame` where each column corresponds to a field of [`DifferentiationBenchmarkDataRow`](@ref).
 
 The keyword arguments available here have the same meaning as those in [`test_differentiation`](@ref).
 """
@@ -191,5 +191,19 @@ function benchmark_differentiation(
             end
         end
     end
-    return benchmark_data
+    return DataFrame(benchmark_data)
+end
+
+function test_noallocs(benchmark_data::DataFrame)
+    useless_rows =
+        startswith.(string.(benchmark_data[!, :operator]), Ref("prepare")) .|
+        startswith.(string.(benchmark_data[!, :operator]), Ref("value_and"))
+
+    useful_data = benchmark_data[.!useless_rows, :]
+
+    for row in eachrow(useful_data)
+        @testset "$(row[:operator]) - $(row[:scenario])" begin
+            @test row[:allocs] == 0
+        end
+    end
 end
