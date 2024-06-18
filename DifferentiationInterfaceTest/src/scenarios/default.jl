@@ -67,6 +67,8 @@ function pick_num_to_arr(::Type{A}) where {A<:AbstractArray}
         return num_to_arr_smatrix
     elseif A <: JLArray{<:Any,2}
         return num_to_arr_jlmatrix
+    else
+        throw(ArgumentError("Array type $A not supported"))
     end
 end
 
