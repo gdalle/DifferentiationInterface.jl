@@ -101,7 +101,6 @@ end
 function prepare_sparse_jacobian_aux(
     f_or_f!y::FY, backend, x, y, ::PushforwardSlow
 ) where {FY}
-    y = f(x)
     dense_backend = dense_ad(backend)
     initial_sparsity = jacobian_sparsity(f_or_f!y..., x, sparsity_detector(backend))
     sparsity = row_major(initial_sparsity)
@@ -267,7 +266,7 @@ function sparse_jacobian_aux!(
         dx_batch_elements = ntuple(Val(B)) do b
             seeds[1 + ((a - 1) * B + (b - 1)) % G]
         end
-        dy_batch_elements = ntuple(Val(B)) do l
+        dy_batch_elements = ntuple(Val(B)) do b
             products[1 + ((a - 1) * B + (b - 1)) % G]
         end
         pushforward_batched!(
@@ -308,7 +307,7 @@ function sparse_jacobian_aux!(
         dy_batch_elements = ntuple(Val(B)) do b
             seeds[1 + ((a - 1) * B + (b - 1)) % G]
         end
-        dx_batch_elements = ntuple(Val(B)) do l
+        dx_batch_elements = ntuple(Val(B)) do b
             products[1 + ((a - 1) * B + (b - 1)) % G]
         end
         pullback_batched!(

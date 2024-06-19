@@ -94,7 +94,7 @@ function hessian!(
         dx_batch_elements = ntuple(Val(B)) do b
             seeds[1 + ((a - 1) * B + (b - 1)) % G]
         end
-        dg_batch_elements = ntuple(Val(B)) do l
+        dg_batch_elements = ntuple(Val(B)) do b
             products[1 + ((a - 1) * B + (b - 1)) % G]
         end
         hvp_batched!(
