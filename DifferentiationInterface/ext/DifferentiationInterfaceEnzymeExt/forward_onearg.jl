@@ -103,7 +103,7 @@ end
 function DI.prepare_jacobian(f, backend::AutoEnzyme{<:Union{ForwardMode,Nothing}}, x)
     B = pick_batchsize(backend, length(x))
     shadow = chunkedonehot(x, Val(B))
-    return EnzymeForwardOneArgJacobianExtras{C,typeof(shadow)}(shadow)
+    return EnzymeForwardOneArgJacobianExtras{B,typeof(shadow)}(shadow)
 end
 
 function DI.jacobian(
