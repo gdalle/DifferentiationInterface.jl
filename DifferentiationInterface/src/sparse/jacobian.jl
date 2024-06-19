@@ -204,7 +204,7 @@ function sparse_jacobian_aux(
         stack(vec, dy_batch.elements; dims=2)
     end
 
-    compressed = reduce(compressed_blocks, hcat)
+    compressed = reduce(hcat, compressed_blocks)
     if G < size(compressed, 2)
         compressed = compressed[:, 1:G]
     end
