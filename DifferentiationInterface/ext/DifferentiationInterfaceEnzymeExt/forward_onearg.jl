@@ -61,8 +61,8 @@ struct EnzymeForwardGradientExtras{B,O} <: GradientExtras
     shadow::O
 end
 
-function DI.prepare_gradient(f, ::AutoEnzyme{<:ForwardMode}, x)
-    B = pick_batchsize(length(x))
+function DI.prepare_gradient(f, backend::AutoEnzyme{<:ForwardMode}, x)
+    B = pick_batchsize(backend, length(x))
     shadow = chunkedonehot(x, Val(B))
     return EnzymeForwardGradientExtras{B,typeof(shadow)}(shadow)
 end
@@ -100,8 +100,8 @@ struct EnzymeForwardOneArgJacobianExtras{B,O} <: JacobianExtras
     shadow::O
 end
 
-function DI.prepare_jacobian(f, ::AutoEnzyme{<:Union{ForwardMode,Nothing}}, x)
-    B = pick_batchsize(length(x))
+function DI.prepare_jacobian(f, backend::AutoEnzyme{<:Union{ForwardMode,Nothing}}, x)
+    B = pick_batchsize(backend, length(x))
     shadow = chunkedonehot(x, Val(B))
     return EnzymeForwardOneArgJacobianExtras{C,typeof(shadow)}(shadow)
 end
