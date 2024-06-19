@@ -50,7 +50,6 @@ include("second_order/second_order.jl")
 
 include("utils/traits.jl")
 include("utils/basis.jl")
-include("utils/printing.jl")
 include("utils/batch.jl")
 include("utils/check.jl")
 include("utils/exceptions.jl")
@@ -74,6 +73,8 @@ include("sparse/hessian.jl")
 include("misc/differentiate_with.jl")
 include("misc/sparsity_detector.jl")
 include("misc/from_primitive.jl")
+
+include("utils/printing.jl")
 
 function __init__()
     @require_extensions
