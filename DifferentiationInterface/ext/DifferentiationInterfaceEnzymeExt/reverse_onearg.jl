@@ -175,7 +175,7 @@ function DI.jacobian(
     x::AbstractArray,
     ::EnzymeReverseOneArgJacobianExtras{C,N},
 ) where {B,N}
-    jac_wrongshape = jacobian(reverse_mode(backend), f, x, Val{N}(), Val{B}())
+    jac_wrongshape = jacobian(reverse_mode(backend), f, x, Val(N), Val(B))
     nx = length(x)
     ny = length(jac_wrongshape) ÷ length(x)
     jac_rightshape = reshape(jac_wrongshape, ny, nx)

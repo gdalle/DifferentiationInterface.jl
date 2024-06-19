@@ -241,7 +241,7 @@ end
 function pullback_batched(
     f::F, backend::AbstractADType, x, dy::Batch{B}, extras::PullbackExtras
 ) where {F,B}
-    dx_elements = ntuple(Val{B}()) do l
+    dx_elements = ntuple(Val(B)) do l
         pullback(f, backend, x, dy.elements[l], extras)
     end
     return Batch(dx_elements)
@@ -319,7 +319,7 @@ end
 function pullback_batched(
     f!::F, y, backend::AbstractADType, x, dy::Batch{B}, extras::PullbackExtras
 ) where {F,B}
-    dx_elements = ntuple(Val{B}()) do l
+    dx_elements = ntuple(Val(B)) do l
         pullback(f!, y, backend, x, dy.elements[l], extras)
     end
     return Batch(dx_elements)

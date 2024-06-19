@@ -55,72 +55,52 @@ abstract type JacobianExtras <: Extras end
 
 struct NoJacobianExtras <: JacobianExtras end
 
-struct PushforwardJacobianExtras{B,E<:PushforwardExtras} <: JacobianExtras
+struct PushforwardJacobianExtras{B,D,E<:PushforwardExtras} <: JacobianExtras
+    seeds::D
     pushforward_batched_extras::E
 end
 
-struct PullbackJacobianExtras{B,E<:PullbackExtras} <: JacobianExtras
+struct PullbackJacobianExtras{B,D,E<:PullbackExtras,Y} <: JacobianExtras
+    seeds::D
     pullback_batched_extras::E
+    y_example::Y
 end
 
 function prepare_jacobian(f::F, backend::AbstractADType, x) where {F}
-    return prepare_jacobian_aux(f, backend, x, pushforward_performance(backend))
+    y = f(x)
+    return prepare_jacobian_aux((f,), backend, x, y, pushforward_performance(backend))
 end
 
 function prepare_jacobian(f!::F, y, backend::AbstractADType, x) where {F}
-    return prepare_jacobian_aux(f!, y, backend, x, pushforward_performance(backend))
+    return prepare_jacobian_aux((f!, y), backend, x, y, pushforward_performance(backend))
 end
 
-function prepare_jacobian_aux(f::F, backend, x, ::PushforwardFast) where {F}
+function prepare_jacobian_aux(f_or_f!y::FY, backend, x, y, ::PushforwardFast) where {FY}
     N = length(x)
     B = pick_batchsize(backend, N)
-    dx = basis(backend, x, first(CartesianIndices(x)))
-    dx_batch = Batch(ntuple(Returns(dx), Val{B}()))
-    pushforward_batched_extras = prepare_pushforward_batched(f, backend, x, dx_batch)
+    seeds = [basis(backend, x, ind) for ind in CartesianIndices(x)]
+    pushforward_batched_extras = prepare_pushforward_batched(
+        f_or_f!y..., backend, x, Batch(ntuple(Returns(seeds[1]), Val(B)))
+    )
+    D = typeof(seeds)
     E = typeof(pushforward_batched_extras)
-    return PushforwardJacobianExtras{B,E}(pushforward_batched_extras)
+    return PushforwardJacobianExtras{B,D,E}(seeds, pushforward_batched_extras)
 end
 
-function prepare_jacobian_aux(f::F, backend, x, ::PushforwardSlow) where {F}
-    y = f(x)
+function prepare_jacobian_aux(f_or_f!y::FY, backend, x, y, ::PushforwardSlow) where {FY}
     M = length(y)
     B = pick_batchsize(backend, M)
-    dy = basis(backend, y, first(CartesianIndices(y)))
-    dy_batch = Batch(ntuple(Returns(dy), Val{B}()))
-    pullback_batched_extras = prepare_pullback_batched(f, backend, x, dy_batch)
+    seeds = [basis(backend, y, ind) for ind in CartesianIndices(y)]
+    pullback_batched_extras = prepare_pullback_batched(
+        f_or_f!y..., backend, x, Batch(ntuple(Returns(seeds[1]), Val(B)))
+    )
+    D = typeof(seeds)
     E = typeof(pullback_batched_extras)
-    return PullbackJacobianExtras{B,E}(pullback_batched_extras)
-end
-
-function prepare_jacobian_aux(f!::F, y, backend, x, ::PushforwardFast) where {F}
-    N = length(x)
-    B = pick_batchsize(backend, N)
-    dx = basis(backend, x, first(CartesianIndices(x)))
-    dx_batch = Batch(ntuple(Returns(dx), Val{B}()))
-    pushforward_batched_extras = prepare_pushforward_batched(f!, y, backend, x, dx_batch)
-    E = typeof(pushforward_batched_extras)
-    return PushforwardJacobianExtras{B,E}(pushforward_batched_extras)
-end
-
-function prepare_jacobian_aux(f!::F, y, backend, x, ::PushforwardSlow) where {F}
-    M = length(y)
-    B = pick_batchsize(backend, M)
-    dy = basis(backend, y, first(CartesianIndices(y)))
-    dy_batch = Batch(ntuple(Returns(dy), Val{B}()))
-    pullback_batched_extras = prepare_pullback_batched(f!, y, backend, x, dy_batch)
-    E = typeof(pullback_batched_extras)
-    return PullbackJacobianExtras{B,E}(pullback_batched_extras)
+    Y = typeof(y)
+    return PullbackJacobianExtras{B,D,E,Y}(seeds, pullback_batched_extras, copy(y))
 end
 
 ## One argument
-
-function value_and_jacobian(f::F, backend::AbstractADType, x) where {F}
-    return value_and_jacobian(f, backend, x, prepare_jacobian(f, backend, x))
-end
-
-function value_and_jacobian!(f::F, jac, backend::AbstractADType, x) where {F}
-    return value_and_jacobian!(f, jac, backend, x, prepare_jacobian(f, backend, x))
-end
 
 function jacobian(f::F, backend::AbstractADType, x) where {F}
     return jacobian(f, backend, x, prepare_jacobian(f, backend, x))
@@ -130,147 +110,35 @@ function jacobian!(f::F, jac, backend::AbstractADType, x) where {F}
     return jacobian!(f, jac, backend, x, prepare_jacobian(f, backend, x))
 end
 
-function value_and_jacobian(
-    f::F, backend, x::AbstractArray, extras::PushforwardJacobianExtras{B}
-) where {F,B}
-    y = f(x)  # TODO: remove
-    xinds = CartesianIndices(x)
-    N = length(x)
-
-    example_dx_batch_elements = ntuple(Returns(basis(backend, x, xinds[1])), Val{B}())
-    pushforward_batched_extras_same = prepare_pushforward_batched_same_point(
-        f, backend, x, Batch(example_dx_batch_elements), extras.pushforward_batched_extras
-    )
-
-    jac = mapreduce(hcat, 1:div(N, B, RoundUp)) do a
-        dx_batch_elements = ntuple(Val{B}()) do b
-            basis(backend, x, xinds[1 + ((a - 1) * B + (b - 1)) % N])
-        end
-        dy_batch = pushforward_batched(
-            f, backend, x, Batch(dx_batch_elements), pushforward_batched_extras_same
-        )
-        stack(vec, dy_batch.elements; dims=2)
-    end
-
-    if N < size(jac, 2)
-        jac = jac[:, 1:N]
-    end
-    return y, jac
+function value_and_jacobian(f::F, backend::AbstractADType, x) where {F}
+    return value_and_jacobian(f, backend, x, prepare_jacobian(f, backend, x))
 end
 
-function value_and_jacobian(
-    f::F, backend, x::AbstractArray, extras::PullbackJacobianExtras{B}
-) where {F,B}
-    y = f(x)  # TODO: remove
-    yinds = CartesianIndices(y)
-    M = length(y)
-
-    example_dy_batch_elements = ntuple(Returns(basis(backend, y, yinds[1])), Val{B}())
-    pullback_batched_extras_same = prepare_pullback_batched_same_point(
-        f, backend, x, Batch(example_dy_batch_elements), extras.pullback_batched_extras
-    )
-
-    jac = mapreduce(vcat, 1:div(M, B, RoundUp)) do a
-        dy_batch_elements = ntuple(Val{B}()) do b
-            basis(backend, y, yinds[1 + ((a - 1) * B + (b - 1)) % M])
-        end
-        dx_batch = pullback_batched(
-            f, backend, x, Batch(dy_batch_elements), pullback_batched_extras_same
-        )
-        stack(vec, dx_batch.elements; dims=1)
-    end
-
-    if M < size(jac, 1)
-        jac = jac[1:M, :]
-    end
-    return y, jac
-end
-
-function value_and_jacobian!(
-    f::F,
-    jac::AbstractMatrix,
-    backend,
-    x::AbstractArray,
-    extras::PushforwardJacobianExtras{B},
-) where {F,B}
-    y = f(x)  # TODO: remove
-    xinds = CartesianIndices(x)
-    N = length(x)
-
-    example_dx_batch_elements = ntuple(Returns(basis(backend, x, xinds[1])), Val{B}())
-    pushforward_batched_extras_same = prepare_pushforward_batched_same_point(
-        f, backend, x, Batch(example_dx_batch_elements), extras.pushforward_batched_extras
-    )
-
-    for a in 1:div(N, B, RoundUp)
-        dx_batch_elements = ntuple(Val{B}()) do b
-            basis(backend, x, xinds[1 + ((a - 1) * B + (b - 1)) % N])
-        end
-        dy_batch_elements = ntuple(Val{B}()) do b
-            reshape(view(jac, :, 1 + ((a - 1) * B + (b - 1)) % N), size(y))
-        end
-        pushforward_batched!(
-            f,
-            Batch(dy_batch_elements),
-            backend,
-            x,
-            Batch(dx_batch_elements),
-            pushforward_batched_extras_same,
-        )
-    end
-
-    return y, jac
-end
-
-function value_and_jacobian!(
-    f::F, jac::AbstractMatrix, backend, x::AbstractArray, extras::PullbackJacobianExtras{B}
-) where {F,B}
-    y = f(x)  # TODO: remove
-    yinds = CartesianIndices(y)
-    M = length(y)
-
-    example_dy_batch_elements = ntuple(Returns(basis(backend, y, yinds[1])), Val{B}())
-    pullback_batched_extras_same = prepare_pullback_batched_same_point(
-        f, backend, x, Batch(example_dy_batch_elements), extras.pullback_batched_extras
-    )
-
-    for a in 1:div(M, B, RoundUp)
-        dy_batch_elements = ntuple(Val{B}()) do b
-            basis(backend, y, yinds[1 + ((a - 1) * B + (b - 1)) % M])
-        end
-        dx_batch_elements = ntuple(Val{B}()) do b
-            reshape(view(jac, 1 + ((a - 1) * B + (b - 1)) % M, :), size(x))
-        end
-        pullback_batched!(
-            f,
-            Batch(dx_batch_elements),
-            backend,
-            x,
-            Batch(dy_batch_elements),
-            pullback_batched_extras_same,
-        )
-    end
-
-    return y, jac
+function value_and_jacobian!(f::F, jac, backend::AbstractADType, x) where {F}
+    return value_and_jacobian!(f, jac, backend, x, prepare_jacobian(f, backend, x))
 end
 
 function jacobian(f::F, backend::AbstractADType, x, extras::JacobianExtras) where {F}
-    return value_and_jacobian(f, backend, x, extras)[2]
+    return jacobian_aux((f,), backend, x, extras)
 end
 
 function jacobian!(f::F, jac, backend::AbstractADType, x, extras::JacobianExtras) where {F}
-    return value_and_jacobian!(f, jac, backend, x, extras)[2]
+    return jacobian_aux!((f,), jac, backend, x, extras)
+end
+
+function value_and_jacobian(
+    f::F, backend::AbstractADType, x, extras::JacobianExtras
+) where {F}
+    return f(x), jacobian(f, backend, x, extras)
+end
+
+function value_and_jacobian!(
+    f::F, jac, backend::AbstractADType, x, extras::JacobianExtras
+) where {F}
+    return f(x), jacobian!(f, jac, backend, x, extras)
 end
 
 ## Two arguments
-
-function value_and_jacobian(f!::F, y, backend::AbstractADType, x) where {F}
-    return value_and_jacobian(f!, y, backend, x, prepare_jacobian(f!, y, backend, x))
-end
-
-function value_and_jacobian!(f!::F, y, jac, backend::AbstractADType, x) where {F}
-    return value_and_jacobian!(f!, y, jac, backend, x, prepare_jacobian(f!, y, backend, x))
-end
 
 function jacobian(f!::F, y, backend::AbstractADType, x) where {F}
     return jacobian(f!, y, backend, x, prepare_jacobian(f!, y, backend, x))
@@ -280,144 +148,22 @@ function jacobian!(f!::F, y, jac, backend::AbstractADType, x) where {F}
     return jacobian!(f!, y, jac, backend, x, prepare_jacobian(f!, y, backend, x))
 end
 
-function jacobian(
-    f!::F, y, backend, x::AbstractArray, extras::PushforwardJacobianExtras{B}
-) where {F,B}
-    xinds = CartesianIndices(x)
-    N = length(x)
-
-    example_dx_batch_elements = ntuple(Returns(basis(backend, x, xinds[1])), Val{B}())
-    pushforward_batched_extras_same = prepare_pushforward_batched_same_point(
-        f!,
-        y,
-        backend,
-        x,
-        Batch(example_dx_batch_elements),
-        extras.pushforward_batched_extras,
-    )
-
-    jac = mapreduce(hcat, 1:div(N, B, RoundUp)) do a
-        dx_batch_elements = ntuple(Val{B}()) do b
-            basis(backend, x, xinds[1 + ((a - 1) * B + (b - 1)) % N])
-        end
-        dy_batch = pushforward_batched(
-            f!, y, backend, x, Batch(dx_batch_elements), pushforward_batched_extras_same
-        )
-        stack(vec, dy_batch.elements; dims=2)
-    end
-
-    if N < size(jac, 2)
-        jac = jac[:, 1:N]
-    end
-    return jac
+function value_and_jacobian(f!::F, y, backend::AbstractADType, x) where {F}
+    return value_and_jacobian(f!, y, backend, x, prepare_jacobian(f!, y, backend, x))
 end
 
-function jacobian(
-    f!::F, y, backend, x::AbstractArray, extras::PullbackJacobianExtras{B}
-) where {F,B}
-    yinds = CartesianIndices(y)
-    M = length(y)
+function value_and_jacobian!(f!::F, y, jac, backend::AbstractADType, x) where {F}
+    return value_and_jacobian!(f!, y, jac, backend, x, prepare_jacobian(f!, y, backend, x))
+end
 
-    example_dy_batch_elements = ntuple(Returns(basis(backend, y, yinds[1])), Val{B}())
-    pullback_batched_extras_same = prepare_pullback_batched_same_point(
-        f!, y, backend, x, Batch(example_dy_batch_elements), extras.pullback_batched_extras
-    )
-
-    jac = mapreduce(vcat, 1:div(M, B, RoundUp)) do a
-        dy_batch_elements = ntuple(Val{B}()) do b
-            basis(backend, y, yinds[1 + ((a - 1) * B + (b - 1)) % M])
-        end
-        dx_batch = pullback_batched(
-            f!, y, backend, x, Batch(dy_batch_elements), pullback_batched_extras_same
-        )
-        stack(vec, dx_batch.elements; dims=1)
-    end
-
-    if M < size(jac, 1)
-        jac = jac[1:M, :]
-    end
-    return jac
+function jacobian(f!::F, y, backend::AbstractADType, x, extras::JacobianExtras) where {F}
+    return jacobian_aux((f!, y), backend, x, extras)
 end
 
 function jacobian!(
-    f!::F,
-    y,
-    jac::AbstractMatrix,
-    backend,
-    x::AbstractArray,
-    extras::PushforwardJacobianExtras{B},
-) where {F,B}
-    xinds = CartesianIndices(x)
-    N = length(x)
-
-    example_dx_batch_elements = ntuple(Returns(basis(backend, x, xinds[1])), Val{B}())
-    pushforward_batched_extras_same = prepare_pushforward_batched_same_point(
-        f!,
-        y,
-        backend,
-        x,
-        Batch(example_dx_batch_elements),
-        extras.pushforward_batched_extras,
-    )
-
-    for a in 1:div(N, B, RoundUp)
-        dx_batch_elements = ntuple(Val{B}()) do b
-            basis(backend, x, xinds[1 + ((a - 1) * B + (b - 1)) % N])
-        end
-        dy_batch_elements = ntuple(Val{B}()) do b
-            reshape(view(jac, :, 1 + ((a - 1) * B + (b - 1)) % N), size(y))
-        end
-        pushforward_batched!(
-            f!,
-            y,
-            Batch(dy_batch_elements),
-            backend,
-            x,
-            Batch(dx_batch_elements),
-            pushforward_batched_extras_same,
-        )
-    end
-
-    return jac
-end
-
-function jacobian!(
-    f!::F,
-    y,
-    jac::AbstractMatrix,
-    backend,
-    x::AbstractArray,
-    extras::PullbackJacobianExtras{B},
-) where {F,B}
-    yinds = CartesianIndices(y)
-    M = length(y)
-
-    example_dy_batch_elements = Batch(
-        ntuple(Returns(basis(backend, y, yinds[1])), Val{B}())
-    )
-    pullback_batched_extras_same = prepare_pullback_batched_same_point(
-        f!, y, backend, x, Batch(example_dy_batch_elements), extras.pullback_batched_extras
-    )
-
-    for a in 1:div(M, B, RoundUp)
-        dy_batch_elements = ntuple(Val{B}()) do b
-            basis(backend, y, yinds[1 + ((a - 1) * B + (b - 1)) % M])
-        end
-        dx_batch_elements = ntuple(Val{B}()) do b
-            reshape(view(jac, 1 + ((a - 1) * B + (b - 1)) % M, :), size(x))
-        end
-        pullback_batched!(
-            f!,
-            y,
-            Batch(dx_batch_elements),
-            backend,
-            x,
-            Batch(dy_batch_elements),
-            pullback_batched_extras_same,
-        )
-    end
-
-    return jac
+    f!::F, y, jac, backend::AbstractADType, x, extras::JacobianExtras
+) where {F}
+    return jacobian_aux!((f!, y), jac, backend, x, extras)
 end
 
 function value_and_jacobian(
@@ -434,4 +180,150 @@ function value_and_jacobian!(
     jacobian!(f!, y, jac, backend, x, extras)
     f!(y, x)
     return y, jac
+end
+
+## Common auxiliaries
+
+function jacobian_aux(
+    f_or_f!y::FY, backend, x::AbstractArray, extras::PushforwardJacobianExtras{B}
+) where {FY,B}
+    @compat (; seeds, pushforward_batched_extras) = extras
+    N = length(x)
+
+    pushforward_batched_extras_same = prepare_pushforward_batched_same_point(
+        f_or_f!y...,
+        backend,
+        x,
+        Batch(ntuple(Returns(seeds[1]), Val(B))),
+        pushforward_batched_extras,
+    )
+
+    jac = mapreduce(hcat, 1:div(N, B, RoundUp)) do a
+        dx_batch_elements = ntuple(Val(B)) do b
+            seeds[1 + ((a - 1) * B + (b - 1)) % N]
+        end
+        dy_batch = pushforward_batched(
+            f_or_f!y...,
+            backend,
+            x,
+            Batch(dx_batch_elements),
+            pushforward_batched_extras_same,
+        )
+        stack(vec, dy_batch.elements; dims=2)
+    end
+
+    if N < size(jac, 2)
+        jac = jac[:, 1:N]
+    end
+    return jac
+end
+
+function jacobian_aux(
+    f_or_f!y::FY, backend, x::AbstractArray, extras::PullbackJacobianExtras{B}
+) where {FY,B}
+    @compat (; seeds, pullback_batched_extras, y_example) = extras
+    M = length(y_example)
+
+    pullback_batched_extras_same = prepare_pullback_batched_same_point(
+        f_or_f!y...,
+        backend,
+        x,
+        Batch(ntuple(Returns(seeds[1]), Val(B))),
+        extras.pullback_batched_extras,
+    )
+
+    jac = mapreduce(vcat, 1:div(M, B, RoundUp)) do a
+        dy_batch_elements = ntuple(Val(B)) do b
+            seeds[1 + ((a - 1) * B + (b - 1)) % M]
+        end
+        dx_batch = pullback_batched(
+            f_or_f!y...,
+            backend,
+            x,
+            Batch(dy_batch_elements),
+            pullback_batched_extras_same,
+        )
+        stack(vec, dx_batch.elements; dims=1)
+    end
+
+    if M < size(jac, 1)
+        jac = jac[1:M, :]
+    end
+    return jac
+end
+
+function jacobian_aux!(
+    f_or_f!y::FY,
+    jac::AbstractMatrix,
+    backend,
+    x::AbstractArray,
+    extras::PushforwardJacobianExtras{B},
+) where {FY,B}
+    @compat (; seeds, pushforward_batched_extras) = extras
+    N = length(x)
+
+    pushforward_batched_extras_same = prepare_pushforward_batched_same_point(
+        f_or_f!y...,
+        backend,
+        x,
+        Batch(ntuple(Returns(seeds[1]), Val(B))),
+        pushforward_batched_extras,
+    )
+
+    for a in 1:div(N, B, RoundUp)
+        dx_batch_elements = ntuple(Val(B)) do b
+            seeds[1 + ((a - 1) * B + (b - 1)) % N]
+        end
+        dy_batch_elements = ntuple(Val(B)) do b
+            reshape(view(jac, :, 1 + ((a - 1) * B + (b - 1)) % N), size(y))
+        end
+        pushforward_batched!(
+            f_or_f!y...,
+            Batch(dy_batch_elements),
+            backend,
+            x,
+            Batch(dx_batch_elements),
+            pushforward_batched_extras_same,
+        )
+    end
+
+    return jac
+end
+
+function jacobian_aux!(
+    f_or_f!y::FY,
+    jac::AbstractMatrix,
+    backend,
+    x::AbstractArray,
+    extras::PullbackJacobianExtras{B},
+) where {FY,B}
+    @compat (; seeds, pullback_batched_extras, y_example) = extras
+    M = length(y_example)
+
+    pullback_batched_extras_same = prepare_pullback_batched_same_point(
+        f_or_f!y...,
+        backend,
+        x,
+        Batch(ntuple(Returns(seeds[1]), Val(B))),
+        extras.pullback_batched_extras,
+    )
+
+    for a in 1:div(M, B, RoundUp)
+        dy_batch_elements = ntuple(Val(B)) do b
+            seeds[1 + ((a - 1) * B + (b - 1)) % M]
+        end
+        dx_batch_elements = ntuple(Val(B)) do b
+            reshape(view(jac, 1 + ((a - 1) * B + (b - 1)) % M, :), size(x))
+        end
+        pullback_batched!(
+            f_or_f!y...,
+            Batch(dx_batch_elements),
+            backend,
+            x,
+            Batch(dy_batch_elements),
+            pullback_batched_extras_same,
+        )
+    end
+
+    return jac
 end

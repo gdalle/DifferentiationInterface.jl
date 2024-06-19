@@ -246,7 +246,7 @@ end
 function pushforward_batched(
     f::F, backend::AbstractADType, x, dx::Batch{B}, extras::PushforwardExtras
 ) where {F,B}
-    dy_elements = ntuple(Val{B}()) do l
+    dy_elements = ntuple(Val(B)) do l
         pushforward(f, backend, x, dx.elements[l], extras)
     end
     return Batch(dy_elements)
@@ -328,7 +328,7 @@ end
 function pushforward_batched(
     f!::F, y, backend::AbstractADType, x, dx::Batch{B}, extras::PushforwardExtras
 ) where {F,B}
-    dy_elements = ntuple(Val{B}()) do l
+    dy_elements = ntuple(Val(B)) do l
         pushforward(f!, y, backend, x, dx.elements[l], extras)
     end
     return Batch(dy_elements)

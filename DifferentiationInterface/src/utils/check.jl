@@ -27,7 +27,7 @@ Check whether `backend` supports second order differentiation by trying to compu
     Might take a while due to compilation time.
 """
 function check_hessian(backend::AbstractADType; verbose=true)
-    try
+    # try
         x = [2.0, 3.0]
         hess = hessian(hess_checker, backend, x)
         hess_th = [
@@ -35,10 +35,10 @@ function check_hessian(backend::AbstractADType; verbose=true)
             4*x[1]*x[2] 2*abs2(x[1])
         ]
         return isapprox(hess, hess_th; rtol=1e-3)
-    catch exception
-        if verbose
-            @warn "Backend $backend does not support hessian" exception
-        end
-        return false
-    end
+    # catch exception
+    #     if verbose
+    #         @warn "Backend $backend does not support hessian" exception
+    #     end
+    #     return false
+    # end
 end

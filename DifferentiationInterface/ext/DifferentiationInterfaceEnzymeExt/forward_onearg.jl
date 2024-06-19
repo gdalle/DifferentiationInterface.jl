@@ -70,7 +70,7 @@ end
 function DI.gradient(
     f, backend::AutoEnzyme{<:ForwardMode}, x, extras::EnzymeForwardGradientExtras{B}
 ) where {B}
-    grad_tup = gradient(forward_mode(backend), f, x, Val{B}(); shadow=extras.shadow)
+    grad_tup = gradient(forward_mode(backend), f, x, Val(B); shadow=extras.shadow)
     return reshape(collect(grad_tup), size(x))
 end
 
@@ -83,14 +83,14 @@ end
 function DI.gradient!(
     f, grad, backend::AutoEnzyme{<:ForwardMode}, x, extras::EnzymeForwardGradientExtras{B}
 ) where {B}
-    grad_tup = gradient(forward_mode(backend), f, x, Val{B}(); shadow=extras.shadow)
+    grad_tup = gradient(forward_mode(backend), f, x, Val(B); shadow=extras.shadow)
     return copyto!(grad, grad_tup)
 end
 
 function DI.value_and_gradient!(
     f, grad, backend::AutoEnzyme{<:ForwardMode}, x, extras::EnzymeForwardGradientExtras{B}
 ) where {B}
-    grad_tup = gradient(forward_mode(backend), f, x, Val{B}(); shadow=extras.shadow)
+    grad_tup = gradient(forward_mode(backend), f, x, Val(B); shadow=extras.shadow)
     return f(x), copyto!(grad, grad_tup)
 end
 
@@ -112,7 +112,7 @@ function DI.jacobian(
     x,
     extras::EnzymeForwardOneArgJacobianExtras{B},
 ) where {B}
-    jac_wrongshape = jacobian(forward_mode(backend), f, x, Val{B}(); shadow=extras.shadow)
+    jac_wrongshape = jacobian(forward_mode(backend), f, x, Val(B); shadow=extras.shadow)
     nx = length(x)
     ny = length(jac_wrongshape) ÷ length(x)
     return reshape(jac_wrongshape, ny, nx)

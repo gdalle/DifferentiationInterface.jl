@@ -254,7 +254,7 @@ end
 function hvp_batched(
     f::F, backend::SecondOrder, x, dx::Batch{B}, extras::HVPExtras
 ) where {F,B}
-    dg_elements = ntuple(Val{B}()) do l
+    dg_elements = ntuple(Val(B)) do l
         hvp(f, backend, x, dx.elements[l], extras)
     end
     return Batch(dg_elements)
