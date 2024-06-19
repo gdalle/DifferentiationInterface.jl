@@ -5,20 +5,24 @@ using ForwardDiff: ForwardDiff
 using SparseConnectivityTracer
 using SparseMatrixColorings
 
+## Dense
+
+test_differentiation(AutoForwardDiff(); logging=LOGGING)
+
+## Sparse
+
 sparse_backend = AutoSparse(
     AutoForwardDiff();
     sparsity_detector=TracerSparsityDetector(),
     coloring_algorithm=GreedyColoringAlgorithm(),
 )
+test_differentiation(sparse_backend, sparse_scenarios(); sparsity=true, logging=LOGGING)
 
-## Dense
-
-test_differentiation(AutoForwardDiff(); logging=LOGGING)
+## Weird
 
 test_differentiation(
-    AutoForwardDiff(), component_scenarios(); excluded=[HessianScenario], logging=LOGGING
+    AutoForwardDiff(),
+    vcat(component_scenarios(), static_scenarios());
+    correctness=true,
+    logging=LOGGING,
 )
-
-## Sparse
-
-test_differentiation(sparse_backend, sparse_scenarios(); sparsity=true, logging=LOGGING)

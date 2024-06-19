@@ -5,7 +5,7 @@ We present a typical workflow with DifferentiationInterfaceTest.jl, building on 
 ```@repl tuto
 using DifferentiationInterface, DifferentiationInterfaceTest
 import ForwardDiff, Enzyme
-import DataFrames, Markdown, PrettyTables, Printf
+import Markdown, PrettyTables, Printf
 ```
 
 ## Introduction
@@ -31,15 +31,18 @@ Of course we know the true gradient mapping:
 DifferentiationInterfaceTest.jl relies with so-called "scenarios", in which you encapsulate the information needed for your test:
 
 - the function `f`
-- the input `x` (and output `y` for mutating functions)
-- optionally a reference `ref` to check against
+- the input `x` and output `y`
+- the number of arguments for `f` (either `1` or `2`)
+- the behavior of the operator (either `:inplace` or `:outofplace`)
 
-There is one scenario per operator, and so here we will use [`GradientScenario`](@ref):
+There is one scenario constructor per operator, and so here we will use [`GradientScenario`](@ref):
 
 ```@example tuto
+xv = rand(Float32, 3)
+xm = rand(Float64, 3, 2)
 scenarios = [
-    GradientScenario(f; x=rand(Float32, 3), ref=∇f, place=:inplace),
-    GradientScenario(f; x=rand(Float64, 3, 2), ref=∇f, place=:inplace)
+    GradientScenario(f; x=xv, y=f(xv), nb_args=1, place=:inplace),
+    GradientScenario(f; x=xm, y=f(xm), nb_args=1, place=:inplace)
 ];
 nothing  # hide
 ```
@@ -67,17 +70,11 @@ Once you are confident that your backends give the correct answers, you probably
 This is made easy by the [`benchmark_differentiation`](@ref) function, whose syntax should feel familiar:
 
 ```@example tuto
-benchmark_result = benchmark_differentiation(backends, scenarios);
+df = benchmark_differentiation(backends, scenarios);
 ```
 
-The resulting object is a `Vector` of [`DifferentiationBenchmarkDataRow`](@ref), which can easily be converted into a `DataFrame` from [DataFrames.jl](https://github.com/JuliaData/DataFrames.jl):
-
-```@example tuto
-df = DataFrames.DataFrame(benchmark_result)
-```
-
-Here's what the resulting `DataFrame` looks like with all its columns.
-Note that we only compare (possibly) in-place operators, because they are always more efficient.
+The resulting object is `DataFrame` from [DataFrames.jl](https://github.com/JuliaData/DataFrames.jl), whose columns correspond to the fields of [`DifferentiationBenchmarkDataRow`](@ref):
+Here's what it looks like with all of its columns.
 
 ```@example tuto
 table = PrettyTables.pretty_table(

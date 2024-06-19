@@ -34,4 +34,10 @@ GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "All")
             include("forwarddiff.jl")
         end
     end
+
+    if GROUP == "Zygote" || GROUP == "All"
+        @testset verbose = false "ForwardDiff" begin
+            include("zygote.jl")
+        end
+    end
 end;

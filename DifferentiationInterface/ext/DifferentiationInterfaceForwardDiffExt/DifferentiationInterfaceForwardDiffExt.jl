@@ -12,7 +12,8 @@ using DifferentiationInterface:
     NoDerivativeExtras,
     NoSecondDerivativeExtras,
     PushforwardExtras
-using ForwardDiff.DiffResults: DiffResults, DiffResult, GradientResult, MutableDiffResult
+using ForwardDiff.DiffResults:
+    DiffResults, DiffResult, GradientResult, HessianResult, MutableDiffResult
 using ForwardDiff:
     Chunk,
     Dual,
