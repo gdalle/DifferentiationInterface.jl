@@ -227,7 +227,7 @@ function sparse_jacobian_aux(
         pullback_batched_extras,
     )
 
-    compressed_blocks = map(hcat, 1:div(G, B, RoundUp)) do a
+    compressed_blocks = map(1:div(G, B, RoundUp)) do a
         dy_batch_elements = ntuple(Val(B)) do b
             seeds[1 + ((a - 1) * B + (b - 1)) % G]
         end
