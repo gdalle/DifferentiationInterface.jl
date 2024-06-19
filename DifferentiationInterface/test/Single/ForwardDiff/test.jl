@@ -1,9 +1,12 @@
 using DifferentiationInterface, DifferentiationInterfaceTest
+using DifferentiationInterface: AutoForwardFromPrimitive, AutoReverseFromPrimitive
 using ForwardDiff: ForwardDiff
 using SparseConnectivityTracer, SparseMatrixColorings
 using Test
 
 dense_backends = [AutoForwardDiff(), AutoForwardDiff(; chunksize=2, tag=:hello)]
+
+fromprimitive_backends = [AutoForwardFromPrimitive(AutoForwardDiff())]
 
 sparse_backends = [
     AutoSparse(
@@ -13,7 +16,7 @@ sparse_backends = [
     ),
 ]
 
-for backend in vcat(dense_backends, sparse_backends)
+for backend in vcat(dense_backends, fromprimitive_backends, sparse_backends)
     @test check_available(backend)
     @test check_twoarg(backend)
     @test check_hessian(backend)
