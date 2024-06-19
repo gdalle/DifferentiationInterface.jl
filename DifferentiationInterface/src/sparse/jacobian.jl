@@ -190,7 +190,7 @@ function sparse_jacobian_aux(
         pushforward_batched_extras,
     )
 
-    compressed = mapreduce(hcat, 1:div(G, B, RoundUp)) do a
+    compressed_blocks = map(1:div(G, B, RoundUp)) do a
         dx_batch_elements = ntuple(Val(B)) do b
             seeds[1 + ((a - 1) * B + (b - 1)) % G]
         end
@@ -204,6 +204,7 @@ function sparse_jacobian_aux(
         stack(vec, dy_batch.elements; dims=2)
     end
 
+    compressed = reduce(compressed_blocks, hcat)
     if G < size(compressed, 2)
         compressed = compressed[:, 1:G]
     end
@@ -226,7 +227,7 @@ function sparse_jacobian_aux(
         pullback_batched_extras,
     )
 
-    compressed = mapreduce(hcat, 1:div(G, B, RoundUp)) do a
+    compressed_blocks = map(hcat, 1:div(G, B, RoundUp)) do a
         dy_batch_elements = ntuple(Val(B)) do b
             seeds[1 + ((a - 1) * B + (b - 1)) % G]
         end
@@ -240,6 +241,7 @@ function sparse_jacobian_aux(
         stack(vec, dx_batch.elements; dims=1)
     end
 
+    compressed = reduce(vcat, compressed_blocks)
     if G < size(compressed, 1)
         compressed = compressed[1:G, :]
     end

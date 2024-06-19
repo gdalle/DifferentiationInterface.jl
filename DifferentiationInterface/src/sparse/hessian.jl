@@ -63,7 +63,7 @@ function hessian(f::F, backend::AutoSparse, x, extras::SparseHessianExtras{B}) w
         f, dense_backend, x, Batch(ntuple(Returns(seeds[1]), Val(B))), hvp_batched_extras
     )
 
-    compressed = mapreduce(hcat, 1:div(G, B, RoundUp)) do a
+    compressed_blocks = map(1:div(G, B, RoundUp)) do a
         dx_batch_elements = ntuple(Val(B)) do b
             seeds[1 + ((a - 1) * B + (b - 1)) % G]
         end
@@ -73,6 +73,7 @@ function hessian(f::F, backend::AutoSparse, x, extras::SparseHessianExtras{B}) w
         stack(vec, dg_batch.elements; dims=2)
     end
 
+    compressed = reduce(hcat, compressed_blocks)
     if G < size(compressed, 2)
         compressed = compressed[:, 1:G]
     end

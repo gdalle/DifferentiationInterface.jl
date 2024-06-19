@@ -27,7 +27,7 @@ end
 test_differentiation(vcat(dense_backends, fromprimitive_backends); logging=LOGGING);
 
 test_differentiation(
-    dense_backends;
+    vcat(dense_backends, fromprimitive_backends);
     correctness=false,
     type_stability=true,
     second_order=false,

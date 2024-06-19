@@ -98,7 +98,7 @@ function hessian(
         f, backend, x, Batch(ntuple(Returns(seeds[1]), Val(B))), hvp_batched_extras
     )
 
-    hess = mapreduce(hcat, 1:div(N, B, RoundUp)) do a
+    hess_blocks = map(1:div(N, B, RoundUp)) do a
         dx_batch_elements = ntuple(Val(B)) do b
             seeds[1 + ((a - 1) * B + (b - 1)) % N]
         end
@@ -108,6 +108,7 @@ function hessian(
         stack(vec, dg_batch.elements; dims=2)
     end
 
+    hess = reduce(hcat, hess_blocks)
     if N < size(hess, 2)
         hess = hess[:, 1:N]
     end

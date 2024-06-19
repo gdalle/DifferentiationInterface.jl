@@ -200,7 +200,7 @@ function jacobian_aux(
         pushforward_batched_extras,
     )
 
-    jac = mapreduce(hcat, 1:div(N, B, RoundUp)) do a
+    jac_blocks = map(1:div(N, B, RoundUp)) do a
         dx_batch_elements = ntuple(Val(B)) do b
             seeds[1 + ((a - 1) * B + (b - 1)) % N]
         end
@@ -214,6 +214,7 @@ function jacobian_aux(
         stack(vec, dy_batch.elements; dims=2)
     end
 
+    jac = reduce(hcat, jac_blocks)
     if N < size(jac, 2)
         jac = jac[:, 1:N]
     end
@@ -234,7 +235,7 @@ function jacobian_aux(
         extras.pullback_batched_extras,
     )
 
-    jac = mapreduce(vcat, 1:div(M, B, RoundUp)) do a
+    jac_blocks = map(1:div(M, B, RoundUp)) do a
         dy_batch_elements = ntuple(Val(B)) do b
             seeds[1 + ((a - 1) * B + (b - 1)) % M]
         end
@@ -248,6 +249,7 @@ function jacobian_aux(
         stack(vec, dx_batch.elements; dims=1)
     end
 
+    jac = reduce(vcat, jac_blocks)
     if M < size(jac, 1)
         jac = jac[1:M, :]
     end
