@@ -15,6 +15,9 @@ backend_package_name(::AutoTracker) = "Tracker"
 backend_package_name(::AutoZygote) = "Zygote"
 backend_package_name(::AutoReverseDiff) = "ReverseDiff"
 
+backend_package_name(::AF) where {AF<:AutoForwardFromPrimitive} = string(AF)
+backend_package_name(::AR) where {AR<:AutoReverseFromPrimitive} = string(AR)
+
 function backend_str(backend::AbstractADType)
     bs = backend_package_name(backend)
     if mode(backend) isa ForwardMode
