@@ -55,9 +55,10 @@ abstract type JacobianExtras <: Extras end
 
 struct NoJacobianExtras <: JacobianExtras end
 
-struct PushforwardJacobianExtras{B,D,E<:PushforwardExtras} <: JacobianExtras
+struct PushforwardJacobianExtras{B,D,E<:PushforwardExtras,Y} <: JacobianExtras
     seeds::D
     pushforward_batched_extras::E
+    y_example::Y
 end
 
 struct PullbackJacobianExtras{B,D,E<:PullbackExtras,Y} <: JacobianExtras
@@ -84,7 +85,8 @@ function prepare_jacobian_aux(f_or_f!y::FY, backend, x, y, ::PushforwardFast) wh
     )
     D = typeof(seeds)
     E = typeof(pushforward_batched_extras)
-    return PushforwardJacobianExtras{B,D,E}(seeds, pushforward_batched_extras)
+    Y = typeof(y)
+    return PushforwardJacobianExtras{B,D,E,Y}(seeds, pushforward_batched_extras, copy(y))
 end
 
 function prepare_jacobian_aux(f_or_f!y::FY, backend, x, y, ::PushforwardSlow) where {FY}
@@ -187,7 +189,7 @@ end
 function jacobian_aux(
     f_or_f!y::FY, backend, x::AbstractArray, extras::PushforwardJacobianExtras{B}
 ) where {FY,B}
-    @compat (; seeds, pushforward_batched_extras) = extras
+    @compat (; seeds, pushforward_batched_extras, y_example) = extras
     N = length(x)
 
     pushforward_batched_extras_same = prepare_pushforward_batched_same_point(
@@ -259,7 +261,7 @@ function jacobian_aux!(
     x::AbstractArray,
     extras::PushforwardJacobianExtras{B},
 ) where {FY,B}
-    @compat (; seeds, pushforward_batched_extras) = extras
+    @compat (; seeds, pushforward_batched_extras, y_example) = extras
     N = length(x)
 
     pushforward_batched_extras_same = prepare_pushforward_batched_same_point(
@@ -275,7 +277,7 @@ function jacobian_aux!(
             seeds[1 + ((a - 1) * B + (b - 1)) % N]
         end
         dy_batch_elements = ntuple(Val(B)) do b
-            reshape(view(jac, :, 1 + ((a - 1) * B + (b - 1)) % N), size(y))
+            reshape(view(jac, :, 1 + ((a - 1) * B + (b - 1)) % N), size(y_example))
         end
         pushforward_batched!(
             f_or_f!y...,

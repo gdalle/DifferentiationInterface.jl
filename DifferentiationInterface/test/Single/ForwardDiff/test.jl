@@ -1,12 +1,12 @@
 using DifferentiationInterface, DifferentiationInterfaceTest
-using DifferentiationInterface: AutoForwardFromPrimitive, AutoReverseFromPrimitive
+using DifferentiationInterface: AutoForwardFromPrimitive
 using ForwardDiff: ForwardDiff
 using SparseConnectivityTracer, SparseMatrixColorings
 using Test
 
 dense_backends = [AutoForwardDiff(), AutoForwardDiff(; chunksize=2, tag=:hello)]
 
-fromprimitive_backends = [AutoForwardFromPrimitive(AutoForwardDiff(chunksize=2))]
+fromprimitive_backends = [AutoForwardFromPrimitive(AutoForwardDiff(; chunksize=2))]
 
 sparse_backends = [
     AutoSparse(
@@ -24,7 +24,7 @@ end
 
 ## Dense backends
 
-test_differentiation(dense_backends; logging=LOGGING);
+test_differentiation(vcat(dense_backends, fromprimitive_backends); logging=LOGGING);
 
 test_differentiation(
     dense_backends;
