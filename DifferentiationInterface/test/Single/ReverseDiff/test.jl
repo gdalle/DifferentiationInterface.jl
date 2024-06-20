@@ -1,13 +1,16 @@
 using DifferentiationInterface, DifferentiationInterfaceTest
+using DifferentiationInterface: AutoReverseFromPrimitive
 using ReverseDiff: ReverseDiff
 using Test
 
-backends = [AutoReverseDiff(; compile=false), AutoReverseDiff(; compile=true)]
+dense_backends = [AutoReverseDiff(; compile=false), AutoReverseDiff(; compile=true)]
 
-for backend in backends
+fromprimitive_backends = [AutoReverseFromPrimitive(AutoReverseDiff())]
+
+for backend in vcat(dense_backends, fromprimitive_backends)
     @test check_available(backend)
     @test check_twoarg(backend)
     @test check_hessian(backend)
 end
 
-test_differentiation(backends; logging=LOGGING);
+test_differentiation(vcat(dense_backends, fromprimitive_backends); logging=LOGGING);

@@ -160,13 +160,13 @@ end
 
 #=
 
-struct EnzymeReverseOneArgJacobianExtras{C,N} end
+struct EnzymeReverseOneArgJacobianExtras{B,N} end
 
-function DI.prepare_jacobian(f, ::AutoReverseEnzyme, x)
-    C = pick_chunksize(length(x))
+function DI.prepare_jacobian(f, backend::AutoReverseEnzyme, x)
+    B = pick_batchsize(backend, length(x))
     y = f(x)
     N = length(y)
-    return EnzymeReverseOneArgJacobianExtras{C,N}()
+    return EnzymeReverseOneArgJacobianExtras{B,N}()
 end
 
 function DI.jacobian(
@@ -174,8 +174,8 @@ function DI.jacobian(
     backend::AutoReverseEnzyme,
     x::AbstractArray,
     ::EnzymeReverseOneArgJacobianExtras{C,N},
-) where {C,N}
-    jac_wrongshape = jacobian(reverse_mode(backend), f, x, Val{N}(), Val{C}())
+) where {B,N}
+    jac_wrongshape = jacobian(reverse_mode(backend), f, x, Val(N), Val(B))
     nx = length(x)
     ny = length(jac_wrongshape) ÷ length(x)
     jac_rightshape = reshape(jac_wrongshape, ny, nx)

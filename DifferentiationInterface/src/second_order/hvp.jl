@@ -10,6 +10,8 @@ Create an `extras` object that can be given to [`hvp`](@ref) and its variants.
 """
 function prepare_hvp end
 
+function prepare_hvp_batched end
+
 """
     prepare_hvp_same_point(f, backend, x, dx) -> extras_same
 
@@ -20,12 +22,16 @@ Create an `extras_same` object that can be given to [`hvp`](@ref) and its varian
 """
 function prepare_hvp_same_point end
 
+function prepare_hvp_batched_same_point end
+
 """
     hvp(f, backend, x, dx, [extras]) -> dg
 
 Compute the Hessian-vector product of `f` at point `x` with seed `dx`.
 """
 function hvp end
+
+function hvp_batched end
 
 """
     hvp!(f, dg, backend, x, dx, [extras]) -> dg
@@ -34,7 +40,11 @@ Compute the Hessian-vector product of `f` at point `x` with seed `dx`, overwriti
 """
 function hvp! end
 
+function hvp_batched! end
+
 ## Preparation
+
+### Extras types
 
 """
     HVPExtras
@@ -85,6 +95,8 @@ struct ReverseOverReverseHVPExtras{IG<:InnerGradient,E<:PullbackExtras} <: HVPEx
     outer_pullback_extras::E
 end
 
+### Standard
+
 function prepare_hvp(f::F, backend::AbstractADType, x, dx) where {F}
     return prepare_hvp(f, SecondOrder(backend, backend), x, dx)
 end
@@ -122,7 +134,7 @@ function prepare_hvp(f::F, backend::SecondOrder, x, dx, ::ReverseOverReverse) wh
     return ReverseOverReverseHVPExtras(inner_gradient, outer_pullback_extras)
 end
 
-## Preparation (same point)
+### Standard, same point
 
 function prepare_hvp_same_point(
     f::F, backend::AbstractADType, x, dx, extras::HVPExtras
@@ -135,14 +147,26 @@ function prepare_hvp_same_point(f::F, backend::AbstractADType, x, dx) where {F}
     return prepare_hvp_same_point(f, backend, x, dx, extras)
 end
 
+### Batched
+
+function prepare_hvp_batched(f::F, backend::AbstractADType, x, dx::Batch{B}) where {F,B}
+    return prepare_hvp(f, backend, x, first(dx.elements))
+end
+
+### Batched, same point
+
+function prepare_hvp_batched_same_point(
+    f::F, backend::AbstractADType, x, dx::Batch{B}, extras::HVPExtras
+) where {F,B}
+    return prepare_hvp_same_point(f, backend, x, first(dx.elements), extras)
+end
+
 ## One argument
+
+### Standard
 
 function hvp(f::F, backend::AbstractADType, x, dx) where {F}
     return hvp(f, backend, x, dx, prepare_hvp(f, backend, x, dx))
-end
-
-function hvp!(f::F, dg, backend::AbstractADType, x, dx) where {F}
-    return hvp!(f, dg, backend, x, dx, prepare_hvp(f, backend, x, dx))
 end
 
 function hvp(f::F, backend::AbstractADType, x, dx, extras::HVPExtras) where {F}
@@ -178,6 +202,10 @@ function hvp(
     return pullback(inner_gradient, outer(backend), x, dx, outer_pullback_extras)
 end
 
+function hvp!(f::F, dg, backend::AbstractADType, x, dx) where {F}
+    return hvp!(f, dg, backend, x, dx, prepare_hvp(f, backend, x, dx))
+end
+
 function hvp!(f::F, dg, backend::AbstractADType, x, dx, extras::HVPExtras) where {F}
     return hvp!(f, dg, SecondOrder(backend, backend), x, dx, extras)
 end
@@ -209,4 +237,31 @@ function hvp!(
 ) where {F}
     @compat (; inner_gradient, outer_pullback_extras) = extras
     return pullback!(inner_gradient, dg, outer(backend), x, dx, outer_pullback_extras)
+end
+
+### Batched
+
+function hvp_batched(f::F, backend::AbstractADType, x, dx, extras::HVPExtras) where {F}
+    return hvp_batched(f, SecondOrder(backend, backend), x, dx, extras)
+end
+
+function hvp_batched(
+    f::F, backend::SecondOrder, x, dx::Batch{B}, extras::HVPExtras
+) where {F,B}
+    dg_elements = ntuple(Val(B)) do l
+        hvp(f, backend, x, dx.elements[l], extras)
+    end
+    return Batch(dg_elements)
+end
+
+function hvp_batched!(f::F, dg, backend::AbstractADType, x, dx, extras::HVPExtras) where {F}
+    return hvp_batched!(f, dg, SecondOrder(backend, backend), x, dx, extras)
+end
+
+function hvp_batched!(
+    f::F, dg::Batch{B}, backend::SecondOrder, x, dx::Batch{B}, extras::HVPExtras
+) where {F,B}
+    for l in 1:B
+        hvp!(f, dg.elements[l], backend, x, dx.elements[l], extras)
+    end
 end

@@ -13,3 +13,9 @@ basis(::AbstractADType, a::AbstractArray, i) = basis(a, i)
 function basis(a::AbstractArray{T,N}, i::CartesianIndex{N}) where {T,N}
     return OneElement(one(T), Tuple(i), axes(a))
 end
+
+function make_seed(x::AbstractArray, group::AbstractVector{<:Integer})
+    seed = zero(x)
+    seed[group] .= one(eltype(x))
+    return seed
+end
