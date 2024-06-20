@@ -6,7 +6,7 @@ using Test
 
 dense_backends = [AutoForwardDiff(), AutoForwardDiff(; chunksize=2, tag=:hello)]
 
-fromprimitive_backends = [AutoForwardFromPrimitive(AutoForwardDiff(; chunksize=2))]
+fromprimitive_backends = [AutoForwardFromPrimitive(AutoForwardDiff(; chunksize=5))]
 
 sparse_backends = [
     AutoSparse(
