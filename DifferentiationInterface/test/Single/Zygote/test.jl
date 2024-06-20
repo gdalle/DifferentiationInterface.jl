@@ -3,8 +3,6 @@ using SparseConnectivityTracer, SparseMatrixColorings
 using Test
 using Zygote: Zygote
 
-LOGGING = true
-
 dense_backends = [AutoZygote()]
 
 sparse_backends = [

@@ -3,6 +3,7 @@ module DifferentiationInterfaceZygoteExt
 using ADTypes: AutoForwardDiff, AutoZygote
 import DifferentiationInterface as DI
 using DifferentiationInterface:
+    Batch,
     HVPExtras,
     NoGradientExtras,
     NoHessianExtras,
@@ -103,20 +104,45 @@ struct ZygoteHVPExtras{G,PE} <: HVPExtras
     pushforward_extras::PE
 end
 
-function DI.prepare_hvp(f, ::AutoZygote, x, v)
+function DI.prepare_hvp(f, ::AutoZygote, x, dx)
     ∇f(x) = only(gradient(f, x))
-    pushforward_extras = DI.prepare_pushforward(∇f, AutoForwardDiff(), x, v)
+    pushforward_extras = DI.prepare_pushforward(∇f, AutoForwardDiff(), x, dx)
     return ZygoteHVPExtras(∇f, pushforward_extras)
 end
 
-function DI.hvp(f, ::AutoZygote, x, v, extras::ZygoteHVPExtras)
+function DI.hvp(f, ::AutoZygote, x, dx, extras::ZygoteHVPExtras)
     @compat (; ∇f, pushforward_extras) = extras
-    return DI.pushforward(∇f, AutoForwardDiff(), x, v, pushforward_extras)
+    return DI.pushforward(∇f, AutoForwardDiff(), x, dx, pushforward_extras)
 end
 
-function DI.hvp!(f, p, ::AutoZygote, x, v, extras::ZygoteHVPExtras)
+function DI.hvp!(f, dg, ::AutoZygote, x, dx, extras::ZygoteHVPExtras)
     @compat (; ∇f, pushforward_extras) = extras
-    return DI.pushforward!(∇f, p, AutoForwardDiff(), x, v, pushforward_extras)
+    return DI.pushforward!(∇f, dg, AutoForwardDiff(), x, dx, pushforward_extras)
+end
+
+struct ZygoteHVPBatchedExtras{G,PE} <: HVPExtras
+    ∇f::G
+    pushforward_batched_extras::PE
+end
+
+function DI.prepare_hvp_batched(f, ::AutoZygote, x, dx::Batch)
+    ∇f(x) = only(gradient(f, x))
+    pushforward_batched_extras = DI.prepare_pushforward_batched(
+        ∇f, AutoForwardDiff(), x, dx
+    )
+    return ZygoteHVPBatchedExtras(∇f, pushforward_batched_extras)
+end
+
+function DI.hvp_batched(f, ::AutoZygote, x, dx::Batch, extras::ZygoteHVPBatchedExtras)
+    @compat (; ∇f, pushforward_batched_extras) = extras
+    return DI.pushforward_batched(∇f, AutoForwardDiff(), x, dx, pushforward_batched_extras)
+end
+
+function DI.hvp!(f, dg::Batch, ::AutoZygote, x, dx::Batch, extras::ZygoteHVPBatchedExtras)
+    @compat (; ∇f, pushforward_batched_extras) = extras
+    return DI.pushforward_batched!(
+        ∇f, dg, AutoForwardDiff(), x, dx, pushforward_batched_extras
+    )
 end
 
 ## Hessian
