@@ -138,7 +138,9 @@ function DI.hvp_batched(f, ::AutoZygote, x, dx::Batch, extras::ZygoteHVPBatchedE
     return DI.pushforward_batched(∇f, AutoForwardDiff(), x, dx, pushforward_batched_extras)
 end
 
-function DI.hvp!(f, dg::Batch, ::AutoZygote, x, dx::Batch, extras::ZygoteHVPBatchedExtras)
+function DI.hvp_batched!(
+    f, dg::Batch, ::AutoZygote, x, dx::Batch, extras::ZygoteHVPBatchedExtras
+)
     @compat (; ∇f, pushforward_batched_extras) = extras
     return DI.pushforward_batched!(
         ∇f, dg, AutoForwardDiff(), x, dx, pushforward_batched_extras

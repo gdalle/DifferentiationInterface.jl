@@ -166,18 +166,6 @@ function prepare_pullback_batched_same_point(
     return prepare_pullback_same_point(f!, y, backend, x, first(dy.elements), extras)
 end
 
-function prepare_pullback_batched_same_point(
-    f::F, backend::AbstractADType, x, dy::Batch{B}
-) where {F,B}
-    return prepare_pullback_same_point(f, backend, x, first(dy.elements))
-end
-
-function prepare_pullback_batched_same_point(
-    f!::F, y, backend::AbstractADType, x, dy::Batch{B}
-) where {F,B}
-    return prepare_pullback_same_point(f!, y, backend, x, first(dy.elements))
-end
-
 ## One argument
 
 ### Standard

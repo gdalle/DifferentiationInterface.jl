@@ -161,12 +161,6 @@ function prepare_hvp_batched_same_point(
     return prepare_hvp_same_point(f, backend, x, first(dx.elements), extras)
 end
 
-function prepare_hvp_batched_same_point(
-    f::F, backend::AbstractADType, x, dx::Batch{B}
-) where {F,B}
-    return prepare_hvp_same_point(f, backend, x, first(dx.elements))
-end
-
 ## One argument
 
 ### Standard

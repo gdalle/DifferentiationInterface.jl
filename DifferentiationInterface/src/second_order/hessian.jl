@@ -57,7 +57,7 @@ end
 
 function prepare_hessian(f::F, backend::AbstractADType, x) where {F}
     N = length(x)
-    B = pick_batchsize(backend, N)
+    B = pick_batchsize(maybe_outer(backend), N)
     seeds = [basis(backend, x, ind) for ind in CartesianIndices(x)]
     hvp_batched_extras = prepare_hvp_batched(
         f, backend, x, Batch(ntuple(Returns(seeds[1]), Val(B)))

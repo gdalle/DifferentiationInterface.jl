@@ -167,18 +167,6 @@ function prepare_pushforward_batched_same_point(
     return prepare_pushforward_same_point(f!, y, backend, x, first(dx.elements), extras)
 end
 
-function prepare_pushforward_batched_same_point(
-    f::F, backend::AbstractADType, x, dx::Batch{B}
-) where {F,B}
-    return prepare_pushforward_same_point(f, backend, x, first(dx.elements))
-end
-
-function prepare_pushforward_batched_same_point(
-    f!::F, y, backend::AbstractADType, x, dx::Batch{B}
-) where {F,B}
-    return prepare_pushforward_same_point(f!, y, backend, x, first(dx.elements))
-end
-
 ## One argument
 
 ### Standard

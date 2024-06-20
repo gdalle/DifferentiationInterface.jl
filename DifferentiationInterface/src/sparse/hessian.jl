@@ -43,7 +43,7 @@ function prepare_hessian(f::F, backend::AutoSparse, x) where {F}
     groups = color_groups(colors)
     seeds = map(group -> make_seed(x, group), groups)
     G = length(seeds)
-    B = pick_batchsize(backend, G)
+    B = pick_batchsize(maybe_outer(dense_backend), G)
     dx_batch = Batch(ntuple(Returns(seeds[1]), Val(B)))
     hvp_batched_extras = prepare_hvp_batched(f, dense_backend, x, dx_batch)
     products = map(_ -> similar(x), seeds)

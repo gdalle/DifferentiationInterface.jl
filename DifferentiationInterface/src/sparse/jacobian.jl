@@ -86,7 +86,7 @@ function prepare_sparse_jacobian_aux(
     groups = color_groups(colors)
     seeds = map(group -> make_seed(x, group), groups)
     G = length(seeds)
-    B = pick_batchsize(backend, G)
+    B = pick_batchsize(dense_backend, G)
     dx_batch = Batch(ntuple(Returns(seeds[1]), Val(B)))
     pushforward_batched_extras = prepare_pushforward_batched(
         f_or_f!y..., dense_backend, x, dx_batch
@@ -108,7 +108,7 @@ function prepare_sparse_jacobian_aux(
     groups = color_groups(colors)
     seeds = map(group -> make_seed(y, group), groups)
     G = length(seeds)
-    B = pick_batchsize(backend, G)
+    B = pick_batchsize(dense_backend, G)
     dx_batch = Batch(ntuple(Returns(seeds[1]), Val(B)))
     pullback_batched_extras = prepare_pullback_batched(
         f_or_f!y..., dense_backend, x, dx_batch
