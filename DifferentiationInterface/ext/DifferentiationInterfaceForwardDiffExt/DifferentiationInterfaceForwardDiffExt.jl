@@ -39,11 +39,11 @@ using LinearAlgebra: dot, mul!
 DI.check_available(::AutoForwardDiff) = true
 
 function DI.pick_batchsize(::AutoForwardDiff{C}, dimension::Integer) where {C}
-    return min(dimension, C)
-end
-
-function DI.pick_batchsize(::AutoForwardDiff{Nothing}, dimension::Integer)
-    return ForwardDiff.pickchunksize(dimension)  # TODO: remove internal
+    if isnothing(C)
+        return ForwardDiff.pickchunksize(dimension)
+    else
+        return min(dimension, C)
+    end
 end
 
 include("utils.jl")
