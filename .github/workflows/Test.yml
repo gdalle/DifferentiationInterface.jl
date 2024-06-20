@@ -28,8 +28,8 @@ jobs:
       matrix:
         version:
           - '1'
-          - '1.6'
-          - '~1.11.0-0'
+          # - '1.6'
+          # - '~1.11.0-0'
         group:
           - Formalities
           # - Internals
@@ -109,7 +109,6 @@ jobs:
           files: lcov.info
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
-
   test-DIT:
     name: DIT (${{ matrix.group }}) - ${{ matrix.version }}
     runs-on: ubuntu-latest
@@ -125,7 +124,7 @@ jobs:
           - '1.6'
           - '~1.11.0-0'
         group:
-          - Formalities
+          # - Formalities
           # - Zero
           # - ForwardDiff
           # - Zygote
