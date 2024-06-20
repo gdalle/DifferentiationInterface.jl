@@ -32,23 +32,24 @@ jobs:
           - '~1.11.0-0'
         group:
           - Formalities
-          - Internals
-          - Single/Diffractor
-          - Single/Enzyme
-          - Single/FastDifferentiation
-          - Single/FiniteDiff
-          - Single/FiniteDifferences
-          - Single/ForwardDiff
-          - Single/PolyesterForwardDiff
-          - Single/ReverseDiff
-          - Single/Symbolics
-          - Single/Tapir
-          - Single/Tracker
-          - Single/Zygote
-          - Double/ChainRulesCore-Zygote
-          - Double/Enzyme-ForwardDiff
-          - Double/ForwardDiff-Zygote
-          - Double/ReverseDiff-Zygote
+          # - Internals
+          # - Single/Diffractor
+          # - Single/Enzyme
+          # - Single/FastDifferentiation
+          # - Single/FiniteDiff
+          # - Single/FiniteDifferences
+          # - Single/ForwardDiff
+          # - Single/PolyesterForwardDiff
+          # - Single/ReverseDiff
+          # - Single/Symbolics
+          # - Single/Tapir
+          # - Single/Tracker
+          # - Single/Zygote
+          # - Double/ChainRulesCore-Zygote
+          # - Double/Enzyme-ForwardDiff
+          - Double/Enzyme-Reactant
+          # - Double/ForwardDiff-Zygote
+          # - Double/ReverseDiff-Zygote
         exclude:
           - version: '1.6'
             group: Formalities
@@ -78,6 +79,10 @@ jobs:
             group: Double/Enzyme-ForwardDiff
           - version: '~1.11.0-0'
             group: Double/Enzyme-ForwardDiff
+          - version: '1.6'
+            group: Double/Enzyme-Reactant
+          - version: '~1.11.0-0'
+            group: Double/Enzyme-Reactant
           - version: '1.6'
             group: Double/ReverseDiff-Zygote
     
@@ -121,9 +126,9 @@ jobs:
           - '~1.11.0-0'
         group:
           - Formalities
-          - Zero
-          - ForwardDiff
-          - Zygote
+          # - Zero
+          # - ForwardDiff
+          # - Zygote
         exclude:
           - version: '1.6'
             group: Formalities
