@@ -1,24 +1,24 @@
-struct ReactantGradientExtras{FC,E}
-    f_compiled::FC
-    gradient_extras::E
+struct ReactantGradientExtras{G}
+    compiled_gradient_closure::G
 end
 
 function DI.prepare_gradient(f, rebackend::ReactantBackend, x)
     xr = ConcreteRArray(x)
-    f_compiled = compile(f, (xr,))  
-    gradient_extras = DI.prepare_gradient(f_compiled, rebackend.backend, xr)
-    return ReactantGradientExtras(f_compiled, gradient_extras)
+    gradient_extras = DI.prepare_gradient(f, rebackend.backend, xr)
+    gradient_closure(xr) = DI.gradient(f, rebackend.backend, xr, gradient_extras)
+    compiled_gradient_closure = compile(gradient_closure, (xr,))
+    return ReactantGradientExtras(compiled_gradient_closure)
 end
 
 function DI.gradient(f, rebackend::ReactantBackend, x, extras::ReactantGradientExtras)
-    @compat (; f_compiled, gradient_extras) = extras
+    @compat (; compiled_gradient_closure) = extras
     xr = ConcreteRArray(x)
-    return DI.gradient(f_compiled, rebackend.backend, xr, gradient_extras)
+    return compiled_gradient_closure(xr)
 end
 
 function DI.gradient!(f, grad, rebackend::ReactantBackend, x, extras::ReactantGradientExtras)
-    @compat (; f_compiled, gradient_extras) = extras
+    @compat (; compiled_gradient_closure) = extras
     xr = ConcreteRArray(x)
-    gradr = DI.gradient(f_compiled, rebackend.backend, xr, gradient_extras)
+    gradr = compiled_gradient_closure(xr)
     return copyto!(grad, gradr)
 end
