@@ -3,8 +3,7 @@ module DifferentiationInterfaceReactantExt
 using ADTypes: ADTypes
 using Compat
 import DifferentiationInterface as DI
-using DifferentiationInterface:
-     GradientExtras
+using DifferentiationInterface: GradientExtras
 using Reactant: ConcreteRArray, compile
 
 struct ReactantBackend{B} <: ADTypes.AbstractADType

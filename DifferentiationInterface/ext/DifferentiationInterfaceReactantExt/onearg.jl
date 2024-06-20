@@ -16,7 +16,9 @@ function DI.gradient(f, rebackend::ReactantBackend, x, extras::ReactantGradientE
     return compiled_gradient_closure(xr)
 end
 
-function DI.gradient!(f, grad, rebackend::ReactantBackend, x, extras::ReactantGradientExtras)
+function DI.gradient!(
+    f, grad, rebackend::ReactantBackend, x, extras::ReactantGradientExtras
+)
     @compat (; compiled_gradient_closure) = extras
     xr = ConcreteRArray(x)
     gradr = compiled_gradient_closure(xr)
