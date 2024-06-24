@@ -65,6 +65,8 @@ jobs:
           - version: '1.6'
             group: Single/FastDifferentiation
           - version: '1.6'
+            group: Single/GTPSA
+          - version: '1.9'
             group: Single/PolyesterForwardDiff
           - version: '1.6'
             group: Single/Symbolics

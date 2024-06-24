@@ -22,6 +22,7 @@ using ADTypes:
     AutoFiniteDiff,
     AutoFiniteDifferences,
     AutoForwardDiff,
+    AutoGTPSA,
     AutoPolyesterForwardDiff,
     AutoReverseDiff,
     AutoSymbolics,
@@ -122,6 +123,7 @@ export AutoFastDifferentiation
 export AutoFiniteDiff
 export AutoFiniteDifferences
 export AutoForwardDiff
+export AutoGTPSA
 export AutoPolyesterForwardDiff
 export AutoReverseDiff
 export AutoSymbolics

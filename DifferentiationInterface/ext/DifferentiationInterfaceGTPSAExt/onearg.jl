@@ -1,3 +1,9 @@
+# --- pushforward ---
+function DI.pushforward(f, backend::AutoGTPSA{D}, x, dx, extras::NoPushforwardExtras)
+  println("hi!")
+end
+
+
 # --- derivative ---
 struct GTPSADerivativeExtras <: DerivativeExtras
   t::TPS
