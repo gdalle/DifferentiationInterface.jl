@@ -3,12 +3,17 @@ module DifferentiationInterfaceReactantExt
 using ADTypes: ADTypes
 using Compat
 import DifferentiationInterface as DI
-using DifferentiationInterface: GradientExtras
+using DifferentiationInterface:
+    ReactantBackend,
+    DerivativeExtras,
+    GradientExtras,
+    HessianExtras,
+    HVPExtras,
+    JacobianExtras,
+    PullbackExtras,
+    PushforwardExtras,
+    SecondDerivativeExtras
 using Reactant: ConcreteRArray, compile
-
-struct ReactantBackend{B} <: ADTypes.AbstractADType
-    backend::B
-end
 
 DI.check_available(rebackend::ReactantBackend) = DI.check_available(rebackend.backend)
 DI.mode(rebackend::ReactantBackend) = DI.mode(rebackend.backend)

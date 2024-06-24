@@ -1,13 +1,16 @@
 using DifferentiationInterface
+using DifferentiationInterface: ReactantBackend
+using DifferentiationInterfaceTest
 using Enzyme: Enzyme
 using Reactant: Reactant
 using Test
 
-ReactantBackend =
-    Base.get_extension(
-        DifferentiationInterface, :DifferentiationInterfaceReactantExt
-    ).ReactantBackend
-
 rebackend = ReactantBackend(AutoEnzyme())
 
-@test gradient(sum, rebackend, rand(3)) ≈ ones(3)
+test_differentiation(
+    ReactantBackend(AutoEnzyme());
+    excluded=[
+        :derivative, :jacobian, :hessian, :hvp, :pullback, :pushforward, :second_derivative
+    ],
+    logging=LOGGING,
+)

@@ -76,6 +76,10 @@ include("misc/from_primitive.jl")
 
 include("utils/printing.jl")
 
+struct ReactantBackend{B} <: ADTypes.AbstractADType
+    backend::B
+end
+
 function __init__()
     @require_extensions
 end
