@@ -1,7 +1,7 @@
 module DifferentiationInterfaceForwardDiffExt
 
 using ADTypes: AbstractADType, AutoForwardDiff
-using Base: Fix1
+using Base: Fix1, Fix2
 using Compat
 import DifferentiationInterface as DI
 using DifferentiationInterface:
