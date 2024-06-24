@@ -5,6 +5,7 @@ using Base: Fix1
 using Compat
 import DifferentiationInterface as DI
 using DifferentiationInterface:
+    Batch,
     DerivativeExtras,
     GradientExtras,
     HessianExtras,
@@ -33,6 +34,8 @@ using ForwardDiff:
     hessian!,
     jacobian,
     jacobian!,
+    npartials,
+    partials,
     value
 using LinearAlgebra: dot, mul!
 

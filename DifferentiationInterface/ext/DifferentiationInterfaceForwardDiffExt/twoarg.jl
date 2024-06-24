@@ -7,8 +7,19 @@ end
 
 function DI.prepare_pushforward(f!::F, y, backend::AutoForwardDiff, x, dx) where {F}
     T = tag_type(f!, backend, x)
-    xdual_tmp = make_dual_similar(T, x)
-    ydual_tmp = make_dual_similar(T, y)
+    xdual_tmp = make_dual_similar(T, x, dx)
+    ydual_tmp = make_dual_similar(T, y, dx)  # dx only for batch size
+    return ForwardDiffTwoArgPushforwardExtras{T,typeof(xdual_tmp),typeof(ydual_tmp)}(
+        xdual_tmp, ydual_tmp
+    )
+end
+
+function DI.prepare_pushforward_batched(
+    f!::F, y, backend::AutoForwardDiff, x, dx::Batch
+) where {F}
+    T = tag_type(f!, backend, x)
+    xdual_tmp = make_dual_similar(T, x, dx)
+    ydual_tmp = make_dual_similar(T, y, dx)  # dx only for batch size
     return ForwardDiffTwoArgPushforwardExtras{T,typeof(xdual_tmp),typeof(ydual_tmp)}(
         xdual_tmp, ydual_tmp
     )
@@ -63,6 +74,28 @@ function DI.pushforward!(
 ) where {F,T}
     ydual_tmp = compute_ydual_twoarg(f!, y, x, dx, extras)
     myderivative!(T, dy, ydual_tmp)
+    return dy
+end
+
+function DI.pushforward_batched(
+    f!::F, y, ::AutoForwardDiff, x, dx::Batch, extras::ForwardDiffTwoArgPushforwardExtras{T}
+) where {F,T}
+    ydual_tmp = compute_ydual_twoarg(f!, y, x, dx, extras)
+    dy = mypartials(T, ydual_tmp)
+    return dy
+end
+
+function DI.pushforward_batched!(
+    f!::F,
+    y,
+    dy,
+    ::AutoForwardDiff,
+    x,
+    dx::Batch,
+    extras::ForwardDiffTwoArgPushforwardExtras{T},
+) where {F,T}
+    ydual_tmp = compute_ydual_twoarg(f!, y, x, dx, extras)
+    mypartials!(T, dy, ydual_tmp)
     return dy
 end
 

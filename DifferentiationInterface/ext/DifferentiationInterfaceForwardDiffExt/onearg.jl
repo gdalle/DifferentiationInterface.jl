@@ -6,7 +6,15 @@ end
 
 function DI.prepare_pushforward(f::F, backend::AutoForwardDiff, x, dx) where {F}
     T = tag_type(f, backend, x)
-    xdual_tmp = make_dual_similar(T, x)
+    xdual_tmp = make_dual_similar(T, x, dx)
+    return ForwardDiffOneArgPushforwardExtras{T,typeof(xdual_tmp)}(xdual_tmp)
+end
+
+function DI.prepare_pushforward_batched(
+    f::F, backend::AutoForwardDiff, x, dx::Batch
+) where {F}
+    T = tag_type(f, backend, x)
+    xdual_tmp = make_dual_similar(T, x, dx)
     return ForwardDiffOneArgPushforwardExtras{T,typeof(xdual_tmp)}(xdual_tmp)
 end
 
@@ -61,56 +69,25 @@ function DI.pushforward!(
     return dy
 end
 
-## Second derivative
-
-function DI.prepare_second_derivative(f::F, backend::AutoForwardDiff, x) where {F}
-    return NoSecondDerivativeExtras()
+function DI.pushforward_batched(
+    f::F, ::AutoForwardDiff, x, dx::Batch{B}, extras::ForwardDiffOneArgPushforwardExtras{T}
+) where {F,T,B}
+    ydual = compute_ydual_onearg(f, x, dx, extras)
+    new_dy = mypartials(T, ydual)
+    return new_dy
 end
 
-function DI.second_derivative(
-    f::F, backend::AutoForwardDiff, x, ::NoSecondDerivativeExtras
-) where {F}
-    T = tag_type(f, backend, x)
-    xdual = make_dual(T, x, one(x))
-    T2 = tag_type(f, backend, xdual)
-    ydual = f(make_dual(T2, xdual, one(xdual)))
-    return myderivative(T, myderivative(T2, ydual))
-end
-
-function DI.second_derivative!(
-    f::F, der2, backend::AutoForwardDiff, x, ::NoSecondDerivativeExtras
-) where {F}
-    T = tag_type(f, backend, x)
-    xdual = make_dual(T, x, one(x))
-    T2 = tag_type(f, backend, xdual)
-    ydual = f(make_dual(T2, xdual, one(xdual)))
-    return myderivative!(T, der2, myderivative(T2, ydual))
-end
-
-function DI.value_derivative_and_second_derivative(
-    f::F, backend::AutoForwardDiff, x, ::NoSecondDerivativeExtras
-) where {F}
-    T = tag_type(f, backend, x)
-    xdual = make_dual(T, x, one(x))
-    T2 = tag_type(f, backend, xdual)
-    ydual = f(make_dual(T2, xdual, one(xdual)))
-    y = myvalue(T, myvalue(T2, ydual))
-    der = myderivative(T, myvalue(T2, ydual))
-    der2 = myderivative(T, myderivative(T2, ydual))
-    return y, der, der2
-end
-
-function DI.value_derivative_and_second_derivative!(
-    f::F, der, der2, backend::AutoForwardDiff, x, ::NoSecondDerivativeExtras
-) where {F}
-    T = tag_type(f, backend, x)
-    xdual = make_dual(T, x, one(x))
-    T2 = tag_type(f, backend, xdual)
-    ydual = f(make_dual(T2, xdual, one(xdual)))
-    y = myvalue(T, myvalue(T2, ydual))
-    myderivative!(T, der, myvalue(T2, ydual))
-    myderivative!(T, der2, myderivative(T2, ydual))
-    return y, der, der2
+function DI.pushforward_batched!(
+    f::F,
+    dy::Batch{B},
+    ::AutoForwardDiff,
+    x,
+    dx::Batch{B},
+    extras::ForwardDiffOneArgPushforwardExtras{T},
+) where {F,T,B}
+    ydual = compute_ydual_onearg(f, x, dx, extras)
+    mypartials!(T, dy, ydual)
+    return dy
 end
 
 ## Gradient
@@ -186,6 +163,58 @@ function DI.jacobian(
     f::F, ::AutoForwardDiff, x, extras::ForwardDiffOneArgJacobianExtras
 ) where {F}
     return jacobian(f, x, extras.config)
+end
+
+## Second derivative
+
+function DI.prepare_second_derivative(f::F, backend::AutoForwardDiff, x) where {F}
+    return NoSecondDerivativeExtras()
+end
+
+function DI.second_derivative(
+    f::F, backend::AutoForwardDiff, x, ::NoSecondDerivativeExtras
+) where {F}
+    T = tag_type(f, backend, x)
+    xdual = make_dual(T, x, one(x))
+    T2 = tag_type(f, backend, xdual)
+    ydual = f(make_dual(T2, xdual, one(xdual)))
+    return myderivative(T, myderivative(T2, ydual))
+end
+
+function DI.second_derivative!(
+    f::F, der2, backend::AutoForwardDiff, x, ::NoSecondDerivativeExtras
+) where {F}
+    T = tag_type(f, backend, x)
+    xdual = make_dual(T, x, one(x))
+    T2 = tag_type(f, backend, xdual)
+    ydual = f(make_dual(T2, xdual, one(xdual)))
+    return myderivative!(T, der2, myderivative(T2, ydual))
+end
+
+function DI.value_derivative_and_second_derivative(
+    f::F, backend::AutoForwardDiff, x, ::NoSecondDerivativeExtras
+) where {F}
+    T = tag_type(f, backend, x)
+    xdual = make_dual(T, x, one(x))
+    T2 = tag_type(f, backend, xdual)
+    ydual = f(make_dual(T2, xdual, one(xdual)))
+    y = myvalue(T, myvalue(T2, ydual))
+    der = myderivative(T, myvalue(T2, ydual))
+    der2 = myderivative(T, myderivative(T2, ydual))
+    return y, der, der2
+end
+
+function DI.value_derivative_and_second_derivative!(
+    f::F, der, der2, backend::AutoForwardDiff, x, ::NoSecondDerivativeExtras
+) where {F}
+    T = tag_type(f, backend, x)
+    xdual = make_dual(T, x, one(x))
+    T2 = tag_type(f, backend, xdual)
+    ydual = f(make_dual(T2, xdual, one(xdual)))
+    y = myvalue(T, myvalue(T2, ydual))
+    myderivative!(T, der, myvalue(T2, ydual))
+    myderivative!(T, der2, myderivative(T2, ydual))
+    return y, der, der2
 end
 
 ## Hessian

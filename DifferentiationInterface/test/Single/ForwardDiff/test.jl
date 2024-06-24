@@ -4,7 +4,11 @@ using ForwardDiff: ForwardDiff
 using SparseConnectivityTracer, SparseMatrixColorings
 using Test
 
-dense_backends = [AutoForwardDiff(), AutoForwardDiff(; chunksize=2, tag=:hello)]
+dense_backends = [
+    AutoForwardDiff(),
+    AutoForwardDiff(; chunksize=2),
+    AutoForwardDiff(; chunksize=100, tag=:hello),
+]
 
 fromprimitive_backends = [AutoForwardFromPrimitive(AutoForwardDiff(; chunksize=5))]
 
