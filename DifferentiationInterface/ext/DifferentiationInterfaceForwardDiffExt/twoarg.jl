@@ -78,8 +78,13 @@ function DI.pushforward!(
 end
 
 function DI.pushforward_batched(
-    f!::F, y, ::AutoForwardDiff, x, dx::Batch, extras::ForwardDiffTwoArgPushforwardExtras{T}
-) where {F,T}
+    f!::F,
+    y,
+    ::AutoForwardDiff,
+    x,
+    dx::Batch{B},
+    extras::ForwardDiffTwoArgPushforwardExtras{T},
+) where {F,T,B}
     ydual_tmp = compute_ydual_twoarg(f!, y, x, dx, extras)
     dy = mypartials(T, ydual_tmp)
     return dy
@@ -88,12 +93,12 @@ end
 function DI.pushforward_batched!(
     f!::F,
     y,
-    dy,
+    dy::Batch{B},
     ::AutoForwardDiff,
     x,
-    dx::Batch,
+    dx::Batch{B},
     extras::ForwardDiffTwoArgPushforwardExtras{T},
-) where {F,T}
+) where {F,T,B}
     ydual_tmp = compute_ydual_twoarg(f!, y, x, dx, extras)
     mypartials!(T, dy, ydual_tmp)
     return dy
