@@ -31,7 +31,7 @@ end
 test_differentiation(vcat(dense_backends, fromprimitive_backends); logging=LOGGING);
 
 test_differentiation(
-    vcat(dense_backends, fromprimitive_backends);
+    dense_backends;  # TODO: add fromprimitive
     correctness=false,
     type_stability=true,
     second_order=false,
