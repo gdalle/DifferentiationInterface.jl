@@ -22,7 +22,6 @@ using ADTypes:
     AutoFiniteDiff,
     AutoFiniteDifferences,
     AutoForwardDiff,
-    AutoGTPSA,
     AutoPolyesterForwardDiff,
     AutoReverseDiff,
     AutoSymbolics,
@@ -74,6 +73,7 @@ include("sparse/hessian.jl")
 
 include("misc/differentiate_with.jl")
 include("misc/sparsity_detector.jl")
+include("misc/temp_backends.jl")
 
 function __init__()
     @require_extensions
@@ -132,6 +132,10 @@ export AutoTracker
 export AutoZygote
 
 export AutoSparse
+
+## Temporary export
+
+export AutoGTPSA
 
 ## Re-exported from SparseMatrixColorings
 

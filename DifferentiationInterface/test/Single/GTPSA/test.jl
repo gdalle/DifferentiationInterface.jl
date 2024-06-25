@@ -8,6 +8,4 @@ for backend in [AutoGTPSA()]
     #@test check_hessian(backend)
 end
 
-test_differentiation(
-    AutoGTPSA(); excluded=[SecondDerivativeScenario, HVPScenario], logging=LOGGING
-);
+test_differentiation(AutoGTPSA(); logging=LOGGING);

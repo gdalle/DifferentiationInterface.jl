@@ -39,6 +39,7 @@ jobs:
           - Single/FiniteDiff
           - Single/FiniteDifferences
           - Single/ForwardDiff
+          - Single/GTPSA
           - Single/PolyesterForwardDiff
           - Single/ReverseDiff
           - Single/Symbolics
@@ -66,7 +67,7 @@ jobs:
             group: Single/FastDifferentiation
           - version: '1.6'
             group: Single/GTPSA
-          - version: '1.9'
+          - version: '1.6'
             group: Single/PolyesterForwardDiff
           - version: '1.6'
             group: Single/Symbolics
