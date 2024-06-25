@@ -141,29 +141,27 @@ end
 
 ### Batched
 
-function prepare_pushforward_batched(
-    f::F, backend::AbstractADType, x, dx::Batch{B}
-) where {F,B}
+function prepare_pushforward_batched(f::F, backend::AbstractADType, x, dx::Batch) where {F}
     return prepare_pushforward(f, backend, x, first(dx.elements))
 end
 
 function prepare_pushforward_batched(
-    f!::F, y, backend::AbstractADType, x, dx::Batch{B}
-) where {F,B}
+    f!::F, y, backend::AbstractADType, x, dx::Batch
+) where {F}
     return prepare_pushforward(f!, y, backend, x, first(dx.elements))
 end
 
 ### Batched, same point
 
 function prepare_pushforward_batched_same_point(
-    f::F, backend::AbstractADType, x, dx::Batch{B}, extras::PushforwardExtras
-) where {F,B}
+    f::F, backend::AbstractADType, x, dx::Batch, extras::PushforwardExtras
+) where {F}
     return prepare_pushforward_same_point(f, backend, x, first(dx.elements), extras)
 end
 
 function prepare_pushforward_batched_same_point(
-    f!::F, y, backend::AbstractADType, x, dx::Batch{B}, extras::PushforwardExtras
-) where {F,B}
+    f!::F, y, backend::AbstractADType, x, dx::Batch, extras::PushforwardExtras
+) where {F}
     return prepare_pushforward_same_point(f!, y, backend, x, first(dx.elements), extras)
 end
 
@@ -234,17 +232,17 @@ end
 function pushforward_batched(
     f::F, backend::AbstractADType, x, dx::Batch{B}, extras::PushforwardExtras
 ) where {F,B}
-    dy_elements = ntuple(Val(B)) do l
-        pushforward(f, backend, x, dx.elements[l], extras)
+    dy_elements = ntuple(Val(B)) do b
+        pushforward(f, backend, x, dx.elements[b], extras)
     end
     return Batch(dy_elements)
 end
 
 function pushforward_batched!(
-    f::F, dy::Batch{B}, backend::AbstractADType, x, dx::Batch{B}, extras::PushforwardExtras
-) where {F,B}
-    for l in 1:B
-        pushforward!(f, dy.elements[l], backend, x, dx.elements[l], extras)
+    f::F, dy::Batch, backend::AbstractADType, x, dx::Batch, extras::PushforwardExtras
+) where {F}
+    for b in eachindex(dy.elements, dx.elements)
+        pushforward!(f, dy.elements[b], backend, x, dx.elements[b], extras)
     end
     return dy
 end
@@ -316,23 +314,17 @@ end
 function pushforward_batched(
     f!::F, y, backend::AbstractADType, x, dx::Batch{B}, extras::PushforwardExtras
 ) where {F,B}
-    dy_elements = ntuple(Val(B)) do l
-        pushforward(f!, y, backend, x, dx.elements[l], extras)
+    dy_elements = ntuple(Val(B)) do b
+        pushforward(f!, y, backend, x, dx.elements[b], extras)
     end
     return Batch(dy_elements)
 end
 
 function pushforward_batched!(
-    f!::F,
-    y,
-    dy::Batch{B},
-    backend::AbstractADType,
-    x,
-    dx::Batch{B},
-    extras::PushforwardExtras,
-) where {F,B}
-    for l in 1:B
-        pushforward!(f!, y, dy.elements[l], backend, x, dx.elements[l], extras)
+    f!::F, y, dy::Batch, backend::AbstractADType, x, dx::Batch, extras::PushforwardExtras
+) where {F}
+    for b in eachindex(dy.elements, dx.elements)
+        pushforward!(f!, y, dy.elements[b], backend, x, dx.elements[b], extras)
     end
     return dy
 end
