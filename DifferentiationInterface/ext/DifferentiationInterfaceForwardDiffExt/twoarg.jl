@@ -86,7 +86,7 @@ function DI.pushforward_batched(
     extras::ForwardDiffTwoArgPushforwardExtras{T},
 ) where {F,T,B}
     ydual_tmp = compute_ydual_twoarg(f!, y, x, dx, extras)
-    dy = mypartials(T, ydual_tmp)
+    dy = mypartials(T, Val(B), ydual_tmp)
     return dy
 end
 

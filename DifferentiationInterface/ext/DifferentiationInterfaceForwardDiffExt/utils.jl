@@ -7,20 +7,12 @@ tag_type(f, ::AutoForwardDiff{C,Nothing}, x) where {C} = Tag{typeof(f),eltype(x)
 make_dual_similar(::Type{T}, x::Number, dx::Number) where {T} = Dual{T}(x, dx)
 make_dual_similar(::Type{T}, x, dx) where {T} = similar(x, Dual{T,eltype(x),1})
 
-function make_dual_similar(::Type{T}, x::Number, dx::Batch{B,<:Number}) where {T,B}
-    return Dual{T}(x, dx.elements...)
-end
-
 function make_dual_similar(::Type{T}, x, dx::Batch{B}) where {T,B}
     return similar(x, Dual{T,eltype(x),B})
 end
 
 make_dual(::Type{T}, x::Number, dx::Number) where {T} = Dual{T}(x, dx)
 make_dual!(::Type{T}, xdual, x, dx) where {T} = map!(Dual{T}, xdual, x, dx)
-
-function make_dual(::Type{T}, x::Number, dx::Batch{B,<:Number}) where {T,B}
-    return Dual{T}(x, dx.elements...)
-end
 
 function make_dual!(::Type{T}, xdual, x, dx::Batch{B}) where {T,B}
     return map!(Dual{T}, xdual, x, dx.elements...)
@@ -40,21 +32,16 @@ function myderivative!(::Type{T}, dy, ydual) where {T}
     return map!(Fix1(myderivative, T), dy, ydual)
 end
 
-mypartials(::Type{T}, ydual::Dual{T}) where {T} = Batch(partials(ydual).values)
-
-function mypartials(::Type{T}, ydual) where {T}
-    B = npartials(eltype(ydual))
+function mypartials(::Type{T}, ::Val{B}, ydual) where {T,B}
     elements = ntuple(Val(B)) do b
-        map(Fix2(partials, b), ydual)
+        partials.(T, ydual, b)
     end
     return Batch(elements)
 end
 
 function mypartials!(::Type{T}, dy::Batch{B}, ydual) where {T,B}
     for b in eachindex(dy.elements)
-        for i in eachindex(dy.elements[b], ydual)
-            dy.elements[b][i] = partials(ydual[i], b)
-        end
+        dy.elements[b] .= partials.(T, ydual, b)
     end
     return dy
 end

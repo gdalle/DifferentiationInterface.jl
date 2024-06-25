@@ -73,7 +73,7 @@ function DI.pushforward_batched(
     f::F, ::AutoForwardDiff, x, dx::Batch{B}, extras::ForwardDiffOneArgPushforwardExtras{T}
 ) where {F,T,B}
     ydual = compute_ydual_onearg(f, x, dx, extras)
-    new_dy = mypartials(T, ydual)
+    new_dy = mypartials(T, Val(B), ydual)
     return new_dy
 end
 
