@@ -128,7 +128,7 @@ function prepare_hvp_aux(f::F, backend::SecondOrder, x, dx, ::ReverseOverForward
 end
 
 function prepare_hvp_aux(f::F, backend::SecondOrder, x, dx, ::ReverseOverReverse) where {F}
-    # pullback of the gradient
+    # pullback of gradient
     inner_gradient = InnerGradient(f, nested(inner(backend)))
     outer_pullback_extras = prepare_pullback(inner_gradient, outer(backend), x, dx)
     return ReverseOverReverseHVPExtras(inner_gradient, outer_pullback_extras)
@@ -160,6 +160,7 @@ end
 function prepare_hvp_batched_aux(
     f::F, backend::SecondOrder, x, dx::Batch, ::ForwardOverForward
 ) where {F}
+    # batched pushforward of gradient
     inner_gradient = InnerGradient(f, nested(inner(backend)))
     outer_pushforward_extras = prepare_pushforward_batched(
         inner_gradient, outer(backend), x, dx
@@ -170,6 +171,7 @@ end
 function prepare_hvp_batched_aux(
     f::F, backend::SecondOrder, x, dx::Batch, ::ForwardOverReverse
 ) where {F}
+    # batched pushforward of gradient
     inner_gradient = InnerGradient(f, nested(inner(backend)))
     outer_pushforward_extras = prepare_pushforward_batched(
         inner_gradient, outer(backend), x, dx
@@ -180,13 +182,14 @@ end
 function prepare_hvp_batched_aux(
     f::F, backend::SecondOrder, x, dx::Batch, ::ReverseOverForward
 ) where {F}
-    # TODO: batched version replacing the outer gradient with a Jacobian
+    # TODO: batched version replacing the outer gradient with a pullback
     return prepare_hvp_aux(f, backend, x, first(dx.elements), ReverseOverForward())
 end
 
 function prepare_hvp_batched_aux(
     f::F, backend::SecondOrder, x, dx::Batch, ::ReverseOverReverse
 ) where {F}
+    # batched pullback of gradient
     inner_gradient = InnerGradient(f, nested(inner(backend)))
     outer_pullback_extras = prepare_pullback_batched(inner_gradient, outer(backend), x, dx)
     return ReverseOverReverseHVPExtras(inner_gradient, outer_pullback_extras)
@@ -280,10 +283,6 @@ end
 
 ### Batched
 
-function hvp_batched(f::F, backend::AbstractADType, x, dx::Batch) where {F}
-    return hvp_batched(f, backend, x, dx, prepare_hvp_batched(f, backend, x, dx))
-end
-
 function hvp_batched(
     f::F, backend::AbstractADType, x, dx::Batch, extras::HVPExtras
 ) where {F}
@@ -311,8 +310,8 @@ end
 function hvp_batched(
     f::F, backend::SecondOrder, x, dx::Batch{B}, extras::ReverseOverForwardHVPExtras
 ) where {F,B}
-    dg_elements = ntuple(Val(B)) do l
-        hvp(f, backend, x, dx.elements[l], extras)
+    dg_elements = ntuple(Val(B)) do b
+        hvp(f, backend, x, dx.elements[b], extras)
     end
     return Batch(dg_elements)
 end
@@ -322,10 +321,6 @@ function hvp_batched(
 ) where {F}
     @compat (; inner_gradient, outer_pullback_extras) = extras
     return pullback_batched(inner_gradient, outer(backend), x, dx, outer_pullback_extras)
-end
-
-function hvp_batched!(f::F, dg::Batch, backend::AbstractADType, x, dx::Batch) where {F}
-    return hvp_batched!(f, dg, backend, x, dx, prepare_hvp_batched(f, backend, x, dx))
 end
 
 function hvp_batched!(
@@ -360,8 +355,8 @@ function hvp_batched!(
     dx::Batch{B},
     extras::ReverseOverForwardHVPExtras,
 ) where {F,B}
-    for l in eachindex(dg.elements, dx.elements)
-        hvp!(f, dg.elements[l], backend, x, dx.elements[l], extras)
+    for b in eachindex(dg.elements, dx.elements)
+        hvp!(f, dg.elements[b], backend, x, dx.elements[b], extras)
     end
     return dg
 end
