@@ -23,6 +23,7 @@ using ComponentArrays: ComponentVector
 using DataFrames: DataFrame
 using DifferentiationInterface
 using DifferentiationInterface:
+    Batch,
     backend_str,
     inner,
     maybe_inner,
@@ -30,6 +31,15 @@ using DifferentiationInterface:
     mode,
     outer,
     twoarg_support,
+    prepare_hvp_batched,
+    prepare_pullback_batched,
+    prepare_pushforward_batched,
+    hvp_batched,
+    hvp_batched!,
+    pullback_batched,
+    pullback_batched!,
+    pushforward_batched,
+    pushforward_batched!,
     pushforward_performance,
     pullback_performance
 using DifferentiationInterface:

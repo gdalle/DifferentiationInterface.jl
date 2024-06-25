@@ -203,6 +203,13 @@ function prepare_hvp_batched_same_point(
     return extras
 end
 
+function prepare_hvp_batched_same_point(
+    f::F, backend::AbstractADType, x, dx::Batch
+) where {F}
+    extras = prepare_hvp_batched(f, backend, x, dx)
+    return prepare_hvp_batched_same_point(f, backend, x, dx, extras)
+end
+
 ## One argument
 
 ### Standard

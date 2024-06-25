@@ -22,3 +22,6 @@ struct Batch{B,T}
     elements::NTuple{B,T}
     Batch(elements::NTuple) = new{length(elements),eltype(elements)}(elements)
 end
+
+Base.length(::Batch{B}) where {B} = B
+Base.eltype(::Batch{B,T}) where {B,T} = T
