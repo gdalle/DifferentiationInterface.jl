@@ -12,7 +12,8 @@ using DifferentiationInterface:
     NoDerivativeExtras,
     NoSecondDerivativeExtras,
     PushforwardExtras
-using ForwardDiff.DiffResults: DiffResults, DiffResult, GradientResult, MutableDiffResult
+using ForwardDiff.DiffResults:
+    DiffResults, DiffResult, GradientResult, HessianResult, MutableDiffResult
 using ForwardDiff:
     Chunk,
     Dual,
@@ -36,6 +37,14 @@ using ForwardDiff:
 using LinearAlgebra: dot, mul!
 
 DI.check_available(::AutoForwardDiff) = true
+
+function DI.pick_batchsize(::AutoForwardDiff{C}, dimension::Integer) where {C}
+    if isnothing(C)
+        return ForwardDiff.pickchunksize(dimension)
+    else
+        return min(dimension, C)
+    end
+end
 
 include("utils.jl")
 include("onearg.jl")

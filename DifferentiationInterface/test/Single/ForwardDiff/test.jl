@@ -1,9 +1,12 @@
 using DifferentiationInterface, DifferentiationInterfaceTest
+using DifferentiationInterface: AutoForwardFromPrimitive
 using ForwardDiff: ForwardDiff
 using SparseConnectivityTracer, SparseMatrixColorings
 using Test
 
 dense_backends = [AutoForwardDiff(), AutoForwardDiff(; chunksize=2, tag=:hello)]
+
+fromprimitive_backends = [AutoForwardFromPrimitive(AutoForwardDiff(; chunksize=5))]
 
 sparse_backends = [
     AutoSparse(
@@ -13,7 +16,7 @@ sparse_backends = [
     ),
 ]
 
-for backend in vcat(dense_backends, sparse_backends)
+for backend in vcat(dense_backends, fromprimitive_backends, sparse_backends)
     @test check_available(backend)
     @test check_twoarg(backend)
     @test check_hessian(backend)
@@ -21,10 +24,10 @@ end
 
 ## Dense backends
 
-test_differentiation(dense_backends; logging=LOGGING);
+test_differentiation(vcat(dense_backends, fromprimitive_backends); logging=LOGGING);
 
 test_differentiation(
-    dense_backends;
+    vcat(dense_backends, fromprimitive_backends);
     correctness=false,
     type_stability=true,
     second_order=false,
@@ -36,7 +39,7 @@ test_differentiation(
     # ForwardDiff accesses individual indices
     vcat(component_scenarios(), static_scenarios());
     # jacobian is super slow for some reason
-    excluded=[JacobianScenario],
+    excluded=[:jacobian],
     second_order=false,
     logging=LOGGING,
 );
@@ -46,14 +49,7 @@ test_differentiation(
 test_differentiation(
     sparse_backends,
     default_scenarios();
-    excluded=[
-        DerivativeScenario,
-        GradientScenario,
-        HVPScenario,
-        PullbackScenario,
-        PushforwardScenario,
-        SecondDerivativeScenario,
-    ],
+    excluded=[:derivative, :gradient, :hvp, :pullback, :pushforward, :second_derivative],
     logging=LOGGING,
 );
 
