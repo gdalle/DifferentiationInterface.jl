@@ -140,29 +140,25 @@ end
 
 ### Batched
 
-function prepare_pullback_batched(
-    f::F, backend::AbstractADType, x, dy::Batch{B}
-) where {F,B}
+function prepare_pullback_batched(f::F, backend::AbstractADType, x, dy::Batch) where {F}
     return prepare_pullback(f, backend, x, first(dy.elements))
 end
 
-function prepare_pullback_batched(
-    f!::F, y, backend::AbstractADType, x, dy::Batch{B}
-) where {F,B}
+function prepare_pullback_batched(f!::F, y, backend::AbstractADType, x, dy::Batch) where {F}
     return prepare_pullback(f!, y, backend, x, first(dy.elements))
 end
 
 ### Batched, same point
 
 function prepare_pullback_batched_same_point(
-    f::F, backend::AbstractADType, x, dy::Batch{B}, extras::PullbackExtras
-) where {F,B}
+    f::F, backend::AbstractADType, x, dy::Batch, extras::PullbackExtras
+) where {F}
     return prepare_pullback_same_point(f, backend, x, first(dy.elements), extras)
 end
 
 function prepare_pullback_batched_same_point(
-    f!::F, y, backend::AbstractADType, x, dy::Batch{B}, extras::PullbackExtras
-) where {F,B}
+    f!::F, y, backend::AbstractADType, x, dy::Batch, extras::PullbackExtras
+) where {F}
     return prepare_pullback_same_point(f!, y, backend, x, first(dy.elements), extras)
 end
 
@@ -229,17 +225,17 @@ end
 function pullback_batched(
     f::F, backend::AbstractADType, x, dy::Batch{B}, extras::PullbackExtras
 ) where {F,B}
-    dx_elements = ntuple(Val(B)) do l
-        pullback(f, backend, x, dy.elements[l], extras)
+    dx_elements = ntuple(Val(B)) do b
+        pullback(f, backend, x, dy.elements[b], extras)
     end
     return Batch(dx_elements)
 end
 
 function pullback_batched!(
-    f::F, dx::Batch{B}, backend::AbstractADType, x, dy::Batch{B}, extras::PullbackExtras
-) where {F,B}
-    for l in 1:B
-        pullback!(f, dx.elements[l], backend, x, dy.elements[l], extras)
+    f::F, dx::Batch, backend::AbstractADType, x, dy::Batch, extras::PullbackExtras
+) where {F}
+    for b in eachindex(dx.elements, dy.elements)
+        pullback!(f, dx.elements[b], backend, x, dy.elements[b], extras)
     end
     return dx
 end
@@ -307,17 +303,17 @@ end
 function pullback_batched(
     f!::F, y, backend::AbstractADType, x, dy::Batch{B}, extras::PullbackExtras
 ) where {F,B}
-    dx_elements = ntuple(Val(B)) do l
-        pullback(f!, y, backend, x, dy.elements[l], extras)
+    dx_elements = ntuple(Val(B)) do b
+        pullback(f!, y, backend, x, dy.elements[b], extras)
     end
     return Batch(dx_elements)
 end
 
 function pullback_batched!(
-    f!::F, y, dx::Batch{B}, backend::AbstractADType, x, dy::Batch{B}, extras::PullbackExtras
-) where {F,B}
-    for l in 1:B
-        pullback!(f!, y, dx.elements[l], backend, x, dy.elements[l], extras)
+    f!::F, y, dx::Batch, backend::AbstractADType, x, dy::Batch, extras::PullbackExtras
+) where {F}
+    for b in eachindex(dx.elements, dy.elements)
+        pullback!(f!, y, dx.elements[b], backend, x, dy.elements[b], extras)
     end
     return dx
 end
