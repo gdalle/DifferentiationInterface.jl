@@ -50,5 +50,6 @@ function static_scenarios(rng::AbstractRNG=default_rng(); linalg=true)
     scens = filter(scens) do s
         place(s) == :outofplace || s.x isa Union{Number,MArray}
     end
+    add_batchified!(scens)
     return scens
 end

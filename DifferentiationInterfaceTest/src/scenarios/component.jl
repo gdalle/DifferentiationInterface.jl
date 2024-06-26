@@ -53,9 +53,11 @@ function component_scenarios(rng::AbstractRNG=default_rng())
     x_comp = ComponentVector(; a=randn(rng, 4), b=randn(rng, 2))
     dx_comp = ComponentVector(; a=randn(rng, 4), b=randn(rng, 2))
 
-    return vcat(
+    scens = vcat(
         # one argument
         comp_to_num_scenarios_onearg(x_comp::ComponentVector; dx=dx_comp, dy=dy_),
         # two arguments
     )
+    add_batchified!(scens)
+    return scens
 end

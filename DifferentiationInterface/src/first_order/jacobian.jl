@@ -104,6 +104,8 @@ end
 
 ## One argument
 
+### Without extras
+
 function jacobian(f::F, backend::AbstractADType, x) where {F}
     return jacobian(f, backend, x, prepare_jacobian(f, backend, x))
 end
@@ -119,6 +121,8 @@ end
 function value_and_jacobian!(f::F, jac, backend::AbstractADType, x) where {F}
     return value_and_jacobian!(f, jac, backend, x, prepare_jacobian(f, backend, x))
 end
+
+### With extras
 
 function jacobian(f::F, backend::AbstractADType, x, extras::JacobianExtras) where {F}
     return jacobian_aux((f,), backend, x, extras)
@@ -142,6 +146,8 @@ end
 
 ## Two arguments
 
+### Without extras
+
 function jacobian(f!::F, y, backend::AbstractADType, x) where {F}
     return jacobian(f!, y, backend, x, prepare_jacobian(f!, y, backend, x))
 end
@@ -157,6 +163,8 @@ end
 function value_and_jacobian!(f!::F, y, jac, backend::AbstractADType, x) where {F}
     return value_and_jacobian!(f!, y, jac, backend, x, prepare_jacobian(f!, y, backend, x))
 end
+
+### With extras
 
 function jacobian(f!::F, y, backend::AbstractADType, x, extras::JacobianExtras) where {F}
     return jacobian_aux((f!, y), backend, x, extras)
