@@ -73,7 +73,10 @@ end
 
 function Base.show(io::IO, detector::DenseSparsityDetector{method}) where {method}
     @compat (; backend, atol) = detector
-    return print(io, "DenseSparsityDetector{:$method}($backend; atol=$atol)")
+    return print(
+        io,
+        "$(repr(DenseSparsityDetector; context=io))($(repr(backend; context=io)); atol=$atol, method=$(repr(method; context=io)))",
+    )
 end
 
 function DenseSparsityDetector(
