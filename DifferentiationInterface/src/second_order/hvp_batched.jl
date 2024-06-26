@@ -112,9 +112,7 @@ end
 function hvp_batched(
     f::F, backend::SecondOrder, x, dx::Batch{B}, extras::ReverseOverForwardHVPExtras
 ) where {F,B}
-    dg_elements = ntuple(Val(B)) do b
-        hvp(f, backend, x, dx.elements[b], extras)
-    end
+    dg_elements = hvp.(Ref(f), Ref(backend), Ref(x), dx.elements, Ref(extras))
     return Batch(dg_elements)
 end
 
