@@ -3,27 +3,27 @@
 abstract type SparseJacobianExtras <: JacobianExtras end
 
 struct PushforwardSparseJacobianExtras{
-    B,S<:AbstractMatrix{Bool},C<:AbstractMatrix{<:Real},D,E<:PushforwardExtras,Y
+    B,S<:AbstractMatrix{Bool},C<:AbstractMatrix{<:Real},D,R,E<:PushforwardExtras
 } <: SparseJacobianExtras
     sparsity::S
     colors::Vector{Int}
     groups::Vector{Vector{Int}}
     compressed::C
     batched_seeds::Vector{Batch{B,D}}
+    batched_results::Vector{Batch{B,R}}
     pushforward_batched_extras::E
-    y_example::Y
 end
 
 struct PullbackSparseJacobianExtras{
-    B,S<:AbstractMatrix{Bool},C<:AbstractMatrix{<:Real},D,E<:PullbackExtras,Y
+    B,S<:AbstractMatrix{Bool},C<:AbstractMatrix{<:Real},D,R,E<:PullbackExtras
 } <: SparseJacobianExtras
     sparsity::S
     colors::Vector{Int}
     groups::Vector{Vector{Int}}
     compressed::C
     batched_seeds::Vector{Batch{B,D}}
+    batched_results::Vector{Batch{B,R}}
     pullback_batched_extras::E
-    y_example::Y
 end
 
 function PushforwardSparseJacobianExtras{B}(;
@@ -32,19 +32,19 @@ function PushforwardSparseJacobianExtras{B}(;
     groups,
     compressed::C,
     batched_seeds::Vector{Batch{B,D}},
+    batched_results::Vector{Batch{B,R}},
     pushforward_batched_extras::E,
-    y_example::Y,
-) where {B,S,C,D,E,Y}
+) where {B,S,C,D,R,E}
     @assert size(sparsity, 1) == size(compressed, 1)
     @assert size(sparsity, 2) == length(colors)
-    return PushforwardSparseJacobianExtras{B,S,C,D,E,Y}(
+    return PushforwardSparseJacobianExtras{B,S,C,D,R,E}(
         sparsity,
         colors,
         groups,
         compressed,
         batched_seeds,
+        batched_results,
         pushforward_batched_extras,
-        y_example,
     )
 end
 
@@ -54,19 +54,19 @@ function PullbackSparseJacobianExtras{B}(;
     groups,
     compressed::C,
     batched_seeds::Vector{Batch{B,D}},
+    batched_results::Vector{Batch{B,R}},
     pullback_batched_extras::E,
-    y_example::Y,
-) where {B,S,C,D,E,Y}
+) where {B,S,C,D,R,E}
     @assert size(sparsity, 2) == size(compressed, 2)
     @assert size(sparsity, 1) == length(colors)
-    return PullbackSparseJacobianExtras{B,S,C,D,E,Y}(
+    return PullbackSparseJacobianExtras{B,S,C,D,R,E}(
         sparsity,
         colors,
         groups,
         compressed,
         batched_seeds,
+        batched_results,
         pullback_batched_extras,
-        y_example,
     )
 end
 
@@ -100,6 +100,7 @@ function prepare_sparse_jacobian_aux(
             ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % Ng], Val(B)) for
             a in 1:div(Ng, B, RoundUp)
         ])
+    batched_results = Batch.([ntuple(b -> similar(y), Val(B)) for _ in batched_seeds])
     pushforward_batched_extras = prepare_pushforward_batched(
         f_or_f!y..., dense_backend, x, batched_seeds[1]
     )
@@ -109,8 +110,8 @@ function prepare_sparse_jacobian_aux(
         groups,
         compressed,
         batched_seeds,
+        batched_results,
         pushforward_batched_extras,
-        y_example=copy(y),
     )
 end
 
@@ -131,6 +132,7 @@ function prepare_sparse_jacobian_aux(
             ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % Ng], Val(B)) for
             a in 1:div(Ng, B, RoundUp)
         ])
+    batched_results = Batch.([ntuple(b -> similar(x), Val(B)) for _ in batched_seeds])
     pullback_batched_extras = prepare_pullback_batched(
         f_or_f!y..., dense_backend, x, batched_seeds[1]
     )
@@ -140,8 +142,8 @@ function prepare_sparse_jacobian_aux(
         groups,
         compressed,
         batched_seeds,
+        batched_results,
         pullback_batched_extras,
-        y_example=copy(y),
     )
 end
 
@@ -270,8 +272,8 @@ function sparse_jacobian_aux!(
         colors,
         groups,
         batched_seeds,
+        batched_results,
         pushforward_batched_extras,
-        y_example,
     ) = extras
     dense_backend = dense_ad(backend)
     Ng = length(groups)
@@ -280,18 +282,24 @@ function sparse_jacobian_aux!(
         f_or_f!y..., dense_backend, x, batched_seeds[1], pushforward_batched_extras
     )
 
-    for a in eachindex(batched_seeds)
-        dy_batch_elements = ntuple(Val(B)) do b
-            reshape(view(compressed, :, 1 + ((a - 1) * B + (b - 1)) % Ng), size(y_example))
-        end
+    for a in eachindex(batched_seeds, batched_results)
         pushforward_batched!(
             f_or_f!y...,
-            Batch(dy_batch_elements),
+            batched_results[a],
             dense_backend,
             x,
             batched_seeds[a],
             pushforward_batched_extras_same,
         )
+    end
+
+    for a in eachindex(batched_results)
+        for b in eachindex(batched_results[a].elements)
+            copyto!(
+                view(compressed, :, 1 + ((a - 1) * B + (b - 1)) % Ng),
+                vec(batched_results[a].elements[b]),
+            )
+        end
     end
 
     decompress_columns!(jac, sparsity, compressed, colors)
@@ -302,7 +310,13 @@ function sparse_jacobian_aux!(
     f_or_f!y::FY, jac, backend::AutoSparse, x, extras::PullbackSparseJacobianExtras{B}
 ) where {FY,B}
     @compat (;
-        sparsity, compressed, colors, groups, batched_seeds, pullback_batched_extras
+        sparsity,
+        compressed,
+        colors,
+        groups,
+        batched_seeds,
+        batched_results,
+        pullback_batched_extras,
     ) = extras
     dense_backend = dense_ad(backend)
     Ng = length(groups)
@@ -311,18 +325,24 @@ function sparse_jacobian_aux!(
         f_or_f!y..., dense_backend, x, batched_seeds[1], pullback_batched_extras
     )
 
-    for a in eachindex(batched_seeds)
-        dx_batch_elements = ntuple(Val(B)) do b
-            reshape(view(compressed, 1 + ((a - 1) * B + (b - 1)) % Ng, :), size(x))
-        end
+    for a in eachindex(batched_seeds, batched_results)
         pullback_batched!(
             f_or_f!y...,
-            Batch(dx_batch_elements),
+            batched_results[a],
             dense_backend,
             x,
             batched_seeds[a],
             pullback_batched_extras_same,
         )
+    end
+
+    for a in eachindex(batched_results)
+        for b in eachindex(batched_results[a].elements)
+            copyto!(
+                view(compressed, 1 + ((a - 1) * B + (b - 1)) % Ng, :),
+                vec(batched_results[a].elements[b]),
+            )
+        end
     end
 
     decompress_rows!(jac, sparsity, compressed, colors)

@@ -1,11 +1,12 @@
 struct SparseHessianExtras{
-    B,S<:AbstractMatrix{Bool},C<:AbstractMatrix{<:Real},D,E2<:HVPExtras,E1<:GradientExtras
+    B,S<:AbstractMatrix{Bool},C<:AbstractMatrix{<:Real},D,R,E2<:HVPExtras,E1<:GradientExtras
 } <: HessianExtras
     sparsity::S
     colors::Vector{Int}
     groups::Vector{Vector{Int}}
     compressed::C
     batched_seeds::Vector{Batch{B,D}}
+    batched_results::Vector{Batch{B,R}}
     hvp_batched_extras::E2
     gradient_extras::E1
 end
@@ -16,16 +17,18 @@ function SparseHessianExtras{B}(;
     groups,
     compressed::C,
     batched_seeds::Vector{Batch{B,D}},
+    batched_results::Vector{Batch{B,R}},
     hvp_batched_extras::E2,
     gradient_extras::E1,
-) where {B,S,C,D,E2,E1}
+) where {B,S,C,D,R,E2,E1}
     @assert size(sparsity, 1) == size(sparsity, 2) == size(compressed, 1) == length(colors)
-    return SparseHessianExtras{B,S,C,D,E2,E1}(
+    return SparseHessianExtras{B,S,C,D,R,E2,E1}(
         sparsity,
         colors,
         groups,
         compressed,
         batched_seeds,
+        batched_results,
         hvp_batched_extras,
         gradient_extras,
     )
@@ -48,6 +51,7 @@ function prepare_hessian(f::F, backend::AutoSparse, x) where {F}
             ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % Ng], Val(B)) for
             a in 1:div(Ng, B, RoundUp)
         ])
+    batched_results = Batch.([ntuple(b -> similar(x), Val(B)) for _ in batched_seeds])
     hvp_batched_extras = prepare_hvp_batched(f, dense_backend, x, batched_seeds[1])
     gradient_extras = prepare_gradient(f, maybe_inner(dense_backend), x)
     return SparseHessianExtras{B}(;
@@ -56,6 +60,7 @@ function prepare_hessian(f::F, backend::AutoSparse, x) where {F}
         groups,
         compressed,
         batched_seeds,
+        batched_results,
         hvp_batched_extras,
         gradient_extras,
     )
@@ -95,18 +100,24 @@ function hessian!(
         f, dense_backend, x, batched_seeds[1], hvp_batched_extras
     )
 
-    for a in 1:div(Ng, B, RoundUp)
-        dg_batch_elements = ntuple(Val(B)) do b
-            reshape(view(compressed, :, 1 + ((a - 1) * B + (b - 1)) % Ng), size(x))
-        end
+    for a in eachindex(batched_seeds, batched_results)
         hvp_batched!(
             f,
-            Batch(dg_batch_elements),
+            batched_results[a],
             dense_backend,
             x,
             batched_seeds[a],
             hvp_batched_extras_same,
         )
+    end
+
+    for a in eachindex(batched_results)
+        for b in eachindex(batched_results[a].elements)
+            copyto!(
+                view(compressed, :, 1 + ((a - 1) * B + (b - 1)) % Ng),
+                vec(batched_results[a].elements[b]),
+            )
+        end
     end
 
     decompress_symmetric!(hess, sparsity, compressed, colors)
