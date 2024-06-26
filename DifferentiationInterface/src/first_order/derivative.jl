@@ -72,6 +72,8 @@ end
 
 ## One argument
 
+### Without extras
+
 function value_and_derivative(f::F, backend::AbstractADType, x) where {F}
     return value_and_derivative(f, backend, x, prepare_derivative(f, backend, x))
 end
@@ -87,6 +89,8 @@ end
 function derivative!(f::F, der, backend::AbstractADType, x) where {F}
     return derivative!(f, der, backend, x, prepare_derivative(f, backend, x))
 end
+
+### With extras
 
 function value_and_derivative(
     f::F, backend::AbstractADType, x, extras::PushforwardDerivativeExtras
@@ -114,6 +118,8 @@ end
 
 ## Two arguments
 
+### Without extras
+
 function value_and_derivative(f!::F, y, backend::AbstractADType, x) where {F}
     return value_and_derivative(f!, y, backend, x, prepare_derivative(f!, y, backend, x))
 end
@@ -131,6 +137,8 @@ end
 function derivative!(f!::F, y, der, backend::AbstractADType, x) where {F}
     return derivative!(f!, y, der, backend, x, prepare_derivative(f!, y, backend, x))
 end
+
+### With extras
 
 function value_and_derivative(
     f!::F, y, backend::AbstractADType, x, extras::PushforwardDerivativeExtras

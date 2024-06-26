@@ -23,6 +23,7 @@ using ComponentArrays: ComponentVector
 using DataFrames: DataFrame
 using DifferentiationInterface
 using DifferentiationInterface:
+    Batch,
     backend_str,
     inner,
     maybe_inner,
@@ -32,6 +33,23 @@ using DifferentiationInterface:
     twoarg_support,
     pushforward_performance,
     pullback_performance
+using DifferentiationInterface:
+    prepare_hvp_batched,
+    prepare_hvp_batched_same_point,
+    prepare_pullback_batched,
+    prepare_pullback_batched_same_point,
+    prepare_pushforward_batched,
+    prepare_pushforward_batched_same_point,
+    hvp_batched,
+    hvp_batched!,
+    pullback_batched,
+    pullback_batched!,
+    pushforward_batched,
+    pushforward_batched!,
+    value_and_pullback_batched,
+    value_and_pullback_batched!,
+    value_and_pushforward_batched,
+    value_and_pushforward_batched!
 using DifferentiationInterface:
     DerivativeExtras,
     GradientExtras,
@@ -55,6 +73,7 @@ using StaticArrays: MArray, MMatrix, MVector, SArray, SMatrix, SVector
 using Test: @testset, @test
 
 include("scenarios/scenario.jl")
+include("scenarios/batchify.jl")
 include("scenarios/default.jl")
 include("scenarios/sparse.jl")
 include("scenarios/static.jl")

@@ -62,6 +62,8 @@ end
 
 ## One argument
 
+### Without extras
+
 function value_and_gradient(f::F, backend::AbstractADType, x) where {F}
     return value_and_gradient(f, backend, x, prepare_gradient(f, backend, x))
 end
@@ -77,6 +79,8 @@ end
 function gradient!(f::F, der, backend::AbstractADType, x) where {F}
     return gradient!(f, der, backend, x, prepare_gradient(f, backend, x))
 end
+
+### With extras
 
 function value_and_gradient(
     f::F, backend::AbstractADType, x, extras::PullbackGradientExtras
