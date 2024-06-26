@@ -39,7 +39,6 @@ makedocs(;
         "Reference" => ["operators.md", "backends.md", "api.md"],
         "Advanced" => ["dev_guide.md", "overloads.md"],
     ],
-    checkdocs=:exports,
     plugins=[links],
 )
 

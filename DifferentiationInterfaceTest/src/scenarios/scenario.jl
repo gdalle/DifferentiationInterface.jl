@@ -25,6 +25,12 @@ This generic type should never be used directly: use the specific constructor co
 # Fields
 
 $(TYPEDFIELDS)
+
+Note that the `res1` and `res2` fields are given more meaningful names in the keyword arguments of each specialized constructor.
+For example:
+
+- the keyword `grad` of `GradientScenario` becomes `res1`
+- the keyword `hess` of `HessianScenario` becomes `res2`, and the keyword `grad` becomes `res1`
 """
 struct Scenario{op,args,pl,F,X,Y,D,R1,R2}
     "function `f` (if `args==1`) or `f!` (if `args==2`) to apply"
@@ -35,9 +41,9 @@ struct Scenario{op,args,pl,F,X,Y,D,R1,R2}
     y::Y
     "seed for pushforward, pullback or HVP"
     seed::D
-    "first-order result"
+    "first-order result of the operator"
     res1::R1
-    "second-order result"
+    "second-order result of the operator (when it makes sense)"
     res2::R2
 
     function Scenario{op,args,pl}(
@@ -120,6 +126,8 @@ end
 
 """
 $(SIGNATURES)
+
+Construct a [`Scenario`](@ref) to test `pushforward` and its variants.
 """
 function PushforwardScenario(f; x, y, dx, dy=nothing, nb_args, place=:inplace)
     return Scenario{:pushforward,nb_args,place}(f; x, y, seed=dx, res1=dy, res2=nothing)
@@ -127,6 +135,8 @@ end
 
 """
 $(SIGNATURES)
+
+Construct a [`Scenario`](@ref) to test `pullback` and its variants.
 """
 function PullbackScenario(f; x, y, dy, dx=nothing, nb_args, place=:inplace)
     return Scenario{:pullback,nb_args,place}(f; x, y, seed=dy, res1=dx, res2=nothing)
@@ -134,6 +144,8 @@ end
 
 """
 $(SIGNATURES)
+
+Construct a [`Scenario`](@ref) to test `derivative` and its variants.
 """
 function DerivativeScenario(f; x, y, der=nothing, nb_args, place=:inplace)
     return Scenario{:derivative,nb_args,place}(
@@ -143,6 +155,8 @@ end
 
 """
 $(SIGNATURES)
+
+Construct a [`Scenario`](@ref) to test `gradient` and its variants.
 """
 function GradientScenario(f; x, y, grad=nothing, nb_args, place=:inplace)
     return Scenario{:gradient,nb_args,place}(f; x, y, seed=nothing, res1=grad, res2=nothing)
@@ -150,6 +164,8 @@ end
 
 """
 $(SIGNATURES)
+
+Construct a [`Scenario`](@ref) to test `jacobian` and its variants.
 """
 function JacobianScenario(f; x, y, jac=nothing, nb_args, place=:inplace)
     return Scenario{:jacobian,nb_args,place}(f; x, y, seed=nothing, res1=jac, res2=nothing)
@@ -157,6 +173,8 @@ end
 
 """
 $(SIGNATURES)
+
+Construct a [`Scenario`](@ref) to test `second_derivative` and its variants.
 """
 function SecondDerivativeScenario(
     f; x, y, der=nothing, der2=nothing, nb_args, place=:inplace
@@ -168,6 +186,8 @@ end
 
 """
 $(SIGNATURES)
+
+Construct a [`Scenario`](@ref) to test `hvp` and its variants.
 """
 function HVPScenario(f; x, y, dx, grad=nothing, dg=nothing, nb_args, place=:inplace)
     return Scenario{:hvp,nb_args,place}(f; x, y, seed=dx, res1=grad, res2=dg)
@@ -175,6 +195,8 @@ end
 
 """
 $(SIGNATURES)
+
+Construct a [`Scenario`](@ref) to test `hessian` and its variants.
 """
 function HessianScenario(f; x, y, grad=nothing, hess=nothing, nb_args, place=:inplace)
     return Scenario{:hessian,nb_args,place}(f; x, y, seed=nothing, res1=grad, res2=hess)
