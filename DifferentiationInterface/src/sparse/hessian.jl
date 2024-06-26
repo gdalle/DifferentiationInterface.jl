@@ -91,8 +91,15 @@ end
 function hessian!(
     f::F, hess, backend::AutoSparse, x, extras::SparseHessianExtras{B}
 ) where {F,B}
-    @compat (; sparsity, compressed, colors, groups, batched_seeds, hvp_batched_extras) =
-        extras
+    @compat (;
+        sparsity,
+        compressed,
+        colors,
+        groups,
+        batched_seeds,
+        batched_results,
+        hvp_batched_extras,
+    ) = extras
     dense_backend = dense_ad(backend)
     Ng = length(groups)
 
