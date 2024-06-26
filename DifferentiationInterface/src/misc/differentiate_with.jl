@@ -55,7 +55,6 @@ Call the underlying function `dw.f` of a [`DifferentiateWith`](@ref) wrapper.
 function Base.show(io::IO, dw::DifferentiateWith)
     @compat (; f, backend) = dw
     return print(
-        io,
-        "$(repr(DifferentiateWith; context=io))($(repr(f; context=io)), $(repr(backend; context=io)))",
+        io, DifferentiateWith, "(", repr(f; context=io), ",", repr(backend; context=io), ")"
     )
 end
