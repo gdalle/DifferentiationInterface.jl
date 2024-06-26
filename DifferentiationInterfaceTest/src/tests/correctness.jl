@@ -20,7 +20,7 @@ function test_correctness(
     atol,
     rtol,
 )
-    @compat (; f, x, y, seed, res1, res2) = deepcopy(scen)
+    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
 
     extras_candidates = if seed isa Batch
         [
@@ -33,7 +33,7 @@ function test_correctness(
             prepare_pushforward_same_point(f, ba, x, mycopy_random(seed)),
         ]
     end
-    extras_tup_candidates = vcat((), Tuple.(extras_candidates))
+    extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         if seed isa Batch
@@ -68,7 +68,7 @@ function test_correctness(
     atol,
     rtol,
 )
-    @compat (; f, x, y, seed, res1, res2) = deepcopy(scen)
+    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
 
     extras_candidates = if seed isa Batch
         [
@@ -81,7 +81,7 @@ function test_correctness(
             prepare_pushforward_same_point(f, ba, x, mycopy_random(seed)),
         ]
     end
-    extras_tup_candidates = vcat((), Tuple.(extras_candidates))
+    extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         dy1_in = mysimilar(res1)
@@ -121,7 +121,7 @@ function test_correctness(
     atol,
     rtol,
 )
-    @compat (; f, x, y, seed, res1, res2) = deepcopy(scen)
+    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
     f! = f
 
     extras_candidates = if seed isa Batch
@@ -141,7 +141,7 @@ function test_correctness(
             prepare_pushforward_same_point(f!, mysimilar(y), ba, x, mycopy_random(seed)),
         ]
     end
-    extras_tup_candidates = vcat((), Tuple.(extras_candidates))
+    extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         y1_in = mysimilar(y)
@@ -180,7 +180,7 @@ function test_correctness(
     atol,
     rtol,
 )
-    @compat (; f, x, y, seed, res1, res2) = deepcopy(scen)
+    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
     f! = f
 
     extras_candidates = if seed isa Batch
@@ -200,7 +200,7 @@ function test_correctness(
             prepare_pushforward_same_point(f!, mysimilar(y), ba, x, mycopy_random(seed)),
         ]
     end
-    extras_tup_candidates = vcat((), Tuple.(extras_candidates))
+    extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         y1_in, dy1_in = mysimilar(y), mysimilar(res1)
@@ -245,7 +245,7 @@ function test_correctness(
     atol,
     rtol,
 )
-    @compat (; f, x, y, seed, res1, res2) = deepcopy(scen)
+    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
 
     extras_candidates = if seed isa Batch
         [
@@ -258,7 +258,7 @@ function test_correctness(
             prepare_pullback_same_point(f, ba, x, mycopy_random(seed)),
         ]
     end
-    extras_tup_candidates = vcat((), Tuple.(extras_candidates))
+    extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         if seed isa Batch
@@ -289,7 +289,7 @@ end
 function test_correctness(
     ba::AbstractADType, scen::Scenario{:pullback,1,:inplace}; isapprox::Function, atol, rtol
 )
-    @compat (; f, x, y, seed, res1, res2) = deepcopy(scen)
+    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
 
     extras_candidates = if seed isa Batch
         [
@@ -302,7 +302,7 @@ function test_correctness(
             prepare_pullback_same_point(f, ba, x, mycopy_random(seed)),
         ]
     end
-    extras_tup_candidates = vcat((), Tuple.(extras_candidates))
+    extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         dx1_in = mysimilar(res1)
@@ -342,7 +342,7 @@ function test_correctness(
     atol,
     rtol,
 )
-    @compat (; f, x, y, seed, res1, res2) = deepcopy(scen)
+    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
     f! = f
 
     extras_candidates = if seed isa Batch
@@ -360,7 +360,7 @@ function test_correctness(
             prepare_pullback_same_point(f!, mysimilar(y), ba, x, mycopy_random(seed)),
         ]
     end
-    extras_tup_candidates = vcat((), Tuple.(extras_candidates))
+    extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         y1_in = mysimilar(y)
@@ -395,7 +395,7 @@ end
 function test_correctness(
     ba::AbstractADType, scen::Scenario{:pullback,2,:inplace}; isapprox::Function, atol, rtol
 )
-    @compat (; f, x, y, seed, res1, res2) = deepcopy(scen)
+    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
     f! = f
 
     extras_candidates = if seed isa Batch
@@ -413,7 +413,7 @@ function test_correctness(
             prepare_pullback_same_point(f!, mysimilar(y), ba, x, mycopy_random(seed)),
         ]
     end
-    extras_tup_candidates = vcat((), Tuple.(extras_candidates))
+    extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         y1_in, dx1_in = mysimilar(y), mysimilar(res1)
@@ -458,10 +458,10 @@ function test_correctness(
     atol,
     rtol,
 )
-    @compat (; f, x, y, seed, res1, res2) = deepcopy(scen)
+    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
 
     extras_candidates = [prepare_derivative(f, ba, mycopy_random(x))]
-    extras_tup_candidates = vcat((), Tuple.(extras_candidates))
+    extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         y1, der1 = value_and_derivative(f, ba, x, extras_tup...)
@@ -491,10 +491,10 @@ function test_correctness(
     atol,
     rtol,
 )
-    @compat (; f, x, y, seed, res1, res2) = deepcopy(scen)
+    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
 
     extras_candidates = [prepare_derivative(f, ba, mycopy_random(x))]
-    extras_tup_candidates = vcat((), Tuple.(extras_candidates))
+    extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         der1_in = mysimilar(y)
@@ -529,11 +529,11 @@ function test_correctness(
     atol,
     rtol,
 )
-    @compat (; f, x, y, seed, res1, res2) = deepcopy(scen)
+    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
     f! = f
 
     extras_candidates = [prepare_derivative(f!, mysimilar(y), ba, mycopy_random(x))]
-    extras_tup_candidates = vcat((), Tuple.(extras_candidates))
+    extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         y1_in = mysimilar(y)
@@ -567,11 +567,11 @@ function test_correctness(
     atol,
     rtol,
 )
-    @compat (; f, x, y, seed, res1, res2) = deepcopy(scen)
+    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
     f! = f
 
     extras_candidates = [prepare_derivative(f!, mysimilar(y), ba, mycopy_random(x))]
-    extras_tup_candidates = vcat((), Tuple.(extras_candidates))
+    extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         y1_in, der1_in = mysimilar(y), mysimilar(y)
@@ -609,10 +609,10 @@ function test_correctness(
     atol,
     rtol,
 )
-    @compat (; f, x, y, seed, res1, res2) = deepcopy(scen)
+    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
 
     extras_candidates = [prepare_gradient(f, ba, mycopy_random(x))]
-    extras_tup_candidates = vcat((), Tuple.(extras_candidates))
+    extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         y1, grad1 = value_and_gradient(f, ba, x, extras_tup...)
@@ -639,10 +639,10 @@ end
 function test_correctness(
     ba::AbstractADType, scen::Scenario{:gradient,1,:inplace}; isapprox::Function, atol, rtol
 )
-    @compat (; f, x, y, seed, res1, res2) = deepcopy(scen)
+    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
 
     extras_candidates = [prepare_gradient(f, ba, mycopy_random(x))]
-    extras_tup_candidates = vcat((), Tuple.(extras_candidates))
+    extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         grad1_in = mysimilar(x)
@@ -679,10 +679,10 @@ function test_correctness(
     atol,
     rtol,
 )
-    @compat (; f, x, y, seed, res1, res2) = deepcopy(scen)
+    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
 
     extras_candidates = [prepare_jacobian(f, ba, mycopy_random(x))]
-    extras_tup_candidates = vcat((), Tuple.(extras_candidates))
+    extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         y1, jac1 = value_and_jacobian(f, ba, x, extras_tup...)
@@ -709,10 +709,10 @@ end
 function test_correctness(
     ba::AbstractADType, scen::Scenario{:jacobian,1,:inplace}; isapprox::Function, atol, rtol
 )
-    @compat (; f, x, y, seed, res1, res2) = deepcopy(scen)
+    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
 
     extras_candidates = [prepare_jacobian(f, ba, mycopy_random(x))]
-    extras_tup_candidates = vcat((), Tuple.(extras_candidates))
+    extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         jac1_in = mysimilar(new_scen.res1)
@@ -747,11 +747,11 @@ function test_correctness(
     atol,
     rtol,
 )
-    @compat (; f, x, y, seed, res1, res2) = deepcopy(scen)
+    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
     f! = f
 
     extras_candidates = [prepare_jacobian(f!, mysimilar(y), ba, mycopy_random(x))]
-    extras_tup_candidates = vcat((), Tuple.(extras_candidates))
+    extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         y1_in = mysimilar(y)
@@ -781,11 +781,11 @@ end
 function test_correctness(
     ba::AbstractADType, scen::Scenario{:jacobian,2,:inplace}; isapprox::Function, atol, rtol
 )
-    @compat (; f, x, y, seed, res1, res2) = deepcopy(scen)
+    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
     f! = f
 
     extras_candidates = [prepare_jacobian(f!, mysimilar(y), ba, mycopy_random(x))]
-    extras_tup_candidates = vcat((), Tuple.(extras_candidates))
+    extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         y1_in, jac1_in = mysimilar(y), mysimilar(new_scen.res1)
@@ -823,10 +823,10 @@ function test_correctness(
     atol,
     rtol,
 )
-    @compat (; f, x, y, seed, res1, res2) = deepcopy(scen)
+    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
 
     extras_candidates = [prepare_second_derivative(f, ba, mycopy_random(x))]
-    extras_tup_candidates = vcat((), Tuple.(extras_candidates))
+    extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         der21 = second_derivative(f, ba, x, extras_tup...)
@@ -859,10 +859,10 @@ function test_correctness(
     atol,
     rtol,
 )
-    @compat (; f, x, y, seed, res1, res2) = deepcopy(scen)
+    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
 
     extras_candidates = [prepare_second_derivative(f, ba, mycopy_random(x))]
-    extras_tup_candidates = vcat((), Tuple.(extras_candidates))
+    extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         der21_in = mysimilar(y)
@@ -901,7 +901,7 @@ end
 function test_correctness(
     ba::AbstractADType, scen::Scenario{:hvp,1,:outofplace}; isapprox::Function, atol, rtol
 )
-    @compat (; f, x, y, seed, res1, res2) = deepcopy(scen)
+    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
 
     extras_candidates = if seed isa Batch
         [
@@ -914,7 +914,7 @@ function test_correctness(
             prepare_hvp_same_point(f, ba, x, mycopy_random(seed)),
         ]
     end
-    extras_tup_candidates = vcat((), Tuple.(extras_candidates))
+    extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         if seed isa Batch
@@ -939,7 +939,7 @@ end
 function test_correctness(
     ba::AbstractADType, scen::Scenario{:hvp,1,:inplace}; isapprox::Function, atol, rtol
 )
-    @compat (; f, x, y, seed, res1, res2) = deepcopy(scen)
+    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
 
     extras_candidates = if seed isa Batch
         [
@@ -952,7 +952,7 @@ function test_correctness(
             prepare_hvp_same_point(f, ba, x, mycopy_random(seed)),
         ]
     end
-    extras_tup_candidates = vcat((), Tuple.(extras_candidates))
+    extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         dg1_in = mysimilar(res2)
@@ -986,10 +986,10 @@ function test_correctness(
     atol,
     rtol,
 )
-    @compat (; f, x, y, seed, res1, res2) = deepcopy(scen)
+    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
 
     extras_candidates = [prepare_hessian(f, ba, mycopy_random(x))]
-    extras_tup_candidates = vcat((), Tuple.(extras_candidates))
+    extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         hess1 = hessian(f, ba, x, extras_tup...)
@@ -1018,10 +1018,10 @@ end
 function test_correctness(
     ba::AbstractADType, scen::Scenario{:hessian,1,:inplace}; isapprox::Function, atol, rtol
 )
-    @compat (; f, x, y, seed, res1, res2) = deepcopy(scen)
+    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
 
     extras_candidates = [prepare_hessian(f, ba, mycopy_random(x))]
-    extras_tup_candidates = vcat((), Tuple.(extras_candidates))
+    extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         hess1_in = mysimilar(new_scen.res2)

@@ -15,5 +15,5 @@ end
 
 function add_batchified!(scens::AbstractVector{<:Scenario})
     batchifiable_scens = filter(s -> operator(s) in (:pushforward, :pullback, :hvp), scens)
-    return vcat(scens, batchify.(batchifiable_scens))
+    return append!(scens, batchify.(batchifiable_scens))
 end
