@@ -92,6 +92,7 @@ include("tests/sparsity.jl")
 include("tests/benchmark.jl")
 include("test_differentiation.jl")
 
+export Scenario
 export PushforwardScenario,
     PullbackScenario,
     DerivativeScenario,
