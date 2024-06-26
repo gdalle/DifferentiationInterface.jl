@@ -110,8 +110,8 @@ function hvp_batched(
 end
 
 function hvp_batched(
-    f::F, backend::SecondOrder, x, dx::Batch{B}, extras::ReverseOverForwardHVPExtras
-) where {F,B}
+    f::F, backend::SecondOrder, x, dx::Batch, extras::ReverseOverForwardHVPExtras
+) where {F}
     dg_elements = hvp.(Ref(f), Ref(backend), Ref(x), dx.elements, Ref(extras))
     return Batch(dg_elements)
 end
@@ -148,13 +148,8 @@ function hvp_batched!(
 end
 
 function hvp_batched!(
-    f::F,
-    dg::Batch{B},
-    backend::SecondOrder,
-    x,
-    dx::Batch{B},
-    extras::ReverseOverForwardHVPExtras,
-) where {F,B}
+    f::F, dg::Batch, backend::SecondOrder, x, dx::Batch, extras::ReverseOverForwardHVPExtras
+) where {F}
     for b in eachindex(dg.elements, dx.elements)
         hvp!(f, dg.elements[b], backend, x, dx.elements[b], extras)
     end

@@ -23,11 +23,7 @@ struct Batch{B,T}
     Batch(elements::NTuple) = new{length(elements),eltype(elements)}(elements)
 end
 
-Base.length(::Batch{B}) where {B} = B
-Base.eltype(::Batch{B,T}) where {B,T} = T
-
 Base.:(==)(b1::Batch{B}, b2::Batch{B}) where {B} = b1.elements == b2.elements
-Base.isequal(b1::Batch{B}, b2::Batch{B}) where {B} = isequal(b1.elements, b2.elements)
 
 function Base.isapprox(b1::Batch{B}, b2::Batch{B}; kwargs...) where {B}
     return all(isapprox.(b1.elements, b2.elements; kwargs...))

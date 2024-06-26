@@ -8,8 +8,6 @@ function batchify(scen::Scenario{op,args,pl}) where {op,args,pl}
         new_seed = Batch((seed, -seed))
         new_res2 = Batch((res2, -res2))
         return Scenario{op,args,pl}(f; x, y, seed=new_seed, res1, res2=new_res2)
-    else
-        throw(ArgumentError("Scenario $scen is not batchifiable."))
     end
 end
 

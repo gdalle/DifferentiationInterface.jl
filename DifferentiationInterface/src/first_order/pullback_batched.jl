@@ -59,7 +59,7 @@ function value_and_pullback_batched(f::F, backend::AbstractADType, x, dy::Batch)
 end
 
 function value_and_pullback_batched!(
-    f::F, dx, backend::AbstractADType, x, dy::Batch
+    f::F, dx::Batch, backend::AbstractADType, x, dy::Batch
 ) where {F}
     return value_and_pullback_batched!(
         f, dx, backend, x, dy, prepare_pullback_batched(f, backend, x, dy)
@@ -70,7 +70,7 @@ function pullback_batched(f::F, backend::AbstractADType, x, dy::Batch) where {F}
     return pullback_batched(f, backend, x, dy, prepare_pullback_batched(f, backend, x, dy))
 end
 
-function pullback_batched!(f::F, dx, backend::AbstractADType, x, dy::Batch) where {F}
+function pullback_batched!(f::F, dx::Batch, backend::AbstractADType, x, dy::Batch) where {F}
     return pullback_batched!(
         f, dx, backend, x, dy, prepare_pullback_batched(f, backend, x, dy)
     )
@@ -79,11 +79,9 @@ end
 ### With extras
 
 function pullback_batched(
-    f::F, backend::AbstractADType, x, dy::Batch{B}, extras::PullbackExtras
-) where {F,B}
-    dx_elements = ntuple(Val(B)) do b
-        pullback(f, backend, x, dy.elements[b], extras)
-    end
+    f::F, backend::AbstractADType, x, dy::Batch, extras::PullbackExtras
+) where {F}
+    dx_elements = pullback.(Ref(f), Ref(backend), Ref(x), dy.elements, Ref(extras))
     return Batch(dx_elements)
 end
 
@@ -97,8 +95,8 @@ function pullback_batched!(
 end
 
 function value_and_pullback_batched(
-    f::F, backend::AbstractADType, x, dy::Batch{B}, extras::PullbackExtras
-) where {F,B}
+    f::F, backend::AbstractADType, x, dy::Batch, extras::PullbackExtras
+) where {F}
     return f(x), pullback_batched(f, backend, x, dy, extras)
 end
 
@@ -121,7 +119,7 @@ function value_and_pullback_batched(
 end
 
 function value_and_pullback_batched!(
-    f!::F, y, dx, backend::AbstractADType, x, dy::Batch
+    f!::F, y, dx::Batch, backend::AbstractADType, x, dy::Batch
 ) where {F}
     return value_and_pullback_batched!(
         f!, y, dx, backend, x, dy, prepare_pullback_batched(f!, y, backend, x, dy)
@@ -134,7 +132,9 @@ function pullback_batched(f!::F, y, backend::AbstractADType, x, dy::Batch) where
     )
 end
 
-function pullback_batched!(f!::F, y, dx, backend::AbstractADType, x, dy::Batch) where {F}
+function pullback_batched!(
+    f!::F, y, dx::Batch, backend::AbstractADType, x, dy::Batch
+) where {F}
     return pullback_batched!(
         f!, y, dx, backend, x, dy, prepare_pullback_batched(f!, y, backend, x, dy)
     )
@@ -143,8 +143,8 @@ end
 ### With extras
 
 function pullback_batched(
-    f!::F, y, backend::AbstractADType, x, dy::Batch{B}, extras::PullbackExtras
-) where {F,B}
+    f!::F, y, backend::AbstractADType, x, dy::Batch, extras::PullbackExtras
+) where {F}
     dx_elements = pullback.(Ref(f!), Ref(y), Ref(backend), Ref(x), dy.elements, Ref(extras))
     return Batch(dx_elements)
 end
@@ -159,8 +159,8 @@ function pullback_batched!(
 end
 
 function value_and_pullback_batched(
-    f!::F, y, backend::AbstractADType, x, dy::Batch{B}, extras::PullbackExtras
-) where {F,B}
+    f!::F, y, backend::AbstractADType, x, dy::Batch, extras::PullbackExtras
+) where {F}
     dx = pullback_batched(f!, y, backend, x, dy, extras)
     f!(y, x)
     return y, dx

@@ -68,6 +68,5 @@ function allocfree_scenarios(rng::AbstractRNG=default_rng())
         sum_scenarios(x_6; dx=dx_6, dy=dy_),
         copyto!_scenarios(x_6; dx=dx_6, dy=dy_6),
     )
-    add_batchified!(scens)
     return scens
 end

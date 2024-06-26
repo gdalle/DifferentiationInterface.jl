@@ -63,7 +63,7 @@ function value_and_pushforward_batched(
 end
 
 function value_and_pushforward_batched!(
-    f::F, dy, backend::AbstractADType, x, dx::Batch
+    f::F, dy::Batch, backend::AbstractADType, x, dx::Batch
 ) where {F}
     return value_and_pushforward_batched!(
         f, dy, backend, x, dx, prepare_pushforward_batched(f, backend, x, dx)
@@ -76,7 +76,9 @@ function pushforward_batched(f::F, backend::AbstractADType, x, dx::Batch) where 
     )
 end
 
-function pushforward_batched!(f::F, dy, backend::AbstractADType, x, dx::Batch) where {F}
+function pushforward_batched!(
+    f::F, dy::Batch, backend::AbstractADType, x, dx::Batch
+) where {F}
     return pushforward_batched!(
         f, dy, backend, x, dx, prepare_pushforward_batched(f, backend, x, dx)
     )
@@ -85,8 +87,8 @@ end
 ### With extras
 
 function pushforward_batched(
-    f::F, backend::AbstractADType, x, dx::Batch{B}, extras::PushforwardExtras
-) where {F,B}
+    f::F, backend::AbstractADType, x, dx::Batch, extras::PushforwardExtras
+) where {F}
     dy_elements = pushforward.(Ref(f), Ref(backend), Ref(x), dx.elements, Ref(extras))
     return Batch(dy_elements)
 end
@@ -101,8 +103,8 @@ function pushforward_batched!(
 end
 
 function value_and_pushforward_batched(
-    f::F, backend::AbstractADType, x, dx::Batch{B}, extras::PushforwardExtras
-) where {F,B}
+    f::F, backend::AbstractADType, x, dx::Batch, extras::PushforwardExtras
+) where {F}
     return f(x), pushforward_batched(f, backend, x, dx, extras)
 end
 
@@ -125,7 +127,7 @@ function value_and_pushforward_batched(
 end
 
 function value_and_pushforward_batched!(
-    f!::F, y, dy, backend::AbstractADType, x, dx::Batch
+    f!::F, y, dy::Batch, backend::AbstractADType, x, dx::Batch
 ) where {F}
     return value_and_pushforward_batched!(
         f!, y, dy, backend, x, dx, prepare_pushforward_batched(f!, y, backend, x, dx)
@@ -138,7 +140,9 @@ function pushforward_batched(f!::F, y, backend::AbstractADType, x, dx::Batch) wh
     )
 end
 
-function pushforward_batched!(f!::F, y, dy, backend::AbstractADType, x, dx::Batch) where {F}
+function pushforward_batched!(
+    f!::F, y, dy::Batch, backend::AbstractADType, x, dx::Batch
+) where {F}
     return pushforward_batched!(
         f!, y, dy, backend, x, dx, prepare_pushforward_batched(f!, y, backend, x, dx)
     )
@@ -147,8 +151,8 @@ end
 ### With extras
 
 function pushforward_batched(
-    f!::F, y, backend::AbstractADType, x, dx::Batch{B}, extras::PushforwardExtras
-) where {F,B}
+    f!::F, y, backend::AbstractADType, x, dx::Batch, extras::PushforwardExtras
+) where {F}
     dy_elements =
         pushforward.(Ref(f!), Ref(y), Ref(backend), Ref(x), dx.elements, Ref(extras))
     return Batch(dy_elements)
@@ -164,8 +168,8 @@ function pushforward_batched!(
 end
 
 function value_and_pushforward_batched(
-    f!::F, y, backend::AbstractADType, x, dx::Batch{B}, extras::PushforwardExtras
-) where {F,B}
+    f!::F, y, backend::AbstractADType, x, dx::Batch, extras::PushforwardExtras
+) where {F}
     dy = pushforward_batched(f!, y, backend, x, dx, extras)
     f!(y, x)
     return y, dy
