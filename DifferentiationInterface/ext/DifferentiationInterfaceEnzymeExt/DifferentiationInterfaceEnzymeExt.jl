@@ -43,7 +43,7 @@ end
 
 ADTypes.mode(backend::AutoDeferredEnzyme) = ADTypes.mode(AutoEnzyme(backend.mode))
 
-DI.backend_package_name(::AutoDeferredEnzyme) = "DeferredEnzyme"
+DI.package_name(::AutoDeferredEnzyme) = "Enzyme"
 
 DI.nested(backend::AutoEnzyme) = AutoDeferredEnzyme(backend.mode)
 

@@ -3,13 +3,13 @@ struct MissingBackendError <: Exception
 end
 
 function Base.showerror(io::IO, e::MissingBackendError)
-    println(io, "failed to use $(backend_str(e.backend)) backend.")
+    println(io, "MissingBackendError: Failed to use $(e.backend).")
     if !check_available(e.backend)
         print(
             io,
-            """Backend package is not loaded. To fix, run
+            """Backend package is probably not loaded. To fix this, try to run
 
-              import $(backend_package_name(e.backend))
+                import $(package_name(e.backend))
             """,
         )
     else

@@ -23,7 +23,6 @@ using ComponentArrays: ComponentVector
 using DataFrames: DataFrame
 using DifferentiationInterface
 using DifferentiationInterface:
-    backend_str,
     inner,
     maybe_inner,
     maybe_dense_ad,
