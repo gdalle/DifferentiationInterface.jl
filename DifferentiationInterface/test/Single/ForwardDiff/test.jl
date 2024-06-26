@@ -4,11 +4,11 @@ using ForwardDiff: ForwardDiff
 using SparseConnectivityTracer, SparseMatrixColorings
 using Test
 
-dense_backends = [AutoForwardDiff(), AutoForwardDiff(; chunksize=2, tag=:hello)]
+dense_backends = [AutoForwardDiff(), AutoForwardDiff(; chunksize=5, tag=:hello)]
 
 sparse_backends = [
     AutoSparse(
-        AutoForwardDiff();
+        AutoForwardDiff(; chunksize=5);
         sparsity_detector=TracerSparsityDetector(),
         coloring_algorithm=GreedyColoringAlgorithm(),
     ),
@@ -25,7 +25,7 @@ end
 test_differentiation(dense_backends, add_batchified!(default_scenarios()); logging=LOGGING);
 
 test_differentiation(
-    fromprimitive_backends,
+    dense_backends,
     add_batchified!(default_scenarios());
     correctness=false,
     type_stability=true,

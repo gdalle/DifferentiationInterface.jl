@@ -11,87 +11,114 @@ end
 
 ADTypes.mode(::AutoForwardFromPrimitive) = ADTypes.ForwardMode()
 
+struct FromPrimitivePushforwardExtras{E<:PushforwardExtras} <: PushforwardExtras
+    pushforward_extras::E
+end
+
 ### Standard
 
 function prepare_pushforward(f, fromprim::AutoForwardFromPrimitive, x, dx)
-    return prepare_pushforward(f, fromprim.backend, x, dx)
+    return FromPrimitivePushforwardExtras(prepare_pushforward(f, fromprim.backend, x, dx))
 end
 
 function prepare_pushforward(f!, y, fromprim::AutoForwardFromPrimitive, x, dx)
-    return prepare_pushforward(f!, y, fromprim.backend, x, dx)
+    return FromPrimitivePushforwardExtras(
+        prepare_pushforward(f!, y, fromprim.backend, x, dx)
+    )
 end
 
 function value_and_pushforward(
-    f, fromprim::AutoForwardFromPrimitive, x, dx, extras::PushforwardExtras
+    f, fromprim::AutoForwardFromPrimitive, x, dx, extras::FromPrimitivePushforwardExtras
 )
-    return value_and_pushforward(f, fromprim.backend, x, dx, extras)
+    return value_and_pushforward(f, fromprim.backend, x, dx, extras.pushforward_extras)
 end
 
 function value_and_pushforward(
-    f!, y, fromprim::AutoForwardFromPrimitive, x, dx, extras::PushforwardExtras
+    f!, y, fromprim::AutoForwardFromPrimitive, x, dx, extras::FromPrimitivePushforwardExtras
 )
-    return value_and_pushforward(f!, y, fromprim.backend, x, dx, extras)
+    return value_and_pushforward(f!, y, fromprim.backend, x, dx, extras.pushforward_extras)
 end
 
 function value_and_pushforward!(
-    f, dy, fromprim::AutoForwardFromPrimitive, x, dx, extras::PushforwardExtras
+    f, dy, fromprim::AutoForwardFromPrimitive, x, dx, extras::FromPrimitivePushforwardExtras
 )
-    return value_and_pushforward!(f, dy, fromprim.backend, x, dx, extras)
+    return value_and_pushforward!(f, dy, fromprim.backend, x, dx, extras.pushforward_extras)
 end
 
 function value_and_pushforward!(
-    f!, y, dy, fromprim::AutoForwardFromPrimitive, x, dx, extras::PushforwardExtras
+    f!,
+    y,
+    dy,
+    fromprim::AutoForwardFromPrimitive,
+    x,
+    dx,
+    extras::FromPrimitivePushforwardExtras,
 )
-    return value_and_pushforward!(f!, y, dy, fromprim.backend, x, dx, extras)
+    return value_and_pushforward!(
+        f!, y, dy, fromprim.backend, x, dx, extras.pushforward_extras
+    )
 end
 
 ### Batched
 
-function prepare_pushforward_batched(
-    f, fromprim::AutoForwardFromPrimitive, x, dx::Batch{B}
-) where {B}
-    return prepare_pushforward_batched(f, fromprim.backend, x, dx)
+function prepare_pushforward_batched(f, fromprim::AutoForwardFromPrimitive, x, dx::Batch)
+    return FromPrimitivePushforwardExtras(
+        prepare_pushforward_batched(f, fromprim.backend, x, dx)
+    )
 end
 
 function prepare_pushforward_batched(
-    f!, y, fromprim::AutoForwardFromPrimitive, x, dx::Batch{B}
-) where {B}
-    return prepare_pushforward_batched(f!, y, fromprim.backend, x, dx)
+    f!, y, fromprim::AutoForwardFromPrimitive, x, dx::Batch
+)
+    return FromPrimitivePushforwardExtras(
+        prepare_pushforward_batched(f!, y, fromprim.backend, x, dx)
+    )
 end
 
 function pushforward_batched(
-    f, fromprim::AutoForwardFromPrimitive, x, dx::Batch{B}, extras::PushforwardExtras
-) where {B}
-    return pushforward_batched(f, fromprim.backend, x, dx, extras)
+    f,
+    fromprim::AutoForwardFromPrimitive,
+    x,
+    dx::Batch,
+    extras::FromPrimitivePushforwardExtras,
+)
+    return pushforward_batched(f, fromprim.backend, x, dx, extras.pushforward_extras)
 end
 
 function pushforward_batched(
-    f!, y, fromprim::AutoForwardFromPrimitive, x, dx::Batch{B}, extras::PushforwardExtras
-) where {B}
-    return pushforward_batched(f!, y, fromprim.backend, x, dx, extras)
+    f!,
+    y,
+    fromprim::AutoForwardFromPrimitive,
+    x,
+    dx::Batch,
+    extras::FromPrimitivePushforwardExtras,
+)
+    return pushforward_batched(f!, y, fromprim.backend, x, dx, extras.pushforward_extras)
 end
 
 function pushforward_batched!(
     f,
-    dy::Batch{B},
+    dy::Batch,
     fromprim::AutoForwardFromPrimitive,
     x,
-    dx::Batch{B},
-    extras::PushforwardExtras,
-) where {B}
-    return pushforward_batched!(f, dy, fromprim.backend, x, dx, extras)
+    dx::Batch,
+    extras::FromPrimitivePushforwardExtras,
+)
+    return pushforward_batched!(f, dy, fromprim.backend, x, dx, extras.pushforward_extras)
 end
 
 function pushforward_batched!(
     f!,
     y,
-    dy::Batch{B},
+    dy::Batch,
     fromprim::AutoForwardFromPrimitive,
     x,
-    dx::Batch{B},
-    extras::PushforwardExtras,
-) where {B}
-    return pushforward_batched!(f!, y, dy, fromprim.backend, x, dx, extras)
+    dx::Batch,
+    extras::FromPrimitivePushforwardExtras,
+)
+    return pushforward_batched!(
+        f!, y, dy, fromprim.backend, x, dx, extras.pushforward_extras
+    )
 end
 
 ## Reverse
@@ -102,85 +129,98 @@ end
 
 ADTypes.mode(::AutoReverseFromPrimitive) = ADTypes.ReverseMode()
 
+struct FromPrimitivePullbackExtras{E<:PullbackExtras} <: PullbackExtras
+    pullback_extras::E
+end
+
 ### Standard
 
 function prepare_pullback(f, fromprim::AutoReverseFromPrimitive, x, dy)
-    return prepare_pullback(f, fromprim.backend, x, dy)
+    return FromPrimitivePullbackExtras(prepare_pullback(f, fromprim.backend, x, dy))
 end
 
 function prepare_pullback(f!, y, fromprim::AutoReverseFromPrimitive, x, dy)
-    return prepare_pullback(f!, y, fromprim.backend, x, dy)
+    return FromPrimitivePullbackExtras(prepare_pullback(f!, y, fromprim.backend, x, dy))
 end
 
 function value_and_pullback(
-    f, fromprim::AutoReverseFromPrimitive, x, dy, extras::PullbackExtras
+    f, fromprim::AutoReverseFromPrimitive, x, dy, extras::FromPrimitivePullbackExtras
 )
-    return value_and_pullback(f, fromprim.backend, x, dy, extras)
+    return value_and_pullback(f, fromprim.backend, x, dy, extras.pullback_extras)
 end
 
 function value_and_pullback(
-    f!, y, fromprim::AutoReverseFromPrimitive, x, dy, extras::PullbackExtras
+    f!, y, fromprim::AutoReverseFromPrimitive, x, dy, extras::FromPrimitivePullbackExtras
 )
-    return value_and_pullback(f!, y, fromprim.backend, x, dy, extras)
+    return value_and_pullback(f!, y, fromprim.backend, x, dy, extras.pullback_extras)
 end
 
 function value_and_pullback!(
-    f, dx, fromprim::AutoReverseFromPrimitive, x, dy, extras::PullbackExtras
+    f, dx, fromprim::AutoReverseFromPrimitive, x, dy, extras::FromPrimitivePullbackExtras
 )
-    return value_and_pullback!(f, dx, fromprim.backend, x, dy, extras)
+    return value_and_pullback!(f, dx, fromprim.backend, x, dy, extras.pullback_extras)
 end
 
 function value_and_pullback!(
-    f!, y, dx, fromprim::AutoReverseFromPrimitive, x, dy, extras::PullbackExtras
+    f!,
+    y,
+    dx,
+    fromprim::AutoReverseFromPrimitive,
+    x,
+    dy,
+    extras::FromPrimitivePullbackExtras,
 )
-    return value_and_pullback!(f!, y, dx, fromprim.backend, x, dy, extras)
+    return value_and_pullback!(f!, y, dx, fromprim.backend, x, dy, extras.pullback_extras)
 end
 
 ### Batched
 
-function prepare_pullback_batched(
-    f, fromprim::AutoReverseFromPrimitive, x, dy::Batch{B}
-) where {B}
-    return prepare_pullback_batched(f, fromprim.backend, x, dy)
+function prepare_pullback_batched(f, fromprim::AutoReverseFromPrimitive, x, dy::Batch)
+    return FromPrimitivePullbackExtras(prepare_pullback_batched(f, fromprim.backend, x, dy))
 end
 
-function prepare_pullback_batched(
-    f!, y, fromprim::AutoReverseFromPrimitive, x, dy::Batch{B}
-) where {B}
-    return prepare_pullback_batched(f!, y, fromprim.backend, x, dy)
-end
-
-function pullback_batched(
-    f, fromprim::AutoReverseFromPrimitive, x, dy::Batch{B}, extras::PullbackExtras
-) where {B}
-    return pullback_batched(f, fromprim.backend, x, dy, extras)
+function prepare_pullback_batched(f!, y, fromprim::AutoReverseFromPrimitive, x, dy::Batch)
+    return FromPrimitivePullbackExtras(
+        prepare_pullback_batched(f!, y, fromprim.backend, x, dy)
+    )
 end
 
 function pullback_batched(
-    f!, y, fromprim::AutoReverseFromPrimitive, x, dy::Batch{B}, extras::PullbackExtras
-) where {B}
-    return pullback_batched(f!, y, fromprim.backend, x, dy, extras)
+    f, fromprim::AutoReverseFromPrimitive, x, dy::Batch, extras::FromPrimitivePullbackExtras
+)
+    return pullback_batched(f, fromprim.backend, x, dy, extras.pullback_extras)
+end
+
+function pullback_batched(
+    f!,
+    y,
+    fromprim::AutoReverseFromPrimitive,
+    x,
+    dy::Batch,
+    extras::FromPrimitivePullbackExtras,
+)
+    return pullback_batched(f!, y, fromprim.backend, x, dy, extras.pullback_extras)
 end
 
 function pullback_batched!(
     f,
-    dx::Batch{B},
+    dx::Batch,
     fromprim::AutoReverseFromPrimitive,
     x,
-    dy::Batch{B},
-    extras::PullbackExtras,
-) where {B}
-    return pullback_batched!(f, dx, fromprim.backend, x, dy, extras)
+    dy::Batch,
+    extras::FromPrimitivePullbackExtras,
+)
+    return pullback_batched!(f, dx, fromprim.backend, x, dy, extras.pullback_extras)
 end
 
 function pullback_batched!(
     f!,
     y,
-    dx::Batch{B},
+    dx::Batch,
     fromprim::AutoReverseFromPrimitive,
     x,
-    dy::Batch{B},
-    extras::PullbackExtras,
-) where {B}
-    return pullback_batched!(f!, y, dx, fromprim.backend, x, dy, extras)
+    dy::Batch,
+    extras::FromPrimitivePullbackExtras,
+)
+    return pullback_batched!(f!, y, dx, fromprim.backend, x, dy, extras.pullback_extras)
 end

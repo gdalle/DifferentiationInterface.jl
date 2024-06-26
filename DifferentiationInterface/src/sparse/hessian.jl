@@ -1,35 +1,33 @@
 struct SparseHessianExtras{
-    B,
-    S<:AbstractMatrix{Bool},
-    C<:AbstractMatrix{<:Real},
-    K<:AbstractVector{<:Integer},
-    D<:AbstractVector,
-    P<:AbstractVector,
-    E2<:HVPExtras,
-    E1<:GradientExtras,
+    B,S<:AbstractMatrix{Bool},C<:AbstractMatrix{<:Real},D,E2<:HVPExtras,E1<:GradientExtras
 } <: HessianExtras
     sparsity::S
+    colors::Vector{Int}
+    groups::Vector{Vector{Int}}
     compressed::C
-    colors::K
-    seeds::D
-    products::P
+    batched_seeds::Vector{Batch{B,D}}
     hvp_batched_extras::E2
     gradient_extras::E1
 end
 
 function SparseHessianExtras{B}(;
     sparsity::S,
+    colors,
+    groups,
     compressed::C,
-    colors::K,
-    seeds::D,
-    products::P,
+    batched_seeds::Vector{Batch{B,D}},
     hvp_batched_extras::E2,
     gradient_extras::E1,
-) where {B,S,C,K,D,P,E2,E1}
-    @assert length(seeds) == length(products) == size(compressed, 2)
+) where {B,S,C,D,E2,E1}
     @assert size(sparsity, 1) == size(sparsity, 2) == size(compressed, 1) == length(colors)
-    return SparseHessianExtras{B,S,C,K,D,P,E2,E1}(
-        sparsity, compressed, colors, seeds, products, hvp_batched_extras, gradient_extras
+    return SparseHessianExtras{B,S,C,D,E2,E1}(
+        sparsity,
+        colors,
+        groups,
+        compressed,
+        batched_seeds,
+        hvp_batched_extras,
+        gradient_extras,
     )
 end
 
@@ -41,41 +39,46 @@ function prepare_hessian(f::F, backend::AutoSparse, x) where {F}
     sparsity = col_major(initial_sparsity)
     colors = symmetric_coloring(sparsity, coloring_algorithm(backend))
     groups = color_groups(colors)
+    Ng = length(groups)
+    B = pick_batchsize(maybe_outer(dense_backend), Ng)
     seeds = map(group -> make_seed(x, group), groups)
-    G = length(seeds)
-    B = pick_batchsize(maybe_outer(dense_backend), G)
-    dx_batch = Batch(ntuple(Returns(seeds[1]), Val(B)))
-    hvp_batched_extras = prepare_hvp_batched(f, dense_backend, x, dx_batch)
-    products = map(_ -> similar(x), seeds)
-    compressed = stack(vec, products; dims=2)
+    compressed = stack(_ -> vec(similar(x)), groups; dims=2)
+    batched_seeds =
+        Batch.([
+            ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % Ng], Val(B)) for
+            a in 1:div(Ng, B, RoundUp)
+        ])
+    hvp_batched_extras = prepare_hvp_batched(f, dense_backend, x, batched_seeds[1])
     gradient_extras = prepare_gradient(f, maybe_inner(dense_backend), x)
     return SparseHessianExtras{B}(;
-        sparsity, compressed, colors, seeds, products, hvp_batched_extras, gradient_extras
+        sparsity,
+        colors,
+        groups,
+        compressed,
+        batched_seeds,
+        hvp_batched_extras,
+        gradient_extras,
     )
 end
 
 function hessian(f::F, backend::AutoSparse, x, extras::SparseHessianExtras{B}) where {F,B}
-    @compat (; sparsity, compressed, colors, seeds, products, hvp_batched_extras) = extras
-    G = length(seeds)
+    @compat (; sparsity, compressed, colors, groups, batched_seeds, hvp_batched_extras) =
+        extras
     dense_backend = dense_ad(backend)
+    Ng = length(groups)
 
     hvp_batched_extras_same = prepare_hvp_batched_same_point(
-        f, dense_backend, x, Batch(ntuple(Returns(seeds[1]), Val(B))), hvp_batched_extras
+        f, dense_backend, x, batched_seeds[1], hvp_batched_extras
     )
 
-    compressed_blocks = map(1:div(G, B, RoundUp)) do a
-        dx_batch_elements = ntuple(Val(B)) do b
-            seeds[1 + ((a - 1) * B + (b - 1)) % G]
-        end
-        dg_batch = hvp_batched(
-            f, dense_backend, x, Batch(dx_batch_elements), hvp_batched_extras_same
-        )
+    compressed_blocks = map(eachindex(batched_seeds)) do a
+        dg_batch = hvp_batched(f, dense_backend, x, batched_seeds[a], hvp_batched_extras_same)
         stack(vec, dg_batch.elements; dims=2)
     end
 
     compressed = reduce(hcat, compressed_blocks)
-    if G < size(compressed, 2)
-        compressed = compressed[:, 1:G]
+    if Ng < size(compressed, 2)
+        compressed = compressed[:, 1:Ng]
     end
     return decompress_symmetric(sparsity, compressed, colors)
 end
@@ -83,33 +86,27 @@ end
 function hessian!(
     f::F, hess, backend::AutoSparse, x, extras::SparseHessianExtras{B}
 ) where {F,B}
-    @compat (; sparsity, compressed, colors, seeds, products, hvp_batched_extras) = extras
+    @compat (; sparsity, compressed, colors, groups, batched_seeds, hvp_batched_extras) =
+        extras
     dense_backend = dense_ad(backend)
-    G = length(seeds)
+    Ng = length(groups)
 
     hvp_batched_extras_same = prepare_hvp_batched_same_point(
-        f, dense_backend, x, Batch(ntuple(Returns(seeds[1]), Val(B))), hvp_batched_extras
+        f, dense_backend, x, batched_seeds[1], hvp_batched_extras
     )
 
-    for a in 1:div(G, B, RoundUp)
-        dx_batch_elements = ntuple(Val(B)) do b
-            seeds[1 + ((a - 1) * B + (b - 1)) % G]
-        end
+    for a in 1:div(Ng, B, RoundUp)
         dg_batch_elements = ntuple(Val(B)) do b
-            products[1 + ((a - 1) * B + (b - 1)) % G]
+            reshape(view(compressed, :, 1 + ((a - 1) * B + (b - 1)) % Ng), size(x))
         end
         hvp_batched!(
             f,
             Batch(dg_batch_elements),
             dense_backend,
             x,
-            Batch(dx_batch_elements),
+            batched_seeds[a],
             hvp_batched_extras_same,
         )
-    end
-
-    for k in eachindex(products)
-        copyto!(view(compressed, :, k), vec(products[k]))
     end
 
     decompress_symmetric!(hess, sparsity, compressed, colors)
