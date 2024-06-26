@@ -11,7 +11,7 @@ end
 
 LOGGING = get(ENV, "CI", "false") == "false"
 
-GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "All")
+GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "Single/GTPSA")
 
 ALL_BACKENDS = [
     "Diffractor",
@@ -20,6 +20,7 @@ ALL_BACKENDS = [
     "FiniteDifferences",
     "FastDifferentiation",
     "ForwardDiff",
+    "GTPSA",
     "PolyesterForwardDiff",
     "ReverseDiff",
     "Symbolics",
