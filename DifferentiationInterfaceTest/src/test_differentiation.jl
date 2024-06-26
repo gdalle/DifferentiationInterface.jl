@@ -78,8 +78,7 @@ function test_differentiation(
     prog = ProgressUnknown(; desc="$title", spinner=true, enabled=logging)
 
     @testset verbose = true "$title" begin
-        @testset verbose = detailed "$(backend_str(backend))" for (i, backend) in
-                                                                  enumerate(backends)
+        @testset verbose = detailed "$backend" for (i, backend) in enumerate(backends)
             filtered_scenarios = filter(s -> compatible(backend, s), scenarios)
             grouped_scenarios = group_by_operator(filtered_scenarios)
             @testset verbose = detailed "$op" for (j, (op, op_group)) in
@@ -88,7 +87,7 @@ function test_differentiation(
                     next!(
                         prog;
                         showvalues=[
-                            (:backend, "$(backend_str(backend)) - $i/$(length(backends))"),
+                            (:backend, "$backend - $i/$(length(backends))"),
                             (:scenario_type, "$op - $j/$(length(grouped_scenarios))"),
                             (:scenario, "$k/$(length(op_group))"),
                             (:arguments, nb_args(scen)),
@@ -177,7 +176,7 @@ function benchmark_differentiation(
                 next!(
                     prog;
                     showvalues=[
-                        (:backend, "$(backend_str(backend)) - $i/$(length(backends))"),
+                        (:backend, "$backend - $i/$(length(backends))"),
                         (:scenario_type, "$op - $j/$(length(grouped_scenarios))"),
                         (:scenario, "$k/$(length(op_group))"),
                         (:arguments, nb_args(scen)),

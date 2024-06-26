@@ -24,7 +24,6 @@ using DataFrames: DataFrame
 using DifferentiationInterface
 using DifferentiationInterface:
     Batch,
-    backend_str,
     inner,
     maybe_inner,
     maybe_dense_ad,

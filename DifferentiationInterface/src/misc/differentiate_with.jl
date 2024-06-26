@@ -54,5 +54,7 @@ Call the underlying function `dw.f` of a [`DifferentiateWith`](@ref) wrapper.
 
 function Base.show(io::IO, dw::DifferentiateWith)
     @compat (; f, backend) = dw
-    return print(io, "$f differentiated with $(backend_str(backend))")
+    return print(
+        io, DifferentiateWith, "(", repr(f; context=io), ",", repr(backend; context=io), ")"
+    )
 end

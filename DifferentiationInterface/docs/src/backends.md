@@ -9,7 +9,6 @@ We support all dense backend choices from [ADTypes.jl](https://github.com/SciML/
 
 ```@setup backends
 using DifferentiationInterface
-using DifferentiationInterface: backend_str
 import Markdown
 
 import Diffractor
@@ -25,21 +24,21 @@ import Tapir
 import Tracker
 import Zygote
 
-const backend_examples = (
-    "AutoDiffractor()",
-    "AutoEnzyme(; mode=Enzyme.Forward)",
-    "AutoEnzyme(; mode=Enzyme.Reverse)",
-    "AutoFastDifferentiation()",
-    "AutoFiniteDiff()",
-    "AutoFiniteDifferences(; fdm=FiniteDifferences.central_fdm(3, 1))",
-    "AutoForwardDiff()",
-    "AutoPolyesterForwardDiff(; chunksize=1)",
-    "AutoReverseDiff()",
-    "AutoSymbolics()",
-    "AutoTapir(; safe_mode=false)",
-    "AutoTracker()",
-    "AutoZygote()",
-)
+backend_examples = [
+    AutoDiffractor(),
+    AutoEnzyme(; mode=Enzyme.Forward),
+    AutoEnzyme(; mode=Enzyme.Reverse),
+    AutoFastDifferentiation(),
+    AutoFiniteDiff(),
+    AutoFiniteDifferences(; fdm=FiniteDifferences.central_fdm(3, 1)),
+    AutoForwardDiff(),
+    AutoPolyesterForwardDiff(; chunksize=1),
+    AutoReverseDiff(),
+    AutoSymbolics(),
+    AutoTapir(; safe_mode=false),
+    AutoTracker(),
+    AutoZygote(),
+]
 
 checkmark(x::Bool) = x ? '✅' : '❌'
 unicode_check_available(backend) = checkmark(check_available(backend))
@@ -49,12 +48,11 @@ unicode_check_twoarg(backend)    = checkmark(check_twoarg(backend))
 io = IOBuffer()
 
 # Table header 
-println(io, "| Backend | Availability | Two-argument functions | Hessian support | Example |")
-println(io, "|:--------|:------------:|:----------------------:|:---------------:|:--------|")
+println(io, "| Backend | Availability | Two-argument functions | Hessian support |")
+println(io, "|:--------|:------------:|:----------------------:|:---------------:|")
 
-for example in backend_examples
-    b = eval(Meta.parse(example)) # backend
-    join(io, [backend_str(b), unicode_check_available(b), unicode_check_twoarg(b), unicode_check_hessian(b), "`$example`"], '|')
+for b in backend_examples
+    join(io, [string(b), unicode_check_available(b), unicode_check_twoarg(b), unicode_check_hessian(b)], '|')
     println(io, '|' )
 end
 backend_table = Markdown.parse(String(take!(io)))
