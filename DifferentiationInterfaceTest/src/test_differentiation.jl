@@ -97,6 +97,7 @@ function test_differentiation(
                             (:input_size, size(scen.x)),
                             (:output_type, typeof(scen.y)),
                             (:output_size, size(scen.y)),
+                            (:batched_seed, scen.seed isa Batch),
                         ],
                     )
                     correctness && @testset "Correctness" begin
@@ -110,6 +111,7 @@ function test_differentiation(
                     sparsity && @testset "Sparsity" begin
                         test_sparsity(backend, scen)
                     end
+                    yield()
                 end
             end
         end
@@ -184,9 +186,11 @@ function benchmark_differentiation(
                         (:input_size, size(scen.x)),
                         (:output_type, typeof(scen.y)),
                         (:output_size, size(scen.y)),
+                        (:batched_seed, scen.seed isa Batch),
                     ],
                 )
                 run_benchmark!(benchmark_data, backend, scen; logging)
+                yield()
             end
         end
     end

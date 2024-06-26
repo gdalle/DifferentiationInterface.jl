@@ -77,6 +77,8 @@ end
 
 ## One argument
 
+### Without extras
+
 function value_derivative_and_second_derivative(f::F, backend::AbstractADType, x) where {F}
     return value_derivative_and_second_derivative(
         f, backend, x, prepare_second_derivative(f, backend, x)
@@ -98,6 +100,8 @@ end
 function second_derivative!(f::F, der2, backend::AbstractADType, x) where {F}
     return second_derivative!(f, der2, backend, x, prepare_second_derivative(f, backend, x))
 end
+
+### With extras
 
 function second_derivative(
     f::F, backend::AbstractADType, x, extras::SecondDerivativeExtras

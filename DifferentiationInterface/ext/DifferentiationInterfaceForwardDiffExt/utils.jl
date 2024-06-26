@@ -7,29 +7,41 @@ tag_type(f, ::AutoForwardDiff{C,Nothing}, x) where {C} = Tag{typeof(f),eltype(x)
 make_dual_similar(::Type{T}, x::Number, dx::Number) where {T} = Dual{T}(x, dx)
 make_dual_similar(::Type{T}, x, dx) where {T} = similar(x, Dual{T,eltype(x),1})
 
+function make_dual_similar(::Type{T}, x::Number, dx::Batch{B,<:Number}) where {T,B}
+    return Dual{T}(x, dx.elements)
+end
+
 function make_dual_similar(::Type{T}, x, dx::Batch{B}) where {T,B}
     return similar(x, Dual{T,eltype(x),B})
 end
 
-make_dual(::Type{T}, x::Number, dx::Number) where {T} = Dual{T}(x, dx)
-make_dual!(::Type{T}, xdual, x, dx) where {T} = map!(Dual{T}, xdual, x, dx)
+function make_dual(::Type{T}, x::Number, dx::Number) where {T}
+    return Dual{T}(x, dx)
+end
+
+function make_dual(::Type{T}, x::Number, dx::Batch{B,<:Number}) where {T,B}
+    return Dual{T}(x, dx.elements...)
+end
+
+function make_dual!(::Type{T}, xdual, x, dx) where {T}
+    return xdual .= Dual{T}.(x, dx)
+end
 
 function make_dual!(::Type{T}, xdual, x, dx::Batch{B}) where {T,B}
-    return map!(Dual{T}, xdual, x, dx.elements...)
+    return xdual .= Dual{T}.(x, dx.elements...)
 end
 
 myvalue(::Type{T}, ydual::Dual{T}) where {T} = value(T, ydual)
-myvalue(::Type{T}, ydual) where {T} = map(Fix1(myvalue, T), ydual)
-
-function myvalue!(::Type{T}, y, ydual) where {T}
-    return map!(Fix1(myvalue, T), y, ydual)
-end
+myvalue(::Type{T}, ydual) where {T} = myvalue.(T, ydual)
+myvalue!(::Type{T}, y, ydual) where {T} = y .= myvalue.(T, ydual)
 
 myderivative(::Type{T}, ydual::Dual{T}) where {T} = extract_derivative(T, ydual)
-myderivative(::Type{T}, ydual) where {T} = map(Fix1(myderivative, T), ydual)
+myderivative(::Type{T}, ydual) where {T} = myderivative.(T, ydual)
+myderivative!(::Type{T}, dy, ydual) where {T} = dy .= myderivative.(T, ydual)
 
-function myderivative!(::Type{T}, dy, ydual) where {T}
-    return map!(Fix1(myderivative, T), dy, ydual)
+function mypartials(::Type{T}, ::Val{B}, ydual::Dual) where {T,B}
+    elements = partials(T, ydual).values
+    return Batch(elements)
 end
 
 function mypartials(::Type{T}, ::Val{B}, ydual) where {T,B}

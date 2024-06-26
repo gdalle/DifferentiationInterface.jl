@@ -12,8 +12,6 @@ Create an `extras` object that can be given to [`pullback`](@ref) and its varian
 """
 function prepare_pullback end
 
-function prepare_pullback_batched end
-
 """
     prepare_pullback_same_point(f,     backend, x, dy) -> extras_same
     prepare_pullback_same_point(f!, y, backend, x, dy) -> extras_same
@@ -25,8 +23,6 @@ Create an `extras_same` object that can be given to [`pullback`](@ref) and its v
     In the two-argument case, `y` is mutated by `f!` during preparation.
 """
 function prepare_pullback_same_point end
-
-function prepare_pullback_batched_same_point end
 
 """
     value_and_pullback(f,     backend, x, dy, [extras]) -> (y, dx)
@@ -55,8 +51,6 @@ Compute the pullback of the function `f` at point `x` with seed `dy`.
 """
 function pullback end
 
-function pullback_batched end
-
 """
     pullback!(f,     dx, backend, x, dy, [extras]) -> dx
     pullback!(f!, y, dx, backend, x, dy, [extras]) -> dx
@@ -64,8 +58,6 @@ function pullback_batched end
 Compute the pullback of the function `f` at point `x` with seed `dy`, overwriting `dx`.
 """
 function pullback! end
-
-function pullback_batched! end
 
 ## Preparation
 
@@ -84,7 +76,7 @@ struct PushforwardPullbackExtras{E} <: PullbackExtras
     pushforward_extras::E
 end
 
-## Standard
+## Different point
 
 function prepare_pullback(f::F, backend::AbstractADType, x, dy) where {F}
     return prepare_pullback_aux(f, backend, x, dy, pullback_performance(backend))
@@ -114,7 +106,7 @@ function prepare_pullback_aux(f!, y, backend, x, dy, ::PullbackFast)
     throw(MissingBackendError(backend))
 end
 
-### Standard, same point
+### Same point
 
 function prepare_pullback_same_point(
     f::F, backend::AbstractADType, x, dy, extras::PullbackExtras
@@ -138,33 +130,9 @@ function prepare_pullback_same_point(f!::F, y, backend::AbstractADType, x, dy) w
     return prepare_pullback_same_point(f!, y, backend, x, dy, extras)
 end
 
-### Batched
-
-function prepare_pullback_batched(f::F, backend::AbstractADType, x, dy::Batch) where {F}
-    return prepare_pullback(f, backend, x, first(dy.elements))
-end
-
-function prepare_pullback_batched(f!::F, y, backend::AbstractADType, x, dy::Batch) where {F}
-    return prepare_pullback(f!, y, backend, x, first(dy.elements))
-end
-
-### Batched, same point
-
-function prepare_pullback_batched_same_point(
-    f::F, backend::AbstractADType, x, dy::Batch, extras::PullbackExtras
-) where {F}
-    return prepare_pullback_same_point(f, backend, x, first(dy.elements), extras)
-end
-
-function prepare_pullback_batched_same_point(
-    f!::F, y, backend::AbstractADType, x, dy::Batch, extras::PullbackExtras
-) where {F}
-    return prepare_pullback_same_point(f!, y, backend, x, first(dy.elements), extras)
-end
-
 ## One argument
 
-### Standard
+### Without extras
 
 function value_and_pullback(f::F, backend::AbstractADType, x, dy) where {F}
     return value_and_pullback(f, backend, x, dy, prepare_pullback(f, backend, x, dy))
@@ -181,6 +149,8 @@ end
 function pullback!(f::F, dx, backend::AbstractADType, x, dy) where {F}
     return pullback!(f, dx, backend, x, dy, prepare_pullback(f, backend, x, dy))
 end
+
+### With extras
 
 function value_and_pullback(
     f::F, backend, x, dy, extras::PushforwardPullbackExtras
@@ -220,29 +190,9 @@ function pullback!(
     return value_and_pullback!(f, dx, backend, x, dy, extras)[2]
 end
 
-### Batched
-
-function pullback_batched(
-    f::F, backend::AbstractADType, x, dy::Batch{B}, extras::PullbackExtras
-) where {F,B}
-    dx_elements = ntuple(Val(B)) do b
-        pullback(f, backend, x, dy.elements[b], extras)
-    end
-    return Batch(dx_elements)
-end
-
-function pullback_batched!(
-    f::F, dx::Batch, backend::AbstractADType, x, dy::Batch, extras::PullbackExtras
-) where {F}
-    for b in eachindex(dx.elements, dy.elements)
-        pullback!(f, dx.elements[b], backend, x, dy.elements[b], extras)
-    end
-    return dx
-end
-
 ## Two arguments
 
-### Standard
+### Without extras
 
 function value_and_pullback(f!::F, y, backend::AbstractADType, x, dy) where {F}
     return value_and_pullback(
@@ -263,6 +213,8 @@ end
 function pullback!(f!::F, y, dx, backend::AbstractADType, x, dy) where {F}
     return pullback!(f!, y, dx, backend, x, dy, prepare_pullback(f!, y, backend, x, dy))
 end
+
+### With extras
 
 function value_and_pullback(
     f!::F, y, backend, x, dy, extras::PushforwardPullbackExtras
@@ -296,24 +248,4 @@ function pullback!(
     f!::F, y, dx, backend::AbstractADType, x, dy, extras::PullbackExtras
 ) where {F}
     return value_and_pullback!(f!, y, dx, backend, x, dy, extras)[2]
-end
-
-### Batched
-
-function pullback_batched(
-    f!::F, y, backend::AbstractADType, x, dy::Batch{B}, extras::PullbackExtras
-) where {F,B}
-    dx_elements = ntuple(Val(B)) do b
-        pullback(f!, y, backend, x, dy.elements[b], extras)
-    end
-    return Batch(dx_elements)
-end
-
-function pullback_batched!(
-    f!::F, y, dx::Batch, backend::AbstractADType, x, dy::Batch, extras::PullbackExtras
-) where {F}
-    for b in eachindex(dx.elements, dy.elements)
-        pullback!(f!, y, dx.elements[b], backend, x, dy.elements[b], extras)
-    end
-    return dx
 end
