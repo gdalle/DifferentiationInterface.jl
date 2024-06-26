@@ -43,8 +43,6 @@ end
 
 ADTypes.mode(backend::AutoDeferredEnzyme) = ADTypes.mode(AutoEnzyme(backend.mode))
 
-DI.package_name(::AutoDeferredEnzyme) = "Enzyme"
-
 DI.nested(backend::AutoEnzyme) = AutoDeferredEnzyme(backend.mode)
 
 const AnyAutoEnzyme{M} = Union{AutoEnzyme{M},AutoDeferredEnzyme{M}}
