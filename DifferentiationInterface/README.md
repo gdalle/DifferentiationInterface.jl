@@ -32,7 +32,7 @@ This package provides a backend-agnostic syntax to differentiate functions of th
 
 ## Compatibility
 
-We support all of the backends defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl) v1.0:
+We support all of the backends defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl):
 
 - [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl)
 - [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl)
