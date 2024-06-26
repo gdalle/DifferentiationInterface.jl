@@ -24,7 +24,7 @@ end
 function Base.show(io::IO, backend::SecondOrder)
     return print(
         io,
-        "SecondOrder($(repr(outer(backend); context=io)), $(repr(inner(backend); context=io)))",
+        "$(repr(SecondOrder; context=io))($(repr(outer(backend); context=io)), $(repr(inner(backend); context=io)))",
     )
 end
 
