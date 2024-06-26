@@ -42,7 +42,7 @@ xv = rand(Float32, 3)
 xm = rand(Float64, 3, 2)
 scenarios = [
     GradientScenario(f; x=xv, y=f(xv), grad=∇f(xv), nb_args=1, place=:inplace),
-    GradientScenario(f; x=xm, y=f(xm), grad=∇f(xv), nb_args=1, place=:inplace)
+    GradientScenario(f; x=xm, y=f(xm), grad=∇f(xm), nb_args=1, place=:inplace)
 ];
 nothing  # hide
 ```
