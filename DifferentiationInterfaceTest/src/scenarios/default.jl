@@ -38,8 +38,8 @@ end
 
 ## Number to array
 
-multiplicator(::Type{V}) where {V<:AbstractVector} = V(float.(1:6))
-multiplicator(::Type{M}) where {M<:AbstractMatrix} = M(float.(reshape(1:6, 2, 3)))
+multiplicator(::Type{V}) where {V<:AbstractVector} = convert(V, float.(1:6))
+multiplicator(::Type{M}) where {M<:AbstractMatrix} = convert(M, float.(reshape(1:6, 2, 3)))
 
 function num_to_arr(x::Number, ::Type{A}) where {A<:AbstractArray}
     a = multiplicator(A)
@@ -170,8 +170,8 @@ function arr_to_num_aux_no_linalg(x; α, β)
     return s
 end
 
-function arr_to_num_aux_gradient(x; α, β)
-    x = Array(x)  # GPU arrays don't like indexing
+function arr_to_num_aux_gradient(x0; α, β)
+    x = Array(x0)  # GPU arrays don't like indexing
     g = similar(x)
     for k in eachindex(g, x)
         g[k] = (
@@ -180,11 +180,11 @@ function arr_to_num_aux_gradient(x; α, β)
             (α + β) * x[k]^(α + β - 1)
         )
     end
-    return g
+    return convert(typeof(x0), g)
 end
 
-function arr_to_num_aux_hessian(x; α, β)
-    x = Array(x)  # GPU arrays don't like indexing
+function arr_to_num_aux_hessian(x0; α, β)
+    x = Array(x0)  # GPU arrays don't like indexing
     H = similar(x, length(x), length(x))
     for k in axes(H, 1), l in axes(H, 2)
         if k == l
@@ -197,7 +197,7 @@ function arr_to_num_aux_hessian(x; α, β)
             H[k, l] = α * β * (x[k]^(α - 1) * x[l]^(β - 1) + x[k]^(β - 1) * x[l]^(α - 1))
         end
     end
-    return H
+    return convert(typeof(similar(x0, length(x0), length(x0))), H)
 end
 
 const DEFAULT_α = 4
