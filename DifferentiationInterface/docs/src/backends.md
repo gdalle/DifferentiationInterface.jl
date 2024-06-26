@@ -8,6 +8,7 @@ This page is about the latter, check out [that page](@ref "Operators") to learn 
 We support all dense backend choices from [ADTypes.jl](https://github.com/SciML/ADTypes.jl), as well as their sparse wrapper [`AutoSparse`](@extref ADTypes.AutoSparse).
 
 ```@setup backends
+using ADTypes
 using DifferentiationInterface
 import Markdown
 
@@ -26,8 +27,7 @@ import Zygote
 
 backend_examples = [
     AutoDiffractor(),
-    AutoEnzyme(; mode=Enzyme.Forward),
-    AutoEnzyme(; mode=Enzyme.Reverse),
+    AutoEnzyme(),
     AutoFastDifferentiation(),
     AutoFiniteDiff(),
     AutoFiniteDifferences(; fdm=FiniteDifferences.central_fdm(3, 1)),
@@ -52,7 +52,7 @@ println(io, "| Backend | Availability | Two-argument functions | Hessian support
 println(io, "|:--------|:------------:|:----------------------:|:---------------:|")
 
 for b in backend_examples
-    join(io, [string(b), unicode_check_available(b), unicode_check_twoarg(b), unicode_check_hessian(b)], '|')
+    join(io, ["[`$(nameof(typeof(b)))`](@extref ADTypes)", unicode_check_available(b), unicode_check_twoarg(b), unicode_check_hessian(b)], '|')
     println(io, '|' )
 end
 backend_table = Markdown.parse(String(take!(io)))
