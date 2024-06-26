@@ -75,6 +75,7 @@ end
 
 maybe_zero(x::Number) = zero(x)
 maybe_zero(x::AbstractArray) = zero(x)
+maybe_zero(x::Batch) = Batch(maybe_zero.(x.elements))
 maybe_zero(::Nothing) = nothing
 
 function scenario_to_zero(scen::Scenario{op,args,pl}) where {op,args,pl}
