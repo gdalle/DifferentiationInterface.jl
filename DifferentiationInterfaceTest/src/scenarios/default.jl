@@ -38,8 +38,8 @@ end
 
 ## Number to array
 
-multiplicator(::Type{V}) where {V<:AbstractVector} = V(float.(1:6))
-multiplicator(::Type{M}) where {M<:AbstractMatrix} = M(float.(reshape(1:6, 2, 3)))
+multiplicator(::Type{V}) where {V<:AbstractVector} = convert(V, float.(1:6))
+multiplicator(::Type{M}) where {M<:AbstractMatrix} = convert(M, float.(reshape(1:6, 2, 3)))
 
 function num_to_arr(x::Number, ::Type{A}) where {A<:AbstractArray}
     a = multiplicator(A)
