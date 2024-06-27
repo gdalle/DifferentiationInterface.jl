@@ -2,10 +2,10 @@
     pick_batchsize(backend::AbstractADType, dimension::Integer)
 
 Pick a reasonable batch size for batched derivative evaluation with a given total `dimension`.
+
+Returns `1` for backends which have not overloaded it.
 """
-function pick_batchsize(::AbstractADType, dimension::Integer)
-    return min(dimension, 8)
-end
+pick_batchsize(::AbstractADType, dimension::Integer) = 1
 
 """
     Batch{B,T}
