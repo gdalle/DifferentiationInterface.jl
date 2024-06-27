@@ -3,6 +3,10 @@ abstract type FromPrimitive <: AbstractADType end
 check_available(fromprim::FromPrimitive) = check_available(fromprim.backend)
 twoarg_support(fromprim::FromPrimitive) = twoarg_support(fromprim.backend)
 
+function pick_batchsize(fromprim::FromPrimitive, dimension)
+    return pick_batchsize(fromprim.backend, dimension)
+end
+
 ## Forward
 
 struct AutoForwardFromPrimitive{B} <: FromPrimitive
