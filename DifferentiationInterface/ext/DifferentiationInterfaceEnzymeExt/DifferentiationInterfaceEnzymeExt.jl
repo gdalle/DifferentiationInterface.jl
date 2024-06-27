@@ -57,6 +57,9 @@ reverse_mode(::AnyAutoEnzyme{Nothing}) = Reverse
 
 DI.check_available(::AutoEnzyme) = true
 
+# until https://github.com/EnzymeAD/Enzyme.jl/pull/1545 is merged
+DI.pick_batchsize(::AnyAutoEnzyme, dimension) = min(dimension, 8)
+
 # Enzyme's `Duplicated(x, dx)` expects both arguments to be of the same type
 function DI.basis(::AutoEnzyme, a::AbstractArray{T}, i::CartesianIndex) where {T}
     b = zero(a)
