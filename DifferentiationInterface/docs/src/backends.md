@@ -5,20 +5,20 @@ This page is about the latter, check out [that page](@ref "Operators") to learn 
 
 ## List of backends
 
-We support all dense backend choices from [ADTypes.jl](https://github.com/SciML/ADTypes.jl):.
+We support all dense backend choices from [ADTypes.jl](https://github.com/SciML/ADTypes.jl):
 
-- [`AutoDiffractor`](@extref ADTypes)
-- [`AutoEnzyme`](@extref ADTypes)
-- [`AutoFastDifferentiation`](@extref ADTypes)
-- [`AutoFiniteDiff`](@extref ADTypes)
-- [`AutoFiniteDifferences`](@extref ADTypes)
-- [`AutoForwardDiff`](@extref ADTypes)
-- [`AutoPolyesterForwardDiff`](@extref ADTypes)
-- [`AutoReverseDiff`](@extref ADTypes)
-- [`AutoSymbolics`](@extref ADTypes)
-- [`AutoTapir`](@extref ADTypes)
-- [`AutoTracker`](@extref ADTypes)
-- [`AutoZygote`](@extref ADTypes)
+- [`AutoDiffractor`](@extref ADTypes.AutoDiffractor)
+- [`AutoEnzyme`](@extref ADTypes.AutoEnzyme)
+- [`AutoFastDifferentiation`](@extref ADTypes.AutoFastDifferentiation)
+- [`AutoFiniteDiff`](@extref ADTypes.AutoFiniteDiff)
+- [`AutoFiniteDifferences`](@extref ADTypes.AutoFiniteDifferences)
+- [`AutoForwardDiff`](@extref ADTypes.AutoForwardDiff)
+- [`AutoPolyesterForwardDiff`](@extref ADTypes.AutoPolyesterForwardDiff)
+- [`AutoReverseDiff`](@extref ADTypes.AutoReverseDiff)
+- [`AutoSymbolics`](@extref ADTypes.AutoSymbolics)
+- [`AutoTapir`](@extref ADTypes.AutoTapir)
+- [`AutoTracker`](@extref ADTypes.AutoTracker)
+- [`AutoZygote`](@extref ADTypes.AutoZygote)
 
 We also support the sparse wrapper [`AutoSparse`](@extref ADTypes.AutoSparse).
 
