@@ -5,7 +5,37 @@ This page is about the latter, check out [that page](@ref "Operators") to learn 
 
 ## List of backends
 
-We support all dense backend choices from [ADTypes.jl](https://github.com/SciML/ADTypes.jl), as well as their sparse wrapper [`AutoSparse`](@extref ADTypes.AutoSparse).
+We support all dense backend choices from [ADTypes.jl](https://github.com/SciML/ADTypes.jl):.
+
+- [`AutoDiffractor`](@extref ADTypes)
+- [`AutoEnzyme`](@extref ADTypes)
+- [`AutoFastDifferentiation`](@extref ADTypes)
+- [`AutoFiniteDiff`](@extref ADTypes)
+- [`AutoFiniteDifferences`](@extref ADTypes)
+- [`AutoForwardDiff`](@extref ADTypes)
+- [`AutoPolyesterForwardDiff`](@extref ADTypes)
+- [`AutoReverseDiff`](@extref ADTypes)
+- [`AutoSymbolics`](@extref ADTypes)
+- [`AutoTapir`](@extref ADTypes)
+- [`AutoTracker`](@extref ADTypes)
+- [`AutoZygote`](@extref ADTypes)
+
+We also support the sparse wrapper [`AutoSparse`](@extref ADTypes.AutoSparse).
+
+## Compatibility
+
+DifferentiationInterface.jl itself is compatible with Julia 1.6, the Long Term Support (LTS) version of the language.
+However, we were only able to test the following backends on Julia 1.6:
+
+- `AutoFiniteDifferences`
+- `AutoForwardDiff`
+- `AutoReverseDiff`
+- `AutoTracker`
+- `AutoZygote`
+
+We strongly recommend that users upgrade to Julia 1.10 or above, where all backends are tested.
+
+## Features
 
 ```@setup backends
 using ADTypes
@@ -52,7 +82,7 @@ println(io, "| Backend | Availability | Two-argument functions | Hessian support
 println(io, "|:--------|:------------:|:----------------------:|:---------------:|")
 
 for b in backend_examples
-    join(io, ["[`$(nameof(typeof(b)))`](@extref ADTypes)", unicode_check_available(b), unicode_check_twoarg(b), unicode_check_hessian(b)], '|')
+    join(io, ["`$(nameof(typeof(b)))`", unicode_check_available(b), unicode_check_twoarg(b), unicode_check_hessian(b)], '|')
     println(io, '|' )
 end
 backend_table = Markdown.parse(String(take!(io)))
@@ -61,21 +91,6 @@ backend_table = Markdown.parse(String(take!(io)))
 ```@example backends
 backend_table #hide
 ```
-
-## Compatibility
-
-DifferentiationInterface.jl itself is compatible with Julia 1.6, the Long Term Support (LTS) version of the language.
-However, we were only able to test the following backends on Julia 1.6:
-
-- FiniteDifferences.jl
-- ForwardDiff.jl
-- ReverseDiff.jl
-- Tracker.jl
-- Zygote.jl
-
-We strongly recommend that users upgrade to Julia 1.10, where all backends are tested.
-
-## Checks
 
 ### Availability
 

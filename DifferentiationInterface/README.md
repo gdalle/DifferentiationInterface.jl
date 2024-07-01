@@ -86,7 +86,6 @@ value_and_gradient(f, AutoZygote(),      x) # returns (5.0, [2.0, 4.0]) with Zyg
 
 To improve your performance by up to several orders of magnitude compared to this example, take a look at the [DifferentiationInterface tutorial](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterface/stable/tutorial1/) and its section on operator preparation.
 
-## Related packages
+## Citation
 
-- [AbstractDifferentiation.jl](https://github.com/JuliaDiff/AbstractDifferentiation.jl) is the original inspiration for DifferentiationInterface.jl.
-- [AutoDiffOperators.jl](https://github.com/oschulz/AutoDiffOperators.jl) is an attempt to bridge ADTypes.jl with AbstractDifferentiation.jl.
+Please cite both DifferentiationInterface.jl and its inspiration [AbstractDifferentiation.jl](https://github.com/JuliaDiff/AbstractDifferentiation.jl), using the provided [`CITATION.bib`](./CITATION.bib) file.
