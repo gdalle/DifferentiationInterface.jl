@@ -48,6 +48,11 @@ We support all of the backends defined by [ADTypes.jl](https://github.com/SciML/
 - [Tracker.jl](https://github.com/FluxML/Tracker.jl)
 - [Zygote.jl](https://github.com/FluxML/Zygote.jl)
 
+Note that in some cases, going through DifferentiationInterface.jl might be slower than a direct call to the backend's API.
+This is mostly true for Enzyme.jl, whose handling of activities and multiple arguments unlocks additional performance.
+We are working on this challenge, and welcome any suggestions or contributions.
+Meanwhile, if differentiation fails or takes too long, consider using Enzyme.jl directly.
+
 ## Installation
 
 To install the stable version of the package, run the following code in a Julia REPL:
