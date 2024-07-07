@@ -77,7 +77,7 @@ function DI.pushforward!(f, dy, backend::AutoGTPSA, x, dx, extras::GTPSAPushforw
     end
 end
 
-function DI.value_and_pushforward(f, backend::AutoGTPSA, x, dx, extras:GTPSAPushforwardExtras)
+function DI.value_and_pushforward(f, backend::AutoGTPSA, x, dx, extras::GTPSAPushforwardExtras)
     if x isa Number
         extras.xd[0] = x
         extras.xd[1] = dx
@@ -105,7 +105,7 @@ function DI.value_and_pushforward(f, backend::AutoGTPSA, x, dx, extras:GTPSAPush
     end
 end
 
-function DI.value_and_pushforward!(f, dy, backend::AutoGTPSA, x, dx, extras:GTPSAPushforwardExtras)
+function DI.value_and_pushforward!(f, dy, backend::AutoGTPSA, x, dx, extras::GTPSAPushforwardExtras)
     if x isa Number
         extras.xd[0] = x
         extras.xd[1] = dx
