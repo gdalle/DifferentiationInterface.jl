@@ -1,9 +1,141 @@
 ## Pushforward
+struct GTPSAPushforwardExtras{X} <: PushforwardExtras
+    xd::X
+end
+
+function DI.prepare_pushforward(f, backend::AutoGTPSA{D}, x, dx) where {D}
+    if D != Nothing
+        d = backend.descriptor
+    else
+        d = Descriptor(length(x), 1)
+    end
+
+    if x isa Number
+        t = TPS(; use=d)
+        return GTPSAPushforwardExtras(t)
+    else
+        v = similar(x, TPS)
+
+        # v and x have same indexing because of similar
+        for i in eachindex(v)
+            v[i] = TPS(; use=d)
+        end
+        return GTPSAPushforwardExtras(v)
+    end
+end
+
+function DI.pushforward(f, backend::AutoGTPSA, x, dx, extras::GTPSAPushforwardExtras)
+    if x isa Number
+        extras.xd[0] = x
+        extras.xd[1] = dx
+    else
+        j = 1
+        for i in eachindex(x)
+            extras.xd[i][0] = x[i]
+            extras.xd[i][j] = dx[i]
+            j += 1
+        end
+    end
+
+    yt = f(extras.xd)
+    if yt isa Number
+        return yt[1]
+    else
+        dy = similar(yt, GTPSA.numtype(eltype(yt)))
+        j = 1
+        for i in eachindex(yt)
+            dy[i] = yt[i][j]
+            j += 1
+        end
+        return dy
+    end
+end
+
+function DI.pushforward!(f, dy, backend::AutoGTPSA, x, dx, extras::GTPSAPushforwardExtras)
+    if x isa Number
+        extras.xd[0] = x
+        extras.xd[1] = dx
+    else
+        j = 1
+        for i in eachindex(x)
+            extras.xd[i][0] = x[i]
+            extras.xd[i][j] = dx[i]
+            j += 1
+        end
+    end
+
+    yt = f(extras.xd)
+    if yt isa Number
+        return yt[1]
+    else
+        j = 1
+        for i in eachindex(yt)
+            dy[i] = yt[i][j]
+            j += 1
+        end
+        return dy
+    end
+end
+
+function DI.value_and_pushforward(f, backend::AutoGTPSA, x, dx, extras:GTPSAPushforwardExtras)
+    if x isa Number
+        extras.xd[0] = x
+        extras.xd[1] = dx
+    else
+        j = 1
+        for i in eachindex(x)
+            extras.xd[i][0] = x[i]
+            extras.xd[i][j] = dx[i]
+            j += 1
+        end
+    end
+
+    yt = f(extras.xd)
+    if yt isa Number
+        return yt[1]
+    else
+        dy = similar(yt, GTPSA.numtype(eltype(yt)))
+        j = 1
+        for i in eachindex(yt)
+            dy[i] = yt[i][j]
+            j += 1
+        end
+        y = map(t->t[0], yt)
+        return y, dy
+    end
+end
+
+function DI.value_and_pushforward!(f, dy, backend::AutoGTPSA, x, dx, extras:GTPSAPushforwardExtras)
+    if x isa Number
+        extras.xd[0] = x
+        extras.xd[1] = dx
+    else
+        j = 1
+        for i in eachindex(x)
+            extras.xd[i][0] = x[i]
+            extras.xd[i][j] = dx[i]
+            j += 1
+        end
+    end
+
+    yt = f(extras.xd)
+    if yt isa Number
+        return yt[1]
+    else
+        j = 1
+        for i in eachindex(yt)
+            dy[i] = yt[i][j]
+            j += 1
+        end
+        y = map(t->t[0], yt)
+        return y, dy
+    end
+end
 
 ## Derivative
 
-struct GTPSADerivativeExtras <: DerivativeExtras
-    t::TPS
+struct GTPSADerivativeExtras{T} <: DerivativeExtras
+    t::T
 end
 
 function DI.prepare_derivative(f, backend::AutoGTPSA{D}, x) where {D}
@@ -67,8 +199,8 @@ end
 
 ## Gradient
 
-struct GTPSAGradientExtras <: GradientExtras
-    v::Vector{TPS}
+struct GTPSAGradientExtras{V} <: GradientExtras
+    v::V
 end
 
 function DI.prepare_gradient(f, backend::AutoGTPSA{D}, x) where {D}
@@ -128,8 +260,8 @@ end
 
 ## Jacobian
 
-struct GTPSAJacobianExtras <: JacobianExtras
-    v::Vector{TPS}
+struct GTPSAJacobianExtras{V} <: JacobianExtras
+    v::V
 end
 
 function DI.prepare_jacobian(f, backend::AutoGTPSA{D}, x) where {D}
@@ -189,8 +321,8 @@ end
 
 ## Second derivative
 
-struct GTPSASecondDerivativeExtras <: SecondDerivativeExtras
-    t::TPS
+struct GTPSASecondDerivativeExtras{T} <: SecondDerivativeExtras
+    t::T
 end
 
 function DI.prepare_second_derivative(f, backend::AutoGTPSA{D}, x) where {D}
@@ -261,8 +393,8 @@ end
 
 ## Hessian
 
-struct GTPSAHessianExtras <: HessianExtras
-    v::Vector{TPS}
+struct GTPSAHessianExtras{V} <: HessianExtras
+    v::V
 end
 
 function DI.prepare_hessian(f, backend::AutoGTPSA{D}, x) where {D}
