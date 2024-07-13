@@ -24,19 +24,17 @@ Create an `extras_same` object that can be given to [`pullback`](@ref) and its v
 """
 function prepare_pullback_same_point end
 
-PREPARE_PULLBACK_REF = "To improve performance via operator preparation, refer to [`prepare_pullback`](@ref) and [`prepare_pullback_same_point`](@ref)."
-
 """
     value_and_pullback(f,     backend, x, dy, [extras]) -> (y, dx)
     value_and_pullback(f!, y, backend, x, dy, [extras]) -> (y, dx)
 
 Compute the value and the pullback of the function `f` at point `x` with seed `dy`.
 
-$PREPARE_PULLBACK_REF
+$(document_preparation("pullback"; same_point=true))
 
 !!! tip 
-    Pullbacks are also commonly called vector-Jacobian products (VJPs).
-    This function could therefore also have been named `value_and_vjp`.
+    Pullbacks are also commonly called vector-Jacobian products or VJPs.
+    This function could have been named `value_and_vjp`.
 
 !!! info
     Required primitive for reverse mode backends.
@@ -49,11 +47,11 @@ function value_and_pullback end
 
 Compute the value and the pullback of the function `f` at point `x` with seed `dy`, overwriting `dx`.
 
-$PREPARE_PULLBACK_REF
+$(document_preparation("pullback"; same_point=true))
 
 !!! tip 
     Pullbacks are also commonly called vector-Jacobian products or VJPs.
-    This function could therefore also have been named `value_and_vjp!`.
+    This function could have been named `value_and_vjp!`.
 """
 function value_and_pullback! end
 
@@ -63,11 +61,11 @@ function value_and_pullback! end
 
 Compute the pullback of the function `f` at point `x` with seed `dy`.
 
-$PREPARE_PULLBACK_REF
+$(document_preparation("pullback"; same_point=true))
 
 !!! tip 
     Pullbacks are also commonly called vector-Jacobian products or VJPs.
-    This function could therefore also have been named `vjp`.
+    This function could have been named `vjp`.
 """
 function pullback end
 
@@ -77,12 +75,11 @@ function pullback end
 
 Compute the pullback of the function `f` at point `x` with seed `dy`, overwriting `dx`.
 
-$PREPARE_PULLBACK_REF
+$(document_preparation("pullback"; same_point=true))
 
 !!! tip 
     Pullbacks are also commonly called vector-Jacobian products or VJPs.
-    This function could therefore also have been named `vjp!`.
-
+    This function could have been named `vjp!`.
 """
 function pullback! end
 

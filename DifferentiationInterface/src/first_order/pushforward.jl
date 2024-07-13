@@ -24,19 +24,17 @@ Create an `extras_same` object that can be given to [`pushforward`](@ref) and it
 """
 function prepare_pushforward_same_point end
 
-PREPARE_PUSHFORWARD_REF = "To improve performance via operator preparation, refer to [`prepare_pushforward`](@ref) and [`prepare_pushforward_same_point`](@ref)."
-
 """
     value_and_pushforward(f,     backend, x, dx, [extras]) -> (y, dy)
     value_and_pushforward(f!, y, backend, x, dx, [extras]) -> (y, dy)
 
 Compute the value and the pushforward of the function `f` at point `x` with seed `dx`.
 
-$PREPARE_PUSHFORWARD_REF
+$(document_preparation("pushforward"; same_point=true))
 
 !!! tip 
     Pushforwards are also commonly called Jacobian-vector products or JVPs.
-    This function could therefore also have been named `value_and_jvp`.
+    This function could have been named `value_and_jvp`.
 
 !!! info
     Required primitive for forward mode backends.
@@ -49,11 +47,11 @@ function value_and_pushforward end
 
 Compute the value and the pushforward of the function `f` at point `x` with seed `dx`, overwriting `dy`.
 
-$PREPARE_PUSHFORWARD_REF
+$(document_preparation("pushforward"; same_point=true))
 
 !!! tip 
     Pushforwards are also commonly called Jacobian-vector products or JVPs.
-    This function could therefore also have been named `value_and_jvp!`.
+    This function could have been named `value_and_jvp!`.
 """
 function value_and_pushforward! end
 
@@ -63,11 +61,11 @@ function value_and_pushforward! end
 
 Compute the pushforward of the function `f` at point `x` with seed `dx`.
 
-$PREPARE_PUSHFORWARD_REF
+$(document_preparation("pushforward"; same_point=true))
 
 !!! tip 
     Pushforwards are also commonly called Jacobian-vector products or JVPs.
-    This function could therefore also have been named `jvp`.
+    This function could have been named `jvp`.
 """
 function pushforward end
 
@@ -77,11 +75,11 @@ function pushforward end
 
 Compute the pushforward of the function `f` at point `x` with seed `dx`, overwriting `dy`.
 
-$PREPARE_PUSHFORWARD_REF
+$(document_preparation("pushforward"; same_point=true))
 
 !!! tip 
     Pushforwards are also commonly called Jacobian-vector products or JVPs.
-    This function could therefore also have been named `jvp!`.
+    This function could have been named `jvp!`.
 """
 function pushforward! end
 
