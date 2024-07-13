@@ -72,10 +72,10 @@ struct ReverseDiffTwoArgJacobianExtras{T} <: JacobianExtras
 end
 
 function DI.prepare_jacobian(
-    f!, y::AbstractArray, backend::AutoReverseDiff, x::AbstractArray
-)
+    f!, y::AbstractArray, ::AutoReverseDiff{Compile}, x::AbstractArray
+) where {Compile}
     tape = JacobianTape(f!, y, x)
-    if backend.compile
+    if Compile
         tape = compile(tape)
     end
     return ReverseDiffTwoArgJacobianExtras(tape)
