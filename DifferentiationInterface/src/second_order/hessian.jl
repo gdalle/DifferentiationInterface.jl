@@ -14,6 +14,8 @@ function prepare_hessian end
     hessian(f, backend, x, [extras]) -> hess
 
 Compute the Hessian matrix of the function `f` at point `x`.
+
+$(document_preparation("hessian"))
 """
 function hessian end
 
@@ -21,6 +23,8 @@ function hessian end
     hessian!(f, hess, backend, x, [extras]) -> hess
 
 Compute the Hessian matrix of the function `f` at point `x`, overwriting `hess`.
+
+$(document_preparation("hessian"))
 """
 function hessian! end
 
@@ -28,6 +32,8 @@ function hessian! end
     value_gradient_and_hessian(f, backend, x, [extras]) -> (y, grad, hess)
 
 Compute the value, gradient vector and Hessian matrix of the function `f` at point `x`.
+
+$(document_preparation("hessian"))
 """
 function value_gradient_and_hessian end
 
@@ -35,6 +41,8 @@ function value_gradient_and_hessian end
     value_gradient_and_hessian!(f, grad, hess, backend, x, [extras]) -> (y, grad, hess)
 
 Compute the value, gradient vector and Hessian matrix of the function `f` at point `x`, overwriting `grad` and `hess`.
+
+$(document_preparation("hessian"))
 """
 function value_gradient_and_hessian! end
 
