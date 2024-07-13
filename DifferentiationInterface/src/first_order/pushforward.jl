@@ -30,6 +30,12 @@ function prepare_pushforward_same_point end
 
 Compute the value and the pushforward of the function `f` at point `x` with seed `dx`.
 
+$(document_preparation("pushforward"; same_point=true))
+
+!!! tip 
+    Pushforwards are also commonly called Jacobian-vector products or JVPs.
+    This function could have been named `value_and_jvp`.
+
 !!! info
     Required primitive for forward mode backends.
 """
@@ -40,6 +46,12 @@ function value_and_pushforward end
     value_and_pushforward!(f!, y, dy, backend, x, dx, [extras]) -> (y, dy)
 
 Compute the value and the pushforward of the function `f` at point `x` with seed `dx`, overwriting `dy`.
+
+$(document_preparation("pushforward"; same_point=true))
+
+!!! tip 
+    Pushforwards are also commonly called Jacobian-vector products or JVPs.
+    This function could have been named `value_and_jvp!`.
 """
 function value_and_pushforward! end
 
@@ -48,6 +60,12 @@ function value_and_pushforward! end
     pushforward(f!, y, backend, x, dx, [extras]) -> dy
 
 Compute the pushforward of the function `f` at point `x` with seed `dx`.
+
+$(document_preparation("pushforward"; same_point=true))
+
+!!! tip 
+    Pushforwards are also commonly called Jacobian-vector products or JVPs.
+    This function could have been named `jvp`.
 """
 function pushforward end
 
@@ -56,6 +74,12 @@ function pushforward end
     pushforward!(f!, y, dy, backend, x, dx, [extras]) -> dy
 
 Compute the pushforward of the function `f` at point `x` with seed `dx`, overwriting `dy`.
+
+$(document_preparation("pushforward"; same_point=true))
+
+!!! tip 
+    Pushforwards are also commonly called Jacobian-vector products or JVPs.
+    This function could have been named `jvp!`.
 """
 function pushforward! end
 

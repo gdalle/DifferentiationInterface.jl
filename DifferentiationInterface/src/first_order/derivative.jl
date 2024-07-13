@@ -17,6 +17,8 @@ function prepare_derivative end
     value_and_derivative(f!, y, backend, x, [extras]) -> (y, der)
 
 Compute the value and the derivative of the function `f` at point `x`.
+
+$(document_preparation("derivative"))
 """
 function value_and_derivative end
 
@@ -25,7 +27,9 @@ function value_and_derivative end
     value_and_derivative!(f!, y, der, backend, x, [extras]) -> (y, der)
 
 Compute the value and the derivative of the function `f` at point `x`, overwriting `der`.
-    """
+
+$(document_preparation("derivative"))
+"""
 function value_and_derivative! end
 
 """
@@ -33,6 +37,8 @@ function value_and_derivative! end
     derivative(f!, y, backend, x, [extras]) -> der
 
 Compute the derivative of the function `f` at point `x`.
+
+$(document_preparation("derivative"))
 """
 function derivative end
 
@@ -41,6 +47,8 @@ function derivative end
     derivative!(f!, y, der, backend, x, [extras]) -> der
 
 Compute the derivative of the function `f` at point `x`, overwriting `der`.
+
+$(document_preparation("derivative"))
 """
 function derivative! end
 
