@@ -49,6 +49,7 @@ jobs:
           - Double/Enzyme-ForwardDiff
           - Double/ForwardDiff-Zygote
           - Double/ReverseDiff-Zygote
+          - Double/Flux-Zygote
         exclude:
           - version: '1.6'
             group: Formalities
