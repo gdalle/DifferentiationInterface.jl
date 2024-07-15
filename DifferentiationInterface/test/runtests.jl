@@ -14,6 +14,7 @@ LOGGING = get(ENV, "CI", "false") == "false"
 GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "All")
 
 ALL_BACKENDS = [
+    "ChainRulesCore",
     "Diffractor",
     "Enzyme",
     "FiniteDiff",
@@ -47,23 +48,20 @@ ALL_BACKENDS = [
 
     if GROUP == "All"
         Pkg.add(ALL_BACKENDS)
-        @testset verbose = true "$folder" for folder in ("Backends",)
-            @testset verbose = true "$subfolder" for subfolder in
-                                                     readdir(joinpath(@__DIR__, folder))
-                @testset "$file" for file in readdir(joinpath(@__DIR__, folder, subfolder))
-                    @info "Testing $folder/$subfolder/$file"
-                    include(joinpath(@__DIR__, folder, subfolder, file))
-                end
+        @testset verbose = true "$folder" for folder in readdir(joinpath(@__DIR__, "Back"))
+            @testset "$file" for file in readdir(joinpath(@__DIR__, "Back", folder))
+                @info "Testing Back/$folder/$file"
+                include(joinpath(@__DIR__, "Back", folder, file))
             end
         end
     elseif startswith(GROUP, "Back")
-        @testset verbose = true "$GROUP" begin
-            backends_str = split(GROUP, '/')[2]
-            backends = split(backends_str, '-')
-            Pkg.add(backends)
-            @testset "$file" for file in readdir(joinpath(@__DIR__, "Back", backends_str))
-                @info "Testing Back/$backends_str/$file"
-                include(joinpath(@__DIR__, "Back", backends_str, file))
+        folder = split(GROUP, '/')[2]
+        backends = split(folder, '-')
+        Pkg.add(backends)
+        @testset verbose = true "$folder" begin
+            @testset "$file" for file in readdir(joinpath(@__DIR__, "Back", folder))
+                @info "Testing Back/$folder/$file"
+                include(joinpath(@__DIR__, "Back", folder, file))
             end
         end
     end
