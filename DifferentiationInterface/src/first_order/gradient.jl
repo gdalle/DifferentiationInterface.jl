@@ -14,6 +14,8 @@ function prepare_gradient end
     value_and_gradient(f, backend, x, [extras]) -> (y, grad)
 
 Compute the value and the gradient of the function `f` at point `x`.
+
+$(document_preparation("gradient"))
 """
 function value_and_gradient end
 
@@ -21,6 +23,8 @@ function value_and_gradient end
     value_and_gradient!(f, grad, backend, x, [extras]) -> (y, grad)
 
 Compute the value and the gradient of the function `f` at point `x`, overwriting `grad`.
+
+$(document_preparation("gradient"))
 """
 function value_and_gradient! end
 
@@ -28,6 +32,8 @@ function value_and_gradient! end
     gradient(f, backend, x, [extras]) -> grad
 
 Compute the gradient of the function `f` at point `x`.
+
+$(document_preparation("gradient"))
 """
 function gradient end
 
@@ -35,6 +41,8 @@ function gradient end
     gradient!(f, grad, backend, x, [extras]) -> grad
 
 Compute the gradient of the function `f` at point `x`, overwriting `grad`.
+
+$(document_preparation("gradient"))
 """
 function gradient! end
 
@@ -62,6 +70,8 @@ end
 
 ## One argument
 
+### Without extras
+
 function value_and_gradient(f::F, backend::AbstractADType, x) where {F}
     return value_and_gradient(f, backend, x, prepare_gradient(f, backend, x))
 end
@@ -77,6 +87,8 @@ end
 function gradient!(f::F, der, backend::AbstractADType, x) where {F}
     return gradient!(f, der, backend, x, prepare_gradient(f, backend, x))
 end
+
+### With extras
 
 function value_and_gradient(
     f::F, backend::AbstractADType, x, extras::PullbackGradientExtras

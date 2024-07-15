@@ -22,7 +22,7 @@ The cells can have three values:
 ```@setup overloads
 using ADTypes: AbstractADType
 using DifferentiationInterface
-using DifferentiationInterface: backend_str, twoarg_support, TwoArgSupported
+using DifferentiationInterface: twoarg_support, TwoArgSupported
 using Markdown: Markdown
 
 using Diffractor: Diffractor

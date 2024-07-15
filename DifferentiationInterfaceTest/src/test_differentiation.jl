@@ -78,8 +78,7 @@ function test_differentiation(
     prog = ProgressUnknown(; desc="$title", spinner=true, enabled=logging)
 
     @testset verbose = true "$title" begin
-        @testset verbose = detailed "$(backend_str(backend))" for (i, backend) in
-                                                                  enumerate(backends)
+        @testset verbose = detailed "$backend" for (i, backend) in enumerate(backends)
             filtered_scenarios = filter(s -> compatible(backend, s), scenarios)
             grouped_scenarios = group_by_operator(filtered_scenarios)
             @testset verbose = detailed "$op" for (j, (op, op_group)) in
@@ -88,7 +87,7 @@ function test_differentiation(
                     next!(
                         prog;
                         showvalues=[
-                            (:backend, "$(backend_str(backend)) - $i/$(length(backends))"),
+                            (:backend, "$backend - $i/$(length(backends))"),
                             (:scenario_type, "$op - $j/$(length(grouped_scenarios))"),
                             (:scenario, "$k/$(length(op_group))"),
                             (:arguments, nb_args(scen)),
@@ -98,6 +97,7 @@ function test_differentiation(
                             (:input_size, size(scen.x)),
                             (:output_type, typeof(scen.y)),
                             (:output_size, size(scen.y)),
+                            (:batched_seed, scen.seed isa Batch),
                         ],
                     )
                     correctness && @testset "Correctness" begin
@@ -111,6 +111,7 @@ function test_differentiation(
                     sparsity && @testset "Sparsity" begin
                         test_sparsity(backend, scen)
                     end
+                    yield()
                 end
             end
         end
@@ -175,7 +176,7 @@ function benchmark_differentiation(
                 next!(
                     prog;
                     showvalues=[
-                        (:backend, "$(backend_str(backend)) - $i/$(length(backends))"),
+                        (:backend, "$backend - $i/$(length(backends))"),
                         (:scenario_type, "$op - $j/$(length(grouped_scenarios))"),
                         (:scenario, "$k/$(length(op_group))"),
                         (:arguments, nb_args(scen)),
@@ -185,9 +186,11 @@ function benchmark_differentiation(
                         (:input_size, size(scen.x)),
                         (:output_type, typeof(scen.y)),
                         (:output_size, size(scen.y)),
+                        (:batched_seed, scen.seed isa Batch),
                     ],
                 )
                 run_benchmark!(benchmark_data, backend, scen; logging)
+                yield()
             end
         end
     end

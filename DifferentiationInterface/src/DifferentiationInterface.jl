@@ -54,15 +54,19 @@ include("utils/batch.jl")
 include("utils/check.jl")
 include("utils/exceptions.jl")
 include("utils/maybe.jl")
+include("utils/printing.jl")
 
 include("first_order/pushforward.jl")
+include("first_order/pushforward_batched.jl")
 include("first_order/pullback.jl")
+include("first_order/pullback_batched.jl")
 include("first_order/derivative.jl")
 include("first_order/gradient.jl")
 include("first_order/jacobian.jl")
 
 include("second_order/second_derivative.jl")
 include("second_order/hvp.jl")
+include("second_order/hvp_batched.jl")
 include("second_order/hessian.jl")
 
 include("sparse/fallbacks.jl")
@@ -74,8 +78,6 @@ include("misc/differentiate_with.jl")
 include("misc/sparsity_detector.jl")
 include("misc/from_primitive.jl")
 include("misc/temp_backends.jl")
-
-include("utils/printing.jl")
 
 function __init__()
     @require_extensions

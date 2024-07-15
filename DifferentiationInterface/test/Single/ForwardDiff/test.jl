@@ -1,22 +1,20 @@
 using DifferentiationInterface, DifferentiationInterfaceTest
-using DifferentiationInterface: AutoForwardFromPrimitive
+using DifferentiationInterfaceTest: add_batchified!
 using ForwardDiff: ForwardDiff
 using SparseConnectivityTracer, SparseMatrixColorings
 using Test
 
-dense_backends = [AutoForwardDiff(), AutoForwardDiff(; chunksize=2, tag=:hello)]
-
-fromprimitive_backends = [AutoForwardFromPrimitive(AutoForwardDiff(; chunksize=5))]
+dense_backends = [AutoForwardDiff(), AutoForwardDiff(; chunksize=5, tag=:hello)]
 
 sparse_backends = [
     AutoSparse(
-        AutoForwardDiff();
+        AutoForwardDiff(; chunksize=5);
         sparsity_detector=TracerSparsityDetector(),
         coloring_algorithm=GreedyColoringAlgorithm(),
     ),
 ]
 
-for backend in vcat(dense_backends, fromprimitive_backends, sparse_backends)
+for backend in vcat(dense_backends, sparse_backends)
     @test check_available(backend)
     @test check_twoarg(backend)
     @test check_hessian(backend)
@@ -24,10 +22,11 @@ end
 
 ## Dense backends
 
-test_differentiation(vcat(dense_backends, fromprimitive_backends); logging=LOGGING);
+test_differentiation(dense_backends, add_batchified!(default_scenarios()); logging=LOGGING);
 
 test_differentiation(
-    vcat(dense_backends, fromprimitive_backends);
+    dense_backends,
+    add_batchified!(default_scenarios());
     correctness=false,
     type_stability=true,
     second_order=false,
