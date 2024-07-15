@@ -17,7 +17,7 @@ concurrency:
 jobs:
   
   test-DI:
-    name: DI (${{ matrix.group }}) - ${{ matrix.version }}
+    name: ${{ matrix.version }} - DI (${{ matrix.group }})
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions: # needed to allow julia-actions/cache to proactively delete old caches that it has created
@@ -33,55 +33,55 @@ jobs:
         group:
           - Formalities
           - Internals
-          - Backends/Diffractor
-          - Backends/Enzyme
-          - Backends/FastDifferentiation
-          - Backends/FiniteDiff
-          - Backends/FiniteDifferences
-          - Backends/ForwardDiff
-          - Backends/PolyesterForwardDiff
-          - Backends/ReverseDiff
-          - Backends/Symbolics
-          - Backends/Tapir
-          - Backends/Tracker
-          - Backends/Zygote
-          - Backends/ChainRulesCore-Zygote
-          - Backends/Enzyme-ForwardDiff
-          - Backends/ForwardDiff-Zygote
-          - Backends/ReverseDiff-Zygote
+          - Back/Diffractor
+          - Back/Enzyme
+          - Back/FastDifferentiation
+          - Back/FiniteDiff
+          - Back/FiniteDifferences
+          - Back/ForwardDiff
+          - Back/PolyesterForwardDiff
+          - Back/ReverseDiff
+          - Back/Symbolics
+          - Back/Tapir
+          - Back/Tracker
+          - Back/Zygote
+          - Back/ChainRulesCore-Zygote
+          - Back/Enzyme-ForwardDiff
+          - Back/ForwardDiff-Zygote
+          - Back/ReverseDiff-Zygote
         exclude:
           # lts
           - version: 'lts'
             group: Formalities
           - version: 'lts'
-            group: Backends/Diffractor
+            group: Back/Diffractor
           - version: 'lts'
-            group: Backends/Enzyme
+            group: Back/Enzyme
           - version: 'lts'
-            group: Backends/FiniteDiff
+            group: Back/FiniteDiff
           - version: 'lts'
-            group: Backends/FastDifferentiation
+            group: Back/FastDifferentiation
           - version: 'lts'
-            group: Backends/PolyesterForwardDiff
+            group: Back/PolyesterForwardDiff
           - version: 'lts'
-            group: Backends/Symbolics
+            group: Back/Symbolics
           - version: 'lts'
-            group: Backends/Tapir
+            group: Back/Tapir
           - version: 'lts'
-            group: Backends/Enzyme-ForwardDiff
+            group: Back/Enzyme-ForwardDiff
           - version: 'lts'
-            group: Backends/ReverseDiff-Zygote
+            group: Back/ReverseDiff-Zygote
           # pre-release
           - version: 'pre'
             group: Formalities
           - version: 'pre'
-            group: Backends/Enzyme
+            group: Back/Enzyme
           - version: 'pre'
-            group: Backends/Tapir
+            group: Back/Tapir
           - version: 'pre'
-            group: Backends/ChainRulesCore-Zygote
+            group: Back/ChainRulesCore-Zygote
           - version: 'pre'
-            group: Backends/Enzyme-ForwardDiff
+            group: Back/Enzyme-ForwardDiff
     
     steps:
       - uses: actions/checkout@v4
@@ -108,7 +108,7 @@ jobs:
           fail_ci_if_error: true
 
   test-DIT:
-    name: DIT (${{ matrix.group }}) - ${{ matrix.version }}
+    name: ${{ matrix.version }} - DIT (${{ matrix.group }})
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions: # needed to allow julia-actions/cache to proactively delete old caches that it has created

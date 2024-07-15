@@ -56,15 +56,14 @@ ALL_BACKENDS = [
                 end
             end
         end
-    elseif startswith(GROUP, "Backends")
+    elseif startswith(GROUP, "Back")
         @testset verbose = true "$GROUP" begin
             backends_str = split(GROUP, '/')[2]
             backends = split(backends_str, '-')
             Pkg.add(backends)
-            @testset "$file" for file in
-                                 readdir(joinpath(@__DIR__, "Backends", backends_str))
-                @info "Testing Backends/$backends_str/$file"
-                include(joinpath(@__DIR__, "Backends", backends_str, file))
+            @testset "$file" for file in readdir(joinpath(@__DIR__, "Back", backends_str))
+                @info "Testing Back/$backends_str/$file"
+                include(joinpath(@__DIR__, "Back", backends_str, file))
             end
         end
     end
