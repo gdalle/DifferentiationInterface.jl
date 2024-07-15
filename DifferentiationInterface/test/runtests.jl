@@ -47,7 +47,7 @@ ALL_BACKENDS = [
 
     if GROUP == "All"
         Pkg.add(ALL_BACKENDS)
-        @testset verbose = true "$folder" for folder in ("Single", "Double")
+        @testset verbose = true "$folder" for folder in ("Backends",)
             @testset verbose = true "$subfolder" for subfolder in
                                                      readdir(joinpath(@__DIR__, folder))
                 @testset "$file" for file in readdir(joinpath(@__DIR__, folder, subfolder))
@@ -56,22 +56,15 @@ ALL_BACKENDS = [
                 end
             end
         end
-    elseif startswith(GROUP, "Single")
-        b1 = split(GROUP, '/')[2]
-        @testset verbose = true "Single/$b1" begin
-            Pkg.add(b1)
-            @testset "$file" for file in readdir(joinpath(@__DIR__, "Single", "$b1"))
-                @info "Testing Single/$b1/$file"
-                include(joinpath(@__DIR__, "Single", "$b1", file))
-            end
-        end
-    elseif startswith(GROUP, "Double")
-        b1, b2 = split(split(GROUP, '/')[2], '-')
-        @testset verbose = true "Double/$b1-$b2" begin
-            Pkg.add([b1, b2])
-            @testset "$file" for file in readdir(joinpath(@__DIR__, "Double", "$b1-$b2"))
-                @info "Testing Double/$b1-$b2/$file"
-                include(joinpath(@__DIR__, "Double", "$b1-$b2", file))
+    elseif startswith(GROUP, "Backends")
+        @testset verbose = true "$GROUP" begin
+            backends_str = split(GROUP, '/')[2]
+            backends = split(backends_str, '-')
+            Pkg.add(backends)
+            @testset "$file" for file in
+                                 readdir(joinpath(@__DIR__, "Backends", backends_str))
+                @info "Testing Backends/$backends_str/$file"
+                include(joinpath(@__DIR__, "Backends", backends_str, file))
             end
         end
     end
