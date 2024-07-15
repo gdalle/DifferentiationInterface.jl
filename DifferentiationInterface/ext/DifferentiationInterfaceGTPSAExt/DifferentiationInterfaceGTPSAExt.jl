@@ -8,8 +8,7 @@ using DifferentiationInterface:
     GradientExtras,
     JacobianExtras,
     HessianExtras,
-    PushforwardExtras,
-    NoPushforwardExtras
+    PushforwardExtras
 using GTPSA
 
 DI.check_available(::AutoGTPSA) = true
