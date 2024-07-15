@@ -14,6 +14,7 @@ LOGGING = get(ENV, "CI", "false") == "false"
 GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "All")
 
 ALL_BACKENDS = [
+    "ChainRulesCore",
     "Diffractor",
     "Enzyme",
     "FiniteDiff",
@@ -47,31 +48,20 @@ ALL_BACKENDS = [
 
     if GROUP == "All"
         Pkg.add(ALL_BACKENDS)
-        @testset verbose = true "$folder" for folder in ("Single", "Double")
-            @testset verbose = true "$subfolder" for subfolder in
-                                                     readdir(joinpath(@__DIR__, folder))
-                @testset "$file" for file in readdir(joinpath(@__DIR__, folder, subfolder))
-                    @info "Testing $folder/$subfolder/$file"
-                    include(joinpath(@__DIR__, folder, subfolder, file))
-                end
+        @testset verbose = true "$folder" for folder in readdir(joinpath(@__DIR__, "Back"))
+            @testset "$file" for file in readdir(joinpath(@__DIR__, "Back", folder))
+                @info "Testing Back/$folder/$file"
+                include(joinpath(@__DIR__, "Back", folder, file))
             end
         end
-    elseif startswith(GROUP, "Single")
-        b1 = split(GROUP, '/')[2]
-        @testset verbose = true "Single/$b1" begin
-            Pkg.add(b1)
-            @testset "$file" for file in readdir(joinpath(@__DIR__, "Single", "$b1"))
-                @info "Testing Single/$b1/$file"
-                include(joinpath(@__DIR__, "Single", "$b1", file))
-            end
-        end
-    elseif startswith(GROUP, "Double")
-        b1, b2 = split(split(GROUP, '/')[2], '-')
-        @testset verbose = true "Double/$b1-$b2" begin
-            Pkg.add([b1, b2])
-            @testset "$file" for file in readdir(joinpath(@__DIR__, "Double", "$b1-$b2"))
-                @info "Testing Double/$b1-$b2/$file"
-                include(joinpath(@__DIR__, "Double", "$b1-$b2", file))
+    elseif startswith(GROUP, "Back")
+        folder = split(GROUP, '/')[2]
+        backends = split(folder, '-')
+        Pkg.add(backends)
+        @testset verbose = true "$folder" begin
+            @testset "$file" for file in readdir(joinpath(@__DIR__, "Back", folder))
+                @info "Testing Back/$folder/$file"
+                include(joinpath(@__DIR__, "Back", folder, file))
             end
         end
     end
