@@ -69,7 +69,9 @@ jobs:
             group: Back/Symbolics
           - version: 'lts'
             group: Back/Tapir
-          - version: 'pre'
+          - version: 'lts'
+            group: Down/Detector
+          - version: 'lts'
             group: Down/Detector
           # pre-release
           - version: 'pre'
