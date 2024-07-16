@@ -6,8 +6,8 @@ using Random: AbstractRNG, default_rng
 using SparseArrays: SparseArrays, SparseMatrixCSC, nnz, spdiagm
 using StaticArrays: MArray, MMatrix, MVector, SArray, SMatrix, SVector
 
-num_to_arr_svector(x) = num_to_arr(x, SVector{6,Float64})
-num_to_arr_smatrix(x) = num_to_arr(x, SMatrix{2,3,Float64,6})
+num_to_arr_svector(x) = DIT.num_to_arr(x, SVector{6,Float64})
+num_to_arr_smatrix(x) = DIT.num_to_arr(x, SMatrix{2,3,Float64,6})
 
 DIT.pick_num_to_arr(::Type{<:SVector}) = num_to_arr_svector
 DIT.pick_num_to_arr(::Type{<:SMatrix}) = num_to_arr_smatrix

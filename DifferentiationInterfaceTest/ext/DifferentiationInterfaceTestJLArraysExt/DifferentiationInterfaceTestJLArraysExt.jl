@@ -5,8 +5,8 @@ import DifferentiationInterfaceTest as DIT
 using JLArrays: JLArray, jl
 using Random: AbstractRNG, default_rng
 
-num_to_arr_jlvector(x) = num_to_arr(x, JLArray{Float64,1})
-num_to_arr_jlmatrix(x) = num_to_arr(x, JLArray{Float64,2})
+num_to_arr_jlvector(x) = DIT.num_to_arr(x, JLArray{Float64,1})
+num_to_arr_jlmatrix(x) = DIT.num_to_arr(x, JLArray{Float64,2})
 
 DIT.pick_num_to_arr(::Type{<:JLArray{<:Real,1}}) = num_to_arr_jlvector
 DIT.pick_num_to_arr(::Type{<:JLArray{<:Real,2}}) = num_to_arr_jlmatrix
