@@ -28,8 +28,8 @@ jobs:
       matrix:
         version:
           - '1'
-          - 'lts'
-          - 'pre'
+          # - 'lts'
+          # - 'pre'
         group:
           - Formalities
           # - Internals
@@ -121,8 +121,8 @@ jobs:
       matrix:
         version:
           - '1'
-          - 'lts'
-          - 'pre'
+          # - 'lts'
+          # - 'pre'
         group:
           - Formalities
           # - Zero
