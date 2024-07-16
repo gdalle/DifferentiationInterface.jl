@@ -2,7 +2,7 @@ module DifferentiationInterfaceTestStaticArraysExt
 
 using DifferentiationInterfaceTest
 import DifferentiationInterfaceTest as DIT
-using Random: AbstractRNG
+using Random: AbstractRNG, default_rng
 using SparseArrays: SparseArrays, SparseMatrixCSC, nnz, spdiagm
 using StaticArrays: MArray, MMatrix, MVector, SArray, SMatrix, SVector
 

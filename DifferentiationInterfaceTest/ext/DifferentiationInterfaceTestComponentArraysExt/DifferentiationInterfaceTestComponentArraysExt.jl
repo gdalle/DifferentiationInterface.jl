@@ -3,7 +3,7 @@ module DifferentiationInterfaceTestComponentArraysExt
 using ComponentArrays: ComponentVector
 using DifferentiationInterfaceTest
 import DifferentiationInterfaceTest as DIT
-using Random: AbstractRNG
+using Random: AbstractRNG, default_rng
 
 ## Vector to scalar
 
