@@ -19,13 +19,13 @@ GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "All")
 ## Main tests
 
 function subtest(category, folder)
-    Pkg.activate(; path=joinpath(@__DIR__, category, folder))
+    Pkg.activate(joinpath(@__DIR__, category, folder))
     Pkg.instantiate()
     @testset "$file" for file in readdir(joinpath(@__DIR__, category, folder))
         @info "Testing category/$folder/$file"
         include(joinpath(@__DIR__, category, folder, file))
     end
-    return Pkg.activate(; path=TEST_ENV)
+    return Pkg.activate(TEST_ENV)
 end
 
 @testset verbose = true "DifferentiationInterface.jl" begin
