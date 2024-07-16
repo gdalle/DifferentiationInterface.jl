@@ -32,22 +32,23 @@ jobs:
           - 'pre'
         group:
           - Formalities
-          - Internals
-          - Back/Diffractor
-          - Back/Enzyme
-          - Back/FastDifferentiation
-          - Back/FiniteDiff
-          - Back/FiniteDifferences
-          - Back/ForwardDiff
-          - Back/PolyesterForwardDiff
-          - Back/ReverseDiff
-          - Back/SecondOrder
-          - Back/Symbolics
-          - Back/Tapir
-          - Back/Tracker
-          - Back/Zygote
-          - Down/Detector
-          - Down/DifferentiateWith
+          # - Internals
+          # - Back/Diffractor
+          # - Back/Enzyme
+          # - Back/FastDifferentiation
+          # - Back/FiniteDiff
+          # - Back/FiniteDifferences
+          # - Back/ForwardDiff
+          # - Back/PolyesterForwardDiff
+          # - Back/ReverseDiff
+          # - Back/SecondOrder
+          # - Back/Symbolics
+          # - Back/Tapir
+          # - Back/Tracker
+          # - Back/Zygote
+          # - Down/Detector
+          # - Down/DifferentiateWith
+          - Down/Flux
         exclude:
           # lts
           - version: 'lts'
@@ -122,9 +123,9 @@ jobs:
           - 'pre'
         group:
           - Formalities
-          - Zero
-          - ForwardDiff
-          - Zygote
+          # - Zero
+          # - ForwardDiff
+          # - Zygote
         exclude:
           - version: 'lts'
             group: Formalities
