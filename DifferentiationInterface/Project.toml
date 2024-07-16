@@ -105,6 +105,7 @@ test = [
     "ComponentArrays",
     "DataFrames",
     # "DifferentiationInterfaceTest",
+    "ForwardDiff",
     "JET",
     "JLArrays",
     "JuliaFormatter",

@@ -41,14 +41,13 @@ jobs:
           - Back/ForwardDiff
           - Back/PolyesterForwardDiff
           - Back/ReverseDiff
+          - Back/SecondOrder
           - Back/Symbolics
           - Back/Tapir
           - Back/Tracker
           - Back/Zygote
-          - Back/ChainRulesCore-Zygote
-          - Back/Enzyme-ForwardDiff
-          - Back/ForwardDiff-Zygote
-          - Back/ReverseDiff-Zygote
+          - Down/Detector
+          - Down/DifferentiateWith
         exclude:
           # lts
           - version: 'lts'
@@ -64,13 +63,13 @@ jobs:
           - version: 'lts'
             group: Back/PolyesterForwardDiff
           - version: 'lts'
+            group: Back/SecondOrder
+          - version: 'lts'
             group: Back/Symbolics
           - version: 'lts'
             group: Back/Tapir
-          - version: 'lts'
-            group: Back/Enzyme-ForwardDiff
-          - version: 'lts'
-            group: Back/ReverseDiff-Zygote
+          - version: 'pre'
+            group: Down/Detector
           # pre-release
           - version: 'pre'
             group: Formalities
@@ -79,9 +78,9 @@ jobs:
           - version: 'pre'
             group: Back/Tapir
           - version: 'pre'
-            group: Back/ChainRulesCore-Zygote
+            group: Back/SecondOrder
           - version: 'pre'
-            group: Back/Enzyme-ForwardDiff
+            group: Down/Detector
     
     steps:
       - uses: actions/checkout@v4
