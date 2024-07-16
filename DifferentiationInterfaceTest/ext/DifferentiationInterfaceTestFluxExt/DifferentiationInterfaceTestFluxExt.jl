@@ -131,8 +131,7 @@ function DIT.flux_scenarios(rng::AbstractRNG=default_rng())
     # Recurrence
 
     recurrent_models_and_xs = [
-        (RNN(3 => 3), randn(rng, Float32, 3, 2)),
-        (LSTM(3 => 3), randn(rng, Float32, 3, 2)),
+        (RNN(3 => 3), randn(rng, Float32, 3, 2)), (LSTM(3 => 3), randn(rng, Float32, 3, 2))
     ]
 
     for (model, x) in recurrent_models_and_xs

@@ -4,7 +4,7 @@ mysimilar(x) = deepcopy(x)
 mysimilar(x::Batch) = Batch(map(mysimilar, x.elements))
 
 mycopy_random(rng::AbstractRNG, x::Number) = randn(rng, typeof(x))
-mycopy_random(rng::AbstractRNG, x::AbstractArray) = map(Base.Fix1(mycopy_random_aux, rng), x)
+mycopy_random(rng::AbstractRNG, x::AbstractArray) = map(Base.Fix1(mycopy_random, rng), x)
 mycopy_random(rng::AbstractRNG, x) = deepcopy(x)
 
 function mycopy_random(rng::AbstractRNG, x::Batch)
