@@ -80,7 +80,6 @@ Enzyme = "7da242da-08ed-463a-9acd-ee780be4f1d9"
 FastDifferentiation = "eb9bf01b-bf85-4b60-bf87-ee5de06c00be"
 FiniteDiff = "6a86dc24-6348-571c-b903-95158fe2bd41"
 FiniteDifferences = "26cc04aa-876d-5657-8c51-4c34ba976000"
-Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 JET = "c3a54625-cd67-489e-a8e7-0a5a0ff4e31b"
 JLArrays = "27aeb0d3-9eb9-45fb-866b-73c2ecf80fcb"
@@ -106,7 +105,7 @@ test = [
     "ComponentArrays",
     "DataFrames",
     # "DifferentiationInterfaceTest",
-    "Flux",
+    "ForwardDiff",
     "JET",
     "JLArrays",
     "JuliaFormatter",

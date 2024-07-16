@@ -94,9 +94,9 @@ function test_differentiation(
                             (:place, place(scen)),
                             (:function, scen.f),
                             (:input_type, typeof(scen.x)),
-                            (:input_size, size(scen.x)),
+                            (:input_size, mysize(scen.x)),
                             (:output_type, typeof(scen.y)),
-                            (:output_size, size(scen.y)),
+                            (:output_size, mysize(scen.y)),
                             (:batched_seed, scen.seed isa Batch),
                         ],
                     )
@@ -183,9 +183,9 @@ function benchmark_differentiation(
                         (:place, place(scen)),
                         (:function, scen.f),
                         (:input_type, typeof(scen.x)),
-                        (:input_size, size(scen.x)),
+                        (:input_size, mysize(scen.x)),
                         (:output_type, typeof(scen.y)),
-                        (:output_size, size(scen.y)),
+                        (:output_size, mysize(scen.y)),
                         (:batched_seed, scen.seed isa Batch),
                     ],
                 )

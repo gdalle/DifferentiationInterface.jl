@@ -9,27 +9,27 @@ else
     Pkg.add("DifferentiationInterfaceTest")
 end
 
+TEST_ENV = Base.active_project()
+push!(LOAD_PATH, TEST_ENV)
+
 LOGGING = get(ENV, "CI", "false") == "false"
 
 GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "All")
 
-ALL_BACKENDS = [
-    "ChainRulesCore",
-    "Diffractor",
-    "Enzyme",
-    "FiniteDiff",
-    "FiniteDifferences",
-    "FastDifferentiation",
-    "ForwardDiff",
-    "PolyesterForwardDiff",
-    "ReverseDiff",
-    "Symbolics",
-    "Tapir",
-    "Tracker",
-    "Zygote",
-]
-
 ## Main tests
+
+function subtest(category, folder)
+    Pkg.activate(joinpath(@__DIR__, category, folder))
+    Pkg.instantiate()
+    @testset "$file" for file in filter(
+        endswith(".jl"), readdir(joinpath(@__DIR__, category, folder))
+    )
+        @info "Testing category/$folder/$file"
+        include(joinpath(@__DIR__, category, folder, file))
+    end
+    Pkg.activate(TEST_ENV)
+    return nothing
+end
 
 @testset verbose = true "DifferentiationInterface.jl" begin
     if GROUP == "Formalities" || GROUP == "All"
@@ -47,21 +47,17 @@ ALL_BACKENDS = [
     end
 
     if GROUP == "All"
-        Pkg.add(ALL_BACKENDS)
-        @testset verbose = true "$folder" for folder in readdir(joinpath(@__DIR__, "Back"))
-            @testset "$file" for file in readdir(joinpath(@__DIR__, "Back", folder))
-                @info "Testing Back/$folder/$file"
-                include(joinpath(@__DIR__, "Back", folder, file))
+        @testset verbose = true "$category" for category in ["Back", "Down"]
+            @testset verbose = true "$folder" for folder in
+                                                  readdir(joinpath(@__DIR__, category))
+                subtest(category, folder)
             end
         end
     elseif startswith(GROUP, "Back") || startswith(GROUP, "Down")
         category, folder = split(GROUP, '/')
-        backends = split(folder, '-')
-        Pkg.add(backends)
-        @testset verbose = true "$category/$folder" begin
-            @testset "$file" for file in readdir(joinpath(@__DIR__, category, folder))
-                @info "Testing $category/$folder/$file"
-                include(joinpath(@__DIR__, category, folder, file))
+        @testset verbose = true "$category" begin
+            @testset verbose = true "$folder" begin
+                subtest(category, folder)
             end
         end
     end
