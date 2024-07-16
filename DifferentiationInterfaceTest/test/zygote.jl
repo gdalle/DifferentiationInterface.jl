@@ -1,6 +1,7 @@
 using ADTypes
 using DifferentiationInterface
 using DifferentiationInterfaceTest
+using JLArrays: JLArrays
 using Zygote: Zygote
 
 ## Dense
@@ -14,3 +15,5 @@ if VERSION >= v"1.10"
         AutoZygote(), gpu_scenarios(); correctness=true, second_order=false, logging=LOGGING
     )
 end
+
+flux_scenarios()

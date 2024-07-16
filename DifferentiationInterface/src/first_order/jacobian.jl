@@ -17,6 +17,8 @@ function prepare_jacobian end
     value_and_jacobian(f!, y, backend, x, [extras]) -> (y, jac)
 
 Compute the value and the Jacobian matrix of the function `f` at point `x`.
+
+$(document_preparation("jacobian"))
 """
 function value_and_jacobian end
 
@@ -25,6 +27,8 @@ function value_and_jacobian end
     value_and_jacobian!(f!, y, jac, backend, x, [extras]) -> (y, jac)
 
 Compute the value and the Jacobian matrix of the function `f` at point `x`, overwriting `jac`.
+    
+$(document_preparation("jacobian"))
 """
 function value_and_jacobian! end
 
@@ -33,6 +37,8 @@ function value_and_jacobian! end
     jacobian(f!, y, backend, x, [extras]) -> jac
 
 Compute the Jacobian matrix of the function `f` at point `x`.
+
+$(document_preparation("jacobian"))
 """
 function jacobian end
 
@@ -41,6 +47,8 @@ function jacobian end
     jacobian!(f!, y, jac, backend, x, [extras]) -> jac
 
 Compute the Jacobian matrix of the function `f` at point `x`, overwriting `jac`.
+
+$(document_preparation("jacobian"))
 """
 function jacobian! end
 

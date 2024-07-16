@@ -24,6 +24,8 @@ function prepare_hvp_same_point end
     hvp(f, backend, x, dx, [extras]) -> dg
 
 Compute the Hessian-vector product of `f` at point `x` with seed `dx`.
+
+$(document_preparation("hvp"; same_point=true))
 """
 function hvp end
 
@@ -31,6 +33,8 @@ function hvp end
     hvp!(f, dg, backend, x, dx, [extras]) -> dg
 
 Compute the Hessian-vector product of `f` at point `x` with seed `dx`, overwriting `dg`.
+
+$(document_preparation("hvp"; same_point=true))
 """
 function hvp! end
 

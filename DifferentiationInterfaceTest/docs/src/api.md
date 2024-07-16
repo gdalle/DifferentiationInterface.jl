@@ -25,6 +25,7 @@ sparse_scenarios
 component_scenarios
 gpu_scenarios
 static_scenarios
+flux_scenarios
 ```
 
 ## Scenario types

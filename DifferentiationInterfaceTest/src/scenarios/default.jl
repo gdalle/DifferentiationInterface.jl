@@ -47,30 +47,10 @@ function num_to_arr(x::Number, ::Type{A}) where {A<:AbstractArray}
 end
 
 num_to_arr_vector(x) = num_to_arr(x, Vector{Float64})
-num_to_arr_svector(x) = num_to_arr(x, SVector{6,Float64})
-num_to_arr_jlvector(x) = num_to_arr(x, JLArray{Float64,1})
-
 num_to_arr_matrix(x) = num_to_arr(x, Matrix{Float64})
-num_to_arr_smatrix(x) = num_to_arr(x, SMatrix{2,3,Float64,6})
-num_to_arr_jlmatrix(x) = num_to_arr(x, JLArray{Float64,2})
 
-function pick_num_to_arr(::Type{A}) where {A<:AbstractArray}
-    if A <: Vector
-        return num_to_arr_vector
-    elseif A <: SVector
-        return num_to_arr_svector
-    elseif A <: JLArray{<:Any,1}
-        return num_to_arr_jlvector
-    elseif A <: Matrix
-        return num_to_arr_matrix
-    elseif A <: SMatrix
-        return num_to_arr_smatrix
-    elseif A <: JLArray{<:Any,2}
-        return num_to_arr_jlmatrix
-    else
-        throw(ArgumentError("Array type $A not supported"))
-    end
-end
+pick_num_to_arr(::Type{<:Vector}) = num_to_arr_vector
+pick_num_to_arr(::Type{<:Matrix}) = num_to_arr_matrix
 
 function num_to_arr!(y::AbstractArray, x::Number)::Nothing
     a = multiplicator(typeof(y))

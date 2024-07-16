@@ -7,6 +7,9 @@ using DifferentiationInterfaceTest:
     test_allocfree,
     allocfree_scenarios,
     add_batchified!
+using ComponentArrays: ComponentArrays
+using JLArrays: JLArrays
+using StaticArrays: StaticArrays
 
 using Test
 

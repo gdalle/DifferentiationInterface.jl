@@ -30,6 +30,12 @@ function prepare_pullback_same_point end
 
 Compute the value and the pullback of the function `f` at point `x` with seed `dy`.
 
+$(document_preparation("pullback"; same_point=true))
+
+!!! tip 
+    Pullbacks are also commonly called vector-Jacobian products or VJPs.
+    This function could have been named `value_and_vjp`.
+
 !!! info
     Required primitive for reverse mode backends.
 """
@@ -40,6 +46,12 @@ function value_and_pullback end
     value_and_pullback!(f!, y, dx, backend, x, dy, [extras]) -> (y, dx)
 
 Compute the value and the pullback of the function `f` at point `x` with seed `dy`, overwriting `dx`.
+
+$(document_preparation("pullback"; same_point=true))
+
+!!! tip 
+    Pullbacks are also commonly called vector-Jacobian products or VJPs.
+    This function could have been named `value_and_vjp!`.
 """
 function value_and_pullback! end
 
@@ -48,6 +60,12 @@ function value_and_pullback! end
     pullback(f!, y, backend, x, dy, [extras]) -> dx
 
 Compute the pullback of the function `f` at point `x` with seed `dy`.
+
+$(document_preparation("pullback"; same_point=true))
+
+!!! tip 
+    Pullbacks are also commonly called vector-Jacobian products or VJPs.
+    This function could have been named `vjp`.
 """
 function pullback end
 
@@ -56,6 +74,12 @@ function pullback end
     pullback!(f!, y, dx, backend, x, dy, [extras]) -> dx
 
 Compute the pullback of the function `f` at point `x` with seed `dy`, overwriting `dx`.
+
+$(document_preparation("pullback"; same_point=true))
+
+!!! tip 
+    Pullbacks are also commonly called vector-Jacobian products or VJPs.
+    This function could have been named `vjp!`.
 """
 function pullback! end
 
