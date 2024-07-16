@@ -4,6 +4,8 @@ using DifferentiationInterfaceTest
 using ForwardDiff: ForwardDiff
 using SparseConnectivityTracer
 using SparseMatrixColorings
+using ComponentArrays: ComponentArrays
+using StaticArrays: StaticArrays
 
 ## Dense
 

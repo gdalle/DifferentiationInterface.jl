@@ -1,6 +1,7 @@
 using ADTypes
 using DifferentiationInterface
 using DifferentiationInterfaceTest
+using JLArrays: JLArrays
 using Zygote: Zygote
 
 ## Dense
