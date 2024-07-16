@@ -35,7 +35,8 @@ using Enzyme:
     gradient,
     gradient!,
     jacobian,
-    make_zero
+    make_zero,
+    make_zero!
 
 struct AutoDeferredEnzyme{M} <: ADTypes.AbstractADType
     mode::M

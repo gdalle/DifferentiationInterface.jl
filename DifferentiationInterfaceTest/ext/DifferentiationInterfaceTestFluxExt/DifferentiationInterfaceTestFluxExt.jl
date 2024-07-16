@@ -28,7 +28,7 @@ function DIT.flux_isequal(a, b)
 end
 
 function DIT.flux_isapprox(a, b; atol, rtol)
-    isapprox_results = fmap_with_path(a, b) do kp, x, y
+    isapprox_results = fmapstructure_with_path(a, b) do kp, x, y
         if :state in kp  # ignore RNN and LSTM state
             return true
         else
@@ -46,9 +46,22 @@ struct SquareLossOnInput{X}
     x::X
 end
 
+struct SquareLossOnInputIterated{X}
+    x::X
+end
+
 function (sqli::SquareLossOnInput)(model)
     Flux.reset!(model)
     return sum(abs2, model(sqli.x))
+end
+
+function (sqlii::SquareLossOnInputIterated)(model)
+    Flux.reset!(model)
+    x = copy(sqlii.x)
+    for _ in 1:3
+        x = model(x)
+    end
+    return sum(abs2, x)
 end
 
 struct SimpleDense{W,B,F}
@@ -109,6 +122,22 @@ function DIT.flux_scenarios(rng::AbstractRNG=default_rng())
     for (model, x) in models_and_xs
         Flux.trainmode!(model)
         loss = SquareLossOnInput(x)
+        l = loss(model)
+        g = gradient_finite_differences(loss, model)
+        scen = GradientScenario(loss; x=model, y=l, grad=g, nb_args=1, place=:outofplace)
+        push!(scens, scen)
+    end
+
+    # Recurrence
+
+    recurrent_models_and_xs = [
+        (RNN(3 => 3), randn(rng, Float32, 3, 2)),
+        (LSTM(3 => 3), randn(rng, Float32, 3, 2)),
+    ]
+
+    for (model, x) in recurrent_models_and_xs
+        Flux.trainmode!(model)
+        loss = SquareLossOnInputIterated(x)
         l = loss(model)
         g = gradient_finite_differences(loss, model)
         scen = GradientScenario(loss; x=model, y=l, grad=g, nb_args=1, place=:outofplace)

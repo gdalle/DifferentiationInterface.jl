@@ -8,7 +8,7 @@ using Test
 using Random
 
 test_differentiation(
-    [AutoZygote()],
+    [AutoZygote(), AutoEnzyme()],
     flux_scenarios();
     isequal=DIT.flux_isequal,
     isapprox=DIT.flux_isapprox,
