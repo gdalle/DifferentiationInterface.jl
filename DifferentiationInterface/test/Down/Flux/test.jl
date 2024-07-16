@@ -6,6 +6,8 @@ using Enzyme: Enzyme
 using Zygote: Zygote
 using Test
 
+Enzyme.API.runtimeActivity!(true)
+
 test_differentiation(
     [AutoZygote(), AutoEnzyme()],
     flux_scenarios();
