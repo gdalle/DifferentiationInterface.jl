@@ -41,6 +41,13 @@ function flux_scenarios end
 """
     flux_isapprox(x, y; atol, rtol)
 
-Comparison function to use in correctness tests with gradients of Flux.jl networks.
+Approximate comparison function to use in correctness tests with gradients of Flux.jl networks.
 """
 function flux_isapprox end
+
+"""
+    flux_isequal(x, y)
+
+Exact comparison function to use in correctness tests with gradients of Flux.jl networks.
+"""
+function flux_isequal end

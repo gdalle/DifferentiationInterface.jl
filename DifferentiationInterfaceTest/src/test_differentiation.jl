@@ -26,7 +26,8 @@ Filtering:
 Options:
 
 - `logging=false`: whether to log progress
-- `isapprox=isapprox`: function used to compare objects, with the standard signature `isapprox(x, y; atol, rtol)`
+- `isequal=isequal`: function used to compare objects exactly, with the standard signature `isequal(x, y)`
+- `isapprox=isapprox`: function used to compare objects approximately, with the standard signature `isapprox(x, y; atol, rtol)`
 - `atol=0`: absolute precision for correctness testing (when comparing to the reference outputs)
 - `rtol=1e-3`: relative precision for correctness testing (when comparing to the reference outputs)
 """
@@ -51,6 +52,7 @@ function test_differentiation(
     excluded::Vector{Symbol}=Symbol[],
     # options
     logging::Bool=false,
+    isequal=isequal,
     isapprox=isapprox,
     atol::Real=0,
     rtol::Real=1e-3,
@@ -101,7 +103,7 @@ function test_differentiation(
                         ],
                     )
                     correctness && @testset "Correctness" begin
-                        test_correctness(backend, scen; isapprox, atol, rtol)
+                        test_correctness(backend, scen; isequal, isapprox, atol, rtol)
                     end
                     type_stability && @testset "Type stability" begin
                         @static if VERSION >= v"1.7"

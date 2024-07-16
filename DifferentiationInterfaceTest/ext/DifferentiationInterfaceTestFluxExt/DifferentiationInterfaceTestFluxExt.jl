@@ -22,8 +22,12 @@ function gradient_finite_differences(loss, model)
     return re(only(gs))
 end
 
-function DIT.flux_isapprox(g1, g2; atol, rtol)
-    isapprox_results = fmap_with_path(g1, g2) do kp, x, y
+function DIT.flux_isequal(a, b)
+    return all(isequal.(fleaves(a), fleaves(b)))
+end
+
+function DIT.flux_isapprox(a, b; atol, rtol)
+    isapprox_results = fmap_with_path(a, b) do kp, x, y
         :state ∈ kp && return nothing # ignore RNN and LSTM state
         if x isa AbstractArray{<:Number} && !isapprox(x, y; atol, rtol)
             return false
