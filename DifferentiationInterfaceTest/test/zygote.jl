@@ -15,5 +15,3 @@ if VERSION >= v"1.10"
         AutoZygote(), gpu_scenarios(); correctness=true, second_order=false, logging=LOGGING
     )
 end
-
-flux_scenarios()
