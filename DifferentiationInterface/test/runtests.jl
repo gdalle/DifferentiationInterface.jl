@@ -24,7 +24,7 @@ function subtest(category, folder)
     @testset "$file" for file in filter(
         endswith(".jl"), readdir(joinpath(@__DIR__, category, folder))
     )
-        @info "Testing category/$folder/$file"
+        @info "Testing $category/$folder/$file"
         include(joinpath(@__DIR__, category, folder, file))
     end
     Pkg.activate(TEST_ENV)
