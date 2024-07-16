@@ -28,26 +28,26 @@ jobs:
       matrix:
         version:
           - '1'
-          # - 'lts'
-          # - 'pre'
+          - 'lts'
+          - 'pre'
         group:
           - Formalities
-          # - Internals
-          # - Back/Diffractor
-          # - Back/Enzyme
-          # - Back/FastDifferentiation
-          # - Back/FiniteDiff
-          # - Back/FiniteDifferences
-          # - Back/ForwardDiff
-          # - Back/PolyesterForwardDiff
-          # - Back/ReverseDiff
-          # - Back/SecondOrder
-          # - Back/Symbolics
-          # - Back/Tapir
-          # - Back/Tracker
-          # - Back/Zygote
-          # - Down/Detector
-          # - Down/DifferentiateWith
+          - Internals
+          - Back/Diffractor
+          - Back/Enzyme
+          - Back/FastDifferentiation
+          - Back/FiniteDiff
+          - Back/FiniteDifferences
+          - Back/ForwardDiff
+          - Back/PolyesterForwardDiff
+          - Back/ReverseDiff
+          - Back/SecondOrder
+          - Back/Symbolics
+          - Back/Tapir
+          - Back/Tracker
+          - Back/Zygote
+          - Down/Detector
+          - Down/DifferentiateWith
           - Down/Flux
         exclude:
           # lts
@@ -72,7 +72,7 @@ jobs:
           - version: 'lts'
             group: Down/Detector
           - version: 'lts'
-            group: Down/Detector
+            group: Down/Flux
           # pre-release
           - version: 'pre'
             group: Formalities
@@ -84,6 +84,8 @@ jobs:
             group: Back/SecondOrder
           - version: 'pre'
             group: Down/Detector
+          - version: 'pre'
+            group: Down/Flux
     
     steps:
       - uses: actions/checkout@v4
@@ -121,13 +123,13 @@ jobs:
       matrix:
         version:
           - '1'
-          # - 'lts'
-          # - 'pre'
+          - 'lts'
+          - 'pre'
         group:
           - Formalities
-          # - Zero
-          # - ForwardDiff
-          # - Zygote
+          - Zero
+          - ForwardDiff
+          - Zygote
         exclude:
           - version: 'lts'
             group: Formalities
