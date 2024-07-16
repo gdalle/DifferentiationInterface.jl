@@ -20,6 +20,7 @@ GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "All")
 
 function subtest(category, folder)
     Pkg.activate(joinpath(@__DIR__, category, folder))
+    Pkg.instantiate()
     @testset "$file" for file in filter(
         endswith(".jl"), readdir(joinpath(@__DIR__, category, folder))
     )
