@@ -12,7 +12,7 @@ num_to_arr_smatrix(x) = num_to_arr(x, SMatrix{2,3,Float64,6})
 DIT.pick_num_to_arr(::Type{<:SVector}) = num_to_arr_svector
 DIT.pick_num_to_arr(::Type{<:SMatrix}) = num_to_arr_smatrix
 
-function static_scenarios(rng::AbstractRNG=default_rng(); linalg=true)
+function DIT.static_scenarios(rng::AbstractRNG=default_rng(); linalg=true)
     x_ = rand(rng)
     dx_ = rand(rng)
     dy_ = rand(rng)

@@ -11,7 +11,7 @@ num_to_arr_jlmatrix(x) = num_to_arr(x, JLArray{Float64,2})
 DIT.pick_num_to_arr(::Type{<:JLArray{<:Real,1}}) = num_to_arr_jlvector
 DIT.pick_num_to_arr(::Type{<:JLArray{<:Real,2}}) = num_to_arr_jlmatrix
 
-function gpu_scenarios(rng::AbstractRNG=default_rng(); linalg=true)
+function DIT.gpu_scenarios(rng::AbstractRNG=default_rng(); linalg=true)
     x_ = rand(rng)
     dx_ = rand(rng)
     dy_ = rand(rng)
