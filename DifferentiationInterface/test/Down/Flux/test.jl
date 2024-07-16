@@ -5,6 +5,7 @@ using Flux: Flux
 using Enzyme: Enzyme
 using Zygote: Zygote
 using Test
+using Random
 
 test_differentiation(
     [AutoZygote()],
