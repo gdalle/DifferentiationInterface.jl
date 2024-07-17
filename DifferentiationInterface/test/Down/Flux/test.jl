@@ -13,7 +13,7 @@ test_differentiation(
         AutoZygote(),
         # AutoEnzyme()  # TODO: fix
     ],
-    flux_scenarios();
+    DIT.flux_scenarios();
     isequal=DIT.flux_isequal,
     isapprox=DIT.flux_isapprox,
     rtol=1e-2,

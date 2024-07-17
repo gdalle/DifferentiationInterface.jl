@@ -25,7 +25,7 @@ test_differentiation(
 
 test_differentiation(
     AutoZygote(),
-    flux_scenarios();
+    DIT.flux_scenarios();
     isequal=DIT.flux_isequal,
     isapprox=DIT.flux_isapprox,
     rtol=5e-2,

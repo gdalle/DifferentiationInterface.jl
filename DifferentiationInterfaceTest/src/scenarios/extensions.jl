@@ -35,6 +35,10 @@ Create a vector of [`Scenario`](@ref)s with neural networks from [Flux.jl](https
 
 !!! warning
     This function requires Flux.jl and FiniteDifferences.jl to be loaded (it is implemented in a package extension).
+
+!!! danger
+    These scenarios are still experimental and not part of the public API.
+    Their ground truth values are computed with finite differences, and thus subject to imprecision.
 """
 function flux_scenarios end
 
