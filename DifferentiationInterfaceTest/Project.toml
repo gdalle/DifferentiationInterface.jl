@@ -39,6 +39,7 @@ DocStringExtensions = "0.9"
 JET = "0.4 - 0.8, 0.9"
 JLArrays = "0.1"
 LinearAlgebra = "<0.0.1,1"
+PackageExtensionCompat = "1"
 ProgressMeter = "1"
 Random = "<0.0.1,1"
 SparseArrays = "<0.0.1,1"
@@ -66,21 +67,4 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [targets]
-test = [
-    "ADTypes",
-    "Aqua",
-    "ComponentArrays",
-    "DataFrames",
-    "DifferentiationInterface",
-    "ForwardDiff",
-    "JET",
-    "JLArrays",
-    "JuliaFormatter",
-    "Pkg",
-    "SparseArrays",
-    "SparseConnectivityTracer",
-    "SparseMatrixColorings",
-    "StaticArrays",
-    "Test",
-    "Zygote",
-]
+test = ["ADTypes", "Aqua", "ComponentArrays", "DataFrames", "DifferentiationInterface", "ForwardDiff", "JET", "JLArrays", "JuliaFormatter", "Pkg", "SparseArrays", "SparseConnectivityTracer", "SparseMatrixColorings", "StaticArrays", "Test", "Zygote"]
