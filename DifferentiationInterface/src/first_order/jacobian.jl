@@ -86,7 +86,9 @@ function prepare_jacobian(f!::F, y, backend::AbstractADType, x) where {F}
     return prepare_jacobian_aux((f!, y), backend, x, y, pushforward_performance(backend))
 end
 
-function prepare_jacobian_aux(f_or_f!y::FY, backend, x, y, ::PushforwardFast) where {FY}
+function prepare_jacobian_aux(
+    f_or_f!y::FY, backend::AbstractADType, x, y, ::PushforwardFast
+) where {FY}
     N = length(x)
     B = pick_batchsize(backend, N)
     seeds = [basis(backend, x, ind) for ind in CartesianIndices(x)]
@@ -107,7 +109,9 @@ function prepare_jacobian_aux(f_or_f!y::FY, backend, x, y, ::PushforwardFast) wh
     )
 end
 
-function prepare_jacobian_aux(f_or_f!y::FY, backend, x, y, ::PushforwardSlow) where {FY}
+function prepare_jacobian_aux(
+    f_or_f!y::FY, backend::AbstractADType, x, y, ::PushforwardSlow
+) where {FY}
     M = length(y)
     B = pick_batchsize(backend, M)
     seeds = [basis(backend, y, ind) for ind in CartesianIndices(y)]
@@ -221,7 +225,7 @@ end
 ## Common auxiliaries
 
 function jacobian_aux(
-    f_or_f!y::FY, backend, x::AbstractArray, extras::PushforwardJacobianExtras{B}
+    f_or_f!y::FY, backend::AbstractADType, x, extras::PushforwardJacobianExtras{B}
 ) where {FY,B}
     @compat (; batched_seeds, pushforward_batched_extras, N) = extras
 
@@ -244,7 +248,7 @@ function jacobian_aux(
 end
 
 function jacobian_aux(
-    f_or_f!y::FY, backend, x::AbstractArray, extras::PullbackJacobianExtras{B}
+    f_or_f!y::FY, backend::AbstractADType, x, extras::PullbackJacobianExtras{B}
 ) where {FY,B}
     @compat (; batched_seeds, pullback_batched_extras, M) = extras
 
@@ -267,11 +271,7 @@ function jacobian_aux(
 end
 
 function jacobian_aux!(
-    f_or_f!y::FY,
-    jac::AbstractMatrix,
-    backend,
-    x::AbstractArray,
-    extras::PushforwardJacobianExtras{B},
+    f_or_f!y::FY, jac, backend::AbstractADType, x, extras::PushforwardJacobianExtras{B}
 ) where {FY,B}
     @compat (; batched_seeds, batched_results, pushforward_batched_extras, N) = extras
 
@@ -303,11 +303,7 @@ function jacobian_aux!(
 end
 
 function jacobian_aux!(
-    f_or_f!y::FY,
-    jac::AbstractMatrix,
-    backend,
-    x::AbstractArray,
-    extras::PullbackJacobianExtras{B},
+    f_or_f!y::FY, jac, backend::AbstractADType, x, extras::PullbackJacobianExtras{B}
 ) where {FY,B}
     @compat (; batched_seeds, batched_results, pullback_batched_extras, M) = extras
 

@@ -84,7 +84,7 @@ function prepare_jacobian(f!::F, y, backend::AutoSparse, x) where {F}
 end
 
 function prepare_sparse_jacobian_aux(
-    f_or_f!y::FY, backend, x, y, ::PushforwardFast
+    f_or_f!y::FY, backend::AutoSparse, x, y, ::PushforwardFast
 ) where {FY}
     dense_backend = dense_ad(backend)
     initial_sparsity = jacobian_sparsity(f_or_f!y..., x, sparsity_detector(backend))
@@ -116,7 +116,7 @@ function prepare_sparse_jacobian_aux(
 end
 
 function prepare_sparse_jacobian_aux(
-    f_or_f!y::FY, backend, x, y, ::PushforwardSlow
+    f_or_f!y::FY, backend::AutoSparse, x, y, ::PushforwardSlow
 ) where {FY}
     dense_backend = dense_ad(backend)
     initial_sparsity = jacobian_sparsity(f_or_f!y..., x, sparsity_detector(backend))
