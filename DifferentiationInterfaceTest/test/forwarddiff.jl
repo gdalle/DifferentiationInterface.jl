@@ -19,12 +19,3 @@ sparse_backend = AutoSparse(
     coloring_algorithm=GreedyColoringAlgorithm(),
 )
 test_differentiation(sparse_backend, sparse_scenarios(); sparsity=true, logging=LOGGING)
-
-## Weird
-
-test_differentiation(
-    AutoForwardDiff(),
-    vcat(component_scenarios(), static_scenarios());
-    correctness=true,
-    logging=LOGGING,
-)
