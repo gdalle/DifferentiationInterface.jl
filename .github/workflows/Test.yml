@@ -84,8 +84,6 @@ jobs:
             group: Back/SecondOrder
           - version: 'pre'
             group: Down/Detector
-          - version: 'pre'
-            group: Down/Flux
     
     steps:
       - uses: actions/checkout@v4
