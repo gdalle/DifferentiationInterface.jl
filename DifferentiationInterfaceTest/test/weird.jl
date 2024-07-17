@@ -2,6 +2,7 @@ using ADTypes
 using ComponentArrays: ComponentArrays
 using DifferentiationInterface
 using DifferentiationInterfaceTest
+import DifferentiationInterfaceTest as DIT
 using FiniteDifferences: FiniteDifferences
 using Flux: Flux
 using ForwardDiff: ForwardDiff
