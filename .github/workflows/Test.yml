@@ -48,6 +48,7 @@ jobs:
           - Back/Zygote
           - Down/Detector
           - Down/DifferentiateWith
+          - Down/Flux
         exclude:
           # lts
           - version: 'lts'
@@ -68,8 +69,10 @@ jobs:
             group: Back/Symbolics
           - version: 'lts'
             group: Back/Tapir
-          - version: 'pre'
+          - version: 'lts'
             group: Down/Detector
+          - version: 'lts'
+            group: Down/Flux
           # pre-release
           - version: 'pre'
             group: Formalities
@@ -81,6 +84,8 @@ jobs:
             group: Back/SecondOrder
           - version: 'pre'
             group: Down/Detector
+          - version: 'pre'
+            group: Down/Flux
     
     steps:
       - uses: actions/checkout@v4
@@ -124,10 +129,12 @@ jobs:
           - Formalities
           - Zero
           - ForwardDiff
-          - Zygote
+          - Weird
         exclude:
           - version: 'lts'
             group: Formalities
+          - version: 'lts'
+            group: Weird
     
     steps:
       - uses: actions/checkout@v4

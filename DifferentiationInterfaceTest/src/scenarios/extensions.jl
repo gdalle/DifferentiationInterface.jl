@@ -27,3 +27,27 @@ Create a vector of [`Scenario`](@ref)s with GPU array types from [JLArrays.jl](h
     This function requires JLArrays.jl to be loaded (it is implemented in a package extension).
 """
 function gpu_scenarios end
+
+"""
+    flux_scenarios(rng=Random.default_rng())
+
+Create a vector of [`Scenario`](@ref)s with neural networks from [Flux.jl](https://github.com/FluxML/Flux.jl).
+
+!!! warning
+    This function requires Flux.jl and FiniteDifferences.jl to be loaded (it is implemented in a package extension).
+"""
+function flux_scenarios end
+
+"""
+    flux_isapprox(x, y; atol, rtol)
+
+Approximate comparison function to use in correctness tests with gradients of Flux.jl networks.
+"""
+function flux_isapprox end
+
+"""
+    flux_isequal(x, y)
+
+Exact comparison function to use in correctness tests with gradients of Flux.jl networks.
+"""
+function flux_isequal end
