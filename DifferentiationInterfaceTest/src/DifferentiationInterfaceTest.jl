@@ -109,6 +109,5 @@ export DifferentiationBenchmarkDataRow
 export static_scenarios
 export component_scenarios
 export gpu_scenarios
-export flux_scenarios
 
 end
