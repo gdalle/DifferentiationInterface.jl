@@ -110,24 +110,28 @@ function prepare_pushforward(f!::F, y, backend::AbstractADType, x, dx) where {F}
     return prepare_pushforward_aux(f!, y, backend, x, dx, pushforward_performance(backend))
 end
 
-function prepare_pushforward_aux(f::F, backend, x, dx, ::PushforwardSlow) where {F}
+function prepare_pushforward_aux(
+    f::F, backend::AbstractADType, x, dx, ::PushforwardSlow
+) where {F}
     y = f(x)
     dy = y isa Number ? one(y) : basis(backend, y, first(CartesianIndices(y)))
     pullback_extras = prepare_pullback(f, backend, x, dy)
     return PullbackPushforwardExtras(pullback_extras)
 end
 
-function prepare_pushforward_aux(f!::F, y, backend, x, dx, ::PushforwardSlow) where {F}
+function prepare_pushforward_aux(
+    f!::F, y, backend::AbstractADType, x, dx, ::PushforwardSlow
+) where {F}
     dy = y isa Number ? one(y) : basis(backend, y, first(CartesianIndices(y)))
     pullback_extras = prepare_pullback(f!, y, backend, x, dy)
     return PullbackPushforwardExtras(pullback_extras)
 end
 
-function prepare_pushforward_aux(f, backend, x, dy, ::PushforwardFast)
+function prepare_pushforward_aux(f, backend::AbstractADType, x, dx, ::PushforwardFast)
     throw(MissingBackendError(backend))
 end
 
-function prepare_pushforward_aux(f!, y, backend, x, dy, ::PushforwardFast)
+function prepare_pushforward_aux(f!, y, backend::AbstractADType, x, dx, ::PushforwardFast)
     throw(MissingBackendError(backend))
 end
 
@@ -180,7 +184,7 @@ end
 ### With extras
 
 function value_and_pushforward(
-    f::F, backend, x, dx, extras::PullbackPushforwardExtras
+    f::F, backend::AbstractADType, x, dx, extras::PullbackPushforwardExtras
 ) where {F}
     @compat (; pullback_extras) = extras
     y = f(x)
@@ -248,7 +252,7 @@ end
 ### With extras
 
 function value_and_pushforward(
-    f!::F, y, backend, x, dx, extras::PullbackPushforwardExtras
+    f!::F, y, backend::AbstractADType, x, dx, extras::PullbackPushforwardExtras
 ) where {F}
     @compat (; pullback_extras) = extras
     dy = if x isa Number && y isa AbstractArray

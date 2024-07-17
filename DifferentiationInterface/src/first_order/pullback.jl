@@ -110,23 +110,27 @@ function prepare_pullback(f!::F, y, backend::AbstractADType, x, dy) where {F}
     return prepare_pullback_aux(f!, y, backend, x, dy, pullback_performance(backend))
 end
 
-function prepare_pullback_aux(f::F, backend, x, dy, ::PullbackSlow) where {F}
+function prepare_pullback_aux(
+    f::F, backend::AbstractADType, x, dy, ::PullbackSlow
+) where {F}
     dx = x isa Number ? one(x) : basis(backend, x, first(CartesianIndices(x)))
     pushforward_extras = prepare_pushforward(f, backend, x, dx)
     return PushforwardPullbackExtras(pushforward_extras)
 end
 
-function prepare_pullback_aux(f!::F, y, backend, x, dy, ::PullbackSlow) where {F}
+function prepare_pullback_aux(
+    f!::F, y, backend::AbstractADType, x, dy, ::PullbackSlow
+) where {F}
     dx = x isa Number ? one(x) : basis(backend, x, first(CartesianIndices(x)))
     pushforward_extras = prepare_pushforward(f!, y, backend, x, dx)
     return PushforwardPullbackExtras(pushforward_extras)
 end
 
-function prepare_pullback_aux(f, backend, x, dy, ::PullbackFast)
+function prepare_pullback_aux(f, backend::AbstractADType, x, dy, ::PullbackFast)
     throw(MissingBackendError(backend))
 end
 
-function prepare_pullback_aux(f!, y, backend, x, dy, ::PullbackFast)
+function prepare_pullback_aux(f!, y, backend::AbstractADType, x, dy, ::PullbackFast)
     throw(MissingBackendError(backend))
 end
 
@@ -177,7 +181,7 @@ end
 ### With extras
 
 function value_and_pullback(
-    f::F, backend, x, dy, extras::PushforwardPullbackExtras
+    f::F, backend::AbstractADType, x, dy, extras::PushforwardPullbackExtras
 ) where {F}
     @compat (; pushforward_extras) = extras
     y = f(x)
@@ -241,7 +245,7 @@ end
 ### With extras
 
 function value_and_pullback(
-    f!::F, y, backend, x, dy, extras::PushforwardPullbackExtras
+    f!::F, y, backend::AbstractADType, x, dy, extras::PushforwardPullbackExtras
 ) where {F}
     @compat (; pushforward_extras) = extras
     dx = if x isa Number && y isa AbstractArray
