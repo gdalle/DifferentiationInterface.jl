@@ -4,6 +4,8 @@ using DifferentiationInterfaceTest
 import DifferentiationInterfaceTest as DIT
 using JLArrays: JLArrays
 using Zygote: Zygote
+using Flux: Flux
+using FiniteDifferences: FiniteDifferences
 
 ## Dense
 
