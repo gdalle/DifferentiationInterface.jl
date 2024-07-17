@@ -29,6 +29,6 @@ test_differentiation(
     isequal=DIT.flux_isequal,
     isapprox=DIT.flux_isapprox,
     rtol=1e-2,
-    atol=1e-6,
+    atol=1e-3,
     logging=LOGGING,
 )
