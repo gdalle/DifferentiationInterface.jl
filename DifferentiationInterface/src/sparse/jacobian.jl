@@ -291,9 +291,7 @@ function sparse_jacobian_aux!(
             batched_seeds[a],
             pushforward_batched_extras_same,
         )
-    end
 
-    for a in eachindex(batched_results)
         for b in eachindex(batched_results[a].elements)
             copyto!(
                 view(compressed, :, 1 + ((a - 1) * B + (b - 1)) % Ng),
@@ -334,9 +332,7 @@ function sparse_jacobian_aux!(
             batched_seeds[a],
             pullback_batched_extras_same,
         )
-    end
 
-    for a in eachindex(batched_results)
         for b in eachindex(batched_results[a].elements)
             copyto!(
                 view(compressed, 1 + ((a - 1) * B + (b - 1)) % Ng, :),
