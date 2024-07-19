@@ -1,12 +1,13 @@
 using DifferentiationInterface, DifferentiationInterfaceTest
 import DifferentiationInterfaceTest as DIT
+using Enzyme: Enzyme
 using FiniteDifferences: FiniteDifferences
 using Flux: Flux
-using Enzyme: Enzyme
+using Random
 using Zygote: Zygote
 using Test
 
-Enzyme.API.runtimeActivity!(true)
+Random.seed!(0)
 
 test_differentiation(
     [

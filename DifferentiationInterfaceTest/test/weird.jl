@@ -7,6 +7,7 @@ using FiniteDifferences: FiniteDifferences
 using Flux: Flux
 using ForwardDiff: ForwardDiff
 using JLArrays: JLArrays
+using Random
 using SparseConnectivityTracer
 using SparseMatrixColorings
 using StaticArrays: StaticArrays
@@ -23,12 +24,14 @@ test_differentiation(
     AutoZygote(), gpu_scenarios(); correctness=true, second_order=false, logging=LOGGING
 )
 
+Random.seed!(0)
+
 test_differentiation(
     AutoZygote(),
     DIT.flux_scenarios();
     isequal=DIT.flux_isequal,
     isapprox=DIT.flux_isapprox,
-    rtol=5e-2,
-    atol=1e-2,
+    rtol=1e-2,
+    atol=1e-6,
     logging=LOGGING,
 )
