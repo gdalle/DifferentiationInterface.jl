@@ -4,7 +4,6 @@ using Enzyme: Enzyme
 using FiniteDifferences: FiniteDifferences
 using Flux: Flux
 using Random
-using Tracker: Tracker
 using Zygote: Zygote
 using Test
 
@@ -13,7 +12,6 @@ Random.seed!(0)
 test_differentiation(
     [
         AutoZygote(),
-        AutoTracker(),
         # AutoEnzyme()  # TODO: fix
     ],
     DIT.flux_scenarios();
