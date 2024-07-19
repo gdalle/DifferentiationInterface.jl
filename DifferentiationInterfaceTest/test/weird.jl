@@ -7,6 +7,8 @@ using FiniteDifferences: FiniteDifferences
 using Flux: Flux
 using ForwardDiff: ForwardDiff
 using JLArrays: JLArrays
+using Lux: Lux
+using LuxTestUtils: LuxTestUtils
 using SparseConnectivityTracer
 using SparseMatrixColorings
 using StaticArrays: StaticArrays
@@ -32,3 +34,5 @@ test_differentiation(
     atol=1e-2,
     logging=LOGGING,
 )
+
+test_differentiation(AutoZygote(), DIT.lux_scenarios(); logging=LOGGING)

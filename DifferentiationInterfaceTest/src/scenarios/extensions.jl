@@ -55,3 +55,17 @@ function flux_isapprox end
 Exact comparison function to use in correctness tests with gradients of Flux.jl networks.
 """
 function flux_isequal end
+
+"""
+    lux_scenarios(rng=Random.default_rng())
+
+Create a vector of [`Scenario`](@ref)s with neural networks from [Lux.jl](https://github.com/LuxDL/Lux.jl).
+
+!!! warning
+    This function requires Lux.jl and LuxTestUtils.jl to be loaded (it is implemented in a package extension).
+
+!!! danger
+    These scenarios are still experimental and not part of the public API.
+    Their ground truth values are computed with finite differences, and thus subject to imprecision.
+"""
+function lux_scenarios end

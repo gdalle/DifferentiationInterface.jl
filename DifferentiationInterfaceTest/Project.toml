@@ -25,12 +25,13 @@ FiniteDifferences = "26cc04aa-876d-5657-8c51-4c34ba976000"
 Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"
 JLArrays = "27aeb0d3-9eb9-45fb-866b-73c2ecf80fcb"
 Lux = "b2108857-7c20-44ae-9111-449ecde12c47"
+LuxTestUtils = "ac9de150-d08f-4546-94fb-7472b5760531"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [extensions]
 DifferentiationInterfaceTestComponentArraysExt = "ComponentArrays"
 DifferentiationInterfaceTestFluxExt = ["FiniteDifferences", "Flux"]
-DifferentiationInterfaceTestLuxExt = ["FiniteDifferences", "Lux"]
+DifferentiationInterfaceTestLuxExt = ["ComponentArrays", "FiniteDifferences", "Lux", "LuxTestUtils"]
 DifferentiationInterfaceTestJLArraysExt = "JLArrays"
 DifferentiationInterfaceTestStaticArraysExt = "StaticArrays"
 
@@ -69,6 +70,8 @@ ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 JET = "c3a54625-cd67-489e-a8e7-0a5a0ff4e31b"
 JLArrays = "27aeb0d3-9eb9-45fb-866b-73c2ecf80fcb"
 JuliaFormatter = "98e50ef6-434e-11e9-1051-2b60c6c9e899"
+Lux = "b2108857-7c20-44ae-9111-449ecde12c47"
+LuxTestUtils = "ac9de150-d08f-4546-94fb-7472b5760531"
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 SparseConnectivityTracer = "9f842d2f-2579-4b1d-911e-f412cf18a3f5"
@@ -78,4 +81,4 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [targets]
-test = ["ADTypes", "Aqua", "ComponentArrays", "DataFrames", "DifferentiationInterface", "FiniteDifferences", "Flux", "ForwardDiff", "JET", "JLArrays", "JuliaFormatter", "Pkg", "SparseArrays", "SparseConnectivityTracer", "SparseMatrixColorings", "StaticArrays", "Test", "Zygote"]
+test = ["ADTypes", "Aqua", "ComponentArrays", "DataFrames", "DifferentiationInterface", "FiniteDifferences", "Flux", "ForwardDiff", "JET", "JLArrays", "JuliaFormatter", "Lux", "LuxTestUtils", "Pkg", "SparseArrays", "SparseConnectivityTracer", "SparseMatrixColorings", "StaticArrays", "Test", "Zygote"]
