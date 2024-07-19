@@ -1,0 +1,8 @@
+module DifferentiationInterfaceTestLuxExt
+
+using DifferentiationInterfaceTest
+import DifferentiationInterfaceTest as DIT
+using FiniteDifferences: FiniteDifferences
+using Lux
+
+end
