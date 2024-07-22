@@ -6,14 +6,18 @@ using StableRNGs
 using Test
 
 dense_backends = [
-    AutoEnzyme(; mode=nothing),
-    AutoEnzyme(; mode=Enzyme.Forward),
-    AutoEnzyme(; mode=Enzyme.Reverse),
+    AutoEnzyme(; mode=nothing, constant_function=true),
+    AutoEnzyme(; mode=Enzyme.Forward, constant_function=true),
+    AutoEnzyme(; mode=Enzyme.Reverse, constant_function=true),
 ]
 
 nested_dense_backends = [
-    DifferentiationInterface.nested(AutoEnzyme(; mode=Enzyme.Forward)),
-    DifferentiationInterface.nested(AutoEnzyme(; mode=Enzyme.Reverse)),
+    DifferentiationInterface.nested(
+        AutoEnzyme(; mode=Enzyme.Forward, constant_function=true)
+    ),
+    DifferentiationInterface.nested(
+        AutoEnzyme(; mode=Enzyme.Reverse, constant_function=true)
+    ),
 ]
 
 sparse_backends =

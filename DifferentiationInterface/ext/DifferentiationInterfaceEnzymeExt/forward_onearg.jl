@@ -1,11 +1,23 @@
 ## Pushforward
 
-function DI.prepare_pushforward(f, ::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}}, x, dx)
+function DI.prepare_pushforward(
+    f, ::AnyAutoEnzyme{<:Union{ForwardMode,Nothing},true}, x, dx
+)
     return NoPushforwardExtras()
 end
 
+function DI.prepare_pushforward(
+    f, ::AnyAutoEnzyme{<:Union{ForwardMode,Nothing},false}, x, dx
+)
+    throw(ArgumentError(CONSTANT_FUNCTION_ERROR))
+end
+
 function DI.value_and_pushforward(
-    f, backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}}, x, dx, ::NoPushforwardExtras
+    f,
+    backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing},true},
+    x,
+    dx,
+    ::NoPushforwardExtras,
 )
     dx_sametype = convert(typeof(x), dx)
     x_and_dx = Duplicated(x, dx_sametype)
@@ -18,7 +30,11 @@ function DI.value_and_pushforward(
 end
 
 function DI.pushforward(
-    f, backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}}, x, dx, ::NoPushforwardExtras
+    f,
+    backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing},true},
+    x,
+    dx,
+    ::NoPushforwardExtras,
 )
     dx_sametype = convert(typeof(x), dx)
     x_and_dx = Duplicated(x, dx_sametype)
@@ -33,7 +49,7 @@ end
 function DI.value_and_pushforward!(
     f,
     dy,
-    backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}},
+    backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing},true},
     x,
     dx,
     extras::NoPushforwardExtras,
@@ -46,7 +62,7 @@ end
 function DI.pushforward!(
     f,
     dy,
-    backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}},
+    backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing},true},
     x,
     dx,
     extras::NoPushforwardExtras,
@@ -61,34 +77,42 @@ struct EnzymeForwardGradientExtras{B,O} <: GradientExtras
     shadow::O
 end
 
-function DI.prepare_gradient(f, backend::AutoEnzyme{<:ForwardMode}, x)
+function DI.prepare_gradient(f, backend::AutoEnzyme{<:ForwardMode,true}, x)
     B = pick_batchsize(backend, length(x))
     shadow = chunkedonehot(x, Val(B))
     return EnzymeForwardGradientExtras{B,typeof(shadow)}(shadow)
 end
 
 function DI.gradient(
-    f, backend::AutoEnzyme{<:ForwardMode}, x, extras::EnzymeForwardGradientExtras{B}
+    f, backend::AutoEnzyme{<:ForwardMode,true}, x, extras::EnzymeForwardGradientExtras{B}
 ) where {B}
     grad_tup = gradient(forward_mode(backend), f, x, Val(B); shadow=extras.shadow)
     return reshape(collect(grad_tup), size(x))
 end
 
 function DI.value_and_gradient(
-    f, backend::AutoEnzyme{<:ForwardMode}, x, extras::EnzymeForwardGradientExtras
+    f, backend::AutoEnzyme{<:ForwardMode,true}, x, extras::EnzymeForwardGradientExtras
 )
     return f(x), DI.gradient(f, backend, x, extras)
 end
 
 function DI.gradient!(
-    f, grad, backend::AutoEnzyme{<:ForwardMode}, x, extras::EnzymeForwardGradientExtras{B}
+    f,
+    grad,
+    backend::AutoEnzyme{<:ForwardMode,true},
+    x,
+    extras::EnzymeForwardGradientExtras{B},
 ) where {B}
     grad_tup = gradient(forward_mode(backend), f, x, Val(B); shadow=extras.shadow)
     return copyto!(grad, grad_tup)
 end
 
 function DI.value_and_gradient!(
-    f, grad, backend::AutoEnzyme{<:ForwardMode}, x, extras::EnzymeForwardGradientExtras{B}
+    f,
+    grad,
+    backend::AutoEnzyme{<:ForwardMode,true},
+    x,
+    extras::EnzymeForwardGradientExtras{B},
 ) where {B}
     grad_tup = gradient(forward_mode(backend), f, x, Val(B); shadow=extras.shadow)
     return f(x), copyto!(grad, grad_tup)
@@ -100,7 +124,7 @@ struct EnzymeForwardOneArgJacobianExtras{B,O} <: JacobianExtras
     shadow::O
 end
 
-function DI.prepare_jacobian(f, backend::AutoEnzyme{<:Union{ForwardMode,Nothing}}, x)
+function DI.prepare_jacobian(f, backend::AutoEnzyme{<:Union{ForwardMode,Nothing},true}, x)
     B = pick_batchsize(backend, length(x))
     shadow = chunkedonehot(x, Val(B))
     return EnzymeForwardOneArgJacobianExtras{B,typeof(shadow)}(shadow)
@@ -108,7 +132,7 @@ end
 
 function DI.jacobian(
     f,
-    backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
+    backend::AutoEnzyme{<:Union{ForwardMode,Nothing},true},
     x,
     extras::EnzymeForwardOneArgJacobianExtras{B},
 ) where {B}
@@ -120,7 +144,7 @@ end
 
 function DI.value_and_jacobian(
     f,
-    backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
+    backend::AutoEnzyme{<:Union{ForwardMode,Nothing},true},
     x,
     extras::EnzymeForwardOneArgJacobianExtras,
 )
@@ -130,7 +154,7 @@ end
 function DI.jacobian!(
     f,
     jac,
-    backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
+    backend::AutoEnzyme{<:Union{ForwardMode,Nothing},true},
     x,
     extras::EnzymeForwardOneArgJacobianExtras,
 )
@@ -140,7 +164,7 @@ end
 function DI.value_and_jacobian!(
     f,
     jac,
-    backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}},
+    backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing},true},
     x,
     extras::EnzymeForwardOneArgJacobianExtras,
 )

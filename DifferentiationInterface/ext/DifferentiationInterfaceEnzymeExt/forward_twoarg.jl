@@ -1,13 +1,21 @@
 ## Pushforward
 
-function DI.prepare_pushforward(f!, y, ::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}}, x, dx)
+function DI.prepare_pushforward(
+    f!, y, ::AnyAutoEnzyme{<:Union{ForwardMode,Nothing},true}, x, dx
+)
     return NoPushforwardExtras()
+end
+
+function DI.prepare_pushforward(
+    f!, y, ::AnyAutoEnzyme{<:Union{ForwardMode,Nothing},false}, x, dx
+)
+    throw(ArgumentError(CONSTANT_FUNCTION_ERROR))
 end
 
 function DI.value_and_pushforward(
     f!,
     y,
-    backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}},
+    backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing},true},
     x,
     dx,
     ::NoPushforwardExtras,

@@ -38,15 +38,21 @@ using Enzyme:
     make_zero,
     make_zero!
 
-struct AutoDeferredEnzyme{M} <: ADTypes.AbstractADType
+const CONSTANT_FUNCTION_ERROR = """`AutoEnzyme(constant_function=false)` is not yet supported by DifferentiationInterface. For the time being, please use `AutoEnzyme(constant_function=true)` and avoid closures containing differentiable data."""
+
+struct AutoDeferredEnzyme{M,constant_function} <: ADTypes.AbstractADType
     mode::M
 end
 
 ADTypes.mode(backend::AutoDeferredEnzyme) = ADTypes.mode(AutoEnzyme(backend.mode))
 
-DI.nested(backend::AutoEnzyme) = AutoDeferredEnzyme(backend.mode)
+function DI.nested(backend::AutoEnzyme{M,constant_function}) where {M}
+    return AutoDeferredEnzyme{M,constant_function}(backend.mode)
+end
 
-const AnyAutoEnzyme{M} = Union{AutoEnzyme{M},AutoDeferredEnzyme{M}}
+const AnyAutoEnzyme{M,constant_function} = Union{
+    AutoEnzyme{M,constant_function},AutoDeferredEnzyme{M,constant_function}
+}
 
 # forward mode if possible
 forward_mode(backend::AnyAutoEnzyme{<:Mode}) = backend.mode

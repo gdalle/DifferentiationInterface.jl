@@ -1,14 +1,18 @@
 ## Pullback
 
-function DI.prepare_pullback(f, ::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, dy)
+function DI.prepare_pullback(f, ::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},true}, x, dy)
     return NoPullbackExtras()
+end
+
+function DI.prepare_pullback(f, ::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},false}, x, dy)
+    throw(ArgumentError(CONSTANT_FUNCTION_ERROR))
 end
 
 ### Out-of-place
 
 function DI.value_and_pullback(
     f,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},true},
     x::Number,
     dy::Number,
     ::NoPullbackExtras,
@@ -24,7 +28,7 @@ end
 
 function DI.value_and_pullback(
     f,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},true},
     x::Number,
     dy,
     ::NoPullbackExtras,
@@ -39,7 +43,7 @@ end
 
 function DI.value_and_pullback(
     f,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},true},
     x,
     dy::Number,
     ::NoPullbackExtras,
@@ -59,14 +63,22 @@ function DI.value_and_pullback(
 end
 
 function DI.value_and_pullback(
-    f, backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, dy, extras::NoPullbackExtras
+    f,
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},true},
+    x,
+    dy,
+    extras::NoPullbackExtras,
 )
     dx = make_zero(x)
     return DI.value_and_pullback!(f, dx, backend, x, dy, extras)
 end
 
 function DI.pullback(
-    f, backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, dy, extras::NoPullbackExtras
+    f,
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},true},
+    x,
+    dy,
+    extras::NoPullbackExtras,
 )
     return DI.value_and_pullback(f, backend, x, dy, extras)[2]
 end
@@ -76,7 +88,7 @@ end
 function DI.value_and_pullback!(
     f,
     dx,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},true},
     x,
     dy::Number,
     ::NoPullbackExtras,
@@ -97,7 +109,12 @@ function DI.value_and_pullback!(
 end
 
 function DI.value_and_pullback!(
-    f, dx, backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, dy, ::NoPullbackExtras
+    f,
+    dx,
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},true},
+    x,
+    dy,
+    ::NoPullbackExtras,
 )
     tf, tx = typeof(f), typeof(x)
     forw, rev = autodiff_thunk(
@@ -114,7 +131,7 @@ end
 function DI.pullback!(
     f,
     dx,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},true},
     x,
     dy,
     extras::NoPullbackExtras,
@@ -124,12 +141,12 @@ end
 
 ## Gradient
 
-function DI.prepare_gradient(f, ::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x)
+function DI.prepare_gradient(f, ::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},true}, x)
     return NoGradientExtras()
 end
 
 function DI.gradient(
-    f, backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, ::NoGradientExtras
+    f, backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},true}, x, ::NoGradientExtras
 )
     if backend isa AutoDeferredEnzyme
         grad = make_zero(x)
@@ -143,7 +160,7 @@ end
 function DI.gradient!(
     f,
     grad,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},true},
     x,
     extras::NoGradientExtras,
 )
@@ -158,13 +175,17 @@ function DI.gradient!(
 end
 
 function DI.value_and_gradient(
-    f, backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, ::NoGradientExtras
+    f, backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},true}, x, ::NoGradientExtras
 )
     return DI.value_and_pullback(f, backend, x, true, NoPullbackExtras())
 end
 
 function DI.value_and_gradient!(
-    f, grad, backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, ::NoGradientExtras
+    f,
+    grad,
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},true},
+    x,
+    ::NoGradientExtras,
 )
     return DI.value_and_pullback!(f, grad, backend, x, true, NoPullbackExtras())
 end
@@ -172,59 +193,3 @@ end
 ## Jacobian
 
 # see https://github.com/EnzymeAD/Enzyme.jl/issues/1391
-
-#=
-
-struct EnzymeReverseOneArgJacobianExtras{B,N} end
-
-function DI.prepare_jacobian(f, backend::AutoReverseEnzyme, x)
-    B = pick_batchsize(backend, length(x))
-    y = f(x)
-    N = length(y)
-    return EnzymeReverseOneArgJacobianExtras{B,N}()
-end
-
-function DI.jacobian(
-    f,
-    backend::AutoReverseEnzyme,
-    x::AbstractArray,
-    ::EnzymeReverseOneArgJacobianExtras{C,N},
-) where {B,N}
-    jac_wrongshape = jacobian(reverse_mode(backend), f, x, Val(N), Val(B))
-    nx = length(x)
-    ny = length(jac_wrongshape) ÷ length(x)
-    jac_rightshape = reshape(jac_wrongshape, ny, nx)
-    return jac_rightshape
-end
-
-function DI.value_and_jacobian(
-    f,
-    backend::AutoReverseEnzyme,
-    x::AbstractArray,
-    extras::EnzymeReverseOneArgJacobianExtras,
-)
-    return f(x), DI.jacobian(f, backend, x, extras)
-end
-
-function DI.jacobian!(
-    f,
-    jac,
-    backend::AutoReverseEnzyme,
-    x::AbstractArray,
-    extras::EnzymeReverseOneArgJacobianExtras,
-)
-    return copyto!(jac, DI.jacobian(f, backend, x, extras))
-end
-
-function DI.value_and_jacobian!(
-    f,
-    jac,
-    backend::AutoReverseEnzyme,
-    x::AbstractArray,
-    extras::EnzymeReverseOneArgJacobianExtras,
-)
-    y, new_jac = DI.value_and_jacobian(f, backend, x, extras)
-    return y, copyto!(jac, new_jac)
-end
-
-=#
