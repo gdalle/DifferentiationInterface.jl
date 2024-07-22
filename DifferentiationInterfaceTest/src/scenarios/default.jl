@@ -28,12 +28,40 @@ function num_to_num_scenarios_onearg(x::Number; dx::Number, dy::Number)
     der2 = num_to_num_second_derivative(x)
 
     # everyone out of place
-    return [
+    scens = Scenario[
         PushforwardScenario(f; x, y, dx, dy=dy_from_dx, nb_args, place),
         PullbackScenario(f; x, y, dy, dx=dx_from_dy, nb_args, place),
         DerivativeScenario(f; x, y, der, nb_args, place),
         SecondDerivativeScenario(f; x, y, der, der2, nb_args, place),
     ]
+
+    # add scenarios [x] -> [y] to test 1-sized everything
+    f_vec(x) = [f(only(x))]
+    f_vec!(y, x) = y[only(eachindex(y))] = f(only(x))
+
+    for place in (:outofplace, :inplace)
+        append!(
+            scens,
+            [
+                PushforwardScenario(
+                    f_vec; x=[x], y=[y], dx=[dx], dy=[dy_from_dx], nb_args=1, place
+                ),
+                PushforwardScenario(
+                    f_vec!; x=[x], y=[y], dx=[dx], dy=[dy_from_dx], nb_args=2, place
+                ),
+                PullbackScenario(
+                    f_vec; x=[x], y=[y], dy=[dy], dx=[dx_from_dy], nb_args=1, place
+                ),
+                PullbackScenario(
+                    f_vec!; x=[x], y=[y], dy=[dy], dx=[dx_from_dy], nb_args=2, place
+                ),
+                JacobianScenario(f_vec; x=[x], y=[y], jac=[der;;], nb_args=1, place),
+                JacobianScenario(f_vec!; x=[x], y=[y], jac=[der;;], nb_args=2, place),
+            ],
+        )
+    end
+
+    return scens
 end
 
 ## Number to array
