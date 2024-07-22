@@ -17,7 +17,14 @@ num_to_num_second_derivative(x) = -sin(x)
 num_to_num_pushforward(x, dx) = num_to_num_derivative(x) * dx
 num_to_num_pullback(x, dy) = num_to_num_derivative(x) * dy
 
-function num_to_num_scenarios_onearg(x::Number; dx::Number, dy::Number)
+num_to_num_vec(x) = [num_to_num(only(x))]
+
+function num_to_num_vec!(y, x)
+    y[only(eachindex(y))] = num_to_num(only(x))
+    return nothing
+end
+
+function num_to_num_scenarios(x::Number; dx::Number, dy::Number)
     nb_args = 1
     place = :outofplace
     f = num_to_num
@@ -36,30 +43,39 @@ function num_to_num_scenarios_onearg(x::Number; dx::Number, dy::Number)
     ]
 
     # add scenarios [x] -> [y] to test 1-sized everything
-    f_vec(x) = [f(only(x))]
-    function f_vec!(y, x)
-        y[only(eachindex(y))] = f(only(x))
-        return nothing
-    end
+
+    jac = fill(der, 1, 1)
 
     for place in (:outofplace, :inplace)
         append!(
             scens,
             [
                 PushforwardScenario(
-                    f_vec; x=[x], y=[y], dx=[dx], dy=[dy_from_dx], nb_args=1, place
+                    num_to_num_vec; x=[x], y=[y], dx=[dx], dy=[dy_from_dx], nb_args=1, place
                 ),
                 PushforwardScenario(
-                    f_vec!; x=[x], y=[y], dx=[dx], dy=[dy_from_dx], nb_args=2, place
+                    num_to_num_vec!;
+                    x=[x],
+                    y=[y],
+                    dx=[dx],
+                    dy=[dy_from_dx],
+                    nb_args=2,
+                    place,
                 ),
                 PullbackScenario(
-                    f_vec; x=[x], y=[y], dy=[dy], dx=[dx_from_dy], nb_args=1, place
+                    num_to_num_vec; x=[x], y=[y], dy=[dy], dx=[dx_from_dy], nb_args=1, place
                 ),
                 PullbackScenario(
-                    f_vec!; x=[x], y=[y], dy=[dy], dx=[dx_from_dy], nb_args=2, place
+                    num_to_num_vec!;
+                    x=[x],
+                    y=[y],
+                    dy=[dy],
+                    dx=[dx_from_dy],
+                    nb_args=2,
+                    place,
                 ),
-                JacobianScenario(f_vec; x=[x], y=[y], jac=[der;;], nb_args=1, place),
-                JacobianScenario(f_vec!; x=[x], y=[y], jac=[der;;], nb_args=2, place),
+                JacobianScenario(num_to_num_vec; x=[x], y=[y], jac=jac, nb_args=1, place),
+                JacobianScenario(num_to_num_vec!; x=[x], y=[y], jac=jac, nb_args=2, place),
             ],
         )
     end
@@ -496,7 +512,7 @@ function default_scenarios(rng::AbstractRNG=default_rng(); linalg=true)
 
     scens = vcat(
         # one argument
-        num_to_num_scenarios_onearg(x_; dx=dx_, dy=dy_),
+        num_to_num_scenarios(x_; dx=dx_, dy=dy_),
         num_to_arr_scenarios_onearg(x_, V; dx=dx_, dy=dy_6),
         num_to_arr_scenarios_onearg(x_, M; dx=dx_, dy=dy_2_3),
         arr_to_num_scenarios_onearg(x_6; dx=dx_6, dy=dy_, linalg),
