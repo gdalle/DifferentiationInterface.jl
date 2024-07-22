@@ -1,5 +1,6 @@
 using ADTypes: ADTypes
 using DifferentiationInterface, DifferentiationInterfaceTest
+import DifferentiationInterfaceTest as DIT
 using Enzyme: Enzyme
 using SparseConnectivityTracer, SparseMatrixColorings
 using StableRNGs
@@ -43,6 +44,13 @@ test_differentiation(
     second_order=false,
     logging=LOGGING,
 );
+
+test_differentiation(
+    AutoEnzyme(; constant_function=true),
+    DIT.make_closure.(default_scenarios());
+    second_order=false,
+    logging=LOGGING,
+);  # all of these should fail?
 
 test_differentiation(
     [

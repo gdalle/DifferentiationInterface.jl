@@ -46,7 +46,7 @@ end
 
 ADTypes.mode(backend::AutoDeferredEnzyme) = ADTypes.mode(AutoEnzyme(backend.mode))
 
-function DI.nested(backend::AutoEnzyme{M,constant_function}) where {M}
+function DI.nested(backend::AutoEnzyme{M,constant_function}) where {M,constant_function}
     return AutoDeferredEnzyme{M,constant_function}(backend.mode)
 end
 
