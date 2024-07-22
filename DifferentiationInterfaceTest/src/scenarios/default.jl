@@ -37,7 +37,10 @@ function num_to_num_scenarios_onearg(x::Number; dx::Number, dy::Number)
 
     # add scenarios [x] -> [y] to test 1-sized everything
     f_vec(x) = [f(only(x))]
-    f_vec!(y, x) = y[only(eachindex(y))] = f(only(x))
+    function f_vec!(y, x)
+        y[only(eachindex(y))] = f(only(x))
+        return nothing
+    end
 
     for place in (:outofplace, :inplace)
         append!(
