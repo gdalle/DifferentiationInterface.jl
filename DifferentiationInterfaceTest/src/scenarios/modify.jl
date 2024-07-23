@@ -23,7 +23,7 @@ end
 Return a new [`Scenario`](@ref) with a modified function `f` or `f!` that closes over differentiable data.
 """
 function make_closure(scen::Scenario)
-    (; f, x, y) = scen
+    @compat (; f, x, y) = scen
     x_buffer = [zero(x)]
     y_buffer = [zero(y)]
     closure_f = MyClosure{nb_args(scen),typeof(f),typeof(x),typeof(y)}(
