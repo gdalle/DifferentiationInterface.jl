@@ -68,6 +68,7 @@ using PackageExtensionCompat: @require_extensions
 using ProgressMeter: ProgressUnknown, next!
 using Random: AbstractRNG, default_rng, rand!
 using SparseArrays: SparseArrays, SparseMatrixCSC, nnz, spdiagm
+using StochasticAD
 using Test: @testset, @test
 
 include("scenarios/scenario.jl")

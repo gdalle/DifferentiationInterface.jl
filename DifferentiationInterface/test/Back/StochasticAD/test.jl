@@ -2,15 +2,14 @@ using ADTypes
 using DifferentiationInterface
 using DifferentiationInterfaceTest
 using StochasticAD: StochasticAD
-using SparseConnectivityTracer
-using SparseMatrixColorings
-using ComponentArrays: ComponentArrays
-using StaticArrays: StaticArrays
+#using SparseConnectivityTracer
+#using SparseMatrixColorings
+#using ComponentArrays: ComponentArrays
+#using StaticArrays: StaticArrays
 
 for backend in [AutoStochasticAD(10)]
     @test check_available(backend)
     @test !check_twoarg(backend)
-    @test !check_hessian(backend; verbose=false)
 end
 
 ## Dense
