@@ -14,7 +14,8 @@ push!(LOAD_PATH, TEST_ENV)
 
 LOGGING = get(ENV, "CI", "false") == "false"
 
-GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "All")
+#GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "All")
+GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "Back/StochasticAD")
 
 ## Main tests
 

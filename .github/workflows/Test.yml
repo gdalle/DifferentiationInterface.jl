@@ -42,6 +42,7 @@ jobs:
           - Back/PolyesterForwardDiff
           - Back/ReverseDiff
           - Back/SecondOrder
+          - Back/StochasticAD
           - Back/Symbolics
           - Back/Tapir
           - Back/Tracker

@@ -130,12 +130,19 @@ export AutoFiniteDifferences
 export AutoForwardDiff
 export AutoPolyesterForwardDiff
 export AutoReverseDiff
+export AutoStochasticAD
 export AutoSymbolics
 export AutoTapir
 export AutoTracker
 export AutoZygote
 
 export AutoSparse
+
+## testing for now. To be moved to ADTypes.jl
+struct AutoStochasticAD <: AbstractADType
+    n_samples::Int64
+end
+ADTypes.mode(::AutoStochasticAD) = ADTypes.ForwardMode()
 
 ## Re-exported from SparseMatrixColorings
 

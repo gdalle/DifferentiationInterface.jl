@@ -43,6 +43,7 @@ We support all of the backends defined by [ADTypes.jl](https://github.com/SciML/
 - [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl)
 - [PolyesterForwardDiff.jl](https://github.com/JuliaDiff/PolyesterForwardDiff.jl)
 - [ReverseDiff.jl](https://github.com/JuliaDiff/ReverseDiff.jl)
+- [StochasticAD.jl](https://github.com/gaurav-arya/StochasticAD.jl)
 - [Symbolics.jl](https://github.com/JuliaSymbolics/Symbolics.jl)
 - [Tapir.jl](https://github.com/withbayes/Tapir.jl)
 - [Tracker.jl](https://github.com/FluxML/Tracker.jl)

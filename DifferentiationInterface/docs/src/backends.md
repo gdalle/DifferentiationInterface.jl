@@ -15,6 +15,7 @@ We support all dense backend choices from [ADTypes.jl](https://github.com/SciML/
 - [`AutoForwardDiff`](@extref ADTypes.AutoForwardDiff)
 - [`AutoPolyesterForwardDiff`](@extref ADTypes.AutoPolyesterForwardDiff)
 - [`AutoReverseDiff`](@extref ADTypes.AutoReverseDiff)
+- [`AutoStochasticAD`](@extref ADTypes.AutoStochasticAD)
 - [`AutoSymbolics`](@extref ADTypes.AutoSymbolics)
 - [`AutoTapir`](@extref ADTypes.AutoTapir)
 - [`AutoTracker`](@extref ADTypes.AutoTracker)
@@ -50,6 +51,7 @@ import FiniteDifferences
 import ForwardDiff
 import PolyesterForwardDiff
 import ReverseDiff
+import StochasticAD
 import Symbolics
 import Tapir
 import Tracker
@@ -64,6 +66,7 @@ backend_examples = [
     AutoForwardDiff(),
     AutoPolyesterForwardDiff(; chunksize=1),
     AutoReverseDiff(),
+    AutoStochasticAD(),
     AutoSymbolics(),
     AutoTapir(; safe_mode=false),
     AutoTracker(),
