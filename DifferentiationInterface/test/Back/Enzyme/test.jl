@@ -46,7 +46,10 @@ test_differentiation(
 );
 
 test_differentiation(
-    AutoEnzyme(; mode=Enzyme.Forward, constant_function=false),
+    [
+        AutoEnzyme(; mode=Enzyme.Forward, constant_function=false),
+        AutoEnzyme(; mode=Enzyme.Reverse, constant_function=false),
+    ],
     DIT.make_closure.(default_scenarios());
     second_order=false,
     logging=LOGGING,

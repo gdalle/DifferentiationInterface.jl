@@ -1,26 +1,28 @@
 ## Pullback
 
-function DI.prepare_pullback(f, ::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},true}, x, dy)
+function DI.prepare_pullback(f, ::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, dy)
     return NoPullbackExtras()
-end
-
-function DI.prepare_pullback(f, ::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},false}, x, dy)
-    throw(ArgumentError(CONSTANT_FUNCTION_ERROR))
 end
 
 ### Out-of-place
 
 function DI.value_and_pullback(
     f,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},true},
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},constant_function},
     x::Number,
     dy::Number,
     ::NoPullbackExtras,
-)
-    der, y = if backend isa AutoDeferredEnzyme
-        autodiff_deferred(ReverseWithPrimal, f, Active, Active(x))
+) where {constant_function}
+    f_and_df = if constant_function
+        Const(f)
     else
-        autodiff(ReverseWithPrimal, Const(f), Active, Active(x))
+        df = make_zero(f)
+        Duplicated(f, df)
+    end
+    der, y = if backend isa AutoDeferredEnzyme
+        autodiff_deferred(ReverseWithPrimal, f_and_df, Active, Active(x))
+    else
+        autodiff(ReverseWithPrimal, f_and_df, Active, Active(x))
     end
     new_dx = dy * only(der)
     return y, new_dx
@@ -28,32 +30,45 @@ end
 
 function DI.value_and_pullback(
     f,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},true},
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},constant_function},
     x::Number,
     dy,
     ::NoPullbackExtras,
-)
-    tf, tx = typeof(f), typeof(x)
-    forw, rev = autodiff_thunk(ReverseSplitWithPrimal, Const{tf}, Duplicated, Active{tx})
-    tape, y, new_dy = forw(Const(f), Active(x))
+) where {constant_function}
+    f_and_df = if constant_function
+        Const(f)
+    else
+        df = make_zero(f)
+        Duplicated(f, df)
+    end
+    forw, rev = autodiff_thunk(
+        ReverseSplitWithPrimal, typeof(f_and_df), Duplicated, typeof(Active(x))
+    )
+    tape, y, new_dy = forw(f_and_df, Active(x))
     copyto!(new_dy, dy)
-    new_dx = only(only(rev(Const(f), Active(x), tape)))
+    new_dx = only(only(rev(f_and_df, Active(x), tape)))
     return y, new_dx
 end
 
 function DI.value_and_pullback(
     f,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},true},
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},constant_function},
     x,
     dy::Number,
     ::NoPullbackExtras,
-)
+) where {constant_function}
+    f_and_df = if constant_function
+        Const(f)
+    else
+        df = make_zero(f)
+        Duplicated(f, df)
+    end
     dx_sametype = make_zero(x)
     x_and_dx = Duplicated(x, dx_sametype)
     _, y = if backend isa AutoDeferredEnzyme
-        autodiff_deferred(ReverseWithPrimal, Const(f), Active, x_and_dx)
+        autodiff_deferred(ReverseWithPrimal, f_and_df, Active, x_and_dx)
     else
-        autodiff(ReverseWithPrimal, Const(f), Active, x_and_dx)
+        autodiff(ReverseWithPrimal, f_and_df, Active, x_and_dx)
     end
     if !isone(dy)
         # TODO: generalize beyond Arrays?
@@ -63,22 +78,14 @@ function DI.value_and_pullback(
 end
 
 function DI.value_and_pullback(
-    f,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},true},
-    x,
-    dy,
-    extras::NoPullbackExtras,
+    f, backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, dy, extras::NoPullbackExtras
 )
     dx = make_zero(x)
     return DI.value_and_pullback!(f, dx, backend, x, dy, extras)
 end
 
 function DI.pullback(
-    f,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},true},
-    x,
-    dy,
-    extras::NoPullbackExtras,
+    f, backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, dy, extras::NoPullbackExtras
 )
     return DI.value_and_pullback(f, backend, x, dy, extras)[2]
 end
@@ -88,18 +95,24 @@ end
 function DI.value_and_pullback!(
     f,
     dx,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},true},
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},constant_function},
     x,
     dy::Number,
     ::NoPullbackExtras,
-)
+) where {constant_function}
+    f_and_df = if constant_function
+        Const(f)
+    else
+        df = make_zero(f)
+        Duplicated(f, df)
+    end
     dx_sametype = convert(typeof(x), dx)
     make_zero!(dx_sametype)
     x_and_dx = Duplicated(x, dx_sametype)
     _, y = if backend isa AutoDeferredEnzyme
-        autodiff_deferred(ReverseWithPrimal, Const(f), Active, x_and_dx)
+        autodiff_deferred(ReverseWithPrimal, f_and_df, Active, x_and_dx)
     else
-        autodiff(ReverseWithPrimal, Const(f), Active, x_and_dx)
+        autodiff(ReverseWithPrimal, f_and_df, Active, x_and_dx)
     end
     if !isone(dy)
         # TODO: generalize beyond Arrays?
@@ -111,27 +124,33 @@ end
 function DI.value_and_pullback!(
     f,
     dx,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},true},
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},constant_function},
     x,
     dy,
     ::NoPullbackExtras,
-)
-    tf, tx = typeof(f), typeof(x)
-    forw, rev = autodiff_thunk(
-        ReverseSplitWithPrimal, Const{tf}, Duplicated, Duplicated{tx}
-    )
+) where {constant_function}
+    f_and_df = if constant_function
+        Const(f)
+    else
+        df = make_zero(f)
+        Duplicated(f, df)
+    end
     dx_sametype = convert(typeof(x), dx)
     make_zero!(dx_sametype)
-    tape, y, new_dy = forw(Const(f), Duplicated(x, dx_sametype))
+    x_and_dx = Duplicated(x, dx_sametype)
+    forw, rev = autodiff_thunk(
+        ReverseSplitWithPrimal, typeof(f_and_df), Duplicated, typeof(x_and_dx)
+    )
+    tape, y, new_dy = forw(f_and_df, x_and_dx)
     copyto!(new_dy, dy)
-    rev(Const(f), Duplicated(x, dx_sametype), tape)
+    rev(f_and_df, x_and_dx, tape)
     return y, copyto!(dx, dx_sametype)
 end
 
 function DI.pullback!(
     f,
     dx,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},true},
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
     dy,
     extras::NoPullbackExtras,
