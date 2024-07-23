@@ -7,17 +7,12 @@ end
 function DI.value_and_pullback(
     f!,
     y,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},constant_function},
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
     x::Number,
     dy,
     ::NoPullbackExtras,
-) where {constant_function}
-    f!_and_df! = if constant_function
-        Const(f!)
-    else
-        df! = make_zero(f!)
-        Duplicated(f!, df!)
-    end
+)
+    f!_and_df! = get_f_and_df(f!, backend)
     dy_sametype = convert(typeof(y), copy(dy))
     y_and_dy = Duplicated(y, dy_sametype)
     _, new_dx = if backend isa AutoDeferredEnzyme
@@ -36,12 +31,7 @@ function DI.value_and_pullback(
     dy,
     ::NoPullbackExtras,
 )
-    f!_and_df! = if constant_function
-        Const(f!)
-    else
-        df! = make_zero(f!)
-        Duplicated(f!, df!)
-    end
+    f!_and_df! = get_f_and_df(f!, backend)
     dx_sametype = make_zero(x)
     dy_sametype = convert(typeof(y), copy(dy))
     y_and_dy = Duplicated(y, dy_sametype)

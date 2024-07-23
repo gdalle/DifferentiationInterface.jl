@@ -7,17 +7,12 @@ end
 function DI.value_and_pushforward(
     f!,
     y,
-    backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing},constant_function},
+    backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
     dx,
     ::NoPushforwardExtras,
-) where {constant_function}
-    f!_and_df! = if constant_function
-        Const(f!)
-    else
-        df! = make_zero(f!)
-        Duplicated(f!, df!)
-    end
+)
+    f!_and_df! = get_f_and_df(f!, backend)
     dx_sametype = convert(typeof(x), dx)
     dy_sametype = make_zero(y)
     y_and_dy = Duplicated(y, dy_sametype)

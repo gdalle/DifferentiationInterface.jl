@@ -5,18 +5,9 @@ function DI.prepare_pushforward(f, ::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}}
 end
 
 function DI.value_and_pushforward(
-    f,
-    backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing},constant_function},
-    x,
-    dx,
-    ::NoPushforwardExtras,
-) where {constant_function}
-    f_and_df = if constant_function
-        Const(f)
-    else
-        df = make_zero(f)
-        Duplicated(f, df)
-    end
+    f, backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}}, x, dx, ::NoPushforwardExtras
+)
+    f_and_df = get_f_and_df(f, backend)
     dx_sametype = convert(typeof(x), dx)
     x_and_dx = Duplicated(x, dx_sametype)
     y, new_dy = if backend isa AutoDeferredEnzyme
@@ -28,18 +19,9 @@ function DI.value_and_pushforward(
 end
 
 function DI.pushforward(
-    f,
-    backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing},constant_function},
-    x,
-    dx,
-    ::NoPushforwardExtras,
-) where {constant_function}
-    f_and_df = if constant_function
-        Const(f)
-    else
-        df = make_zero(f)
-        Duplicated(f, df)
-    end
+    f, backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}}, x, dx, ::NoPushforwardExtras
+)
+    f_and_df = get_f_and_df(f, backend)
     dx_sametype = convert(typeof(x), dx)
     x_and_dx = Duplicated(x, dx_sametype)
     new_dy = if backend isa AutoDeferredEnzyme

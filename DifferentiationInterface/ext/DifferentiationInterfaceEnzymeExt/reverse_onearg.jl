@@ -8,17 +8,12 @@ end
 
 function DI.value_and_pullback(
     f,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},constant_function},
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
     x::Number,
     dy::Number,
     ::NoPullbackExtras,
-) where {constant_function}
-    f_and_df = if constant_function
-        Const(f)
-    else
-        df = make_zero(f)
-        Duplicated(f, df)
-    end
+)
+    f_and_df = get_f_and_df(f, backend)
     der, y = if backend isa AutoDeferredEnzyme
         autodiff_deferred(ReverseWithPrimal, f_and_df, Active, Active(x))
     else
@@ -30,17 +25,12 @@ end
 
 function DI.value_and_pullback(
     f,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},constant_function},
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
     x::Number,
     dy,
     ::NoPullbackExtras,
-) where {constant_function}
-    f_and_df = if constant_function
-        Const(f)
-    else
-        df = make_zero(f)
-        Duplicated(f, df)
-    end
+)
+    f_and_df = get_f_and_df(f, backend)
     forw, rev = autodiff_thunk(
         ReverseSplitWithPrimal, typeof(f_and_df), Duplicated, typeof(Active(x))
     )
@@ -52,17 +42,12 @@ end
 
 function DI.value_and_pullback(
     f,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},constant_function},
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
     dy::Number,
     ::NoPullbackExtras,
-) where {constant_function}
-    f_and_df = if constant_function
-        Const(f)
-    else
-        df = make_zero(f)
-        Duplicated(f, df)
-    end
+)
+    f_and_df = get_f_and_df(f, backend)
     dx_sametype = make_zero(x)
     x_and_dx = Duplicated(x, dx_sametype)
     _, y = if backend isa AutoDeferredEnzyme
@@ -95,17 +80,12 @@ end
 function DI.value_and_pullback!(
     f,
     dx,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},constant_function},
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
     dy::Number,
     ::NoPullbackExtras,
-) where {constant_function}
-    f_and_df = if constant_function
-        Const(f)
-    else
-        df = make_zero(f)
-        Duplicated(f, df)
-    end
+)
+    f_and_df = get_f_and_df(f, backend)
     dx_sametype = convert(typeof(x), dx)
     make_zero!(dx_sametype)
     x_and_dx = Duplicated(x, dx_sametype)
@@ -122,19 +102,9 @@ function DI.value_and_pullback!(
 end
 
 function DI.value_and_pullback!(
-    f,
-    dx,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},constant_function},
-    x,
-    dy,
-    ::NoPullbackExtras,
-) where {constant_function}
-    f_and_df = if constant_function
-        Const(f)
-    else
-        df = make_zero(f)
-        Duplicated(f, df)
-    end
+    f, dx, backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, dy, ::NoPullbackExtras
+)
+    f_and_df = get_f_and_df(f, backend)
     dx_sametype = convert(typeof(x), dx)
     make_zero!(dx_sametype)
     x_and_dx = Duplicated(x, dx_sametype)

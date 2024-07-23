@@ -74,6 +74,15 @@ function DI.basis(::AutoEnzyme, a::AbstractArray{T}, i::CartesianIndex) where {T
     return b
 end
 
+function get_f_and_df(f, ::AnyAutoEnzyme{M,true}) where {M}
+    return Const(f)
+end
+
+function get_f_and_df(f, ::AnyAutoEnzyme{M,false}) where {M}
+    df = make_zero(f)
+    return Duplicated(f, df)
+end
+
 include("forward_onearg.jl")
 include("forward_twoarg.jl")
 
