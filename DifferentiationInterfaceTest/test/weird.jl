@@ -3,6 +3,7 @@ using ComponentArrays: ComponentArrays
 using DifferentiationInterface
 using DifferentiationInterfaceTest
 import DifferentiationInterfaceTest as DIT
+using FiniteDiff: FiniteDiff
 using FiniteDifferences: FiniteDifferences
 using Flux: Flux
 using ForwardDiff: ForwardDiff
@@ -21,7 +22,7 @@ test_differentiation(
 )
 
 test_differentiation(
-    AutoFiniteDifferences(; fdm=FiniteDifferences.central_fdm(3, 1)),
+    AutoFiniteDiff(),
     DIT.make_closure.(default_scenarios());
     second_order=false,
     logging=LOGGING,
