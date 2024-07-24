@@ -26,7 +26,7 @@ end
 function DI.value_and_pullback(
     f!,
     y,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},true},
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
     x::AbstractArray,
     dy,
     ::NoPullbackExtras,
