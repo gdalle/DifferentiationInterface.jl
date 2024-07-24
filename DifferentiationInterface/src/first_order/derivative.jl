@@ -17,6 +17,8 @@ function prepare_derivative end
     value_and_derivative(f!, y, backend, x, [extras]) -> (y, der)
 
 Compute the value and the derivative of the function `f` at point `x`.
+
+$(document_preparation("derivative"))
 """
 function value_and_derivative end
 
@@ -25,7 +27,9 @@ function value_and_derivative end
     value_and_derivative!(f!, y, der, backend, x, [extras]) -> (y, der)
 
 Compute the value and the derivative of the function `f` at point `x`, overwriting `der`.
-    """
+
+$(document_preparation("derivative"))
+"""
 function value_and_derivative! end
 
 """
@@ -33,6 +37,8 @@ function value_and_derivative! end
     derivative(f!, y, backend, x, [extras]) -> der
 
 Compute the derivative of the function `f` at point `x`.
+
+$(document_preparation("derivative"))
 """
 function derivative end
 
@@ -41,6 +47,8 @@ function derivative end
     derivative!(f!, y, der, backend, x, [extras]) -> der
 
 Compute the derivative of the function `f` at point `x`, overwriting `der`.
+
+$(document_preparation("derivative"))
 """
 function derivative! end
 
@@ -72,6 +80,8 @@ end
 
 ## One argument
 
+### Without extras
+
 function value_and_derivative(f::F, backend::AbstractADType, x) where {F}
     return value_and_derivative(f, backend, x, prepare_derivative(f, backend, x))
 end
@@ -87,6 +97,8 @@ end
 function derivative!(f::F, der, backend::AbstractADType, x) where {F}
     return derivative!(f, der, backend, x, prepare_derivative(f, backend, x))
 end
+
+### With extras
 
 function value_and_derivative(
     f::F, backend::AbstractADType, x, extras::PushforwardDerivativeExtras
@@ -114,6 +126,8 @@ end
 
 ## Two arguments
 
+### Without extras
+
 function value_and_derivative(f!::F, y, backend::AbstractADType, x) where {F}
     return value_and_derivative(f!, y, backend, x, prepare_derivative(f!, y, backend, x))
 end
@@ -131,6 +145,8 @@ end
 function derivative!(f!::F, y, der, backend::AbstractADType, x) where {F}
     return derivative!(f!, y, der, backend, x, prepare_derivative(f!, y, backend, x))
 end
+
+### With extras
 
 function value_and_derivative(
     f!::F, y, backend::AbstractADType, x, extras::PushforwardDerivativeExtras

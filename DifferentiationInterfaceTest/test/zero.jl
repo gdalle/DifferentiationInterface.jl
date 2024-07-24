@@ -1,7 +1,15 @@
 using DifferentiationInterface
 using DifferentiationInterfaceTest
 using DifferentiationInterfaceTest:
-    AutoZeroForward, AutoZeroReverse, scenario_to_zero, test_allocfree, allocfree_scenarios
+    AutoZeroForward,
+    AutoZeroReverse,
+    scenario_to_zero,
+    test_allocfree,
+    allocfree_scenarios,
+    add_batchified!
+using ComponentArrays: ComponentArrays
+using JLArrays: JLArrays
+using StaticArrays: StaticArrays
 
 using Test
 
@@ -14,7 +22,7 @@ using Test
 
 test_differentiation(
     [AutoZeroForward(), AutoZeroReverse()],
-    scenario_to_zero.(default_scenarios());
+    add_batchified!(scenario_to_zero.(default_scenarios()));
     correctness=true,
     type_stability=true,
     logging=LOGGING,
@@ -25,7 +33,7 @@ test_differentiation(
         SecondOrder(AutoZeroForward(), AutoZeroReverse()),
         SecondOrder(AutoZeroReverse(), AutoZeroForward()),
     ],
-    scenario_to_zero.(default_scenarios(; linalg=false));
+    add_batchified!(scenario_to_zero.(default_scenarios(; linalg=false)));
     correctness=true,
     type_stability=true,
     first_order=false,

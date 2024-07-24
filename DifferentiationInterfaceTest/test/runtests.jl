@@ -35,9 +35,9 @@ GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "All")
         end
     end
 
-    if GROUP == "Zygote" || GROUP == "All"
-        @testset verbose = false "ForwardDiff" begin
-            include("zygote.jl")
+    if GROUP == "Weird" || GROUP == "All"
+        @testset verbose = false "Weird" begin
+            include("weird.jl")
         end
     end
 end;

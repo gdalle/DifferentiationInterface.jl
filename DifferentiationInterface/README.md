@@ -32,7 +32,7 @@ This package provides a backend-agnostic syntax to differentiate functions of th
 
 ## Compatibility
 
-We support all of the backends defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl) v1.0:
+We support all of the backends defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl):
 
 - [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl)
 - [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl)
@@ -47,6 +47,11 @@ We support all of the backends defined by [ADTypes.jl](https://github.com/SciML/
 - [Tapir.jl](https://github.com/withbayes/Tapir.jl)
 - [Tracker.jl](https://github.com/FluxML/Tracker.jl)
 - [Zygote.jl](https://github.com/FluxML/Zygote.jl)
+
+Note that in some cases, going through DifferentiationInterface.jl might be slower than a direct call to the backend's API.
+This is mostly true for Enzyme.jl, whose handling of activities and multiple arguments unlocks additional performance.
+We are working on this challenge, and welcome any suggestions or contributions.
+Meanwhile, if differentiation fails or takes too long, consider using Enzyme.jl directly.
 
 ## Installation
 
@@ -86,7 +91,6 @@ value_and_gradient(f, AutoZygote(),      x) # returns (5.0, [2.0, 4.0]) with Zyg
 
 To improve your performance by up to several orders of magnitude compared to this example, take a look at the [DifferentiationInterface tutorial](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterface/stable/tutorial1/) and its section on operator preparation.
 
-## Related packages
+## Citation
 
-- [AbstractDifferentiation.jl](https://github.com/JuliaDiff/AbstractDifferentiation.jl) is the original inspiration for DifferentiationInterface.jl.
-- [AutoDiffOperators.jl](https://github.com/oschulz/AutoDiffOperators.jl) is an attempt to bridge ADTypes.jl with AbstractDifferentiation.jl.
+Please cite both DifferentiationInterface.jl and its inspiration [AbstractDifferentiation.jl](https://github.com/JuliaDiff/AbstractDifferentiation.jl), using the provided `CITATION.bib` file.

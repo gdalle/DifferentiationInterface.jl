@@ -14,6 +14,8 @@ function prepare_second_derivative end
     second_derivative(f, backend, x, [extras]) -> der2
 
 Compute the second derivative of the function `f` at point `x`.
+
+$(document_preparation("second_derivative"))
 """
 function second_derivative end
 
@@ -21,6 +23,8 @@ function second_derivative end
     second_derivative!(f, der2, backend, x, [extras]) -> der2
 
 Compute the second derivative of the function `f` at point `x`, overwriting `der2`.
+
+$(document_preparation("second_derivative"))
 """
 function second_derivative! end
 
@@ -28,6 +32,8 @@ function second_derivative! end
     value_derivative_and_second_derivative(f, backend, x, [extras]) -> (y, der, der2)
 
 Compute the value, first derivative and second derivative of the function `f` at point `x`.
+
+$(document_preparation("second_derivative"))
 """
 function value_derivative_and_second_derivative end
 
@@ -35,6 +41,8 @@ function value_derivative_and_second_derivative end
     value_derivative_and_second_derivative!(f, der, der2, backend, x, [extras]) -> (y, der, der2)
 
 Compute the value, first derivative and second derivative of the function `f` at point `x`, overwriting `der` and `der2`.
+
+$(document_preparation("second_derivative"))
 """
 function value_derivative_and_second_derivative! end
 
@@ -77,6 +85,8 @@ end
 
 ## One argument
 
+### Without extras
+
 function value_derivative_and_second_derivative(f::F, backend::AbstractADType, x) where {F}
     return value_derivative_and_second_derivative(
         f, backend, x, prepare_second_derivative(f, backend, x)
@@ -98,6 +108,8 @@ end
 function second_derivative!(f::F, der2, backend::AbstractADType, x) where {F}
     return second_derivative!(f, der2, backend, x, prepare_second_derivative(f, backend, x))
 end
+
+### With extras
 
 function second_derivative(
     f::F, backend::AbstractADType, x, extras::SecondDerivativeExtras

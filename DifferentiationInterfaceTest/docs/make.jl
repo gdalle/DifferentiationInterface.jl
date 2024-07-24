@@ -1,6 +1,7 @@
 using DifferentiationInterface
 using DifferentiationInterfaceTest
 using Documenter
+using DocumenterInterLinks
 
 using BenchmarkTools: BenchmarkTools
 using DataFrames: DataFrames

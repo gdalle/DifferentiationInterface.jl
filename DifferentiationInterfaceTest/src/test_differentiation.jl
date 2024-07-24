@@ -26,7 +26,8 @@ Filtering:
 Options:
 
 - `logging=false`: whether to log progress
-- `isapprox=isapprox`: function used to compare objects, with the standard signature `isapprox(x, y; atol, rtol)`
+- `isequal=isequal`: function used to compare objects exactly, with the standard signature `isequal(x, y)`
+- `isapprox=isapprox`: function used to compare objects approximately, with the standard signature `isapprox(x, y; atol, rtol)`
 - `atol=0`: absolute precision for correctness testing (when comparing to the reference outputs)
 - `rtol=1e-3`: relative precision for correctness testing (when comparing to the reference outputs)
 """
@@ -51,6 +52,7 @@ function test_differentiation(
     excluded::Vector{Symbol}=Symbol[],
     # options
     logging::Bool=false,
+    isequal=isequal,
     isapprox=isapprox,
     atol::Real=0,
     rtol::Real=1e-3,
@@ -78,8 +80,7 @@ function test_differentiation(
     prog = ProgressUnknown(; desc="$title", spinner=true, enabled=logging)
 
     @testset verbose = true "$title" begin
-        @testset verbose = detailed "$(backend_str(backend))" for (i, backend) in
-                                                                  enumerate(backends)
+        @testset verbose = detailed "$backend" for (i, backend) in enumerate(backends)
             filtered_scenarios = filter(s -> compatible(backend, s), scenarios)
             grouped_scenarios = group_by_operator(filtered_scenarios)
             @testset verbose = detailed "$op" for (j, (op, op_group)) in
@@ -88,20 +89,21 @@ function test_differentiation(
                     next!(
                         prog;
                         showvalues=[
-                            (:backend, "$(backend_str(backend)) - $i/$(length(backends))"),
+                            (:backend, "$backend - $i/$(length(backends))"),
                             (:scenario_type, "$op - $j/$(length(grouped_scenarios))"),
                             (:scenario, "$k/$(length(op_group))"),
                             (:arguments, nb_args(scen)),
                             (:place, place(scen)),
                             (:function, scen.f),
                             (:input_type, typeof(scen.x)),
-                            (:input_size, size(scen.x)),
+                            (:input_size, mysize(scen.x)),
                             (:output_type, typeof(scen.y)),
-                            (:output_size, size(scen.y)),
+                            (:output_size, mysize(scen.y)),
+                            (:batched_seed, scen.seed isa Batch),
                         ],
                     )
                     correctness && @testset "Correctness" begin
-                        test_correctness(backend, scen; isapprox, atol, rtol)
+                        test_correctness(backend, scen; isequal, isapprox, atol, rtol)
                     end
                     type_stability && @testset "Type stability" begin
                         @static if VERSION >= v"1.7"
@@ -111,6 +113,7 @@ function test_differentiation(
                     sparsity && @testset "Sparsity" begin
                         test_sparsity(backend, scen)
                     end
+                    yield()
                 end
             end
         end
@@ -175,19 +178,21 @@ function benchmark_differentiation(
                 next!(
                     prog;
                     showvalues=[
-                        (:backend, "$(backend_str(backend)) - $i/$(length(backends))"),
+                        (:backend, "$backend - $i/$(length(backends))"),
                         (:scenario_type, "$op - $j/$(length(grouped_scenarios))"),
                         (:scenario, "$k/$(length(op_group))"),
                         (:arguments, nb_args(scen)),
                         (:place, place(scen)),
                         (:function, scen.f),
                         (:input_type, typeof(scen.x)),
-                        (:input_size, size(scen.x)),
+                        (:input_size, mysize(scen.x)),
                         (:output_type, typeof(scen.y)),
-                        (:output_size, size(scen.y)),
+                        (:output_size, mysize(scen.y)),
+                        (:batched_seed, scen.seed isa Batch),
                     ],
                 )
                 run_benchmark!(benchmark_data, backend, scen; logging)
+                yield()
             end
         end
     end

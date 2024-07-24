@@ -17,7 +17,7 @@ concurrency:
 jobs:
   
   test-DI:
-    name: DI (${{ matrix.group }}) - ${{ matrix.version }}
+    name: ${{ matrix.version }} - DI (${{ matrix.group }})
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions: # needed to allow julia-actions/cache to proactively delete old caches that it has created
@@ -28,63 +28,63 @@ jobs:
       matrix:
         version:
           - '1'
-          # - '1.6'
-          # - '~1.11.0-0'
+          # - 'lts'
+          # - 'pre'
         group:
           - Formalities
           # - Internals
-          # - Single/Diffractor
-          # - Single/Enzyme
-          # - Single/FastDifferentiation
-          # - Single/FiniteDiff
-          # - Single/FiniteDifferences
-          # - Single/ForwardDiff
-          # - Single/PolyesterForwardDiff
-          # - Single/ReverseDiff
-          # - Single/Symbolics
-          # - Single/Tapir
-          # - Single/Tracker
-          # - Single/Zygote
-          # - Double/ChainRulesCore-Zygote
-          # - Double/Enzyme-ForwardDiff
-          - Double/Enzyme-Reactant
-          # - Double/ForwardDiff-Zygote
-          # - Double/ReverseDiff-Zygote
+          # - Back/Diffractor
+          # - Back/Enzyme
+          # - Back/FastDifferentiation
+          # - Back/FiniteDiff
+          # - Back/FiniteDifferences
+          # - Back/ForwardDiff
+          # - Back/PolyesterForwardDiff
+          # - Back/ReverseDiff
+          # - Back/SecondOrder
+          # - Back/Symbolics
+          # - Back/Tapir
+          # - Back/Tracker
+          # - Back/Zygote
+          # - Down/Detector
+          # - Down/DifferentiateWith
+          # - Down/Flux
+          - Down/Reactant
         exclude:
-          - version: '1.6'
+          # lts
+          - version: 'lts'
             group: Formalities
-          - version: '~1.11.0-0'
+          - version: 'lts'
+            group: Back/Diffractor
+          - version: 'lts'
+            group: Back/Enzyme
+          - version: 'lts'
+            group: Back/FiniteDiff
+          - version: 'lts'
+            group: Back/FastDifferentiation
+          - version: 'lts'
+            group: Back/PolyesterForwardDiff
+          - version: 'lts'
+            group: Back/SecondOrder
+          - version: 'lts'
+            group: Back/Symbolics
+          - version: 'lts'
+            group: Back/Tapir
+          - version: 'lts'
+            group: Down/Detector
+          - version: 'lts'
+            group: Down/Flux
+          # pre-release
+          - version: 'pre'
             group: Formalities
-          - version: '1.6'
-            group: Single/Diffractor
-          - version: '1.6'
-            group: Single/Enzyme
-          - version: '~1.11.0-0'
-            group: Single/Enzyme
-          - version: '1.6'
-            group: Single/FiniteDiff
-          - version: '1.6'
-            group: Single/FastDifferentiation
-          - version: '1.6'
-            group: Single/PolyesterForwardDiff
-          - version: '1.6'
-            group: Single/Symbolics
-          - version: '1.6'
-            group: Single/Tapir
-          - version: '~1.11.0-0'
-            group: Single/Tapir
-          - version: '~1.11.0-0'
-            group: Double/ChainRulesCore-Zygote
-          - version: '1.6'
-            group: Double/Enzyme-ForwardDiff
-          - version: '~1.11.0-0'
-            group: Double/Enzyme-ForwardDiff
-          - version: '1.6'
-            group: Double/Enzyme-Reactant
-          - version: '~1.11.0-0'
-            group: Double/Enzyme-Reactant
-          - version: '1.6'
-            group: Double/ReverseDiff-Zygote
+          - version: 'pre'
+            group: Back/Enzyme
+          - version: 'pre'
+            group: Back/Tapir
+          - version: 'pre'
+            group: Back/SecondOrder
+          - version: 'pre'
+            group: Down/Detector
     
     steps:
       - uses: actions/checkout@v4
@@ -109,8 +109,9 @@ jobs:
           files: lcov.info
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
+
   # test-DIT:
-  #   name: DIT (${{ matrix.group }}) - ${{ matrix.version }}
+  #   name: ${{ matrix.version }} - DIT (${{ matrix.group }})
   #   runs-on: ubuntu-latest
   #   timeout-minutes: 60
   #   permissions: # needed to allow julia-actions/cache to proactively delete old caches that it has created
@@ -121,17 +122,18 @@ jobs:
   #     matrix:
   #       version:
   #         - '1'
-  #         - '1.6'
-  #         - '~1.11.0-0'
+  #         - 'lts'
+  #         - 'pre'
   #       group:
   #         - Formalities
   #         - Zero
   #         - ForwardDiff
-  #         - Zygote
+  #         - Weird
   #       exclude:
-  #         - version: '1.6'
+  #         - version: 'lts'
   #           group: Formalities
-    
+  #         - version: 'lts'
+  #           group: Weird
   #   steps:
   #     - uses: actions/checkout@v4
   #     - uses: julia-actions/setup-julia@v2

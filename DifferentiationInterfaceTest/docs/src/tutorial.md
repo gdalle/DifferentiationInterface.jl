@@ -5,7 +5,6 @@ We present a typical workflow with DifferentiationInterfaceTest.jl, building on 
 ```@repl tuto
 using DifferentiationInterface, DifferentiationInterfaceTest
 import ForwardDiff, Enzyme
-import Markdown, PrettyTables, Printf
 ```
 
 ## Introduction
@@ -13,7 +12,7 @@ import Markdown, PrettyTables, Printf
 The AD backends we want to compare are [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl) and [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl).
 
 ```@example tuto
-backends = [AutoForwardDiff(), AutoEnzyme(; mode=Enzyme.Reverse)]
+backends = [AutoForwardDiff(), AutoEnzyme(; mode=Enzyme.Reverse, constant_function=true)]
 ```
 
 To do that, we are going to take gradients of a simple function:
@@ -31,7 +30,8 @@ Of course we know the true gradient mapping:
 DifferentiationInterfaceTest.jl relies with so-called "scenarios", in which you encapsulate the information needed for your test:
 
 - the function `f`
-- the input `x` and output `y`
+- the input `x` and output `y` of the function `f`
+- the reference output of the operator (here `grad`)
 - the number of arguments for `f` (either `1` or `2`)
 - the behavior of the operator (either `:inplace` or `:outofplace`)
 
@@ -41,8 +41,8 @@ There is one scenario constructor per operator, and so here we will use [`Gradie
 xv = rand(Float32, 3)
 xm = rand(Float64, 3, 2)
 scenarios = [
-    GradientScenario(f; x=xv, y=f(xv), nb_args=1, place=:inplace),
-    GradientScenario(f; x=xm, y=f(xm), nb_args=1, place=:inplace)
+    GradientScenario(f; x=xv, y=f(xv), grad=∇f(xv), nb_args=1, place=:inplace),
+    GradientScenario(f; x=xm, y=f(xm), grad=∇f(xm), nb_args=1, place=:inplace)
 ];
 nothing  # hide
 ```
@@ -73,16 +73,4 @@ This is made easy by the [`benchmark_differentiation`](@ref) function, whose syn
 df = benchmark_differentiation(backends, scenarios);
 ```
 
-The resulting object is `DataFrame` from [DataFrames.jl](https://github.com/JuliaData/DataFrames.jl), whose columns correspond to the fields of [`DifferentiationBenchmarkDataRow`](@ref):
-Here's what it looks like with all of its columns.
-
-```@example tuto
-table = PrettyTables.pretty_table(
-    String,
-    df;
-    backend=Val(:markdown),
-    header=names(df),
-)
-
-Markdown.parse(table)
-```
+The resulting object is a `DataFrame` from [DataFrames.jl](https://github.com/JuliaData/DataFrames.jl), whose columns correspond to the fields of [`DifferentiationBenchmarkDataRow`](@ref):

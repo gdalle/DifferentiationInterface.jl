@@ -26,7 +26,7 @@ Make it easy to know, for a given function:
 - Type stability tests
 - Count calls to the function
 - Benchmark runtime and allocations
-- Weird array types (GPU, static, components)
+- Scenarios with weird array types (GPU, static, components) in package extensions
 
 ## Installation
 

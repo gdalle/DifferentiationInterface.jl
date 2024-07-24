@@ -5,11 +5,41 @@ This page is about the latter, check out [that page](@ref "Operators") to learn 
 
 ## List of backends
 
-We support all dense backend choices from [ADTypes.jl](https://github.com/SciML/ADTypes.jl), as well as their sparse wrapper [`AutoSparse`](@extref ADTypes.AutoSparse).
+We support all dense backend choices from [ADTypes.jl](https://github.com/SciML/ADTypes.jl):
+
+- [`AutoDiffractor`](@extref ADTypes.AutoDiffractor)
+- [`AutoEnzyme`](@extref ADTypes.AutoEnzyme)
+- [`AutoFastDifferentiation`](@extref ADTypes.AutoFastDifferentiation)
+- [`AutoFiniteDiff`](@extref ADTypes.AutoFiniteDiff)
+- [`AutoFiniteDifferences`](@extref ADTypes.AutoFiniteDifferences)
+- [`AutoForwardDiff`](@extref ADTypes.AutoForwardDiff)
+- [`AutoPolyesterForwardDiff`](@extref ADTypes.AutoPolyesterForwardDiff)
+- [`AutoReverseDiff`](@extref ADTypes.AutoReverseDiff)
+- [`AutoSymbolics`](@extref ADTypes.AutoSymbolics)
+- [`AutoTapir`](@extref ADTypes.AutoTapir)
+- [`AutoTracker`](@extref ADTypes.AutoTracker)
+- [`AutoZygote`](@extref ADTypes.AutoZygote)
+
+We also support the sparse wrapper [`AutoSparse`](@extref ADTypes.AutoSparse).
+
+## Compatibility
+
+DifferentiationInterface.jl itself is compatible with Julia 1.6, the Long Term Support (LTS) version of the language.
+However, we were only able to test the following backends on Julia 1.6:
+
+- `AutoFiniteDifferences`
+- `AutoForwardDiff`
+- `AutoReverseDiff`
+- `AutoTracker`
+- `AutoZygote`
+
+We strongly recommend that users upgrade to Julia 1.10 or above, where all backends are tested.
+
+## Features
 
 ```@setup backends
+using ADTypes
 using DifferentiationInterface
-using DifferentiationInterface: backend_str
 import Markdown
 
 import Diffractor
@@ -25,21 +55,20 @@ import Tapir
 import Tracker
 import Zygote
 
-const backend_examples = (
-    "AutoDiffractor()",
-    "AutoEnzyme(; mode=Enzyme.Forward)",
-    "AutoEnzyme(; mode=Enzyme.Reverse)",
-    "AutoFastDifferentiation()",
-    "AutoFiniteDiff()",
-    "AutoFiniteDifferences(; fdm=FiniteDifferences.central_fdm(3, 1))",
-    "AutoForwardDiff()",
-    "AutoPolyesterForwardDiff(; chunksize=1)",
-    "AutoReverseDiff()",
-    "AutoSymbolics()",
-    "AutoTapir(; safe_mode=false)",
-    "AutoTracker()",
-    "AutoZygote()",
-)
+backend_examples = [
+    AutoDiffractor(),
+    AutoEnzyme(; constant_function=true),
+    AutoFastDifferentiation(),
+    AutoFiniteDiff(),
+    AutoFiniteDifferences(; fdm=FiniteDifferences.central_fdm(3, 1)),
+    AutoForwardDiff(),
+    AutoPolyesterForwardDiff(; chunksize=1),
+    AutoReverseDiff(),
+    AutoSymbolics(),
+    AutoTapir(; safe_mode=false),
+    AutoTracker(),
+    AutoZygote(),
+]
 
 checkmark(x::Bool) = x ? '✅' : '❌'
 unicode_check_available(backend) = checkmark(check_available(backend))
@@ -49,12 +78,11 @@ unicode_check_twoarg(backend)    = checkmark(check_twoarg(backend))
 io = IOBuffer()
 
 # Table header 
-println(io, "| Backend | Availability | Two-argument functions | Hessian support | Example |")
-println(io, "|:--------|:------------:|:----------------------:|:---------------:|:--------|")
+println(io, "| Backend | Availability | Two-argument functions | Hessian support |")
+println(io, "|:--------|:------------:|:----------------------:|:---------------:|")
 
-for example in backend_examples
-    b = eval(Meta.parse(example)) # backend
-    join(io, [backend_str(b), unicode_check_available(b), unicode_check_twoarg(b), unicode_check_hessian(b), "`$example`"], '|')
+for b in backend_examples
+    join(io, ["`$(nameof(typeof(b)))`", unicode_check_available(b), unicode_check_twoarg(b), unicode_check_hessian(b)], '|')
     println(io, '|' )
 end
 backend_table = Markdown.parse(String(take!(io)))
@@ -63,21 +91,6 @@ backend_table = Markdown.parse(String(take!(io)))
 ```@example backends
 backend_table #hide
 ```
-
-## Compatibility
-
-DifferentiationInterface.jl itself is compatible with Julia 1.6, the Long Term Support (LTS) version of the language.
-However, we were only able to test the following backends on Julia 1.6:
-
-- FiniteDifferences.jl
-- ForwardDiff.jl
-- ReverseDiff.jl
-- Tracker.jl
-- Zygote.jl
-
-We strongly recommend that users upgrade to Julia 1.10, where all backends are tested.
-
-## Checks
 
 ### Availability
 

@@ -12,7 +12,7 @@ module DifferentiationInterface
 using ADTypes: ADTypes, AbstractADType
 using ADTypes: mode, ForwardMode, ForwardOrReverseMode, ReverseMode, SymbolicMode
 using ADTypes: AutoSparse, dense_ad
-using ADTypes: coloring_algorithm, column_coloring, row_coloring, symmetric_coloring
+using ADTypes: coloring_algorithm, column_coloring, row_coloring
 using ADTypes: sparsity_detector, jacobian_sparsity, hessian_sparsity
 using ADTypes:
     AutoChainRules,
@@ -42,7 +42,9 @@ using SparseMatrixColorings:
     decompress_rows,
     decompress_rows!,
     decompress_symmetric,
-    decompress_symmetric!
+    decompress_symmetric!,
+    symmetric_coloring_detailed,
+    StarSet
 
 abstract type Extras end
 
@@ -54,15 +56,19 @@ include("utils/batch.jl")
 include("utils/check.jl")
 include("utils/exceptions.jl")
 include("utils/maybe.jl")
+include("utils/printing.jl")
 
 include("first_order/pushforward.jl")
+include("first_order/pushforward_batched.jl")
 include("first_order/pullback.jl")
+include("first_order/pullback_batched.jl")
 include("first_order/derivative.jl")
 include("first_order/gradient.jl")
 include("first_order/jacobian.jl")
 
 include("second_order/second_derivative.jl")
 include("second_order/hvp.jl")
+include("second_order/hvp_batched.jl")
 include("second_order/hessian.jl")
 
 include("sparse/fallbacks.jl")
@@ -73,8 +79,6 @@ include("sparse/hessian.jl")
 include("misc/differentiate_with.jl")
 include("misc/sparsity_detector.jl")
 include("misc/from_primitive.jl")
-
-include("utils/printing.jl")
 
 struct ReactantBackend{B} <: ADTypes.AbstractADType
     backend::B

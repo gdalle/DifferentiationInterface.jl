@@ -42,9 +42,11 @@ struct ReverseDiffGradientExtras{T} <: GradientExtras
     tape::T
 end
 
-function DI.prepare_gradient(f, backend::AutoReverseDiff, x::AbstractArray)
+function DI.prepare_gradient(
+    f, ::AutoReverseDiff{Compile}, x::AbstractArray
+) where {Compile}
     tape = GradientTape(f, x)
-    if backend.compile
+    if Compile
         tape = compile(tape)
     end
     return ReverseDiffGradientExtras(tape)
@@ -91,9 +93,11 @@ struct ReverseDiffOneArgJacobianExtras{T} <: JacobianExtras
     tape::T
 end
 
-function DI.prepare_jacobian(f, backend::AutoReverseDiff, x::AbstractArray)
+function DI.prepare_jacobian(
+    f, ::AutoReverseDiff{Compile}, x::AbstractArray
+) where {Compile}
     tape = JacobianTape(f, x)
-    if backend.compile
+    if Compile
         tape = compile(tape)
     end
     return ReverseDiffOneArgJacobianExtras(tape)
@@ -140,9 +144,9 @@ struct ReverseDiffHessianExtras{T} <: HessianExtras
     tape::T
 end
 
-function DI.prepare_hessian(f, backend::AutoReverseDiff, x::AbstractArray)
+function DI.prepare_hessian(f, ::AutoReverseDiff{Compile}, x::AbstractArray) where {Compile}
     tape = HessianTape(f, x)
-    if backend.compile
+    if Compile
         tape = compile(tape)
     end
     return ReverseDiffHessianExtras(tape)

@@ -22,7 +22,15 @@ struct SecondOrder{ADO<:AbstractADType,ADI<:AbstractADType} <: AbstractADType
 end
 
 function Base.show(io::IO, backend::SecondOrder)
-    return print(io, "SecondOrder($(outer(backend)) / $(inner(backend)))")
+    return print(
+        io,
+        SecondOrder,
+        "(",
+        repr(outer(backend); context=io),
+        ", ",
+        repr(inner(backend); context=io),
+        ")",
+    )
 end
 
 """
