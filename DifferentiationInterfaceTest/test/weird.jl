@@ -21,6 +21,13 @@ test_differentiation(
 )
 
 test_differentiation(
+    AutoFiniteDifferences(; fdm=FiniteDifferences.central_fdm(3, 1)),
+    DIT.make_closure.(default_scenarios());
+    second_order=false,
+    logging=LOGGING,
+);
+
+test_differentiation(
     AutoZygote(), gpu_scenarios(); correctness=true, second_order=false, logging=LOGGING
 )
 

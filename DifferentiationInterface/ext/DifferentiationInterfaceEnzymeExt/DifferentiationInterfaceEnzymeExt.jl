@@ -38,8 +38,6 @@ using Enzyme:
     make_zero,
     make_zero!
 
-const CONSTANT_FUNCTION_ERROR = """`AutoEnzyme(constant_function=false)` is not yet supported by DifferentiationInterface. For the time being, please use `AutoEnzyme(constant_function=true)` and avoid closures containing differentiable data."""
-
 struct AutoDeferredEnzyme{M,constant_function} <: ADTypes.AbstractADType
     mode::M
 end
