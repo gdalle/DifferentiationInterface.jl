@@ -3,6 +3,7 @@ using ComponentArrays: ComponentArrays
 using DifferentiationInterface
 using DifferentiationInterfaceTest
 import DifferentiationInterfaceTest as DIT
+using FiniteDiff: FiniteDiff
 using FiniteDifferences: FiniteDifferences
 using Flux: Flux
 using ForwardDiff: ForwardDiff
@@ -19,6 +20,13 @@ test_differentiation(
     correctness=true,
     logging=LOGGING,
 )
+
+test_differentiation(
+    AutoFiniteDiff(),
+    DIT.make_closure.(default_scenarios());
+    second_order=false,
+    logging=LOGGING,
+);
 
 test_differentiation(
     AutoZygote(), gpu_scenarios(); correctness=true, second_order=false, logging=LOGGING

@@ -39,15 +39,19 @@ using Enzyme:
     make_zero!,
     onehot
 
-struct AutoDeferredEnzyme{M} <: ADTypes.AbstractADType
+struct AutoDeferredEnzyme{M,constant_function} <: ADTypes.AbstractADType
     mode::M
 end
 
 ADTypes.mode(backend::AutoDeferredEnzyme) = ADTypes.mode(AutoEnzyme(backend.mode))
 
-DI.nested(backend::AutoEnzyme) = AutoDeferredEnzyme(backend.mode)
+function DI.nested(backend::AutoEnzyme{M,constant_function}) where {M,constant_function}
+    return AutoDeferredEnzyme{M,constant_function}(backend.mode)
+end
 
-const AnyAutoEnzyme{M} = Union{AutoEnzyme{M},AutoDeferredEnzyme{M}}
+const AnyAutoEnzyme{M,constant_function} = Union{
+    AutoEnzyme{M,constant_function},AutoDeferredEnzyme{M,constant_function}
+}
 
 # forward mode if possible
 forward_mode(backend::AnyAutoEnzyme{<:Mode}) = backend.mode
@@ -67,6 +71,15 @@ function DI.basis(::AutoEnzyme, a::AbstractArray{T}, i::CartesianIndex) where {T
     b = zero(a)
     b[i] = one(T)
     return b
+end
+
+function get_f_and_df(f, ::AnyAutoEnzyme{M,true}) where {M}
+    return Const(f)
+end
+
+function get_f_and_df(f, ::AnyAutoEnzyme{M,false}) where {M}
+    df = make_zero(f)
+    return Duplicated(f, df)
 end
 
 include("forward_onearg.jl")

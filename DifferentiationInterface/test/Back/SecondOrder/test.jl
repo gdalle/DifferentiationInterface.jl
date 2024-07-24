@@ -16,8 +16,12 @@ onearg_backends = [
 ]
 
 twoarg_backends = [
-    SecondOrder(AutoForwardDiff(), AutoEnzyme(; mode=Enzyme.Forward)),
-    SecondOrder(AutoEnzyme(; mode=Enzyme.Reverse), AutoForwardDiff()),
+    SecondOrder(
+        AutoForwardDiff(), AutoEnzyme(; mode=Enzyme.Forward, constant_function=true)
+    ),
+    SecondOrder(
+        AutoEnzyme(; mode=Enzyme.Reverse, constant_function=true), AutoForwardDiff()
+    ),
 ]
 
 for backend in vcat(onearg_backends, twoarg_backends)
