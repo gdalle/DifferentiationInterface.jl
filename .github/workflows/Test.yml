@@ -96,7 +96,9 @@ jobs:
         # https://github.com/julia-actions/julia-downgrade-compat?tab=readme-ov-file#example
         if: ${{ matrix.version == 'lts' }}
         with:
-          skip: Pkg, TOML
+          # Comma-separated list of packages to not downgrade. 
+          # This should include any standard libraries because these have versions tied to the Julia version.
+          skip: LinearAlgebra, SparseArrays
       - uses: julia-actions/cache@v2
       - uses: julia-actions/julia-buildpkg@v1
       - name: Update registry
@@ -151,7 +153,9 @@ jobs:
         # https://github.com/julia-actions/julia-downgrade-compat?tab=readme-ov-file#example
         if: ${{ matrix.version == 'lts' }}
         with:
-          skip: Pkg, TOML
+          # Comma-separated list of packages to not downgrade. 
+          # This should include any standard libraries because these have versions tied to the Julia version.
+          skip: Test, Random, LinearAlgebra, SparseArrays
       - uses: julia-actions/cache@v2
       - uses: julia-actions/julia-buildpkg@v1
       - name: Dev dependencies (temporary)
