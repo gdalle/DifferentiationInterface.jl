@@ -1,3 +1,6 @@
+using Pkg
+Pkg.add("PolyesterForwardDiff")
+
 using DifferentiationInterface, DifferentiationInterfaceTest
 using PolyesterForwardDiff: PolyesterForwardDiff
 using Test

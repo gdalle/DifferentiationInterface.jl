@@ -1,3 +1,6 @@
+using Pkg
+Pkg.add("Diffractor")
+
 using DifferentiationInterface, DifferentiationInterfaceTest
 using Diffractor: Diffractor
 using Test

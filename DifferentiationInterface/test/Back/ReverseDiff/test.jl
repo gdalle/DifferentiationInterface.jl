@@ -1,3 +1,6 @@
+using Pkg
+Pkg.add("ReverseDiff")
+
 using DifferentiationInterface, DifferentiationInterfaceTest
 using DifferentiationInterface: AutoReverseFromPrimitive
 using ReverseDiff: ReverseDiff

@@ -1,3 +1,6 @@
+using Pkg
+Pkg.add(["Enzyme", "ForwardDiff", "ReverseDiff", "Zygote"])
+
 using DifferentiationInterface, DifferentiationInterfaceTest
 import DifferentiationInterface as DI
 using Enzyme: Enzyme
