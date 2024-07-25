@@ -33,7 +33,7 @@ DifferentiationInterfaceTestJLArraysExt = "JLArrays"
 DifferentiationInterfaceTestStaticArraysExt = "StaticArrays"
 
 [compat]
-ADTypes = "1"
+ADTypes = "1.1"
 Chairmarks = "1"
 Compat = "4"
 ComponentArrays = "0.15"
