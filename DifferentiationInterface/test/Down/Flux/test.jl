@@ -1,3 +1,6 @@
+using Pkg
+Pkg.add(["Enzyme", "FiniteDifferences", "Flux", "Zygote"])
+
 using DifferentiationInterface, DifferentiationInterfaceTest
 import DifferentiationInterfaceTest as DIT
 using Enzyme: Enzyme

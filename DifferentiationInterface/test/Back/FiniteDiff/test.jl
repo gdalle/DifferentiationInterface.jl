@@ -1,3 +1,6 @@
+using Pkg
+Pkg.add("FiniteDiff")
+
 using DifferentiationInterface, DifferentiationInterfaceTest
 using FiniteDiff: FiniteDiff
 using Test

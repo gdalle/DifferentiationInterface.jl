@@ -1,3 +1,6 @@
+using Pkg
+Pkg.add("Tracker")
+
 using DifferentiationInterface, DifferentiationInterfaceTest
 using Tracker: Tracker
 using Test

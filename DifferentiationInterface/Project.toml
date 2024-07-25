@@ -86,6 +86,7 @@ JLArrays = "27aeb0d3-9eb9-45fb-866b-73c2ecf80fcb"
 JuliaFormatter = "98e50ef6-434e-11e9-1051-2b60c6c9e899"
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 PolyesterForwardDiff = "98d1487c-24ca-40b6-b7ab-df2af84e126b"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 ReverseDiff = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 SparseConnectivityTracer = "9f842d2f-2579-4b1d-911e-f412cf18a3f5"
@@ -110,6 +111,7 @@ test = [
     "JLArrays",
     "JuliaFormatter",
     "Pkg",
+    "Random",
     "SparseArrays",
     "SparseConnectivityTracer",
     "SparseMatrixColorings",
