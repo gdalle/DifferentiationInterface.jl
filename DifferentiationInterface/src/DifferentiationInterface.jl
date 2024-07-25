@@ -80,6 +80,10 @@ include("misc/differentiate_with.jl")
 include("misc/sparsity_detector.jl")
 include("misc/from_primitive.jl")
 
+struct ReactantBackend{B} <: ADTypes.AbstractADType
+    backend::B
+end
+
 function __init__()
     @require_extensions
 end
