@@ -23,7 +23,8 @@ using ReverseDiff:
     hessian,
     hessian!,
     jacobian,
-    jacobian!
+    jacobian!,
+    ForwardDiff
 
 DI.check_available(::AutoReverseDiff) = true
 

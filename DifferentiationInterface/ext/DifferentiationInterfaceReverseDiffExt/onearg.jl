@@ -1,6 +1,46 @@
 ## Pullback
 
-DI.prepare_pullback(f, ::AutoReverseDiff, x, dy) = NoPullbackExtras()
+struct DIPullbackTag end
+
+struct ReverseDiffOneArgPullbackExtras{E1} <: PullbackExtras
+    tape::E1
+end
+
+function DI.prepare_pullback(f, ::AutoReverseDiff, x, dy)
+    if length(x) < ForwardDiff.DEFAULT_CHUNK_THRESHOLD
+        chunksize = length(x)
+    else
+        chunksize = ForwardDiff.DEFAULT_CHUNK_THRESHOLD
+    end
+
+    T = ForwardDiff.Tag(DIPullbackTag(), eltype(x))
+            xdual = ForwardDiff.Dual{
+                typeof(T),
+                eltype(x),
+                chunksize
+            }.(x, Ref(ForwardDiff.Partials((ones(eltype(x), chunksize)...,))))
+
+    h_tape = ReverseDiff.GradientTape(f, xdual)
+    htape = ReverseDiff.compile(h_tape)
+    return ReverseDiffOneArgPullbackExtras(htape)
+end
+
+function DI.value_and_pullback!(
+    f,
+    dx,
+    ::AutoReverseDiff,
+    x::AbstractArray,
+    dy,
+    extras::ReverseDiffOneArgPullbackExtras,
+)
+    result = gradient!(extras.tape, x)
+    dx .= DiffResults.derivative(result)
+    return DiffResults.value(result)
+end
+
+function DI.pullback(f, ::AutoReverseDiff, x, dy, extras::ReverseDiffOneArgPullbackExtras)
+    return DI.value_and_pullback(f, similar(x), x, dy, extras)
+end
 
 function DI.value_and_pullback(
     f, ::AutoReverseDiff, x::AbstractArray, dy, ::NoPullbackExtras
