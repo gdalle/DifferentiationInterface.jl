@@ -99,6 +99,8 @@ jobs:
           # Comma-separated list of packages to not downgrade. 
           # This should include any standard libraries because these have versions tied to the Julia version.
           skip: LinearAlgebra, SparseArrays
+          # Specify path to Project.toml
+          projects: DifferentiationInterface
       - uses: julia-actions/cache@v2
       - uses: julia-actions/julia-buildpkg@v1
       - name: Update registry
@@ -156,6 +158,8 @@ jobs:
           # Comma-separated list of packages to not downgrade. 
           # This should include any standard libraries because these have versions tied to the Julia version.
           skip: Test, Random, LinearAlgebra, SparseArrays
+          # Specify path to Project.toml
+          projects: DifferentiationInterfaceTest
       - uses: julia-actions/cache@v2
       - uses: julia-actions/julia-buildpkg@v1
       - name: Dev dependencies (temporary)
