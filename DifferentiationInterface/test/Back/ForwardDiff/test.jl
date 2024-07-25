@@ -1,3 +1,6 @@
+using Pkg
+Pkg.add("ForwardDiff")
+
 using ComponentArrays: ComponentArrays
 using DifferentiationInterface, DifferentiationInterfaceTest
 using DifferentiationInterfaceTest: add_batchified!
