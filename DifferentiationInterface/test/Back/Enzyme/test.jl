@@ -13,6 +13,8 @@ dense_backends = [
     AutoEnzyme(; mode=nothing, constant_function=true),
     AutoEnzyme(; mode=Enzyme.Forward, constant_function=true),
     AutoEnzyme(; mode=Enzyme.Reverse, constant_function=true),
+    AutoEnzyme(; mode=Enzyme.Forward, constant_function=false),
+    AutoEnzyme(; mode=Enzyme.Reverse, constant_function=false),
 ]
 
 nested_dense_backends = [
@@ -122,4 +124,9 @@ end
 
 backend = AutoEnzyme(; mode=Enzyme.Reverse, constant_function=false)
 
+@test Ext.get_f_and_df(make_closure(nothing), backend) isa Enzyme.Const
+@test Ext.get_f_and_df(make_closure(1), backend) isa Enzyme.Const
 @test Ext.get_f_and_df(make_closure([1.0]), backend) isa Enzyme.Duplicated
+
+@test_throws ArgumentError Ext.get_f_and_df(make_closure(1.0), backend)
+@test_throws ArgumentError Ext.get_f_and_df(make_closure((1.0, [1.0])), backend)
