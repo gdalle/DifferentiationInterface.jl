@@ -36,6 +36,7 @@ DifferentiationInterfaceFastDifferentiationExt = "FastDifferentiation"
 DifferentiationInterfaceFiniteDiffExt = "FiniteDiff"
 DifferentiationInterfaceFiniteDifferencesExt = "FiniteDifferences"
 DifferentiationInterfaceForwardDiffExt = "ForwardDiff"
+DifferentiationInterfaceForwardDiffReverseDiffExt = ["ForwardDiff", "ReverseDiff"]
 DifferentiationInterfacePolyesterForwardDiffExt = "PolyesterForwardDiff"
 DifferentiationInterfaceReverseDiffExt = "ReverseDiff"
 DifferentiationInterfaceSymbolicsExt = "Symbolics"
