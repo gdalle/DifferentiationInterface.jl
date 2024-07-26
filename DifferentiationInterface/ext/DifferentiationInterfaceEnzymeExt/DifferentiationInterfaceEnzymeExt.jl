@@ -82,22 +82,11 @@ end
 function get_f_and_df(f, backend::AnyAutoEnzyme{M,false}) where {M}
     mode = isnothing(backend.mode) ? Reverse : backend.mode
     A = guess_activity(typeof(f), mode)
-    if A <: Const
+    if A <: Const || A <: Active
         return Const(f)
-    elseif A <: Duplicated || A <: DuplicatedNoNeed
+    elseif A <: Duplicated || A <: DuplicatedNoNeed || A <: MixedDuplicated
         df = make_zero(f)
         return Duplicated(f, df)
-    elseif A <: Active || A <: MixedDuplicated
-        throw(
-            ArgumentError(
-                """
-You are using `ADTypes.AutoEnzyme(constant_function=false)` to differentiate a function `f` which itself contains some internal data (possibly a closure). Enzyme has guessed activity $A for `f`, but it can only handle `Const` or `Duplicated` at the moment.
-Here are some possible workarounds:
-- If the internal data is not influenced by the input `x` of the function `f` (if it is constant), use `ADTypes.AutoEnzyme(constant_function=true)` instead.
-- Otherwise, make sure that the internal data is only stored in objects that are passed by reference (e.g. arrays and not numbers) and try again.
-""",
-            ),
-        )
     else
         error("Unexpected activity guessed for the function `f`.")
     end
