@@ -61,6 +61,17 @@ function (ig::InnerGradient)(x)
     return gradient(f, backend, x)
 end
 
+struct InnerPreparedGradient{F,B,E}
+    f::F
+    backend::B
+    extras::E
+end
+
+function (ipg::InnerPreparedGradient)(x)
+    @compat (; f, backend, extras) = ig
+    return gradient(f, backend, x, extras)
+end
+
 struct InnerPushforwardFixedSeed{F,B,DX}
     f::F
     backend::B
