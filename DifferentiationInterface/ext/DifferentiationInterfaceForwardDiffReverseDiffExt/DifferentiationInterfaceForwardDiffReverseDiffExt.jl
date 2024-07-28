@@ -35,6 +35,8 @@ function _hvp_tag(f::F, backend::AutoForwardDiff, x) where {F}
     end
 end
 
+## Standard
+
 function DI.prepare_hvp(
     f::F, backend::SecondOrder{<:AutoForwardDiff,<:AutoReverseDiff}, x, dx
 ) where {F}
@@ -75,6 +77,51 @@ function DI.hvp!(
     xdual = DIForwardDiffExt.make_dual(T, x, dx)
     ydual = inner_gradient(xdual)
     DIForwardDiffExt.myderivative!(T, dg, ydual)
+    return dg
+end
+
+## Batched
+
+function DI.prepare_hvp_batched(
+    f::F, backend::SecondOrder{<:AutoForwardDiff,<:AutoReverseDiff}, x, dx::Batch
+) where {F}
+    T = typeof(_hvp_tag(f, outer(backend), x))
+    xdual = DIForwardDiffExt.make_dual(T, x, dx)
+    tape = ReverseDiff.GradientTape(f, xdual)
+    if inner(backend) isa AutoReverseDiff{true}
+        tape = ReverseDiff.compile(tape)
+    end
+    inner_gradient(x) = ReverseDiff.gradient!(tape, x)
+    return ForwardDiffOverReverseDiffHVPExtras(inner_gradient)
+end
+
+function DI.hvp_batched(
+    f::F,
+    backend::SecondOrder{<:AutoForwardDiff,<:AutoReverseDiff},
+    x,
+    dx::Batch{B},
+    extras::ForwardDiffOverReverseDiffHVPExtras,
+) where {F,B}
+    @compat (; inner_gradient) = extras
+    T = typeof(_hvp_tag(f, outer(backend), x))
+    xdual = DIForwardDiffExt.make_dual(T, x, dx)
+    ydual = inner_gradient(xdual)
+    return DIForwardDiffExt.mypartials(T, Val(B), ydual)
+end
+
+function DI.hvp_batched!(
+    f::F,
+    dg::Batch{B},
+    backend::SecondOrder{<:AutoForwardDiff,<:AutoReverseDiff},
+    x,
+    dx::Batch{B},
+    extras::ForwardDiffOverReverseDiffHVPExtras,
+) where {F,B}
+    @compat (; inner_gradient) = extras
+    T = typeof(_hvp_tag(f, outer(backend), x))
+    xdual = DIForwardDiffExt.make_dual(T, x, dx)
+    ydual = inner_gradient(xdual)
+    DIForwardDiffExt.mypartials!(T, dg, ydual)
     return dg
 end
 

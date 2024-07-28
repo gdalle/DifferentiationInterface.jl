@@ -14,8 +14,8 @@ using Test
 ## Dense
 
 onearg_backends = [
-    SecondOrder(AutoForwardDiff(), AutoZygote()),
     SecondOrder(AutoForwardDiff(), AutoReverseDiff()),
+    SecondOrder(AutoForwardDiff(), AutoZygote()),
     SecondOrder(AutoReverseDiff(), AutoZygote()),
 ]
 
