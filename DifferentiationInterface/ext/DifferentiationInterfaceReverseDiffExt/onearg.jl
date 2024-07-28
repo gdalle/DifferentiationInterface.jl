@@ -53,14 +53,14 @@ function DI.prepare_gradient(
 end
 
 function DI.value_and_gradient!(
-    _f,
+    f,
     grad::AbstractArray,
     ::AutoReverseDiff,
     x::AbstractArray,
     extras::ReverseDiffGradientExtras,
 )
-    result = MutableDiffResult(zero(eltype(x)), (grad,))
-    println(result)
+    y = f(x)  # TODO: remove once ReverseDiff#251 is fixed
+    result = MutableDiffResult(y, (grad,))
     result = gradient!(result, extras.tape, x)
     return DiffResults.value(result), DiffResults.derivative(result)
 end
@@ -170,14 +170,15 @@ function DI.hessian(
 end
 
 function DI.value_gradient_and_hessian!(
-    _f,
+    f,
     grad,
     hess::AbstractMatrix,
     ::AutoReverseDiff,
     x::AbstractArray,
     extras::ReverseDiffHessianExtras,
 )
-    result = MutableDiffResult(one(eltype(x)), (grad, hess))
+    y = f(x)  # TODO: remove once ReverseDiff#251 is fixed
+    result = MutableDiffResult(y, (grad, hess))
     result = hessian!(result, extras.tape, x)
     return (
         DiffResults.value(result), DiffResults.gradient(result), DiffResults.hessian(result)
@@ -185,11 +186,10 @@ function DI.value_gradient_and_hessian!(
 end
 
 function DI.value_gradient_and_hessian(
-    _f, ::AutoReverseDiff, x::AbstractArray, extras::ReverseDiffHessianExtras
+    f, ::AutoReverseDiff, x::AbstractArray, extras::ReverseDiffHessianExtras
 )
-    result = MutableDiffResult(
-        one(eltype(x)), (similar(x), similar(x, length(x), length(x)))
-    )
+    y = f(x)  # TODO: remove once ReverseDiff#251 is fixed
+    result = MutableDiffResult(y, (similar(x), similar(x, length(x), length(x))))
     result = hessian!(result, extras.tape, x)
     return (
         DiffResults.value(result), DiffResults.gradient(result), DiffResults.hessian(result)
