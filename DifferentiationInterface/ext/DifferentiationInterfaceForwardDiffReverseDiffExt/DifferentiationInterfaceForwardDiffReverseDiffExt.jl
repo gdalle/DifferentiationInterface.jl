@@ -15,8 +15,7 @@ using DifferentiationInterface:
     prepare_hvp,
     prepare_hvp_batched,
     prepare_pushforward,
-    prepare_pushforward_batched,
-    PreparedInnerGradient
+    prepare_pushforward_batched
 using ForwardDiff: ForwardDiff
 using ReverseDiff: ReverseDiff
 
