@@ -15,6 +15,7 @@ using Test
 
 onearg_backends = [
     SecondOrder(AutoForwardDiff(), AutoZygote()),
+    SecondOrder(AutoForwardDiff(), AutoReverseDiff()),
     SecondOrder(AutoReverseDiff(), AutoZygote()),
 ]
 
