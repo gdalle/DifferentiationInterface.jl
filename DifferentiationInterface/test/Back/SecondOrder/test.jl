@@ -19,6 +19,7 @@ onearg_backends = [
 ]
 
 twoarg_backends = [
+    SecondOrder(AutoForwardDiff(), AutoReverseDiff()),
     SecondOrder(
         AutoForwardDiff(), AutoEnzyme(; mode=Enzyme.Forward, constant_function=true)
     ),
