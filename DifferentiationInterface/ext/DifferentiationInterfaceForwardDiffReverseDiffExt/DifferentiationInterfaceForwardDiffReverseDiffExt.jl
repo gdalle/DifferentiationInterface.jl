@@ -50,7 +50,7 @@ end
 
 function DI.hvp(
     f::F,
-    ::SecondOrder{<:AutoForwardDiff,<:AutoReverseDiff},
+    backend::SecondOrder{<:AutoForwardDiff,<:AutoReverseDiff},
     x,
     dx,
     extras::ForwardDiffOverReverseDiffHVPExtras,
@@ -65,7 +65,7 @@ end
 function DI.hvp!(
     f::F,
     dg,
-    ::SecondOrder{<:AutoForwardDiff,<:AutoReverseDiff},
+    backend::SecondOrder{<:AutoForwardDiff,<:AutoReverseDiff},
     x,
     dx,
     extras::ForwardDiffOverReverseDiffHVPExtras,
