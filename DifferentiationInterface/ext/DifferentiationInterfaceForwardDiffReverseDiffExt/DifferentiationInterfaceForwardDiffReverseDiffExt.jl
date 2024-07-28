@@ -39,7 +39,7 @@ end
 function DI.prepare_hvp(
     f::F, backend::SecondOrder{<:AutoForwardDiff,<:AutoReverseDiff}, x, dx
 ) where {F}
-    T = _hvp_tag(f, outer(backend), x)
+    T = typeof(_hvp_tag(f, outer(backend), x))
     xdual = DIForwardDiffExt.make_dual(T, x, dx)
     tape = ReverseDiff.GradientTape(f, xdual)
     if inner(backend) isa AutoReverseDiff{true}
@@ -57,7 +57,7 @@ function DI.hvp(
     extras::ForwardDiffOverReverseDiffHVPExtras,
 ) where {F}
     @compat (; inner_gradient) = extras
-    T = _hvp_tag(f, outer(backend), x)
+    T = typeof(_hvp_tag(f, outer(backend), x))
     xdual = DIForwardDiffExt.make_dual(T, x, dx)
     ydual = inner_gradient(xdual)
     return DIForwardDiffExt.myderivative(T, ydual)
@@ -72,7 +72,7 @@ function DI.hvp!(
     extras::ForwardDiffOverReverseDiffHVPExtras,
 ) where {F}
     @compat (; inner_gradient) = extras
-    T = _hvp_tag(f, outer(backend), x)
+    T = typeof(_hvp_tag(f, outer(backend), x))
     xdual = DIForwardDiffExt.make_dual(T, x, dx)
     ydual = inner_gradient(xdual)
     DIForwardDiffExt.myderivative!(T, dg, ydual)
