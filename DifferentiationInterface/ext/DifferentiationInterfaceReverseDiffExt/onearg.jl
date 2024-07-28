@@ -60,6 +60,7 @@ function DI.value_and_gradient!(
     extras::ReverseDiffGradientExtras,
 )
     result = MutableDiffResult(zero(eltype(x)), (grad,))
+    println(result)
     result = gradient!(result, extras.tape, x)
     return DiffResults.value(result), DiffResults.derivative(result)
 end
