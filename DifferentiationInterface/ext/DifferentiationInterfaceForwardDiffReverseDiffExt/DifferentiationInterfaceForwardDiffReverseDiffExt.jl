@@ -37,7 +37,7 @@ function _hvp_tag(f::F, backend::AutoForwardDiff, x) where {F}
 end
 
 function DI.prepare_hvp(
-    f::F, backend::SecondOrder{<:AutoForwardDiff,<:AutoReverseDiff}, x
+    f::F, backend::SecondOrder{<:AutoForwardDiff,<:AutoReverseDiff}, x, dx
 ) where {F}
     T = _hvp_tag(f, outer(backend), x)
     xdual = DIForwardDiffExt.make_dual(T, x, dx)
