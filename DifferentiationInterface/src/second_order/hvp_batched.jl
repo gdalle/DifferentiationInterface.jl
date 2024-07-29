@@ -22,7 +22,7 @@ function prepare_hvp_batched_aux(
     f::F, backend::SecondOrder, x, dx::Batch, ::ForwardOverForward
 ) where {F}
     # batched pushforward of gradient
-    inner_gradient = InnerGradient(f, nested(inner(backend)))
+    inner_gradient = Gradient(f, nested(inner(backend)))
     outer_pushforward_extras = prepare_pushforward_batched(
         inner_gradient, outer(backend), x, dx
     )
@@ -33,7 +33,7 @@ function prepare_hvp_batched_aux(
     f::F, backend::SecondOrder, x, dx::Batch, ::ForwardOverReverse
 ) where {F}
     # batched pushforward of gradient
-    inner_gradient = InnerGradient(f, nested(inner(backend)))
+    inner_gradient = Gradient(f, nested(inner(backend)))
     outer_pushforward_extras = prepare_pushforward_batched(
         inner_gradient, outer(backend), x, dx
     )
@@ -51,7 +51,7 @@ function prepare_hvp_batched_aux(
     f::F, backend::SecondOrder, x, dx::Batch, ::ReverseOverReverse
 ) where {F}
     # batched pullback of gradient
-    inner_gradient = InnerGradient(f, nested(inner(backend)))
+    inner_gradient = Gradient(f, nested(inner(backend)))
     outer_pullback_extras = prepare_pullback_batched(inner_gradient, outer(backend), x, dx)
     return ReverseOverReverseHVPExtras(inner_gradient, outer_pullback_extras)
 end
