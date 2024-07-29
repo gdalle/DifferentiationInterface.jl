@@ -286,3 +286,21 @@ function pushforward!(
 ) where {F}
     return value_and_pushforward!(f!, y, dy, backend, x, dx, extras)[2]
 end
+
+## Functors
+
+struct PushforwardFixedSeed{F,B,DX,E}
+    f::F
+    backend::B
+    dx::DX
+    extras::E
+end
+
+function PushforwardFixedSeed(f, backend::AbstractADType, dx)
+    return PushforwardFixedSeed(f, backend, dx, nothing)
+end
+
+function (pfs::PushforwardFixedSeed{F,B,DX,Nothing})(x) where {F,B,DX}
+    @compat (; f, backend, dx) = pfs
+    return pushforward(f, backend, x, dx)
+end
