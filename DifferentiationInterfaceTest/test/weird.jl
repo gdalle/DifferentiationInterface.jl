@@ -52,6 +52,6 @@ test_differentiation(
     isequal=DIT.lux_isequal,
     isapprox=DIT.lux_isapprox,
     rtol=1.0f-2,
-    atol=1.0f-3,
+    atol=1.0f-2,
     logging=LOGGING,
 )

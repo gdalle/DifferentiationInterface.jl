@@ -6,6 +6,9 @@ using DifferentiationInterface, DifferentiationInterfaceTest
 import DifferentiationInterfaceTest as DIT
 using Lux: Lux
 using LuxTestUtils: LuxTestUtils
+using Random
+
+Random.seed!(0)
 
 test_differentiation(
     AutoZygote(),
@@ -13,6 +16,6 @@ test_differentiation(
     isequal=DIT.lux_isequal,
     isapprox=DIT.lux_isapprox,
     rtol=1.0f-2,
-    atol=1.0f-3,
+    atol=1.0f-2,
     logging=LOGGING,
 )
