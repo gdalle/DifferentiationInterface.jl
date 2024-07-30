@@ -84,7 +84,7 @@ jobs:
             group: Back/SecondOrder
           - version: 'pre'
             group: Down/Detector
-    
+    if: ${{ matrix.version == '1' || contains(github.event.pull_request.labels.*.name, 'fulltest') }}
     steps:
       - uses: actions/checkout@v4
       - uses: julia-actions/setup-julia@v2
@@ -133,7 +133,7 @@ jobs:
             group: Formalities
           - version: 'lts'
             group: Weird
-    
+    if: ${{ matrix.version == '1' || contains(github.event.pull_request.labels.*.name, 'fulltest') }}
     steps:
       - uses: actions/checkout@v4
       - uses: julia-actions/setup-julia@v2
