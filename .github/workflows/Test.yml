@@ -87,6 +87,7 @@ jobs:
     env:
       SHOULDRUN: ${{ matrix.version == '1' || contains(github.event.pull_request.labels.*.name, 'fulltest') }}
     steps:
+      - run: echo "$SHOULDRUN"
       - uses: actions/checkout@v4
         if: ${{ env.SHOULDRUN }}
       - uses: julia-actions/setup-julia@v2
@@ -145,6 +146,7 @@ jobs:
     env:
       SHOULDRUN: ${{ matrix.version == '1' || contains(github.event.pull_request.labels.*.name, 'fulltest') }}
     steps:
+      - run: echo "$SHOULDRUN"
       - uses: actions/checkout@v4
         if: ${{ env.SHOULDRUN }}
       - uses: julia-actions/setup-julia@v2
