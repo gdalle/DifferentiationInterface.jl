@@ -8,3 +8,4 @@ Draft pull requests have a lightened CI workflow, which only runs tests on the l
 
 The repository follows the [ColPrac](https://github.com/SciML/ColPrac) best practices, and its code is formatted using [BlueStyle](https://github.com/JuliaDiff/BlueStyle).
 Please refer to the [dev guide](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterface/stable/dev_guide/) for details on the package structure and the testing pipeline.
+
