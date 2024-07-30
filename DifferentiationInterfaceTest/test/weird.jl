@@ -46,4 +46,12 @@ test_differentiation(
     logging=LOGGING,
 )
 
-test_differentiation(AutoZygote(), DIT.lux_scenarios(); logging=LOGGING)
+test_differentiation(
+    AutoZygote(),
+    DIT.lux_scenarios();
+    isequal=DIT.lux_isequal,
+    isapprox=DIT.lux_isapprox,
+    atol=1e-3,
+    rtol=1e-3,
+    logging=LOGGING,
+)

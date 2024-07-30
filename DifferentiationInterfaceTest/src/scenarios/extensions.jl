@@ -69,3 +69,17 @@ Create a vector of [`Scenario`](@ref)s with neural networks from [Lux.jl](https:
     Their ground truth values are computed with finite differences, and thus subject to imprecision.
 """
 function lux_scenarios end
+
+"""
+    lux_isapprox(x, y; atol, rtol)
+
+Approximate comparison function to use in correctness tests with gradients of Lux.jl networks.
+"""
+function lux_isapprox end
+
+"""
+    lux_isequal(x, y)
+
+Exact comparison function to use in correctness tests with gradients of Lux.jl networks.
+"""
+function lux_isequal end
