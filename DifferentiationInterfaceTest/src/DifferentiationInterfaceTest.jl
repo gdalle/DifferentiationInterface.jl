@@ -61,6 +61,7 @@ using DifferentiationInterface:
     SecondDerivativeExtras
 using DocStringExtensions
 import DifferentiationInterface as DI
+using FiniteDifferences: FiniteDifferences
 using Functors: fmap
 using JET: JET
 using LinearAlgebra: Adjoint, Diagonal, Transpose, dot, parent

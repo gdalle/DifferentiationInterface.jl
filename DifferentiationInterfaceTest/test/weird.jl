@@ -51,7 +51,7 @@ test_differentiation(
     DIT.lux_scenarios();
     isequal=DIT.lux_isequal,
     isapprox=DIT.lux_isapprox,
-    atol=1e-3,
-    rtol=1e-3,
+    rtol=1.0f-2,
+    atol=1.0f-3,
     logging=LOGGING,
 )

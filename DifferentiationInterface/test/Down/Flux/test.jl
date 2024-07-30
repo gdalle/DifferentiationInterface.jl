@@ -1,5 +1,5 @@
 using Pkg
-Pkg.add(["Enzyme", "FiniteDifferences", "Flux", "Zygote"])
+Pkg.add(["Enzyme", "Flux", "Zygote"])
 
 using DifferentiationInterface, DifferentiationInterfaceTest
 import DifferentiationInterfaceTest as DIT

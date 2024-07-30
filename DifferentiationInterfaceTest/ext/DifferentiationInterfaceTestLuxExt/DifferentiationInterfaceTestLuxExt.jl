@@ -1,13 +1,15 @@
 module DifferentiationInterfaceTestLuxExt
 
 using Compat: @compat
+using ComponentArrays: ComponentArray
+import DifferentiationInterface as DI
 using DifferentiationInterfaceTest
+import DifferentiationInterfaceTest as DIT
 using FiniteDifferences: FiniteDifferences
 using Lux
 using LuxTestUtils
 using LuxTestUtils: check_approx
 using Random: AbstractRNG, default_rng
-using Zygote: Zygote
 
 #=
 Relevant discussions:
@@ -15,11 +17,11 @@ Relevant discussions:
 - https://github.com/LuxDL/Lux.jl/issues/769
 =#
 
-function DifferentiationInterfaceTest.lux_isequal(a, b)
+function DIT.lux_isequal(a, b)
     return check_approx(a, b; atol=0, rtol=0)
 end
 
-function DifferentiationInterfaceTest.lux_isapprox(a, b; atol, rtol)
+function DIT.lux_isapprox(a, b; atol, rtol)
     return check_approx(a, b; atol, rtol)
 end
 
@@ -31,11 +33,11 @@ end
 
 function (sql::SquareLoss)(ps)
     @compat (; model, x, st) = sql
-    # TODO: use deepcopy(st)?
-    return sum(abs2, first(model(x, ps, st)))
+    # TODO: get rid of deepcopy(st)?
+    return sum(abs2, first(model(x, ps, deepcopy(st))))
 end
 
-function DifferentiationInterfaceTest.lux_scenarios(rng::AbstractRNG=default_rng())
+function DIT.lux_scenarios(rng::AbstractRNG=default_rng())
     models_and_xs = [
         (Dense(2, 4), randn(rng, Float32, 2, 3)),
         (Dense(2, 4, gelu), randn(rng, Float32, 2, 3)),
@@ -123,9 +125,12 @@ function DifferentiationInterfaceTest.lux_scenarios(rng::AbstractRNG=default_rng
 
     for (model, x) in models_and_xs
         ps, st = Lux.setup(rng, model)
+        ps = ComponentArray(ps)
         loss = SquareLoss(model, x, st)
         l = loss(ps)
-        g = Zygote.gradient(loss, ps)  # TODO: replace with FiniteDifferences
+        g = DI.gradient(
+            loss, DI.AutoFiniteDifferences(; fdm=FiniteDifferences.central_fdm(5, 1)), ps
+        )
         scen = GradientScenario(loss; x=ps, y=l, grad=g, nb_args=1, place=:outofplace)
         push!(scens, scen)
     end
