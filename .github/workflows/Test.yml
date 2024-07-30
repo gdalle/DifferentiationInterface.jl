@@ -86,7 +86,7 @@ jobs:
           - version: 'pre'
             group: Down/Detector
     env:
-      SHOULDRUN: ${{ matrix.version == '1' || github.event.pull_request.draft == 'false' }}
+      SHOULDRUN: ${{ matrix.version == '1' || !github.event.pull_request.draft }}
     steps:
       - run: echo "$SHOULDRUN"
       - uses: actions/checkout@v4
@@ -145,7 +145,7 @@ jobs:
           - version: 'lts'
             group: Weird
     env:
-      SHOULDRUN: ${{ matrix.version == '1' || github.event.pull_request.draft == 'false' }}
+      SHOULDRUN: ${{ matrix.version == '1' || !github.event.pull_request.draft }}
     steps:
       - run: echo "$SHOULDRUN"
       - uses: actions/checkout@v4
