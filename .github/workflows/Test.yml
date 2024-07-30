@@ -6,7 +6,7 @@ on:
       - main
     tags: ['*']
   pull_request:
-    types: [opened, reopened, synchronize, labeled]
+    types: [opened, reopened, synchronize, ready_for_review, converted_to_draft]
   workflow_dispatch:
 
 concurrency:
@@ -86,7 +86,7 @@ jobs:
           - version: 'pre'
             group: Down/Detector
     env:
-      SHOULDRUN: ${{ matrix.version == '1' || contains(github.event.pull_request.labels.*.name, 'fulltest') }}
+      SHOULDRUN: ${{ matrix.version == '1' || github.event.pull_request.draft == 'false' }}
     steps:
       - run: echo "$SHOULDRUN"
       - uses: actions/checkout@v4
@@ -145,7 +145,7 @@ jobs:
           - version: 'lts'
             group: Weird
     env:
-      SHOULDRUN: ${{ matrix.version == '1' || contains(github.event.pull_request.labels.*.name, 'fulltest') }}
+      SHOULDRUN: ${{ matrix.version == '1' || github.event.pull_request.draft == 'false' }}
     steps:
       - run: echo "$SHOULDRUN"
       - uses: actions/checkout@v4
