@@ -19,6 +19,8 @@ onearg_backends = [
 ]
 
 twoarg_backends = [
+    SecondOrder(AutoForwardDiff(), AutoReverseDiff(; compile=true)),
+    SecondOrder(AutoForwardDiff(; tag=:mytag), AutoReverseDiff(; compile=false)),
     SecondOrder(
         AutoForwardDiff(), AutoEnzyme(; mode=Enzyme.Forward, constant_function=true)
     ),
