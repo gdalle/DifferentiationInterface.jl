@@ -85,26 +85,34 @@ jobs:
           - version: 'pre'
             group: Down/Detector
     env:
-      shouldrun: ${{ matrix.version == '1' || contains(github.event.pull_request.labels.*.name, 'fulltest') }}
+      SHOULDRUN: ${{ matrix.version == '1' || contains(github.event.pull_request.labels.*.name, 'fulltest') }}
     steps:
       - uses: actions/checkout@v4
+        if: ${{ env.SHOULDRUN }}
       - uses: julia-actions/setup-julia@v2
+        if: ${{ env.SHOULDRUN }}
         with:
           version: ${{ matrix.version }}
           arch: x64
       - uses: julia-actions/cache@v2
+        if: ${{ env.SHOULDRUN }}
       - uses: julia-actions/julia-buildpkg@v1
+        if: ${{ env.SHOULDRUN }}
       - name: Update registry
+        if: ${{ env.SHOULDRUN }}
         run: julia -e 'using Pkg; Pkg.Registry.update()'
       - uses: julia-actions/julia-runtest@v1
+        if: ${{ env.SHOULDRUN }}
         with:
           project: ./DifferentiationInterface
         env:
           JULIA_DI_TEST_GROUP: ${{ matrix.group }}
       - uses: julia-actions/julia-processcoverage@v1
+        if: ${{ env.SHOULDRUN }}
         with:
           directories: ./DifferentiationInterface/src,./DifferentiationInterface/ext,./DifferentiationInterface/test
       - uses: codecov/codecov-action@v4
+        if: ${{ env.SHOULDRUN }}
         with:
           files: lcov.info
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -135,30 +143,38 @@ jobs:
           - version: 'lts'
             group: Weird
     env:
-      shouldrun: ${{ matrix.version == '1' || contains(github.event.pull_request.labels.*.name, 'fulltest') }}
+      SHOULDRUN: ${{ matrix.version == '1' || contains(github.event.pull_request.labels.*.name, 'fulltest') }}
     steps:
       - uses: actions/checkout@v4
+        if: ${{ env.SHOULDRUN }}
       - uses: julia-actions/setup-julia@v2
+        if: ${{ env.SHOULDRUN }}
         with:
           version: ${{ matrix.version }}
           arch: x64
       - uses: julia-actions/cache@v2
+        if: ${{ env.SHOULDRUN }}
       - uses: julia-actions/julia-buildpkg@v1
+        if: ${{ env.SHOULDRUN }}
       - name: Dev dependencies (temporary)
+        if: ${{ env.SHOULDRUN }}
         run: julia --project='./DifferentiationInterfaceTest' -e '
           using Pkg;
           Pkg.Registry.update();
           Pkg.develop(PackageSpec(path="./DifferentiationInterface"));
           Pkg.instantiate();'
       - uses: julia-actions/julia-runtest@v1
+        if: ${{ env.SHOULDRUN }}
         with:
           project: ./DifferentiationInterfaceTest
         env:
           JULIA_DI_TEST_GROUP: ${{ matrix.group }}
       - uses: julia-actions/julia-processcoverage@v1
+        if: ${{ env.SHOULDRUN }}
         with:
           directories: ./DifferentiationInterfaceTest/src,./DifferentiationInterfaceTest/ext,./DifferentiationInterfaceTest/test
       - uses: codecov/codecov-action@v4
+        if: ${{ env.SHOULDRUN }}
         with:
           files: lcov.info
           token: ${{ secrets.CODECOV_TOKEN }}
