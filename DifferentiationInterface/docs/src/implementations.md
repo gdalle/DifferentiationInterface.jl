@@ -1,4 +1,4 @@
-# Overloads
+# Implementations
 
 DifferentiationInterface.jl provides a handful of [operators](@ref "Operators") like [`gradient`](@ref) or [`jacobian`](@ref), each with several variants:
 
@@ -7,9 +7,11 @@ DifferentiationInterface.jl provides a handful of [operators](@ref "Operators") 
 - support for **one-argument functions** `y = f(x)` or **two-argument functions** `f!(y, x)`
 
 While it is possible to define every operator using just [`pushforward`](@ref) and [`pullback`](@ref), some backends have more efficient implementations of high-level operators.
-When they are available, we **always** call these backend-specific overloads.
+When they are available, we nearly always call these backend-specific overloads.
+We also adapt the preparation phase accordingly.
+This page gives details on each backend's bindings.
 
-The following tables summarize all implemented overloads for each backend.
+The tables below summarize all implemented overloads for each backend.
 The cells can have three values:
 
 - ❌: the operator is not overloaded because the backend does not support it
@@ -166,79 +168,113 @@ function print_overloads(backend, ext::Symbol)
 end
 ```
 
-## Diffractor (forward/reverse)
+## ChainRulesCore
+
+For [`pullback`](@ref), same-point preparation runs the forward sweep and returns the pullback closure.
+
+## Diffractor
 
 ```@example overloads
 print_overloads(AutoDiffractor(), :DifferentiationInterfaceDiffractorExt) # hide
 ```
 
-## Enzyme (forward)
+## Enzyme
+
+### Forward mode
+
+In forward mode, for [`gradient`](@ref) and [`jacobian`](@ref), preparation chooses a number of chunks.
 
 ```@example overloads
 print_overloads(AutoEnzyme(; mode=Enzyme.Forward), :DifferentiationInterfaceEnzymeExt) # hide
 ```
 
-## Enzyme (reverse)
+### Reverse mode
 
 ```@example overloads
 print_overloads(AutoEnzyme(; mode=Enzyme.Reverse), :DifferentiationInterfaceEnzymeExt) # hide
 ```
 
-## FastDifferentiation (symbolic)
+## FastDifferentiation
+
+Preparation generates an [executable function](https://brianguenter.github.io/FastDifferentiation.jl/stable/makefunction/) from the symbolic expression of the differentiated function.
+
+!!! warning
+    Preparation can be very slow for symbolic AD.
 
 ```@example overloads
 print_overloads(AutoFastDifferentiation(), :DifferentiationInterfaceFastDifferentiationExt) # hide
 ```
 
-## FiniteDiff (forward)
+## FiniteDiff
+
+Whenever possible, preparation creates a cache object.
 
 ```@example overloads
 print_overloads(AutoFiniteDiff(), :DifferentiationInterfaceFiniteDiffExt) # hide
 ```
 
-## FiniteDifferences (forward)
+## FiniteDifferences
 
 ```@example overloads
 print_overloads(AutoFiniteDifferences(; fdm=FiniteDifferences.central_fdm(3, 1)), :DifferentiationInterfaceFiniteDifferencesExt) # hide
 ```
 
-## ForwardDiff (forward)
+## ForwardDiff
+
+Wherever possible, preparation creates a [config](https://juliadiff.org/ForwardDiff.jl/stable/user/api/#Preallocating/Configuring-Work-Buffers).
+For [`pushforward`](@ref), preparation allocates the necessary space for `Dual` number computations.
 
 ```@example overloads
 print_overloads(AutoForwardDiff(), :DifferentiationInterfaceForwardDiffExt) # hide
 ```
 
-## PolyesterForwardDiff (forward)
+## PolyesterForwardDiff
 
 ```@example overloads
 print_overloads(AutoPolyesterForwardDiff(; chunksize=1), :DifferentiationInterfacePolyesterForwardDiffExt) # hide
 ```
 
-## ReverseDiff (reverse)
+## ReverseDiff
+
+Wherever possible, preparation records a [tape](https://juliadiff.org/ReverseDiff.jl/dev/api/#The-AbstractTape-API) of the function's execution.
+
+!!! warning
+    This tape is specific to the control flow inside the function, and cannot be reused if the control flow is value-dependent (like `if x[1] > 0`).
 
 ```@example overloads
 print_overloads(AutoReverseDiff(), :DifferentiationInterfaceReverseDiffExt) # hide
 ```
 
-## Symbolics (symbolic)
+## Symbolics
+
+Preparation generates an [executable function](https://docs.sciml.ai/Symbolics/stable/manual/build_function/) from the symbolic expression of the differentiated function.
+
+!!! warning
+    Preparation can be very slow for symbolic AD.
 
 ```@example overloads
 print_overloads(AutoSymbolics(), :DifferentiationInterfaceSymbolicsExt) # hide
 ```
 
-## Tapir (reverse)
+## Tapir
+
+For [`pullback`](@ref), preparation [builds the reverse rule](https://github.com/withbayes/Tapir.jl?tab=readme-ov-file#how-it-works) of the function.
 
 ```@example overloads
 print_overloads(AutoTapir(), :DifferentiationInterfaceTapirExt) # hide
 ```
 
-## Tracker (reverse)
+## Tracker
+
+For [`pullback`](@ref), same-point preparation runs the forward sweep and returns the pullback closure at `x`.
 
 ```@example overloads
 print_overloads(AutoTracker(), :DifferentiationInterfaceTrackerExt) # hide
 ```
 
-## Zygote (reverse)
+## Zygote
+
+For [`pullback`](@ref), same-point preparation runs the forward sweep and returns the pullback closure at `x`.
 
 ```@example overloads
 print_overloads(AutoZygote(), :DifferentiationInterfaceZygoteExt) # hide
