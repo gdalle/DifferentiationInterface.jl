@@ -126,7 +126,7 @@ function DifferentiationInterfaceTest.lux_scenarios(rng::AbstractRNG=default_rng
         loss = SquareLoss(model, x, st)
         l = loss(ps)
         g = Zygote.gradient(loss, ps)  # TODO: replace with FiniteDifferences
-        scen = GradientScenario(loss; x=model, y=l, grad=g, nb_args=1, place=:outofplace)
+        scen = GradientScenario(loss; x=ps, y=l, grad=g, nb_args=1, place=:outofplace)
         push!(scens, scen)
     end
 
