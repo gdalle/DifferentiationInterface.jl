@@ -76,6 +76,7 @@ include("scenarios/default.jl")
 include("scenarios/sparse.jl")
 include("scenarios/allocfree.jl")
 include("scenarios/extensions.jl")
+include("scenarios/modify.jl")
 
 include("utils/zero_backends.jl")
 include("utils/misc.jl")

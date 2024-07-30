@@ -19,8 +19,16 @@ function make_dual(::Type{T}, x::Number, dx::Number) where {T}
     return Dual{T}(x, dx)
 end
 
+function make_dual(::Type{T}, x, dx) where {T}
+    return Dual{T}.(x, dx)
+end
+
 function make_dual(::Type{T}, x::Number, dx::Batch{B,<:Number}) where {T,B}
     return Dual{T}(x, dx.elements...)
+end
+
+function make_dual(::Type{T}, x, dx::Batch{B}) where {T,B}
+    return Dual{T}.(x, dx.elements...)
 end
 
 function make_dual!(::Type{T}, xdual, x, dx) where {T}

@@ -13,10 +13,11 @@ function DI.value_and_pullback(
     dy::Number,
     ::NoPullbackExtras,
 )
+    f_and_df = get_f_and_df(f, backend)
     der, y = if backend isa AutoDeferredEnzyme
-        autodiff_deferred(ReverseWithPrimal, f, Active, Active(x))
+        autodiff_deferred(ReverseWithPrimal, f_and_df, Active, Active(x))
     else
-        autodiff(ReverseWithPrimal, Const(f), Active, Active(x))
+        autodiff(ReverseWithPrimal, f_and_df, Active, Active(x))
     end
     new_dx = dy * only(der)
     return y, new_dx
@@ -29,11 +30,13 @@ function DI.value_and_pullback(
     dy,
     ::NoPullbackExtras,
 )
-    tf, tx = typeof(f), typeof(x)
-    forw, rev = autodiff_thunk(ReverseSplitWithPrimal, Const{tf}, Duplicated, Active{tx})
-    tape, y, new_dy = forw(Const(f), Active(x))
+    f_and_df = get_f_and_df(f, backend)
+    forw, rev = autodiff_thunk(
+        ReverseSplitWithPrimal, typeof(f_and_df), Duplicated, typeof(Active(x))
+    )
+    tape, y, new_dy = forw(f_and_df, Active(x))
     copyto!(new_dy, dy)
-    new_dx = only(only(rev(Const(f), Active(x), tape)))
+    new_dx = only(only(rev(f_and_df, Active(x), tape)))
     return y, new_dx
 end
 
@@ -44,12 +47,13 @@ function DI.value_and_pullback(
     dy::Number,
     ::NoPullbackExtras,
 )
+    f_and_df = get_f_and_df(f, backend)
     dx_sametype = make_zero(x)
     x_and_dx = Duplicated(x, dx_sametype)
     _, y = if backend isa AutoDeferredEnzyme
-        autodiff_deferred(ReverseWithPrimal, Const(f), Active, x_and_dx)
+        autodiff_deferred(ReverseWithPrimal, f_and_df, Active, x_and_dx)
     else
-        autodiff(ReverseWithPrimal, Const(f), Active, x_and_dx)
+        autodiff(ReverseWithPrimal, f_and_df, Active, x_and_dx)
     end
     if !isone(dy)
         # TODO: generalize beyond Arrays?
@@ -81,13 +85,14 @@ function DI.value_and_pullback!(
     dy::Number,
     ::NoPullbackExtras,
 )
+    f_and_df = get_f_and_df(f, backend)
     dx_sametype = convert(typeof(x), dx)
     make_zero!(dx_sametype)
     x_and_dx = Duplicated(x, dx_sametype)
     _, y = if backend isa AutoDeferredEnzyme
-        autodiff_deferred(ReverseWithPrimal, Const(f), Active, x_and_dx)
+        autodiff_deferred(ReverseWithPrimal, f_and_df, Active, x_and_dx)
     else
-        autodiff(ReverseWithPrimal, Const(f), Active, x_and_dx)
+        autodiff(ReverseWithPrimal, f_and_df, Active, x_and_dx)
     end
     if !isone(dy)
         # TODO: generalize beyond Arrays?
@@ -99,15 +104,16 @@ end
 function DI.value_and_pullback!(
     f, dx, backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, dy, ::NoPullbackExtras
 )
-    tf, tx = typeof(f), typeof(x)
-    forw, rev = autodiff_thunk(
-        ReverseSplitWithPrimal, Const{tf}, Duplicated, Duplicated{tx}
-    )
+    f_and_df = get_f_and_df(f, backend)
     dx_sametype = convert(typeof(x), dx)
     make_zero!(dx_sametype)
-    tape, y, new_dy = forw(Const(f), Duplicated(x, dx_sametype))
+    x_and_dx = Duplicated(x, dx_sametype)
+    forw, rev = autodiff_thunk(
+        ReverseSplitWithPrimal, typeof(f_and_df), Duplicated, typeof(x_and_dx)
+    )
+    tape, y, new_dy = forw(f_and_df, x_and_dx)
     copyto!(new_dy, dy)
-    rev(Const(f), Duplicated(x, dx_sametype), tape)
+    rev(f_and_df, x_and_dx, tape)
     return y, copyto!(dx, dx_sametype)
 end
 
@@ -124,12 +130,12 @@ end
 
 ## Gradient
 
-function DI.prepare_gradient(f, ::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x)
+function DI.prepare_gradient(f, ::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},true}, x)
     return NoGradientExtras()
 end
 
 function DI.gradient(
-    f, backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, ::NoGradientExtras
+    f, backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},true}, x, ::NoGradientExtras
 )
     if backend isa AutoDeferredEnzyme
         grad = make_zero(x)
@@ -143,7 +149,7 @@ end
 function DI.gradient!(
     f,
     grad,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},true},
     x,
     extras::NoGradientExtras,
 )
@@ -158,13 +164,17 @@ function DI.gradient!(
 end
 
 function DI.value_and_gradient(
-    f, backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, ::NoGradientExtras
+    f, backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},true}, x, ::NoGradientExtras
 )
     return DI.value_and_pullback(f, backend, x, true, NoPullbackExtras())
 end
 
 function DI.value_and_gradient!(
-    f, grad, backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, ::NoGradientExtras
+    f,
+    grad,
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},true},
+    x,
+    ::NoGradientExtras,
 )
     return DI.value_and_pullback!(f, grad, backend, x, true, NoPullbackExtras())
 end
@@ -172,59 +182,3 @@ end
 ## Jacobian
 
 # see https://github.com/EnzymeAD/Enzyme.jl/issues/1391
-
-#=
-
-struct EnzymeReverseOneArgJacobianExtras{B,N} end
-
-function DI.prepare_jacobian(f, backend::AutoReverseEnzyme, x)
-    B = pick_batchsize(backend, length(x))
-    y = f(x)
-    N = length(y)
-    return EnzymeReverseOneArgJacobianExtras{B,N}()
-end
-
-function DI.jacobian(
-    f,
-    backend::AutoReverseEnzyme,
-    x::AbstractArray,
-    ::EnzymeReverseOneArgJacobianExtras{C,N},
-) where {B,N}
-    jac_wrongshape = jacobian(reverse_mode(backend), f, x, Val(N), Val(B))
-    nx = length(x)
-    ny = length(jac_wrongshape) ÷ length(x)
-    jac_rightshape = reshape(jac_wrongshape, ny, nx)
-    return jac_rightshape
-end
-
-function DI.value_and_jacobian(
-    f,
-    backend::AutoReverseEnzyme,
-    x::AbstractArray,
-    extras::EnzymeReverseOneArgJacobianExtras,
-)
-    return f(x), DI.jacobian(f, backend, x, extras)
-end
-
-function DI.jacobian!(
-    f,
-    jac,
-    backend::AutoReverseEnzyme,
-    x::AbstractArray,
-    extras::EnzymeReverseOneArgJacobianExtras,
-)
-    return copyto!(jac, DI.jacobian(f, backend, x, extras))
-end
-
-function DI.value_and_jacobian!(
-    f,
-    jac,
-    backend::AutoReverseEnzyme,
-    x::AbstractArray,
-    extras::EnzymeReverseOneArgJacobianExtras,
-)
-    y, new_jac = DI.value_and_jacobian(f, backend, x, extras)
-    return y, copyto!(jac, new_jac)
-end
-
-=#

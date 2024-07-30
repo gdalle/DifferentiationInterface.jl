@@ -1,19 +1,29 @@
+using Pkg
+Pkg.add("Enzyme")
+
 using ADTypes: ADTypes
 using DifferentiationInterface, DifferentiationInterfaceTest
+import DifferentiationInterfaceTest as DIT
 using Enzyme: Enzyme
 using SparseConnectivityTracer, SparseMatrixColorings
 using StableRNGs
 using Test
 
 dense_backends = [
-    AutoEnzyme(; mode=nothing),
-    AutoEnzyme(; mode=Enzyme.Forward),
-    AutoEnzyme(; mode=Enzyme.Reverse),
+    AutoEnzyme(; mode=nothing, constant_function=true),
+    AutoEnzyme(; mode=Enzyme.Forward, constant_function=true),
+    AutoEnzyme(; mode=Enzyme.Reverse, constant_function=true),
+    AutoEnzyme(; mode=Enzyme.Forward, constant_function=false),
+    AutoEnzyme(; mode=Enzyme.Reverse, constant_function=false),
 ]
 
 nested_dense_backends = [
-    DifferentiationInterface.nested(AutoEnzyme(; mode=Enzyme.Forward)),
-    DifferentiationInterface.nested(AutoEnzyme(; mode=Enzyme.Reverse)),
+    DifferentiationInterface.nested(
+        AutoEnzyme(; mode=Enzyme.Forward, constant_function=true)
+    ),
+    DifferentiationInterface.nested(
+        AutoEnzyme(; mode=Enzyme.Reverse, constant_function=true)
+    ),
 ]
 
 sparse_backends =
@@ -42,10 +52,26 @@ test_differentiation(
 
 test_differentiation(
     [
-        AutoEnzyme(; mode=nothing),
-        AutoEnzyme(; mode=Enzyme.Reverse),
-        SecondOrder(AutoEnzyme(; mode=Enzyme.Reverse), AutoEnzyme(; mode=Enzyme.Reverse)),
-        SecondOrder(AutoEnzyme(; mode=Enzyme.Forward), AutoEnzyme(; mode=Enzyme.Reverse)),
+        AutoEnzyme(; mode=Enzyme.Forward, constant_function=false),
+        AutoEnzyme(; mode=Enzyme.Reverse, constant_function=false),
+    ],
+    DIT.make_closure.(default_scenarios());
+    second_order=false,
+    logging=LOGGING,
+);
+
+test_differentiation(
+    [
+        AutoEnzyme(; mode=nothing, constant_function=true),
+        AutoEnzyme(; mode=Enzyme.Reverse, constant_function=true),
+        SecondOrder(
+            AutoEnzyme(; mode=Enzyme.Reverse, constant_function=true),
+            AutoEnzyme(; mode=Enzyme.Reverse, constant_function=true),
+        ),
+        SecondOrder(
+            AutoEnzyme(; mode=Enzyme.Forward, constant_function=true),
+            AutoEnzyme(; mode=Enzyme.Reverse, constant_function=true),
+        ),
     ];
     first_order=false,
     excluded=[:second_derivative],
@@ -53,14 +79,17 @@ test_differentiation(
 );
 
 test_differentiation(
-    [AutoEnzyme(; mode=nothing), AutoEnzyme(; mode=Enzyme.Forward)];
+    [
+        AutoEnzyme(; mode=nothing, constant_function=true),
+        AutoEnzyme(; mode=Enzyme.Forward, constant_function=true),
+    ];
     first_order=false,
     excluded=[:hessian, :hvp],
     logging=LOGGING,
 );
 
 test_differentiation(
-    AutoEnzyme(; mode=Enzyme.Forward);  # TODO: add more
+    AutoEnzyme(; mode=Enzyme.Forward, constant_function=true);  # TODO: add more
     correctness=false,
     type_stability=true,
     second_order=false,
@@ -80,3 +109,23 @@ test_differentiation(
 test_differentiation(
     sparse_backends, sparse_scenarios(); second_order=false, sparsity=true, logging=LOGGING
 );
+
+## Activity analysis
+
+Ext = Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceEnzymeExt)
+
+function make_closure(data)
+    function f(x)
+        data
+        return x
+    end
+    return f
+end
+
+backend = AutoEnzyme(; mode=Enzyme.Reverse, constant_function=false)
+
+@test Ext.get_f_and_df(make_closure(nothing), backend) isa Enzyme.Const
+@test Ext.get_f_and_df(make_closure(1), backend) isa Enzyme.Const
+@test Ext.get_f_and_df(make_closure(1.0), backend) isa Enzyme.Const
+@test Ext.get_f_and_df(make_closure([1.0]), backend) isa Enzyme.Duplicated
+@test Ext.get_f_and_df(make_closure((1.0, [1.0])), backend) isa Enzyme.Duplicated

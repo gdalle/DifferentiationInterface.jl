@@ -32,7 +32,6 @@ function DIT.gpu_scenarios(rng::AbstractRNG=default_rng(); linalg=true)
 
     scens = vcat(
         # one argument
-        DIT.num_to_num_scenarios_onearg(x_; dx=dx_, dy=dy_),
         DIT.num_to_arr_scenarios_onearg(x_, V; dx=dx_, dy=dy_6),
         DIT.num_to_arr_scenarios_onearg(x_, M; dx=dx_, dy=dy_2_3),
         DIT.arr_to_num_scenarios_onearg(x_6; dx=dx_6, dy=dy_, linalg),

@@ -1,3 +1,6 @@
+using Pkg
+Pkg.add("Zygote")
+
 using ComponentArrays: ComponentArrays
 using DifferentiationInterface, DifferentiationInterfaceTest
 using JLArrays: JLArrays
