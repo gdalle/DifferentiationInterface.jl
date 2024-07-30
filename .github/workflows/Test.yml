@@ -91,6 +91,8 @@ jobs:
         with:
           version: ${{ matrix.version }}
           arch: x64
+      - name: Update registry
+        run: julia -e 'using Pkg; Pkg.Registry.update()'
       - uses: julia-actions/julia-downgrade-compat@v1
         # Use lower compat bounds on LTS version
         # https://github.com/julia-actions/julia-downgrade-compat?tab=readme-ov-file#example
@@ -103,8 +105,6 @@ jobs:
           projects: DifferentiationInterface
       - uses: julia-actions/cache@v2
       - uses: julia-actions/julia-buildpkg@v1
-      - name: Update registry
-        run: julia -e 'using Pkg; Pkg.Registry.update()'
       - uses: julia-actions/julia-runtest@v1
         with:
           project: ./DifferentiationInterface
@@ -150,6 +150,8 @@ jobs:
         with:
           version: ${{ matrix.version }}
           arch: x64
+      - name: Update registry
+        run: julia -e 'using Pkg; Pkg.Registry.update()'
       - uses: julia-actions/julia-downgrade-compat@v1
         # Use lower compat bounds on LTS version
         # https://github.com/julia-actions/julia-downgrade-compat?tab=readme-ov-file#example
