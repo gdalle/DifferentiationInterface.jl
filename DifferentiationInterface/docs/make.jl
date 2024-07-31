@@ -37,7 +37,7 @@ makedocs(;
         "Home" => "index.md",
         "Tutorials" => ["tutorial1.md", "tutorial2.md"],
         "Reference" => ["operators.md", "backends.md", "api.md"],
-        "Advanced" => ["dev_guide.md", "overloads.md"],
+        "Advanced" => ["dev_guide.md", "implementations.md"],
     ],
     plugins=[links],
 )
