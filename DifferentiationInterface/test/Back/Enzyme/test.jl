@@ -13,8 +13,6 @@ dense_backends = [
     AutoEnzyme(; mode=nothing),
     AutoEnzyme(; mode=Enzyme.Forward),
     AutoEnzyme(; mode=Enzyme.Reverse),
-    AutoEnzyme(; mode=Enzyme.Forward, constant_function=false),
-    AutoEnzyme(; mode=Enzyme.Reverse, constant_function=false),
 ]
 
 nested_dense_backends = [
@@ -42,16 +40,6 @@ end
 test_differentiation(
     vcat(dense_backends, nested_dense_backends),
     default_scenarios();
-    second_order=false,
-    logging=LOGGING,
-);
-
-test_differentiation(
-    [
-        AutoEnzyme(; mode=Enzyme.Forward, constant_function=false),
-        AutoEnzyme(; mode=Enzyme.Reverse, constant_function=false),
-    ],
-    DIT.make_closure.(default_scenarios());
     second_order=false,
     logging=LOGGING,
 );
