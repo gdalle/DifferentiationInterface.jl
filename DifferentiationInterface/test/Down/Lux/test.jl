@@ -8,6 +8,8 @@ using FiniteDiff: FiniteDiff
 using Lux: Lux
 using LuxTestUtils: LuxTestUtils
 using Random
+using Tracker: Tracker
+using Zygote: Zygote
 
 Random.seed!(0)
 
