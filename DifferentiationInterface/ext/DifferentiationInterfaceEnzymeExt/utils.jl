@@ -32,7 +32,7 @@ function DI.basis(::AutoEnzyme, a::AbstractArray{T}, i::CartesianIndex) where {T
     return b
 end
 
-get_f_and_df(f, ::AnyAutoEnzyme) = f
+get_f_and_df(f, ::AnyAutoEnzyme) = Const(f)
 
 #=
 # commented out until Enzyme errors when non-duplicated data is written to
