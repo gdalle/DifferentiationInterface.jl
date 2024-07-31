@@ -32,9 +32,10 @@ function DI.basis(::AutoEnzyme, a::AbstractArray{T}, i::CartesianIndex) where {T
     return b
 end
 
-function get_f_and_df(f, ::AnyAutoEnzyme{M,true}) where {M}
-    return Const(f)
-end
+get_f_and_df(f, ::AnyAutoEnzyme) = Const(f)
+
+#=
+# commented out until Enzyme errors when non-duplicated data is written to
 
 function get_f_and_df(f, backend::AnyAutoEnzyme{M,false}) where {M}
     mode = isnothing(backend.mode) ? Reverse : backend.mode
@@ -48,3 +49,4 @@ function get_f_and_df(f, backend::AnyAutoEnzyme{M,false}) where {M}
         error("Unexpected activity guessed for the function `f`.")
     end
 end
+=#

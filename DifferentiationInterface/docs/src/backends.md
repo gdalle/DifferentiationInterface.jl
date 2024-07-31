@@ -57,7 +57,7 @@ import Zygote
 
 backend_examples = [
     AutoDiffractor(),
-    AutoEnzyme(; constant_function=true),
+    AutoEnzyme(),
     AutoFastDifferentiation(),
     AutoFiniteDiff(),
     AutoFiniteDifferences(; fdm=FiniteDifferences.central_fdm(3, 1)),

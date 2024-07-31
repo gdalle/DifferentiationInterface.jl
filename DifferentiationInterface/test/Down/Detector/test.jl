@@ -27,7 +27,7 @@ g(x::AbstractVector) = dot(x, Hc, x)
 g(x::AbstractMatrix) = g(vec(x))
 
 @testset verbose = true "$(typeof(backend))" for backend in [
-    AutoEnzyme(; mode=Enzyme.Reverse, constant_function=true), AutoForwardDiff()
+    AutoEnzyme(; mode=Enzyme.Reverse), AutoForwardDiff()
 ]
     @test_throws ArgumentError DenseSparsityDetector(backend; atol=1e-5, method=:random)
     @testset "$method" for method in (:iterative, :direct)
