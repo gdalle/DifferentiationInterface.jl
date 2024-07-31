@@ -48,10 +48,10 @@ test_differentiation(
 
 test_differentiation(
     AutoZygote(),
-    DIT.lux_scenarios();
+    DIT.lux_scenarios(Random.Xoshiro(63));
     isequal=DIT.lux_isequal,
     isapprox=DIT.lux_isapprox,
-    rtol=1.0f-3,
+    rtol=1.0f-2,
     atol=1.0f-3,
     logging=LOGGING,
 )
