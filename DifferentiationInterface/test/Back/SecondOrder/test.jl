@@ -21,12 +21,8 @@ onearg_backends = [
 twoarg_backends = [
     SecondOrder(AutoForwardDiff(), AutoReverseDiff(; compile=true)),
     SecondOrder(AutoForwardDiff(; tag=:mytag), AutoReverseDiff(; compile=false)),
-    SecondOrder(
-        AutoForwardDiff(), AutoEnzyme(; mode=Enzyme.Forward, constant_function=true)
-    ),
-    SecondOrder(
-        AutoEnzyme(; mode=Enzyme.Reverse, constant_function=true), AutoForwardDiff()
-    ),
+    SecondOrder(AutoForwardDiff(), AutoEnzyme(; mode=Enzyme.Forward)),
+    SecondOrder(AutoEnzyme(; mode=Enzyme.Reverse), AutoForwardDiff()),
 ]
 
 for backend in vcat(onearg_backends, twoarg_backends)

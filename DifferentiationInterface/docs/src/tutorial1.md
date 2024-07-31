@@ -116,7 +116,7 @@ Typically, for gradients, reverse mode AD might be a better fit, so let's try th
 ```@example tuto1
 import Enzyme
 
-backend2 = AutoEnzyme(constant_function=true)
+backend2 = AutoEnzyme()
 ```
 
 Once the backend is created, things run smoothly with exactly the same syntax as before:

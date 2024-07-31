@@ -26,15 +26,16 @@ DI.check_available(::AutoEnzyme) = true
 DI.pick_batchsize(::AnyAutoEnzyme, dimension::Integer) = min(dimension, 16)
 
 # Enzyme's `Duplicated(x, dx)` expects both arguments to be of the same type
-function DI.basis(::AutoEnzyme, a::AbstractArray{T}, i::CartesianIndex) where {T}
+function DI.basis(::AnyAutoEnzyme, a::AbstractArray{T}, i::CartesianIndex) where {T}
     b = zero(a)
     b[i] = one(T)
     return b
 end
 
-function get_f_and_df(f, ::AnyAutoEnzyme{M,true}) where {M}
-    return Const(f)
-end
+get_f_and_df(f, ::AnyAutoEnzyme) = Const(f)
+
+#=
+# commented out until Enzyme errors when non-duplicated data is written to
 
 function get_f_and_df(f, backend::AnyAutoEnzyme{M,false}) where {M}
     mode = isnothing(backend.mode) ? Reverse : backend.mode
@@ -48,3 +49,4 @@ function get_f_and_df(f, backend::AnyAutoEnzyme{M,false}) where {M}
         error("Unexpected activity guessed for the function `f`.")
     end
 end
+=#
