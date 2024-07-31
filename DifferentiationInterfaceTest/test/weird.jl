@@ -8,6 +8,8 @@ using FiniteDifferences: FiniteDifferences
 using Flux: Flux
 using ForwardDiff: ForwardDiff
 using JLArrays: JLArrays
+using Lux: Lux
+using LuxTestUtils: LuxTestUtils
 using Random
 using SparseConnectivityTracer
 using SparseMatrixColorings
@@ -41,5 +43,15 @@ test_differentiation(
     isapprox=DIT.flux_isapprox,
     rtol=1e-2,
     atol=1e-6,
+    logging=LOGGING,
+)
+
+test_differentiation(
+    AutoZygote(),
+    DIT.lux_scenarios(Random.Xoshiro(63));
+    isequal=DIT.lux_isequal,
+    isapprox=DIT.lux_isapprox,
+    rtol=1.0f-2,
+    atol=1.0f-3,
     logging=LOGGING,
 )

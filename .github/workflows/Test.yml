@@ -50,6 +50,7 @@ jobs:
           - Down/Detector
           - Down/DifferentiateWith
           - Down/Flux
+          - Down/Lux
         exclude:
           # lts
           - version: 'lts'
@@ -74,6 +75,8 @@ jobs:
             group: Down/Detector
           - version: 'lts'
             group: Down/Flux
+          - version: 'lts'
+            group: Down/Lux
           # pre-release
           - version: 'pre'
             group: Formalities
