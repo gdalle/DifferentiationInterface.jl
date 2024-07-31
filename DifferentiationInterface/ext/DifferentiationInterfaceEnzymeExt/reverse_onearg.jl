@@ -130,12 +130,12 @@ end
 
 ## Gradient
 
-function DI.prepare_gradient(f, ::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},true}, x)
+function DI.prepare_gradient(f, ::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x)
     return NoGradientExtras()
 end
 
 function DI.gradient(
-    f, backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},true}, x, ::NoGradientExtras
+    f, backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, ::NoGradientExtras
 )
     if backend isa AutoDeferredEnzyme
         grad = make_zero(x)
@@ -149,7 +149,7 @@ end
 function DI.gradient!(
     f,
     grad,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},true},
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
     extras::NoGradientExtras,
 )
@@ -164,17 +164,13 @@ function DI.gradient!(
 end
 
 function DI.value_and_gradient(
-    f, backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},true}, x, ::NoGradientExtras
+    f, backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, ::NoGradientExtras
 )
     return DI.value_and_pullback(f, backend, x, true, NoPullbackExtras())
 end
 
 function DI.value_and_gradient!(
-    f,
-    grad,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},true},
-    x,
-    ::NoGradientExtras,
+    f, grad, backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, ::NoGradientExtras
 )
     return DI.value_and_pullback!(f, grad, backend, x, true, NoPullbackExtras())
 end
