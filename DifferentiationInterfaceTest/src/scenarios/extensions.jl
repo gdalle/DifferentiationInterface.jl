@@ -34,7 +34,7 @@ function gpu_scenarios end
 Create a vector of [`Scenario`](@ref)s with neural networks from [Flux.jl](https://github.com/FluxML/Flux.jl).
 
 !!! warning
-    This function requires Flux.jl to be loaded (it is implemented in a package extension).
+    This function requires FiniteDifferences.jl and Flux.jl to be loaded (it is implemented in a package extension).
 
 !!! danger
     These scenarios are still experimental and not part of the public API.
@@ -62,7 +62,7 @@ function flux_isequal end
 Create a vector of [`Scenario`](@ref)s with neural networks from [Lux.jl](https://github.com/LuxDL/Lux.jl).
 
 !!! warning
-    This function requires ComponentArrays.jl, Lux.jl and LuxTestUtils.jl to be loaded (it is implemented in a package extension).
+    This function requires ComponentArrays.jl, FiniteDiff.jl, Lux.jl and LuxTestUtils.jl to be loaded (it is implemented in a package extension).
 
 !!! danger
     These scenarios are still experimental and not part of the public API.

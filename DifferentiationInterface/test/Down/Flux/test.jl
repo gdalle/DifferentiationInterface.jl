@@ -1,9 +1,10 @@
 using Pkg
-Pkg.add(["Enzyme", "Flux", "Zygote"])
+Pkg.add(["FiniteDifferences", "Enzyme", "Flux", "Zygote"])
 
 using DifferentiationInterface, DifferentiationInterfaceTest
 import DifferentiationInterfaceTest as DIT
 using Enzyme: Enzyme
+using FiniteDifferences: FiniteDifferences
 using Flux: Flux
 using Random
 using Zygote: Zygote

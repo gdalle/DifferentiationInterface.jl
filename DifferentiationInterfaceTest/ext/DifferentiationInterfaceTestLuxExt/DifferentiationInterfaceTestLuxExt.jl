@@ -5,7 +5,7 @@ using ComponentArrays: ComponentArray
 import DifferentiationInterface as DI
 using DifferentiationInterfaceTest
 import DifferentiationInterfaceTest as DIT
-using FiniteDifferences: FiniteDifferences
+using FiniteDiff: FiniteDiff
 using Lux
 using LuxTestUtils
 using LuxTestUtils: check_approx
@@ -33,8 +33,7 @@ end
 
 function (sql::SquareLoss)(ps)
     @compat (; model, x, st) = sql
-    # TODO: get rid of deepcopy(st)?
-    return sum(abs2, first(model(x, ps, deepcopy(st))))
+    return sum(abs2, first(model(x, ps, st)))
 end
 
 function DIT.lux_scenarios(rng::AbstractRNG=default_rng())
@@ -128,9 +127,7 @@ function DIT.lux_scenarios(rng::AbstractRNG=default_rng())
         ps = ComponentArray(ps)
         loss = SquareLoss(model, x, st)
         l = loss(ps)
-        g = DI.gradient(
-            loss, DI.AutoFiniteDifferences(; fdm=FiniteDifferences.central_fdm(5, 1)), ps
-        )
+        g = DI.gradient(loss, DI.AutoFiniteDiff(), ps)
         scen = GradientScenario(loss; x=ps, y=l, grad=g, nb_args=1, place=:outofplace)
         push!(scens, scen)
     end

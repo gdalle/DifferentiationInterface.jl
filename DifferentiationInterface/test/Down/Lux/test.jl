@@ -1,9 +1,10 @@
 using Pkg
-Pkg.add(["Lux", "LuxTestUtils", "Zygote"])
+Pkg.add(["FiniteDiff", "Lux", "LuxTestUtils", "Zygote"])
 
 using ComponentArrays: ComponentArrays
 using DifferentiationInterface, DifferentiationInterfaceTest
 import DifferentiationInterfaceTest as DIT
+using FiniteDiff: FiniteDiff
 using Lux: Lux
 using LuxTestUtils: LuxTestUtils
 using Random
@@ -15,7 +16,7 @@ test_differentiation(
     DIT.lux_scenarios();
     isequal=DIT.lux_isequal,
     isapprox=DIT.lux_isapprox,
-    rtol=1.0f-2,
-    atol=1.0f-2,
+    rtol=1.0f-3,
+    atol=1.0f-3,
     logging=LOGGING,
 )
