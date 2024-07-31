@@ -154,7 +154,7 @@ end
 function DI.value_and_jacobian!(
     f,
     jac,
-    backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing},true},
+    backend::AutoEnzyme{<:Union{ForwardMode,Nothing},true},
     x,
     extras::EnzymeForwardOneArgJacobianExtras,
 )
