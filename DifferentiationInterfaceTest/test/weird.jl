@@ -1,5 +1,5 @@
 using Pkg
-Pkg.add(["Lux", "LuxTestUtils"])
+Pkg.add(["FiniteDiff", "Lux", "LuxTestUtils"])
 
 using ADTypes
 using ComponentArrays: ComponentArrays
