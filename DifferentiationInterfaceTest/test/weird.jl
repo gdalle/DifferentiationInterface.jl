@@ -1,3 +1,6 @@
+using Pkg
+Pkg.add(["Lux", "LuxTestUtils"])
+
 using ADTypes
 using ComponentArrays: ComponentArrays
 using DifferentiationInterface
