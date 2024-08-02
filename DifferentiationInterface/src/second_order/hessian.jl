@@ -143,9 +143,7 @@ function hessian!(
         hvp_batched!(
             f, batched_results[a], backend, x, batched_seeds[a], hvp_batched_extras_same
         )
-    end
 
-    for a in eachindex(batched_results)
         for b in eachindex(batched_results[a].elements)
             copyto!(
                 view(hess, :, 1 + ((a - 1) * B + (b - 1)) % N),

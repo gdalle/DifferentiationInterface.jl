@@ -84,7 +84,7 @@ function prepare_jacobian(f!::F, y, backend::AutoSparse, x) where {F}
 end
 
 function prepare_sparse_jacobian_aux(
-    f_or_f!y::FY, backend, x, y, ::PushforwardFast
+    f_or_f!y::FY, backend::AutoSparse, x, y, ::PushforwardFast
 ) where {FY}
     dense_backend = dense_ad(backend)
     initial_sparsity = jacobian_sparsity(f_or_f!y..., x, sparsity_detector(backend))
@@ -116,7 +116,7 @@ function prepare_sparse_jacobian_aux(
 end
 
 function prepare_sparse_jacobian_aux(
-    f_or_f!y::FY, backend, x, y, ::PushforwardSlow
+    f_or_f!y::FY, backend::AutoSparse, x, y, ::PushforwardSlow
 ) where {FY}
     dense_backend = dense_ad(backend)
     initial_sparsity = jacobian_sparsity(f_or_f!y..., x, sparsity_detector(backend))
@@ -291,9 +291,7 @@ function sparse_jacobian_aux!(
             batched_seeds[a],
             pushforward_batched_extras_same,
         )
-    end
 
-    for a in eachindex(batched_results)
         for b in eachindex(batched_results[a].elements)
             copyto!(
                 view(compressed, :, 1 + ((a - 1) * B + (b - 1)) % Ng),
@@ -334,9 +332,7 @@ function sparse_jacobian_aux!(
             batched_seeds[a],
             pullback_batched_extras_same,
         )
-    end
 
-    for a in eachindex(batched_results)
         for b in eachindex(batched_results[a].elements)
             copyto!(
                 view(compressed, 1 + ((a - 1) * B + (b - 1)) % Ng, :),

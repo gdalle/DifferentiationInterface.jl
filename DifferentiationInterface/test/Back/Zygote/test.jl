@@ -1,5 +1,11 @@
+using Pkg
+Pkg.add("Zygote")
+
+using ComponentArrays: ComponentArrays
 using DifferentiationInterface, DifferentiationInterfaceTest
+using JLArrays: JLArrays
 using SparseConnectivityTracer, SparseMatrixColorings
+using StaticArrays: StaticArrays
 using Test
 using Zygote: Zygote
 

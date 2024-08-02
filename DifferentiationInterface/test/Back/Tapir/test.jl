@@ -1,3 +1,6 @@
+using Pkg
+Pkg.add("Tapir")
+
 using DifferentiationInterface, DifferentiationInterfaceTest
 using Tapir: Tapir
 using Test

@@ -9,10 +9,14 @@ using DifferentiationInterface:
     DerivativeExtras,
     GradientExtras,
     HessianExtras,
+    HVPExtras,
     JacobianExtras,
     NoDerivativeExtras,
     NoSecondDerivativeExtras,
-    PushforwardExtras
+    PushforwardExtras,
+    SecondOrder,
+    inner,
+    outer
 using ForwardDiff.DiffResults:
     DiffResults, DiffResult, GradientResult, HessianResult, MutableDiffResult
 using ForwardDiff:
@@ -52,5 +56,6 @@ end
 include("utils.jl")
 include("onearg.jl")
 include("twoarg.jl")
+include("secondorder.jl")
 
 end # module

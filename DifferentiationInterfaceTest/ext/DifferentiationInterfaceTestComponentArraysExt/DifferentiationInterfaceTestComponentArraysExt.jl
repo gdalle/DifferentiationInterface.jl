@@ -1,3 +1,11 @@
+module DifferentiationInterfaceTestComponentArraysExt
+
+using ComponentArrays: ComponentVector
+using DifferentiationInterfaceTest
+import DifferentiationInterfaceTest as DIT
+using LinearAlgebra: dot
+using Random: AbstractRNG, default_rng
+
 ## Vector to scalar
 
 function comp_to_num(x::ComponentVector)::Number
@@ -42,12 +50,7 @@ end
 
 ## Gather
 
-"""
-    component_scenarios(rng=Random.default_rng())
-
-Create a vector of [`Scenario`](@ref)s with component array types from [ComponentArrays.jl](https://github.com/jonniedie/ComponentArrays.jl).
-"""
-function component_scenarios(rng::AbstractRNG=default_rng())
+function DIT.component_scenarios(rng::AbstractRNG=default_rng())
     dy_ = rand(rng)
 
     x_comp = ComponentVector(; a=randn(rng, 4), b=randn(rng, 2))
@@ -59,4 +62,6 @@ function component_scenarios(rng::AbstractRNG=default_rng())
         # two arguments
     )
     return scens
+end
+
 end

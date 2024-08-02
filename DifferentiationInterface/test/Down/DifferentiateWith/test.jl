@@ -1,3 +1,6 @@
+using Pkg
+Pkg.add(["ForwardDiff", "Zygote"])
+
 using DifferentiationInterface, DifferentiationInterfaceTest
 import DifferentiationInterfaceTest as DIT
 using ForwardDiff: ForwardDiff

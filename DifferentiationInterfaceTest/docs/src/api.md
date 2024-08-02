@@ -19,6 +19,8 @@ DifferentiationBenchmarkDataRow
 
 ## Pre-made scenario lists
 
+The precise contents of the scenario lists are not part of the API, only their existence.
+
 ```@docs
 default_scenarios
 sparse_scenarios

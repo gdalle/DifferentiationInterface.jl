@@ -1,3 +1,6 @@
+using Pkg
+Pkg.add(["Enzyme", "ForwardDiff"])
+
 using ADTypes: jacobian_sparsity, hessian_sparsity
 using DifferentiationInterface
 using ForwardDiff: ForwardDiff

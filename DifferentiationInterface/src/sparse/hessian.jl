@@ -3,6 +3,7 @@ struct SparseHessianExtras{
 } <: HessianExtras
     sparsity::S
     colors::Vector{Int}
+    star_set::StarSet
     groups::Vector{Vector{Int}}
     compressed::C
     batched_seeds::Vector{Batch{B,D}}
@@ -14,6 +15,7 @@ end
 function SparseHessianExtras{B}(;
     sparsity::S,
     colors,
+    star_set,
     groups,
     compressed::C,
     batched_seeds::Vector{Batch{B,D}},
@@ -25,6 +27,7 @@ function SparseHessianExtras{B}(;
     return SparseHessianExtras{B,S,C,D,R,E2,E1}(
         sparsity,
         colors,
+        star_set,
         groups,
         compressed,
         batched_seeds,
@@ -40,7 +43,7 @@ function prepare_hessian(f::F, backend::AutoSparse, x) where {F}
     dense_backend = dense_ad(backend)
     initial_sparsity = hessian_sparsity(f, x, sparsity_detector(backend))
     sparsity = col_major(initial_sparsity)
-    colors = symmetric_coloring(sparsity, coloring_algorithm(backend))
+    colors, star_set = symmetric_coloring_detailed(sparsity, coloring_algorithm(backend))
     groups = color_groups(colors)
     Ng = length(groups)
     B = pick_batchsize(maybe_outer(dense_backend), Ng)
@@ -57,6 +60,7 @@ function prepare_hessian(f::F, backend::AutoSparse, x) where {F}
     return SparseHessianExtras{B}(;
         sparsity,
         colors,
+        star_set,
         groups,
         compressed,
         batched_seeds,
@@ -67,8 +71,9 @@ function prepare_hessian(f::F, backend::AutoSparse, x) where {F}
 end
 
 function hessian(f::F, backend::AutoSparse, x, extras::SparseHessianExtras{B}) where {F,B}
-    @compat (; sparsity, compressed, colors, groups, batched_seeds, hvp_batched_extras) =
-        extras
+    @compat (;
+        sparsity, compressed, colors, star_set, groups, batched_seeds, hvp_batched_extras
+    ) = extras
     dense_backend = dense_ad(backend)
     Ng = length(groups)
 
@@ -85,7 +90,7 @@ function hessian(f::F, backend::AutoSparse, x, extras::SparseHessianExtras{B}) w
     if Ng < size(compressed, 2)
         compressed = compressed[:, 1:Ng]
     end
-    return decompress_symmetric(sparsity, compressed, colors)
+    return decompress_symmetric(sparsity, compressed, colors, star_set)
 end
 
 function hessian!(
@@ -95,6 +100,7 @@ function hessian!(
         sparsity,
         compressed,
         colors,
+        star_set,
         groups,
         batched_seeds,
         batched_results,
@@ -116,9 +122,7 @@ function hessian!(
             batched_seeds[a],
             hvp_batched_extras_same,
         )
-    end
 
-    for a in eachindex(batched_results)
         for b in eachindex(batched_results[a].elements)
             copyto!(
                 view(compressed, :, 1 + ((a - 1) * B + (b - 1)) % Ng),
@@ -127,7 +131,7 @@ function hessian!(
         end
     end
 
-    decompress_symmetric!(hess, sparsity, compressed, colors)
+    decompress_symmetric!(hess, sparsity, compressed, colors, star_set)
     return hess
 end
 

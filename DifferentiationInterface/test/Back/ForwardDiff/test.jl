@@ -1,7 +1,12 @@
+using Pkg
+Pkg.add("ForwardDiff")
+
+using ComponentArrays: ComponentArrays
 using DifferentiationInterface, DifferentiationInterfaceTest
 using DifferentiationInterfaceTest: add_batchified!
 using ForwardDiff: ForwardDiff
 using SparseConnectivityTracer, SparseMatrixColorings
+using StaticArrays: StaticArrays
 using Test
 
 dense_backends = [AutoForwardDiff(), AutoForwardDiff(; chunksize=5, tag=:hello)]

@@ -1,3 +1,6 @@
+using Pkg
+Pkg.add("Symbolics")
+
 using DifferentiationInterface, DifferentiationInterfaceTest
 using Symbolics: Symbolics
 using Test

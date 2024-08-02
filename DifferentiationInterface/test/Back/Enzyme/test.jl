@@ -1,5 +1,9 @@
+using Pkg
+Pkg.add("Enzyme")
+
 using ADTypes: ADTypes
 using DifferentiationInterface, DifferentiationInterfaceTest
+import DifferentiationInterfaceTest as DIT
 using Enzyme: Enzyme
 using SparseConnectivityTracer, SparseMatrixColorings
 using StableRNGs

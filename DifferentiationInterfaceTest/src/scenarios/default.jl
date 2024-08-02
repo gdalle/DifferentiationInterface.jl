@@ -17,7 +17,14 @@ num_to_num_second_derivative(x) = -sin(x)
 num_to_num_pushforward(x, dx) = num_to_num_derivative(x) * dx
 num_to_num_pullback(x, dy) = num_to_num_derivative(x) * dy
 
-function num_to_num_scenarios_onearg(x::Number; dx::Number, dy::Number)
+num_to_num_vec(x) = [num_to_num(only(x))]
+
+function num_to_num_vec!(y, x)
+    y[only(eachindex(y))] = num_to_num(only(x))
+    return nothing
+end
+
+function num_to_num_scenarios(x::Number; dx::Number, dy::Number)
     nb_args = 1
     place = :outofplace
     f = num_to_num
@@ -28,12 +35,52 @@ function num_to_num_scenarios_onearg(x::Number; dx::Number, dy::Number)
     der2 = num_to_num_second_derivative(x)
 
     # everyone out of place
-    return [
+    scens = Scenario[
         PushforwardScenario(f; x, y, dx, dy=dy_from_dx, nb_args, place),
         PullbackScenario(f; x, y, dy, dx=dx_from_dy, nb_args, place),
         DerivativeScenario(f; x, y, der, nb_args, place),
         SecondDerivativeScenario(f; x, y, der, der2, nb_args, place),
     ]
+
+    # add scenarios [x] -> [y] to test 1-sized everything
+
+    jac = fill(der, 1, 1)
+
+    for place in (:outofplace, :inplace)
+        append!(
+            scens,
+            [
+                PushforwardScenario(
+                    num_to_num_vec; x=[x], y=[y], dx=[dx], dy=[dy_from_dx], nb_args=1, place
+                ),
+                PushforwardScenario(
+                    num_to_num_vec!;
+                    x=[x],
+                    y=[y],
+                    dx=[dx],
+                    dy=[dy_from_dx],
+                    nb_args=2,
+                    place,
+                ),
+                PullbackScenario(
+                    num_to_num_vec; x=[x], y=[y], dy=[dy], dx=[dx_from_dy], nb_args=1, place
+                ),
+                PullbackScenario(
+                    num_to_num_vec!;
+                    x=[x],
+                    y=[y],
+                    dy=[dy],
+                    dx=[dx_from_dy],
+                    nb_args=2,
+                    place,
+                ),
+                JacobianScenario(num_to_num_vec; x=[x], y=[y], jac=jac, nb_args=1, place),
+                JacobianScenario(num_to_num_vec!; x=[x], y=[y], jac=jac, nb_args=2, place),
+            ],
+        )
+    end
+
+    return scens
 end
 
 ## Number to array
@@ -47,30 +94,10 @@ function num_to_arr(x::Number, ::Type{A}) where {A<:AbstractArray}
 end
 
 num_to_arr_vector(x) = num_to_arr(x, Vector{Float64})
-num_to_arr_svector(x) = num_to_arr(x, SVector{6,Float64})
-num_to_arr_jlvector(x) = num_to_arr(x, JLArray{Float64,1})
-
 num_to_arr_matrix(x) = num_to_arr(x, Matrix{Float64})
-num_to_arr_smatrix(x) = num_to_arr(x, SMatrix{2,3,Float64,6})
-num_to_arr_jlmatrix(x) = num_to_arr(x, JLArray{Float64,2})
 
-function pick_num_to_arr(::Type{A}) where {A<:AbstractArray}
-    if A <: Vector
-        return num_to_arr_vector
-    elseif A <: SVector
-        return num_to_arr_svector
-    elseif A <: JLArray{<:Any,1}
-        return num_to_arr_jlvector
-    elseif A <: Matrix
-        return num_to_arr_matrix
-    elseif A <: SMatrix
-        return num_to_arr_smatrix
-    elseif A <: JLArray{<:Any,2}
-        return num_to_arr_jlmatrix
-    else
-        throw(ArgumentError("Array type $A not supported"))
-    end
-end
+pick_num_to_arr(::Type{<:Vector}) = num_to_arr_vector
+pick_num_to_arr(::Type{<:Matrix}) = num_to_arr_matrix
 
 function num_to_arr!(y::AbstractArray, x::Number)::Nothing
     a = multiplicator(typeof(y))
@@ -485,7 +512,7 @@ function default_scenarios(rng::AbstractRNG=default_rng(); linalg=true)
 
     scens = vcat(
         # one argument
-        num_to_num_scenarios_onearg(x_; dx=dx_, dy=dy_),
+        num_to_num_scenarios(x_; dx=dx_, dy=dy_),
         num_to_arr_scenarios_onearg(x_, V; dx=dx_, dy=dy_6),
         num_to_arr_scenarios_onearg(x_, M; dx=dx_, dy=dy_2_3),
         arr_to_num_scenarios_onearg(x_6; dx=dx_6, dy=dy_, linalg),

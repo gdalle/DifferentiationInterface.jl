@@ -1,3 +1,6 @@
+using Pkg
+Pkg.add("FastDifferentiation")
+
 using DifferentiationInterface, DifferentiationInterfaceTest
 using FastDifferentiation: FastDifferentiation
 using Test
