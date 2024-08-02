@@ -1,16 +1,14 @@
-struct AutoDeferredEnzyme{M,constant_function} <: ADTypes.AbstractADType
+struct AutoDeferredEnzyme{M} <: ADTypes.AbstractADType
     mode::M
 end
 
 ADTypes.mode(backend::AutoDeferredEnzyme) = ADTypes.mode(AutoEnzyme(backend.mode))
 
-function DI.nested(backend::AutoEnzyme{M,constant_function}) where {M,constant_function}
-    return AutoDeferredEnzyme{M,constant_function}(backend.mode)
+function DI.nested(backend::AutoEnzyme{M}) where {M}
+    return AutoDeferredEnzyme{M}(backend.mode)
 end
 
-const AnyAutoEnzyme{M,constant_function} = Union{
-    AutoEnzyme{M,constant_function},AutoDeferredEnzyme{M,constant_function}
-}
+const AnyAutoEnzyme{M} = Union{AutoEnzyme{M},AutoDeferredEnzyme{M}}
 
 # forward mode if possible
 forward_mode(backend::AnyAutoEnzyme{<:Mode}) = backend.mode
@@ -33,20 +31,3 @@ function DI.basis(::AnyAutoEnzyme, a::AbstractArray{T}, i::CartesianIndex) where
 end
 
 get_f_and_df(f, ::AnyAutoEnzyme) = Const(f)
-
-#=
-# commented out until Enzyme errors when non-duplicated data is written to
-
-function get_f_and_df(f, backend::AnyAutoEnzyme{M,false}) where {M}
-    mode = isnothing(backend.mode) ? Reverse : backend.mode
-    A = guess_activity(typeof(f), mode)
-    if A <: Const || A <: Active
-        return Const(f)
-    elseif A <: Duplicated || A <: DuplicatedNoNeed || A <: MixedDuplicated
-        df = make_zero(f)
-        return Duplicated(f, df)
-    else
-        error("Unexpected activity guessed for the function `f`.")
-    end
-end
-=#
