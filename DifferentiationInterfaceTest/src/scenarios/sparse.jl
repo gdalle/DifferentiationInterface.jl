@@ -11,7 +11,7 @@ function diffsquare!(y::AbstractVector, x::AbstractVector)
     return nothing
 end
 
-function diffcube!(y::AbstractVector, x::AbstractVector)
+function diffcube!(y, x::AbstractVector)
     x1 = @view x[1:(end - 1)]
     x2 = @view x[2:end]
     y .= x2 .- x1
@@ -54,7 +54,7 @@ function diffsquarecube_matvec(x::AbstractMatrix)::AbstractVector
     return vcat(diffsquare(vec(x)), diffcube(vec(x)))
 end
 
-function diffsquarecube_matvec!(y::AbstractVector, x::AbstractMatrix)
+function diffsquarecube_matvec!(y, x::AbstractMatrix)
     m, n = size(x)
     diffsquare!(view(y, 1:(m * n - 1)), vec(x))
     diffcube!(view(y, (m * n):(2(m * n) - 2)), vec(x))
@@ -88,7 +88,7 @@ end
 
 diffsquarecube_vecmat(x::AbstractVector)::AbstractMatrix = hcat(diffsquare(x), diffcube(x))
 
-function diffsquarecube_vecmat!(y::AbstractMatrix, x::AbstractVector)
+function diffsquarecube_vecmat!(y, x::AbstractVector)
     diffsquare!(view(y, :, 1), x)
     diffcube!(view(y, :, 2), x)
     return nothing
@@ -123,7 +123,7 @@ function diffsquarecube_matmat(x::AbstractMatrix)::AbstractMatrix
     return hcat(diffsquare(vec(x)), diffcube(vec(x)))
 end
 
-function diffsquarecube_matmat!(y::AbstractMatrix, x::AbstractMatrix)
+function diffsquarecube_matmat!(y, x::AbstractMatrix)
     diffsquare!(view(y, :, 1), vec(x))
     diffcube!(view(y, :, 2), vec(x))
     return nothing
