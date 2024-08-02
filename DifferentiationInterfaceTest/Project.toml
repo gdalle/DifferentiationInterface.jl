@@ -36,6 +36,7 @@ DifferentiationInterfaceTestFluxExt = ["FiniteDifferences", "Flux"]
 DifferentiationInterfaceTestJLArraysExt = "JLArrays"
 DifferentiationInterfaceTestLuxExt = ["ComponentArrays", "FiniteDiff", "Lux", "LuxTestUtils"]
 DifferentiationInterfaceTestStaticArraysExt = "StaticArrays"
+DifferentiationInterfaceTestZygoteExt = "Zygote"
 
 [compat]
 ADTypes = "1.0.0"
