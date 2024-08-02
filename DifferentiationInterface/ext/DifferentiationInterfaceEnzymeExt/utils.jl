@@ -8,9 +8,7 @@ function DI.nested(backend::AutoEnzyme{M}) where {M}
     return AutoDeferredEnzyme{M}(backend.mode)
 end
 
-const AnyAutoEnzyme{M,constant_function} = Union{
-    AutoEnzyme{M,constant_function},AutoDeferredEnzyme{M,constant_function}
-}
+const AnyAutoEnzyme{M} = Union{AutoEnzyme{M},AutoDeferredEnzyme{M}}
 
 # forward mode if possible
 forward_mode(backend::AnyAutoEnzyme{<:Mode}) = backend.mode
