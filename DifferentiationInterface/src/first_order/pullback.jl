@@ -187,13 +187,13 @@ function value_and_pullback(
     y = f(x)
     dx = if x isa Number && y isa Number
         dy * pushforward(f, backend, x, one(x), pushforward_extras)
-    elseif x isa Number && y isa AbstractArray
+    elseif x isa Number
         dot(dy, pushforward(f, backend, x, one(x), pushforward_extras))
-    elseif x isa AbstractArray && y isa Number
+    elseif y isa Number
         map(CartesianIndices(x)) do j
             dy * pushforward(f, backend, x, basis(backend, x, j), pushforward_extras)
         end
-    elseif x isa AbstractArray && y isa AbstractArray
+    else
         map(CartesianIndices(x)) do j
             dot(dy, pushforward(f, backend, x, basis(backend, x, j), pushforward_extras))
         end
@@ -248,9 +248,9 @@ function value_and_pullback(
     f!::F, y, backend::AbstractADType, x, dy, extras::PushforwardPullbackExtras
 ) where {F}
     @compat (; pushforward_extras) = extras
-    dx = if x isa Number && y isa AbstractArray
+    dx = if x isa Number
         dot(dy, pushforward(f!, y, backend, x, one(x), pushforward_extras))
-    elseif x isa AbstractArray && y isa AbstractArray
+    else
         map(CartesianIndices(x)) do j
             dot(dy, pushforward(f!, y, backend, x, basis(backend, x, j), pushforward_extras))
         end
