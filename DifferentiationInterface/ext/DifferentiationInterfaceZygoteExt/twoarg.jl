@@ -17,6 +17,6 @@ DI.prepare_pullback(f!, y, ::AutoZygote, x, dy) = NoPullbackExtras()
 function DI.value_and_pullback(f!, y, backend::AutoZygote, x, dy, ::NoPullbackExtras)
     f = Bufferize(f!, y)
     y_new, dx = DI.value_and_pullback(f, backend, x, dy)
-    copyto!(y_new, y)
+    copyto!(y, y_new)
     return y, dx
 end
