@@ -6,6 +6,8 @@ using DifferentiationInterface, DifferentiationInterfaceTest
 using Test
 using Zygote: ZygoteRuleConfig
 
+LOGGING = get(ENV, "CI", "false") == "false"
+
 for backend in [AutoChainRules(ZygoteRuleConfig())]
     @test check_available(backend)
     @test !check_twoarg(backend)

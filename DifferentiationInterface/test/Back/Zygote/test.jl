@@ -9,6 +9,8 @@ using StaticArrays: StaticArrays
 using Test
 using Zygote: Zygote
 
+LOGGING = get(ENV, "CI", "false") == "false"
+
 dense_backends = [AutoZygote()]
 
 sparse_backends = [

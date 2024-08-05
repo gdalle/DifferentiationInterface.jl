@@ -11,6 +11,8 @@ using SparseMatrixColorings
 using Zygote: Zygote
 using Test
 
+LOGGING = get(ENV, "CI", "false") == "false"
+
 ## Dense
 
 onearg_backends = [

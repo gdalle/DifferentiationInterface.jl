@@ -90,6 +90,7 @@ jobs:
             group: Down/Detector
     env:
       SHOULDRUN: ${{ matrix.version == '1' || !github.event.pull_request.draft }}
+      JULIA_DI_TEST_GROUP: ${{ matrix.group }}
     steps:
       - run: echo "$SHOULDRUN"
       - uses: actions/checkout@v4
@@ -101,17 +102,15 @@ jobs:
           arch: x64
       - uses: julia-actions/cache@v2
         if: ${{ env.SHOULDRUN == 'true' }}
-      - uses: julia-actions/julia-buildpkg@v1
+      - name: Install dependencies & run tests
         if: ${{ env.SHOULDRUN == 'true' }}
-      - name: Update registry
-        if: ${{ env.SHOULDRUN == 'true' }}
-        run: julia -e 'using Pkg; Pkg.Registry.update()'
-      - uses: julia-actions/julia-runtest@v1
-        if: ${{ env.SHOULDRUN == 'true' }}
-        with:
-          project: ./DifferentiationInterface
-        env:
-          JULIA_DI_TEST_GROUP: ${{ matrix.group }}
+        shell: julia --project=./DifferentiationInterface
+        run: |
+          using Pkg
+          Pkg.registry.update()
+          Pkg.update()
+          Pkg.develop(path="./DifferentiationInterfaceTest")
+          Pkg.test("DifferentiationInterface"; coverage=true)
       - uses: julia-actions/julia-processcoverage@v1
         if: ${{ env.SHOULDRUN == 'true' }}
         with:
@@ -149,6 +148,7 @@ jobs:
             group: Weird
     env:
       SHOULDRUN: ${{ matrix.version == '1' || !github.event.pull_request.draft }}
+      JULIA_DIT_TEST_GROUP: ${{ matrix.group }}
     steps:
       - run: echo "$SHOULDRUN"
       - uses: actions/checkout@v4
@@ -160,21 +160,15 @@ jobs:
           arch: x64
       - uses: julia-actions/cache@v2
         if: ${{ env.SHOULDRUN == 'true' }}
-      - uses: julia-actions/julia-buildpkg@v1
+      - name: Install dependencies & run tests
         if: ${{ env.SHOULDRUN == 'true' }}
-      - name: Dev dependencies (temporary)
-        if: ${{ env.SHOULDRUN == 'true' }}
-        run: julia --project='./DifferentiationInterfaceTest' -e '
-          using Pkg;
-          Pkg.Registry.update();
-          Pkg.develop(PackageSpec(path="./DifferentiationInterface"));
-          Pkg.instantiate();'
-      - uses: julia-actions/julia-runtest@v1
-        if: ${{ env.SHOULDRUN == 'true' }}
-        with:
-          project: ./DifferentiationInterfaceTest
-        env:
-          JULIA_DI_TEST_GROUP: ${{ matrix.group }}
+        shell: julia --project=./DifferentiationInterfaceTest
+        run: |
+          using Pkg
+          Pkg.registry.update()
+          Pkg.update()
+          Pkg.develop(path="./DifferentiationInterface")
+          Pkg.test("DifferentiationInterfaceTest"; coverage=true)
       - uses: julia-actions/julia-processcoverage@v1
         if: ${{ env.SHOULDRUN == 'true' }}
         with:
