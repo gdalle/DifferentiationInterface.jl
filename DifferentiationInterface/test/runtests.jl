@@ -2,6 +2,13 @@ using DifferentiationInterface
 using Pkg
 using Test
 
+DIT_PATH = joinpath(@__DIR__, "..", "..", "DifferentiationInterfaceTest")
+if isdir(DIT_PATH)
+    Pkg.develop(; path=DIT_PATH)
+else
+    Pkg.add("DifferentiationInterfaceTest")
+end
+
 GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "All")
 
 ## Main tests
