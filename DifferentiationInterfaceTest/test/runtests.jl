@@ -5,7 +5,7 @@ using Pkg
 using SparseConnectivityTracer
 using Test
 
-GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "All")
+GROUP = get(ENV, "JULIA_DIT_TEST_GROUP", "All")
 
 ## Main tests
 
