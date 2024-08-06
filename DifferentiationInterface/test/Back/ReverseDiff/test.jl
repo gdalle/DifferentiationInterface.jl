@@ -7,6 +7,8 @@ using ReverseDiff: ReverseDiff
 using StaticArrays: StaticArrays
 using Test
 
+LOGGING = get(ENV, "CI", "false") == "false"
+
 dense_backends = [AutoReverseDiff(; compile=false), AutoReverseDiff(; compile=true)]
 
 fromprimitive_backends = [AutoReverseFromPrimitive(AutoReverseDiff())]

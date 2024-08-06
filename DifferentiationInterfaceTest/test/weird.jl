@@ -19,6 +19,8 @@ using SparseMatrixColorings
 using StaticArrays: StaticArrays
 using Zygote: Zygote
 
+LOGGING = get(ENV, "CI", "false") == "false"
+
 test_differentiation(
     AutoForwardDiff(),
     vcat(component_scenarios(), static_scenarios());

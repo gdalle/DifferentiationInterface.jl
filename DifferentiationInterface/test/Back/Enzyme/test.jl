@@ -9,6 +9,8 @@ using SparseConnectivityTracer, SparseMatrixColorings
 using StableRNGs
 using Test
 
+LOGGING = get(ENV, "CI", "false") == "false"
+
 dense_backends = [
     AutoEnzyme(; mode=nothing),
     AutoEnzyme(; mode=Enzyme.Forward),

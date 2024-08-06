@@ -4,6 +4,8 @@ using DifferentiationInterfaceTest: add_batchified!
 using ForwardDiff: ForwardDiff
 using Test
 
+LOGGING = get(ENV, "CI", "false") == "false"
+
 fromprimitive_backends = [ #
     AutoForwardFromPrimitive(AutoForwardDiff(; chunksize=5)),
     AutoReverseFromPrimitive(AutoForwardDiff(; chunksize=5)),

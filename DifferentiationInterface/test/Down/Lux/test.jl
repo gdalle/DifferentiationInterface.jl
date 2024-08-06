@@ -9,6 +9,8 @@ using Lux: Lux
 using LuxTestUtils: LuxTestUtils
 using Random
 
+LOGGING = get(ENV, "CI", "false") == "false"
+
 Random.seed!(0)
 
 test_differentiation(

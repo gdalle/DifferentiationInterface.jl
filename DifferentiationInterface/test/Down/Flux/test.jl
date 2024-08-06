@@ -10,6 +10,8 @@ using Random
 using Zygote: Zygote
 using Test
 
+LOGGING = get(ENV, "CI", "false") == "false"
+
 Random.seed!(0)
 
 test_differentiation(

@@ -5,6 +5,8 @@ using DifferentiationInterface, DifferentiationInterfaceTest
 using Tapir: Tapir
 using Test
 
+LOGGING = get(ENV, "CI", "false") == "false"
+
 for backend in [AutoTapir(; safe_mode=false)]
     @test check_available(backend)
     @test check_twoarg(backend)

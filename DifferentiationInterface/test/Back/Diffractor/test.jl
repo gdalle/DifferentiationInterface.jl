@@ -5,6 +5,8 @@ using DifferentiationInterface, DifferentiationInterfaceTest
 using Diffractor: Diffractor
 using Test
 
+LOGGING = get(ENV, "CI", "false") == "false"
+
 for backend in [AutoDiffractor()]
     @test check_available(backend)
     @test !check_twoarg(backend)

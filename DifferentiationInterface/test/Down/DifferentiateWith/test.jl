@@ -7,6 +7,8 @@ using ForwardDiff: ForwardDiff
 using Zygote: Zygote
 using Test
 
+LOGGING = get(ENV, "CI", "false") == "false"
+
 function zygote_breaking_scenarios()
     onearg_scens = filter(default_scenarios()) do scen
         DIT.nb_args(scen) == 1

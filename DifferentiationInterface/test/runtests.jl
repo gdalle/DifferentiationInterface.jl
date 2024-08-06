@@ -9,8 +9,6 @@ else
     Pkg.add("DifferentiationInterfaceTest")
 end
 
-LOGGING = get(ENV, "CI", "false") == "false"
-
 GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "All")
 
 ## Main tests

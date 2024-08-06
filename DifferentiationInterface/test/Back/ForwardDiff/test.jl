@@ -9,6 +9,8 @@ using SparseConnectivityTracer, SparseMatrixColorings
 using StaticArrays: StaticArrays
 using Test
 
+LOGGING = get(ENV, "CI", "false") == "false"
+
 dense_backends = [AutoForwardDiff(), AutoForwardDiff(; chunksize=5, tag=:hello)]
 
 sparse_backends = [

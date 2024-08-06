@@ -7,6 +7,8 @@ using SparseMatrixColorings
 using ComponentArrays: ComponentArrays
 using StaticArrays: StaticArrays
 
+LOGGING = get(ENV, "CI", "false") == "false"
+
 ## Dense
 
 test_differentiation(AutoForwardDiff(); logging=LOGGING)
