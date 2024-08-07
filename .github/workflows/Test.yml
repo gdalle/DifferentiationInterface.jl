@@ -109,6 +109,7 @@ jobs:
           using Pkg;
           Pkg.Registry.update();
           Pkg.update();
+          Pkg.add(url="https://github.com/gdalle/SparseMatrixColorings.jl", rev="revamp")
           Pkg.test("DifferentiationInterface"; coverage=true);'
       - uses: julia-actions/julia-processcoverage@v1
         if: ${{ env.SHOULDRUN == 'true' }}
@@ -165,6 +166,7 @@ jobs:
           using Pkg;
           Pkg.Registry.update();
           Pkg.update();
+          Pkg.add(url="https://github.com/gdalle/SparseMatrixColorings.jl", rev="revamp")
           Pkg.develop(path="./DifferentiationInterface");
           Pkg.test("DifferentiationInterfaceTest"; coverage=true);'
       - uses: julia-actions/julia-processcoverage@v1
