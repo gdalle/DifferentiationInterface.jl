@@ -12,7 +12,7 @@ module DifferentiationInterface
 using ADTypes: ADTypes, AbstractADType
 using ADTypes: mode, ForwardMode, ForwardOrReverseMode, ReverseMode, SymbolicMode
 using ADTypes: AutoSparse, dense_ad
-using ADTypes: coloring_algorithm, column_coloring, row_coloring, symmetric_coloring
+using ADTypes: coloring_algorithm, column_coloring, row_coloring
 using ADTypes: sparsity_detector, jacobian_sparsity, hessian_sparsity
 using ADTypes:
     AutoChainRules,
@@ -42,7 +42,9 @@ using SparseMatrixColorings:
     decompress_rows,
     decompress_rows!,
     decompress_symmetric,
-    decompress_symmetric!
+    decompress_symmetric!,
+    symmetric_coloring_detailed,
+    StarSet
 
 abstract type Extras end
 

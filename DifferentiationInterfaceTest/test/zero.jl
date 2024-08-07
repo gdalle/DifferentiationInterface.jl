@@ -7,8 +7,13 @@ using DifferentiationInterfaceTest:
     test_allocfree,
     allocfree_scenarios,
     add_batchified!
+using ComponentArrays: ComponentArrays
+using JLArrays: JLArrays
+using StaticArrays: StaticArrays
 
 using Test
+
+LOGGING = get(ENV, "CI", "false") == "false"
 
 @test check_available(AutoZeroForward())
 @test check_available(AutoZeroReverse())

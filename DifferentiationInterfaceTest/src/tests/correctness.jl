@@ -1,10 +1,10 @@
 ## No overwrite
 
-function test_scen_intact(new_scen, scen)
+function test_scen_intact(new_scen, scen; isequal)
     @testset "Scenario intact" begin
         for n in fieldnames(typeof(scen))
             n == :f && continue
-            @test getfield(new_scen, n) == getfield(scen, n)
+            @test isequal(getfield(new_scen, n), getfield(scen, n))
         end
     end
 end
@@ -16,6 +16,7 @@ testset_name(k) = k == 1 ? "No prep" : (k == 2 ? "Different point" : "Same point
 function test_correctness(
     ba::AbstractADType,
     scen::Scenario{:pushforward,1,:outofplace};
+    isequal::Function,
     isapprox::Function,
     atol,
     rtol,
@@ -57,13 +58,14 @@ function test_correctness(
             end
         end
     end
-    test_scen_intact(new_scen, scen)
+    test_scen_intact(new_scen, scen; isequal)
     return nothing
 end
 
 function test_correctness(
     ba::AbstractADType,
     scen::Scenario{:pushforward,1,:inplace};
+    isequal::Function,
     isapprox::Function,
     atol,
     rtol,
@@ -110,13 +112,14 @@ function test_correctness(
             end
         end
     end
-    test_scen_intact(new_scen, scen)
+    test_scen_intact(new_scen, scen; isequal)
     return nothing
 end
 
 function test_correctness(
     ba::AbstractADType,
     scen::Scenario{:pushforward,2,:outofplace};
+    isequal::Function,
     isapprox::Function,
     atol,
     rtol,
@@ -169,13 +172,14 @@ function test_correctness(
             end
         end
     end
-    test_scen_intact(new_scen, scen)
+    test_scen_intact(new_scen, scen; isequal)
     return nothing
 end
 
 function test_correctness(
     ba::AbstractADType,
     scen::Scenario{:pushforward,2,:inplace};
+    isequal::Function,
     isapprox::Function,
     atol,
     rtol,
@@ -232,7 +236,7 @@ function test_correctness(
             end
         end
     end
-    test_scen_intact(new_scen, scen)
+    test_scen_intact(new_scen, scen; isequal)
     return nothing
 end
 
@@ -241,6 +245,7 @@ end
 function test_correctness(
     ba::AbstractADType,
     scen::Scenario{:pullback,1,:outofplace};
+    isequal::Function,
     isapprox::Function,
     atol,
     rtol,
@@ -282,12 +287,17 @@ function test_correctness(
             end
         end
     end
-    test_scen_intact(new_scen, scen)
+    test_scen_intact(new_scen, scen; isequal)
     return nothing
 end
 
 function test_correctness(
-    ba::AbstractADType, scen::Scenario{:pullback,1,:inplace}; isapprox::Function, atol, rtol
+    ba::AbstractADType,
+    scen::Scenario{:pullback,1,:inplace};
+    isequal::Function,
+    isapprox::Function,
+    atol,
+    rtol,
 )
     @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
 
@@ -331,13 +341,14 @@ function test_correctness(
             end
         end
     end
-    test_scen_intact(new_scen, scen)
+    test_scen_intact(new_scen, scen; isequal)
     return nothing
 end
 
 function test_correctness(
     ba::AbstractADType,
     scen::Scenario{:pullback,2,:outofplace};
+    isequal::Function,
     isapprox::Function,
     atol,
     rtol,
@@ -388,12 +399,17 @@ function test_correctness(
             end
         end
     end
-    test_scen_intact(new_scen, scen)
+    test_scen_intact(new_scen, scen; isequal)
     return nothing
 end
 
 function test_correctness(
-    ba::AbstractADType, scen::Scenario{:pullback,2,:inplace}; isapprox::Function, atol, rtol
+    ba::AbstractADType,
+    scen::Scenario{:pullback,2,:inplace};
+    isequal::Function,
+    isapprox::Function,
+    atol,
+    rtol,
 )
     @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
     f! = f
@@ -445,7 +461,7 @@ function test_correctness(
             end
         end
     end
-    test_scen_intact(new_scen, scen)
+    test_scen_intact(new_scen, scen; isequal)
     return nothing
 end
 
@@ -454,6 +470,7 @@ end
 function test_correctness(
     ba::AbstractADType,
     scen::Scenario{:derivative,1,:outofplace};
+    isequal::Function,
     isapprox::Function,
     atol,
     rtol,
@@ -480,13 +497,14 @@ function test_correctness(
             end
         end
     end
-    test_scen_intact(new_scen, scen)
+    test_scen_intact(new_scen, scen; isequal)
     return nothing
 end
 
 function test_correctness(
     ba::AbstractADType,
     scen::Scenario{:derivative,1,:inplace};
+    isequal::Function,
     isapprox::Function,
     atol,
     rtol,
@@ -518,13 +536,14 @@ function test_correctness(
             end
         end
     end
-    test_scen_intact(new_scen, scen)
+    test_scen_intact(new_scen, scen; isequal)
     return nothing
 end
 
 function test_correctness(
     ba::AbstractADType,
     scen::Scenario{:derivative,2,:outofplace};
+    isequal::Function,
     isapprox::Function,
     atol,
     rtol,
@@ -556,13 +575,14 @@ function test_correctness(
             end
         end
     end
-    test_scen_intact(new_scen, scen)
+    test_scen_intact(new_scen, scen; isequal)
     return nothing
 end
 
 function test_correctness(
     ba::AbstractADType,
     scen::Scenario{:derivative,2,:inplace};
+    isequal::Function,
     isapprox::Function,
     atol,
     rtol,
@@ -596,7 +616,7 @@ function test_correctness(
             end
         end
     end
-    test_scen_intact(new_scen, scen)
+    test_scen_intact(new_scen, scen; isequal)
     return nothing
 end
 
@@ -605,6 +625,7 @@ end
 function test_correctness(
     ba::AbstractADType,
     scen::Scenario{:gradient,1,:outofplace};
+    isequal::Function,
     isapprox::Function,
     atol,
     rtol,
@@ -632,12 +653,17 @@ function test_correctness(
             end
         end
     end
-    test_scen_intact(new_scen, scen)
+    test_scen_intact(new_scen, scen; isequal)
     return nothing
 end
 
 function test_correctness(
-    ba::AbstractADType, scen::Scenario{:gradient,1,:inplace}; isapprox::Function, atol, rtol
+    ba::AbstractADType,
+    scen::Scenario{:gradient,1,:inplace};
+    isequal::Function,
+    isapprox::Function,
+    atol,
+    rtol,
 )
     @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
 
@@ -666,7 +692,7 @@ function test_correctness(
             end
         end
     end
-    test_scen_intact(new_scen, scen)
+    test_scen_intact(new_scen, scen; isequal)
     return nothing
 end
 
@@ -675,6 +701,7 @@ end
 function test_correctness(
     ba::AbstractADType,
     scen::Scenario{:jacobian,1,:outofplace};
+    isequal::Function,
     isapprox::Function,
     atol,
     rtol,
@@ -702,12 +729,17 @@ function test_correctness(
             end
         end
     end
-    test_scen_intact(new_scen, scen)
+    test_scen_intact(new_scen, scen; isequal)
     return nothing
 end
 
 function test_correctness(
-    ba::AbstractADType, scen::Scenario{:jacobian,1,:inplace}; isapprox::Function, atol, rtol
+    ba::AbstractADType,
+    scen::Scenario{:jacobian,1,:inplace};
+    isequal::Function,
+    isapprox::Function,
+    atol,
+    rtol,
 )
     @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
 
@@ -736,13 +768,14 @@ function test_correctness(
             end
         end
     end
-    test_scen_intact(new_scen, scen)
+    test_scen_intact(new_scen, scen; isequal)
     return nothing
 end
 
 function test_correctness(
     ba::AbstractADType,
     scen::Scenario{:jacobian,2,:outofplace};
+    isequal::Function,
     isapprox::Function,
     atol,
     rtol,
@@ -774,12 +807,17 @@ function test_correctness(
             end
         end
     end
-    test_scen_intact(new_scen, scen)
+    test_scen_intact(new_scen, scen; isequal)
     return nothing
 end
 
 function test_correctness(
-    ba::AbstractADType, scen::Scenario{:jacobian,2,:inplace}; isapprox::Function, atol, rtol
+    ba::AbstractADType,
+    scen::Scenario{:jacobian,2,:inplace};
+    isequal::Function,
+    isapprox::Function,
+    atol,
+    rtol,
 )
     @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
     f! = f
@@ -810,7 +848,7 @@ function test_correctness(
             end
         end
     end
-    test_scen_intact(new_scen, scen)
+    test_scen_intact(new_scen, scen; isequal)
     return nothing
 end
 
@@ -819,6 +857,7 @@ end
 function test_correctness(
     ba::AbstractADType,
     scen::Scenario{:second_derivative,1,:outofplace};
+    isequal::Function,
     isapprox::Function,
     atol,
     rtol,
@@ -848,13 +887,14 @@ function test_correctness(
             end
         end
     end
-    test_scen_intact(new_scen, scen)
+    test_scen_intact(new_scen, scen; isequal)
     return nothing
 end
 
 function test_correctness(
     ba::AbstractADType,
     scen::Scenario{:second_derivative,1,:inplace};
+    isequal::Function,
     isapprox::Function,
     atol,
     rtol,
@@ -892,14 +932,19 @@ function test_correctness(
             end
         end
     end
-    test_scen_intact(new_scen, scen)
+    test_scen_intact(new_scen, scen; isequal)
     return nothing
 end
 
 ## Hessian-vector product
 
 function test_correctness(
-    ba::AbstractADType, scen::Scenario{:hvp,1,:outofplace}; isapprox::Function, atol, rtol
+    ba::AbstractADType,
+    scen::Scenario{:hvp,1,:outofplace};
+    isequal::Function,
+    isapprox::Function,
+    atol,
+    rtol,
 )
     @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
 
@@ -932,12 +977,17 @@ function test_correctness(
             end
         end
     end
-    test_scen_intact(new_scen, scen)
+    test_scen_intact(new_scen, scen; isequal)
     return nothing
 end
 
 function test_correctness(
-    ba::AbstractADType, scen::Scenario{:hvp,1,:inplace}; isapprox::Function, atol, rtol
+    ba::AbstractADType,
+    scen::Scenario{:hvp,1,:inplace};
+    isequal::Function,
+    isapprox::Function,
+    atol,
+    rtol,
 )
     @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
 
@@ -973,7 +1023,7 @@ function test_correctness(
             end
         end
     end
-    test_scen_intact(new_scen, scen)
+    test_scen_intact(new_scen, scen; isequal)
     return nothing
 end
 
@@ -982,6 +1032,7 @@ end
 function test_correctness(
     ba::AbstractADType,
     scen::Scenario{:hessian,1,:outofplace};
+    isequal::Function,
     isapprox::Function,
     atol,
     rtol,
@@ -1011,12 +1062,17 @@ function test_correctness(
             end
         end
     end
-    test_scen_intact(new_scen, scen)
+    test_scen_intact(new_scen, scen; isequal)
     return nothing
 end
 
 function test_correctness(
-    ba::AbstractADType, scen::Scenario{:hessian,1,:inplace}; isapprox::Function, atol, rtol
+    ba::AbstractADType,
+    scen::Scenario{:hessian,1,:inplace};
+    isequal::Function,
+    isapprox::Function,
+    atol,
+    rtol,
 )
     @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
 
@@ -1050,6 +1106,6 @@ function test_correctness(
             end
         end
     end
-    test_scen_intact(new_scen, scen)
+    test_scen_intact(new_scen, scen; isequal)
     return nothing
 end

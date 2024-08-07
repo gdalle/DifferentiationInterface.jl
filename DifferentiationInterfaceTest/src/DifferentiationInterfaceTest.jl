@@ -19,7 +19,6 @@ using ADTypes:
     SymbolicMode
 using Chairmarks: @be, Benchmark, Sample
 using Compat
-using ComponentArrays: ComponentVector
 using DataFrames: DataFrame
 using DifferentiationInterface
 using DifferentiationInterface:
@@ -62,23 +61,22 @@ using DifferentiationInterface:
     SecondDerivativeExtras
 using DocStringExtensions
 import DifferentiationInterface as DI
+using Functors: fmap
 using JET: JET
-using JLArrays: JLArray, jl
 using LinearAlgebra: Adjoint, Diagonal, Transpose, dot, parent
+using PackageExtensionCompat: @require_extensions
 using ProgressMeter: ProgressUnknown, next!
 using Random: AbstractRNG, default_rng, rand!
 using SparseArrays: SparseArrays, SparseMatrixCSC, nnz, spdiagm
-using StaticArrays: MArray, MMatrix, MVector, SArray, SMatrix, SVector
 using Test: @testset, @test
 
 include("scenarios/scenario.jl")
 include("scenarios/batchify.jl")
 include("scenarios/default.jl")
 include("scenarios/sparse.jl")
-include("scenarios/static.jl")
-include("scenarios/component.jl")
-include("scenarios/gpu.jl")
 include("scenarios/allocfree.jl")
+include("scenarios/extensions.jl")
+include("scenarios/modify.jl")
 
 include("utils/zero_backends.jl")
 include("utils/misc.jl")
@@ -92,6 +90,10 @@ include("tests/sparsity.jl")
 include("tests/benchmark.jl")
 include("test_differentiation.jl")
 
+function __init__()
+    @require_extensions
+end
+
 export Scenario
 export PushforwardScenario,
     PullbackScenario,
@@ -102,8 +104,11 @@ export PushforwardScenario,
     HVPScenario,
     HessianScenario
 export default_scenarios, sparse_scenarios
-export static_scenarios, component_scenarios, gpu_scenarios
 export test_differentiation, benchmark_differentiation
 export DifferentiationBenchmarkDataRow
+# extensions
+export static_scenarios
+export component_scenarios
+export gpu_scenarios
 
 end

@@ -62,9 +62,7 @@ struct PullbackGradientExtras{E<:PullbackExtras} <: GradientExtras
 end
 
 function prepare_gradient(f::F, backend::AbstractADType, x) where {F}
-    y = f(x)
-    dy = one(y)
-    pullback_extras = prepare_pullback(f, backend, x, dy)
+    pullback_extras = prepare_pullback(f, backend, x, true)
     return PullbackGradientExtras(pullback_extras)
 end
 
@@ -93,23 +91,73 @@ end
 function value_and_gradient(
     f::F, backend::AbstractADType, x, extras::PullbackGradientExtras
 ) where {F}
-    return value_and_pullback(f, backend, x, one(eltype(x)), extras.pullback_extras)
+    return value_and_pullback(f, backend, x, true, extras.pullback_extras)
 end
 
 function value_and_gradient!(
     f::F, grad, backend::AbstractADType, x, extras::PullbackGradientExtras
 ) where {F}
-    return value_and_pullback!(f, grad, backend, x, one(eltype(x)), extras.pullback_extras)
+    return value_and_pullback!(f, grad, backend, x, true, extras.pullback_extras)
 end
 
 function gradient(
     f::F, backend::AbstractADType, x, extras::PullbackGradientExtras
 ) where {F}
-    return pullback(f, backend, x, one(eltype(x)), extras.pullback_extras)
+    return pullback(f, backend, x, true, extras.pullback_extras)
 end
 
 function gradient!(
     f::F, grad, backend::AbstractADType, x, extras::PullbackGradientExtras
 ) where {F}
-    return pullback!(f, grad, backend, x, one(eltype(x)), extras.pullback_extras)
+    return pullback!(f, grad, backend, x, true, extras.pullback_extras)
+end
+
+## Functors
+
+"""
+    Gradient
+
+Functor computing the gradient of `f` with a fixed `backend`.
+
+!!! warning
+    This type is not part of the public API.
+
+# Constructor
+
+    Gradient(f, backend, extras=nothing)
+
+If `extras` is provided, the gradient closure will skip preparation.
+
+# Example
+
+```jldoctest
+using DifferentiationInterface
+import Zygote
+
+g = DifferentiationInterface.Gradient(x -> sum(abs2, x), AutoZygote())
+g([2.0, 3.0])
+
+# output
+
+2-element Vector{Float64}:
+ 4.0
+ 6.0
+```
+"""
+struct Gradient{F,B,E}
+    f::F
+    backend::B
+    extras::E
+end
+
+Gradient(f, backend::AbstractADType) = Gradient(f, backend, nothing)
+
+function (g::Gradient{F,B,Nothing})(x) where {F,B}
+    @compat (; f, backend) = g
+    return gradient(f, backend, x)
+end
+
+function (g::Gradient{F,B,<:GradientExtras})(x) where {F,B}
+    @compat (; f, backend, extras) = g
+    return gradient(f, backend, x, extras)
 end

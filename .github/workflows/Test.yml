@@ -7,6 +7,7 @@ on:
       - addgtpsa
     tags: ['*']
   pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
   workflow_dispatch:
 
 concurrency:
@@ -18,7 +19,7 @@ concurrency:
 jobs:
   
   test-DI:
-    name: DI (${{ matrix.group }}) - ${{ matrix.version }}
+    name: ${{ matrix.version }} - DI (${{ matrix.group }})
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions: # needed to allow julia-actions/cache to proactively delete old caches that it has created
@@ -29,133 +30,152 @@ jobs:
       matrix:
         version:
           - '1'
-          # - '1.6'
-          # - '~1.11.0-0'
+          - 'lts'
+          - 'pre'
         group:
           - Formalities
-          # - Internals
-          # - Single/Diffractor
-          # - Single/Enzyme
-          # - Single/FastDifferentiation
-          # - Single/FiniteDiff
-          # - Single/FiniteDifferences
-          # - Single/ForwardDiff
-          - Single/GTPSA
-          # - Single/PolyesterForwardDiff
-          # - Single/ReverseDiff
-          # - Single/Symbolics
-          # - Single/Tapir
-          # - Single/Tracker
-          # - Single/Zygote
-          # - Double/ChainRulesCore-Zygote
-          # - Double/Enzyme-ForwardDiff
-          # - Double/ForwardDiff-Zygote
-          # - Double/ReverseDiff-Zygote
+          - Internals
+          - Back/Diffractor
+          - Back/Enzyme
+          - Back/FastDifferentiation
+          - Back/FiniteDiff
+          - Back/FiniteDifferences
+          - Back/ForwardDiff
+          - Back/GTPSA
+          - Back/PolyesterForwardDiff
+          - Back/ReverseDiff
+          - Back/SecondOrder
+          - Back/Symbolics
+          - Back/Tapir
+          - Back/Tracker
+          - Back/Zygote
+          - Down/Detector
+          - Down/DifferentiateWith
+          - Down/Flux
+          - Down/Lux
         exclude:
-          - version: '1.6'
+          # lts
+          - version: 'lts'
             group: Formalities
-          - version: '~1.11.0-0'
+          - version: 'lts'
+            group: Back/Diffractor
+          - version: 'lts'
+            group: Back/Enzyme
+          - version: 'lts'
+            group: Back/FiniteDiff
+          - version: 'lts'
+            group: Back/FastDifferentiation
+          - version: 'lts'
+            group: Back/PolyesterForwardDiff
+          - version: 'lts'
+            group: Back/SecondOrder
+          - version: 'lts'
+            group: Back/Symbolics
+          - version: 'lts'
+            group: Back/Tapir
+          - version: 'lts'
+            group: Down/Detector
+          - version: 'lts'
+            group: Down/Flux
+          - version: 'lts'
+            group: Down/Lux
+          # pre-release
+          - version: 'pre'
             group: Formalities
-          - version: '1.6'
-            group: Single/Diffractor
-          - version: '1.6'
-            group: Single/Enzyme
-          - version: '~1.11.0-0'
-            group: Single/Enzyme
-          - version: '1.6'
-            group: Single/FiniteDiff
-          - version: '1.6'
-            group: Single/FastDifferentiation
-          - version: '1.6'
-            group: Single/GTPSA
-          - version: '1.6'
-            group: Single/PolyesterForwardDiff
-          - version: '1.6'
-            group: Single/Symbolics
-          - version: '1.6'
-            group: Single/Tapir
-          - version: '~1.11.0-0'
-            group: Single/Tapir
-          - version: '~1.11.0-0'
-            group: Double/ChainRulesCore-Zygote
-          - version: '1.6'
-            group: Double/Enzyme-ForwardDiff
-          - version: '~1.11.0-0'
-            group: Double/Enzyme-ForwardDiff
-          - version: '1.6'
-            group: Double/ReverseDiff-Zygote
-    
+          - version: 'pre'
+            group: Back/Enzyme
+          - version: 'pre'
+            group: Back/Tapir
+          - version: 'pre'
+            group: Back/SecondOrder
+          - version: 'pre'
+            group: Down/Detector
+    env:
+      SHOULDRUN: ${{ matrix.version == '1' || !github.event.pull_request.draft }}
+      JULIA_DI_TEST_GROUP: ${{ matrix.group }}
     steps:
+      - run: echo "$SHOULDRUN"
       - uses: actions/checkout@v4
+        if: ${{ env.SHOULDRUN == 'true' }}
       - uses: julia-actions/setup-julia@v2
+        if: ${{ env.SHOULDRUN == 'true' }}
         with:
           version: ${{ matrix.version }}
           arch: x64
       - uses: julia-actions/cache@v2
-      - uses: julia-actions/julia-buildpkg@v1
-      - name: Update registry
-        run: julia -e 'using Pkg; Pkg.Registry.update()'
-      - uses: julia-actions/julia-runtest@v1
-        with:
-          project: ./DifferentiationInterface
-        env:
-          JULIA_DI_TEST_GROUP: ${{ matrix.group }}
+        if: ${{ env.SHOULDRUN == 'true' }}
+      - name: Install dependencies & run tests
+        if: ${{ env.SHOULDRUN == 'true' }}
+        # how to add the local DIT to the DI test env?
+        run: julia --project=./DifferentiationInterface -e '
+          using Pkg;
+          Pkg.Registry.update();
+          Pkg.update();
+          Pkg.test("DifferentiationInterface"; coverage=true);'
       - uses: julia-actions/julia-processcoverage@v1
+        if: ${{ env.SHOULDRUN == 'true' }}
         with:
           directories: ./DifferentiationInterface/src,./DifferentiationInterface/ext,./DifferentiationInterface/test
       - uses: codecov/codecov-action@v4
+        if: ${{ env.SHOULDRUN == 'true' }}
         with:
           files: lcov.info
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
 
-  # test-DIT:
-  #   name: DIT (${{ matrix.group }}) - ${{ matrix.version }}
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 60
-  #   permissions: # needed to allow julia-actions/cache to proactively delete old caches that it has created
-  #     actions: write
-  #     contents: read
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       version:
-  #         - '1'
-  #         - '1.6'
-  #         - '~1.11.0-0'
-  #       group:
-  #         - Formalities
-  #         - Zero
-  #         - ForwardDiff
-  #         - Zygote
-  #       exclude:
-  #         - version: '1.6'
-  #           group: Formalities
-    
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - uses: julia-actions/setup-julia@v2
-  #       with:
-  #         version: ${{ matrix.version }}
-  #         arch: x64
-  #     - uses: julia-actions/cache@v2
-  #     - uses: julia-actions/julia-buildpkg@v1
-  #     - name: Dev dependencies (temporary)
-  #       run: julia --project='./DifferentiationInterfaceTest' -e '
-  #         using Pkg;
-  #         Pkg.Registry.update();
-  #         Pkg.develop(PackageSpec(path="./DifferentiationInterface"));
-  #         Pkg.instantiate();'
-  #     - uses: julia-actions/julia-runtest@v1
-  #       with:
-  #         project: ./DifferentiationInterfaceTest
-  #       env:
-  #         JULIA_DI_TEST_GROUP: ${{ matrix.group }}
-  #     - uses: julia-actions/julia-processcoverage@v1
-  #       with:
-  #         directories: ./DifferentiationInterfaceTest/src,./DifferentiationInterfaceTest/ext,./DifferentiationInterfaceTest/test
-  #     - uses: codecov/codecov-action@v4
-  #       with:
-  #         files: lcov.info
-  #         token: ${{ secrets.CODECOV_TOKEN }}
-  #         fail_ci_if_error: true
+#  test-DIT:
+#    name: ${{ matrix.version }} - DIT (${{ matrix.group }})
+#    runs-on: ubuntu-latest
+#    timeout-minutes: 60
+#    permissions: # needed to allow julia-actions/cache to proactively delete old caches that it has created
+#      actions: write
+#      contents: read
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        version:
+#          - '1'
+#          - 'lts'
+#          - 'pre'
+#        group:
+#          - Formalities
+#          - Zero
+#          - ForwardDiff
+#          - Weird
+#        exclude:
+#          - version: 'lts'
+#            group: Formalities
+#          - version: 'lts'
+#            group: Weird
+#    env:
+#      SHOULDRUN: ${{ matrix.version == '1' || !github.event.pull_request.draft }}
+#      JULIA_DIT_TEST_GROUP: ${{ matrix.group }}
+#    steps:
+#      - run: echo "$SHOULDRUN"
+#      - uses: actions/checkout@v4
+#        if: ${{ env.SHOULDRUN == 'true' }}
+#      - uses: julia-actions/setup-julia@v2
+#        if: ${{ env.SHOULDRUN == 'true' }}
+#        with:
+#          version: ${{ matrix.version }}
+#          arch: x64
+#      - uses: julia-actions/cache@v2
+#        if: ${{ env.SHOULDRUN == 'true' }}
+#      - name: Install dependencies & run tests
+#        if: ${{ env.SHOULDRUN == 'true' }}
+#        run: julia --project=./DifferentiationInterfaceTest -e '
+#          using Pkg;
+#          Pkg.Registry.update();
+#          Pkg.update();
+#          Pkg.develop(path="./DifferentiationInterface");
+#          Pkg.test("DifferentiationInterfaceTest"; coverage=true);'
+#      - uses: julia-actions/julia-processcoverage@v1
+#        if: ${{ env.SHOULDRUN == 'true' }}
+#        with:
+#          directories: ./DifferentiationInterfaceTest/src,./DifferentiationInterfaceTest/ext,./DifferentiationInterfaceTest/test
+#      - uses: codecov/codecov-action@v4
+#        if: ${{ env.SHOULDRUN == 'true' }}
+#        with:
+#          files: lcov.info
+#          token: ${{ secrets.CODECOV_TOKEN }}
+#          fail_ci_if_error: true
