@@ -110,8 +110,10 @@ jobs:
           Pkg.Registry.update();
           Pkg.update();
           Pkg.activate("./DifferentiationInterface/test");
+          Pkg.develop(path="./DifferentiationInterface");
           Pkg.develop(path="./DifferentiationInterfaceTest");
           Pkg.activate("./DifferentiationInterface");
+          rm("./DifferentiationInterface/Manifest.toml");
           Pkg.test("DifferentiationInterface"; coverage=true);'
       - uses: julia-actions/julia-processcoverage@v1
         if: ${{ env.SHOULDRUN == 'true' }}
