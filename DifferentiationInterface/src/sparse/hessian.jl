@@ -23,7 +23,7 @@ function SparseHessianExtras{B}(;
     hvp_batched_extras::E2,
     gradient_extras::E1,
 ) where {B,C,M,D,R,E2,E1}
-    return SparseHessianExtras{B,S,C,D,R,E2,E1}(
+    return SparseHessianExtras{B,C,M,D,R,E2,E1}(
         coloring_result,
         compressed_matrix,
         batched_seeds,

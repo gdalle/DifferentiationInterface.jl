@@ -34,7 +34,7 @@ function PushforwardSparseJacobianExtras{B}(;
     batched_results::Vector{Batch{B,R}},
     pushforward_batched_extras::E,
 ) where {B,C,M,D,R,E}
-    return PushforwardSparseJacobianExtras{B,S,C,D,R,E}(
+    return PushforwardSparseJacobianExtras{B,C,M,D,R,E}(
         coloring_result,
         compressed_matrix,
         batched_seeds,
