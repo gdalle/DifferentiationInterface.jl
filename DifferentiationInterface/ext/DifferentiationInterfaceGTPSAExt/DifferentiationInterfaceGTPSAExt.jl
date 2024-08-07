@@ -8,12 +8,13 @@ using DifferentiationInterface:
     GradientExtras,
     JacobianExtras,
     HessianExtras,
-    PushforwardExtras
+    PushforwardExtras,
+    HVPExtras
 using GTPSA
 
 DI.check_available(::AutoGTPSA) = true
-DI.twoarg_support(::AutoGTPSA) = DI.TwoArgNotSupported()
 
 include("onearg.jl")
+include("twoarg.jl")
 
-end # module
+end
