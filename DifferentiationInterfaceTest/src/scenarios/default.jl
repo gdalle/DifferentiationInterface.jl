@@ -99,7 +99,7 @@ num_to_arr_matrix(x) = num_to_arr(x, Matrix{Float64})
 pick_num_to_arr(::Type{<:Vector}) = num_to_arr_vector
 pick_num_to_arr(::Type{<:Matrix}) = num_to_arr_matrix
 
-function num_to_arr!(y::AbstractArray, x::Number)::Nothing
+function num_to_arr!(y, x::Number)::Nothing
     a = multiplicator(typeof(y))
     y .= sin.(x .* a)
     return nothing
@@ -293,7 +293,7 @@ end
 
 vec_to_vec(x::AbstractVector)::AbstractVector = vcat(sin.(x), cos.(x))
 
-function vec_to_vec!(y::AbstractVector, x::AbstractVector)
+function vec_to_vec!(y, x::AbstractVector)
     y[1:length(x)] .= sin.(x)
     y[(length(x) + 1):(2length(x))] .= cos.(x)
     return nothing
@@ -338,7 +338,7 @@ end
 
 vec_to_mat(x::AbstractVector)::AbstractMatrix = hcat(sin.(x), cos.(x))
 
-function vec_to_mat!(y::AbstractMatrix, x::AbstractVector)
+function vec_to_mat!(y, x::AbstractVector)
     y[:, 1] .= sin.(x)
     y[:, 2] .= cos.(x)
     return nothing
@@ -383,7 +383,7 @@ end
 
 mat_to_vec(x::AbstractMatrix)::AbstractVector = vcat(vec(sin.(x)), vec(cos.(x)))
 
-function mat_to_vec!(y::AbstractVector, x::AbstractMatrix)
+function mat_to_vec!(y, x::AbstractMatrix)
     n = length(x)
     y[1:n] .= sin.(getindex.(Ref(x), 1:n))
     y[(n + 1):(2n)] .= cos.(getindex.(Ref(x), 1:n))
@@ -436,7 +436,7 @@ end
 
 mat_to_mat(x::AbstractMatrix)::AbstractMatrix = hcat(vec(sin.(x)), vec(cos.(x)))
 
-function mat_to_mat!(y::AbstractMatrix, x::AbstractMatrix)
+function mat_to_mat!(y, x::AbstractMatrix)
     n = length(x)
     y[:, 1] .= sin.(getindex.(Ref(x), 1:n))
     y[:, 2] .= cos.(getindex.(Ref(x), 1:n))
