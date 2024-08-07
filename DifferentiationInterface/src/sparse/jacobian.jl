@@ -77,7 +77,7 @@ function prepare_sparse_jacobian_aux(
 ) where {FY}
     dense_backend = dense_ad(backend)
     sparsity = jacobian_sparsity(f_or_f!y..., x, sparsity_detector(backend))
-    coloring_result = column_coloring(sparsity, coloring_algorithm(backend))
+    coloring_result = column_coloring_detailed(sparsity, coloring_algorithm(backend))
     groups = column_groups(coloring_result)
     Ng = length(groups)
     B = pick_batchsize(dense_backend, Ng)

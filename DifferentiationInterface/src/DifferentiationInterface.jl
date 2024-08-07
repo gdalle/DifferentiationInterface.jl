@@ -40,6 +40,10 @@ using SparseMatrixColorings:
     column_coloring_detailed,
     row_coloring_detailed,
     symmetric_coloring_detailed,
+    column_colors,
+    row_colors,
+    column_groups,
+    row_groups,
     decompress,
     decompress!
 
