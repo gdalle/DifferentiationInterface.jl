@@ -79,6 +79,7 @@ include("sparse/hessian.jl")
 include("misc/differentiate_with.jl")
 include("misc/sparsity_detector.jl")
 include("misc/from_primitive.jl")
+include("misc/temp_backends.jl")
 
 function __init__()
     @require_extensions
@@ -128,6 +129,7 @@ export AutoFastDifferentiation
 export AutoFiniteDiff
 export AutoFiniteDifferences
 export AutoForwardDiff
+export AutoGTPSA
 export AutoPolyesterForwardDiff
 export AutoReverseDiff
 export AutoSymbolics
@@ -136,6 +138,10 @@ export AutoTracker
 export AutoZygote
 
 export AutoSparse
+
+## Temporary export
+
+export AutoGTPSA
 
 ## Re-exported from SparseMatrixColorings
 
