@@ -145,7 +145,7 @@ end
 
 ## Derivative
 
-struct GTPSATwoArgDerivativeExtras{X,Y} <: TwoArgDerivativeExtras
+struct GTPSATwoArgDerivativeExtras{X,Y} <: DerivativeExtras
     xt::X
     yt::Y
 end
