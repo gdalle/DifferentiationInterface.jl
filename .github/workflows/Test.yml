@@ -164,7 +164,6 @@ jobs:
         run: julia --project=./DifferentiationInterfaceTest -e '
           using Pkg;
           Pkg.Registry.update();
-          Pkg.add(url="https://github.com/gdalle/SparseMatrixColorings.jl", rev="gd/revamp");
           Pkg.develop(path="./DifferentiationInterface");
           Pkg.test("DifferentiationInterfaceTest"; coverage=true);'
       - uses: julia-actions/julia-processcoverage@v1
