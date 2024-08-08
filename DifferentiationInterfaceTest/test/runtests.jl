@@ -5,7 +5,7 @@ using Pkg
 using SparseConnectivityTracer
 using Test
 
-Pkg.add(; url="https://github.com/gdalle/SparseMatrixColorings.jl", rev="gd/revamp");
+Pkg.add(; url="https://github.com/gdalle/SparseMatrixColorings.jl", rev="main");
 
 GROUP = get(ENV, "JULIA_DIT_TEST_GROUP", "All")
 
