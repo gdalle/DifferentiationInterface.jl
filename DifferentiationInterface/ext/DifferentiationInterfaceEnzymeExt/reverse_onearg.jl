@@ -30,9 +30,9 @@ function DI.value_and_pullback(
     dy,
     ::NoPullbackExtras,
 )
-    f_and_df = get_f_and_df(f, backend)
+    f_and_df = force_annotation(get_f_and_df(f, backend))
     forw, rev = autodiff_thunk(
-        ReverseSplitWithPrimal, get_annotation(f_and_df), Duplicated, typeof(Active(x))
+        ReverseSplitWithPrimal, typeof(f_and_df), Duplicated, typeof(Active(x))
     )
     tape, y, new_dy = forw(f_and_df, Active(x))
     copyto!(new_dy, dy)
@@ -104,12 +104,12 @@ end
 function DI.value_and_pullback!(
     f, dx, backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, dy, ::NoPullbackExtras
 )
-    f_and_df = get_f_and_df(f, backend)
+    f_and_df = force_annotation(get_f_and_df(f, backend))
     dx_sametype = convert(typeof(x), dx)
     make_zero!(dx_sametype)
     x_and_dx = Duplicated(x, dx_sametype)
     forw, rev = autodiff_thunk(
-        ReverseSplitWithPrimal, get_annotation(f_and_df), Duplicated, typeof(x_and_dx)
+        ReverseSplitWithPrimal, typeof(f_and_df), Duplicated, typeof(x_and_dx)
     )
     tape, y, new_dy = forw(f_and_df, x_and_dx)
     copyto!(new_dy, dy)
