@@ -1,14 +1,14 @@
-struct AutoDeferredEnzyme{M} <: ADTypes.AbstractADType
+struct AutoDeferredEnzyme{M,A} <: ADTypes.AbstractADType
     mode::M
 end
 
 ADTypes.mode(backend::AutoDeferredEnzyme) = ADTypes.mode(AutoEnzyme(backend.mode))
 
-function DI.nested(backend::AutoEnzyme{M}) where {M}
-    return AutoDeferredEnzyme{M}(backend.mode)
+function DI.nested(backend::AutoEnzyme{M,A}) where {M,A}
+    return AutoDeferredEnzyme{M,A}(backend.mode)
 end
 
-const AnyAutoEnzyme{M} = Union{AutoEnzyme{M},AutoDeferredEnzyme{M}}
+const AnyAutoEnzyme{M,A} = Union{AutoEnzyme{M,A},AutoDeferredEnzyme{M,A}}
 
 # forward mode if possible
 forward_mode(backend::AnyAutoEnzyme{<:Mode}) = backend.mode
@@ -30,4 +30,14 @@ function DI.basis(::AnyAutoEnzyme, a::AbstractArray{T}, i::CartesianIndex) where
     return b
 end
 
-get_f_and_df(f, ::AnyAutoEnzyme) = Const(f)
+function get_f_and_df(f, ::AnyAutoEnzyme{M,Nothing}) where {M}
+    return f
+end
+
+function get_f_and_df(f, ::AnyAutoEnzyme{M,<:Const}) where {M}
+    return Const(f)
+end
+
+function get_f_and_df(f, ::AnyAutoEnzyme{M,<:Duplicated}) where {M}
+    return Duplicated(f, make_zero(f))
+end
