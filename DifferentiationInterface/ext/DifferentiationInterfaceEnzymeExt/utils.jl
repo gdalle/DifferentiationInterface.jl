@@ -44,5 +44,5 @@ function get_f_and_df(f, ::AnyAutoEnzyme{M,<:Duplicated}) where {M}
     return Duplicated(f, make_zero(f))
 end
 
-force_annotation(::A) where {A<:Annotation} = A
-force_annotation(::F) where {F} = Const{F}
+force_annotation(f::Annotation) = f
+force_annotation(f) = Const(f)
