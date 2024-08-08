@@ -25,6 +25,7 @@ function DI.prepare_pushforward(f, backend::AutoGTPSA{D}, x, dx) where {D}
 end
 
 function DI.pushforward(f, backend::AutoGTPSA, x, dx, extras::GTPSAPushforwardExtras)
+    
     if x isa Number
         extras.xt[0] = x
         extras.xt[1] = dx
@@ -39,19 +40,32 @@ function DI.pushforward(f, backend::AutoGTPSA, x, dx, extras::GTPSAPushforwardEx
 
     yt = f(extras.xt)
     if yt isa Number
-        return yt[1]
+        if dx isa Number
+            
+            return yt[1]
+        else
+            dy = 0
+            for j=1:length(dx)
+                dy += yt[j]
+            end
+            
+            return dy
+        end
     else
         dy = similar(yt, eltype(eltype(yt)))
-        j = 1
+        dy .= 0
         for i in eachindex(yt)
-            dy[i] = yt[i][j]
-            j += 1
+            for j=1:length(dx)
+                dy[i] += yt[i][j]
+            end
         end
+        
         return dy
     end
 end
 
 function DI.pushforward!(f, dy, backend::AutoGTPSA, x, dx, extras::GTPSAPushforwardExtras)
+    
     if x isa Number
         extras.xt[0] = x
         extras.xt[1] = dx
@@ -66,18 +80,31 @@ function DI.pushforward!(f, dy, backend::AutoGTPSA, x, dx, extras::GTPSAPushforw
 
     yt = f(extras.xt)
     if yt isa Number
-        return yt[1]
-    else
-        j = 1
-        for i in eachindex(yt)
-            dy[i] = yt[i][j]
-            j += 1
+        if dx isa Number
+            
+            return yt[1]
+        else
+            dy = 0
+            for j=1:length(dx)
+                dy += yt[j]
+            end
+            
+            return dy
         end
+    else
+        dy .= 0
+        for i in eachindex(yt)
+            for j=1:length(dx)
+                dy[i] += yt[i][j]
+            end
+        end
+        
         return dy
     end
 end
 
 function DI.value_and_pushforward(f, backend::AutoGTPSA, x, dx, extras::GTPSAPushforwardExtras)
+    
     if x isa Number
         extras.xt[0] = x
         extras.xt[1] = dx
@@ -92,20 +119,33 @@ function DI.value_and_pushforward(f, backend::AutoGTPSA, x, dx, extras::GTPSAPus
 
     yt = f(extras.xt)
     if yt isa Number
-        return yt[1]
+        if dx isa Number
+            
+            return yt[0], yt[1]
+        else
+            dy = 0
+            for j=1:length(dx)
+                dy += yt[j]
+            end
+            
+            return yt[0], dy
+        end
     else
         dy = similar(yt, eltype(eltype(yt)))
-        j = 1
+        dy .= 0
         for i in eachindex(yt)
-            dy[i] = yt[i][j]
-            j += 1
+            for j=1:length(dx)
+                dy[i] += yt[i][j]
+            end
         end
         y = map(t->t[0], yt)
+        
         return y, dy
     end
 end
 
 function DI.value_and_pushforward!(f, dy, backend::AutoGTPSA, x, dx, extras::GTPSAPushforwardExtras)
+    
     if x isa Number
         extras.xt[0] = x
         extras.xt[1] = dx
@@ -120,16 +160,29 @@ function DI.value_and_pushforward!(f, dy, backend::AutoGTPSA, x, dx, extras::GTP
 
     yt = f(extras.xt)
     if yt isa Number
-        return yt[1]
+        if dx isa Number
+            return yt[0], yt[1]
+            
+        else
+            dy = 0
+            for j=1:length(dx)
+                dy += yt[j]
+            end
+            
+            return yt[0], dy
+        end
     else
-        j = 1
+        dy .= 0
         for i in eachindex(yt)
-            dy[i] = yt[i][j]
-            j += 1
+            for j=1:length(dx)
+                dy[i] += yt[i][j]
+            end
         end
         y = map(t->t[0], yt)
+        
         return y, dy
     end
+    
 end
 
 ## Derivative
@@ -340,11 +393,11 @@ function DI.second_derivative(f, ::AutoGTPSA, x, extras::GTPSASecondDerivativeEx
     extras.xt[0] = x
     yt = f(extras.xt)
     if yt isa Number
-        return yt[2]
+        return yt[2]*2
     else
         der2 = similar(yt, eltype(eltype(yt)))
         for i in eachindex(yt)
-            der2[i] = yt[i][2]/2
+            der2[i] = yt[i][2]*2 # *2 because monomial coefficient is 1/2
         end
         return der2
     end
@@ -354,7 +407,7 @@ function DI.second_derivative!(f, der2, ::AutoGTPSA, x, extras::GTPSASecondDeriv
     extras.xt[0] = x
     yt = f(extras.xt)
     for i in eachindex(yt)
-        der2[i] = yt[i][2]/2
+        der2[i] = yt[i][2]*2
     end
     return der2
 end
@@ -365,14 +418,14 @@ function DI.value_derivative_and_second_derivative(
     extras.xt[0] = x
     yt = f(extras.xt)
     if yt isa Number
-        return yt[0], yt[1], yt[2]
+        return yt[0], yt[1], yt[2]*2
     else
         y = map(t -> t[0], yt)
         der = similar(yt, eltype(eltype(yt)))
         der2 = similar(yt, eltype(eltype(yt)))
         for i in eachindex(yt)
             der[i] = yt[i][1]
-            der2[i] = yt[i][2]/2
+            der2[i] = yt[i][2]*2
         end
         return y, der, der2
     end
@@ -386,7 +439,7 @@ function DI.value_derivative_and_second_derivative!(
     y = map(t -> t[0], yt)
     for i in eachindex(yt)
         der[i] = yt[i][1]
-        der2[i] = yt[i][2]/2
+        der2[i] = yt[i][2]*2
     end
     return y, der, der2
 end
@@ -502,6 +555,81 @@ function DI.hvp(f, backend::AutoGTPSA{D}, x, dx, extras::GTPSAHVPExtras) where {
     
 
     dg = similar(x, eltype(eltype(yt)))
+    dg .= 0
+
+    d = GTPSA.getdesc(yt) 
+    desc = unsafe_load(d.desc)
+    nn = desc.nn
+
+
+    if D == Nothing
+        idx = desc.nv+desc.np
+        endidx = floor(nn*(nn+1)/2)+nn
+        curdiag = 1
+        col = 1
+        xt = Ref{eltype(yt)}()
+        idx = cycle!(yt, idx, 0, C_NULL, xt)
+        while idx <= endidx && idx > 0
+            h_idx = idx-nn
+            while h_idx > curdiag
+            col += 1
+            curdiag += col
+            end
+            row = col-(curdiag-h_idx)
+            #println("row = ", row, ", col = ", col)
+            if row==col
+                dg[row] += 2*xt[]*dx[col]
+            else
+                dg[row] += xt[]*dx[col]
+                dg[col] += xt[]*dx[row]
+            end
+            idx = cycle!(yt, idx, 0, C_NULL, xt)
+        end
+    else
+      # If there are some variables/parameters with TO == 1, we have to do it "slow"
+      # because the indexing of TPSA index -> hessian index can be very complicated.
+      # I saw slow in quotes because it is likely still much faster than the calculation
+      # of the Hessian itself (this is just a getter)  
+      idx = desc.nv+desc.np # start at 2nd order
+      xt = Ref{eltype(yt)}()
+      mono = extras.mono
+      idx = cycle!(yt, idx, nn, mono, xt)
+      while idx > 0 
+        if sum(mono) > 0x2
+          return dg
+        end
+        i = findfirst(x->x==0x1, mono)
+        if isnothing(i)
+          i = findfirst(x->x==0x2, mono)
+          if isnothing(i)
+            return dg
+          end
+          if i <= nn
+            dg[i] += 2*xt[]*dx[i]   # Multiply by 2 because taylor coefficient on diagonal is 1/2!*d2f/dx2
+          end
+        else 
+          j = findlast(x->x==0x1, mono)
+          if isnothing(j)
+            return dg
+          end
+          if i <= nn && j <= nn
+            dg[i] += xt[]*dx[j]
+            dg[j] += xt[]*dx[i]
+          end
+        end
+        idx = cycle!(yt, idx, nn, mono, xt)
+      end
+    end
+    return dg
+end
+
+function DI.hvp!(f, dg, backend::AutoGTPSA{D}, x, dx, extras::GTPSAHVPExtras) where {D}
+    foreach((t, xi) -> t[0] = xi, extras.xt, x) # Set the scalar part
+    
+    yt = f(extras.xt)
+    
+
+    #dg = similar(x, eltype(eltype(yt)))
     dg .= 0
 
     d = GTPSA.getdesc(yt) 
