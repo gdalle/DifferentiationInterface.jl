@@ -32,7 +32,7 @@ function DI.value_and_pullback(
 )
     f_and_df = get_f_and_df(f, backend)
     forw, rev = autodiff_thunk(
-        ReverseSplitWithPrimal, typeof(f_and_df), Duplicated, typeof(Active(x))
+        ReverseSplitWithPrimal, get_annotation(f_and_df), Duplicated, typeof(Active(x))
     )
     tape, y, new_dy = forw(f_and_df, Active(x))
     copyto!(new_dy, dy)
@@ -109,7 +109,7 @@ function DI.value_and_pullback!(
     make_zero!(dx_sametype)
     x_and_dx = Duplicated(x, dx_sametype)
     forw, rev = autodiff_thunk(
-        ReverseSplitWithPrimal, typeof(f_and_df), Duplicated, typeof(x_and_dx)
+        ReverseSplitWithPrimal, get_annotation(f_and_df), Duplicated, typeof(x_and_dx)
     )
     tape, y, new_dy = forw(f_and_df, x_and_dx)
     copyto!(new_dy, dy)
