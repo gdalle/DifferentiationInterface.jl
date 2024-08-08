@@ -9,8 +9,7 @@ else
     Pkg.add("DifferentiationInterfaceTest")
 end
 
-#GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "All")
-GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "Back/GTPSA")
+GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "All")
 
 ## Main tests
 
