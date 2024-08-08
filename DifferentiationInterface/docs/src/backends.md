@@ -13,6 +13,7 @@ We support all dense backend choices from [ADTypes.jl](https://github.com/SciML/
 - [`AutoFiniteDiff`](@extref ADTypes.AutoFiniteDiff)
 - [`AutoFiniteDifferences`](@extref ADTypes.AutoFiniteDifferences)
 - [`AutoForwardDiff`](@extref ADTypes.AutoForwardDiff)
+- [`AutoGTPSA](@extref ADTypes.AutoGTPSA)
 - [`AutoPolyesterForwardDiff`](@extref ADTypes.AutoPolyesterForwardDiff)
 - [`AutoReverseDiff`](@extref ADTypes.AutoReverseDiff)
 - [`AutoSymbolics`](@extref ADTypes.AutoSymbolics)
@@ -48,6 +49,7 @@ import FastDifferentiation
 import FiniteDiff
 import FiniteDifferences
 import ForwardDiff
+import GTPSA
 import PolyesterForwardDiff
 import ReverseDiff
 import Symbolics
@@ -62,6 +64,7 @@ backend_examples = [
     AutoFiniteDiff(),
     AutoFiniteDifferences(; fdm=FiniteDifferences.central_fdm(3, 1)),
     AutoForwardDiff(),
+    AutoGTPSA(),
     AutoPolyesterForwardDiff(; chunksize=1),
     AutoReverseDiff(),
     AutoSymbolics(),

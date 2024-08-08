@@ -33,6 +33,7 @@ using FastDifferentiation: FastDifferentiation
 using FiniteDiff: FiniteDiff
 using FiniteDifferences: FiniteDifferences
 using ForwardDiff: ForwardDiff
+using GTPSA: GTPSA
 using PolyesterForwardDiff: PolyesterForwardDiff
 using ReverseDiff: ReverseDiff
 using Symbolics: Symbolics
@@ -226,6 +227,14 @@ For [`pushforward`](@ref), preparation allocates the necessary space for `Dual` 
 
 ```@example overloads
 print_overloads(AutoForwardDiff(), :DifferentiationInterfaceForwardDiffExt) # hide
+```
+
+## GTPSA
+
+Preparation constructs a [GTPSA Descriptor](https://bmad-sim.github.io/GTPSA.jl/stable/man/c_descriptor/) if none is provided or does not already exist, and will pre-allocate the variables as [TPSs](https://bmad-sim.github.io/GTPSA.jl/stable/man/d_tps/).
+
+```@example overloads
+print_overloads(AutoGTPSA(), :DifferentiationInterfaceGTPSAfExt) # hide
 ```
 
 ## PolyesterForwardDiff
