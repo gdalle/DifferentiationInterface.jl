@@ -112,16 +112,16 @@ jobs:
           Pkg.Registry.update();
           Pkg.update();
           Pkg.test("DifferentiationInterface"; coverage=false);'
-      - uses: julia-actions/julia-processcoverage@v1
-        if: ${{ env.SHOULDRUN == 'true' }}
-        with:
-          directories: ./DifferentiationInterface/src,./DifferentiationInterface/ext,./DifferentiationInterface/test
-      - uses: codecov/codecov-action@v4
-        if: ${{ env.SHOULDRUN == 'true' }}
-        with:
-          files: lcov.info
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: true
+      #- uses: julia-actions/julia-processcoverage@v1
+      #  if: ${{ env.SHOULDRUN == 'true' }}
+      #  with:
+      #    directories: ./DifferentiationInterface/src,./DifferentiationInterface/ext,./DifferentiationInterface/test
+      #- uses: codecov/codecov-action@v4
+      #  if: ${{ env.SHOULDRUN == 'true' }}
+      #  with:
+      #    files: lcov.info
+      #    token: ${{ secrets.CODECOV_TOKEN }}
+      #    fail_ci_if_error: true
 
 #  test-DIT:
 #    name: ${{ matrix.version }} - DIT (${{ matrix.group }})
