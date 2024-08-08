@@ -40,6 +40,7 @@ jobs:
           - Back/FiniteDiff
           - Back/FiniteDifferences
           - Back/ForwardDiff
+          - Back/GTPSA
           - Back/PolyesterForwardDiff
           - Back/ReverseDiff
           - Back/SecondOrder
@@ -63,6 +64,8 @@ jobs:
             group: Back/FiniteDiff
           - version: 'lts'
             group: Back/FastDifferentiation
+          - version: 'lts'
+            group: Back/GTPSA
           - version: 'lts'
             group: Back/PolyesterForwardDiff
           - version: 'lts'
