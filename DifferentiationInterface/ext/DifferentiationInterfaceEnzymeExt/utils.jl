@@ -7,7 +7,7 @@ function ADTypes.mode(backend::AutoDeferredEnzyme{M,A}) where {M,A}
 end
 
 function DI.nested(backend::AutoEnzyme{M,A}) where {M,A}
-    return AutoDeferredEnzyme(; mode=backend.mode, function_annotation=A)
+    return AutoDeferredEnzyme{M,A}(backend.mode)
 end
 
 const AnyAutoEnzyme{M,A} = Union{AutoEnzyme{M,A},AutoDeferredEnzyme{M,A}}
