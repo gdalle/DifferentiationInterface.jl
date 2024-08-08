@@ -34,24 +34,24 @@ jobs:
         group:
           - Formalities
           - Internals
-          #- Back/Diffractor
-          #- Back/Enzyme
-          #- Back/FastDifferentiation
-          #- Back/FiniteDiff
-          #- Back/FiniteDifferences
-          #- Back/ForwardDiff
+          - Back/Diffractor
+          - Back/Enzyme
+          - Back/FastDifferentiation
+          - Back/FiniteDiff
+          - Back/FiniteDifferences
+          - Back/ForwardDiff
           - Back/GTPSA
-          #- Back/PolyesterForwardDiff
-          #- Back/ReverseDiff
-          #- Back/SecondOrder
-          #- Back/Symbolics
-          #- Back/Tapir
-          #- Back/Tracker
-          #- Back/Zygote
-          #- Down/Detector
-          #- Down/DifferentiateWith
-          #- Down/Flux
-          #- Down/Lux
+          - Back/PolyesterForwardDiff
+          - Back/ReverseDiff
+          - Back/SecondOrder
+          - Back/Symbolics
+          - Back/Tapir
+          - Back/Tracker
+          - Back/Zygote
+          - Down/Detector
+          - Down/DifferentiateWith
+          - Down/Flux
+          - Down/Lux
         exclude:
           # lts
           - version: 'lts'
