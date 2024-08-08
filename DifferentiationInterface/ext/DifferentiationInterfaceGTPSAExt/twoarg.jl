@@ -68,7 +68,7 @@ function DI.pushforward(f!, y, backend::AutoGTPSA, x, dx, extras::GTPSATwoArgPus
         dy .= 0
         for i in eachindex(extras.yt)
             for j=1:length(dx)
-                dy[i] = extras.yt[i][j]
+                dy[i] += extras.yt[i][j]
             end
         end
         
