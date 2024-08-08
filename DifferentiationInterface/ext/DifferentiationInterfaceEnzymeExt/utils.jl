@@ -2,7 +2,9 @@ struct AutoDeferredEnzyme{M,A} <: ADTypes.AbstractADType
     mode::M
 end
 
-ADTypes.mode(backend::AutoDeferredEnzyme) = ADTypes.mode(AutoEnzyme(backend.mode))
+function ADTypes.mode(backend::AutoDeferredEnzyme{M,A}) where {M,A}
+    return ADTypes.mode(AutoEnzyme{M,A}(backend.mode))
+end
 
 function DI.nested(backend::AutoEnzyme{M,A}) where {M,A}
     return AutoDeferredEnzyme(; mode=backend.mode, function_annotation=A)
@@ -42,5 +44,5 @@ function get_f_and_df(f, ::AnyAutoEnzyme{M,<:Duplicated}) where {M}
     return Duplicated(f, make_zero(f))
 end
 
-get_annotation(::A) where {A<:EnzymeCore.Annotation} = A
+get_annotation(::A) where {A<:Enzyme.Annotation} = A
 get_annotation(::F) where {F} = Const{F}
