@@ -12,31 +12,32 @@ function DI.prepare_pushforward(f!, y, backend::AutoGTPSA{D}, x, dx) where {D}
     end
 
     if x isa Number
-        xt = TPS{promote_type(typeof(dx),typeof(x),Float64)}(; use=d)
+        xt = TPS{promote_type(typeof(dx), typeof(x), Float64)}(; use=d)
     else
-        xt = similar(x, TPS{promote_type(eltype(dx),eltype(x),Float64)})
+        xt = similar(x, TPS{promote_type(eltype(dx), eltype(x), Float64)})
 
         # xt and x have same indexing because of similar
         for i in eachindex(xt)
-            xt[i] = TPS{promote_type(eltype(dx),eltype(x),Float64)}(; use=d)
+            xt[i] = TPS{promote_type(eltype(dx), eltype(x), Float64)}(; use=d)
         end
     end
 
     if y isa Number
-        yt = TPS{promote_type(typeof(y),Float64)}(; use=d)
+        yt = TPS{promote_type(typeof(y), Float64)}(; use=d)
     else
-        yt = similar(y, TPS{promote_type(eltype(y),Float64)})
+        yt = similar(y, TPS{promote_type(eltype(y), Float64)})
 
         for i in eachindex(yt)
-            yt[i] = TPS{promote_type(eltype(y),Float64)}(; use=d)
+            yt[i] = TPS{promote_type(eltype(y), Float64)}(; use=d)
         end
     end
 
     return GTPSATwoArgPushforwardExtras(xt, yt)
 end
 
-function DI.pushforward(f!, y, backend::AutoGTPSA, x, dx, extras::GTPSATwoArgPushforwardExtras)
-    
+function DI.pushforward(
+    f!, y, backend::AutoGTPSA, x, dx, extras::GTPSATwoArgPushforwardExtras
+)
     if x isa Number
         extras.xt[0] = x
         extras.xt[1] = dx
@@ -52,14 +53,13 @@ function DI.pushforward(f!, y, backend::AutoGTPSA, x, dx, extras::GTPSATwoArgPus
     f!(extras.yt, extras.xt)
     if extras.yt isa Number
         if dx isa Number
-            
             return extras.yt[1]
         else
             dy = 0
-            for j=1:length(dx)
+            for j in 1:length(dx)
                 dy += extras.yt[j]
             end
-            
+
             return dy
         end
     else
@@ -67,17 +67,18 @@ function DI.pushforward(f!, y, backend::AutoGTPSA, x, dx, extras::GTPSATwoArgPus
         dy = similar(extras.yt, eltype(eltype(extras.yt)))
         dy .= 0
         for i in eachindex(extras.yt)
-            for j=1:length(dx)
+            for j in 1:length(dx)
                 dy[i] += extras.yt[i][j]
             end
         end
-        
+
         return dy
     end
 end
 
-function DI.pushforward!(f!, y, dy, backend::AutoGTPSA, x, dx, extras::GTPSATwoArgPushforwardExtras)
-    
+function DI.pushforward!(
+    f!, y, dy, backend::AutoGTPSA, x, dx, extras::GTPSATwoArgPushforwardExtras
+)
     if x isa Number
         extras.xt[0] = x
         extras.xt[1] = dx
@@ -93,31 +94,31 @@ function DI.pushforward!(f!, y, dy, backend::AutoGTPSA, x, dx, extras::GTPSATwoA
     f!(extras.yt, extras.xt)
     if extras.yt isa Number
         if dx isa Number
-            
             return extras.yt[1]
         else
             dy = 0
-            for j=1:length(dx)
+            for j in 1:length(dx)
                 dy += extras.yt[j]
             end
-            
+
             return extras.dy
         end
     else
         map!(t -> t[0], y, extras.yt)
         dy .= 0
         for i in eachindex(extras.yt)
-            for j=1:length(dx)
+            for j in 1:length(dx)
                 dy[i] += extras.yt[i][j]
             end
         end
-        
+
         return dy
     end
 end
 
-function DI.value_and_pushforward(f!, y, backend::AutoGTPSA, x, dx, extras::GTPSATwoArgPushforwardExtras)
-    
+function DI.value_and_pushforward(
+    f!, y, backend::AutoGTPSA, x, dx, extras::GTPSATwoArgPushforwardExtras
+)
     if x isa Number
         extras.xt[0] = x
         extras.xt[1] = dx
@@ -133,32 +134,32 @@ function DI.value_and_pushforward(f!, y, backend::AutoGTPSA, x, dx, extras::GTPS
     f!(extras.yt, extras.xt)
     if extras.yt isa Number
         if dx isa Number
-            
             return extras.yt[0], extras.yt[1]
         else
             dy = 0
-            for j=1:length(dx)
+            for j in 1:length(dx)
                 dy += extras.yt[j]
             end
-            
+
             return extras.yt[0], dy
         end
     else
         dy = similar(extras.yt, eltype(eltype(extras.yt)))
         dy .= 0
         for i in eachindex(extras.yt)
-            for j=1:length(dx)
+            for j in 1:length(dx)
                 dy[i] += extras.yt[i][j]
             end
         end
         map!(t -> t[0], y, extras.yt)
-        
+
         return y, dy
     end
 end
 
-function DI.value_and_pushforward!(f!, y, dy, backend::AutoGTPSA, x, dx, extras::GTPSATwoArgPushforwardExtras)
-    
+function DI.value_and_pushforward!(
+    f!, y, dy, backend::AutoGTPSA, x, dx, extras::GTPSATwoArgPushforwardExtras
+)
     if x isa Number
         extras.xt[0] = x
         extras.xt[1] = dx
@@ -175,24 +176,24 @@ function DI.value_and_pushforward!(f!, y, dy, backend::AutoGTPSA, x, dx, extras:
     if extras.yt isa Number
         if dx isa Number
             return extras.yt[0], extras.yt[1]
-            
+
         else
             dy = 0
-            for j=1:length(dx)
+            for j in 1:length(dx)
                 dy += yt[j]
             end
-            
+
             return extras.yt[0], dy
         end
     else
         map!(t -> t[0], y, extras.yt)
         dy .= 0
         for i in eachindex(extras.yt)
-            for j=1:length(dx)
+            for j in 1:length(dx)
                 dy[i] += extras.yt[i][j]
             end
         end
-        
+
         return y, dy
     end
 end
@@ -210,16 +211,16 @@ function DI.prepare_derivative(f!, y, backend::AutoGTPSA{D}, x) where {D}
     else
         d = Descriptor(1, 1)
     end
-    xt = TPS{promote_type(typeof(x),Float64)}(; use=d)
+    xt = TPS{promote_type(typeof(x), Float64)}(; use=d)
     xt[1] = 1
 
     if y isa Number
-        yt = TPS{promote_type(typeof(y),Float64)}(; use=d)
+        yt = TPS{promote_type(typeof(y), Float64)}(; use=d)
     else
-        yt = similar(y, TPS{promote_type(eltype(y),Float64)})
+        yt = similar(y, TPS{promote_type(eltype(y), Float64)})
 
         for i in eachindex(yt)
-            yt[i] = TPS{promote_type(eltype(y),Float64)}(; use=d)
+            yt[i] = TPS{promote_type(eltype(y), Float64)}(; use=d)
         end
     end
 
@@ -266,7 +267,9 @@ function DI.value_and_derivative(f!, y, ::AutoGTPSA, x, extras::GTPSATwoArgDeriv
     end
 end
 
-function DI.value_and_derivative!(f!, y, der, ::AutoGTPSA, x, extras::GTPSATwoArgDerivativeExtras)
+function DI.value_and_derivative!(
+    f!, y, der, ::AutoGTPSA, x, extras::GTPSATwoArgDerivativeExtras
+)
     extras.xt[0] = x
     f!(extras.yt, extras.xt)
     map!(t -> t[0], y, extras.yt)
@@ -291,25 +294,25 @@ function DI.prepare_jacobian(f!, y, backend::AutoGTPSA{D}, x) where {D}
         nn = length(x)
         d = Descriptor(nn, 1)
     end
-    xt = similar(x, TPS{promote_type(eltype(x),Float64)})
+    xt = similar(x, TPS{promote_type(eltype(x), Float64)})
 
     # xt and x have same indexing because of similar
     # Setting the first derivatives must be 1-based 
     # linear with the variables.
     j = 1
     for i in eachindex(xt)
-        xt[i] = TPS{promote_type(eltype(x),Float64)}(; use=d)
+        xt[i] = TPS{promote_type(eltype(x), Float64)}(; use=d)
         xt[i][j] = 1
         j += 1
     end
 
     if y isa Number
-        yt = TPS{promote_type(typeof(y),Float64)}(; use=d)
+        yt = TPS{promote_type(typeof(y), Float64)}(; use=d)
     else
-        yt = similar(y, TPS{promote_type(eltype(y),Float64)})
+        yt = similar(y, TPS{promote_type(eltype(y), Float64)})
 
         for i in eachindex(yt)
-            yt[i] = TPS{promote_type(eltype(y),Float64)}(; use=d)
+            yt[i] = TPS{promote_type(eltype(y), Float64)}(; use=d)
         end
     end
 
@@ -342,7 +345,9 @@ function DI.value_and_jacobian(f!, y, ::AutoGTPSA, x, extras::GTPSATwoArgJacobia
     return y, jac
 end
 
-function DI.value_and_jacobian!(f!, y, jac, ::AutoGTPSA, x, extras::GTPSATwoArgJacobianExtras)
+function DI.value_and_jacobian!(
+    f!, y, jac, ::AutoGTPSA, x, extras::GTPSATwoArgJacobianExtras
+)
     foreach((t, xi) -> t[0] = xi, extras.xt, x) # Set the scalar part
     f!(extras.yt, extras.xt)
     GTPSA.jacobian!(jac, extras.yt; include_params=true)

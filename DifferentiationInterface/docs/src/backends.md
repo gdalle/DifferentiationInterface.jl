@@ -13,7 +13,7 @@ We support all dense backend choices from [ADTypes.jl](https://github.com/SciML/
 - [`AutoFiniteDiff`](@extref ADTypes.AutoFiniteDiff)
 - [`AutoFiniteDifferences`](@extref ADTypes.AutoFiniteDifferences)
 - [`AutoForwardDiff`](@extref ADTypes.AutoForwardDiff)
-- [`AutoGTPSA](@extref ADTypes.AutoGTPSA)
+- `AutoGTPSA`
 - [`AutoPolyesterForwardDiff`](@extref ADTypes.AutoPolyesterForwardDiff)
 - [`AutoReverseDiff`](@extref ADTypes.AutoReverseDiff)
 - [`AutoSymbolics`](@extref ADTypes.AutoSymbolics)

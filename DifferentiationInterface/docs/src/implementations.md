@@ -234,7 +234,7 @@ print_overloads(AutoForwardDiff(), :DifferentiationInterfaceForwardDiffExt) # hi
 Preparation constructs a [GTPSA Descriptor](https://bmad-sim.github.io/GTPSA.jl/stable/man/c_descriptor/) if none is provided or does not already exist, and will pre-allocate the variables as [TPSs](https://bmad-sim.github.io/GTPSA.jl/stable/man/d_tps/).
 
 ```@example overloads
-print_overloads(AutoGTPSA(), :DifferentiationInterfaceGTPSAfExt) # hide
+print_overloads(AutoGTPSA(), :DifferentiationInterfaceGTPSAExt) # hide
 ```
 
 ## PolyesterForwardDiff
