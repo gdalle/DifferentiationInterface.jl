@@ -189,7 +189,7 @@ function sparse_jacobian_aux(
 ) where {FY,B}
     @compat (; coloring_result, batched_seeds, pushforward_batched_extras) = extras
     dense_backend = dense_ad(backend)
-    Ng = length(column_groups(coloring_results))
+    Ng = length(column_groups(coloring_result))
 
     pushforward_batched_extras_same = prepare_pushforward_batched_same_point(
         f_or_f!y..., dense_backend, x, batched_seeds[1], pushforward_batched_extras
@@ -218,7 +218,7 @@ function sparse_jacobian_aux(
 ) where {FY,B}
     @compat (; coloring_result, batched_seeds, pullback_batched_extras) = extras
     dense_backend = dense_ad(backend)
-    Ng = length(row_groups(coloring_results))
+    Ng = length(row_groups(coloring_result))
 
     pullback_batched_extras_same = prepare_pullback_batched_same_point(
         f_or_f!y..., dense_backend, x, batched_seeds[1], pullback_batched_extras
@@ -253,7 +253,7 @@ function sparse_jacobian_aux!(
         pushforward_batched_extras,
     ) = extras
     dense_backend = dense_ad(backend)
-    Ng = length(column_groups(coloring_results))
+    Ng = length(column_groups(coloring_result))
 
     pushforward_batched_extras_same = prepare_pushforward_batched_same_point(
         f_or_f!y..., dense_backend, x, batched_seeds[1], pushforward_batched_extras
@@ -292,7 +292,7 @@ function sparse_jacobian_aux!(
         pullback_batched_extras,
     ) = extras
     dense_backend = dense_ad(backend)
-    Ng = length(row_groups(coloring_results))
+    Ng = length(row_groups(coloring_result))
 
     pullback_batched_extras_same = prepare_pullback_batched_same_point(
         f_or_f!y..., dense_backend, x, batched_seeds[1], pullback_batched_extras
