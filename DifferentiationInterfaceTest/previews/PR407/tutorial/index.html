@@ -1,5 +1,131 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Tutorial · DifferentiationInterfaceTest.jl</title><meta name="title" content="Tutorial · DifferentiationInterfaceTest.jl"/><meta property="og:title" content="Tutorial · DifferentiationInterfaceTest.jl"/><meta property="twitter:title" content="Tutorial · DifferentiationInterfaceTest.jl"/><meta name="description" content="Documentation for DifferentiationInterfaceTest.jl."/><meta property="og:description" content="Documentation for DifferentiationInterfaceTest.jl."/><meta property="twitter:description" content="Documentation for DifferentiationInterfaceTest.jl."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">DifferentiationInterfaceTest.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li class="is-active"><a class="tocitem" href>Tutorial</a><ul class="internal"><li><a class="tocitem" href="#Introduction"><span>Introduction</span></a></li><li><a class="tocitem" href="#Testing"><span>Testing</span></a></li><li><a class="tocitem" href="#Benchmarking"><span>Benchmarking</span></a></li></ul></li><li><a class="tocitem" href="../api/">API reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Tutorial</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Tutorial</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/gdalle/DifferentiationInterface.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/gdalle/DifferentiationInterface.jl/blob/main/DifferentiationInterfaceTest/docs/src/tutorial.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Tutorial"><a class="docs-heading-anchor" href="#Tutorial">Tutorial</a><a id="Tutorial-1"></a><a class="docs-heading-anchor-permalink" href="#Tutorial" title="Permalink"></a></h1><p>We present a typical workflow with DifferentiationInterfaceTest.jl, building on the tutorial of the <a href="https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterface">DifferentiationInterface.jl documentation</a> (which we encourage you to read first).</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; using DifferentiationInterface, DifferentiationInterfaceTest</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; import ForwardDiff, Enzyme</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><h2 id="Introduction"><a class="docs-heading-anchor" href="#Introduction">Introduction</a><a id="Introduction-1"></a><a class="docs-heading-anchor-permalink" href="#Introduction" title="Permalink"></a></h2><p>The AD backends we want to compare are <a href="https://github.com/JuliaDiff/ForwardDiff.jl">ForwardDiff.jl</a> and <a href="https://github.com/EnzymeAD/Enzyme.jl">Enzyme.jl</a>.</p><pre><code class="language-julia hljs">backends = [AutoForwardDiff(), AutoEnzyme(; mode=Enzyme.Reverse)]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2-element Vector{ADTypes.AbstractADType}:
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Tutorial · DifferentiationInterfaceTest.jl</title><meta name="title" content="Tutorial · DifferentiationInterfaceTest.jl"/><meta property="og:title" content="Tutorial · DifferentiationInterfaceTest.jl"/><meta property="twitter:title" content="Tutorial · DifferentiationInterfaceTest.jl"/><meta name="description" content="Documentation for DifferentiationInterfaceTest.jl."/><meta property="og:description" content="Documentation for DifferentiationInterfaceTest.jl."/><meta property="twitter:description" content="Documentation for DifferentiationInterfaceTest.jl."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">DifferentiationInterfaceTest.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li class="is-active"><a class="tocitem" href>Tutorial</a><ul class="internal"><li><a class="tocitem" href="#Introduction"><span>Introduction</span></a></li><li><a class="tocitem" href="#Testing"><span>Testing</span></a></li><li><a class="tocitem" href="#Benchmarking"><span>Benchmarking</span></a></li></ul></li><li><a class="tocitem" href="../api/">API reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Tutorial</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Tutorial</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/gdalle/DifferentiationInterface.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/gdalle/DifferentiationInterface.jl/blob/main/DifferentiationInterfaceTest/docs/src/tutorial.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Tutorial"><a class="docs-heading-anchor" href="#Tutorial">Tutorial</a><a id="Tutorial-1"></a><a class="docs-heading-anchor-permalink" href="#Tutorial" title="Permalink"></a></h1><p>We present a typical workflow with DifferentiationInterfaceTest.jl, building on the tutorial of the <a href="https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterface">DifferentiationInterface.jl documentation</a> (which we encourage you to read first).</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; using DifferentiationInterface, DifferentiationInterfaceTest</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; import ForwardDiff, Enzyme</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: LoadError: UndefVarError: `EnzymeCore` not defined
+Stacktrace:
+ [1] top-level scope
+   @ ~/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterface/ext/DifferentiationInterfaceEnzymeExt/utils.jl:45
+ [2] include(mod::Module, _path::String)
+   @ Base ./Base.jl:495
+ [3] include(x::String)
+   @ DifferentiationInterfaceEnzymeExt ~/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterface/ext/DifferentiationInterfaceEnzymeExt/DifferentiationInterfaceEnzymeExt.jl:1
+ [4] top-level scope
+   @ ~/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterface/ext/DifferentiationInterfaceEnzymeExt/DifferentiationInterfaceEnzymeExt.jl:44
+ [5] include
+   @ ./Base.jl:495 [inlined]
+ [6] include_package_for_output(pkg::Base.PkgId, input::String, depot_path::Vector{String}, dl_load_path::Vector{String}, load_path::Vector{String}, concrete_deps::Vector{Pair{Base.PkgId, UInt128}}, source::String)
+   @ Base ./loading.jl:2222
+ [7] top-level scope
+   @ stdin:3
+in expression starting at /home/runner/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterface/ext/DifferentiationInterfaceEnzymeExt/utils.jl:45
+in expression starting at /home/runner/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterface/ext/DifferentiationInterfaceEnzymeExt/DifferentiationInterfaceEnzymeExt.jl:1
+in expression starting at stdin:3
+┌ Error: Error during loading of extension DifferentiationInterfaceEnzymeExt of DifferentiationInterface, use `Base.retry_load_extensions()` to retry.
+│   exception =
+│    1-element ExceptionStack:
+│    Failed to precompile DifferentiationInterfaceEnzymeExt [55327dd7-aa92-56e5-a3d3-d077748ab7c0] to &quot;/home/runner/.julia/compiled/v1.10/DifferentiationInterfaceEnzymeExt/jl_FKTD2I&quot;.
+│    Stacktrace:
+│      [1] error(s::String)
+│        @ Base ./error.jl:35
+│      [2] compilecache(pkg::Base.PkgId, path::String, internal_stderr::IO, internal_stdout::IO, keep_loaded_modules::Bool)
+│        @ Base ./loading.jl:2468
+│      [3] compilecache
+│        @ ./loading.jl:2340 [inlined]
+│      [4] (::Base.var&quot;#968#969&quot;{Base.PkgId})()
+│        @ Base ./loading.jl:1974
+│      [5] mkpidlock(f::Base.var&quot;#968#969&quot;{Base.PkgId}, at::String, pid::Int32; kwopts::@Kwargs{stale_age::Int64, wait::Bool})
+│        @ FileWatching.Pidfile /opt/hostedtoolcache/julia/1.10.4/x64/share/julia/stdlib/v1.10/FileWatching/src/pidfile.jl:93
+│      [6] #mkpidlock#6
+│        @ /opt/hostedtoolcache/julia/1.10.4/x64/share/julia/stdlib/v1.10/FileWatching/src/pidfile.jl:88 [inlined]
+│      [7] trymkpidlock(::Function, ::Vararg{Any}; kwargs::@Kwargs{stale_age::Int64})
+│        @ FileWatching.Pidfile /opt/hostedtoolcache/julia/1.10.4/x64/share/julia/stdlib/v1.10/FileWatching/src/pidfile.jl:111
+│      [8] #invokelatest#2
+│        @ ./essentials.jl:894 [inlined]
+│      [9] invokelatest
+│        @ ./essentials.jl:889 [inlined]
+│     [10] maybe_cachefile_lock(f::Base.var&quot;#968#969&quot;{Base.PkgId}, pkg::Base.PkgId, srcpath::String; stale_age::Int64)
+│        @ Base ./loading.jl:2983
+│     [11] maybe_cachefile_lock
+│        @ ./loading.jl:2980 [inlined]
+│     [12] _require(pkg::Base.PkgId, env::Nothing)
+│        @ Base ./loading.jl:1970
+│     [13] __require_prelocked(uuidkey::Base.PkgId, env::Nothing)
+│        @ Base ./loading.jl:1812
+│     [14] #invoke_in_world#3
+│        @ ./essentials.jl:926 [inlined]
+│     [15] invoke_in_world
+│        @ ./essentials.jl:923 [inlined]
+│     [16] _require_prelocked
+│        @ ./loading.jl:1803 [inlined]
+│     [17] _require_prelocked
+│        @ ./loading.jl:1802 [inlined]
+│     [18] run_extension_callbacks(extid::Base.ExtensionId)
+│        @ Base ./loading.jl:1295
+│     [19] run_extension_callbacks(pkgid::Base.PkgId)
+│        @ Base ./loading.jl:1330
+│     [20] run_package_callbacks(modkey::Base.PkgId)
+│        @ Base ./loading.jl:1164
+│     [21] __require_prelocked(uuidkey::Base.PkgId, env::String)
+│        @ Base ./loading.jl:1819
+│     [22] #invoke_in_world#3
+│        @ ./essentials.jl:926 [inlined]
+│     [23] invoke_in_world
+│        @ ./essentials.jl:923 [inlined]
+│     [24] _require_prelocked(uuidkey::Base.PkgId, env::String)
+│        @ Base ./loading.jl:1803
+│     [25] macro expansion
+│        @ ./loading.jl:1790 [inlined]
+│     [26] macro expansion
+│        @ ./lock.jl:267 [inlined]
+│     [27] __require(into::Module, mod::Symbol)
+│        @ Base ./loading.jl:1753
+│     [28] #invoke_in_world#3
+│        @ ./essentials.jl:926 [inlined]
+│     [29] invoke_in_world
+│        @ ./essentials.jl:923 [inlined]
+│     [30] require(into::Module, mod::Symbol)
+│        @ Base ./loading.jl:1746
+│     [31] eval
+│        @ ./boot.jl:385 [inlined]
+│     [32] #62
+│        @ ~/.julia/packages/Documenter/qoyeC/src/expander_pipeline.jl:848 [inlined]
+│     [33] cd(f::Documenter.var&quot;#62#64&quot;{Module}, dir::String)
+│        @ Base.Filesystem ./file.jl:112
+│     [34] (::Documenter.var&quot;#61#63&quot;{Documenter.Page, Module})()
+│        @ Documenter ~/.julia/packages/Documenter/qoyeC/src/expander_pipeline.jl:847
+│     [35] (::IOCapture.var&quot;#5#9&quot;{DataType, Documenter.var&quot;#61#63&quot;{Documenter.Page, Module}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}, Base.PipeEndpoint, Base.PipeEndpoint})()
+│        @ IOCapture ~/.julia/packages/IOCapture/Y5rEA/src/IOCapture.jl:170
+│     [36] with_logstate(f::Function, logstate::Any)
+│        @ Base.CoreLogging ./logging.jl:515
+│     [37] with_logger
+│        @ ./logging.jl:627 [inlined]
+│     [38] capture(f::Documenter.var&quot;#61#63&quot;{Documenter.Page, Module}; rethrow::Type, color::Bool, passthrough::Bool, capture_buffer::IOBuffer, io_context::Vector{Any})
+│        @ IOCapture ~/.julia/packages/IOCapture/Y5rEA/src/IOCapture.jl:167
+│     [39] runner(::Type{Documenter.Expanders.REPLBlocks}, node::MarkdownAST.Node{Nothing}, page::Documenter.Page, doc::Documenter.Document)
+│        @ Documenter ~/.julia/packages/Documenter/qoyeC/src/expander_pipeline.jl:846
+│     [40] dispatch(::Type{Documenter.Expanders.ExpanderPipeline}, ::MarkdownAST.Node{Nothing}, ::Vararg{Any})
+│        @ Documenter.Selectors ~/.julia/packages/Documenter/qoyeC/src/utilities/Selectors.jl:170
+│     [41] expand(doc::Documenter.Document)
+│        @ Documenter ~/.julia/packages/Documenter/qoyeC/src/expander_pipeline.jl:22
+│     [42] runner(::Type{Documenter.Builder.ExpandTemplates}, doc::Documenter.Document)
+│        @ Documenter ~/.julia/packages/Documenter/qoyeC/src/builder_pipeline.jl:222
+│     [43] dispatch(::Type{Documenter.Builder.DocumentPipeline}, x::Documenter.Document)
+│        @ Documenter.Selectors ~/.julia/packages/Documenter/qoyeC/src/utilities/Selectors.jl:170
+│     [44] #86
+│        @ ~/.julia/packages/Documenter/qoyeC/src/makedocs.jl:248 [inlined]
+│     [45] withenv(::Documenter.var&quot;#86#88&quot;{Documenter.Document}, ::Pair{String, Nothing}, ::Vararg{Pair{String, Nothing}})
+│        @ Base ./env.jl:257
+│     [46] #85
+│        @ ~/.julia/packages/Documenter/qoyeC/src/makedocs.jl:247 [inlined]
+│     [47] cd(f::Documenter.var&quot;#85#87&quot;{Documenter.Document}, dir::String)
+│        @ Base.Filesystem ./file.jl:112
+│     [48] #makedocs#84
+│        @ ~/.julia/packages/Documenter/qoyeC/src/makedocs.jl:247 [inlined]
+│     [49] top-level scope
+│        @ ~/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterfaceTest/docs/make.jl:12
+│     [50] include(mod::Module, _path::String)
+│        @ Base ./Base.jl:495
+│     [51] exec_options(opts::Base.JLOptions)
+│        @ Base ./client.jl:318
+└ @ Base loading.jl:1301</code></pre><h2 id="Introduction"><a class="docs-heading-anchor" href="#Introduction">Introduction</a><a id="Introduction-1"></a><a class="docs-heading-anchor-permalink" href="#Introduction" title="Permalink"></a></h2><p>The AD backends we want to compare are <a href="https://github.com/JuliaDiff/ForwardDiff.jl">ForwardDiff.jl</a> and <a href="https://github.com/EnzymeAD/Enzyme.jl">Enzyme.jl</a>.</p><pre><code class="language-julia hljs">backends = [AutoForwardDiff(), AutoEnzyme(; mode=Enzyme.Reverse)]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2-element Vector{ADTypes.AbstractADType}:
  AutoForwardDiff()
  AutoEnzyme(mode=EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false, false}())</code></pre><p>To do that, we are going to take gradients of a simple function:</p><pre><code class="language-julia hljs">f(x::AbstractArray) = sum(sin, x)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">f (generic function with 1 method)</code></pre><p>Of course we know the true gradient mapping:</p><pre><code class="language-julia hljs">∇f(x::AbstractArray) = cos.(x)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">∇f (generic function with 1 method)</code></pre><p>DifferentiationInterfaceTest.jl relies with so-called &quot;scenarios&quot;, in which you encapsulate the information needed for your test:</p><ul><li>the function <code>f</code></li><li>the input <code>x</code> and output <code>y</code> of the function <code>f</code></li><li>the reference output of the operator (here <code>grad</code>)</li><li>the number of arguments for <code>f</code> (either <code>1</code> or <code>2</code>)</li><li>the behavior of the operator (either <code>:inplace</code> or <code>:outofplace</code>)</li></ul><p>There is one scenario constructor per operator, and so here we will use <a href="../api/#DifferentiationInterfaceTest.GradientScenario"><code>GradientScenario</code></a>:</p><pre><code class="language-julia hljs">xv = rand(Float32, 3)
 xm = rand(Float64, 3, 2)
@@ -12,13 +138,184 @@ scenarios = [
            correctness=true,  # compares values against the reference
            type_stability=false,  # checks type stability with JET.jl
            detailed=true,  # prints a detailed test set
-       )</code><code class="nohighlight hljs ansi" style="display:block;">Test Summary:                                                                       | Pass  Total   Time
-Testing correctness                                                                 |   68     68  18.8s
-  AutoForwardDiff()                                                                 |   34     34   5.6s
-    gradient                                                                        |   34     34   5.6s
-      Scenario{:gradient,1,:inplace} f : Vector{Float32} -&gt; Float32                 |   17     17   3.3s
-      Scenario{:gradient,1,:inplace} f : Matrix{Float64} -&gt; Float64                 |   17     17   2.2s
-  AutoEnzyme(mode=EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false, false}()) |   34     34  13.2s
-    gradient                                                                        |   34     34  13.2s
-      Scenario{:gradient,1,:inplace} f : Vector{Float32} -&gt; Float32                 |   17     17  10.9s
-      Scenario{:gradient,1,:inplace} f : Matrix{Float64} -&gt; Float64                 |   17     17   2.3s</code></pre><p>If you are too lazy to manually specify the reference, you can also provide an AD backend as the <code>ref_backend</code> keyword argument, which will serve as the ground truth for comparison.</p><h2 id="Benchmarking"><a class="docs-heading-anchor" href="#Benchmarking">Benchmarking</a><a id="Benchmarking-1"></a><a class="docs-heading-anchor-permalink" href="#Benchmarking" title="Permalink"></a></h2><p>Once you are confident that your backends give the correct answers, you probably want to compare their performance. This is made easy by the <a href="../api/#DifferentiationInterfaceTest.benchmark_differentiation"><code>benchmark_differentiation</code></a> function, whose syntax should feel familiar:</p><pre><code class="language-julia hljs">df = benchmark_differentiation(backends, scenarios);</code></pre><div><div style = "float: left;"><span>12×11 DataFrame</span></div><div style = "clear: both;"></div></div><div class = "data-frame" style = "overflow-x: scroll;"><table class = "data-frame" style = "margin-bottom: 6px;"><thead><tr class = "header"><th class = "rowNumber" style = "font-weight: bold; text-align: right;">Row</th><th style = "text-align: left;">backend</th><th style = "text-align: left;">scenario</th><th style = "text-align: left;">operator</th><th style = "text-align: left;">calls</th><th style = "text-align: left;">samples</th><th style = "text-align: left;">evals</th><th style = "text-align: left;">time</th><th style = "text-align: left;">allocs</th><th style = "text-align: left;">bytes</th><th style = "text-align: left;">gc_fraction</th><th style = "text-align: left;">compile_fraction</th></tr><tr class = "subheader headerLastRow"><th class = "rowNumber" style = "font-weight: bold; text-align: right;"></th><th title = "ADTypes.AbstractADType" style = "text-align: left;">Abstract…</th><th title = "Scenario{:gradient, 1, :inplace, typeof(Main.__atexample__named__tuto.f), X, Y, Nothing, R1, Nothing} where {X, Y, R1}" style = "text-align: left;">Scenario…</th><th title = "Symbol" style = "text-align: left;">Symbol</th><th title = "Int64" style = "text-align: left;">Int64</th><th title = "Int64" style = "text-align: left;">Int64</th><th title = "Int64" style = "text-align: left;">Int64</th><th title = "Float64" style = "text-align: left;">Float64</th><th title = "Float64" style = "text-align: left;">Float64</th><th title = "Float64" style = "text-align: left;">Float64</th><th title = "Float64" style = "text-align: left;">Float64</th><th title = "Float64" style = "text-align: left;">Float64</th></tr></thead><tbody><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">1</td><td style = "text-align: left;">AutoForwardDiff()</td><td style = "text-align: left;">Scenario{:gradient,1,:inplace} f : Vector{Float32} -&gt; Float32</td><td style = "text-align: left;">prepare_gradient</td><td style = "text-align: right;">0</td><td style = "text-align: right;">1</td><td style = "text-align: right;">1</td><td style = "text-align: right;">4.568e-6</td><td style = "text-align: right;">11.0</td><td style = "text-align: right;">528.0</td><td style = "text-align: right;">0.0</td><td style = "text-align: right;">0.0</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">2</td><td style = "text-align: left;">AutoForwardDiff()</td><td style = "text-align: left;">Scenario{:gradient,1,:inplace} f : Vector{Float32} -&gt; Float32</td><td style = "text-align: left;">value_and_gradient!</td><td style = "text-align: right;">1</td><td style = "text-align: right;">37912</td><td style = "text-align: right;">1</td><td style = "text-align: right;">8.0e-8</td><td style = "text-align: right;">1.0</td><td style = "text-align: right;">32.0</td><td style = "text-align: right;">0.0</td><td style = "text-align: right;">0.0</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">3</td><td style = "text-align: left;">AutoForwardDiff()</td><td style = "text-align: left;">Scenario{:gradient,1,:inplace} f : Vector{Float32} -&gt; Float32</td><td style = "text-align: left;">gradient!</td><td style = "text-align: right;">1</td><td style = "text-align: right;">48305</td><td style = "text-align: right;">1</td><td style = "text-align: right;">6.0e-8</td><td style = "text-align: right;">0.0</td><td style = "text-align: right;">0.0</td><td style = "text-align: right;">0.0</td><td style = "text-align: right;">0.0</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">4</td><td style = "text-align: left;">AutoForwardDiff()</td><td style = "text-align: left;">Scenario{:gradient,1,:inplace} f : Matrix{Float64} -&gt; Float64</td><td style = "text-align: left;">prepare_gradient</td><td style = "text-align: right;">0</td><td style = "text-align: right;">1</td><td style = "text-align: right;">1</td><td style = "text-align: right;">5.13e-6</td><td style = "text-align: right;">11.0</td><td style = "text-align: right;">1776.0</td><td style = "text-align: right;">0.0</td><td style = "text-align: right;">0.0</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">5</td><td style = "text-align: left;">AutoForwardDiff()</td><td style = "text-align: left;">Scenario{:gradient,1,:inplace} f : Matrix{Float64} -&gt; Float64</td><td style = "text-align: left;">value_and_gradient!</td><td style = "text-align: right;">1</td><td style = "text-align: right;">35972</td><td style = "text-align: right;">1</td><td style = "text-align: right;">2.0e-7</td><td style = "text-align: right;">5.0</td><td style = "text-align: right;">192.0</td><td style = "text-align: right;">0.0</td><td style = "text-align: right;">0.0</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">6</td><td style = "text-align: left;">AutoForwardDiff()</td><td style = "text-align: left;">Scenario{:gradient,1,:inplace} f : Matrix{Float64} -&gt; Float64</td><td style = "text-align: left;">gradient!</td><td style = "text-align: right;">1</td><td style = "text-align: right;">39223</td><td style = "text-align: right;">1</td><td style = "text-align: right;">1.9e-7</td><td style = "text-align: right;">4.0</td><td style = "text-align: right;">160.0</td><td style = "text-align: right;">0.0</td><td style = "text-align: right;">0.0</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">7</td><td style = "text-align: left;">AutoEnzyme(mode=ReverseMode{false, FFIABI, false, false}())</td><td style = "text-align: left;">Scenario{:gradient,1,:inplace} f : Vector{Float32} -&gt; Float32</td><td style = "text-align: left;">prepare_gradient</td><td style = "text-align: right;">0</td><td style = "text-align: right;">1</td><td style = "text-align: right;">1</td><td style = "text-align: right;">1.5e-7</td><td style = "text-align: right;">0.0</td><td style = "text-align: right;">0.0</td><td style = "text-align: right;">0.0</td><td style = "text-align: right;">0.0</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">8</td><td style = "text-align: left;">AutoEnzyme(mode=ReverseMode{false, FFIABI, false, false}())</td><td style = "text-align: left;">Scenario{:gradient,1,:inplace} f : Vector{Float32} -&gt; Float32</td><td style = "text-align: left;">value_and_gradient!</td><td style = "text-align: right;">1</td><td style = "text-align: right;">50507</td><td style = "text-align: right;">1</td><td style = "text-align: right;">1.061e-6</td><td style = "text-align: right;">9.0</td><td style = "text-align: right;">192.0</td><td style = "text-align: right;">0.0</td><td style = "text-align: right;">0.0</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">9</td><td style = "text-align: left;">AutoEnzyme(mode=ReverseMode{false, FFIABI, false, false}())</td><td style = "text-align: left;">Scenario{:gradient,1,:inplace} f : Vector{Float32} -&gt; Float32</td><td style = "text-align: left;">gradient!</td><td style = "text-align: right;">1</td><td style = "text-align: right;">141710</td><td style = "text-align: right;">1</td><td style = "text-align: right;">6.0e-8</td><td style = "text-align: right;">0.0</td><td style = "text-align: right;">0.0</td><td style = "text-align: right;">0.0</td><td style = "text-align: right;">0.0</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">10</td><td style = "text-align: left;">AutoEnzyme(mode=ReverseMode{false, FFIABI, false, false}())</td><td style = "text-align: left;">Scenario{:gradient,1,:inplace} f : Matrix{Float64} -&gt; Float64</td><td style = "text-align: left;">prepare_gradient</td><td style = "text-align: right;">0</td><td style = "text-align: right;">1</td><td style = "text-align: right;">1</td><td style = "text-align: right;">1.4e-7</td><td style = "text-align: right;">0.0</td><td style = "text-align: right;">0.0</td><td style = "text-align: right;">0.0</td><td style = "text-align: right;">0.0</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">11</td><td style = "text-align: left;">AutoEnzyme(mode=ReverseMode{false, FFIABI, false, false}())</td><td style = "text-align: left;">Scenario{:gradient,1,:inplace} f : Matrix{Float64} -&gt; Float64</td><td style = "text-align: left;">value_and_gradient!</td><td style = "text-align: right;">1</td><td style = "text-align: right;">47947</td><td style = "text-align: right;">1</td><td style = "text-align: right;">1.112e-6</td><td style = "text-align: right;">9.0</td><td style = "text-align: right;">192.0</td><td style = "text-align: right;">0.0</td><td style = "text-align: right;">0.0</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">12</td><td style = "text-align: left;">AutoEnzyme(mode=ReverseMode{false, FFIABI, false, false}())</td><td style = "text-align: left;">Scenario{:gradient,1,:inplace} f : Matrix{Float64} -&gt; Float64</td><td style = "text-align: left;">gradient!</td><td style = "text-align: right;">1</td><td style = "text-align: right;">139648</td><td style = "text-align: right;">1</td><td style = "text-align: right;">9.0e-8</td><td style = "text-align: right;">0.0</td><td style = "text-align: right;">0.0</td><td style = "text-align: right;">0.0</td><td style = "text-align: right;">0.0</td></tr></tbody></table></div><p>The resulting object is a <code>DataFrame</code> from <a href="https://github.com/JuliaData/DataFrames.jl">DataFrames.jl</a>, whose columns correspond to the fields of <a href="../api/#DifferentiationInterfaceTest.DifferentiationBenchmarkDataRow"><code>DifferentiationBenchmarkDataRow</code></a>:</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Home</a><a class="docs-footer-nextpage" href="../api/">API reference »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.5.0 on <span class="colophon-date" title="Thursday 8 August 2024 06:44">Thursday 8 August 2024</span>. Using Julia version 1.10.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+       )</code><code class="nohighlight hljs ansi" style="display:block;">Correctness: Error During Test at /home/runner/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterfaceTest/src/test_differentiation.jl:105
+  Got exception outside of a @test
+  MissingBackendError: Failed to use AutoEnzyme(mode=EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false, false}()).
+  Backend package is probably not loaded. To fix this, try to run
+  
+      import Enzyme
+  
+  Stacktrace:
+    [1] prepare_pullback_aux(f::Function, backend::AutoEnzyme{EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false, false}, Nothing}, x::Vector{Float32}, dy::Bool, ::DifferentiationInterface.PullbackFast)
+      @ DifferentiationInterface ~/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterface/src/first_order/pullback.jl:130
+    [2] prepare_pullback(f::typeof(Main.f), backend::AutoEnzyme{EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false, false}, Nothing}, x::Vector{Float32}, dy::Bool)
+      @ DifferentiationInterface ~/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterface/src/first_order/pullback.jl:106
+    [3] prepare_gradient(f::typeof(Main.f), backend::AutoEnzyme{EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false, false}, Nothing}, x::Vector{Float32})
+      @ DifferentiationInterface ~/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterface/src/first_order/gradient.jl:65
+    [4] test_correctness(ba::AutoEnzyme{EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false, false}, Nothing}, scen::Scenario{:gradient, 1, :inplace, typeof(Main.f), Vector{Float32}, Float32, Nothing, Vector{Float32}, Nothing}; isequal::Function, isapprox::typeof(isapprox), atol::Int64, rtol::Float64)
+      @ DifferentiationInterfaceTest ~/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterfaceTest/src/tests/correctness.jl:670
+    [5] macro expansion
+      @ ~/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterfaceTest/src/test_differentiation.jl:106 [inlined]
+    [6] macro expansion
+      @ /opt/hostedtoolcache/julia/1.10.4/x64/share/julia/stdlib/v1.10/Test/src/Test.jl:1577 [inlined]
+    [7] macro expansion
+      @ ~/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterfaceTest/src/test_differentiation.jl:106 [inlined]
+    [8] macro expansion
+      @ /opt/hostedtoolcache/julia/1.10.4/x64/share/julia/stdlib/v1.10/Test/src/Test.jl:1669 [inlined]
+    [9] macro expansion
+      @ ~/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterfaceTest/src/test_differentiation.jl:88 [inlined]
+   [10] macro expansion
+      @ /opt/hostedtoolcache/julia/1.10.4/x64/share/julia/stdlib/v1.10/Test/src/Test.jl:1669 [inlined]
+   [11] macro expansion
+      @ ~/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterfaceTest/src/test_differentiation.jl:86 [inlined]
+   [12] macro expansion
+      @ /opt/hostedtoolcache/julia/1.10.4/x64/share/julia/stdlib/v1.10/Test/src/Test.jl:1669 [inlined]
+   [13] macro expansion
+      @ ~/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterfaceTest/src/test_differentiation.jl:83 [inlined]
+   [14] macro expansion
+      @ /opt/hostedtoolcache/julia/1.10.4/x64/share/julia/stdlib/v1.10/Test/src/Test.jl:1577 [inlined]
+   [15] test_differentiation(backends::Vector{ADTypes.AbstractADType}, scenarios::Vector{Scenario{:gradient, 1, :inplace, typeof(Main.f), X, Y, Nothing, R1, Nothing} where {X, Y, R1}}; correctness::Bool, type_stability::Bool, call_count::Bool, sparsity::Bool, detailed::Bool, input_type::Type, output_type::Type, first_order::Bool, second_order::Bool, onearg::Bool, twoarg::Bool, inplace::Bool, outofplace::Bool, excluded::Vector{Symbol}, logging::Bool, isequal::typeof(isequal), isapprox::typeof(isapprox), atol::Int64, rtol::Float64)
+      @ DifferentiationInterfaceTest ~/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterfaceTest/src/test_differentiation.jl:83
+   [16] top-level scope
+      @ REPL[1]:1
+   [17] eval
+      @ ./boot.jl:385 [inlined]
+   [18] #62
+      @ ~/.julia/packages/Documenter/qoyeC/src/expander_pipeline.jl:848 [inlined]
+   [19] cd(f::Documenter.var&quot;#62#64&quot;{Module}, dir::String)
+      @ Base.Filesystem ./file.jl:112
+   [20] (::Documenter.var&quot;#61#63&quot;{Documenter.Page, Module})()
+      @ Documenter ~/.julia/packages/Documenter/qoyeC/src/expander_pipeline.jl:847
+   [21] (::IOCapture.var&quot;#5#9&quot;{DataType, Documenter.var&quot;#61#63&quot;{Documenter.Page, Module}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}, Base.PipeEndpoint, Base.PipeEndpoint})()
+      @ IOCapture ~/.julia/packages/IOCapture/Y5rEA/src/IOCapture.jl:170
+   [22] with_logstate(f::Function, logstate::Any)
+      @ Base.CoreLogging ./logging.jl:515
+   [23] with_logger
+      @ ./logging.jl:627 [inlined]
+   [24] capture(f::Documenter.var&quot;#61#63&quot;{Documenter.Page, Module}; rethrow::Type, color::Bool, passthrough::Bool, capture_buffer::IOBuffer, io_context::Vector{Any})
+      @ IOCapture ~/.julia/packages/IOCapture/Y5rEA/src/IOCapture.jl:167
+   [25] runner(::Type{Documenter.Expanders.REPLBlocks}, node::MarkdownAST.Node{Nothing}, page::Documenter.Page, doc::Documenter.Document)
+      @ Documenter ~/.julia/packages/Documenter/qoyeC/src/expander_pipeline.jl:846
+   [26] dispatch(::Type{Documenter.Expanders.ExpanderPipeline}, ::MarkdownAST.Node{Nothing}, ::Vararg{Any})
+      @ Documenter.Selectors ~/.julia/packages/Documenter/qoyeC/src/utilities/Selectors.jl:170
+   [27] expand(doc::Documenter.Document)
+      @ Documenter ~/.julia/packages/Documenter/qoyeC/src/expander_pipeline.jl:22
+   [28] runner(::Type{Documenter.Builder.ExpandTemplates}, doc::Documenter.Document)
+      @ Documenter ~/.julia/packages/Documenter/qoyeC/src/builder_pipeline.jl:222
+   [29] dispatch(::Type{Documenter.Builder.DocumentPipeline}, x::Documenter.Document)
+      @ Documenter.Selectors ~/.julia/packages/Documenter/qoyeC/src/utilities/Selectors.jl:170
+   [30] #86
+      @ ~/.julia/packages/Documenter/qoyeC/src/makedocs.jl:248 [inlined]
+   [31] withenv(::Documenter.var&quot;#86#88&quot;{Documenter.Document}, ::Pair{String, Nothing}, ::Vararg{Pair{String, Nothing}})
+      @ Base ./env.jl:257
+   [32] #85
+      @ ~/.julia/packages/Documenter/qoyeC/src/makedocs.jl:247 [inlined]
+   [33] cd(f::Documenter.var&quot;#85#87&quot;{Documenter.Document}, dir::String)
+      @ Base.Filesystem ./file.jl:112
+   [34] #makedocs#84
+      @ ~/.julia/packages/Documenter/qoyeC/src/makedocs.jl:247 [inlined]
+   [35] top-level scope
+      @ ~/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterfaceTest/docs/make.jl:12
+   [36] include(mod::Module, _path::String)
+      @ Base ./Base.jl:495
+   [37] exec_options(opts::Base.JLOptions)
+      @ Base ./client.jl:318
+   [38] _start()
+      @ Base ./client.jl:552
+Correctness: Error During Test at /home/runner/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterfaceTest/src/test_differentiation.jl:105
+  Got exception outside of a @test
+  MissingBackendError: Failed to use AutoEnzyme(mode=EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false, false}()).
+  Backend package is probably not loaded. To fix this, try to run
+  
+      import Enzyme
+  
+  Stacktrace:
+    [1] prepare_pullback_aux(f::Function, backend::AutoEnzyme{EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false, false}, Nothing}, x::Matrix{Float64}, dy::Bool, ::DifferentiationInterface.PullbackFast)
+      @ DifferentiationInterface ~/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterface/src/first_order/pullback.jl:130
+    [2] prepare_pullback(f::typeof(Main.f), backend::AutoEnzyme{EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false, false}, Nothing}, x::Matrix{Float64}, dy::Bool)
+      @ DifferentiationInterface ~/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterface/src/first_order/pullback.jl:106
+    [3] prepare_gradient(f::typeof(Main.f), backend::AutoEnzyme{EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false, false}, Nothing}, x::Matrix{Float64})
+      @ DifferentiationInterface ~/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterface/src/first_order/gradient.jl:65
+    [4] test_correctness(ba::AutoEnzyme{EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false, false}, Nothing}, scen::Scenario{:gradient, 1, :inplace, typeof(Main.f), Matrix{Float64}, Float64, Nothing, Matrix{Float64}, Nothing}; isequal::Function, isapprox::typeof(isapprox), atol::Int64, rtol::Float64)
+      @ DifferentiationInterfaceTest ~/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterfaceTest/src/tests/correctness.jl:670
+    [5] macro expansion
+      @ ~/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterfaceTest/src/test_differentiation.jl:106 [inlined]
+    [6] macro expansion
+      @ /opt/hostedtoolcache/julia/1.10.4/x64/share/julia/stdlib/v1.10/Test/src/Test.jl:1577 [inlined]
+    [7] macro expansion
+      @ ~/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterfaceTest/src/test_differentiation.jl:106 [inlined]
+    [8] macro expansion
+      @ /opt/hostedtoolcache/julia/1.10.4/x64/share/julia/stdlib/v1.10/Test/src/Test.jl:1669 [inlined]
+    [9] macro expansion
+      @ ~/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterfaceTest/src/test_differentiation.jl:88 [inlined]
+   [10] macro expansion
+      @ /opt/hostedtoolcache/julia/1.10.4/x64/share/julia/stdlib/v1.10/Test/src/Test.jl:1669 [inlined]
+   [11] macro expansion
+      @ ~/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterfaceTest/src/test_differentiation.jl:86 [inlined]
+   [12] macro expansion
+      @ /opt/hostedtoolcache/julia/1.10.4/x64/share/julia/stdlib/v1.10/Test/src/Test.jl:1669 [inlined]
+   [13] macro expansion
+      @ ~/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterfaceTest/src/test_differentiation.jl:83 [inlined]
+   [14] macro expansion
+      @ /opt/hostedtoolcache/julia/1.10.4/x64/share/julia/stdlib/v1.10/Test/src/Test.jl:1577 [inlined]
+   [15] test_differentiation(backends::Vector{ADTypes.AbstractADType}, scenarios::Vector{Scenario{:gradient, 1, :inplace, typeof(Main.f), X, Y, Nothing, R1, Nothing} where {X, Y, R1}}; correctness::Bool, type_stability::Bool, call_count::Bool, sparsity::Bool, detailed::Bool, input_type::Type, output_type::Type, first_order::Bool, second_order::Bool, onearg::Bool, twoarg::Bool, inplace::Bool, outofplace::Bool, excluded::Vector{Symbol}, logging::Bool, isequal::typeof(isequal), isapprox::typeof(isapprox), atol::Int64, rtol::Float64)
+      @ DifferentiationInterfaceTest ~/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterfaceTest/src/test_differentiation.jl:83
+   [16] top-level scope
+      @ REPL[1]:1
+   [17] eval
+      @ ./boot.jl:385 [inlined]
+   [18] #62
+      @ ~/.julia/packages/Documenter/qoyeC/src/expander_pipeline.jl:848 [inlined]
+   [19] cd(f::Documenter.var&quot;#62#64&quot;{Module}, dir::String)
+      @ Base.Filesystem ./file.jl:112
+   [20] (::Documenter.var&quot;#61#63&quot;{Documenter.Page, Module})()
+      @ Documenter ~/.julia/packages/Documenter/qoyeC/src/expander_pipeline.jl:847
+   [21] (::IOCapture.var&quot;#5#9&quot;{DataType, Documenter.var&quot;#61#63&quot;{Documenter.Page, Module}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}, Base.PipeEndpoint, Base.PipeEndpoint})()
+      @ IOCapture ~/.julia/packages/IOCapture/Y5rEA/src/IOCapture.jl:170
+   [22] with_logstate(f::Function, logstate::Any)
+      @ Base.CoreLogging ./logging.jl:515
+   [23] with_logger
+      @ ./logging.jl:627 [inlined]
+   [24] capture(f::Documenter.var&quot;#61#63&quot;{Documenter.Page, Module}; rethrow::Type, color::Bool, passthrough::Bool, capture_buffer::IOBuffer, io_context::Vector{Any})
+      @ IOCapture ~/.julia/packages/IOCapture/Y5rEA/src/IOCapture.jl:167
+   [25] runner(::Type{Documenter.Expanders.REPLBlocks}, node::MarkdownAST.Node{Nothing}, page::Documenter.Page, doc::Documenter.Document)
+      @ Documenter ~/.julia/packages/Documenter/qoyeC/src/expander_pipeline.jl:846
+   [26] dispatch(::Type{Documenter.Expanders.ExpanderPipeline}, ::MarkdownAST.Node{Nothing}, ::Vararg{Any})
+      @ Documenter.Selectors ~/.julia/packages/Documenter/qoyeC/src/utilities/Selectors.jl:170
+   [27] expand(doc::Documenter.Document)
+      @ Documenter ~/.julia/packages/Documenter/qoyeC/src/expander_pipeline.jl:22
+   [28] runner(::Type{Documenter.Builder.ExpandTemplates}, doc::Documenter.Document)
+      @ Documenter ~/.julia/packages/Documenter/qoyeC/src/builder_pipeline.jl:222
+   [29] dispatch(::Type{Documenter.Builder.DocumentPipeline}, x::Documenter.Document)
+      @ Documenter.Selectors ~/.julia/packages/Documenter/qoyeC/src/utilities/Selectors.jl:170
+   [30] #86
+      @ ~/.julia/packages/Documenter/qoyeC/src/makedocs.jl:248 [inlined]
+   [31] withenv(::Documenter.var&quot;#86#88&quot;{Documenter.Document}, ::Pair{String, Nothing}, ::Vararg{Pair{String, Nothing}})
+      @ Base ./env.jl:257
+   [32] #85
+      @ ~/.julia/packages/Documenter/qoyeC/src/makedocs.jl:247 [inlined]
+   [33] cd(f::Documenter.var&quot;#85#87&quot;{Documenter.Document}, dir::String)
+      @ Base.Filesystem ./file.jl:112
+   [34] #makedocs#84
+      @ ~/.julia/packages/Documenter/qoyeC/src/makedocs.jl:247 [inlined]
+   [35] top-level scope
+      @ ~/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterfaceTest/docs/make.jl:12
+   [36] include(mod::Module, _path::String)
+      @ Base ./Base.jl:495
+   [37] exec_options(opts::Base.JLOptions)
+      @ Base ./client.jl:318
+   [38] _start()
+      @ Base ./client.jl:552
+Test Summary:                                                                       | Pass  Error  Total  Time
+Testing correctness                                                                 |   34      2     36  6.7s
+  AutoForwardDiff()                                                                 |   34            34  5.9s
+    gradient                                                                        |   34            34  5.9s
+      Scenario{:gradient,1,:inplace} f : Vector{Float32} -&gt; Float32                 |   17            17  3.5s
+      Scenario{:gradient,1,:inplace} f : Matrix{Float64} -&gt; Float64                 |   17            17  2.3s
+  AutoEnzyme(mode=EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false, false}()) |           2      2  0.7s
+    gradient                                                                        |           2      2  0.7s
+      Scenario{:gradient,1,:inplace} f : Vector{Float32} -&gt; Float32                 |           1      1  0.5s
+        Correctness                                                                 |           1      1  0.5s
+      Scenario{:gradient,1,:inplace} f : Matrix{Float64} -&gt; Float64                 |           1      1  0.2s
+        Correctness                                                                 |           1      1  0.2s
+ERROR: <span class="sgr91">Some tests did not pass: 34 passed, 0 failed, 2 errored, 0 broken.</span></code></pre><p>If you are too lazy to manually specify the reference, you can also provide an AD backend as the <code>ref_backend</code> keyword argument, which will serve as the ground truth for comparison.</p><h2 id="Benchmarking"><a class="docs-heading-anchor" href="#Benchmarking">Benchmarking</a><a id="Benchmarking-1"></a><a class="docs-heading-anchor-permalink" href="#Benchmarking" title="Permalink"></a></h2><p>Once you are confident that your backends give the correct answers, you probably want to compare their performance. This is made easy by the <a href="../api/#DifferentiationInterfaceTest.benchmark_differentiation"><code>benchmark_differentiation</code></a> function, whose syntax should feel familiar:</p><pre><code class="language-julia hljs">df = benchmark_differentiation(backends, scenarios);</code></pre><div><div style = "float: left;"><span>12×11 DataFrame</span></div><div style = "clear: both;"></div></div><div class = "data-frame" style = "overflow-x: scroll;"><table class = "data-frame" style = "margin-bottom: 6px;"><thead><tr class = "header"><th class = "rowNumber" style = "font-weight: bold; text-align: right;">Row</th><th style = "text-align: left;">backend</th><th style = "text-align: left;">scenario</th><th style = "text-align: left;">operator</th><th style = "text-align: left;">calls</th><th style = "text-align: left;">samples</th><th style = "text-align: left;">evals</th><th style = "text-align: left;">time</th><th style = "text-align: left;">allocs</th><th style = "text-align: left;">bytes</th><th style = "text-align: left;">gc_fraction</th><th style = "text-align: left;">compile_fraction</th></tr><tr class = "subheader headerLastRow"><th class = "rowNumber" style = "font-weight: bold; text-align: right;"></th><th title = "ADTypes.AbstractADType" style = "text-align: left;">Abstract…</th><th title = "Scenario{:gradient, 1, :inplace, typeof(Main.__atexample__named__tuto.f), X, Y, Nothing, R1, Nothing} where {X, Y, R1}" style = "text-align: left;">Scenario…</th><th title = "Symbol" style = "text-align: left;">Symbol</th><th title = "Int64" style = "text-align: left;">Int64</th><th title = "Int64" style = "text-align: left;">Int64</th><th title = "Int64" style = "text-align: left;">Int64</th><th title = "Float64" style = "text-align: left;">Float64</th><th title = "Float64" style = "text-align: left;">Float64</th><th title = "Float64" style = "text-align: left;">Float64</th><th title = "Float64" style = "text-align: left;">Float64</th><th title = "Float64" style = "text-align: left;">Float64</th></tr></thead><tbody><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">1</td><td style = "text-align: left;">AutoForwardDiff()</td><td style = "text-align: left;">Scenario{:gradient,1,:inplace} f : Vector{Float32} -&gt; Float32</td><td style = "text-align: left;">prepare_gradient</td><td style = "text-align: right;">0</td><td style = "text-align: right;">1</td><td style = "text-align: right;">1</td><td style = "text-align: right;">1.3906e-5</td><td style = "text-align: right;">11.0</td><td style = "text-align: right;">528.0</td><td style = "text-align: right;">0.0</td><td style = "text-align: right;">0.0</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">2</td><td style = "text-align: left;">AutoForwardDiff()</td><td style = "text-align: left;">Scenario{:gradient,1,:inplace} f : Vector{Float32} -&gt; Float32</td><td style = "text-align: left;">value_and_gradient!</td><td style = "text-align: right;">1</td><td style = "text-align: right;">38322</td><td style = "text-align: right;">1</td><td style = "text-align: right;">6.9e-8</td><td style = "text-align: right;">1.0</td><td style = "text-align: right;">32.0</td><td style = "text-align: right;">0.0</td><td style = "text-align: right;">0.0</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">3</td><td style = "text-align: left;">AutoForwardDiff()</td><td style = "text-align: left;">Scenario{:gradient,1,:inplace} f : Vector{Float32} -&gt; Float32</td><td style = "text-align: left;">gradient!</td><td style = "text-align: right;">1</td><td style = "text-align: right;">49387</td><td style = "text-align: right;">1</td><td style = "text-align: right;">6.0e-8</td><td style = "text-align: right;">0.0</td><td style = "text-align: right;">0.0</td><td style = "text-align: right;">0.0</td><td style = "text-align: right;">0.0</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">4</td><td style = "text-align: left;">AutoForwardDiff()</td><td style = "text-align: left;">Scenario{:gradient,1,:inplace} f : Matrix{Float64} -&gt; Float64</td><td style = "text-align: left;">prepare_gradient</td><td style = "text-align: right;">0</td><td style = "text-align: right;">1</td><td style = "text-align: right;">1</td><td style = "text-align: right;">9.448e-6</td><td style = "text-align: right;">11.0</td><td style = "text-align: right;">1776.0</td><td style = "text-align: right;">0.0</td><td style = "text-align: right;">0.0</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">5</td><td style = "text-align: left;">AutoForwardDiff()</td><td style = "text-align: left;">Scenario{:gradient,1,:inplace} f : Matrix{Float64} -&gt; Float64</td><td style = "text-align: left;">value_and_gradient!</td><td style = "text-align: right;">1</td><td style = "text-align: right;">34851</td><td style = "text-align: right;">1</td><td style = "text-align: right;">2.0e-7</td><td style = "text-align: right;">5.0</td><td style = "text-align: right;">192.0</td><td style = "text-align: right;">0.0</td><td style = "text-align: right;">0.0</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">6</td><td style = "text-align: left;">AutoForwardDiff()</td><td style = "text-align: left;">Scenario{:gradient,1,:inplace} f : Matrix{Float64} -&gt; Float64</td><td style = "text-align: left;">gradient!</td><td style = "text-align: right;">1</td><td style = "text-align: right;">37573</td><td style = "text-align: right;">1</td><td style = "text-align: right;">2.0e-7</td><td style = "text-align: right;">4.0</td><td style = "text-align: right;">160.0</td><td style = "text-align: right;">0.0</td><td style = "text-align: right;">0.0</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">7</td><td style = "text-align: left;">AutoEnzyme(mode=ReverseMode{false, FFIABI, false, false}())</td><td style = "text-align: left;">Scenario{:gradient,1,:inplace} f : Vector{Float32} -&gt; Float32</td><td style = "text-align: left;">prepare_gradient</td><td style = "text-align: right;">-1</td><td style = "text-align: right;">1</td><td style = "text-align: right;">0</td><td style = "text-align: right;">NaN</td><td style = "text-align: right;">NaN</td><td style = "text-align: right;">NaN</td><td style = "text-align: right;">NaN</td><td style = "text-align: right;">NaN</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">8</td><td style = "text-align: left;">AutoEnzyme(mode=ReverseMode{false, FFIABI, false, false}())</td><td style = "text-align: left;">Scenario{:gradient,1,:inplace} f : Vector{Float32} -&gt; Float32</td><td style = "text-align: left;">value_and_gradient!</td><td style = "text-align: right;">-1</td><td style = "text-align: right;">1</td><td style = "text-align: right;">0</td><td style = "text-align: right;">NaN</td><td style = "text-align: right;">NaN</td><td style = "text-align: right;">NaN</td><td style = "text-align: right;">NaN</td><td style = "text-align: right;">NaN</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">9</td><td style = "text-align: left;">AutoEnzyme(mode=ReverseMode{false, FFIABI, false, false}())</td><td style = "text-align: left;">Scenario{:gradient,1,:inplace} f : Vector{Float32} -&gt; Float32</td><td style = "text-align: left;">gradient!</td><td style = "text-align: right;">-1</td><td style = "text-align: right;">1</td><td style = "text-align: right;">0</td><td style = "text-align: right;">NaN</td><td style = "text-align: right;">NaN</td><td style = "text-align: right;">NaN</td><td style = "text-align: right;">NaN</td><td style = "text-align: right;">NaN</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">10</td><td style = "text-align: left;">AutoEnzyme(mode=ReverseMode{false, FFIABI, false, false}())</td><td style = "text-align: left;">Scenario{:gradient,1,:inplace} f : Matrix{Float64} -&gt; Float64</td><td style = "text-align: left;">prepare_gradient</td><td style = "text-align: right;">-1</td><td style = "text-align: right;">1</td><td style = "text-align: right;">0</td><td style = "text-align: right;">NaN</td><td style = "text-align: right;">NaN</td><td style = "text-align: right;">NaN</td><td style = "text-align: right;">NaN</td><td style = "text-align: right;">NaN</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">11</td><td style = "text-align: left;">AutoEnzyme(mode=ReverseMode{false, FFIABI, false, false}())</td><td style = "text-align: left;">Scenario{:gradient,1,:inplace} f : Matrix{Float64} -&gt; Float64</td><td style = "text-align: left;">value_and_gradient!</td><td style = "text-align: right;">-1</td><td style = "text-align: right;">1</td><td style = "text-align: right;">0</td><td style = "text-align: right;">NaN</td><td style = "text-align: right;">NaN</td><td style = "text-align: right;">NaN</td><td style = "text-align: right;">NaN</td><td style = "text-align: right;">NaN</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">12</td><td style = "text-align: left;">AutoEnzyme(mode=ReverseMode{false, FFIABI, false, false}())</td><td style = "text-align: left;">Scenario{:gradient,1,:inplace} f : Matrix{Float64} -&gt; Float64</td><td style = "text-align: left;">gradient!</td><td style = "text-align: right;">-1</td><td style = "text-align: right;">1</td><td style = "text-align: right;">0</td><td style = "text-align: right;">NaN</td><td style = "text-align: right;">NaN</td><td style = "text-align: right;">NaN</td><td style = "text-align: right;">NaN</td><td style = "text-align: right;">NaN</td></tr></tbody></table></div><p>The resulting object is a <code>DataFrame</code> from <a href="https://github.com/JuliaData/DataFrames.jl">DataFrames.jl</a>, whose columns correspond to the fields of <a href="../api/#DifferentiationInterfaceTest.DifferentiationBenchmarkDataRow"><code>DifferentiationBenchmarkDataRow</code></a>:</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Home</a><a class="docs-footer-nextpage" href="../api/">API reference »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.5.0 on <span class="colophon-date" title="Thursday 8 August 2024 08:25">Thursday 8 August 2024</span>. Using Julia version 1.10.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
