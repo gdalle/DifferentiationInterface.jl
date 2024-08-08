@@ -66,6 +66,8 @@ jobs:
           - version: 'lts'
             group: Back/FastDifferentiation
           - version: 'lts'
+            group: Back/GTPSA
+          - version: 'lts'
             group: Back/PolyesterForwardDiff
           - version: 'lts'
             group: Back/SecondOrder
