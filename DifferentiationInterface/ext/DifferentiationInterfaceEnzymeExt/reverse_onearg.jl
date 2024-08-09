@@ -153,12 +153,13 @@ function DI.gradient(
     x,
     ::NoGradientExtras,
 )
+    f_and_df = get_f_and_df(f, backend)
     if backend isa AutoDeferredEnzyme
         grad = make_zero(x)
-        autodiff_deferred(reverse_mode(backend), f, Active, Duplicated(x, grad))
+        autodiff_deferred(reverse_mode(backend), f_and_df, Active, Duplicated(x, grad))
         return grad
     else
-        return gradient(reverse_mode(backend), f, x)
+        return gradient(reverse_mode(backend), f_and_df, x)
     end
 end
 
@@ -167,14 +168,17 @@ function DI.gradient!(
     grad,
     backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}},
     x,
-    extras::NoGradientExtras,
+    ::NoGradientExtras,
 )
+    f_and_df = get_f_and_df(f, backend)
     grad_sametype = convert(typeof(x), grad)
     make_zero!(grad_sametype)
     if backend isa AutoDeferredEnzyme
-        autodiff_deferred(reverse_mode(backend), f, Active, Duplicated(x, grad_sametype))
+        autodiff_deferred(
+            reverse_mode(backend), f_and_df, Active, Duplicated(x, grad_sametype)
+        )
     else
-        gradient!(reverse_mode(backend), grad_sametype, f, x)
+        gradient!(reverse_mode(backend), grad_sametype, f_and_df, x)
     end
     return copyto!(grad, grad_sametype)
 end
