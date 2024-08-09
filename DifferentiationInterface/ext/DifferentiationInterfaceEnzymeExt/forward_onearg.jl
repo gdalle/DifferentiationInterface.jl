@@ -59,6 +59,7 @@ end
 
 ## Gradient
 
+#=
 struct EnzymeForwardGradientExtras{B,O} <: GradientExtras
     shadow::O
 end
@@ -95,6 +96,7 @@ function DI.value_and_gradient!(
     grad_tup = gradient(forward_mode(backend), f, x, Val(B); shadow=extras.shadow)
     return f(x), copyto!(grad, grad_tup)
 end
+=#
 
 ## Jacobian
 
