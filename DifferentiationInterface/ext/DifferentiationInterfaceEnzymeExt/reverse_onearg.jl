@@ -25,15 +25,18 @@ end
 
 function DI.value_and_pullback(
     f,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},function_annotation},
     x::Number,
     dy,
     ::NoPullbackExtras,
-)
+) where {function_annotation}
     f_and_df = force_annotation(get_f_and_df(f, backend))
-    forw, rev = autodiff_thunk(
-        ReverseSplitWithPrimal, typeof(f_and_df), Duplicated, typeof(Active(x))
-    )
+    mode = if function_annotation <: Annotation
+        ReverseSplitWithPrimal
+    else
+        EnzymeCore.set_err_if_func_written(ReverseSplitWithPrimal)
+    end
+    forw, rev = autodiff_thunk(mode, typeof(f_and_df), Duplicated, typeof(Active(x)))
     tape, y, new_dy = forw(f_and_df, Active(x))
     copyto!(new_dy, dy)
     new_dx = only(only(rev(f_and_df, Active(x), tape)))
@@ -102,15 +105,23 @@ function DI.value_and_pullback!(
 end
 
 function DI.value_and_pullback!(
-    f, dx, backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, dy, ::NoPullbackExtras
-)
+    f,
+    dx,
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},function_annotation},
+    x,
+    dy,
+    ::NoPullbackExtras,
+) where {function_annotation}
     f_and_df = force_annotation(get_f_and_df(f, backend))
+    mode = if function_annotation <: Annotation
+        ReverseSplitWithPrimal
+    else
+        EnzymeCore.set_err_if_func_written(ReverseSplitWithPrimal)
+    end
     dx_sametype = convert(typeof(x), dx)
     make_zero!(dx_sametype)
     x_and_dx = Duplicated(x, dx_sametype)
-    forw, rev = autodiff_thunk(
-        ReverseSplitWithPrimal, typeof(f_and_df), Duplicated, typeof(x_and_dx)
-    )
+    forw, rev = autodiff_thunk(mode, typeof(f_and_df), Duplicated, typeof(x_and_dx))
     tape, y, new_dy = forw(f_and_df, x_and_dx)
     copyto!(new_dy, dy)
     rev(f_and_df, x_and_dx, tape)

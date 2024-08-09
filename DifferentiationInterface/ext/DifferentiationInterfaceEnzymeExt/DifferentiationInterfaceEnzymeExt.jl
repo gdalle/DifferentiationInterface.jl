@@ -21,6 +21,7 @@ using Enzyme:
     Const,
     Duplicated,
     DuplicatedNoNeed,
+    EnzymeCore,
     Forward,
     ForwardMode,
     MixedDuplicated,
