@@ -14,12 +14,19 @@ LOGGING = get(ENV, "CI", "false") == "false"
 dense_backends = [
     AutoEnzyme(; mode=nothing),
     AutoEnzyme(; mode=Enzyme.Forward),
+    AutoEnzyme(; mode=Enzyme.Forward, function_annotation=Enzyme.Const),
     AutoEnzyme(; mode=Enzyme.Reverse),
+    AutoEnzyme(; mode=Enzyme.Reverse, function_annotation=Enzyme.Const),
 ]
 
 nested_dense_backends = [
     DifferentiationInterface.nested(AutoEnzyme(; mode=Enzyme.Forward)),
     DifferentiationInterface.nested(AutoEnzyme(; mode=Enzyme.Reverse)),
+]
+
+duplicated_function_backends = [
+    AutoEnzyme(; mode=Enzyme.Forward, function_annotation=Enzyme.Duplicated),
+    AutoEnzyme(; mode=Enzyme.Reverse, function_annotation=Enzyme.Duplicated),
 ]
 
 sparse_backends =
@@ -42,6 +49,13 @@ end
 test_differentiation(
     vcat(dense_backends, nested_dense_backends),
     default_scenarios();
+    second_order=false,
+    logging=LOGGING,
+);
+
+test_differentiation(
+    duplicated_function_backends,
+    DIT.make_closure.(default_scenarios());
     second_order=false,
     logging=LOGGING,
 );

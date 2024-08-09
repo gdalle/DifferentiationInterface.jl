@@ -25,15 +25,18 @@ end
 
 function DI.value_and_pullback(
     f,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},function_annotation},
     x::Number,
     dy,
     ::NoPullbackExtras,
-)
-    f_and_df = get_f_and_df(f, backend)
-    forw, rev = autodiff_thunk(
-        ReverseSplitWithPrimal, typeof(f_and_df), Duplicated, typeof(Active(x))
-    )
+) where {function_annotation}
+    f_and_df = force_annotation(get_f_and_df(f, backend))
+    mode = if function_annotation <: Annotation
+        ReverseSplitWithPrimal
+    else
+        my_set_err_if_func_written(ReverseSplitWithPrimal)
+    end
+    forw, rev = autodiff_thunk(mode, typeof(f_and_df), Duplicated, typeof(Active(x)))
     tape, y, new_dy = forw(f_and_df, Active(x))
     copyto!(new_dy, dy)
     new_dx = only(only(rev(f_and_df, Active(x), tape)))
@@ -102,15 +105,23 @@ function DI.value_and_pullback!(
 end
 
 function DI.value_and_pullback!(
-    f, dx, backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, dy, ::NoPullbackExtras
-)
-    f_and_df = get_f_and_df(f, backend)
+    f,
+    dx,
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},function_annotation},
+    x,
+    dy,
+    ::NoPullbackExtras,
+) where {function_annotation}
+    f_and_df = force_annotation(get_f_and_df(f, backend))
+    mode = if function_annotation <: Annotation
+        ReverseSplitWithPrimal
+    else
+        my_set_err_if_func_written(ReverseSplitWithPrimal)
+    end
     dx_sametype = convert(typeof(x), dx)
     make_zero!(dx_sametype)
     x_and_dx = Duplicated(x, dx_sametype)
-    forw, rev = autodiff_thunk(
-        ReverseSplitWithPrimal, typeof(f_and_df), Duplicated, typeof(x_and_dx)
-    )
+    forw, rev = autodiff_thunk(mode, typeof(f_and_df), Duplicated, typeof(x_and_dx))
     tape, y, new_dy = forw(f_and_df, x_and_dx)
     copyto!(new_dy, dy)
     rev(f_and_df, x_and_dx, tape)
@@ -130,47 +141,63 @@ end
 
 ## Gradient
 
-function DI.prepare_gradient(f, ::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x)
+function DI.prepare_gradient(
+    f, ::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}}, x
+)
     return NoGradientExtras()
 end
 
 function DI.gradient(
-    f, backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, ::NoGradientExtras
+    f,
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}},
+    x,
+    ::NoGradientExtras,
 )
+    f_and_df = get_f_and_df(f, backend)
     if backend isa AutoDeferredEnzyme
         grad = make_zero(x)
-        autodiff_deferred(reverse_mode(backend), f, Active, Duplicated(x, grad))
+        autodiff_deferred(reverse_mode(backend), f_and_df, Active, Duplicated(x, grad))
         return grad
     else
-        return gradient(reverse_mode(backend), f, x)
+        return gradient(reverse_mode(backend), f_and_df, x)
     end
 end
 
 function DI.gradient!(
     f,
     grad,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}},
     x,
-    extras::NoGradientExtras,
+    ::NoGradientExtras,
 )
+    f_and_df = get_f_and_df(f, backend)
     grad_sametype = convert(typeof(x), grad)
     make_zero!(grad_sametype)
     if backend isa AutoDeferredEnzyme
-        autodiff_deferred(reverse_mode(backend), f, Active, Duplicated(x, grad_sametype))
+        autodiff_deferred(
+            reverse_mode(backend), f_and_df, Active, Duplicated(x, grad_sametype)
+        )
     else
-        gradient!(reverse_mode(backend), grad_sametype, f, x)
+        gradient!(reverse_mode(backend), grad_sametype, f_and_df, x)
     end
     return copyto!(grad, grad_sametype)
 end
 
 function DI.value_and_gradient(
-    f, backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, ::NoGradientExtras
+    f,
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}},
+    x,
+    ::NoGradientExtras,
 )
     return DI.value_and_pullback(f, backend, x, true, NoPullbackExtras())
 end
 
 function DI.value_and_gradient!(
-    f, grad, backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, ::NoGradientExtras
+    f,
+    grad,
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}},
+    x,
+    ::NoGradientExtras,
 )
     return DI.value_and_pullback!(f, grad, backend, x, true, NoPullbackExtras())
 end
