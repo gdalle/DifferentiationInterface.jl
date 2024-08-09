@@ -17,6 +17,7 @@ using DifferentiationInterface:
 using DocStringExtensions
 using Enzyme:
     Active,
+    Annotation,
     Const,
     Duplicated,
     DuplicatedNoNeed,
