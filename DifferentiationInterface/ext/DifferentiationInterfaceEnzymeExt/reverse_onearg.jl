@@ -130,6 +130,7 @@ end
 
 ## Gradient
 
+#=
 function DI.prepare_gradient(f, ::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x)
     return NoGradientExtras()
 end
@@ -174,6 +175,7 @@ function DI.value_and_gradient!(
 )
     return DI.value_and_pullback!(f, grad, backend, x, true, NoPullbackExtras())
 end
+=#
 
 ## Jacobian
 
