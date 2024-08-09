@@ -98,6 +98,7 @@ end
 
 ## Jacobian
 
+#=
 struct EnzymeForwardOneArgJacobianExtras{B,O} <: JacobianExtras
     shadow::O
 end
@@ -153,3 +154,4 @@ function DI.value_and_jacobian!(
     y, new_jac = DI.value_and_jacobian(f, backend, x, extras)
     return y, copyto!(jac, new_jac)
 end
+=#
