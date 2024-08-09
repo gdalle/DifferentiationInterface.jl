@@ -34,7 +34,7 @@ function DI.value_and_pullback(
     mode = if function_annotation <: Annotation
         ReverseSplitWithPrimal
     else
-        EnzymeCore.set_err_if_func_written(ReverseSplitWithPrimal)
+        my_set_err_if_func_written(ReverseSplitWithPrimal)
     end
     forw, rev = autodiff_thunk(mode, typeof(f_and_df), Duplicated, typeof(Active(x)))
     tape, y, new_dy = forw(f_and_df, Active(x))
@@ -116,7 +116,7 @@ function DI.value_and_pullback!(
     mode = if function_annotation <: Annotation
         ReverseSplitWithPrimal
     else
-        EnzymeCore.set_err_if_func_written(ReverseSplitWithPrimal)
+        my_set_err_if_func_written(ReverseSplitWithPrimal)
     end
     dx_sametype = convert(typeof(x), dx)
     make_zero!(dx_sametype)
