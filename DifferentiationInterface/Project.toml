@@ -44,12 +44,12 @@ DifferentiationInterfaceTrackerExt = "Tracker"
 DifferentiationInterfaceZygoteExt = ["Zygote", "ForwardDiff"]
 
 [compat]
-ADTypes = "1.6.2"
+ADTypes = "1.7.0"
 ChainRulesCore = "1.23.0"
 Compat = "3.46,4.2"
 Diffractor = "=0.2.6"
 DocStringExtensions = "0.8,0.9"
-Enzyme = "0.11.20,0.12"
+Enzyme = "0.12.28"
 FastDifferentiation = "0.3.9"
 FillArrays = "1.7.0"
 FiniteDiff = "2.23.1"
