@@ -87,28 +87,6 @@ end
 
 ## One argument
 
-### Without extras
-
-function value_gradient_and_hessian(f::F, backend::AbstractADType, x) where {F}
-    return value_gradient_and_hessian(f, backend, x, prepare_hessian(f, backend, x))
-end
-
-function value_gradient_and_hessian!(f::F, grad, hess, backend::AbstractADType, x) where {F}
-    return value_gradient_and_hessian!(
-        f, grad, hess, backend, x, prepare_hessian(f, backend, x)
-    )
-end
-
-function hessian(f::F, backend::AbstractADType, x) where {F}
-    return hessian(f, backend, x, prepare_hessian(f, backend, x))
-end
-
-function hessian!(f::F, hess, backend::AbstractADType, x) where {F}
-    return hessian!(f, hess, backend, x, prepare_hessian(f, backend, x))
-end
-
-### With extras
-
 function hessian(
     f::F, backend::AbstractADType, x, extras::HVPGradientHessianExtras{B}
 ) where {F,B}

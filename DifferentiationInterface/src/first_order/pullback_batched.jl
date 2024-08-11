@@ -50,34 +50,6 @@ end
 
 ## One argument
 
-### Without extras
-
-function value_and_pullback_batched(f::F, backend::AbstractADType, x, dy::Batch) where {F}
-    return value_and_pullback_batched(
-        f, backend, x, dy, prepare_pullback_batched(f, backend, x, dy)
-    )
-end
-
-function value_and_pullback_batched!(
-    f::F, dx::Batch, backend::AbstractADType, x, dy::Batch
-) where {F}
-    return value_and_pullback_batched!(
-        f, dx, backend, x, dy, prepare_pullback_batched(f, backend, x, dy)
-    )
-end
-
-function pullback_batched(f::F, backend::AbstractADType, x, dy::Batch) where {F}
-    return pullback_batched(f, backend, x, dy, prepare_pullback_batched(f, backend, x, dy))
-end
-
-function pullback_batched!(f::F, dx::Batch, backend::AbstractADType, x, dy::Batch) where {F}
-    return pullback_batched!(
-        f, dx, backend, x, dy, prepare_pullback_batched(f, backend, x, dy)
-    )
-end
-
-### With extras
-
 function pullback_batched(
     f::F, backend::AbstractADType, x, dy::Batch, extras::PullbackExtras
 ) where {F}
@@ -107,40 +79,6 @@ function value_and_pullback_batched!(
 end
 
 ## Two arguments
-
-### Without extras
-
-function value_and_pullback_batched(
-    f!::F, y, backend::AbstractADType, x, dy::Batch
-) where {F}
-    return value_and_pullback_batched(
-        f!, y, backend, x, dy, prepare_pullback_batched(f!, y, backend, x, dy)
-    )
-end
-
-function value_and_pullback_batched!(
-    f!::F, y, dx::Batch, backend::AbstractADType, x, dy::Batch
-) where {F}
-    return value_and_pullback_batched!(
-        f!, y, dx, backend, x, dy, prepare_pullback_batched(f!, y, backend, x, dy)
-    )
-end
-
-function pullback_batched(f!::F, y, backend::AbstractADType, x, dy::Batch) where {F}
-    return pullback_batched(
-        f!, y, backend, x, dy, prepare_pullback_batched(f!, y, backend, x, dy)
-    )
-end
-
-function pullback_batched!(
-    f!::F, y, dx::Batch, backend::AbstractADType, x, dy::Batch
-) where {F}
-    return pullback_batched!(
-        f!, y, dx, backend, x, dy, prepare_pullback_batched(f!, y, backend, x, dy)
-    )
-end
-
-### With extras
 
 function pullback_batched(
     f!::F, y, backend::AbstractADType, x, dy::Batch, extras::PullbackExtras

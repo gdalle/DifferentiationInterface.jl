@@ -124,18 +124,6 @@ end
 
 ## One argument
 
-### Without extras
-
-function hvp(f::F, backend::AbstractADType, x, dx) where {F}
-    return hvp(f, backend, x, dx, prepare_hvp(f, backend, x, dx))
-end
-
-function hvp!(f::F, dg, backend::AbstractADType, x, dx) where {F}
-    return hvp!(f, dg, backend, x, dx, prepare_hvp(f, backend, x, dx))
-end
-
-### With extras
-
 function hvp(f::F, backend::AbstractADType, x, dx, extras::HVPExtras) where {F}
     return hvp(f, SecondOrder(backend, backend), x, dx, extras)
 end

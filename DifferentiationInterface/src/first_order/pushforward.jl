@@ -161,28 +161,6 @@ end
 
 ## One argument
 
-### Without extras
-
-function value_and_pushforward(f::F, backend::AbstractADType, x, dx) where {F}
-    return value_and_pushforward(f, backend, x, dx, prepare_pushforward(f, backend, x, dx))
-end
-
-function value_and_pushforward!(f::F, dy, backend::AbstractADType, x, dx) where {F}
-    return value_and_pushforward!(
-        f, dy, backend, x, dx, prepare_pushforward(f, backend, x, dx)
-    )
-end
-
-function pushforward(f::F, backend::AbstractADType, x, dx) where {F}
-    return pushforward(f, backend, x, dx, prepare_pushforward(f, backend, x, dx))
-end
-
-function pushforward!(f::F, dy, backend::AbstractADType, x, dx) where {F}
-    return pushforward!(f, dy, backend, x, dx, prepare_pushforward(f, backend, x, dx))
-end
-
-### With extras
-
 function value_and_pushforward(
     f::F, backend::AbstractADType, x, dx, extras::PullbackPushforwardExtras
 ) where {F}
@@ -224,32 +202,6 @@ function pushforward!(
 end
 
 ## Two arguments
-
-### Without extras
-
-function value_and_pushforward(f!::F, y, backend::AbstractADType, x, dx) where {F}
-    return value_and_pushforward(
-        f!, y, backend, x, dx, prepare_pushforward(f!, y, backend, x, dx)
-    )
-end
-
-function value_and_pushforward!(f!::F, y, dy, backend::AbstractADType, x, dx) where {F}
-    return value_and_pushforward!(
-        f!, y, dy, backend, x, dx, prepare_pushforward(f!, y, backend, x, dx)
-    )
-end
-
-function pushforward(f!::F, y, backend::AbstractADType, x, dx) where {F}
-    return pushforward(f!, y, backend, x, dx, prepare_pushforward(f!, y, backend, x, dx))
-end
-
-function pushforward!(f!::F, y, dy, backend::AbstractADType, x, dx) where {F}
-    return pushforward!(
-        f!, y, dy, backend, x, dx, prepare_pushforward(f!, y, backend, x, dx)
-    )
-end
-
-### With extras
 
 function value_and_pushforward(
     f!::F, y, backend::AbstractADType, x, dx, extras::PullbackPushforwardExtras
