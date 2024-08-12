@@ -52,40 +52,6 @@ end
 
 ## One argument
 
-### Without extras
-
-function value_and_pushforward_batched(
-    f::F, backend::AbstractADType, x, dx::Batch
-) where {F}
-    return value_and_pushforward_batched(
-        f, backend, x, dx, prepare_pushforward_batched(f, backend, x, dx)
-    )
-end
-
-function value_and_pushforward_batched!(
-    f::F, dy::Batch, backend::AbstractADType, x, dx::Batch
-) where {F}
-    return value_and_pushforward_batched!(
-        f, dy, backend, x, dx, prepare_pushforward_batched(f, backend, x, dx)
-    )
-end
-
-function pushforward_batched(f::F, backend::AbstractADType, x, dx::Batch) where {F}
-    return pushforward_batched(
-        f, backend, x, dx, prepare_pushforward_batched(f, backend, x, dx)
-    )
-end
-
-function pushforward_batched!(
-    f::F, dy::Batch, backend::AbstractADType, x, dx::Batch
-) where {F}
-    return pushforward_batched!(
-        f, dy, backend, x, dx, prepare_pushforward_batched(f, backend, x, dx)
-    )
-end
-
-### With extras
-
 function pushforward_batched(
     f::F, backend::AbstractADType, x, dx::Batch, extras::PushforwardExtras
 ) where {F}
@@ -115,40 +81,6 @@ function value_and_pushforward_batched!(
 end
 
 ## Two arguments
-
-### Without extras
-
-function value_and_pushforward_batched(
-    f!::F, y, backend::AbstractADType, x, dx::Batch
-) where {F}
-    return value_and_pushforward_batched(
-        f!, y, backend, x, dx, prepare_pushforward_batched(f!, y, backend, x, dx)
-    )
-end
-
-function value_and_pushforward_batched!(
-    f!::F, y, dy::Batch, backend::AbstractADType, x, dx::Batch
-) where {F}
-    return value_and_pushforward_batched!(
-        f!, y, dy, backend, x, dx, prepare_pushforward_batched(f!, y, backend, x, dx)
-    )
-end
-
-function pushforward_batched(f!::F, y, backend::AbstractADType, x, dx::Batch) where {F}
-    return pushforward_batched(
-        f!, y, backend, x, dx, prepare_pushforward_batched(f!, y, backend, x, dx)
-    )
-end
-
-function pushforward_batched!(
-    f!::F, y, dy::Batch, backend::AbstractADType, x, dx::Batch
-) where {F}
-    return pushforward_batched!(
-        f!, y, dy, backend, x, dx, prepare_pushforward_batched(f!, y, backend, x, dx)
-    )
-end
-
-### With extras
 
 function pushforward_batched(
     f!::F, y, backend::AbstractADType, x, dx::Batch, extras::PushforwardExtras
