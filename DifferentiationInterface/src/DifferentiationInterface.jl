@@ -36,10 +36,9 @@ using PackageExtensionCompat: @require_extensions
 using SparseArrays: SparseMatrixCSC, nonzeros, nzrange, rowvals, sparse
 using SparseMatrixColorings:
     AbstractColoringResult,
+    ColoringProblem,
     GreedyColoringAlgorithm,
-    column_coloring_detailed,
-    row_coloring_detailed,
-    symmetric_coloring_detailed,
+    coloring,
     column_colors,
     row_colors,
     column_groups,

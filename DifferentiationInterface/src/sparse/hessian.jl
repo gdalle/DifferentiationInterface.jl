@@ -38,7 +38,12 @@ end
 function prepare_hessian(f::F, backend::AutoSparse, x) where {F}
     dense_backend = dense_ad(backend)
     sparsity = hessian_sparsity(f, x, sparsity_detector(backend))
-    coloring_result = symmetric_coloring_detailed(sparsity, coloring_algorithm(backend))
+    problem = ColoringProblem(;
+        structure=:symmetric, partition=:column; decompression_eltype=eltype(x)
+    )
+    coloring_result = symmetric_coloring_detailed(
+        sparsity, problem, coloring_algorithm(backend)
+    )
     groups = column_groups(coloring_result)
     Ng = length(groups)
     B = pick_batchsize(maybe_outer(dense_backend), Ng)
