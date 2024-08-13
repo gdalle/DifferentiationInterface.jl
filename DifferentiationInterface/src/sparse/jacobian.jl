@@ -77,13 +77,12 @@ function prepare_sparse_jacobian_aux(
 ) where {FY}
     dense_backend = dense_ad(backend)
     sparsity = jacobian_sparsity(f_or_f!y..., x, sparsity_detector(backend))
-    problem = ColoringProblem(;
-        structure=:nonsymmetric,
-        partition=:column,
+    problem = ColoringProblem(; structure=:nonsymmetric, partition=:column)
+    coloring_result = coloring(
+        sparsity,
+        problem,
+        coloring_algorithm(backend);
         decompression_eltype=promote_type(eltype(x), eltype(y)),
-    )
-    coloring_result = column_coloring_detailed(
-        sparsity, problem, coloring_algorithm(backend)
     )
     groups = column_groups(coloring_result)
     Ng = length(groups)
@@ -113,12 +112,13 @@ function prepare_sparse_jacobian_aux(
 ) where {FY}
     dense_backend = dense_ad(backend)
     sparsity = jacobian_sparsity(f_or_f!y..., x, sparsity_detector(backend))
-    problem = ColoringProblem(;
-        structure=:nonsymmetric,
-        partition=:row,
+    problem = ColoringProblem(; structure=:nonsymmetric, partition=:row)
+    coloring_result = coloring(
+        sparsity,
+        problem,
+        coloring_algorithm(backend);
         decompression_eltype=promote_type(eltype(x), eltype(y)),
     )
-    coloring_result = row_coloring_detailed(sparsity, problem, coloring_algorithm(backend))
     groups = row_groups(coloring_result)
     Ng = length(groups)
     B = pick_batchsize(dense_backend, Ng)
