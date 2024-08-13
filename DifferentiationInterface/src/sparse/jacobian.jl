@@ -4,7 +4,7 @@ abstract type SparseJacobianExtras <: JacobianExtras end
 
 struct PushforwardSparseJacobianExtras{
     B,
-    C<:AbstractColoringResult{:column,false},
+    C<:AbstractColoringResult{:nonsymmetric,:column},
     M<:AbstractMatrix{<:Real},
     D,
     R,
@@ -18,7 +18,12 @@ struct PushforwardSparseJacobianExtras{
 end
 
 struct PullbackSparseJacobianExtras{
-    B,C<:AbstractColoringResult{:row,false},M<:AbstractMatrix{<:Real},D,R,E<:PullbackExtras
+    B,
+    C<:AbstractColoringResult{:nonsymmetric,:row},
+    M<:AbstractMatrix{<:Real},
+    D,
+    R,
+    E<:PullbackExtras,
 } <: SparseJacobianExtras
     coloring_result::C
     compressed_matrix::M

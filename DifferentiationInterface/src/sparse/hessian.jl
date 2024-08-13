@@ -1,6 +1,6 @@
 struct SparseHessianExtras{
     B,
-    C<:AbstractColoringResult{:column,true},
+    C<:AbstractColoringResult{:symmetric,:column},
     M<:AbstractMatrix{<:Real},
     D,
     R,
