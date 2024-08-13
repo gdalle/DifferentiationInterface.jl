@@ -72,6 +72,8 @@ include("second_order/hvp.jl")
 include("second_order/hvp_batched.jl")
 include("second_order/hessian.jl")
 
+include("fallbacks/no_extras.jl")
+
 include("sparse/fallbacks.jl")
 include("sparse/jacobian.jl")
 include("sparse/hessian.jl")

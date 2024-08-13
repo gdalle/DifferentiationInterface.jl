@@ -73,18 +73,6 @@ end
 
 ## One argument
 
-### Without extras
-
-function hvp_batched(f::F, backend::AbstractADType, x, dx::Batch) where {F}
-    return hvp_batched(f, backend, x, dx, prepare_hvp_batched(f, backend, x, dx))
-end
-
-function hvp_batched!(f::F, dg::Batch, backend::AbstractADType, x, dx::Batch) where {F}
-    return hvp_batched!(f, dg, backend, x, dx, prepare_hvp_batched(f, backend, x, dx))
-end
-
-### With extras
-
 function hvp_batched(
     f::F, backend::AbstractADType, x, dx::Batch, extras::HVPExtras
 ) where {F}

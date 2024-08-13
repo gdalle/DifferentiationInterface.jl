@@ -63,36 +63,55 @@ struct EnzymeForwardGradientExtras{B,O} <: GradientExtras
     shadow::O
 end
 
-function DI.prepare_gradient(f, backend::AutoEnzyme{<:ForwardMode}, x)
+function DI.prepare_gradient(
+    f, backend::AutoEnzyme{<:ForwardMode,<:Union{Nothing,Const}}, x
+)
     B = pick_batchsize(backend, length(x))
     shadow = chunkedonehot(x, Val(B))
     return EnzymeForwardGradientExtras{B,typeof(shadow)}(shadow)
 end
 
 function DI.gradient(
-    f, backend::AutoEnzyme{<:ForwardMode}, x, extras::EnzymeForwardGradientExtras{B}
+    f,
+    backend::AutoEnzyme{<:ForwardMode,<:Union{Nothing,Const}},
+    x,
+    extras::EnzymeForwardGradientExtras{B},
 ) where {B}
-    grad_tup = gradient(forward_mode(backend), f, x, Val(B); shadow=extras.shadow)
+    f_and_df = get_f_and_df(f, backend)
+    grad_tup = gradient(forward_mode(backend), f_and_df, x, Val(B); shadow=extras.shadow)
     return reshape(collect(grad_tup), size(x))
 end
 
 function DI.value_and_gradient(
-    f, backend::AutoEnzyme{<:ForwardMode}, x, extras::EnzymeForwardGradientExtras
+    f,
+    backend::AutoEnzyme{<:ForwardMode,<:Union{Nothing,Const}},
+    x,
+    extras::EnzymeForwardGradientExtras,
 )
     return f(x), DI.gradient(f, backend, x, extras)
 end
 
 function DI.gradient!(
-    f, grad, backend::AutoEnzyme{<:ForwardMode}, x, extras::EnzymeForwardGradientExtras{B}
+    f,
+    grad,
+    backend::AutoEnzyme{<:ForwardMode,<:Union{Nothing,Const}},
+    x,
+    extras::EnzymeForwardGradientExtras{B},
 ) where {B}
-    grad_tup = gradient(forward_mode(backend), f, x, Val(B); shadow=extras.shadow)
+    f_and_df = get_f_and_df(f, backend)
+    grad_tup = gradient(forward_mode(backend), f_and_df, x, Val(B); shadow=extras.shadow)
     return copyto!(grad, grad_tup)
 end
 
 function DI.value_and_gradient!(
-    f, grad, backend::AutoEnzyme{<:ForwardMode}, x, extras::EnzymeForwardGradientExtras{B}
+    f,
+    grad,
+    backend::AutoEnzyme{<:ForwardMode,<:Union{Nothing,Const}},
+    x,
+    extras::EnzymeForwardGradientExtras{B},
 ) where {B}
-    grad_tup = gradient(forward_mode(backend), f, x, Val(B); shadow=extras.shadow)
+    f_and_df = get_f_and_df(f, backend)
+    grad_tup = gradient(forward_mode(backend), f_and_df, x, Val(B); shadow=extras.shadow)
     return f(x), copyto!(grad, grad_tup)
 end
 
@@ -102,7 +121,9 @@ struct EnzymeForwardOneArgJacobianExtras{B,O} <: JacobianExtras
     shadow::O
 end
 
-function DI.prepare_jacobian(f, backend::AutoEnzyme{<:Union{ForwardMode,Nothing}}, x)
+function DI.prepare_jacobian(
+    f, backend::AutoEnzyme{<:Union{ForwardMode,Nothing},<:Union{Nothing,Const}}, x
+)
     B = pick_batchsize(backend, length(x))
     if B == 1
         shadow = onehot(x)
@@ -114,11 +135,14 @@ end
 
 function DI.jacobian(
     f,
-    backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
+    backend::AutoEnzyme{<:Union{ForwardMode,Nothing},<:Union{Nothing,Const}},
     x,
     extras::EnzymeForwardOneArgJacobianExtras{B},
 ) where {B}
-    jac_wrongshape = jacobian(forward_mode(backend), f, x, Val(B); shadow=extras.shadow)
+    f_and_df = get_f_and_df(f, backend)
+    jac_wrongshape = jacobian(
+        forward_mode(backend), f_and_df, x, Val(B); shadow=extras.shadow
+    )
     nx = length(x)
     ny = length(jac_wrongshape) ÷ length(x)
     return reshape(jac_wrongshape, ny, nx)
@@ -126,7 +150,7 @@ end
 
 function DI.value_and_jacobian(
     f,
-    backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
+    backend::AutoEnzyme{<:Union{ForwardMode,Nothing},<:Union{Nothing,Const}},
     x,
     extras::EnzymeForwardOneArgJacobianExtras,
 )
@@ -136,7 +160,7 @@ end
 function DI.jacobian!(
     f,
     jac,
-    backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
+    backend::AutoEnzyme{<:Union{ForwardMode,Nothing},<:Union{Nothing,Const}},
     x,
     extras::EnzymeForwardOneArgJacobianExtras,
 )
@@ -146,7 +170,7 @@ end
 function DI.value_and_jacobian!(
     f,
     jac,
-    backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
+    backend::AutoEnzyme{<:Union{ForwardMode,Nothing},<:Union{Nothing,Const}},
     x,
     extras::EnzymeForwardOneArgJacobianExtras,
 )
