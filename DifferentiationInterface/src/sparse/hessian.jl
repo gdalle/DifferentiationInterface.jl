@@ -38,7 +38,7 @@ end
 function prepare_hessian(f::F, backend::AutoSparse, x) where {F}
     dense_backend = dense_ad(backend)
     sparsity = hessian_sparsity(f, x, sparsity_detector(backend))
-    problem = ColoringProblem(; structure=:symmetric, partition=:column)
+    problem = ColoringProblem{:symmetric,:column}()
     coloring_result = coloring(
         sparsity, problem, coloring_algorithm(backend); decompression_eltype=eltype(x)
     )

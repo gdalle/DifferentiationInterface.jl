@@ -82,7 +82,7 @@ function prepare_sparse_jacobian_aux(
 ) where {FY}
     dense_backend = dense_ad(backend)
     sparsity = jacobian_sparsity(f_or_f!y..., x, sparsity_detector(backend))
-    problem = ColoringProblem(; structure=:nonsymmetric, partition=:column)
+    problem = ColoringProblem{:nonsymmetric,:column}()
     coloring_result = coloring(
         sparsity,
         problem,
@@ -117,7 +117,7 @@ function prepare_sparse_jacobian_aux(
 ) where {FY}
     dense_backend = dense_ad(backend)
     sparsity = jacobian_sparsity(f_or_f!y..., x, sparsity_detector(backend))
-    problem = ColoringProblem(; structure=:nonsymmetric, partition=:row)
+    problem = ColoringProblem{:nonsymmetric,:row}()
     coloring_result = coloring(
         sparsity,
         problem,
