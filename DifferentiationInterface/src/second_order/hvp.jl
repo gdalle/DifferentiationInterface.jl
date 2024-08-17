@@ -40,8 +40,6 @@ function hvp! end
 
 ## Preparation
 
-### Extras types
-
 """
     HVPExtras
 
@@ -70,122 +68,134 @@ struct ReverseOverReverseHVPExtras{G<:Gradient,E<:PullbackExtras} <: HVPExtras
     outer_pullback_extras::E
 end
 
-### Different point
-
-function prepare_hvp(f::F, backend::AbstractADType, x, dx) where {F}
-    return prepare_hvp(f, SecondOrder(backend, backend), x, dx)
+function prepare_hvp(f::F, backend::AbstractADType, x, tx::Tangents{1}) where {F}
+    return prepare_hvp(f, SecondOrder(backend, backend), x, tx)
 end
 
-function prepare_hvp(f::F, backend::SecondOrder, x, dx) where {F}
-    return prepare_hvp_aux(f, backend, x, dx, hvp_mode(backend))
+function prepare_hvp(f::F, backend::SecondOrder, x, tx::Tangents{1}) where {F}
+    return prepare_hvp_aux(f, backend, x, tx, hvp_mode(backend))
 end
 
-function prepare_hvp_aux(f::F, backend::SecondOrder, x, dx, ::ForwardOverForward) where {F}
+function prepare_hvp_aux(
+    f::F, backend::SecondOrder, x, tx::Tangents{1}, ::ForwardOverForward
+) where {F}
     # pushforward of many pushforwards in theory, but pushforward of gradient in practice
     inner_gradient = Gradient(f, nested(inner(backend)))
-    outer_pushforward_extras = prepare_pushforward(inner_gradient, outer(backend), x, dx)
+    outer_pushforward_extras = prepare_pushforward(inner_gradient, outer(backend), x, tx)
     return ForwardOverForwardHVPExtras(inner_gradient, outer_pushforward_extras)
 end
 
-function prepare_hvp_aux(f::F, backend::SecondOrder, x, dx, ::ForwardOverReverse) where {F}
+function prepare_hvp_aux(
+    f::F, backend::SecondOrder, x, tx::Tangents{1}, ::ForwardOverReverse
+) where {F}
     # pushforward of gradient
     inner_gradient = Gradient(f, nested(inner(backend)))
-    outer_pushforward_extras = prepare_pushforward(inner_gradient, outer(backend), x, dx)
+    outer_pushforward_extras = prepare_pushforward(inner_gradient, outer(backend), x, tx)
     return ForwardOverReverseHVPExtras(inner_gradient, outer_pushforward_extras)
 end
 
-function prepare_hvp_aux(f::F, backend::SecondOrder, x, dx, ::ReverseOverForward) where {F}
+function prepare_hvp_aux(
+    f::F, backend::SecondOrder, x, tx::Tangents{1}, ::ReverseOverForward
+) where {F}
     # gradient of pushforward
     # uses dx in the closure so it can't be stored
-    inner_pushforward = PushforwardFixedSeed(f, nested(inner(backend)), dx)
+    inner_pushforward = PushforwardFixedSeed(f, nested(inner(backend)), tx)
     outer_gradient_extras = prepare_gradient(inner_pushforward, outer(backend), x)
     return ReverseOverForwardHVPExtras(outer_gradient_extras)
 end
 
-function prepare_hvp_aux(f::F, backend::SecondOrder, x, dx, ::ReverseOverReverse) where {F}
+function prepare_hvp_aux(
+    f::F, backend::SecondOrder, x, tx::Tangents{1}, ::ReverseOverReverse
+) where {F}
     # pullback of gradient
     inner_gradient = Gradient(f, nested(inner(backend)))
-    outer_pullback_extras = prepare_pullback(inner_gradient, outer(backend), x, dx)
+    outer_pullback_extras = prepare_pullback(inner_gradient, outer(backend), x, tx)
     return ReverseOverReverseHVPExtras(inner_gradient, outer_pullback_extras)
-end
-
-### Same point
-
-function prepare_hvp_same_point(
-    f::F, backend::AbstractADType, x, dx, extras::HVPExtras
-) where {F}
-    return extras
-end
-
-function prepare_hvp_same_point(f::F, backend::AbstractADType, x, dx) where {F}
-    extras = prepare_hvp(f, backend, x, dx)
-    return prepare_hvp_same_point(f, backend, x, dx, extras)
 end
 
 ## One argument
 
-function hvp(f::F, backend::AbstractADType, x, dx, extras::HVPExtras) where {F}
-    return hvp(f, SecondOrder(backend, backend), x, dx, extras)
+function hvp(f::F, backend::AbstractADType, x, tx::Tangents{1}, extras::HVPExtras) where {F}
+    return hvp(f, SecondOrder(backend, backend), x, tx, extras)
 end
 
 function hvp(
-    f::F, backend::SecondOrder, x, dx, extras::ForwardOverForwardHVPExtras
+    f::F, backend::SecondOrder, x, tx::Tangents{1}, extras::ForwardOverForwardHVPExtras
 ) where {F}
     @compat (; inner_gradient, outer_pushforward_extras) = extras
-    return pushforward(inner_gradient, outer(backend), x, dx, outer_pushforward_extras)
+    return pushforward(inner_gradient, outer(backend), x, tx, outer_pushforward_extras)
 end
 
 function hvp(
-    f::F, backend::SecondOrder, x, dx, extras::ForwardOverReverseHVPExtras
+    f::F, backend::SecondOrder, x, tx::Tangents{1}, extras::ForwardOverReverseHVPExtras
 ) where {F}
     @compat (; inner_gradient, outer_pushforward_extras) = extras
-    return pushforward(inner_gradient, outer(backend), x, dx, outer_pushforward_extras)
+    return pushforward(inner_gradient, outer(backend), x, tx, outer_pushforward_extras)
 end
 
 function hvp(
-    f::F, backend::SecondOrder, x, dx, extras::ReverseOverForwardHVPExtras
+    f::F, backend::SecondOrder, x, tx::Tangents{1}, extras::ReverseOverForwardHVPExtras
 ) where {F}
     @compat (; outer_gradient_extras) = extras
     inner_pushforward = PushforwardFixedSeed(f, nested(inner(backend)), dx)
-    return gradient(inner_pushforward, outer(backend), x, outer_gradient_extras)
+    dg = gradient(inner_pushforward, outer(backend), x, outer_gradient_extras)
+    return Tangents(dg)
 end
 
 function hvp(
-    f::F, backend::SecondOrder, x, dx, extras::ReverseOverReverseHVPExtras
+    f::F, backend::SecondOrder, x, tx::Tangents{1}, extras::ReverseOverReverseHVPExtras
 ) where {F}
     @compat (; inner_gradient, outer_pullback_extras) = extras
-    return pullback(inner_gradient, outer(backend), x, dx, outer_pullback_extras)
-end
-
-function hvp!(f::F, dg, backend::AbstractADType, x, dx, extras::HVPExtras) where {F}
-    return hvp!(f, dg, SecondOrder(backend, backend), x, dx, extras)
+    return pullback(inner_gradient, outer(backend), x, tx, outer_pullback_extras)
 end
 
 function hvp!(
-    f::F, dg, backend::SecondOrder, x, dx, extras::ForwardOverForwardHVPExtras
+    f::F, tg::Tangents{1}, backend::AbstractADType, x, tx::Tangents{1}, extras::HVPExtras
+) where {F}
+    return hvp!(f, tg, SecondOrder(backend, backend), x, tx, extras)
+end
+
+function hvp!(
+    f::F, tg, backend::SecondOrder, x, tx::Tangents{1}, extras::ForwardOverForwardHVPExtras
 ) where {F}
     @compat (; inner_gradient, outer_pushforward_extras) = extras
-    return pushforward!(inner_gradient, dg, outer(backend), x, dx, outer_pushforward_extras)
+    return pushforward!(inner_gradient, tg, outer(backend), x, tx, outer_pushforward_extras)
 end
 
 function hvp!(
-    f::F, dg, backend::SecondOrder, x, dx, extras::ForwardOverReverseHVPExtras
+    f::F,
+    tg::Tangents{1},
+    backend::SecondOrder,
+    x,
+    tx::Tangents{1},
+    extras::ForwardOverReverseHVPExtras,
 ) where {F}
     @compat (; inner_gradient, outer_pushforward_extras) = extras
-    return pushforward!(inner_gradient, dg, outer(backend), x, dx, outer_pushforward_extras)
+    return pushforward!(inner_gradient, tg, outer(backend), x, tx, outer_pushforward_extras)
 end
 
 function hvp!(
-    f::F, dg, backend::SecondOrder, x, dx, extras::ReverseOverForwardHVPExtras
+    f::F,
+    tg::Tangents{1},
+    backend::SecondOrder,
+    x,
+    tx::Tangents{1},
+    extras::ReverseOverForwardHVPExtras,
 ) where {F}
     @compat (; outer_gradient_extras) = extras
     inner_pushforward = PushforwardFixedSeed(f, nested(inner(backend)), dx)
-    return gradient!(inner_pushforward, dg, outer(backend), x, outer_gradient_extras)
+    gradient!(inner_pushforward, only(tg), outer(backend), x, outer_gradient_extras)
+    return tg
 end
 
 function hvp!(
-    f::F, dg, backend::SecondOrder, x, dx, extras::ReverseOverReverseHVPExtras
+    f::F,
+    tg::Tangents{1},
+    backend::SecondOrder,
+    x,
+    tx::Tangents{1},
+    extras::ReverseOverReverseHVPExtras,
 ) where {F}
     @compat (; inner_gradient, outer_pullback_extras) = extras
-    return pullback!(inner_gradient, dg, outer(backend), x, dx, outer_pullback_extras)
+    return pullback!(inner_gradient, tg, outer(backend), x, tx, outer_pullback_extras)
 end

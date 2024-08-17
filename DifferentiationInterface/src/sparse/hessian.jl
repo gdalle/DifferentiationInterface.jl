@@ -9,18 +9,18 @@ struct SparseHessianExtras{
 } <: HessianExtras
     coloring_result::C
     compressed_matrix::M
-    batched_seeds::Vector{Batch{B,D}}
-    batched_results::Vector{Batch{B,R}}
-    hvp_batched_extras::E2
+    batched_seeds::Vector{Tangents{B,D}}
+    batched_results::Vector{Tangents{B,R}}
+    hvp_extras::E2
     gradient_extras::E1
 end
 
 function SparseHessianExtras{B}(;
     coloring_result::C,
     compressed_matrix::M,
-    batched_seeds::Vector{Batch{B,D}},
-    batched_results::Vector{Batch{B,R}},
-    hvp_batched_extras::E2,
+    batched_seeds::Vector{Tangents{B,D}},
+    batched_results::Vector{Tangents{B,R}},
+    hvp_extras::E2,
     gradient_extras::E1,
 ) where {B,C,M,D,R,E2,E1}
     return SparseHessianExtras{B,C,M,D,R,E2,E1}(
@@ -28,7 +28,7 @@ function SparseHessianExtras{B}(;
         compressed_matrix,
         batched_seeds,
         batched_results,
-        hvp_batched_extras,
+        hvp_extras,
         gradient_extras,
     )
 end
@@ -47,35 +47,34 @@ function prepare_hessian(f::F, backend::AutoSparse, x) where {F}
     B = pick_batchsize(maybe_outer(dense_backend), Ng)
     seeds = map(group -> make_seed(x, group), groups)
     compressed_matrix = stack(_ -> vec(similar(x)), groups; dims=2)
-    batched_seeds =
-        Batch.([
-            ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % Ng], Val(B)) for
-            a in 1:div(Ng, B, RoundUp)
-        ])
-    batched_results = Batch.([ntuple(b -> similar(x), Val(B)) for _ in batched_seeds])
-    hvp_batched_extras = prepare_hvp_batched(f, dense_backend, x, batched_seeds[1])
+    batched_seeds = [
+        Tangents(ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % Ng], Val(B))...) for
+        a in 1:div(Ng, B, RoundUp)
+    ]
+    batched_results = [Tangents(ntuple(b -> similar(x), Val(B))...) for _ in batched_seeds]
+    hvp_extras = prepare_hvp(f, dense_backend, x, batched_seeds[1])
     gradient_extras = prepare_gradient(f, maybe_inner(dense_backend), x)
     return SparseHessianExtras{B}(;
         coloring_result,
         compressed_matrix,
         batched_seeds,
         batched_results,
-        hvp_batched_extras,
+        hvp_extras,
         gradient_extras,
     )
 end
 
 function hessian(f::F, backend::AutoSparse, x, extras::SparseHessianExtras{B}) where {F,B}
-    @compat (; coloring_result, batched_seeds, hvp_batched_extras) = extras
+    @compat (; coloring_result, batched_seeds, hvp_extras) = extras
     dense_backend = dense_ad(backend)
     Ng = length(column_groups(coloring_result))
 
-    hvp_batched_extras_same = prepare_hvp_batched_same_point(
-        f, dense_backend, x, batched_seeds[1], hvp_batched_extras
+    hvp_extras_same = prepare_hvp_same_point(
+        f, dense_backend, x, batched_seeds[1], hvp_extras
     )
 
     compressed_blocks = map(eachindex(batched_seeds)) do a
-        dg_batch = hvp_batched(f, dense_backend, x, batched_seeds[a], hvp_batched_extras_same)
+        dg_batch = hvp(f, dense_backend, x, batched_seeds[a], hvp_extras_same)
         stack(vec, dg_batch.d; dims=2)
     end
 
@@ -90,28 +89,17 @@ function hessian!(
     f::F, hess, backend::AutoSparse, x, extras::SparseHessianExtras{B}
 ) where {F,B}
     @compat (;
-        coloring_result,
-        compressed_matrix,
-        batched_seeds,
-        batched_results,
-        hvp_batched_extras,
+        coloring_result, compressed_matrix, batched_seeds, batched_results, hvp_extras
     ) = extras
     dense_backend = dense_ad(backend)
     Ng = length(column_groups(coloring_result))
 
-    hvp_batched_extras_same = prepare_hvp_batched_same_point(
-        f, dense_backend, x, batched_seeds[1], hvp_batched_extras
+    hvp_extras_same = prepare_hvp_same_point(
+        f, dense_backend, x, batched_seeds[1], hvp_extras
     )
 
     for a in eachindex(batched_seeds, batched_results)
-        hvp_batched!(
-            f,
-            batched_results[a],
-            dense_backend,
-            x,
-            batched_seeds[a],
-            hvp_batched_extras_same,
-        )
+        hvp!(f, batched_results[a], dense_backend, x, batched_seeds[a], hvp_extras_same)
 
         for b in eachindex(batched_results[a].d)
             copyto!(

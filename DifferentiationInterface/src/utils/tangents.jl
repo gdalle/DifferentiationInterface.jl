@@ -25,8 +25,13 @@ end
 
 Base.eltype(::Tangents{B,T}) where {B,T} = T
 
-Base.:(==)(b1::Tangents{B}, b2::Tangents{B}) where {B} = b1.d == b2.d
+Base.:(==)(t1::Tangents{B}, t2::Tangents{B}) where {B} = t1.d == t2.d
 
-function Base.isapprox(b1::Tangents{B}, b2::Tangents{B}; kwargs...) where {B}
-    return all(isapprox.(b1.d, b2.d; kwargs...))
+function Base.isapprox(t1::Tangents{B}, t2::Tangents{B}; kwargs...) where {B}
+    return all(isapprox.(t1.d, t2.d; kwargs...))
+end
+
+function Base.copyto!(t1::Tangents{B}, t2::Tangents{B}) where {B}
+    copyto!(t1.d, t2.d)
+    return t1
 end

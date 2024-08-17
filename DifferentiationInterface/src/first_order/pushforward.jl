@@ -98,45 +98,52 @@ struct PullbackPushforwardExtras{E} <: PushforwardExtras
     pullback_extras::E
 end
 
-function prepare_pushforward(f::F, backend::AbstractADType, x, dx) where {F}
-    return prepare_pushforward_aux(f, backend, x, dx, pushforward_performance(backend))
+function prepare_pushforward(f::F, backend::AbstractADType, x, tx::Tangents{1}) where {F}
+    return prepare_pushforward_aux(f, backend, x, tx, pushforward_performance(backend))
 end
 
-function prepare_pushforward(f!::F, y, backend::AbstractADType, x, dx) where {F}
-    return prepare_pushforward_aux(f!, y, backend, x, dx, pushforward_performance(backend))
+function prepare_pushforward(
+    f!::F, y, backend::AbstractADType, x, tx::Tangents{1}
+) where {F}
+    return prepare_pushforward_aux(f!, y, backend, x, tx, pushforward_performance(backend))
 end
 
 function prepare_pushforward_aux(
-    f::F, backend::AbstractADType, x, dx, ::PushforwardSlow
+    f::F, backend::AbstractADType, x, tx::Tangents{1}, ::PushforwardSlow
 ) where {F}
     y = f(x)
     dy = y isa Number ? one(y) : basis(backend, y, first(CartesianIndices(y)))
-    pullback_extras = prepare_pullback(f, backend, x, dy)
+    pullback_extras = prepare_pullback(f, backend, x, Tangents(dy))
     return PullbackPushforwardExtras(pullback_extras)
 end
 
 function prepare_pushforward_aux(
-    f!::F, y, backend::AbstractADType, x, dx, ::PushforwardSlow
+    f!::F, y, backend::AbstractADType, x, tx::Tangents{1}, ::PushforwardSlow
 ) where {F}
     dy = y isa Number ? one(y) : basis(backend, y, first(CartesianIndices(y)))
-    pullback_extras = prepare_pullback(f!, y, backend, x, dy)
+    pullback_extras = prepare_pullback(f!, y, backend, x, Tangents(dy))
     return PullbackPushforwardExtras(pullback_extras)
 end
 
-function prepare_pushforward_aux(f, backend::AbstractADType, x, dx, ::PushforwardFast)
+function prepare_pushforward_aux(
+    f, backend::AbstractADType, x, tx::Tangents{1}, ::PushforwardFast
+)
     throw(MissingBackendError(backend))
 end
 
-function prepare_pushforward_aux(f!, y, backend::AbstractADType, x, dx, ::PushforwardFast)
+function prepare_pushforward_aux(
+    f!, y, backend::AbstractADType, x, tx::Tangents{1}, ::PushforwardFast
+)
     throw(MissingBackendError(backend))
 end
 
 ## One argument
 
 function value_and_pushforward(
-    f::F, backend::AbstractADType, x, dx, extras::PullbackPushforwardExtras
+    f::F, backend::AbstractADType, x, tx::Tangents{1}, extras::PullbackPushforwardExtras
 ) where {F}
     @compat (; pullback_extras) = extras
+    dx = only(tx)
     y = f(x)
     dy = if x isa Number && y isa Number
         dx * pullback(f, backend, x, one(y), pullback_extras)
@@ -151,34 +158,46 @@ function value_and_pushforward(
             dot(dx, pullback(f, backend, x, basis(backend, y, i), pullback_extras))
         end
     end
-    return y, dy
+    return y, Tangents(dy)
 end
 
 function value_and_pushforward!(
-    f::F, dy, backend::AbstractADType, x, dx, extras::PushforwardExtras
+    f::F,
+    ty::Tangents{1},
+    backend::AbstractADType,
+    x,
+    tx::Tangents{1},
+    extras::PushforwardExtras,
 ) where {F}
-    y, new_dy = value_and_pushforward(f, backend, x, dx, extras)
-    return y, copyto!(dy, new_dy)
+    dx = only(tx)
+    y, new_ty = value_and_pushforward(f, backend, x, dx, extras)
+    return y, copyto!(ty, new_ty)
 end
 
 function pushforward(
-    f::F, backend::AbstractADType, x, dx, extras::PushforwardExtras
+    f::F, backend::AbstractADType, x, tx::Tangents{1}, extras::PushforwardExtras
 ) where {F}
-    return value_and_pushforward(f, backend, x, dx, extras)[2]
+    return value_and_pushforward(f, backend, x, tx, extras)[2]
 end
 
 function pushforward!(
-    f::F, dy, backend::AbstractADType, x, dx, extras::PushforwardExtras
+    f::F,
+    ty::Tangents{1},
+    backend::AbstractADType,
+    x,
+    tx::Tangents{1},
+    extras::PushforwardExtras,
 ) where {F}
-    return value_and_pushforward!(f, dy, backend, x, dx, extras)[2]
+    return value_and_pushforward!(f, ty, backend, x, tx, extras)[2]
 end
 
 ## Two arguments
 
 function value_and_pushforward(
-    f!::F, y, backend::AbstractADType, x, dx, extras::PullbackPushforwardExtras
+    f!::F, y, backend::AbstractADType, x, tx::Tangents{1}, extras::PullbackPushforwardExtras
 ) where {F}
     @compat (; pullback_extras) = extras
+    dx = only(tx)
     dy = if x isa Number && y isa AbstractArray
         map(CartesianIndices(y)) do i
             dx * pullback(f!, y, backend, x, basis(backend, y, i), pullback_extras)
@@ -189,42 +208,54 @@ function value_and_pushforward(
         end
     end
     f!(y, x)
-    return y, dy
+    return y, Tangents(dy)
 end
 
 function value_and_pushforward!(
-    f!::F, y, dy, backend::AbstractADType, x, dx, extras::PushforwardExtras
+    f!::F,
+    y,
+    ty::Tangents{1},
+    backend::AbstractADType,
+    x,
+    tx::Tangents{1},
+    extras::PushforwardExtras,
 ) where {F}
-    y, new_dy = value_and_pushforward(f!, y, backend, x, dx, extras)
-    return y, copyto!(dy, new_dy)
+    y, new_ty = value_and_pushforward(f!, y, backend, x, tx, extras)
+    return y, copyto!(only(ty), new_ty)
 end
 
 function pushforward(
-    f!::F, y, backend::AbstractADType, x, dx, extras::PushforwardExtras
+    f!::F, y, backend::AbstractADType, x, tx::Tangents{1}, extras::PushforwardExtras
 ) where {F}
-    return value_and_pushforward(f!, y, backend, x, dx, extras)[2]
+    return value_and_pushforward(f!, y, backend, x, tx, extras)[2]
 end
 
 function pushforward!(
-    f!::F, y, dy, backend::AbstractADType, x, dx, extras::PushforwardExtras
+    f!::F,
+    y,
+    ty::Tangents{1},
+    backend::AbstractADType,
+    x,
+    tx::Tangents{1},
+    extras::PushforwardExtras,
 ) where {F}
-    return value_and_pushforward!(f!, y, dy, backend, x, dx, extras)[2]
+    return value_and_pushforward!(f!, y, ty, backend, x, tx, extras)[2]
 end
 
 ## Functors
 
-struct PushforwardFixedSeed{F,B,DX,E}
+struct PushforwardFixedSeed{F,B,TX,E}
     f::F
     backend::B
-    dx::DX
+    tx::TX
     extras::E
 end
 
-function PushforwardFixedSeed(f, backend::AbstractADType, dx)
-    return PushforwardFixedSeed(f, backend, dx, nothing)
+function PushforwardFixedSeed(f, backend::AbstractADType, tx)
+    return PushforwardFixedSeed(f, backend, tx, nothing)
 end
 
-function (pfs::PushforwardFixedSeed{F,B,DX,Nothing})(x) where {F,B,DX}
-    @compat (; f, backend, dx) = pfs
-    return pushforward(f, backend, x, dx)
+function (pfs::PushforwardFixedSeed{F,B,DX,Nothing})(x) where {F,B,TX}
+    @compat (; f, backend, tx) = pfs
+    return pushforward(f, backend, x, tx)
 end

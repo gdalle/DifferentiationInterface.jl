@@ -98,44 +98,49 @@ struct PushforwardPullbackExtras{E} <: PullbackExtras
     pushforward_extras::E
 end
 
-function prepare_pullback(f::F, backend::AbstractADType, x, dy) where {F}
-    return prepare_pullback_aux(f, backend, x, dy, pullback_performance(backend))
+function prepare_pullback(f::F, backend::AbstractADType, x, ty::Tangents{1}) where {F}
+    return prepare_pullback_aux(f, backend, x, ty, pullback_performance(backend))
 end
 
-function prepare_pullback(f!::F, y, backend::AbstractADType, x, dy) where {F}
-    return prepare_pullback_aux(f!, y, backend, x, dy, pullback_performance(backend))
+function prepare_pullback(f!::F, y, backend::AbstractADType, x, ty::Tangents{1}) where {F}
+    return prepare_pullback_aux(f!, y, backend, x, ty, pullback_performance(backend))
 end
 
 function prepare_pullback_aux(
-    f::F, backend::AbstractADType, x, dy, ::PullbackSlow
+    f::F, backend::AbstractADType, x, ty::Tangents{1}, ::PullbackSlow
 ) where {F}
     dx = x isa Number ? one(x) : basis(backend, x, first(CartesianIndices(x)))
-    pushforward_extras = prepare_pushforward(f, backend, x, dx)
+    pushforward_extras = prepare_pushforward(f, backend, x, Tangents(dx))
     return PushforwardPullbackExtras(pushforward_extras)
 end
 
 function prepare_pullback_aux(
-    f!::F, y, backend::AbstractADType, x, dy, ::PullbackSlow
+    f!::F, y, backend::AbstractADType, x, ty::Tangents{1}, ::PullbackSlow
 ) where {F}
     dx = x isa Number ? one(x) : basis(backend, x, first(CartesianIndices(x)))
-    pushforward_extras = prepare_pushforward(f!, y, backend, x, dx)
+    pushforward_extras = prepare_pushforward(f!, y, backend, x, Tangents(dx))
     return PushforwardPullbackExtras(pushforward_extras)
 end
 
-function prepare_pullback_aux(f, backend::AbstractADType, x, dy, ::PullbackFast)
+function prepare_pullback_aux(
+    f, backend::AbstractADType, x, ty::Tangents{1}, ::PullbackFast
+)
     throw(MissingBackendError(backend))
 end
 
-function prepare_pullback_aux(f!, y, backend::AbstractADType, x, dy, ::PullbackFast)
+function prepare_pullback_aux(
+    f!, y, backend::AbstractADType, x, ty::Tangents{1}, ::PullbackFast
+)
     throw(MissingBackendError(backend))
 end
 
 ## One argument
 
 function value_and_pullback(
-    f::F, backend::AbstractADType, x, dy, extras::PushforwardPullbackExtras
+    f::F, backend::AbstractADType, x, ty::Tangents{1}, extras::PushforwardPullbackExtras
 ) where {F}
     @compat (; pushforward_extras) = extras
+    dy = only(ty)
     y = f(x)
     dx = if x isa Number && y isa Number
         dy * pushforward(f, backend, x, one(x), pushforward_extras)
@@ -150,32 +155,40 @@ function value_and_pullback(
             dot(dy, pushforward(f, backend, x, basis(backend, x, j), pushforward_extras))
         end
     end
-    return y, dx
+    return y, Tangents(dx)
 end
 
 function value_and_pullback!(
-    f::F, dx, backend::AbstractADType, x, dy, extras::PullbackExtras
+    f::F, tx::Tangents{1}, backend::AbstractADType, x, ::Tangents{1}, extras::PullbackExtras
 ) where {F}
-    y, new_dx = value_and_pullback(f, backend, x, dy, extras)
-    return y, copyto!(dx, new_dx)
+    y, new_tx = value_and_pullback(f, backend, x, ty, extras)
+    return y, copyto!(tx, new_tx)
 end
 
-function pullback(f::F, backend::AbstractADType, x, dy, extras::PullbackExtras) where {F}
-    return value_and_pullback(f, backend, x, dy, extras)[2]
+function pullback(
+    f::F, backend::AbstractADType, x, ty::Tangents{1}, extras::PullbackExtras
+) where {F}
+    return value_and_pullback(f, backend, x, ty, extras)[2]
 end
 
 function pullback!(
-    f::F, dx, backend::AbstractADType, x, dy, extras::PullbackExtras
+    f::F,
+    tx::Tangents{1},
+    backend::AbstractADType,
+    x,
+    ty::Tangents{1},
+    extras::PullbackExtras,
 ) where {F}
-    return value_and_pullback!(f, dx, backend, x, dy, extras)[2]
+    return value_and_pullback!(f, tx, backend, x, ty, extras)[2]
 end
 
 ## Two arguments
 
 function value_and_pullback(
-    f!::F, y, backend::AbstractADType, x, dy, extras::PushforwardPullbackExtras
+    f!::F, y, backend::AbstractADType, x, ty::Tangents{1}, extras::PushforwardPullbackExtras
 ) where {F}
     @compat (; pushforward_extras) = extras
+    dy = only(ty)
     dx = if x isa Number && y isa AbstractArray
         dot(dy, pushforward(f!, y, backend, x, one(x), pushforward_extras))
     elseif x isa AbstractArray && y isa AbstractArray
@@ -184,24 +197,36 @@ function value_and_pullback(
         end
     end
     f!(y, x)
-    return y, dx
+    return y, Tangents(dx)
 end
 
 function value_and_pullback!(
-    f!::F, y, dx, backend::AbstractADType, x, dy, extras::PullbackExtras
+    f!::F,
+    y,
+    tx::Tangents{1},
+    backend::AbstractADType,
+    x,
+    ty::Tangents{1},
+    extras::PullbackExtras,
 ) where {F}
-    y, new_dx = value_and_pullback(f!, y, backend, x, dy, extras)
-    return y, copyto!(dx, new_dx)
+    y, new_tx = value_and_pullback(f!, y, backend, x, ty, extras)
+    return y, copyto!(tx, new_tx)
 end
 
 function pullback(
-    f!::F, y, backend::AbstractADType, x, dy, extras::PullbackExtras
+    f!::F, y, backend::AbstractADType, x, ty::Tangents{1}, extras::PullbackExtras
 ) where {F}
-    return value_and_pullback(f!, y, backend, x, dy, extras)[2]
+    return value_and_pullback(f!, y, backend, x, ty, extras)[2]
 end
 
 function pullback!(
-    f!::F, y, dx, backend::AbstractADType, x, dy, extras::PullbackExtras
+    f!::F,
+    y,
+    tx::Tangents{1},
+    backend::AbstractADType,
+    x,
+    ty::Tangents{1},
+    extras::PullbackExtras,
 ) where {F}
-    return value_and_pullback!(f!, y, dx, backend, x, dy, extras)[2]
+    return value_and_pullback!(f!, y, tx, backend, x, ty, extras)[2]
 end

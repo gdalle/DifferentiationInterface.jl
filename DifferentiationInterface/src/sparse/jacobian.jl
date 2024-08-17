@@ -12,9 +12,9 @@ struct PushforwardSparseJacobianExtras{
 } <: SparseJacobianExtras
     coloring_result::C
     compressed_matrix::M
-    batched_seeds::Vector{Batch{B,D}}
-    batched_results::Vector{Batch{B,R}}
-    pushforward_batched_extras::E
+    batched_seeds::Vector{Tangents{B,D}}
+    batched_results::Vector{Tangents{B,R}}
+    pushforward_extras::E
 end
 
 struct PullbackSparseJacobianExtras{
@@ -27,40 +27,36 @@ struct PullbackSparseJacobianExtras{
 } <: SparseJacobianExtras
     coloring_result::C
     compressed_matrix::M
-    batched_seeds::Vector{Batch{B,D}}
-    batched_results::Vector{Batch{B,R}}
-    pullback_batched_extras::E
+    batched_seeds::Vector{Tangents{B,D}}
+    batched_results::Vector{Tangents{B,R}}
+    pullback_extras::E
 end
 
 function PushforwardSparseJacobianExtras{B}(;
     coloring_result::C,
     compressed_matrix::M,
-    batched_seeds::Vector{Batch{B,D}},
-    batched_results::Vector{Batch{B,R}},
-    pushforward_batched_extras::E,
+    batched_seeds::Vector{Tangents{B,D}},
+    batched_results::Vector{Tangents{B,R}},
+    pushforward_extras::E,
 ) where {B,C,M,D,R,E}
     return PushforwardSparseJacobianExtras{B,C,M,D,R,E}(
         coloring_result,
         compressed_matrix,
         batched_seeds,
         batched_results,
-        pushforward_batched_extras,
+        pushforward_extras,
     )
 end
 
 function PullbackSparseJacobianExtras{B}(;
     coloring_result::C,
     compressed_matrix::M,
-    batched_seeds::Vector{Batch{B,D}},
-    batched_results::Vector{Batch{B,R}},
-    pullback_batched_extras::E,
+    batched_seeds::Vector{Tangents{B,D}},
+    batched_results::Vector{Tangents{B,R}},
+    pullback_extras::E,
 ) where {B,C,M,D,R,E}
     return PullbackSparseJacobianExtras{B,C,M,D,R,E}(
-        coloring_result,
-        compressed_matrix,
-        batched_seeds,
-        batched_results,
-        pullback_batched_extras,
+        coloring_result, compressed_matrix, batched_seeds, batched_results, pullback_extras
     )
 end
 
@@ -94,13 +90,12 @@ function prepare_sparse_jacobian_aux(
     B = pick_batchsize(dense_backend, Ng)
     seeds = map(group -> make_seed(x, group), groups)
     compressed_matrix = stack(_ -> vec(similar(y)), groups; dims=2)
-    batched_seeds =
-        Batch.([
-            ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % Ng], Val(B)) for
-            a in 1:div(Ng, B, RoundUp)
-        ])
-    batched_results = Batch.([ntuple(b -> similar(y), Val(B)) for _ in batched_seeds])
-    pushforward_batched_extras = prepare_pushforward_batched(
+    batched_seeds = [
+        Tangents(ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % Ng], Val(B))...) for
+        a in 1:div(Ng, B, RoundUp)
+    ]
+    batched_results = [Tangents(ntuple(b -> similar(y), Val(B))...) for _ in batched_seeds]
+    pushforward_extras = prepare_pushforward(
         f_or_f!y..., dense_backend, x, batched_seeds[1]
     )
     return PushforwardSparseJacobianExtras{B}(;
@@ -108,7 +103,7 @@ function prepare_sparse_jacobian_aux(
         compressed_matrix,
         batched_seeds,
         batched_results,
-        pushforward_batched_extras,
+        pushforward_extras,
     )
 end
 
@@ -129,21 +124,14 @@ function prepare_sparse_jacobian_aux(
     B = pick_batchsize(dense_backend, Ng)
     seeds = map(group -> make_seed(y, group), groups)
     compressed_matrix = stack(_ -> vec(similar(x)), groups; dims=1)
-    batched_seeds =
-        Batch.([
-            ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % Ng], Val(B)) for
-            a in 1:div(Ng, B, RoundUp)
-        ])
-    batched_results = Batch.([ntuple(b -> similar(x), Val(B)) for _ in batched_seeds])
-    pullback_batched_extras = prepare_pullback_batched(
-        f_or_f!y..., dense_backend, x, batched_seeds[1]
-    )
+    batched_seeds = [
+        Tangents(ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % Ng], Val(B))...) for
+        a in 1:div(Ng, B, RoundUp)
+    ]
+    batched_results = [Tangents(ntuple(b -> similar(x), Val(B))...) for _ in batched_seeds]
+    pullback_extras = prepare_pullback(f_or_f!y..., dense_backend, x, batched_seeds[1])
     return PullbackSparseJacobianExtras{B}(;
-        coloring_result,
-        compressed_matrix,
-        batched_seeds,
-        batched_results,
-        pullback_batched_extras,
+        coloring_result, compressed_matrix, batched_seeds, batched_results, pullback_extras
     )
 end
 
@@ -204,21 +192,17 @@ end
 function sparse_jacobian_aux(
     f_or_f!y::FY, backend::AutoSparse, x, extras::PushforwardSparseJacobianExtras{B}
 ) where {FY,B}
-    @compat (; coloring_result, batched_seeds, pushforward_batched_extras) = extras
+    @compat (; coloring_result, batched_seeds, pushforward_extras) = extras
     dense_backend = dense_ad(backend)
     Ng = length(column_groups(coloring_result))
 
-    pushforward_batched_extras_same = prepare_pushforward_batched_same_point(
-        f_or_f!y..., dense_backend, x, batched_seeds[1], pushforward_batched_extras
+    pushforward_extras_same = prepare_pushforward_same_point(
+        f_or_f!y..., dense_backend, x, batched_seeds[1], pushforward_extras
     )
 
     compressed_blocks = map(eachindex(batched_seeds)) do a
-        dy_batch = pushforward_batched(
-            f_or_f!y...,
-            dense_backend,
-            x,
-            batched_seeds[a],
-            pushforward_batched_extras_same,
+        dy_batch = pushforward(
+            f_or_f!y..., dense_backend, x, batched_seeds[a], pushforward_extras_same
         )
         stack(vec, dy_batch.d; dims=2)
     end
@@ -233,21 +217,17 @@ end
 function sparse_jacobian_aux(
     f_or_f!y::FY, backend::AutoSparse, x, extras::PullbackSparseJacobianExtras{B}
 ) where {FY,B}
-    @compat (; coloring_result, batched_seeds, pullback_batched_extras) = extras
+    @compat (; coloring_result, batched_seeds, pullback_extras) = extras
     dense_backend = dense_ad(backend)
     Ng = length(row_groups(coloring_result))
 
-    pullback_batched_extras_same = prepare_pullback_batched_same_point(
-        f_or_f!y..., dense_backend, x, batched_seeds[1], pullback_batched_extras
+    pullback_extras_same = prepare_pullback_same_point(
+        f_or_f!y..., dense_backend, x, batched_seeds[1], pullback_extras
     )
 
     compressed_blocks = map(eachindex(batched_seeds)) do a
-        dx_batch = pullback_batched(
-            f_or_f!y...,
-            dense_backend,
-            x,
-            batched_seeds[a],
-            pullback_batched_extras_same,
+        dx_batch = pullback(
+            f_or_f!y..., dense_backend, x, batched_seeds[a], pullback_extras_same
         )
         stack(vec, dx_batch.d; dims=1)
     end
@@ -267,23 +247,23 @@ function sparse_jacobian_aux!(
         compressed_matrix,
         batched_seeds,
         batched_results,
-        pushforward_batched_extras,
+        pushforward_extras,
     ) = extras
     dense_backend = dense_ad(backend)
     Ng = length(column_groups(coloring_result))
 
-    pushforward_batched_extras_same = prepare_pushforward_batched_same_point(
-        f_or_f!y..., dense_backend, x, batched_seeds[1], pushforward_batched_extras
+    pushforward_extras_same = prepare_pushforward_same_point(
+        f_or_f!y..., dense_backend, x, batched_seeds[1], pushforward_extras
     )
 
     for a in eachindex(batched_seeds, batched_results)
-        pushforward_batched!(
+        pushforward!(
             f_or_f!y...,
             batched_results[a],
             dense_backend,
             x,
             batched_seeds[a],
-            pushforward_batched_extras_same,
+            pushforward_extras_same,
         )
 
         for b in eachindex(batched_results[a].d)
@@ -302,27 +282,23 @@ function sparse_jacobian_aux!(
     f_or_f!y::FY, jac, backend::AutoSparse, x, extras::PullbackSparseJacobianExtras{B}
 ) where {FY,B}
     @compat (;
-        coloring_result,
-        compressed_matrix,
-        batched_seeds,
-        batched_results,
-        pullback_batched_extras,
+        coloring_result, compressed_matrix, batched_seeds, batched_results, pullback_extras
     ) = extras
     dense_backend = dense_ad(backend)
     Ng = length(row_groups(coloring_result))
 
-    pullback_batched_extras_same = prepare_pullback_batched_same_point(
-        f_or_f!y..., dense_backend, x, batched_seeds[1], pullback_batched_extras
+    pullback_extras_same = prepare_pullback_same_point(
+        f_or_f!y..., dense_backend, x, batched_seeds[1], pullback_extras
     )
 
     for a in eachindex(batched_seeds, batched_results)
-        pullback_batched!(
+        pullback!(
             f_or_f!y...,
             batched_results[a],
             dense_backend,
             x,
             batched_seeds[a],
-            pullback_batched_extras_same,
+            pullback_extras_same,
         )
 
         for b in eachindex(batched_results[a].d)
