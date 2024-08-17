@@ -137,7 +137,7 @@ function hvp(
     f::F, backend::SecondOrder, x, tx::Tangents{1}, extras::ReverseOverForwardHVPExtras
 ) where {F}
     @compat (; outer_gradient_extras) = extras
-    inner_pushforward = PushforwardFixedSeed(f, nested(inner(backend)), dx)
+    inner_pushforward = PushforwardFixedSeed(f, nested(inner(backend)), tx)
     dg = gradient(inner_pushforward, outer(backend), x, outer_gradient_extras)
     return Tangents(dg)
 end
@@ -188,7 +188,7 @@ function hvp!(
     extras::ReverseOverForwardHVPExtras,
 ) where {F}
     @compat (; outer_gradient_extras) = extras
-    inner_pushforward = PushforwardFixedSeed(f, nested(inner(backend)), dx)
+    inner_pushforward = PushforwardFixedSeed(f, nested(inner(backend)), tx)
     gradient!(inner_pushforward, only(tg), outer(backend), x, outer_gradient_extras)
     return tg
 end

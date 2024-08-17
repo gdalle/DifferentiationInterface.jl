@@ -86,7 +86,7 @@ for op in (:pushforward, :pullback, :hvp)
         f::F, result, backend::AbstractADType, x, seed::Tangents{B}, ex::$E
     ) where {F,B}
         @assert B > 1
-        for b in eacihndex(seed.d, result.d)
+        for b in eachindex(seed.d, result.d)
             $op!(f, Tangents(result.d[b]), backend, x, Tangents(seed.d[b]), ex)
         end
         return result
