@@ -159,7 +159,12 @@ function value_and_pullback(
 end
 
 function value_and_pullback!(
-    f::F, tx::Tangents{1}, backend::AbstractADType, x, ::Tangents{1}, extras::PullbackExtras
+    f::F,
+    tx::Tangents{1},
+    backend::AbstractADType,
+    x,
+    ty::Tangents{1},
+    extras::PullbackExtras,
 ) where {F}
     y, new_tx = value_and_pullback(f, backend, x, ty, extras)
     return y, copyto!(tx, new_tx)
