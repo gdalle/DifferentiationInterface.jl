@@ -4,38 +4,23 @@ choose_chunk(::AutoForwardDiff{C}, x) where {C} = Chunk{min(length(x), C)}()
 tag_type(f, ::AutoForwardDiff{C,T}, x) where {C,T} = T
 tag_type(f, ::AutoForwardDiff{C,Nothing}, x) where {C} = typeof(Tag(f, eltype(x)))
 
-make_dual_similar(::Type{T}, x::Number, dx::Number) where {T} = Dual{T}(x, dx)
-make_dual_similar(::Type{T}, x, dx) where {T} = similar(x, Dual{T,eltype(x),1})
-
-function make_dual_similar(::Type{T}, x::Number, dx::Batch{B,<:Number}) where {T,B}
+function make_dual_similar(::Type{T}, x::Number, tx::Tangents{B,<:Number}) where {T,B}
     return Dual{T}(x, dx.d)
 end
 
-function make_dual_similar(::Type{T}, x, dx::Batch{B}) where {T,B}
+function make_dual_similar(::Type{T}, x, tx::Tangents{B}) where {T,B}
     return similar(x, Dual{T,eltype(x),B})
 end
 
-function make_dual(::Type{T}, x::Number, dx::Number) where {T}
-    return Dual{T}(x, dx)
-end
-
-function make_dual(::Type{T}, x, dx) where {T}
-    return Dual{T}.(x, dx)
-end
-
-function make_dual(::Type{T}, x::Number, dx::Batch{B,<:Number}) where {T,B}
+function make_dual(::Type{T}, x::Number, dx::Tangents{B,<:Number}) where {T,B}
     return Dual{T}(x, dx.d...)
 end
 
-function make_dual(::Type{T}, x, dx::Batch{B}) where {T,B}
+function make_dual(::Type{T}, x, dx::Tangents{B}) where {T,B}
     return Dual{T}.(x, dx.d...)
 end
 
-function make_dual!(::Type{T}, xdual, x, dx) where {T}
-    return xdual .= Dual{T}.(x, dx)
-end
-
-function make_dual!(::Type{T}, xdual, x, dx::Batch{B}) where {T,B}
+function make_dual!(::Type{T}, xdual, x, dx::Tangents{B}) where {T,B}
     return xdual .= Dual{T}.(x, dx.d...)
 end
 
@@ -49,17 +34,17 @@ myderivative!(::Type{T}, dy, ydual) where {T} = dy .= myderivative.(T, ydual)
 
 function mypartials(::Type{T}, ::Val{B}, ydual::Dual) where {T,B}
     elements = partials(T, ydual).values
-    return Batch(elements)
+    return Tangents(elements)
 end
 
 function mypartials(::Type{T}, ::Val{B}, ydual) where {T,B}
     elements = ntuple(Val(B)) do b
         partials.(T, ydual, b)
     end
-    return Batch(elements)
+    return Tangents(elements)
 end
 
-function mypartials!(::Type{T}, dy::Batch{B}, ydual) where {T,B}
+function mypartials!(::Type{T}, dy::Tangents{B}, ydual) where {T,B}
     for b in eachindex(dy.d)
         dy.d[b] .= partials.(T, ydual, b)
     end
