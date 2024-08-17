@@ -57,7 +57,7 @@ for op in (:pushforward, :pullback, :hvp)
         return only(t)
     end
     @eval function $val_and_op(f!::F, y, backend::AbstractADType, x, seed, ex::$E) where {F}
-        y, t = $val_and_op(f!, y, Tangents(backend), x, Tangents(seed), ex)
+        y, t = $val_and_op(f!, y, backend, x, Tangents(seed), ex)
         return y, only(t)
     end
     @eval function $val_and_op!(
