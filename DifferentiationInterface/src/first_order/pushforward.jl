@@ -220,7 +220,7 @@ function value_and_pushforward!(
     extras::PushforwardExtras,
 ) where {F}
     y, new_ty = value_and_pushforward(f!, y, backend, x, tx, extras)
-    return y, copyto!(only(ty), new_ty)
+    return y, copyto!(ty, new_ty)
 end
 
 function pushforward(
