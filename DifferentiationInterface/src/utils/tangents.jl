@@ -25,6 +25,9 @@ end
 
 Base.eltype(::Tangents{B,T}) where {B,T} = T
 
+Base.only(t::Tangents) = only(t.d)
+Base.first(t::Tangents) = first(t.d)
+
 Base.:(==)(t1::Tangents{B}, t2::Tangents{B}) where {B} = t1.d == t2.d
 
 function Base.isapprox(t1::Tangents{B}, t2::Tangents{B}; kwargs...) where {B}
