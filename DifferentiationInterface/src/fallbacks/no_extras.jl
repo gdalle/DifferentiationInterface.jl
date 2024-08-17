@@ -79,7 +79,7 @@ for op in (:pushforward, :pullback, :hvp)
         return $prep_op_same_point(f, backend, x, seed, $prep_op(f, backend, x, seed))
     end
     @eval function $prep_op_same_point(
-        f::F, backend::AbstractADType, x, seed, ex::E
+        f::F, backend::AbstractADType, x, seed, ex::$E
     ) where {F}
         return ex
     end
@@ -103,7 +103,7 @@ for op in (:pushforward, :pullback, :hvp)
         )
     end
     @eval function $prep_op_same_point(
-        f!::F, y, backend::AbstractADType, x, seed, ex::E
+        f!::F, y, backend::AbstractADType, x, seed, ex::$E
     ) where {F}
         return ex
     end

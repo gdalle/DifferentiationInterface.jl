@@ -1,6 +1,8 @@
 ## Pushforward
 
-function DI.prepare_pushforward(f!, y, ::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}}, x, tx::Tangents{1})
+function DI.prepare_pushforward(
+    f!, y, ::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}}, x, tx::Tangents{1}
+)
     return NoPushforwardExtras()
 end
 

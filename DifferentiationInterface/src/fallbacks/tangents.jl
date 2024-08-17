@@ -21,21 +21,21 @@ for op in (:pushforward, :pullback, :hvp)
     @eval function $prep_op(f::F, backend::AbstractADType, x, seed) where {F}
         return $prep_op(f, backend, x, Tangents(seed))
     end
-    @eval function $op(f::F, backend::AbstractADType, x, seed, ex::E) where {F}
+    @eval function $op(f::F, backend::AbstractADType, x, seed, ex::$E) where {F}
         t = $op(f, backend, x, Tangents(seed), ex)
         return only(t)
     end
-    @eval function $op!(f::F, result, backend::AbstractADType, x, seed, ex::E) where {F}
+    @eval function $op!(f::F, result, backend::AbstractADType, x, seed, ex::$E) where {F}
         t = $op!(f, Tangents(result), backend, x, Tangents(seed), ex)
         return only(t)
     end
     op == :hvp && continue
-    @eval function $val_and_op(f::F, backend::AbstractADType, x, seed, ex::E) where {F}
+    @eval function $val_and_op(f::F, backend::AbstractADType, x, seed, ex::$E) where {F}
         y, t = $val_and_op(f, backend, x, Tangents(seed), ex)
         return y, only(t)
     end
     @eval function $val_and_op!(
-        f::F, result, backend::AbstractADType, x, seed, ex::E
+        f::F, result, backend::AbstractADType, x, seed, ex::$E
     ) where {F}
         y, t = $val_and_op!(f, Tangents(result), backend, x, Tangents(seed), ex)
         return y, only(t)
@@ -46,20 +46,22 @@ for op in (:pushforward, :pullback, :hvp)
     @eval function $prep_op(f!::F, y, backend::AbstractADType, x, seed) where {F}
         return $prep_op(f!, y, backend, x, Tangents(seed))
     end
-    @eval function $op(f!::F, y, backend::AbstractADType, x, seed, ex::E) where {F}
+    @eval function $op(f!::F, y, backend::AbstractADType, x, seed, ex::$E) where {F}
         t = $op(f!, y, backend, x, Tangents(seed), ex)
         return only(t)
     end
-    @eval function $op!(f!::F, y, result, backend::AbstractADType, x, seed, ex::E) where {F}
+    @eval function $op!(
+        f!::F, y, result, backend::AbstractADType, x, seed, ex::$E
+    ) where {F}
         t = $op!(f!, y, Tangents(result), backend, x, Tangents(seed), ex)
         return only(t)
     end
-    @eval function $val_and_op(f!::F, y, backend::AbstractADType, x, seed, ex::E) where {F}
+    @eval function $val_and_op(f!::F, y, backend::AbstractADType, x, seed, ex::$E) where {F}
         y, t = $val_and_op(f!, y, Tangents(backend), x, Tangents(seed), ex)
         return y, only(t)
     end
     @eval function $val_and_op!(
-        f!::F, y, result, backend::AbstractADType, x, seed, ex::E
+        f!::F, y, result, backend::AbstractADType, x, seed, ex::$E
     ) where {F}
         y, t = $val_and_op!(f!, y, Tangents(result), backend, x, Tangents(seed), ex)
         return y, only(t)
@@ -74,14 +76,14 @@ for op in (:pushforward, :pullback, :hvp)
         return $prep_op(f, backend, x, Tangents(first(seed)))
     end
     @eval function $op(
-        f::F, backend::AbstractADType, x, seed::Tangents{B}, ex::E
+        f::F, backend::AbstractADType, x, seed::Tangents{B}, ex::$E
     ) where {F,B}
         @assert B > 1
         resultd = $op.(Ref(f), Ref(backend), Ref(x), Tangents.(seed.d), Ref(ex))
         return Tangents(resultd...)
     end
     @eval function $op!(
-        f::F, result, backend::AbstractADType, x, seed::Tangents{B}, ex::E
+        f::F, result, backend::AbstractADType, x, seed::Tangents{B}, ex::$E
     ) where {F,B}
         @assert B > 1
         for b in eacihndex(seed.d, result.d)
@@ -91,7 +93,7 @@ for op in (:pushforward, :pullback, :hvp)
     end
     op == :hvp && continue
     @eval function $val_and_op(
-        f::F, backend::AbstractADType, x, seed::Tangents{B}, ex::E
+        f::F, backend::AbstractADType, x, seed::Tangents{B}, ex::$E
     ) where {F,B}
         @assert B > 1
         result = $op(f, backend, x, seed, ex)
@@ -99,7 +101,7 @@ for op in (:pushforward, :pullback, :hvp)
         return y, result
     end
     @eval function $val_and_op!(
-        f::F, result, backend::AbstractADType, x, seed::Tangents{B}, ex::E
+        f::F, result, backend::AbstractADType, x, seed::Tangents{B}, ex::$E
     ) where {F,B}
         @assert B > 1
         $op!(f, result, backend, x, seed, ex)
@@ -116,14 +118,14 @@ for op in (:pushforward, :pullback, :hvp)
         return $prep_op(f!, y, backend, x, Tangents(first(seed)))
     end
     @eval function $op(
-        f!::F, y, backend::AbstractADType, x, seed::Tangents{B}, ex::E
+        f!::F, y, backend::AbstractADType, x, seed::Tangents{B}, ex::$E
     ) where {F,B}
         @assert B > 1
         resultd = $op.(Ref(f!), Ref(y), Ref(backend), Ref(x), Tangents.(seed.d), Ref(ex))
         return Tangents(resultd)
     end
     @eval function $op!(
-        f!::F, y, result, backend::AbstractADType, x, seed::Tangents{B}, ex::E
+        f!::F, y, result, backend::AbstractADType, x, seed::Tangents{B}, ex::$E
     ) where {F,B}
         @assert B > 1
         for b in eachindex(seed.d, result.d)
@@ -132,7 +134,7 @@ for op in (:pushforward, :pullback, :hvp)
         return result
     end
     @eval function $val_and_op(
-        f!::F, y, backend::AbstractADType, x, seed::Tangents{B}, ex::E
+        f!::F, y, backend::AbstractADType, x, seed::Tangents{B}, ex::$E
     ) where {F,B}
         @assert B > 1
         result = $op(f!, y, backend, x, seed, ex)
@@ -140,7 +142,7 @@ for op in (:pushforward, :pullback, :hvp)
         return y, result
     end
     @eval function $val_and_op!(
-        f!::F, y, result, backend::AbstractADType, x, seed::Tangents{B}, ex::E
+        f!::F, y, result, backend::AbstractADType, x, seed::Tangents{B}, ex::$E
     ) where {F,B}
         @assert B > 1
         $op!(f!, y, result, backend, x, seed, ex)

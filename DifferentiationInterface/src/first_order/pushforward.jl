@@ -255,7 +255,7 @@ function PushforwardFixedSeed(f, backend::AbstractADType, tx)
     return PushforwardFixedSeed(f, backend, tx, nothing)
 end
 
-function (pfs::PushforwardFixedSeed{F,B,DX,Nothing})(x) where {F,B,TX}
+function (pfs::PushforwardFixedSeed{F,B,TX,Nothing})(x) where {F,B,TX}
     @compat (; f, backend, tx) = pfs
     return pushforward(f, backend, x, tx)
 end
