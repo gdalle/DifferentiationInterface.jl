@@ -1,6 +1,8 @@
 ## Pullback
 
-function DI.prepare_pullback(f, ::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, dy)
+function DI.prepare_pullback(
+    f, ::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, ty::Tangents{1}
+)
     return NoPullbackExtras()
 end
 
@@ -10,9 +12,10 @@ function DI.value_and_pullback(
     f,
     backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
     x::Number,
-    dy::Number,
+    ty::Tangents{1,<:Number},
     ::NoPullbackExtras,
 )
+    dy = only(ty)
     f_and_df = get_f_and_df(f, backend)
     der, y = if backend isa AutoDeferredEnzyme
         autodiff_deferred(ReverseWithPrimal, f_and_df, Active, Active(x))
@@ -20,16 +23,17 @@ function DI.value_and_pullback(
         autodiff(ReverseWithPrimal, f_and_df, Active, Active(x))
     end
     new_dx = dy * only(der)
-    return y, new_dx
+    return y, Tangents(new_dx)
 end
 
 function DI.value_and_pullback(
     f,
     backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},function_annotation},
     x::Number,
-    dy,
+    ty::Tangents{1},
     ::NoPullbackExtras,
 ) where {function_annotation}
+    dy = only(ty)
     f_and_df = force_annotation(get_f_and_df(f, backend))
     mode = if function_annotation <: Annotation
         ReverseSplitWithPrimal
@@ -40,16 +44,17 @@ function DI.value_and_pullback(
     tape, y, new_dy = forw(f_and_df, Active(x))
     copyto!(new_dy, dy)
     new_dx = only(only(rev(f_and_df, Active(x), tape)))
-    return y, new_dx
+    return y, Tangents(new_dx)
 end
 
 function DI.value_and_pullback(
     f,
     backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
-    dy::Number,
+    ty::Tangents{1,<:Number},
     ::NoPullbackExtras,
 )
+    dy = only(ty)
     f_and_df = get_f_and_df(f, backend)
     dx_sametype = make_zero(x)
     x_and_dx = Duplicated(x, dx_sametype)
@@ -62,32 +67,41 @@ function DI.value_and_pullback(
         # TODO: generalize beyond Arrays?
         dx_sametype .*= dy
     end
-    return y, dx_sametype
+    return y, Tangents(dx_sametype)
 end
 
 function DI.value_and_pullback(
-    f, backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, dy, extras::NoPullbackExtras
+    f,
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
+    x,
+    ty::Tangents{1},
+    extras::NoPullbackExtras,
 )
     dx = make_zero(x)
-    return DI.value_and_pullback!(f, dx, backend, x, dy, extras)
+    return DI.value_and_pullback!(f, Tangents(dx), backend, x, ty, extras)
 end
 
 function DI.pullback(
-    f, backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, dy, extras::NoPullbackExtras
+    f,
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
+    x,
+    ty::Tangents{1},
+    extras::NoPullbackExtras,
 )
-    return DI.value_and_pullback(f, backend, x, dy, extras)[2]
+    return DI.value_and_pullback(f, backend, x, ty, extras)[2]
 end
 
 ### In-place
 
 function DI.value_and_pullback!(
     f,
-    dx,
+    tx::Tangents{1},
     backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
-    dy::Number,
+    ty::Tangents{1,<:Number},
     ::NoPullbackExtras,
 )
+    dx, dy = only(tx), only(ty)
     f_and_df = get_f_and_df(f, backend)
     dx_sametype = convert(typeof(x), dx)
     make_zero!(dx_sametype)
@@ -101,17 +115,19 @@ function DI.value_and_pullback!(
         # TODO: generalize beyond Arrays?
         dx_sametype .*= dy
     end
-    return y, copyto!(dx, dx_sametype)
+    copyto!(dx, dx_sametype)
+    return y, tx
 end
 
 function DI.value_and_pullback!(
     f,
-    dx,
+    tx::Tangents{1},
     backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},function_annotation},
     x,
-    dy,
+    ty::Tangents{1},
     ::NoPullbackExtras,
 ) where {function_annotation}
+    dx, dy = only(tx), only(ty)
     f_and_df = force_annotation(get_f_and_df(f, backend))
     mode = if function_annotation <: Annotation
         ReverseSplitWithPrimal
@@ -125,18 +141,19 @@ function DI.value_and_pullback!(
     tape, y, new_dy = forw(f_and_df, x_and_dx)
     copyto!(new_dy, dy)
     rev(f_and_df, x_and_dx, tape)
-    return y, copyto!(dx, dx_sametype)
+    copyto!(dx, dx_sametype)
+    return y, tx
 end
 
 function DI.pullback!(
     f,
-    dx,
+    tx::Tangents{1},
     backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
-    dy,
+    ty::Tangents{1},
     extras::NoPullbackExtras,
 )
-    return DI.value_and_pullback!(f, dx, backend, x, dy, extras)[2]
+    return DI.value_and_pullback!(f, tx, backend, x, ty, extras)[2]
 end
 
 ## Gradient

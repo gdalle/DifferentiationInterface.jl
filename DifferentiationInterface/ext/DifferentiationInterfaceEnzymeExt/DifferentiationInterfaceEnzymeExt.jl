@@ -13,6 +13,7 @@ using DifferentiationInterface:
     NoJacobianExtras,
     NoPullbackExtras,
     NoPushforwardExtras,
+    Tangents,
     pick_batchsize
 using DocStringExtensions
 using Enzyme:

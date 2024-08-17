@@ -1,12 +1,19 @@
 ## Pushforward
 
-function DI.prepare_pushforward(f, ::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}}, x, dx)
+function DI.prepare_pushforward(
+    f, ::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}}, x, tx::Tangents{1}
+)
     return NoPushforwardExtras()
 end
 
 function DI.value_and_pushforward(
-    f, backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}}, x, dx, ::NoPushforwardExtras
+    f,
+    backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}},
+    x,
+    tx::Tangents{1},
+    ::NoPushforwardExtras,
 )
+    dx = only(tx)
     f_and_df = get_f_and_df(f, backend)
     dx_sametype = convert(typeof(x), dx)
     x_and_dx = Duplicated(x, dx_sametype)
@@ -15,12 +22,17 @@ function DI.value_and_pushforward(
     else
         autodiff(forward_mode(backend), f_and_df, Duplicated, x_and_dx)
     end
-    return y, new_dy
+    return y, Tangents(new_dy)
 end
 
 function DI.pushforward(
-    f, backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}}, x, dx, ::NoPushforwardExtras
+    f,
+    backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}},
+    x,
+    tx::Tangents{1},
+    ::NoPushforwardExtras,
 )
+    dx = only(tx)
     f_and_df = get_f_and_df(f, backend)
     dx_sametype = convert(typeof(x), dx)
     x_and_dx = Duplicated(x, dx_sametype)
@@ -29,32 +41,32 @@ function DI.pushforward(
     else
         only(autodiff(forward_mode(backend), f_and_df, DuplicatedNoNeed, x_and_dx))
     end
-    return new_dy
+    return Tangents(new_dy)
 end
 
 function DI.value_and_pushforward!(
     f,
-    dy,
+    ty::Tangents{1},
     backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
-    dx,
+    tx::Tangents{1},
     extras::NoPushforwardExtras,
 )
     # dy cannot be passed anyway
-    y, new_dy = DI.value_and_pushforward(f, backend, x, dx, extras)
-    return y, copyto!(dy, new_dy)
+    y, new_ty = DI.value_and_pushforward(f, backend, x, tx, extras)
+    return y, copyto!(ty, new_ty)
 end
 
 function DI.pushforward!(
     f,
-    dy,
+    ty::Tangents{1},
     backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
-    dx,
+    tx::Tangents{1},
     extras::NoPushforwardExtras,
 )
     # dy cannot be passed anyway
-    return copyto!(dy, DI.pushforward(f, backend, x, dx, extras))
+    return copyto!(ty, DI.pushforward(f, backend, x, tx, extras))
 end
 
 ## Gradient
