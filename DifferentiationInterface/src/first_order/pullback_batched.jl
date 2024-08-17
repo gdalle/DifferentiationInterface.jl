@@ -13,11 +13,11 @@ function pullback_batched! end
 ### Different point
 
 function prepare_pullback_batched(f::F, backend::AbstractADType, x, dy::Batch) where {F}
-    return prepare_pullback(f, backend, x, first(dy.elements))
+    return prepare_pullback(f, backend, x, first(dy.d))
 end
 
 function prepare_pullback_batched(f!::F, y, backend::AbstractADType, x, dy::Batch) where {F}
-    return prepare_pullback(f!, y, backend, x, first(dy.elements))
+    return prepare_pullback(f!, y, backend, x, first(dy.d))
 end
 
 ### Same point
@@ -25,13 +25,13 @@ end
 function prepare_pullback_batched_same_point(
     f::F, backend::AbstractADType, x, dy::Batch, extras::PullbackExtras
 ) where {F}
-    return prepare_pullback_same_point(f, backend, x, first(dy.elements), extras)
+    return prepare_pullback_same_point(f, backend, x, first(dy.d), extras)
 end
 
 function prepare_pullback_batched_same_point(
     f!::F, y, backend::AbstractADType, x, dy::Batch, extras::PullbackExtras
 ) where {F}
-    return prepare_pullback_same_point(f!, y, backend, x, first(dy.elements), extras)
+    return prepare_pullback_same_point(f!, y, backend, x, first(dy.d), extras)
 end
 
 function prepare_pullback_batched_same_point(
@@ -53,15 +53,15 @@ end
 function pullback_batched(
     f::F, backend::AbstractADType, x, dy::Batch, extras::PullbackExtras
 ) where {F}
-    dx_elements = pullback.(Ref(f), Ref(backend), Ref(x), dy.elements, Ref(extras))
+    dx_elements = pullback.(Ref(f), Ref(backend), Ref(x), dy.d, Ref(extras))
     return Batch(dx_elements)
 end
 
 function pullback_batched!(
     f::F, dx::Batch, backend::AbstractADType, x, dy::Batch, extras::PullbackExtras
 ) where {F}
-    for b in eachindex(dx.elements, dy.elements)
-        pullback!(f, dx.elements[b], backend, x, dy.elements[b], extras)
+    for b in eachindex(dx.d, dy.d)
+        pullback!(f, dx.d[b], backend, x, dy.d[b], extras)
     end
     return dx
 end
@@ -83,15 +83,15 @@ end
 function pullback_batched(
     f!::F, y, backend::AbstractADType, x, dy::Batch, extras::PullbackExtras
 ) where {F}
-    dx_elements = pullback.(Ref(f!), Ref(y), Ref(backend), Ref(x), dy.elements, Ref(extras))
+    dx_elements = pullback.(Ref(f!), Ref(y), Ref(backend), Ref(x), dy.d, Ref(extras))
     return Batch(dx_elements)
 end
 
 function pullback_batched!(
     f!::F, y, dx::Batch, backend::AbstractADType, x, dy::Batch, extras::PullbackExtras
 ) where {F}
-    for b in eachindex(dx.elements, dy.elements)
-        pullback!(f!, y, dx.elements[b], backend, x, dy.elements[b], extras)
+    for b in eachindex(dx.d, dy.d)
+        pullback!(f!, y, dx.d[b], backend, x, dy.d[b], extras)
     end
     return dx
 end

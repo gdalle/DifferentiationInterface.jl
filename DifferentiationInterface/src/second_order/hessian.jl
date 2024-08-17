@@ -98,7 +98,7 @@ function hessian(
 
     hess_blocks = map(eachindex(batched_seeds)) do a
         dg_batch = hvp_batched(f, backend, x, batched_seeds[a], hvp_batched_extras_same)
-        stack(vec, dg_batch.elements; dims=2)
+        stack(vec, dg_batch.d; dims=2)
     end
 
     hess = reduce(hcat, hess_blocks)
@@ -122,10 +122,10 @@ function hessian!(
             f, batched_results[a], backend, x, batched_seeds[a], hvp_batched_extras_same
         )
 
-        for b in eachindex(batched_results[a].elements)
+        for b in eachindex(batched_results[a].d)
             copyto!(
                 view(hess, :, 1 + ((a - 1) * B + (b - 1)) % N),
-                vec(batched_results[a].elements[b]),
+                vec(batched_results[a].d[b]),
             )
         end
     end

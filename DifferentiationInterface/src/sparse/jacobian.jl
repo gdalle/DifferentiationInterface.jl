@@ -220,7 +220,7 @@ function sparse_jacobian_aux(
             batched_seeds[a],
             pushforward_batched_extras_same,
         )
-        stack(vec, dy_batch.elements; dims=2)
+        stack(vec, dy_batch.d; dims=2)
     end
 
     compressed_matrix = reduce(hcat, compressed_blocks)
@@ -249,7 +249,7 @@ function sparse_jacobian_aux(
             batched_seeds[a],
             pullback_batched_extras_same,
         )
-        stack(vec, dx_batch.elements; dims=1)
+        stack(vec, dx_batch.d; dims=1)
     end
 
     compressed_matrix = reduce(vcat, compressed_blocks)
@@ -286,10 +286,10 @@ function sparse_jacobian_aux!(
             pushforward_batched_extras_same,
         )
 
-        for b in eachindex(batched_results[a].elements)
+        for b in eachindex(batched_results[a].d)
             copyto!(
                 view(compressed_matrix, :, 1 + ((a - 1) * B + (b - 1)) % Ng),
-                vec(batched_results[a].elements[b]),
+                vec(batched_results[a].d[b]),
             )
         end
     end
@@ -325,10 +325,10 @@ function sparse_jacobian_aux!(
             pullback_batched_extras_same,
         )
 
-        for b in eachindex(batched_results[a].elements)
+        for b in eachindex(batched_results[a].d)
             copyto!(
                 view(compressed_matrix, 1 + ((a - 1) * B + (b - 1)) % Ng, :),
-                vec(batched_results[a].elements[b]),
+                vec(batched_results[a].d[b]),
             )
         end
     end

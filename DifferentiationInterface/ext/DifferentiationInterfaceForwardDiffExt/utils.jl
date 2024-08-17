@@ -8,7 +8,7 @@ make_dual_similar(::Type{T}, x::Number, dx::Number) where {T} = Dual{T}(x, dx)
 make_dual_similar(::Type{T}, x, dx) where {T} = similar(x, Dual{T,eltype(x),1})
 
 function make_dual_similar(::Type{T}, x::Number, dx::Batch{B,<:Number}) where {T,B}
-    return Dual{T}(x, dx.elements)
+    return Dual{T}(x, dx.d)
 end
 
 function make_dual_similar(::Type{T}, x, dx::Batch{B}) where {T,B}
@@ -24,11 +24,11 @@ function make_dual(::Type{T}, x, dx) where {T}
 end
 
 function make_dual(::Type{T}, x::Number, dx::Batch{B,<:Number}) where {T,B}
-    return Dual{T}(x, dx.elements...)
+    return Dual{T}(x, dx.d...)
 end
 
 function make_dual(::Type{T}, x, dx::Batch{B}) where {T,B}
-    return Dual{T}.(x, dx.elements...)
+    return Dual{T}.(x, dx.d...)
 end
 
 function make_dual!(::Type{T}, xdual, x, dx) where {T}
@@ -36,7 +36,7 @@ function make_dual!(::Type{T}, xdual, x, dx) where {T}
 end
 
 function make_dual!(::Type{T}, xdual, x, dx::Batch{B}) where {T,B}
-    return xdual .= Dual{T}.(x, dx.elements...)
+    return xdual .= Dual{T}.(x, dx.d...)
 end
 
 myvalue(::Type{T}, ydual::Dual{T}) where {T} = value(T, ydual)
@@ -60,8 +60,8 @@ function mypartials(::Type{T}, ::Val{B}, ydual) where {T,B}
 end
 
 function mypartials!(::Type{T}, dy::Batch{B}, ydual) where {T,B}
-    for b in eachindex(dy.elements)
-        dy.elements[b] .= partials.(T, ydual, b)
+    for b in eachindex(dy.d)
+        dy.d[b] .= partials.(T, ydual, b)
     end
     return dy
 end

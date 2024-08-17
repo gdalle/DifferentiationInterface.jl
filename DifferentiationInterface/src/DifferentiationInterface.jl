@@ -52,7 +52,7 @@ include("second_order/second_order.jl")
 
 include("utils/traits.jl")
 include("utils/basis.jl")
-include("utils/batch.jl")
+include("utils/tangents.jl")
 include("utils/check.jl")
 include("utils/exceptions.jl")
 include("utils/maybe.jl")

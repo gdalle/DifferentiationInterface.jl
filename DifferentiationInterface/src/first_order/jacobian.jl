@@ -197,7 +197,7 @@ function jacobian_aux(
         dy_batch = pushforward_batched(
             f_or_f!y..., backend, x, batched_seeds[a], pushforward_batched_extras_same
         )
-        stack(vec, dy_batch.elements; dims=2)
+        stack(vec, dy_batch.d; dims=2)
     end
 
     jac = reduce(hcat, jac_blocks)
@@ -220,7 +220,7 @@ function jacobian_aux(
         dx_batch = pullback_batched(
             f_or_f!y..., backend, x, batched_seeds[a], pullback_batched_extras_same
         )
-        stack(vec, dx_batch.elements; dims=1)
+        stack(vec, dx_batch.d; dims=1)
     end
 
     jac = reduce(vcat, jac_blocks)
@@ -249,10 +249,10 @@ function jacobian_aux!(
             pushforward_batched_extras_same,
         )
 
-        for b in eachindex(batched_results[a].elements)
+        for b in eachindex(batched_results[a].d)
             copyto!(
                 view(jac, :, 1 + ((a - 1) * B + (b - 1)) % N),
-                vec(batched_results[a].elements[b]),
+                vec(batched_results[a].d[b]),
             )
         end
     end
@@ -279,10 +279,10 @@ function jacobian_aux!(
             pullback_batched_extras_same,
         )
 
-        for b in eachindex(batched_results[a].elements)
+        for b in eachindex(batched_results[a].d)
             copyto!(
                 view(jac, 1 + ((a - 1) * B + (b - 1)) % M, :),
-                vec(batched_results[a].elements[b]),
+                vec(batched_results[a].d[b]),
             )
         end
     end

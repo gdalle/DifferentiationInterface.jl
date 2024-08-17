@@ -44,7 +44,7 @@ function prepare_hvp_batched_aux(
     f::F, backend::SecondOrder, x, dx::Batch, ::ReverseOverForward
 ) where {F}
     # TODO: batched version replacing the outer gradient with a pullback
-    return prepare_hvp_aux(f, backend, x, first(dx.elements), ReverseOverForward())
+    return prepare_hvp_aux(f, backend, x, first(dx.d), ReverseOverForward())
 end
 
 function prepare_hvp_batched_aux(
@@ -100,7 +100,7 @@ end
 function hvp_batched(
     f::F, backend::SecondOrder, x, dx::Batch, extras::ReverseOverForwardHVPExtras
 ) where {F}
-    dg_elements = hvp.(Ref(f), Ref(backend), Ref(x), dx.elements, Ref(extras))
+    dg_elements = hvp.(Ref(f), Ref(backend), Ref(x), dx.d, Ref(extras))
     return Batch(dg_elements)
 end
 
@@ -138,8 +138,8 @@ end
 function hvp_batched!(
     f::F, dg::Batch, backend::SecondOrder, x, dx::Batch, extras::ReverseOverForwardHVPExtras
 ) where {F}
-    for b in eachindex(dg.elements, dx.elements)
-        hvp!(f, dg.elements[b], backend, x, dx.elements[b], extras)
+    for b in eachindex(dg.d, dx.d)
+        hvp!(f, dg.d[b], backend, x, dx.d[b], extras)
     end
     return dg
 end
