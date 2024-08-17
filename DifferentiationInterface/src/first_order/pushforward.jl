@@ -98,18 +98,16 @@ struct PullbackPushforwardExtras{E} <: PushforwardExtras
     pullback_extras::E
 end
 
-function prepare_pushforward(f::F, backend::AbstractADType, x, tx::Tangents{1}) where {F}
+function prepare_pushforward(f::F, backend::AbstractADType, x, tx::Tangents) where {F}
     return prepare_pushforward_aux(f, backend, x, tx, pushforward_performance(backend))
 end
 
-function prepare_pushforward(
-    f!::F, y, backend::AbstractADType, x, tx::Tangents{1}
-) where {F}
+function prepare_pushforward(f!::F, y, backend::AbstractADType, x, tx::Tangents) where {F}
     return prepare_pushforward_aux(f!, y, backend, x, tx, pushforward_performance(backend))
 end
 
 function prepare_pushforward_aux(
-    f::F, backend::AbstractADType, x, tx::Tangents{1}, ::PushforwardSlow
+    f::F, backend::AbstractADType, x, tx::Tangents, ::PushforwardSlow
 ) where {F}
     y = f(x)
     dy = y isa Number ? one(y) : basis(backend, y, first(CartesianIndices(y)))
@@ -118,7 +116,7 @@ function prepare_pushforward_aux(
 end
 
 function prepare_pushforward_aux(
-    f!::F, y, backend::AbstractADType, x, tx::Tangents{1}, ::PushforwardSlow
+    f!::F, y, backend::AbstractADType, x, tx::Tangents, ::PushforwardSlow
 ) where {F}
     dy = y isa Number ? one(y) : basis(backend, y, first(CartesianIndices(y)))
     pullback_extras = prepare_pullback(f!, y, backend, x, Tangents(dy))
@@ -126,13 +124,13 @@ function prepare_pushforward_aux(
 end
 
 function prepare_pushforward_aux(
-    f, backend::AbstractADType, x, tx::Tangents{1}, ::PushforwardFast
+    f, backend::AbstractADType, x, tx::Tangents, ::PushforwardFast
 )
     throw(MissingBackendError(backend))
 end
 
 function prepare_pushforward_aux(
-    f!, y, backend::AbstractADType, x, tx::Tangents{1}, ::PushforwardFast
+    f!, y, backend::AbstractADType, x, tx::Tangents, ::PushforwardFast
 )
     throw(MissingBackendError(backend))
 end
@@ -140,52 +138,43 @@ end
 ## One argument
 
 function value_and_pushforward(
-    f::F, backend::AbstractADType, x, tx::Tangents{1}, extras::PullbackPushforwardExtras
+    f::F, backend::AbstractADType, x, tx::Tangents, extras::PullbackPushforwardExtras
 ) where {F}
     @compat (; pullback_extras) = extras
-    dx = only(tx)
     y = f(x)
-    dy = if x isa Number && y isa Number
-        dx * pullback(f, backend, x, one(y), pullback_extras)
-    elseif x isa AbstractArray && y isa Number
-        dot(dx, pullback(f, backend, x, one(y), pullback_extras))
-    elseif x isa Number && y isa AbstractArray
-        map(CartesianIndices(y)) do i
-            dx * pullback(f, backend, x, basis(backend, y, i), pullback_extras)
-        end
-    elseif x isa AbstractArray && y isa AbstractArray
-        map(CartesianIndices(y)) do i
-            dot(dx, pullback(f, backend, x, basis(backend, y, i), pullback_extras))
+    dy = map(tx.d) do dx
+        if x isa Number && y isa Number
+            dx * pullback(f, backend, x, one(y), pullback_extras)
+        elseif x isa AbstractArray && y isa Number
+            dot(dx, pullback(f, backend, x, one(y), pullback_extras))
+        elseif x isa Number && y isa AbstractArray
+            map(CartesianIndices(y)) do i
+                dx * pullback(f, backend, x, basis(backend, y, i), pullback_extras)
+            end
+        elseif x isa AbstractArray && y isa AbstractArray
+            map(CartesianIndices(y)) do i
+                dot(dx, pullback(f, backend, x, basis(backend, y, i), pullback_extras))
+            end
         end
     end
-    return y, Tangents(dy)
+    return y, Tangents(dy...)
 end
 
 function value_and_pushforward!(
-    f::F,
-    ty::Tangents{1},
-    backend::AbstractADType,
-    x,
-    tx::Tangents{1},
-    extras::PushforwardExtras,
+    f::F, ty::Tangents, backend::AbstractADType, x, tx::Tangents, extras::PushforwardExtras
 ) where {F}
     y, new_ty = value_and_pushforward(f, backend, x, tx, extras)
     return y, copyto!(ty, new_ty)
 end
 
 function pushforward(
-    f::F, backend::AbstractADType, x, tx::Tangents{1}, extras::PushforwardExtras
+    f::F, backend::AbstractADType, x, tx::Tangents, extras::PushforwardExtras
 ) where {F}
     return value_and_pushforward(f, backend, x, tx, extras)[2]
 end
 
 function pushforward!(
-    f::F,
-    ty::Tangents{1},
-    backend::AbstractADType,
-    x,
-    tx::Tangents{1},
-    extras::PushforwardExtras,
+    f::F, ty::Tangents, backend::AbstractADType, x, tx::Tangents, extras::PushforwardExtras
 ) where {F}
     return value_and_pushforward!(f, ty, backend, x, tx, extras)[2]
 end
@@ -193,30 +182,31 @@ end
 ## Two arguments
 
 function value_and_pushforward(
-    f!::F, y, backend::AbstractADType, x, tx::Tangents{1}, extras::PullbackPushforwardExtras
+    f!::F, y, backend::AbstractADType, x, tx::Tangents, extras::PullbackPushforwardExtras
 ) where {F}
     @compat (; pullback_extras) = extras
-    dx = only(tx)
-    dy = if x isa Number && y isa AbstractArray
-        map(CartesianIndices(y)) do i
-            dx * pullback(f!, y, backend, x, basis(backend, y, i), pullback_extras)
-        end
-    elseif x isa AbstractArray && y isa AbstractArray
-        map(CartesianIndices(y)) do i
-            dot(dx, pullback(f!, y, backend, x, basis(backend, y, i), pullback_extras))
+    dy = map(tx.d) do dx
+        if x isa Number && y isa AbstractArray
+            map(CartesianIndices(y)) do i
+                dx * pullback(f!, y, backend, x, basis(backend, y, i), pullback_extras)
+            end
+        elseif x isa AbstractArray && y isa AbstractArray
+            map(CartesianIndices(y)) do i
+                dot(dx, pullback(f!, y, backend, x, basis(backend, y, i), pullback_extras))
+            end
         end
     end
     f!(y, x)
-    return y, Tangents(dy)
+    return y, Tangents(dy...)
 end
 
 function value_and_pushforward!(
     f!::F,
     y,
-    ty::Tangents{1},
+    ty::Tangents,
     backend::AbstractADType,
     x,
-    tx::Tangents{1},
+    tx::Tangents,
     extras::PushforwardExtras,
 ) where {F}
     y, new_ty = value_and_pushforward(f!, y, backend, x, tx, extras)
@@ -224,7 +214,7 @@ function value_and_pushforward!(
 end
 
 function pushforward(
-    f!::F, y, backend::AbstractADType, x, tx::Tangents{1}, extras::PushforwardExtras
+    f!::F, y, backend::AbstractADType, x, tx::Tangents, extras::PushforwardExtras
 ) where {F}
     return value_and_pushforward(f!, y, backend, x, tx, extras)[2]
 end
@@ -232,10 +222,10 @@ end
 function pushforward!(
     f!::F,
     y,
-    ty::Tangents{1},
+    ty::Tangents,
     backend::AbstractADType,
     x,
-    tx::Tangents{1},
+    tx::Tangents,
     extras::PushforwardExtras,
 ) where {F}
     return value_and_pushforward!(f!, y, ty, backend, x, tx, extras)[2]

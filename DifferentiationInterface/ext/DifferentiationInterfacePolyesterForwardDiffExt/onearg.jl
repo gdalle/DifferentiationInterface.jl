@@ -1,10 +1,6 @@
 
 ## Pushforward
 
-function DI.prepare_pushforward(f, backend::AutoPolyesterForwardDiff, x, tx::Tangents{1})
-    return DI.prepare_pushforward(f, single_threaded(backend), x, tx)
-end
-
 function DI.prepare_pushforward(f, backend::AutoPolyesterForwardDiff, x, tx::Tangents)
     return DI.prepare_pushforward(f, single_threaded(backend), x, tx)
 end
