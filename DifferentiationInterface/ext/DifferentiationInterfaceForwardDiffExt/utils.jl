@@ -12,6 +12,10 @@ function make_dual_similar(::Type{T}, x, tx::Tangents{B}) where {T,B}
     return similar(x, Dual{T,eltype(x),B})
 end
 
+function make_dual(::Type{T}, x::Number, dx::Number) where {T}
+    return Dual{T}(x, dx)
+end
+
 function make_dual(::Type{T}, x::Number, dx::Tangents{B,<:Number}) where {T,B}
     return Dual{T}(x, dx.d...)
 end

@@ -6,6 +6,7 @@ using DifferentiationInterface:
     DerivativeExtras,
     GradientExtras,
     JacobianExtras,
+    HVPExtras,
     PullbackExtras,
     PushforwardExtras,
     NoDerivativeExtras,
