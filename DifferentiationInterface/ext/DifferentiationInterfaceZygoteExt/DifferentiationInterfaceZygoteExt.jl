@@ -26,35 +26,30 @@ struct ZygotePullbackExtrasSamePoint{Y,PB} <: PullbackExtras
     pb::PB
 end
 
-DI.prepare_pullback(f, ::AutoZygote, x, ty::Tangents{1}) = NoPullbackExtras()
+DI.prepare_pullback(f, ::AutoZygote, x, ty::Tangents) = NoPullbackExtras()
 
-function DI.prepare_pullback_same_point(
-    f, ::AutoZygote, x, ty::Tangents{1}, ::PullbackExtras=NoPullbackExtras()
-)
+function DI.prepare_pullback_same_point(f, ::AutoZygote, x, ty::Tangents, ::PullbackExtras)
     y, pb = pullback(f, x)
     return ZygotePullbackExtrasSamePoint(y, pb)
 end
 
-function DI.value_and_pullback(f, ::AutoZygote, x, ty::Tangents{1}, ::NoPullbackExtras)
-    dy = only(ty)
+function DI.value_and_pullback(f, ::AutoZygote, x, ty::Tangents, ::NoPullbackExtras)
     y, pb = pullback(f, x)
-    return y, Tangents(only(pb(dy)))
+    return y, Tangents(only.(pb.(ty.d))...)
 end
 
 function DI.value_and_pullback(
-    f, ::AutoZygote, x, ty::Tangents{1}, extras::ZygotePullbackExtrasSamePoint
+    f, ::AutoZygote, x, ty::Tangents, extras::ZygotePullbackExtrasSamePoint
 )
     @compat (; y, pb) = extras
-    dy = only(ty)
-    return copy(y), Tangents(only(pb(dy)))
+    return copy(y), Tangents(only.(pb.(ty.d))...)
 end
 
 function DI.pullback(
-    f, ::AutoZygote, x, ty::Tangents{1}, extras::ZygotePullbackExtrasSamePoint
+    f, ::AutoZygote, x, ty::Tangents, extras::ZygotePullbackExtrasSamePoint
 )
     @compat (; pb) = extras
-    dy = only(ty)
-    return Tangents(only(pb(dy)))
+    return Tangents(only.(pb.(ty.d)))
 end
 
 ## Gradient

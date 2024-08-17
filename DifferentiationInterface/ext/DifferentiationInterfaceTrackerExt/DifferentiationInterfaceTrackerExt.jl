@@ -16,35 +16,31 @@ struct TrackerPullbackExtrasSamePoint{Y,PB} <: PullbackExtras
     pb::PB
 end
 
-DI.prepare_pullback(f, ::AutoTracker, x, ty::Tangents{1}) = NoPullbackExtras()
+DI.prepare_pullback(f, ::AutoTracker, x, ty::Tangents) = NoPullbackExtras()
 
-function DI.prepare_pullback_same_point(
-    f, ::AutoTracker, x, ty::Tangents{1}, ::PullbackExtras=NoPullbackExtras()
-)
+function DI.prepare_pullback_same_point(f, ::AutoTracker, x, ty::Tangents, ::PullbackExtras)
     y, pb = forward(f, x)
     return TrackerPullbackExtrasSamePoint(y, pb)
 end
 
-function DI.value_and_pullback(f, ::AutoTracker, x, ty::Tangents{1}, ::NoPullbackExtras)
+function DI.value_and_pullback(f, ::AutoTracker, x, ty::Tangents, ::NoPullbackExtras)
     dy = only(ty)
     y, pb = forward(f, x)
-    return y, Tangents(data(only(pb(dy))))
+    return y, Tangents(data.(only.(pb.(ty.d)))...)
 end
 
 function DI.value_and_pullback(
-    f, ::AutoTracker, x, ty::Tangents{1}, extras::TrackerPullbackExtrasSamePoint
+    f, ::AutoTracker, x, ty::Tangents, extras::TrackerPullbackExtrasSamePoint
 )
     @compat (; y, pb) = extras
-    dy = only(ty)
-    return copy(y), Tangents(data(only(pb(dy))))
+    return copy(y), Tangents(data.(only.(pb.(ty.d)))...)
 end
 
 function DI.pullback(
-    f, ::AutoTracker, x, ty::Tangents{1}, extras::TrackerPullbackExtrasSamePoint
+    f, ::AutoTracker, x, ty::Tangents, extras::TrackerPullbackExtrasSamePoint
 )
     @compat (; pb) = extras
-    dy = only(ty)
-    return Tangents(data(only(pb(dy))))
+    return Tangents(data.(only.(pb.(ty.d)))...)
 end
 
 ## Gradient
