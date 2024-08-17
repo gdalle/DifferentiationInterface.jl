@@ -68,16 +68,16 @@ struct ReverseOverReverseHVPExtras{G<:Gradient,E<:PullbackExtras} <: HVPExtras
     outer_pullback_extras::E
 end
 
-function prepare_hvp(f::F, backend::AbstractADType, x, tx::Tangents{1}) where {F}
+function prepare_hvp(f::F, backend::AbstractADType, x, tx::Tangents) where {F}
     return prepare_hvp(f, SecondOrder(backend, backend), x, tx)
 end
 
-function prepare_hvp(f::F, backend::SecondOrder, x, tx::Tangents{1}) where {F}
+function prepare_hvp(f::F, backend::SecondOrder, x, tx::Tangents) where {F}
     return prepare_hvp_aux(f, backend, x, tx, hvp_mode(backend))
 end
 
 function prepare_hvp_aux(
-    f::F, backend::SecondOrder, x, tx::Tangents{1}, ::ForwardOverForward
+    f::F, backend::SecondOrder, x, tx::Tangents, ::ForwardOverForward
 ) where {F}
     # pushforward of many pushforwards in theory, but pushforward of gradient in practice
     inner_gradient = Gradient(f, nested(inner(backend)))
@@ -86,7 +86,7 @@ function prepare_hvp_aux(
 end
 
 function prepare_hvp_aux(
-    f::F, backend::SecondOrder, x, tx::Tangents{1}, ::ForwardOverReverse
+    f::F, backend::SecondOrder, x, tx::Tangents, ::ForwardOverReverse
 ) where {F}
     # pushforward of gradient
     inner_gradient = Gradient(f, nested(inner(backend)))
@@ -105,7 +105,7 @@ function prepare_hvp_aux(
 end
 
 function prepare_hvp_aux(
-    f::F, backend::SecondOrder, x, tx::Tangents{1}, ::ReverseOverReverse
+    f::F, backend::SecondOrder, x, tx::Tangents, ::ReverseOverReverse
 ) where {F}
     # pullback of gradient
     inner_gradient = Gradient(f, nested(inner(backend)))
@@ -115,19 +115,19 @@ end
 
 ## One argument
 
-function hvp(f::F, backend::AbstractADType, x, tx::Tangents{1}, extras::HVPExtras) where {F}
+function hvp(f::F, backend::AbstractADType, x, tx::Tangents, extras::HVPExtras) where {F}
     return hvp(f, SecondOrder(backend, backend), x, tx, extras)
 end
 
 function hvp(
-    f::F, backend::SecondOrder, x, tx::Tangents{1}, extras::ForwardOverForwardHVPExtras
+    f::F, backend::SecondOrder, x, tx::Tangents, extras::ForwardOverForwardHVPExtras
 ) where {F}
     @compat (; inner_gradient, outer_pushforward_extras) = extras
     return pushforward(inner_gradient, outer(backend), x, tx, outer_pushforward_extras)
 end
 
 function hvp(
-    f::F, backend::SecondOrder, x, tx::Tangents{1}, extras::ForwardOverReverseHVPExtras
+    f::F, backend::SecondOrder, x, tx::Tangents, extras::ForwardOverReverseHVPExtras
 ) where {F}
     @compat (; inner_gradient, outer_pushforward_extras) = extras
     return pushforward(inner_gradient, outer(backend), x, tx, outer_pushforward_extras)
@@ -143,20 +143,25 @@ function hvp(
 end
 
 function hvp(
-    f::F, backend::SecondOrder, x, tx::Tangents{1}, extras::ReverseOverReverseHVPExtras
+    f::F, backend::SecondOrder, x, tx::Tangents, extras::ReverseOverReverseHVPExtras
 ) where {F}
     @compat (; inner_gradient, outer_pullback_extras) = extras
     return pullback(inner_gradient, outer(backend), x, tx, outer_pullback_extras)
 end
 
 function hvp!(
-    f::F, tg::Tangents{1}, backend::AbstractADType, x, tx::Tangents{1}, extras::HVPExtras
+    f::F, tg::Tangents, backend::AbstractADType, x, tx::Tangents, extras::HVPExtras
 ) where {F}
     return hvp!(f, tg, SecondOrder(backend, backend), x, tx, extras)
 end
 
 function hvp!(
-    f::F, tg, backend::SecondOrder, x, tx::Tangents{1}, extras::ForwardOverForwardHVPExtras
+    f::F,
+    tg::Tangents,
+    backend::SecondOrder,
+    x,
+    tx::Tangents,
+    extras::ForwardOverForwardHVPExtras,
 ) where {F}
     @compat (; inner_gradient, outer_pushforward_extras) = extras
     return pushforward!(inner_gradient, tg, outer(backend), x, tx, outer_pushforward_extras)
@@ -164,10 +169,10 @@ end
 
 function hvp!(
     f::F,
-    tg::Tangents{1},
+    tg::Tangents,
     backend::SecondOrder,
     x,
-    tx::Tangents{1},
+    tx::Tangents,
     extras::ForwardOverReverseHVPExtras,
 ) where {F}
     @compat (; inner_gradient, outer_pushforward_extras) = extras
@@ -190,10 +195,10 @@ end
 
 function hvp!(
     f::F,
-    tg::Tangents{1},
+    tg::Tangents,
     backend::SecondOrder,
     x,
-    tx::Tangents{1},
+    tx::Tangents,
     extras::ReverseOverReverseHVPExtras,
 ) where {F}
     @compat (; inner_gradient, outer_pullback_extras) = extras
