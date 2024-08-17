@@ -169,8 +169,7 @@ function value_and_pushforward!(
     tx::Tangents{1},
     extras::PushforwardExtras,
 ) where {F}
-    dx = only(tx)
-    y, new_ty = value_and_pushforward(f, backend, x, dx, extras)
+    y, new_ty = value_and_pushforward(f, backend, x, tx, extras)
     return y, copyto!(ty, new_ty)
 end
 
