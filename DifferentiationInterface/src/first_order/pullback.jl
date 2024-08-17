@@ -85,8 +85,6 @@ function pullback! end
 
 ## Preparation
 
-### Extras types
-
 """
     PullbackExtras
 
@@ -99,8 +97,6 @@ struct NoPullbackExtras <: PullbackExtras end
 struct PushforwardPullbackExtras{E} <: PullbackExtras
     pushforward_extras::E
 end
-
-## Different point
 
 function prepare_pullback(f::F, backend::AbstractADType, x, dy) where {F}
     return prepare_pullback_aux(f, backend, x, dy, pullback_performance(backend))
@@ -132,30 +128,6 @@ end
 
 function prepare_pullback_aux(f!, y, backend::AbstractADType, x, dy, ::PullbackFast)
     throw(MissingBackendError(backend))
-end
-
-### Same point
-
-function prepare_pullback_same_point(
-    f::F, backend::AbstractADType, x, dy, extras::PullbackExtras
-) where {F}
-    return extras
-end
-
-function prepare_pullback_same_point(
-    f!::F, y, backend::AbstractADType, x, dy, extras::PullbackExtras
-) where {F}
-    return extras
-end
-
-function prepare_pullback_same_point(f::F, backend::AbstractADType, x, dy) where {F}
-    extras = prepare_pullback(f, backend, x, dy)
-    return prepare_pullback_same_point(f, backend, x, dy, extras)
-end
-
-function prepare_pullback_same_point(f!::F, y, backend::AbstractADType, x, dy) where {F}
-    extras = prepare_pullback(f!, y, backend, x, dy)
-    return prepare_pullback_same_point(f!, y, backend, x, dy, extras)
 end
 
 ## One argument

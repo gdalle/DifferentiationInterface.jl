@@ -85,8 +85,6 @@ function pushforward! end
 
 ## Preparation
 
-### Extras types
-
 """
     PushforwardExtras
 
@@ -99,8 +97,6 @@ struct NoPushforwardExtras <: PushforwardExtras end
 struct PullbackPushforwardExtras{E} <: PushforwardExtras
     pullback_extras::E
 end
-
-### Different point
 
 function prepare_pushforward(f::F, backend::AbstractADType, x, dx) where {F}
     return prepare_pushforward_aux(f, backend, x, dx, pushforward_performance(backend))
@@ -133,30 +129,6 @@ end
 
 function prepare_pushforward_aux(f!, y, backend::AbstractADType, x, dx, ::PushforwardFast)
     throw(MissingBackendError(backend))
-end
-
-### Same point
-
-function prepare_pushforward_same_point(
-    f::F, backend::AbstractADType, x, dx, extras::PushforwardExtras
-) where {F}
-    return extras
-end
-
-function prepare_pushforward_same_point(
-    f!::F, y, backend::AbstractADType, x, dx, extras::PushforwardExtras
-) where {F}
-    return extras
-end
-
-function prepare_pushforward_same_point(f::F, backend::AbstractADType, x, dx) where {F}
-    extras = prepare_pushforward(f, backend, x, dx)
-    return prepare_pushforward_same_point(f, backend, x, dx, extras)
-end
-
-function prepare_pushforward_same_point(f!::F, y, backend::AbstractADType, x, dx) where {F}
-    extras = prepare_pushforward(f!, y, backend, x, dx)
-    return prepare_pushforward_same_point(f!, y, backend, x, dx, extras)
 end
 
 ## One argument

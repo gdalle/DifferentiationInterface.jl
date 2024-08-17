@@ -59,16 +59,13 @@ include("utils/maybe.jl")
 include("utils/printing.jl")
 
 include("first_order/pushforward.jl")
-include("first_order/pushforward_batched.jl")
 include("first_order/pullback.jl")
-include("first_order/pullback_batched.jl")
 include("first_order/derivative.jl")
 include("first_order/gradient.jl")
 include("first_order/jacobian.jl")
 
 include("second_order/second_derivative.jl")
 include("second_order/hvp.jl")
-include("second_order/hvp_batched.jl")
 include("second_order/hessian.jl")
 
 include("fallbacks/no_extras.jl")
