@@ -6,7 +6,7 @@ struct FastDifferentiationOneArgPushforwardExtras{Y,E1,E1!} <: PushforwardExtras
     jvp_exe!::E1!
 end
 
-function DI.prepare_pushforward(f, ::AutoFastDifferentiation, x, dx)
+function DI.prepare_pushforward(f, ::AutoFastDifferentiation, x, tx::Tangents{1})
     y_prototype = f(x)
     x_var = if x isa Number
         only(make_variables(:x))
@@ -24,48 +24,54 @@ function DI.prepare_pushforward(f, ::AutoFastDifferentiation, x, dx)
 end
 
 function DI.pushforward(
-    f, ::AutoFastDifferentiation, x, dx, extras::FastDifferentiationOneArgPushforwardExtras
+    f,
+    ::AutoFastDifferentiation,
+    x,
+    tx::Tangents{1},
+    extras::FastDifferentiationOneArgPushforwardExtras,
 )
+    dx = only(tx)
     v_vec = vcat(myvec(x), myvec(dx))
     if extras.y_prototype isa Number
-        return only(extras.jvp_exe(v_vec))
+        return Tangents(only(extras.jvp_exe(v_vec)))
     else
-        return reshape(extras.jvp_exe(v_vec), size(extras.y_prototype))
+        return Tangents(reshape(extras.jvp_exe(v_vec), size(extras.y_prototype)))
     end
 end
 
 function DI.pushforward!(
     f,
-    dy,
+    ty::Tangents{1},
     ::AutoFastDifferentiation,
     x,
-    dx,
+    tx::Tangents{1},
     extras::FastDifferentiationOneArgPushforwardExtras,
 )
+    dx, dy = only(tx), only(ty)
     v_vec = vcat(myvec(x), myvec(dx))
     extras.jvp_exe!(vec(dy), v_vec)
-    return dy
+    return ty
 end
 
 function DI.value_and_pushforward(
     f,
     backend::AutoFastDifferentiation,
     x,
-    dx,
+    tx::Tangents{1},
     extras::FastDifferentiationOneArgPushforwardExtras,
 )
-    return f(x), DI.pushforward(f, backend, x, dx, extras)
+    return f(x), DI.pushforward(f, backend, x, tx::Tangents{1}, extras)
 end
 
 function DI.value_and_pushforward!(
     f,
-    dy,
+    ty::Tangents{1},
     backend::AutoFastDifferentiation,
     x,
-    dx,
+    tx::Tangents{1},
     extras::FastDifferentiationOneArgPushforwardExtras,
 )
-    return f(x), DI.pushforward!(f, dy, backend, x, dx, extras)
+    return f(x), DI.pushforward!(f, ty, backend, x, tx, extras)
 end
 
 ## Pullback
@@ -75,7 +81,7 @@ struct FastDifferentiationOneArgPullbackExtras{E1,E1!} <: PullbackExtras
     vjp_exe!::E1!
 end
 
-function DI.prepare_pullback(f, ::AutoFastDifferentiation, x, dy)
+function DI.prepare_pullback(f, ::AutoFastDifferentiation, x, ty::Tangents{1})
     x_var = if x isa Number
         only(make_variables(:x))
     else
@@ -92,43 +98,54 @@ function DI.prepare_pullback(f, ::AutoFastDifferentiation, x, dy)
 end
 
 function DI.pullback(
-    f, ::AutoFastDifferentiation, x, dy, extras::FastDifferentiationOneArgPullbackExtras
+    f,
+    ::AutoFastDifferentiation,
+    x,
+    ty::Tangents{1},
+    extras::FastDifferentiationOneArgPullbackExtras,
 )
+    dy = only(ty)
     v_vec = vcat(myvec(x), myvec(dy))
     if x isa Number
-        return only(extras.vjp_exe(v_vec))
+        return Tangents(only(extras.vjp_exe(v_vec)))
     else
-        return reshape(extras.vjp_exe(v_vec), size(x))
+        return Tangents(reshape(extras.vjp_exe(v_vec), size(x)))
     end
 end
 
 function DI.pullback!(
-    f, dx, ::AutoFastDifferentiation, x, dy, extras::FastDifferentiationOneArgPullbackExtras
+    f,
+    tx::Tangents{1},
+    ::AutoFastDifferentiation,
+    x,
+    ty::Tangents{1},
+    extras::FastDifferentiationOneArgPullbackExtras,
 )
+    dx, dy = only(tx), only(ty)
     v_vec = vcat(myvec(x), myvec(dy))
     extras.vjp_exe!(vec(dx), v_vec)
-    return dx
+    return tx
 end
 
 function DI.value_and_pullback(
     f,
     backend::AutoFastDifferentiation,
     x,
-    dy,
+    ty::Tangents{1},
     extras::FastDifferentiationOneArgPullbackExtras,
 )
-    return f(x), DI.pullback(f, backend, x, dy, extras)
+    return f(x), DI.pullback(f, backend, x, ty, extras)
 end
 
 function DI.value_and_pullback!(
     f,
-    dx,
+    tx::Tangents{1},
     backend::AutoFastDifferentiation,
     x,
-    dy,
+    ty::Tangents{1},
     extras::FastDifferentiationOneArgPullbackExtras,
 )
-    return f(x), DI.pullback!(f, dx, backend, x, dy, extras)
+    return f(x), DI.pullback!(f, tx, backend, x, ty, extras)
 end
 
 ## Derivative
@@ -387,7 +404,7 @@ struct FastDifferentiationHVPExtras{E2,E2!} <: HVPExtras
     hvp_exe!::E2!
 end
 
-function DI.prepare_hvp(f, ::AutoFastDifferentiation, x, v)
+function DI.prepare_hvp(f, ::AutoFastDifferentiation, x, tx::Tangents{1})
     x_var = make_variables(:x, size(x)...)
     y_var = f(x_var)
 
@@ -398,18 +415,27 @@ function DI.prepare_hvp(f, ::AutoFastDifferentiation, x, v)
     return FastDifferentiationHVPExtras(hvp_exe, hvp_exe!)
 end
 
-function DI.hvp(f, ::AutoFastDifferentiation, x, v, extras::FastDifferentiationHVPExtras)
-    v_vec = vcat(vec(x), vec(v))
-    hv_vec = extras.hvp_exe(v_vec)
-    return reshape(hv_vec, size(x))
+function DI.hvp(
+    f, ::AutoFastDifferentiation, x, tx::Tangents{1}, extras::FastDifferentiationHVPExtras
+)
+    dx = only(tx)
+    v_vec = vcat(vec(x), vec(dx))
+    dg_vec = extras.hvp_exe(v_vec)
+    return Tangents(reshape(dg_vec, size(x)))
 end
 
 function DI.hvp!(
-    f, p, ::AutoFastDifferentiation, x, v, extras::FastDifferentiationHVPExtras
+    f,
+    tg::Tangents{1},
+    ::AutoFastDifferentiation,
+    x,
+    tx::Tangents{1},
+    extras::FastDifferentiationHVPExtras,
 )
-    v_vec = vcat(vec(x), vec(v))
-    extras.hvp_exe!(p, v_vec)
-    return p
+    dx, dg = only(tx), only(tg)
+    v_vec = vcat(vec(x), vec(dx))
+    extras.hvp_exe!(dg, v_vec)
+    return tg
 end
 
 ## Hessian

@@ -3,7 +3,8 @@ struct TapirOneArgPullbackExtras{Y,R} <: PullbackExtras
     rrule::R
 end
 
-function DI.prepare_pullback(f, backend::AutoTapir, x, dy)
+function DI.prepare_pullback(f, backend::AutoTapir, x, ty::Tangents{1})
+    dy = only(ty)
     y = f(x)
     rrule = build_rrule(
         TapirInterpreter(),
@@ -17,28 +18,45 @@ function DI.prepare_pullback(f, backend::AutoTapir, x, dy)
 end
 
 function DI.value_and_pullback(
-    f, ::AutoTapir, x, dy, extras::TapirOneArgPullbackExtras{Y}
+    f, ::AutoTapir, x, ty::Tangents{1}, extras::TapirOneArgPullbackExtras{Y}
 ) where {Y}
+    dy = only(ty)
     dy_righttype = convert(tangent_type(Y), dy)
     new_y, (_, new_dx) = value_and_pullback!!(extras.rrule, dy_righttype, f, x)
-    return new_y, new_dx
+    return new_y, Tangents(new_dx)
 end
 
 function DI.value_and_pullback!(
-    f, dx, ::AutoTapir, x, dy, extras::TapirOneArgPullbackExtras{Y}
+    f,
+    tx::Tangents{1},
+    ::AutoTapir,
+    x,
+    ty::Tangents{1},
+    extras::TapirOneArgPullbackExtras{Y},
 ) where {Y}
+    dx, dy = only(tx), only(ty)
     dy_righttype = convert(tangent_type(Y), dy)
     dx_righttype = set_to_zero!!(convert(tangent_type(typeof(x)), dx))
     y, (_, new_dx) = __value_and_pullback!!(
         extras.rrule, dy_righttype, zero_codual(f), CoDual(x, dx_righttype)
     )
-    return y, copyto!(dx, new_dx)
+    copyto!(dx, new_dx)
+    return y, tx
 end
 
-function DI.pullback(f, backend::AutoTapir, x, dy, extras::TapirOneArgPullbackExtras)
-    return DI.value_and_pullback(f, backend, x, dy, extras)[2]
+function DI.pullback(
+    f, backend::AutoTapir, x, ty::Tangents{1}, extras::TapirOneArgPullbackExtras
+)
+    return DI.value_and_pullback(f, backend, x, ty, extras)[2]
 end
 
-function DI.pullback!(f, dx, backend::AutoTapir, x, dy, extras::TapirOneArgPullbackExtras)
-    return DI.value_and_pullback!(f, dx, backend, x, dy, extras)[2]
+function DI.pullback!(
+    f,
+    tx::Tangents{1},
+    backend::AutoTapir,
+    x,
+    ty::Tangents{1},
+    extras::TapirOneArgPullbackExtras,
+)
+    return DI.value_and_pullback!(f, tx, backend, x, ty, extras)[2]
 end

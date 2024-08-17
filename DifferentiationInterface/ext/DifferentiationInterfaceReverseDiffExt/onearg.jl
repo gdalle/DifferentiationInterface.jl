@@ -1,22 +1,24 @@
 ## Pullback
 
-DI.prepare_pullback(f, ::AutoReverseDiff, x, dy) = NoPullbackExtras()
+DI.prepare_pullback(f, ::AutoReverseDiff, x, ty::Tangents{1}) = NoPullbackExtras()
 
 function DI.value_and_pullback(
-    f, ::AutoReverseDiff, x::AbstractArray, dy, ::NoPullbackExtras
+    f, ::AutoReverseDiff, x::AbstractArray, ty::Tangents{1}, ::NoPullbackExtras
 )
+    dy = only(ty)
     y = f(x)
     dx = if y isa Number
         dy .* gradient(f, x)
     elseif y isa AbstractArray
         gradient(z -> dot(f(z), dy), x)
     end
-    return y, dx
+    return y, Tangents(dx)
 end
 
 function DI.value_and_pullback!(
-    f, dx, ::AutoReverseDiff, x::AbstractArray, dy, ::NoPullbackExtras
+    f, dx, ::AutoReverseDiff, x::AbstractArray, ty::Tangents{1}, ::NoPullbackExtras
 )
+    dy = only(ty)
     y = f(x)
     dx = if y isa Number
         dx = gradient!(dx, f, x)
@@ -24,16 +26,17 @@ function DI.value_and_pullback!(
     elseif y isa AbstractArray
         gradient!(dx, z -> dot(f(z), dy), x)
     end
-    return y, dx
+    return y, Tangents(dx)
 end
 
 function DI.value_and_pullback(
-    f, backend::AutoReverseDiff, x::Number, dy, ::NoPullbackExtras
+    f, backend::AutoReverseDiff, x::Number, ty::Tangents{1}, ::NoPullbackExtras
 )
+    dy = only(ty)
     x_array = [x]
     f_array = f ∘ only
     y, dx_array = DI.value_and_pullback(f_array, backend, x_array, dy)
-    return y, only(dx_array)
+    return y, Tangents(only(dx_array))
 end
 
 ## Gradient

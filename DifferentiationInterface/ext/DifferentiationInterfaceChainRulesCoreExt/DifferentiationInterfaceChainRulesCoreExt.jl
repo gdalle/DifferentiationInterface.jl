@@ -7,6 +7,7 @@ using ChainRulesCore:
     HasReverseMode,
     NoTangent,
     RuleConfig,
+    Tangents,
     frule_via_ad,
     rrule_via_ad
 using Compat

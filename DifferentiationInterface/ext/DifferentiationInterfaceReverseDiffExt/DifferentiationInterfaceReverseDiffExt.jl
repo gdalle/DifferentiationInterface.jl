@@ -3,7 +3,12 @@ module DifferentiationInterfaceReverseDiffExt
 using ADTypes: AutoReverseDiff
 import DifferentiationInterface as DI
 using DifferentiationInterface:
-    DerivativeExtras, GradientExtras, HessianExtras, JacobianExtras, NoPullbackExtras
+    DerivativeExtras,
+    GradientExtras,
+    HessianExtras,
+    JacobianExtras,
+    NoPullbackExtras,
+    Tangents
 using ReverseDiff.DiffResults: DiffResults, DiffResult, GradientResult, MutableDiffResult
 using DocStringExtensions
 using LinearAlgebra: dot, mul!

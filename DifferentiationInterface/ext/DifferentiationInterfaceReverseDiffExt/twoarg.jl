@@ -1,12 +1,13 @@
 ## Pullback
 
-DI.prepare_pullback(f!, y, ::AutoReverseDiff, x, dy) = NoPullbackExtras()
+DI.prepare_pullback(f!, y, ::AutoReverseDiff, x, ty::Tangents{1}) = NoPullbackExtras()
 
 ### Array in
 
 function DI.value_and_pullback(
-    f!, y, ::AutoReverseDiff, x::AbstractArray, dy, ::NoPullbackExtras
+    f!, y, ::AutoReverseDiff, x::AbstractArray, ty::Tangents{1}, ::NoPullbackExtras
 )
+    dy = only(ty)
     function dotproduct_closure(x)
         y_copy = similar(y, eltype(x))
         f!(y_copy, x)
@@ -14,12 +15,19 @@ function DI.value_and_pullback(
     end
     dx = gradient(dotproduct_closure, x)
     f!(y, x)
-    return y, dx
+    return y, Tangents(dx)
 end
 
 function DI.value_and_pullback!(
-    f!, y, dx, ::AutoReverseDiff, x::AbstractArray, dy, ::NoPullbackExtras
+    f!,
+    y,
+    tx::Tangents{1},
+    ::AutoReverseDiff,
+    x::AbstractArray,
+    ty::Tangents{1},
+    ::NoPullbackExtras,
 )
+    dx, dy = only(tx), only(ty)
     function dotproduct_closure(x)
         y_copy = similar(y, eltype(x))
         f!(y_copy, x)
@@ -27,10 +35,13 @@ function DI.value_and_pullback!(
     end
     dx = gradient!(dx, dotproduct_closure, x)
     f!(y, x)
-    return y, dx
+    return y, tx
 end
 
-function DI.pullback(f!, y, ::AutoReverseDiff, x::AbstractArray, dy, ::NoPullbackExtras)
+function DI.pullback(
+    f!, y, ::AutoReverseDiff, x::AbstractArray, ty::Tangents{1}, ::NoPullbackExtras
+)
+    dy = only(ty)
     function dotproduct_closure(x)
         y_copy = similar(y, eltype(x))
         f!(y_copy, x)
@@ -41,8 +52,15 @@ function DI.pullback(f!, y, ::AutoReverseDiff, x::AbstractArray, dy, ::NoPullbac
 end
 
 function DI.pullback!(
-    f!, y, dx, ::AutoReverseDiff, x::AbstractArray, dy, ::NoPullbackExtras
+    f!,
+    y,
+    tx::Tangents{1},
+    ::AutoReverseDiff,
+    x::AbstractArray,
+    ty::Tangents{1},
+    ::NoPullbackExtras,
 )
+    dx, dy = only(tx), only(ty)
     function dotproduct_closure(x)
         y_copy = similar(y, eltype(x))
         f!(y_copy, x)
@@ -55,14 +73,15 @@ end
 ### Number in, not supported
 
 function DI.value_and_pullback(
-    f!, y, backend::AutoReverseDiff, x::Number, dy, ::NoPullbackExtras
+    f!, y, backend::AutoReverseDiff, x::Number, ty::Tangents{1}, ::NoPullbackExtras
 )
+    dy = only(ty)
     x_array = [x]
     dx_array = similar(x_array)
     f!_array(_y::AbstractArray, _x_array) = f!(_y, only(_x_array))
     new_extras = DI.prepare_pullback(f!_array, y, backend, x_array, dy)
     y, dx_array = DI.value_and_pullback(f!_array, y, backend, x_array, dy, new_extras)
-    return y, only(dx_array)
+    return y, Tangents(only(dx_array))
 end
 
 ## Jacobian
