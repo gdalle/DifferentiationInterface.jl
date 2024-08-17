@@ -99,7 +99,7 @@ function test_differentiation(
                             (:input_size, mysize(scen.x)),
                             (:output_type, typeof(scen.y)),
                             (:output_size, mysize(scen.y)),
-                            (:batched_seed, scen.seed isa Batch),
+                            (:batched_seed, scen.seed isa Tangents),
                         ],
                     )
                     correctness && @testset "Correctness" begin
@@ -188,7 +188,7 @@ function benchmark_differentiation(
                         (:input_size, mysize(scen.x)),
                         (:output_type, typeof(scen.y)),
                         (:output_size, mysize(scen.y)),
-                        (:batched_seed, scen.seed isa Batch),
+                        (:batched_seed, scen.seed isa Tangents),
                     ],
                 )
                 run_benchmark!(benchmark_data, backend, scen; logging)

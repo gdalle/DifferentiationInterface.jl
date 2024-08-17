@@ -3,7 +3,6 @@ module DifferentiationInterfaceZygoteExt
 using ADTypes: AutoForwardDiff, AutoZygote
 import DifferentiationInterface as DI
 using DifferentiationInterface:
-    Batch,
     HVPExtras,
     NoGradientExtras,
     NoHessianExtras,
