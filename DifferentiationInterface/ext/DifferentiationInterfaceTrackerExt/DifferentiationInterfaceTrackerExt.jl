@@ -24,7 +24,6 @@ function DI.prepare_pullback_same_point(f, ::AutoTracker, x, ty::Tangents, ::Pul
 end
 
 function DI.value_and_pullback(f, ::AutoTracker, x, ty::Tangents, ::NoPullbackExtras)
-    dy = only(ty)
     y, pb = forward(f, x)
     return y, Tangents(data.(only.(pb.(ty.d)))...)
 end

@@ -139,20 +139,22 @@ function value_and_pullback(
 ) where {F}
     @compat (; pushforward_extras) = extras
     y = f(x)
-    dx = if x isa Number && y isa Number
-        dy * pushforward(f, backend, x, one(x), pushforward_extras)
-    elseif x isa Number && y isa AbstractArray
-        dot(dy, pushforward(f, backend, x, one(x), pushforward_extras))
-    elseif x isa AbstractArray && y isa Number
-        map(CartesianIndices(x)) do j
-            dy * pushforward(f, backend, x, basis(backend, x, j), pushforward_extras)
-        end
-    elseif x isa AbstractArray && y isa AbstractArray
-        map(CartesianIndices(x)) do j
-            dot(dy, pushforward(f, backend, x, basis(backend, x, j), pushforward_extras))
+    dx = map(ty.d) do dy
+        if x isa Number && y isa Number
+            dy * pushforward(f, backend, x, one(x), pushforward_extras)
+        elseif x isa Number && y isa AbstractArray
+            dot(dy, pushforward(f, backend, x, one(x), pushforward_extras))
+        elseif x isa AbstractArray && y isa Number
+            map(CartesianIndices(x)) do j
+                dy * pushforward(f, backend, x, basis(backend, x, j), pushforward_extras)
+            end
+        elseif x isa AbstractArray && y isa AbstractArray
+            map(CartesianIndices(x)) do j
+                dot(dy, pushforward(f, backend, x, basis(backend, x, j), pushforward_extras))
+            end
         end
     end
-    return y, Tangents(dx)
+    return y, Tangents(dx...)
 end
 
 function value_and_pullback!(
@@ -180,16 +182,22 @@ function value_and_pullback(
     f!::F, y, backend::AbstractADType, x, ty::Tangents, extras::PushforwardPullbackExtras
 ) where {F}
     @compat (; pushforward_extras) = extras
-    dy = only(ty)
-    dx = if x isa Number && y isa AbstractArray
-        dot(dy, pushforward(f!, y, backend, x, one(x), pushforward_extras))
-    elseif x isa AbstractArray && y isa AbstractArray
-        map(CartesianIndices(x)) do j
-            dot(dy, pushforward(f!, y, backend, x, basis(backend, x, j), pushforward_extras))
+    dx = map(ty.d) do dy
+        if x isa Number && y isa AbstractArray
+            dot(dy, pushforward(f!, y, backend, x, one(x), pushforward_extras))
+        elseif x isa AbstractArray && y isa AbstractArray
+            map(CartesianIndices(x)) do j
+                dot(
+                    dy,
+                    pushforward(
+                        f!, y, backend, x, basis(backend, x, j), pushforward_extras
+                    ),
+                )
+            end
         end
     end
     f!(y, x)
-    return y, Tangents(dx)
+    return y, Tangents(dx...)
 end
 
 function value_and_pullback!(
