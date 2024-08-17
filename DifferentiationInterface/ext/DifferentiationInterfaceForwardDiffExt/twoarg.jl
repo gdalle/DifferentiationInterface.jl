@@ -5,7 +5,7 @@ struct ForwardDiffTwoArgPushforwardExtras{T,X,Y} <: PushforwardExtras
     ydual_tmp::Y
 end
 
-function DI.prepare_pushforward_batched(
+function DI.prepare_pushforward(
     f!::F, y, backend::AutoForwardDiff, x, tx::Tangents
 ) where {F}
     T = tag_type(f!, backend, x)

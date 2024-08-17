@@ -32,23 +32,6 @@ using DifferentiationInterface:
     pushforward_performance,
     pullback_performance
 using DifferentiationInterface:
-    prepare_hvp_batched,
-    prepare_hvp_batched_same_point,
-    prepare_pullback_batched,
-    prepare_pullback_batched_same_point,
-    prepare_pushforward_batched,
-    prepare_pushforward_batched_same_point,
-    hvp_batched,
-    hvp_batched!,
-    pullback_batched,
-    pullback_batched!,
-    pushforward_batched,
-    pushforward_batched!,
-    value_and_pullback_batched,
-    value_and_pullback_batched!,
-    value_and_pushforward_batched,
-    value_and_pushforward_batched!
-using DifferentiationInterface:
     DerivativeExtras,
     GradientExtras,
     HessianExtras,

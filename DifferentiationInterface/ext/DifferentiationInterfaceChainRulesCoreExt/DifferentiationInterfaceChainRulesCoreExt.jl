@@ -7,13 +7,12 @@ using ChainRulesCore:
     HasReverseMode,
     NoTangent,
     RuleConfig,
-    Tangents,
     frule_via_ad,
     rrule_via_ad
 using Compat
 import DifferentiationInterface as DI
 using DifferentiationInterface:
-    DifferentiateWith, NoPullbackExtras, NoPushforwardExtras, PullbackExtras
+    DifferentiateWith, NoPullbackExtras, NoPushforwardExtras, PullbackExtras, Tangents
 
 ruleconfig(backend::AutoChainRules) = backend.ruleconfig
 

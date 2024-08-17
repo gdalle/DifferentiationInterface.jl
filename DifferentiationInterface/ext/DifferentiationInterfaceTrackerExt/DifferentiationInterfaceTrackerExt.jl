@@ -2,7 +2,7 @@ module DifferentiationInterfaceTrackerExt
 
 using ADTypes: AutoTracker
 import DifferentiationInterface as DI
-using DifferentiationInterface: NoGradientExtras, NoPullbackExtras, PullbackExtras
+using DifferentiationInterface: NoGradientExtras, NoPullbackExtras, PullbackExtras, Tangents
 using Tracker: Tracker, back, data, forward, gradient, jacobian, param, withgradient
 using Compat
 

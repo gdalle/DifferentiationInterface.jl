@@ -20,7 +20,7 @@ function DI.prepare_pullback_same_point(
 end
 
 function DI.value_and_pullback(
-    f, backend::AutoReverseChainRules, x, ty::Tangent{1}, ::NoPullbackExtras
+    f, backend::AutoReverseChainRules, x, ty::Tangents{1}, ::NoPullbackExtras
 )
     dy = only(ty)
     rc = ruleconfig(backend)
