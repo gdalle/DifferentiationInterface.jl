@@ -51,12 +51,12 @@ end
 function DI.value_and_pushforward!(
     f!::F,
     y,
-    ty::Tangents{B},
+    ty::Tangents,
     ::AutoForwardDiff,
     x,
-    tx::Tangents{B},
+    tx::Tangents,
     extras::ForwardDiffTwoArgPushforwardExtras{T},
-) where {F,T,B}
+) where {F,T}
     ydual_tmp = compute_ydual_twoarg(f!, y, x, tx, extras)
     myvalue!(T, y, ydual_tmp)
     mypartials!(T, ty, ydual_tmp)
@@ -79,12 +79,12 @@ end
 function DI.pushforward!(
     f!::F,
     y,
-    ty::Tangents{B},
+    ty::Tangents,
     ::AutoForwardDiff,
     x,
-    tx::Tangents{B},
+    tx::Tangents,
     extras::ForwardDiffTwoArgPushforwardExtras{T},
-) where {F,T,B}
+) where {F,T}
     ydual_tmp = compute_ydual_twoarg(f!, y, x, tx, extras)
     mypartials!(T, ty, ydual_tmp)
     return ty

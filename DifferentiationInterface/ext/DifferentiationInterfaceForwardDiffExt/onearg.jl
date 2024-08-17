@@ -36,18 +36,18 @@ function DI.value_and_pushforward(
 ) where {F,T,B}
     ydual = compute_ydual_onearg(f, x, tx, extras)
     y = myvalue(T, ydual)
-    new_ty = mypartials(T, Val(B), ydual)
-    return y, new_ty
+    ty = mypartials(T, Val(B), ydual)
+    return y, ty
 end
 
 function DI.value_and_pushforward!(
     f::F,
-    ty::Tangents{B},
+    ty::Tangents,
     ::AutoForwardDiff,
     x,
-    tx::Tangents{B},
+    tx::Tangents,
     extras::ForwardDiffOneArgPushforwardExtras{T},
-) where {F,T,B}
+) where {F,T}
     ydual = compute_ydual_onearg(f, x, tx, extras)
     y = myvalue(ydual)
     mypartials!(T, ty, ydual)
@@ -62,18 +62,18 @@ function DI.pushforward(
     extras::ForwardDiffOneArgPushforwardExtras{T},
 ) where {F,T,B}
     ydual = compute_ydual_onearg(f, x, tx, extras)
-    new_ty = mypartials(T, Val(B), ydual)
-    return new_ty
+    ty = mypartials(T, Val(B), ydual)
+    return ty
 end
 
 function DI.pushforward!(
     f::F,
-    ty::Tangents{B},
+    ty::Tangents,
     ::AutoForwardDiff,
     x,
-    tx::Tangents{B},
+    tx::Tangents,
     extras::ForwardDiffOneArgPushforwardExtras{T},
-) where {F,T,B}
+) where {F,T}
     ydual = compute_ydual_onearg(f, x, tx, extras)
     mypartials!(T, ty, ydual)
     return ty
