@@ -113,7 +113,7 @@ function DI.pullback(
     ty::Tangents,
     extras::FastDifferentiationTwoArgPullbackExtras,
 )
-    dy = map(tx.d) do dx
+    dy = map(ty.d) do dy
         v_vec = vcat(myvec(x), myvec(dy))
         if x isa Number
             return only(extras.vjp_exe(v_vec))

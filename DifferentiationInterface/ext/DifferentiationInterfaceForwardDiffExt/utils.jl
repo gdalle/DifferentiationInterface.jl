@@ -52,5 +52,5 @@ function mypartials!(::Type{T}, ty::Tangents{B}, ydual) where {T,B}
     for b in eachindex(ty.d)
         ty.d[b] .= partials.(T, ydual, b)
     end
-    return dy
+    return ty
 end

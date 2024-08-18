@@ -29,7 +29,7 @@ function DI.value_and_pullback!(
             gradient!(dx, z -> dot(f(z), dy), x)
         end
     end
-    return y, Tangents(dx...)
+    return y, tx
 end
 
 function DI.value_and_pullback(
