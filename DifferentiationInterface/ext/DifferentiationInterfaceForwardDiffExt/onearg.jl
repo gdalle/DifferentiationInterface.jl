@@ -92,6 +92,30 @@ end
 
 ## Gradient
 
+### Unprepared
+
+function DI.value_and_gradient!(f::F, grad, ::AutoForwardDiff, x) where {F}
+    result = MutableDiffResult(zero(eltype(x)), (grad,))
+    result = gradient!(result, f, x)
+    return DiffResults.value(result), DiffResults.gradient(result)
+end
+
+function DI.value_and_gradient(f::F, ::AutoForwardDiff, x) where {F}
+    result = GradientResult(x)
+    result = gradient!(result, f, x)
+    return DiffResults.value(result), DiffResults.gradient(result)
+end
+
+function DI.gradient!(f::F, grad, ::AutoForwardDiff, x) where {F}
+    return gradient!(grad, f, x)
+end
+
+function DI.gradient(f::F, ::AutoForwardDiff, x) where {F}
+    return gradient(f, x)
+end
+
+### Prepared
+
 struct ForwardDiffGradientExtras{C} <: GradientExtras
     config::C
 end
@@ -129,6 +153,29 @@ function DI.gradient(
 end
 
 ## Jacobian
+
+### Unprepared
+
+function DI.value_and_jacobian!(f::F, jac, ::AutoForwardDiff, x) where {F}
+    y = f(x)
+    result = MutableDiffResult(y, (jac,))
+    result = jacobian!(result, f, x)
+    return DiffResults.value(result), DiffResults.jacobian(result)
+end
+
+function DI.value_and_jacobian(f::F, ::AutoForwardDiff, x) where {F}
+    return f(x), jacobian(f, x)
+end
+
+function DI.jacobian!(f::F, jac, ::AutoForwardDiff, x) where {F}
+    return jacobian!(jac, f, x)
+end
+
+function DI.jacobian(f::F, ::AutoForwardDiff, x) where {F}
+    return jacobian(f, x)
+end
+
+### Prepared
 
 struct ForwardDiffOneArgJacobianExtras{C} <: JacobianExtras
     config::C
@@ -218,6 +265,34 @@ function DI.value_derivative_and_second_derivative!(
 end
 
 ## Hessian
+
+### Unprepared
+
+function DI.hessian!(f::F, hess, ::AutoForwardDiff, x) where {F}
+    return hessian!(hess, f, x)
+end
+
+function DI.hessian(f::F, ::AutoForwardDiff, x) where {F}
+    return hessian(f, x)
+end
+
+function DI.value_gradient_and_hessian!(f::F, grad, hess, ::AutoForwardDiff, x) where {F}
+    result = MutableDiffResult(one(eltype(x)), (grad, hess))
+    result = hessian!(result, f, x)
+    return (
+        DiffResults.value(result), DiffResults.gradient(result), DiffResults.hessian(result)
+    )
+end
+
+function DI.value_gradient_and_hessian(f::F, ::AutoForwardDiff, x) where {F}
+    result = HessianResult(x)
+    result = hessian!(result, f, x)
+    return (
+        DiffResults.value(result), DiffResults.gradient(result), DiffResults.hessian(result)
+    )
+end
+
+### Prepared
 
 struct ForwardDiffHessianExtras{C1,C2,C3} <: HessianExtras
     array_config::C1
