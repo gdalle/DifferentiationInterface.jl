@@ -73,7 +73,7 @@ function DI.pullback!(
         end
         gradient!(dx, dotproduct_closure, x)
     end
-    return dx
+    return tx
 end
 
 ### Number in, not supported

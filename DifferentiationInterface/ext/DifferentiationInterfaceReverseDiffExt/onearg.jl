@@ -21,7 +21,7 @@ function DI.value_and_pullback!(
 )
     y = f(x)
     for b in eachindex(tx.d, ty.d)
-        dx, dy = tx.d[b], ty.b[d]
+        dx, dy = tx.d[b], ty.d[b]
         if y isa Number
             dx = gradient!(dx, f, x)
             dx .*= dy

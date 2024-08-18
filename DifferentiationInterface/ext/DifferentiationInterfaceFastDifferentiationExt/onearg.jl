@@ -43,10 +43,10 @@ end
 
 function DI.pushforward!(
     f,
-    ty::Tangents{1},
+    ty::Tangents,
     ::AutoFastDifferentiation,
     x,
-    tx::Tangents{1},
+    tx::Tangents,
     extras::FastDifferentiationOneArgPushforwardExtras,
 )
     for b in eachindex(tx.d, ty.d)

@@ -49,7 +49,7 @@ function DI.pullback(
     f, ::AutoZygote, x, ty::Tangents, extras::ZygotePullbackExtrasSamePoint
 )
     @compat (; pb) = extras
-    return Tangents(only.(pb.(ty.d)))
+    return Tangents(only.(pb.(ty.d))...)
 end
 
 ## Gradient

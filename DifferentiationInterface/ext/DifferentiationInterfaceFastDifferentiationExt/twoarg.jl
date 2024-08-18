@@ -27,7 +27,7 @@ function DI.pushforward(
     y,
     ::AutoFastDifferentiation,
     x,
-    dx,
+    tx::Tangents,
     extras::FastDifferentiationTwoArgPushforwardExtras,
 )
     dy = map(tx.d) do dx
@@ -40,10 +40,10 @@ end
 function DI.pushforward!(
     f!,
     y,
-    dy,
+    ty::Tangents,
     ::AutoFastDifferentiation,
     x,
-    dx,
+    tx::Tangents,
     extras::FastDifferentiationTwoArgPushforwardExtras,
 )
     for b in eachindex(tx.d, ty.d)
@@ -127,10 +127,10 @@ end
 function DI.pullback!(
     f!,
     y,
-    dx,
+    tx::Tangents,
     ::AutoFastDifferentiation,
     x,
-    dy,
+    ty::Tangents,
     extras::FastDifferentiationTwoArgPullbackExtras,
 )
     for b in eachindex(tx.d, ty.d)
