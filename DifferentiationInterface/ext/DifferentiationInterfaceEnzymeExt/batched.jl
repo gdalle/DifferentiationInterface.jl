@@ -29,7 +29,7 @@ for op in (:pushforward, :pullback, :hvp)
         return Tangents(resultd...)
     end
     @eval function DI.$op!(
-        f::F, result, backend::AnyAutoEnzyme, x, seed::Tangents, ex::$E
+        f::F, result::Tangents, backend::AnyAutoEnzyme, x, seed::Tangents, ex::$E
     ) where {F}
         for b in eachindex(seed.d, result.d)
             DI.$op!(f, Tangents(result.d[b]), backend, x, Tangents(seed.d[b]), ex)
@@ -45,7 +45,7 @@ for op in (:pushforward, :pullback, :hvp)
         return y, result
     end
     @eval function DI.$val_and_op!(
-        f::F, result, backend::AnyAutoEnzyme, x, seed::Tangents, ex::$E
+        f::F, result::Tangents, backend::AnyAutoEnzyme, x, seed::Tangents, ex::$E
     ) where {F}
         DI.$op!(f, result, backend, x, seed, ex)
         y = f(x)
@@ -71,7 +71,7 @@ for op in (:pushforward, :pullback, :hvp)
         return Tangents(resultd)
     end
     @eval function DI.$op!(
-        f!::F, y, result, backend::AnyAutoEnzyme, x, seed::Tangents, ex::$E
+        f!::F, y, result::Tangents, backend::AnyAutoEnzyme, x, seed::Tangents, ex::$E
     ) where {F}
         for b in eachindex(seed.d, result.d)
             DI.$op!(f!, y, Tangents(result.d[b]), backend, x, Tangents(seed.d[b]), ex)
@@ -86,7 +86,7 @@ for op in (:pushforward, :pullback, :hvp)
         return y, result
     end
     @eval function DI.$val_and_op!(
-        f!::F, y, result, backend::AnyAutoEnzyme, x, seed::Tangents, ex::$E
+        f!::F, y, result::Tangents, backend::AnyAutoEnzyme, x, seed::Tangents, ex::$E
     ) where {F}
         DI.$op!(f!, y, result, backend, x, seed, ex)
         f!(y, x)
