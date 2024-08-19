@@ -16,67 +16,79 @@ for op in (:pushforward, :pullback, :hvp)
 
     ### 1-arg
 
-    @eval function $prep_op(f::F, backend::AnyAutoEnzyme, x, seed::Tangents) where {F}
-        return $prep_op(f, backend, x, Tangents(first(seed)))
+    @eval function DI.$prep_op(f::F, backend::AnyAutoEnzyme, x, seed::Tangents) where {F}
+        return DI.$prep_op(f, backend, x, Tangents(first(seed)))
     end
-    @eval function $op(f::F, backend::AnyAutoEnzyme, x, seed::Tangents, ex::$E) where {F}
-        resultd = $op.(Ref(f), Ref(backend), Ref(x), Tangents.(seed.d), Ref(ex))
+    @eval function DI.$prep_op_same_point(
+        f::F, backend::AnyAutoEnzyme, x, seed::Tangents
+    ) where {F}
+        return DI.$prep_op_same_point(f, backend, x, Tangents(first(seed)))
+    end
+    @eval function DI.$op(f::F, backend::AnyAutoEnzyme, x, seed::Tangents, ex::$E) where {F}
+        resultd = DI.$op.(Ref(f), Ref(backend), Ref(x), Tangents.(seed.d), Ref(ex))
         return Tangents(resultd...)
     end
-    @eval function $op!(
+    @eval function DI.$op!(
         f::F, result, backend::AnyAutoEnzyme, x, seed::Tangents, ex::$E
     ) where {F}
         for b in eachindex(seed.d, result.d)
-            $op!(f, Tangents(result.d[b]), backend, x, Tangents(seed.d[b]), ex)
+            DI.$op!(f, Tangents(result.d[b]), backend, x, Tangents(seed.d[b]), ex)
         end
         return result
     end
     op == :hvp && continue
-    @eval function $val_and_op(
+    @eval function DI.$val_and_op(
         f::F, backend::AnyAutoEnzyme, x, seed::Tangents, ex::$E
     ) where {F}
-        result = $op(f, backend, x, seed, ex)
+        result = DI.$op(f, backend, x, seed, ex)
         y = f(x)
         return y, result
     end
-    @eval function $val_and_op!(
+    @eval function DI.$val_and_op!(
         f::F, result, backend::AnyAutoEnzyme, x, seed::Tangents, ex::$E
     ) where {F}
-        $op!(f, result, backend, x, seed, ex)
+        DI.$op!(f, result, backend, x, seed, ex)
         y = f(x)
         return y, result
     end
 
     ### 2-arg
 
-    @eval function $prep_op(f!::F, y, backend::AnyAutoEnzyme, x, seed::Tangents) where {F}
-        return $prep_op(f!, y, backend, x, Tangents(first(seed)))
+    @eval function DI.$prep_op(
+        f!::F, y, backend::AnyAutoEnzyme, x, seed::Tangents
+    ) where {F}
+        return DI.$prep_op(f!, y, backend, x, Tangents(first(seed)))
     end
-    @eval function $op(
+    @eval function DI.$prep_op_same_point(
+        f!::F, y, backend::AnyAutoEnzyme, x, seed::Tangents
+    ) where {F}
+        return DI.$prep_op_same_point(f!, y, backend, x, Tangents(first(seed)))
+    end
+    @eval function DI.$op(
         f!::F, y, backend::AnyAutoEnzyme, x, seed::Tangents, ex::$E
     ) where {F}
-        resultd = $op.(Ref(f!), Ref(y), Ref(backend), Ref(x), Tangents.(seed.d), Ref(ex))
+        resultd = DI.$op.(Ref(f!), Ref(y), Ref(backend), Ref(x), Tangents.(seed.d), Ref(ex))
         return Tangents(resultd)
     end
-    @eval function $op!(
+    @eval function DI.$op!(
         f!::F, y, result, backend::AnyAutoEnzyme, x, seed::Tangents, ex::$E
     ) where {F}
         for b in eachindex(seed.d, result.d)
-            $op!(f!, y, Tangents(result.d[b]), backend, x, Tangents(seed.d[b]), ex)
+            DI.$op!(f!, y, Tangents(result.d[b]), backend, x, Tangents(seed.d[b]), ex)
         end
         return result
     end
-    @eval function $val_and_op(
+    @eval function DI.$val_and_op(
         f!::F, y, backend::AnyAutoEnzyme, x, seed::Tangents, ex::$E
     ) where {F}
-        result = $op(f!, y, backend, x, seed, ex)
+        result = DI.$op(f!, y, backend, x, seed, ex)
         f!(y, x)
         return y, result
     end
-    @eval function $val_and_op!(
+    @eval function DI.$val_and_op!(
         f!::F, y, result, backend::AnyAutoEnzyme, x, seed::Tangents, ex::$E
     ) where {F}
-        $op!(f!, y, result, backend, x, seed, ex)
+        DI.$op!(f!, y, result, backend, x, seed, ex)
         f!(y, x)
         return y, result
     end
