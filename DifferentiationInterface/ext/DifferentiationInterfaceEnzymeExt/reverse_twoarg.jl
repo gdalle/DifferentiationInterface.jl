@@ -1,9 +1,24 @@
 ## Pullback
 
 function DI.prepare_pullback(
-    f!, y, ::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, ty::Tangents{1}
+    f!, y, ::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, ty::Tangents
 )
     return NoPullbackExtras()
+end
+
+function DI.value_and_pullback(
+    f!,
+    y,
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
+    x,
+    ty::Tangents,
+    extras::NoPullbackExtras,
+)
+    dx = map(ty.d) do dy
+        DI.pullback(f!, y, backend, x, dy, extras)
+    end
+    f!(y, x)
+    return y, Tangents(dx...)
 end
 
 function DI.value_and_pullback(
@@ -31,7 +46,7 @@ function DI.value_and_pullback(
     y,
     backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
     x::AbstractArray,
-    ty::Tangents,
+    ty::Tangents{1},
     ::NoPullbackExtras,
 )
     dy = only(ty)

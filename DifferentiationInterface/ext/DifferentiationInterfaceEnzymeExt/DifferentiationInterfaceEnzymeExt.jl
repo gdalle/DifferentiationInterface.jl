@@ -53,6 +53,4 @@ include("forward_twoarg.jl")
 include("reverse_onearg.jl")
 include("reverse_twoarg.jl")
 
-include("batched.jl")
-
 end # module
