@@ -64,16 +64,16 @@ function PullbackSparseJacobianExtras{B}(;
     )
 end
 
-function prepare_jacobian(f::F, backend::AutoSparse, x) where {F}
+function DI.prepare_jacobian(f::F, backend::AutoSparse, x) where {F}
     y = f(x)
     return prepare_sparse_jacobian_aux(
-        (f,), backend, x, y, pushforward_performance(backend)
+        (f,), backend, x, y, DI.pushforward_performance(backend)
     )
 end
 
-function prepare_jacobian(f!::F, y, backend::AutoSparse, x) where {F}
+function DI.prepare_jacobian(f!::F, y, backend::AutoSparse, x) where {F}
     return prepare_sparse_jacobian_aux(
-        (f!, y), backend, x, y, pushforward_performance(backend)
+        (f!, y), backend, x, y, DI.pushforward_performance(backend)
     )
 end
 
@@ -149,23 +149,23 @@ end
 
 ## One argument
 
-function jacobian(f::F, backend::AutoSparse, x, extras::SparseJacobianExtras) where {F}
+function DI.jacobian(f::F, backend::AutoSparse, x, extras::SparseJacobianExtras) where {F}
     return sparse_jacobian_aux((f,), backend, x, extras)
 end
 
-function jacobian!(
+function DI.jacobian!(
     f::F, jac, backend::AutoSparse, x, extras::SparseJacobianExtras
 ) where {F}
     return sparse_jacobian_aux!((f,), jac, backend, x, extras)
 end
 
-function value_and_jacobian(
+function DI.value_and_jacobian(
     f::F, backend::AutoSparse, x, extras::SparseJacobianExtras
 ) where {F}
     return f(x), jacobian(f, backend, x, extras)
 end
 
-function value_and_jacobian!(
+function DI.value_and_jacobian!(
     f::F, jac, backend::AutoSparse, x, extras::SparseJacobianExtras
 ) where {F}
     return f(x), jacobian!(f, jac, backend, x, extras)
@@ -173,17 +173,19 @@ end
 
 ## Two arguments
 
-function jacobian(f!::F, y, backend::AutoSparse, x, extras::SparseJacobianExtras) where {F}
+function DI.jacobian(
+    f!::F, y, backend::AutoSparse, x, extras::SparseJacobianExtras
+) where {F}
     return sparse_jacobian_aux((f!, y), backend, x, extras)
 end
 
-function jacobian!(
+function DI.jacobian!(
     f!::F, y, jac, backend::AutoSparse, x, extras::SparseJacobianExtras
 ) where {F}
     return sparse_jacobian_aux!((f!, y), jac, backend, x, extras)
 end
 
-function value_and_jacobian(
+function DI.value_and_jacobian(
     f!::F, y, backend::AutoSparse, x, extras::SparseJacobianExtras
 ) where {F}
     jac = jacobian(f!, y, backend, x, extras)
@@ -191,7 +193,7 @@ function value_and_jacobian(
     return y, jac
 end
 
-function value_and_jacobian!(
+function DI.value_and_jacobian!(
     f!::F, y, jac, backend::AutoSparse, x, extras::SparseJacobianExtras
 ) where {F}
     jacobian!(f!, y, jac, backend, x, extras)
