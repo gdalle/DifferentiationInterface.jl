@@ -442,7 +442,7 @@ function DI.hvp!(
     tx::Tangents,
     extras::FastDifferentiationHVPExtras,
 )
-    for b in eachindex(tx.d, ty.d)
+    for b in eachindex(tx.d, tg.d)
         dx, dg = tx.d[b], tg.d[b]
         v_vec = vcat(vec(x), vec(dx))
         extras.hvp_exe!(dg, v_vec)
