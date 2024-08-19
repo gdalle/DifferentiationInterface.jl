@@ -19,11 +19,11 @@ struct FromPrimitivePushforwardExtras{E<:PushforwardExtras} <: PushforwardExtras
     pushforward_extras::E
 end
 
-function prepare_pushforward(f, fromprim::AutoForwardFromPrimitive, x, tx::Tangents{1})
+function prepare_pushforward(f, fromprim::AutoForwardFromPrimitive, x, tx::Tangents)
     return FromPrimitivePushforwardExtras(prepare_pushforward(f, fromprim.backend, x, tx))
 end
 
-function prepare_pushforward(f!, y, fromprim::AutoForwardFromPrimitive, x, tx::Tangents{1})
+function prepare_pushforward(f!, y, fromprim::AutoForwardFromPrimitive, x, tx::Tangents)
     return FromPrimitivePushforwardExtras(
         prepare_pushforward(f!, y, fromprim.backend, x, tx)
     )
@@ -33,7 +33,7 @@ function value_and_pushforward(
     f,
     fromprim::AutoForwardFromPrimitive,
     x,
-    tx::Tangents{1},
+    tx::Tangents,
     extras::FromPrimitivePushforwardExtras,
 )
     return value_and_pushforward(f, fromprim.backend, x, tx, extras.pushforward_extras)
@@ -44,7 +44,7 @@ function value_and_pushforward(
     y,
     fromprim::AutoForwardFromPrimitive,
     x,
-    tx::Tangents{1},
+    tx::Tangents,
     extras::FromPrimitivePushforwardExtras,
 )
     return value_and_pushforward(f!, y, fromprim.backend, x, tx, extras.pushforward_extras)
@@ -52,10 +52,10 @@ end
 
 function value_and_pushforward!(
     f,
-    ty,
+    ty::Tangents,
     fromprim::AutoForwardFromPrimitive,
     x,
-    tx::Tangents{1},
+    tx::Tangents,
     extras::FromPrimitivePushforwardExtras,
 )
     return value_and_pushforward!(f, ty, fromprim.backend, x, tx, extras.pushforward_extras)
@@ -64,10 +64,10 @@ end
 function value_and_pushforward!(
     f!,
     y,
-    ty::Tangents{1},
+    ty::Tangents,
     fromprim::AutoForwardFromPrimitive,
     x,
-    tx::Tangents{1},
+    tx::Tangents,
     extras::FromPrimitivePushforwardExtras,
 )
     return value_and_pushforward!(
@@ -87,11 +87,11 @@ struct FromPrimitivePullbackExtras{E<:PullbackExtras} <: PullbackExtras
     pullback_extras::E
 end
 
-function prepare_pullback(f, fromprim::AutoReverseFromPrimitive, x, ty::Tangents{1})
+function prepare_pullback(f, fromprim::AutoReverseFromPrimitive, x, ty::Tangents)
     return FromPrimitivePullbackExtras(prepare_pullback(f, fromprim.backend, x, ty))
 end
 
-function prepare_pullback(f!, y, fromprim::AutoReverseFromPrimitive, x, ty::Tangents{1})
+function prepare_pullback(f!, y, fromprim::AutoReverseFromPrimitive, x, ty::Tangents)
     return FromPrimitivePullbackExtras(prepare_pullback(f!, y, fromprim.backend, x, ty))
 end
 
@@ -99,7 +99,7 @@ function value_and_pullback(
     f,
     fromprim::AutoReverseFromPrimitive,
     x,
-    ty::Tangents{1},
+    ty::Tangents,
     extras::FromPrimitivePullbackExtras,
 )
     return value_and_pullback(f, fromprim.backend, x, ty, extras.pullback_extras)
@@ -110,7 +110,7 @@ function value_and_pullback(
     y,
     fromprim::AutoReverseFromPrimitive,
     x,
-    ty::Tangents{1},
+    ty::Tangents,
     extras::FromPrimitivePullbackExtras,
 )
     return value_and_pullback(f!, y, fromprim.backend, x, ty, extras.pullback_extras)
@@ -118,10 +118,10 @@ end
 
 function value_and_pullback!(
     f,
-    tx::Tangents{1},
+    tx::Tangents,
     fromprim::AutoReverseFromPrimitive,
     x,
-    ty::Tangents{1},
+    ty::Tangents,
     extras::FromPrimitivePullbackExtras,
 )
     return value_and_pullback!(f, tx, fromprim.backend, x, ty, extras.pullback_extras)
@@ -130,10 +130,10 @@ end
 function value_and_pullback!(
     f!,
     y,
-    tx::Tangents{1},
+    tx::Tangents,
     fromprim::AutoReverseFromPrimitive,
     x,
-    ty::Tangents{1},
+    ty::Tangents,
     extras::FromPrimitivePullbackExtras,
 )
     return value_and_pullback!(f!, y, tx, fromprim.backend, x, ty, extras.pullback_extras)
