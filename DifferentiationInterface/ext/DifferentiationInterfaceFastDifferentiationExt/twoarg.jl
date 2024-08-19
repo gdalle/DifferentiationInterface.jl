@@ -51,7 +51,7 @@ function DI.pushforward!(
         v_vec = vcat(myvec(x), myvec(dx))
         extras.jvp_exe!(vec(dy), v_vec)
     end
-    return dy
+    return ty
 end
 
 function DI.value_and_pushforward(

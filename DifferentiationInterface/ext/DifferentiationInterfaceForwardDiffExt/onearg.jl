@@ -49,7 +49,7 @@ function DI.value_and_pushforward!(
     extras::ForwardDiffOneArgPushforwardExtras{T},
 ) where {F,T}
     ydual = compute_ydual_onearg(f, x, tx, extras)
-    y = myvalue(ydual)
+    y = myvalue(T, ydual)
     mypartials!(T, ty, ydual)
     return y, ty
 end
