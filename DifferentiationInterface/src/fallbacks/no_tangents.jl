@@ -19,24 +19,29 @@ for op in (:pushforward, :pullback, :hvp)
     ### 1-arg
 
     @eval function $prep_op(f::F, backend::AbstractADType, x, seed) where {F}
+        @assert !isa(seed, Tangents)
         return $prep_op(f, backend, x, Tangents(seed))
     end
     @eval function $op(f::F, backend::AbstractADType, x, seed, ex::$E) where {F}
+        @assert !isa(seed, Tangents)
         t = $op(f, backend, x, Tangents(seed), ex)
         return only(t)
     end
     @eval function $op!(f::F, result, backend::AbstractADType, x, seed, ex::$E) where {F}
+        @assert !isa(seed, Tangents)
         t = $op!(f, Tangents(result), backend, x, Tangents(seed), ex)
         return only(t)
     end
     op == :hvp && continue
     @eval function $val_and_op(f::F, backend::AbstractADType, x, seed, ex::$E) where {F}
+        @assert !isa(seed, Tangents)
         y, t = $val_and_op(f, backend, x, Tangents(seed), ex)
         return y, only(t)
     end
     @eval function $val_and_op!(
         f::F, result, backend::AbstractADType, x, seed, ex::$E
     ) where {F}
+        @assert !isa(seed, Tangents)
         y, t = $val_and_op!(f, Tangents(result), backend, x, Tangents(seed), ex)
         return y, only(t)
     end
@@ -44,25 +49,30 @@ for op in (:pushforward, :pullback, :hvp)
     ### 2-arg
 
     @eval function $prep_op(f!::F, y, backend::AbstractADType, x, seed) where {F}
+        @assert !isa(seed, Tangents)
         return $prep_op(f!, y, backend, x, Tangents(seed))
     end
     @eval function $op(f!::F, y, backend::AbstractADType, x, seed, ex::$E) where {F}
+        @assert !isa(seed, Tangents)
         t = $op(f!, y, backend, x, Tangents(seed), ex)
         return only(t)
     end
     @eval function $op!(
         f!::F, y, result, backend::AbstractADType, x, seed, ex::$E
     ) where {F}
+        @assert !isa(seed, Tangents)
         t = $op!(f!, y, Tangents(result), backend, x, Tangents(seed), ex)
         return only(t)
     end
     @eval function $val_and_op(f!::F, y, backend::AbstractADType, x, seed, ex::$E) where {F}
+        @assert !isa(seed, Tangents)
         y, t = $val_and_op(f!, y, backend, x, Tangents(seed), ex)
         return y, only(t)
     end
     @eval function $val_and_op!(
         f!::F, y, result, backend::AbstractADType, x, seed, ex::$E
     ) where {F}
+        @assert !isa(seed, Tangents)
         y, t = $val_and_op!(f!, y, Tangents(result), backend, x, Tangents(seed), ex)
         return y, only(t)
     end
