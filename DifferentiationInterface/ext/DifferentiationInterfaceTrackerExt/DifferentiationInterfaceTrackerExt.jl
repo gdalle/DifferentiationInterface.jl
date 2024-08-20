@@ -25,7 +25,9 @@ end
 
 function DI.value_and_pullback(f, ::AutoTracker, x, ty::Tangents, ::NoPullbackExtras)
     y, pb = forward(f, x)
-    dx = data.(only.(pb.(ty.d)))
+    dx = map(ty.d) do dy
+        data(only(pb(dy)))
+    end
     return y, Tangents(dx...)
 end
 
@@ -33,7 +35,9 @@ function DI.value_and_pullback(
     f, ::AutoTracker, x, ty::Tangents, extras::TrackerPullbackExtrasSamePoint
 )
     @compat (; y, pb) = extras
-    dx = data.(only.(pb.(ty.d)))
+    dx = map(ty.d) do dy
+        data(only(pb(dy)))
+    end
     return copy(y), Tangents(dx...)
 end
 
@@ -41,7 +45,9 @@ function DI.pullback(
     f, ::AutoTracker, x, ty::Tangents, extras::TrackerPullbackExtrasSamePoint
 )
     @compat (; pb) = extras
-    dx = data.(only.(pb.(ty.d)))
+    dx = map(ty.d) do dy
+        data(only(pb(dy)))
+    end
     return Tangents(dx...)
 end
 

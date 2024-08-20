@@ -40,5 +40,5 @@ function DI.value_and_pushforward(
     else
         autodiff(forward_mode(backend), f!_and_df!, Const, y_and_dy, x_and_dx)
     end
-    return y, Tangents(dy_sametype)
+    return y, Tangents(dy_sametype...)
 end

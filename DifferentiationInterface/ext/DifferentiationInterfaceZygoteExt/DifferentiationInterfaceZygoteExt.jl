@@ -35,21 +35,30 @@ end
 
 function DI.value_and_pullback(f, ::AutoZygote, x, ty::Tangents, ::NoPullbackExtras)
     y, pb = pullback(f, x)
-    return y, Tangents(only.(pb.(ty.d))...)
+    dx = map(ty.d) do dy
+        only(pb(dy))
+    end
+    return y, Tangents(dx...)
 end
 
 function DI.value_and_pullback(
     f, ::AutoZygote, x, ty::Tangents, extras::ZygotePullbackExtrasSamePoint
 )
     @compat (; y, pb) = extras
-    return copy(y), Tangents(only.(pb.(ty.d))...)
+    dx = map(ty.d) do dy
+        only(pb(dy))
+    end
+    return copy(y), Tangents(dx...)
 end
 
 function DI.pullback(
     f, ::AutoZygote, x, ty::Tangents, extras::ZygotePullbackExtrasSamePoint
 )
     @compat (; pb) = extras
-    return Tangents(only.(pb.(ty.d))...)
+    dx = map(ty.d) do dy
+        only(pb(dy))
+    end
+    return Tangents(dx...)
 end
 
 ## Gradient

@@ -30,6 +30,14 @@ end
 ## Dense backends
 
 test_differentiation(AutoZygote(); excluded=[:second_derivative], logging=LOGGING);
+test_differentiation(
+    AutoZygote();
+    excluded=[:pullback, :jacobian, :derivative, :gradient],
+    second_order=false,
+    input_type=AbstractMatrix,
+    output_type=AbstractMatrix,
+    logging=LOGGING,
+);
 
 if VERSION >= v"1.10"
     test_differentiation(

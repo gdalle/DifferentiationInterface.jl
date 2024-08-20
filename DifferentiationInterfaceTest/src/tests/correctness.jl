@@ -70,8 +70,8 @@ function test_correctness(
         dy1_in = mysimilar(res1)
         dy2_in = mysimilar(res1)
 
-        y1, dy1 = value_and_pushforward!(f, dy1_in, ba, x, seed, extras_tup...)
         dy2 = pushforward!(f, dy2_in, ba, x, seed, extras_tup...)
+        y1, dy1 = value_and_pushforward!(f, dy1_in, ba, x, seed, extras_tup...)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin

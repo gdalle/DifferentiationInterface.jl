@@ -11,7 +11,10 @@ this function can be extended on the backend type.
 basis(::AbstractADType, a::AbstractArray, i) = basis(a, i)
 
 function basis(a::AbstractArray{T,N}, i::CartesianIndex{N}) where {T,N}
-    return OneElement(one(T), Tuple(i), axes(a))
+    b = zero(a)
+    b[i] = one(T)
+    return b
+    return OneElement(one(T), Tuple(i), axes(a))  # TODO: reactivate
 end
 
 function make_seed(x::AbstractArray, group::AbstractVector{<:Integer})
