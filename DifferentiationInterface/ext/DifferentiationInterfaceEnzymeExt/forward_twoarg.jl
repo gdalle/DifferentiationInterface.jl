@@ -15,7 +15,7 @@ function DI.value_and_pushforward(
     extras::NoPushforwardExtras,
 )
     dy = map(tx.d) do dx
-        DI.value_and_pushforward(f!, y, backend, x, dx, extras)
+        DI.pushforward(f!, y, backend, x, dx, extras)
     end
     f!(y, x)
     return y, Tangents(dy...)

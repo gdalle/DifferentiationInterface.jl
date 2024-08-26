@@ -11,9 +11,7 @@ this function can be extended on the backend type.
 basis(::AbstractADType, a::AbstractArray, i) = basis(a, i)
 
 function basis(a::AbstractArray{T,N}, i::CartesianIndex{N}) where {T,N}
-    b = similar(a)
-    copyto!(b, OneElement(one(T), Tuple(i), axes(a)))
-    return b
+    return zero(a) + OneElement(one(T), Tuple(i), axes(a))
 end
 
 function make_seed(x::AbstractArray, group::AbstractVector{<:Integer})
