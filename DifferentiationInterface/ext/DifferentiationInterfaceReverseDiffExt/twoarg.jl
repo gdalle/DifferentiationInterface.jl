@@ -11,7 +11,7 @@ function DI.value_and_pullback(
         function dotproduct_closure(x)
             y_copy = similar(y, eltype(x))
             f!(y_copy, x)
-            return mydot(y_copy, dy)
+            return dot(y_copy, dy)
         end
         gradient(dotproduct_closure, x)
     end
@@ -33,7 +33,7 @@ function DI.value_and_pullback!(
         function dotproduct_closure(x)
             y_copy = similar(y, eltype(x))
             f!(y_copy, x)
-            return mydot(y_copy, dy)
+            return dot(y_copy, dy)
         end
         gradient!(dx, dotproduct_closure, x)
     end
@@ -48,7 +48,7 @@ function DI.pullback(
         function dotproduct_closure(x)
             y_copy = similar(y, eltype(x))
             f!(y_copy, x)
-            return mydot(y_copy, dy)
+            return dot(y_copy, dy)
         end
         gradient(dotproduct_closure, x)
     end
@@ -69,7 +69,7 @@ function DI.pullback!(
         function dotproduct_closure(x)
             y_copy = similar(y, eltype(x))
             f!(y_copy, x)
-            return mydot(y_copy, dy)
+            return dot(y_copy, dy)
         end
         gradient!(dx, dotproduct_closure, x)
     end
