@@ -141,16 +141,24 @@ function value_and_pullback(
     y = f(x)
     dx = map(ty.d) do dy
         if x isa Number && y isa Number
-            dy * pushforward(f, backend, x, one(x), pushforward_extras)
+            t1 = pushforward(f, backend, x, Tangents(one(x)), pushforward_extras)
+            dy * only(t1)
         elseif x isa Number && y isa AbstractArray
-            dot(dy, pushforward(f, backend, x, one(x), pushforward_extras))
+            t1 = pushforward(f, backend, x, Tangents(one(x)), pushforward_extras)
+            dot(dy, only(t1))
         elseif x isa AbstractArray && y isa Number
             map(CartesianIndices(x)) do j
-                dy * pushforward(f, backend, x, basis(backend, x, j), pushforward_extras)
+                t1 = pushforward(
+                    f, backend, x, Tangents(basis(backend, x, j)), pushforward_extras
+                )
+                dy * only(t1)
             end
         elseif x isa AbstractArray && y isa AbstractArray
             map(CartesianIndices(x)) do j
-                dot(dy, pushforward(f, backend, x, basis(backend, x, j), pushforward_extras))
+                t1 = pushforward(
+                    f, backend, x, Tangents(basis(backend, x, j)), pushforward_extras
+                )
+                dot(dy, only(t1))
             end
         end
     end

@@ -59,9 +59,7 @@ struct ForwardOverReverseHVPExtras{G<:Gradient,E<:PushforwardExtras} <: HVPExtra
     outer_pushforward_extras::E
 end
 
-struct ReverseOverForwardHVPExtras{E<:GradientExtras} <: HVPExtras
-    outer_gradient_extras::E
-end
+struct ReverseOverForwardHVPExtras <: HVPExtras end
 
 struct ReverseOverReverseHVPExtras{G<:Gradient,E<:PullbackExtras} <: HVPExtras
     inner_gradient::G
@@ -99,9 +97,7 @@ function prepare_hvp_aux(
 ) where {F}
     # gradient of pushforward
     # uses dx in the closure so it can't be stored
-    inner_pushforward = PushforwardFixedSeed(f, nested(inner(backend)), Tangents(first(tx)))
-    outer_gradient_extras = prepare_gradient(inner_pushforward, outer(backend), x)
-    return ReverseOverForwardHVPExtras(outer_gradient_extras)
+    return ReverseOverForwardHVPExtras()
 end
 
 function prepare_hvp_aux(
@@ -134,12 +130,11 @@ function hvp(
 end
 
 function hvp(
-    f::F, backend::SecondOrder, x, tx::Tangents{1}, extras::ReverseOverForwardHVPExtras
+    f::F, backend::SecondOrder, x, tx::Tangents, ::ReverseOverForwardHVPExtras
 ) where {F}
-    @compat (; outer_gradient_extras) = extras
     dg = map(tx.d) do dx
         inner_pushforward = PushforwardFixedSeed(f, nested(inner(backend)), Tangents(dx))
-        gradient(only ∘ inner_pushforward, outer(backend), x, outer_gradient_extras)
+        gradient(only ∘ inner_pushforward, outer(backend), x)
     end
     return Tangents(dg...)
 end
@@ -182,21 +177,13 @@ function hvp!(
 end
 
 function hvp!(
-    f::F,
-    tg::Tangents,
-    backend::SecondOrder,
-    x,
-    tx::Tangents,
-    extras::ReverseOverForwardHVPExtras,
+    f::F, tg::Tangents, backend::SecondOrder, x, tx::Tangents, ::ReverseOverForwardHVPExtras
 ) where {F}
-    @compat (; outer_gradient_extras) = extras
     for b in eachindex(tx.d, tg.d)
         inner_pushforward = PushforwardFixedSeed(
             f, nested(inner(backend)), Tangents(tx.d[b])
         )
-        gradient!(
-            only ∘ inner_pushforward, tg.d[b], outer(backend), x, outer_gradient_extras
-        )
+        gradient!(only ∘ inner_pushforward, tg.d[b], outer(backend), x)
     end
     return tg
 end

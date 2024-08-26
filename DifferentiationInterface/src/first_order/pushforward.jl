@@ -144,16 +144,20 @@ function value_and_pushforward(
     y = f(x)
     dy = map(tx.d) do dx
         if x isa Number && y isa Number
-            dx * pullback(f, backend, x, one(y), pullback_extras)
+            t1 = pullback(f, backend, x, Tangents(one(y)), pullback_extras)
+            dx * only(t1)
         elseif x isa AbstractArray && y isa Number
-            dot(dx, pullback(f, backend, x, one(y), pullback_extras))
+            t1 = pullback(f, backend, x, Tangents(one(y)), pullback_extras)
+            dot(dx, only(t1))
         elseif x isa Number && y isa AbstractArray
             map(CartesianIndices(y)) do i
-                dx * pullback(f, backend, x, basis(backend, y, i), pullback_extras)
+                t1 = pullback(f, backend, x, Tangents(basis(backend, y, i)), pullback_extras)
+                dx * only(t1)
             end
         elseif x isa AbstractArray && y isa AbstractArray
             map(CartesianIndices(y)) do i
-                dot(dx, pullback(f, backend, x, basis(backend, y, i), pullback_extras))
+                t1 = pullback(f, backend, x, Tangents(basis(backend, y, i)), pullback_extras)
+                dot(dx, only(t1))
             end
         end
     end
