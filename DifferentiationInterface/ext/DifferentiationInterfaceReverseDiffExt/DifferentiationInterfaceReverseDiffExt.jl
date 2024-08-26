@@ -27,7 +27,13 @@ using ReverseDiff:
 
 DI.check_available(::AutoReverseDiff) = true
 
-mydot(a, b) = mapreduce(*, +, a, b)
+function mydot(a, b)
+    s = zero(Base.promote_eltype(a, b))
+    for i in eachindex(a, b)
+        s += a[i] * b[i]
+    end
+    return s
+end
 
 include("onearg.jl")
 include("twoarg.jl")
