@@ -27,12 +27,10 @@ using ReverseDiff:
 
 DI.check_available(::AutoReverseDiff) = true
 
-function mydot(a, b)
-    s = zero(Base.promote_eltype(a, b))
-    for i in eachindex(a, b)
-        s += a[i] * b[i]
-    end
-    return s
+function DI.basis(
+    ::AutoReverseDiff, a::AbstractArray{T,N}, i::CartesianIndex{N}
+) where {T,N}
+    return OneElement(one(T), Tuple(i), axes(a))
 end
 
 include("onearg.jl")
