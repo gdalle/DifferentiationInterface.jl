@@ -6,6 +6,7 @@ using DifferentiationInterface:
     DerivativeExtras, GradientExtras, HessianExtras, JacobianExtras, NoPullbackExtras
 using ReverseDiff.DiffResults: DiffResults, DiffResult, GradientResult, MutableDiffResult
 using DocStringExtensions
+using FillArrays: OneElement
 using LinearAlgebra: dot, mul!
 using ReverseDiff:
     CompiledGradient,
@@ -26,6 +27,12 @@ using ReverseDiff:
     jacobian!
 
 DI.check_available(::AutoReverseDiff) = true
+
+function DI.basis(
+    ::AutoReverseDiff, a::AbstractArray{T,N}, i::CartesianIndex{N}
+) where {T,N}
+    return OneElement(one(T), Tuple(i), axes(a))
+end
 
 include("onearg.jl")
 include("twoarg.jl")

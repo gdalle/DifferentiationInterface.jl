@@ -92,7 +92,7 @@ function prepare_sparse_jacobian_aux(
     groups = column_groups(coloring_result)
     Ng = length(groups)
     B = pick_batchsize(dense_backend, Ng)
-    seeds = map(group -> make_seed(x, group), groups)
+    seeds = [multibasis(backend, x, CartesianIndices(x)[group]) for group in groups]
     compressed_matrix = stack(_ -> vec(similar(y)), groups; dims=2)
     batched_seeds =
         Batch.([
@@ -127,7 +127,7 @@ function prepare_sparse_jacobian_aux(
     groups = row_groups(coloring_result)
     Ng = length(groups)
     B = pick_batchsize(dense_backend, Ng)
-    seeds = map(group -> make_seed(y, group), groups)
+    seeds = [multibasis(backend, y, CartesianIndices(y)[group]) for group in groups]
     compressed_matrix = stack(_ -> vec(similar(x)), groups; dims=1)
     batched_seeds =
         Batch.([
