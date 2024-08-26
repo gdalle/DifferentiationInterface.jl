@@ -27,6 +27,8 @@ using ReverseDiff:
 
 DI.check_available(::AutoReverseDiff) = true
 
+mydot(a, b) = mapreduce(*, +, a, b)
+
 include("onearg.jl")
 include("twoarg.jl")
 

@@ -9,7 +9,7 @@ function DI.value_and_pullback(
     dx = if y isa Number
         dy .* gradient(f, x)
     elseif y isa AbstractArray
-        gradient(z -> dot(f(z), dy), x)
+        gradient(z -> mydot(f(z), dy), x)
     end
     return y, dx
 end
@@ -22,7 +22,7 @@ function DI.value_and_pullback!(
         dx = gradient!(dx, f, x)
         dx .*= dy
     elseif y isa AbstractArray
-        gradient!(dx, z -> dot(f(z), dy), x)
+        gradient!(dx, z -> mydot(f(z), dy), x)
     end
     return y, dx
 end
