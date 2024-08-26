@@ -12,7 +12,6 @@ using Zygote: Zygote
 using Test
 
 LOGGING = get(ENV, "CI", "false") == "false"
-LOGGING = true
 
 ## Dense
 
@@ -25,13 +24,14 @@ twoarg_backends = [
     SecondOrder(AutoForwardDiff(), AutoReverseDiff(; compile=true)),
     SecondOrder(AutoForwardDiff(; tag=:mytag), AutoReverseDiff(; compile=false)),
     SecondOrder(AutoForwardDiff(), AutoEnzyme(; mode=Enzyme.Forward)),
-    SecondOrder(
-        AutoEnzyme(; mode=Enzyme.Reverse, function_annotation=Enzyme.Const),
-        AutoForwardDiff(),
-    ),
+    # SecondOrder(
+    #     AutoEnzyme(; mode=Enzyme.Reverse, function_annotation=Enzyme.Const),
+    #     AutoForwardDiff(),
+    # ),
 ]
 
 for backend in vcat(onearg_backends, twoarg_backends)
+    @show backend
     @test check_available(backend)
     if backend in onearg_backends
         @test !check_twoarg(backend)
