@@ -1,5 +1,13 @@
 abstract type FromPrimitive <: AbstractADType end
 
+function basis(fromprim::FromPrimitive, x::AbstractArray, i)
+    return basis(fromprim.backend, x, i)
+end
+
+function multibasis(fromprim::FromPrimitive, x::AbstractArray, inds)
+    return multibasis(fromprim.backend, x, inds)
+end
+
 check_available(fromprim::FromPrimitive) = check_available(fromprim.backend)
 twoarg_support(fromprim::FromPrimitive) = twoarg_support(fromprim.backend)
 

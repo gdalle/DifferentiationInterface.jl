@@ -33,8 +33,11 @@ using ReverseDiff:
 
 DI.check_available(::AutoReverseDiff) = true
 
-# dot is ambiguous between TrackedArrays with different eltypes
-mydot(x, y) = mapreduce(+, *, x, y)
+function DI.basis(
+    ::AutoReverseDiff, a::AbstractArray{T,N}, i::CartesianIndex{N}
+) where {T,N}
+    return OneElement(one(T), Tuple(i), axes(a))
+end
 
 include("onearg.jl")
 include("twoarg.jl")
