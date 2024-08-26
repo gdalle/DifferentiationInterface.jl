@@ -20,8 +20,9 @@ Storage for `B` (co)tangents of type `T` (`NTuple` wrapper).
 """
 struct Tangents{B,T}
     d::NTuple{B,T}
-    Tangents(d::Vararg{T,B}) where {T,B} = new{B,T}(d)
 end
+
+Tangents(d::Vararg{T,B}) where {T,B} = Tangents{B,T}(d)
 
 Base.eltype(::Tangents{B,T}) where {B,T} = T
 
