@@ -11,12 +11,14 @@ this function can be extended on the backend type.
 basis(::AbstractADType, a::AbstractArray, i) = basis(a, i)
 
 function basis(a::AbstractArray{T,N}, i::CartesianIndex{N}) where {T,N}
-    b = OneElement(one(T), Tuple(i), axes(a))
-    return convert(typeof(a), b)
+    b = similar(a)
+    copyto!(b, OneElement(one(T), Tuple(i), axes(a)))
+    return b
 end
 
 function make_seed(x::AbstractArray, group::AbstractVector{<:Integer})
-    seed = zero(x)
+    seed = similar(x)
+    seed .= zero(eltype(x))
     seed[group] .= one(eltype(x))
     return seed
 end
