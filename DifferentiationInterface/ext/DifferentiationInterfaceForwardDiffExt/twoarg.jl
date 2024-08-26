@@ -92,6 +92,30 @@ end
 
 ## Derivative
 
+### Unprepared
+
+function DI.value_and_derivative(f!::F, y, ::AutoForwardDiff, x) where {F}
+    result = MutableDiffResult(y, (similar(y),))
+    result = derivative!(result, f!, y, x)
+    return DiffResults.value(result), DiffResults.derivative(result)
+end
+
+function DI.value_and_derivative!(f!::F, y, der, ::AutoForwardDiff, x) where {F}
+    result = MutableDiffResult(y, (der,))
+    result = derivative!(result, f!, y, x)
+    return DiffResults.value(result), DiffResults.derivative(result)
+end
+
+function DI.derivative(f!::F, y, ::AutoForwardDiff, x) where {F}
+    return derivative(f!, y, x)
+end
+
+function DI.derivative!(f!::F, y, der, ::AutoForwardDiff, x) where {F}
+    return derivative!(der, f!, y, x)
+end
+
+### Prepared
+
 struct ForwardDiffTwoArgDerivativeExtras{C} <: DerivativeExtras
     config::C
 end
@@ -119,18 +143,41 @@ end
 function DI.derivative(
     f!::F, y, ::AutoForwardDiff, x, extras::ForwardDiffTwoArgDerivativeExtras
 ) where {F}
-    der = derivative(f!, y, x, extras.config)
-    return der
+    return derivative(f!, y, x, extras.config)
 end
 
 function DI.derivative!(
     f!::F, y, der, ::AutoForwardDiff, x, extras::ForwardDiffTwoArgDerivativeExtras
 ) where {F}
-    der = derivative!(der, f!, y, x, extras.config)
-    return der
+    return derivative!(der, f!, y, x, extras.config)
 end
 
 ## Jacobian
+
+### Unprepared
+
+function DI.value_and_jacobian(f!::F, y, ::AutoForwardDiff, x) where {F}
+    jac = similar(y, length(y), length(x))
+    result = MutableDiffResult(y, (jac,))
+    result = jacobian!(result, f!, y, x)
+    return DiffResults.value(result), DiffResults.jacobian(result)
+end
+
+function DI.value_and_jacobian!(f!::F, y, jac, ::AutoForwardDiff, x) where {F}
+    result = MutableDiffResult(y, (jac,))
+    result = jacobian!(result, f!, y, x)
+    return DiffResults.value(result), DiffResults.jacobian(result)
+end
+
+function DI.jacobian(f!::F, y, ::AutoForwardDiff, x) where {F}
+    return jacobian(f!, y, x)
+end
+
+function DI.jacobian!(f!::F, y, jac, ::AutoForwardDiff, x) where {F}
+    return jacobian!(jac, f!, y, x)
+end
+
+### Prepared
 
 struct ForwardDiffTwoArgJacobianExtras{C} <: JacobianExtras
     config::C
@@ -162,13 +209,11 @@ end
 function DI.jacobian(
     f!::F, y, ::AutoForwardDiff, x, extras::ForwardDiffTwoArgJacobianExtras
 ) where {F}
-    jac = jacobian(f!, y, x, extras.config)
-    return jac
+    return jacobian(f!, y, x, extras.config)
 end
 
 function DI.jacobian!(
     f!::F, y, jac, ::AutoForwardDiff, x, extras::ForwardDiffTwoArgJacobianExtras
 ) where {F}
-    jac = jacobian!(jac, f!, y, x, extras.config)
-    return jac
+    return jacobian!(jac, f!, y, x, extras.config)
 end
