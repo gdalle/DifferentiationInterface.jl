@@ -14,6 +14,7 @@ using StaticArrays: StaticArrays
 using Test
 
 LOGGING = get(ENV, "CI", "false") == "false"
+LOGGING = true
 
 @test check_available(AutoZeroForward())
 @test check_available(AutoZeroReverse())
