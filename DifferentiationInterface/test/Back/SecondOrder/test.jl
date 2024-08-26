@@ -12,6 +12,7 @@ using Zygote: Zygote
 using Test
 
 LOGGING = get(ENV, "CI", "false") == "false"
+LOGGING = true
 
 ## Dense
 

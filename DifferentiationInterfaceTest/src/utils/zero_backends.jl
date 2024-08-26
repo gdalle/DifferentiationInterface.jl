@@ -14,33 +14,43 @@ ADTypes.mode(::AutoZeroForward) = ForwardMode()
 DI.check_available(::AutoZeroForward) = true
 DI.twoarg_support(::AutoZeroForward) = DI.TwoArgSupported()
 
-DI.prepare_pushforward(f, ::AutoZeroForward, x, dx) = NoPushforwardExtras()
-DI.prepare_pushforward(f!, y, ::AutoZeroForward, x, dx) = NoPushforwardExtras()
+DI.prepare_pushforward(f, ::AutoZeroForward, x, tx::Tangents) = NoPushforwardExtras()
+DI.prepare_pushforward(f!, y, ::AutoZeroForward, x, tx::Tangents) = NoPushforwardExtras()
 
-function DI.value_and_pushforward(f, ::AutoZeroForward, x, dx, ::NoPushforwardExtras)
+function DI.value_and_pushforward(
+    f, ::AutoZeroForward, x, tx::Tangents{B}, ::NoPushforwardExtras
+) where {B}
     y = f(x)
-    dy = zero(y)
-    return y, dy
+    dy = ntuple(_ -> zero(y), Val(B))
+    return y, Tangents(dy...)
 end
 
-function DI.value_and_pushforward(f!, y, ::AutoZeroForward, x, dx, ::NoPushforwardExtras)
+function DI.value_and_pushforward(
+    f!, y, ::AutoZeroForward, x, tx::Tangents{B}, ::NoPushforwardExtras
+) where {B}
     f!(y, x)
-    dy = zero(y)
-    return y, dy
-end
-
-function DI.value_and_pushforward!(f, dy, ::AutoZeroForward, x, dx, ::NoPushforwardExtras)
-    y = f(x)
-    zero!(dy)
-    return y, dy
+    dy = ntuple(_ -> zero(y), Val(B))
+    return y, Tangents(dy...)
 end
 
 function DI.value_and_pushforward!(
-    f!, y, dy, ::AutoZeroForward, x, dx, ::NoPushforwardExtras
+    f, ty::Tangents, ::AutoZeroForward, x, tx::Tangents, ::NoPushforwardExtras
+)
+    y = f(x)
+    for b in eachindex(ty.d)
+        zero!(ty.d[b])
+    end
+    return y, ty
+end
+
+function DI.value_and_pushforward!(
+    f!, y, ty::Tangents, ::AutoZeroForward, x, tx::Tangents, ::NoPushforwardExtras
 )
     f!(y, x)
-    zero!(dy)
-    return y, dy
+    for b in eachindex(ty.d)
+        zero!(ty.d[b])
+    end
+    return y, ty
 end
 
 ## Reverse
@@ -57,29 +67,41 @@ ADTypes.mode(::AutoZeroReverse) = ReverseMode()
 DI.check_available(::AutoZeroReverse) = true
 DI.twoarg_support(::AutoZeroReverse) = DI.TwoArgSupported()
 
-DI.prepare_pullback(f, ::AutoZeroReverse, x, dy) = NoPullbackExtras()
-DI.prepare_pullback(f!, y, ::AutoZeroReverse, x, dy) = NoPullbackExtras()
+DI.prepare_pullback(f, ::AutoZeroReverse, x, ty::Tangents) = NoPullbackExtras()
+DI.prepare_pullback(f!, y, ::AutoZeroReverse, x, ty::Tangents) = NoPullbackExtras()
 
-function DI.value_and_pullback(f, ::AutoZeroReverse, x, dy, ::NoPullbackExtras)
+function DI.value_and_pullback(
+    f, ::AutoZeroReverse, x, ty::Tangents{B}, ::NoPullbackExtras
+) where {B}
     y = f(x)
-    dx = zero(x)
-    return y, dx
+    dx = ntuple(_ -> zero(x), Val(B))
+    return y, Tangents(dx...)
 end
 
-function DI.value_and_pullback(f!, y, ::AutoZeroReverse, x, dy, ::NoPullbackExtras)
+function DI.value_and_pullback(
+    f!, y, ::AutoZeroReverse, x, ty::Tangents{B}, ::NoPullbackExtras
+) where {B}
     f!(y, x)
-    dx = zero(x)
-    return y, dx
+    dx = ntuple(_ -> zero(x), Val(B))
+    return y, Tangents(dx...)
 end
 
-function DI.value_and_pullback!(f, dx, ::AutoZeroReverse, x, dy, ::NoPullbackExtras)
+function DI.value_and_pullback!(
+    f, tx::Tangents, ::AutoZeroReverse, x, ty::Tangents, ::NoPullbackExtras
+)
     y = f(x)
-    zero!(dx)
-    return y, dx
+    for b in eachindex(tx.d)
+        zero!(tx.d[b])
+    end
+    return y, tx
 end
 
-function DI.value_and_pullback!(f!, y, dx, ::AutoZeroReverse, x, dy, ::NoPullbackExtras)
+function DI.value_and_pullback!(
+    f!, y, tx::Tangents, ::AutoZeroReverse, x, ty::Tangents, ::NoPullbackExtras
+)
     f!(y, x)
-    zero!(dx)
-    return y, dx
+    for b in eachindex(tx.d)
+        zero!(tx.d[b])
+    end
+    return y, tx
 end
