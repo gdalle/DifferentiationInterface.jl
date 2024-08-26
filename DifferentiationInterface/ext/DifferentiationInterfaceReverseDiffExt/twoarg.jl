@@ -10,7 +10,7 @@ function DI.value_and_pullback(
     function dotproduct_closure(x)
         y_copy = similar(y, eltype(x))
         f!(y_copy, x)
-        return mydot(y_copy, dy)
+        return dot(y_copy, dy)
     end
     dx = gradient(dotproduct_closure, x)
     f!(y, x)
@@ -23,7 +23,7 @@ function DI.value_and_pullback!(
     function dotproduct_closure(x)
         y_copy = similar(y, eltype(x))
         f!(y_copy, x)
-        return mydot(y_copy, dy)
+        return dot(y_copy, dy)
     end
     dx = gradient!(dx, dotproduct_closure, x)
     f!(y, x)
@@ -34,7 +34,7 @@ function DI.pullback(f!, y, ::AutoReverseDiff, x::AbstractArray, dy, ::NoPullbac
     function dotproduct_closure(x)
         y_copy = similar(y, eltype(x))
         f!(y_copy, x)
-        return mydot(y_copy, dy)
+        return dot(y_copy, dy)
     end
     dx = gradient(dotproduct_closure, x)
     return dx
@@ -46,7 +46,7 @@ function DI.pullback!(
     function dotproduct_closure(x)
         y_copy = similar(y, eltype(x))
         f!(y_copy, x)
-        return mydot(y_copy, dy)
+        return dot(y_copy, dy)
     end
     dx = gradient!(dx, dotproduct_closure, x)
     return dx
