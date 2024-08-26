@@ -99,7 +99,7 @@ function DI.pullback(
     f,
     backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
-    ty::Tangents{1},
+    ty::Tangents,
     extras::NoPullbackExtras,
 )
     return DI.value_and_pullback(f, backend, x, ty, extras)[2]
@@ -161,10 +161,10 @@ end
 
 function DI.pullback!(
     f,
-    tx::Tangents{1},
+    tx::Tangents,
     backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
-    ty::Tangents{1},
+    ty::Tangents,
     extras::NoPullbackExtras,
 )
     return DI.value_and_pullback!(f, tx, backend, x, ty, extras)[2]

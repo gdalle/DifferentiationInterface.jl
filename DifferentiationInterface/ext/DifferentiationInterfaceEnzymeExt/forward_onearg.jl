@@ -60,10 +60,10 @@ end
 
 function DI.value_and_pushforward!(
     f,
-    ty::Tangents{1},
+    ty::Tangents,
     backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
-    tx::Tangents{1},
+    tx::Tangents,
     extras::NoPushforwardExtras,
 )
     # dy cannot be passed anyway
@@ -73,10 +73,10 @@ end
 
 function DI.pushforward!(
     f,
-    ty::Tangents{1},
+    ty::Tangents,
     backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
-    tx::Tangents{1},
+    tx::Tangents,
     extras::NoPushforwardExtras,
 )
     # dy cannot be passed anyway

@@ -11,10 +11,8 @@ this function can be extended on the backend type.
 basis(::AbstractADType, a::AbstractArray, i) = basis(a, i)
 
 function basis(a::AbstractArray{T,N}, i::CartesianIndex{N}) where {T,N}
-    b = zero(a)
-    b[i] = one(T)
-    return b
-    return OneElement(one(T), Tuple(i), axes(a))  # TODO: reactivate
+    b = OneElement(one(T), Tuple(i), axes(a))
+    return convert(typeof(a), b)
 end
 
 function make_seed(x::AbstractArray, group::AbstractVector{<:Integer})
