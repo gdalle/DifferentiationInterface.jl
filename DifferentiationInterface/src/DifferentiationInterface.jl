@@ -12,7 +12,7 @@ module DifferentiationInterface
 using ADTypes: ADTypes, AbstractADType
 using ADTypes: mode, ForwardMode, ForwardOrReverseMode, ReverseMode, SymbolicMode
 using ADTypes: AutoSparse, dense_ad
-using ADTypes: coloring_algorithm, column_coloring, row_coloring
+using ADTypes: coloring_algorithm
 using ADTypes: sparsity_detector, jacobian_sparsity, hessian_sparsity
 using ADTypes:
     AutoChainRules,
@@ -35,16 +35,16 @@ using LinearAlgebra: Symmetric, Transpose, dot, parent, transpose
 using PackageExtensionCompat: @require_extensions
 using SparseArrays: SparseMatrixCSC, nonzeros, nzrange, rowvals, sparse
 using SparseMatrixColorings:
+    AbstractColoringResult,
+    ColoringProblem,
     GreedyColoringAlgorithm,
-    color_groups,
-    decompress_columns,
-    decompress_columns!,
-    decompress_rows,
-    decompress_rows!,
-    decompress_symmetric,
-    decompress_symmetric!,
-    symmetric_coloring_detailed,
-    StarSet
+    coloring,
+    column_colors,
+    row_colors,
+    column_groups,
+    row_groups,
+    decompress,
+    decompress!
 
 abstract type Extras end
 
@@ -71,8 +71,9 @@ include("second_order/hvp.jl")
 include("second_order/hvp_batched.jl")
 include("second_order/hessian.jl")
 
+include("fallbacks/no_extras.jl")
+
 include("sparse/fallbacks.jl")
-include("sparse/matrices.jl")
 include("sparse/jacobian.jl")
 include("sparse/hessian.jl")
 

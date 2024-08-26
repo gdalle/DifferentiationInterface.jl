@@ -160,26 +160,6 @@ end
 
 ## One argument
 
-### Without extras
-
-function value_and_pullback(f::F, backend::AbstractADType, x, dy) where {F}
-    return value_and_pullback(f, backend, x, dy, prepare_pullback(f, backend, x, dy))
-end
-
-function value_and_pullback!(f::F, dx, backend::AbstractADType, x, dy) where {F}
-    return value_and_pullback!(f, dx, backend, x, dy, prepare_pullback(f, backend, x, dy))
-end
-
-function pullback(f::F, backend::AbstractADType, x, dy) where {F}
-    return pullback(f, backend, x, dy, prepare_pullback(f, backend, x, dy))
-end
-
-function pullback!(f::F, dx, backend::AbstractADType, x, dy) where {F}
-    return pullback!(f, dx, backend, x, dy, prepare_pullback(f, backend, x, dy))
-end
-
-### With extras
-
 function value_and_pullback(
     f::F, backend::AbstractADType, x, dy, extras::PushforwardPullbackExtras
 ) where {F}
@@ -219,30 +199,6 @@ function pullback!(
 end
 
 ## Two arguments
-
-### Without extras
-
-function value_and_pullback(f!::F, y, backend::AbstractADType, x, dy) where {F}
-    return value_and_pullback(
-        f!, y, backend, x, dy, prepare_pullback(f!, y, backend, x, dy)
-    )
-end
-
-function value_and_pullback!(f!::F, y, dx, backend::AbstractADType, x, dy) where {F}
-    return value_and_pullback!(
-        f!, y, dx, backend, x, dy, prepare_pullback(f!, y, backend, x, dy)
-    )
-end
-
-function pullback(f!::F, y, backend::AbstractADType, x, dy) where {F}
-    return pullback(f!, y, backend, x, dy, prepare_pullback(f!, y, backend, x, dy))
-end
-
-function pullback!(f!::F, y, dx, backend::AbstractADType, x, dy) where {F}
-    return pullback!(f!, y, dx, backend, x, dy, prepare_pullback(f!, y, backend, x, dy))
-end
-
-### With extras
 
 function value_and_pullback(
     f!::F, y, backend::AbstractADType, x, dy, extras::PushforwardPullbackExtras
