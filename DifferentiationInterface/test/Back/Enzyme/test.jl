@@ -10,6 +10,7 @@ using StableRNGs
 using Test
 
 LOGGING = get(ENV, "CI", "false") == "false"
+LOGGING = true
 
 dense_backends = [
     AutoEnzyme(; mode=nothing),

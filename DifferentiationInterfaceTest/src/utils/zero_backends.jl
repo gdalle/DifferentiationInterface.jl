@@ -21,7 +21,7 @@ function DI.value_and_pushforward(
     f, ::AutoZeroForward, x, tx::Tangents{B}, ::NoPushforwardExtras
 ) where {B}
     y = f(x)
-    dy = ntuple(_ -> zero(y), Val(B))
+    dy = ntuple(Returns(zero(y)), Val(B))
     return y, Tangents(dy...)
 end
 
@@ -29,7 +29,7 @@ function DI.value_and_pushforward(
     f!, y, ::AutoZeroForward, x, tx::Tangents{B}, ::NoPushforwardExtras
 ) where {B}
     f!(y, x)
-    dy = ntuple(_ -> zero(y), Val(B))
+    dy = ntuple(Returns(zero(y)), Val(B))
     return y, Tangents(dy...)
 end
 
@@ -74,7 +74,7 @@ function DI.value_and_pullback(
     f, ::AutoZeroReverse, x, ty::Tangents{B}, ::NoPullbackExtras
 ) where {B}
     y = f(x)
-    dx = ntuple(_ -> zero(x), Val(B))
+    dx = ntuple(Returns(zero(x)), Val(B))
     return y, Tangents(dx...)
 end
 
@@ -82,7 +82,7 @@ function DI.value_and_pullback(
     f!, y, ::AutoZeroReverse, x, ty::Tangents{B}, ::NoPullbackExtras
 ) where {B}
     f!(y, x)
-    dx = ntuple(_ -> zero(x), Val(B))
+    dx = ntuple(Returns(zero(x)), Val(B))
     return y, Tangents(dx...)
 end
 
