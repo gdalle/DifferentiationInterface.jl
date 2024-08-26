@@ -34,7 +34,7 @@ using ReverseDiff:
 DI.check_available(::AutoReverseDiff) = true
 
 # dot is ambiguous between TrackedArrays with different eltypes
-mydot(x, y) = mapreduce(sum, *, x, y)
+mydot(x, y) = mapreduce(+, *, x, y)
 
 include("onearg.jl")
 include("twoarg.jl")
