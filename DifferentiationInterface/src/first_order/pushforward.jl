@@ -155,7 +155,7 @@ end
 function _pushforward_via_pullback(
     f::F, backend::AbstractADType, x, dx, pullback_extras::PullbackExtras, y::Number
 ) where {F}
-    dy = dot(dx, pullback(f, backend, x, dx, pullback_extras))
+    dy = dot(dx, pullback(f, backend, x, one(y), pullback_extras))
     return dy
 end
 
