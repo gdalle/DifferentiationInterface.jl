@@ -70,14 +70,14 @@ end
 
 function prepare_jacobian(f::F, backend::AbstractADType, x) where {F}
     y = f(x)
-    return prepare_jacobian_aux((f,), backend, x, y, pushforward_performance(backend))
+    return _prepare_jacobian_aux((f,), backend, x, y, pushforward_performance(backend))
 end
 
 function prepare_jacobian(f!::F, y, backend::AbstractADType, x) where {F}
-    return prepare_jacobian_aux((f!, y), backend, x, y, pushforward_performance(backend))
+    return _prepare_jacobian_aux((f!, y), backend, x, y, pushforward_performance(backend))
 end
 
-function prepare_jacobian_aux(
+function _prepare_jacobian_aux(
     f_or_f!y::FY, backend::AbstractADType, x, y, ::PushforwardFast
 ) where {FY}
     N = length(x)
@@ -97,7 +97,7 @@ function prepare_jacobian_aux(
     )
 end
 
-function prepare_jacobian_aux(
+function _prepare_jacobian_aux(
     f_or_f!y::FY, backend::AbstractADType, x, y, ::PushforwardSlow
 ) where {FY}
     M = length(y)
@@ -120,11 +120,11 @@ end
 ## One argument
 
 function jacobian(f::F, backend::AbstractADType, x, extras::JacobianExtras) where {F}
-    return jacobian_aux((f,), backend, x, extras)
+    return _jacobian_aux((f,), backend, x, extras)
 end
 
 function jacobian!(f::F, jac, backend::AbstractADType, x, extras::JacobianExtras) where {F}
-    return jacobian_aux!((f,), jac, backend, x, extras)
+    return _jacobian_aux!((f,), jac, backend, x, extras)
 end
 
 function value_and_jacobian(
@@ -142,13 +142,13 @@ end
 ## Two arguments
 
 function jacobian(f!::F, y, backend::AbstractADType, x, extras::JacobianExtras) where {F}
-    return jacobian_aux((f!, y), backend, x, extras)
+    return _jacobian_aux((f!, y), backend, x, extras)
 end
 
 function jacobian!(
     f!::F, y, jac, backend::AbstractADType, x, extras::JacobianExtras
 ) where {F}
-    return jacobian_aux!((f!, y), jac, backend, x, extras)
+    return _jacobian_aux!((f!, y), jac, backend, x, extras)
 end
 
 function value_and_jacobian(
@@ -169,7 +169,7 @@ end
 
 ## Common auxiliaries
 
-function jacobian_aux(
+function _jacobian_aux(
     f_or_f!y::FY, backend::AbstractADType, x, extras::PushforwardJacobianExtras{B}
 ) where {FY,B}
     @compat (; batched_seeds, pushforward_extras, N) = extras
@@ -192,7 +192,7 @@ function jacobian_aux(
     return jac
 end
 
-function jacobian_aux(
+function _jacobian_aux(
     f_or_f!y::FY, backend::AbstractADType, x, extras::PullbackJacobianExtras{B}
 ) where {FY,B}
     @compat (; batched_seeds, pullback_extras, M) = extras
@@ -213,7 +213,7 @@ function jacobian_aux(
     return jac
 end
 
-function jacobian_aux!(
+function _jacobian_aux!(
     f_or_f!y::FY, jac, backend::AbstractADType, x, extras::PushforwardJacobianExtras{B}
 ) where {FY,B}
     @compat (; batched_seeds, batched_results, pushforward_extras, N) = extras
@@ -242,7 +242,7 @@ function jacobian_aux!(
     return jac
 end
 
-function jacobian_aux!(
+function _jacobian_aux!(
     f_or_f!y::FY, jac, backend::AbstractADType, x, extras::PullbackJacobianExtras{B}
 ) where {FY,B}
     @compat (; batched_seeds, batched_results, pullback_extras, M) = extras

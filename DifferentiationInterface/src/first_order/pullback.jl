@@ -109,7 +109,7 @@ function prepare_pullback_aux(
     f!::F, y, backend::AbstractADType, x, ty::Tangents, ::PullbackSlow
 ) where {F}
     dx = x isa Number ? one(x) : basis(backend, x, first(CartesianIndices(x)))
-    pushforward_extras = prepare_pushforward(f!, y, backend, x, Tangents((dx,)))
+    pushforward_extras = prepare_pushforward(f!, y, backend, x, SingleTangent(dx))
     return PushforwardPullbackExtras(pushforward_extras)
 end
 

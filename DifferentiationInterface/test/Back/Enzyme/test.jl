@@ -82,7 +82,8 @@ test_differentiation(
 );
 
 test_differentiation(
-    AutoEnzyme(; mode=Enzyme.Forward);  # TODO: add more
+    AutoEnzyme(; mode=Enzyme.Forward),  # TODO: add more
+    DIT.remove_batched(default_scenarios());
     correctness=false,
     type_stability=true,
     second_order=false,

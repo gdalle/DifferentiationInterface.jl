@@ -54,12 +54,11 @@ using SparseArrays: SparseArrays, SparseMatrixCSC, nnz, spdiagm
 using Test: @testset, @test
 
 include("scenarios/scenario.jl")
-include("scenarios/batchify.jl")
+include("scenarios/modify.jl")
 include("scenarios/default.jl")
 include("scenarios/sparse.jl")
 include("scenarios/allocfree.jl")
 include("scenarios/extensions.jl")
-include("scenarios/modify.jl")
 
 include("utils/zero_backends.jl")
 include("utils/misc.jl")

@@ -73,27 +73,6 @@ function order(::Union{Scenario{:second_derivative},Scenario{:hvp},Scenario{:hes
     return 2
 end
 
-function change_function(scen::Scenario{op,args,pl}, new_f) where {op,args,pl}
-    return Scenario{op,args,pl}(
-        new_f; x=scen.x, y=scen.y, seed=scen.seed, res1=scen.res1, res2=scen.res2
-    )
-end
-
-maybe_zero(x::Number) = zero(x)
-maybe_zero(x::AbstractArray) = zero(x)
-maybe_zero(::Nothing) = nothing
-
-function scenario_to_zero(scen::Scenario{op,args,pl}) where {op,args,pl}
-    return Scenario{op,args,pl}(
-        scen.f;
-        x=scen.x,
-        y=scen.y,
-        seed=scen.seed,
-        res1=maybe_zero(scen.res1),
-        res2=maybe_zero(scen.res2),
-    )
-end
-
 function compatible(backend::AbstractADType, scen::Scenario)
     if nb_args(scen) == 2
         return Bool(twoarg_support(backend))
