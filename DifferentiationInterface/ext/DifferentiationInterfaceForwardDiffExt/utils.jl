@@ -38,14 +38,14 @@ myderivative!(::Type{T}, dy, ydual) where {T} = dy .= myderivative.(T, ydual)
 
 function mypartials(::Type{T}, ::Val{B}, ydual::Dual) where {T,B}
     elements = partials(T, ydual).values
-    return Tangents(elements...)
+    return Tangents(elements)
 end
 
 function mypartials(::Type{T}, ::Val{B}, ydual) where {T,B}
     elements = ntuple(Val(B)) do b
         partials.(T, ydual, b)
     end
-    return Tangents(elements...)
+    return Tangents(elements)
 end
 
 function mypartials!(::Type{T}, ty::Tangents{B}, ydual) where {T,B}

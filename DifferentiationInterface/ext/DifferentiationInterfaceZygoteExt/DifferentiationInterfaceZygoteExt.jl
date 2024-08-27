@@ -35,7 +35,9 @@ end
 
 function DI.value_and_pullback(f, ::AutoZygote, x, ty::Tangents, ::NoPullbackExtras)
     y, pb = pullback(f, x)
-    dxs = only.(pb.(ty.d))
+    dxs = map(ty.d) do dy
+        only(pb(dy))
+    end
     return y, Tangents(dxs)
 end
 
@@ -43,7 +45,9 @@ function DI.value_and_pullback(
     f, ::AutoZygote, x, ty::Tangents, extras::ZygotePullbackExtrasSamePoint
 )
     @compat (; y, pb) = extras
-    dxs = only.(pb.(ty.d))
+    dxs = map(ty.d) do dy
+        only(pb(dy))
+    end
     return copy(y), Tangents(dxs)
 end
 
@@ -51,7 +55,9 @@ function DI.pullback(
     f, ::AutoZygote, x, ty::Tangents, extras::ZygotePullbackExtrasSamePoint
 )
     @compat (; pb) = extras
-    dxs = only.(pb.(ty.d))
+    dxs = map(ty.d) do dy
+        only(pb(dy))
+    end
     return Tangents(dxs)
 end
 

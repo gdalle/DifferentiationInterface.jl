@@ -2,7 +2,7 @@ struct TapirTwoArgPullbackExtras{R} <: PullbackExtras
     rrule::R
 end
 
-function DI.prepare_pullback(f!, y, backend::AutoTapir, x, ty::Tangents{1})
+function DI.prepare_pullback(f!, y, backend::AutoTapir, x, ty::Tangents)
     rrule = build_rrule(
         TapirInterpreter(),
         Tuple{typeof(f!),typeof(y),typeof(x)};
@@ -57,5 +57,5 @@ function DI.value_and_pullback(
     # Run the reverse-pass.
     _, _, new_dx = pb!!(NoRData())
 
-    return y, Tangents(tangent(fdata(dx_righttype), new_dx))
+    return y, SingleTangent(tangent(fdata(dx_righttype), new_dx))
 end
