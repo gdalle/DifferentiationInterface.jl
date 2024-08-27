@@ -529,5 +529,5 @@ function default_scenarios(rng::AbstractRNG=default_rng(); linalg=true)
         mat_to_vec_scenarios_twoarg(x_2_3; dx=dx_2_3, dy=dy_12),
         mat_to_mat_scenarios_twoarg(x_2_3; dx=dx_2_3, dy=dy_6_2),
     )
-    return add_batchified!(scens)
+    return add_batched(scens)
 end

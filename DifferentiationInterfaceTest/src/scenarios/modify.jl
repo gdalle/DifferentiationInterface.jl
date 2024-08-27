@@ -33,14 +33,13 @@ function batchify(scen::Scenario{op,args,pl}) where {op,args,pl}
     end
 end
 
-"""
-    add_batchified!(scens::AbstractVector{<:Scenario})
-
-Add batchified versions to `scens` of its scenarios which support it (pushforward, pullback and HVP).
-"""
-function add_batchified!(scens::AbstractVector{<:Scenario})
+function add_batched(scens::AbstractVector{<:Scenario})
     batchifiable_scens = filter(s -> operator(s) in (:pushforward, :pullback, :hvp), scens)
-    return append!(scens, batchify.(batchifiable_scens))
+    return vcat(scens, batchify.(batchifiable_scens))
+end
+
+function remove_batched(scens::AbstractVector{<:Scenario})
+    return filter(s -> !isa(s.seed, Batch), scens)
 end
 
 struct MyClosure{args,F,X,Y}
