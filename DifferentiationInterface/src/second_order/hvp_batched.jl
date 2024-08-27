@@ -15,10 +15,10 @@ function prepare_hvp_batched(f::F, backend::AbstractADType, x, dx::Batch) where 
 end
 
 function prepare_hvp_batched(f::F, backend::SecondOrder, x, dx::Batch) where {F}
-    return prepare_hvp_batched_aux(f, backend, x, dx, hvp_mode(backend))
+    return _prepare_hvp_batched_aux(f, backend, x, dx, hvp_mode(backend))
 end
 
-function prepare_hvp_batched_aux(
+function _prepare_hvp_batched_aux(
     f::F, backend::SecondOrder, x, dx::Batch, ::ForwardOverForward
 ) where {F}
     # batched pushforward of gradient
@@ -29,7 +29,7 @@ function prepare_hvp_batched_aux(
     return ForwardOverForwardHVPExtras(inner_gradient, outer_pushforward_extras)
 end
 
-function prepare_hvp_batched_aux(
+function _prepare_hvp_batched_aux(
     f::F, backend::SecondOrder, x, dx::Batch, ::ForwardOverReverse
 ) where {F}
     # batched pushforward of gradient
@@ -40,14 +40,14 @@ function prepare_hvp_batched_aux(
     return ForwardOverReverseHVPExtras(inner_gradient, outer_pushforward_extras)
 end
 
-function prepare_hvp_batched_aux(
+function _prepare_hvp_batched_aux(
     f::F, backend::SecondOrder, x, dx::Batch, ::ReverseOverForward
 ) where {F}
     # TODO: batched version replacing the outer gradient with a pullback
-    return prepare_hvp_aux(f, backend, x, first(dx.elements), ReverseOverForward())
+    return _prepare_hvp_aux(f, backend, x, first(dx.elements), ReverseOverForward())
 end
 
-function prepare_hvp_batched_aux(
+function _prepare_hvp_batched_aux(
     f::F, backend::SecondOrder, x, dx::Batch, ::ReverseOverReverse
 ) where {F}
     # batched pullback of gradient
