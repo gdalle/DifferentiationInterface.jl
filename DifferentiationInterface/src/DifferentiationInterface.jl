@@ -50,6 +50,7 @@ abstract type Extras end
 
 include("second_order/second_order.jl")
 
+include("utils/extras.jl")
 include("utils/traits.jl")
 include("utils/basis.jl")
 include("utils/batch.jl")

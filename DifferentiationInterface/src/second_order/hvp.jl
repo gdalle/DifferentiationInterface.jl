@@ -42,15 +42,6 @@ function hvp! end
 
 ### Extras types
 
-"""
-    HVPExtras
-
-Abstract type for additional information needed by [`hvp`](@ref) and its variants.
-"""
-abstract type HVPExtras <: Extras end
-
-struct NoHVPExtras <: HVPExtras end
-
 struct ForwardOverForwardHVPExtras{G<:Gradient,E<:PushforwardExtras} <: HVPExtras
     inner_gradient::G
     outer_pushforward_extras::E
