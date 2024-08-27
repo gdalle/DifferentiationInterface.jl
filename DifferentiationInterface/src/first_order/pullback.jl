@@ -90,14 +90,14 @@ struct PushforwardPullbackExtras{E} <: PullbackExtras
 end
 
 function prepare_pullback(f::F, backend::AbstractADType, x, ty::Tangents) where {F}
-    return prepare_pullback_aux(f, backend, x, ty, pullback_performance(backend))
+    return _prepare_pullback_aux(f, backend, x, ty, pullback_performance(backend))
 end
 
 function prepare_pullback(f!::F, y, backend::AbstractADType, x, ty::Tangents) where {F}
-    return prepare_pullback_aux(f!, y, backend, x, ty, pullback_performance(backend))
+    return _prepare_pullback_aux(f!, y, backend, x, ty, pullback_performance(backend))
 end
 
-function prepare_pullback_aux(
+function _prepare_pullback_aux(
     f::F, backend::AbstractADType, x, ty::Tangents, ::PullbackSlow
 ) where {F}
     dx = x isa Number ? one(x) : basis(backend, x, first(CartesianIndices(x)))
@@ -105,7 +105,7 @@ function prepare_pullback_aux(
     return PushforwardPullbackExtras(pushforward_extras)
 end
 
-function prepare_pullback_aux(
+function _prepare_pullback_aux(
     f!::F, y, backend::AbstractADType, x, ty::Tangents, ::PullbackSlow
 ) where {F}
     dx = x isa Number ? one(x) : basis(backend, x, first(CartesianIndices(x)))
@@ -113,11 +113,11 @@ function prepare_pullback_aux(
     return PushforwardPullbackExtras(pushforward_extras)
 end
 
-function prepare_pullback_aux(f, backend::AbstractADType, x, ty::Tangents, ::PullbackFast)
+function _prepare_pullback_aux(f, backend::AbstractADType, x, ty::Tangents, ::PullbackFast)
     throw(MissingBackendError(backend))
 end
 
-function prepare_pullback_aux(
+function _prepare_pullback_aux(
     f!, y, backend::AbstractADType, x, ty::Tangents, ::PullbackFast
 )
     throw(MissingBackendError(backend))

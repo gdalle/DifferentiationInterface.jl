@@ -62,10 +62,10 @@ function prepare_hvp(f::F, backend::AbstractADType, x, tx::Tangents) where {F}
 end
 
 function prepare_hvp(f::F, backend::SecondOrder, x, tx::Tangents) where {F}
-    return prepare_hvp_aux(f, backend, x, tx, hvp_mode(backend))
+    return _prepare_hvp_aux(f, backend, x, tx, hvp_mode(backend))
 end
 
-function prepare_hvp_aux(
+function _prepare_hvp_aux(
     f::F, backend::SecondOrder, x, tx::Tangents, ::ForwardOverForward
 ) where {F}
     # pushforward of many pushforwards in theory, but pushforward of gradient in practice
@@ -74,7 +74,7 @@ function prepare_hvp_aux(
     return ForwardOverForwardHVPExtras(inner_gradient, outer_pushforward_extras)
 end
 
-function prepare_hvp_aux(
+function _prepare_hvp_aux(
     f::F, backend::SecondOrder, x, tx::Tangents, ::ForwardOverReverse
 ) where {F}
     # pushforward of gradient
@@ -83,7 +83,7 @@ function prepare_hvp_aux(
     return ForwardOverReverseHVPExtras(inner_gradient, outer_pushforward_extras)
 end
 
-function prepare_hvp_aux(
+function _prepare_hvp_aux(
     f::F, backend::SecondOrder, x, tx::Tangents, ::ReverseOverForward
 ) where {F}
     # gradient of pushforward
@@ -91,7 +91,7 @@ function prepare_hvp_aux(
     return ReverseOverForwardHVPExtras()
 end
 
-function prepare_hvp_aux(
+function _prepare_hvp_aux(
     f::F, backend::SecondOrder, x, tx::Tangents, ::ReverseOverReverse
 ) where {F}
     # pullback of gradient

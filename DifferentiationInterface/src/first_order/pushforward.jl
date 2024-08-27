@@ -90,14 +90,14 @@ struct PullbackPushforwardExtras{E} <: PushforwardExtras
 end
 
 function prepare_pushforward(f::F, backend::AbstractADType, x, tx::Tangents) where {F}
-    return prepare_pushforward_aux(f, backend, x, tx, pushforward_performance(backend))
+    return _prepare_pushforward_aux(f, backend, x, tx, pushforward_performance(backend))
 end
 
 function prepare_pushforward(f!::F, y, backend::AbstractADType, x, tx::Tangents) where {F}
-    return prepare_pushforward_aux(f!, y, backend, x, tx, pushforward_performance(backend))
+    return _prepare_pushforward_aux(f!, y, backend, x, tx, pushforward_performance(backend))
 end
 
-function prepare_pushforward_aux(
+function _prepare_pushforward_aux(
     f::F, backend::AbstractADType, x, tx::Tangents, ::PushforwardSlow
 ) where {F}
     y = f(x)
@@ -106,7 +106,7 @@ function prepare_pushforward_aux(
     return PullbackPushforwardExtras(pullback_extras)
 end
 
-function prepare_pushforward_aux(
+function _prepare_pushforward_aux(
     f!::F, y, backend::AbstractADType, x, tx::Tangents, ::PushforwardSlow
 ) where {F}
     dy = y isa Number ? one(y) : basis(backend, y, first(CartesianIndices(y)))
@@ -114,13 +114,13 @@ function prepare_pushforward_aux(
     return PullbackPushforwardExtras(pullback_extras)
 end
 
-function prepare_pushforward_aux(
+function _prepare_pushforward_aux(
     f, backend::AbstractADType, x, tx::Tangents, ::PushforwardFast
 )
     throw(MissingBackendError(backend))
 end
 
-function prepare_pushforward_aux(
+function _prepare_pushforward_aux(
     f!, y, backend::AbstractADType, x, tx::Tangents, ::PushforwardFast
 )
     throw(MissingBackendError(backend))
@@ -131,7 +131,7 @@ end
 function _pushforward_via_pullback(
     f::F, backend::AbstractADType, x, dx, pullback_extras::PullbackExtras, y::Number
 ) where {F}
-    t1 = pullback(f, backend, x, SingleTangent(dx), pullback_extras)
+    t1 = pullback(f, backend, x, SingleTangent(one(y)), pullback_extras)
     dy = dot(dx, only(t1))
     return dy
 end
