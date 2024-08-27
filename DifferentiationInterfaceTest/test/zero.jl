@@ -6,7 +6,7 @@ using DifferentiationInterfaceTest:
     scenario_to_zero,
     test_allocfree,
     allocfree_scenarios,
-    add_batchified!
+    remove_batched
 using ComponentArrays: ComponentArrays
 using JLArrays: JLArrays
 using StaticArrays: StaticArrays
@@ -24,7 +24,7 @@ LOGGING = get(ENV, "CI", "false") == "false"
 
 test_differentiation(
     [AutoZeroForward(), AutoZeroReverse()],
-    add_batchified!(scenario_to_zero.(default_scenarios()));
+    scenario_to_zero.(default_scenarios());
     correctness=true,
     type_stability=true,
     logging=LOGGING,
@@ -35,7 +35,7 @@ test_differentiation(
         SecondOrder(AutoZeroForward(), AutoZeroReverse()),
         SecondOrder(AutoZeroReverse(), AutoZeroForward()),
     ],
-    add_batchified!(scenario_to_zero.(default_scenarios(; linalg=false)));
+    scenario_to_zero.(default_scenarios(; linalg=false));
     correctness=true,
     type_stability=true,
     first_order=false,
@@ -45,12 +45,14 @@ test_differentiation(
 ## Benchmark
 
 data1 = benchmark_differentiation(
-    [AutoZeroForward(), AutoZeroReverse()], default_scenarios(); logging=LOGGING
+    [AutoZeroForward(), AutoZeroReverse()],
+    remove_batched(default_scenarios());
+    logging=LOGGING,
 );
 
 data2 = benchmark_differentiation(
     [SecondOrder(AutoZeroForward(), AutoZeroReverse())],
-    default_scenarios();
+    remove_batched(default_scenarios());
     first_order=false,
     logging=LOGGING,
 );
@@ -58,7 +60,9 @@ data2 = benchmark_differentiation(
 struct FakeBackend <: ADTypes.AbstractADType end
 ADTypes.mode(::FakeBackend) = ADTypes.ForwardMode()
 
-data3 = benchmark_differentiation([FakeBackend()], default_scenarios(); logging=false);
+data3 = benchmark_differentiation(
+    [FakeBackend()], remove_batched(default_scenarios()); logging=false
+);
 
 @testset "Benchmarking DataFrame" begin
     for col in eachcol(vcat(data1, data2))

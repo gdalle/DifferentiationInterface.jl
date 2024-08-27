@@ -1,3 +1,47 @@
+function change_function(scen::Scenario{op,args,pl}, new_f) where {op,args,pl}
+    return Scenario{op,args,pl}(
+        new_f; x=scen.x, y=scen.y, seed=scen.seed, res1=scen.res1, res2=scen.res2
+    )
+end
+
+maybe_zero(x::Number) = zero(x)
+maybe_zero(x::AbstractArray) = zero(x)
+maybe_zero(x::Batch) = Batch(map(maybe_zero, x.elements))
+maybe_zero(::Nothing) = nothing
+
+function scenario_to_zero(scen::Scenario{op,args,pl}) where {op,args,pl}
+    return Scenario{op,args,pl}(
+        scen.f;
+        x=scen.x,
+        y=scen.y,
+        seed=scen.seed,
+        res1=maybe_zero(scen.res1),
+        res2=maybe_zero(scen.res2),
+    )
+end
+
+function batchify(scen::Scenario{op,args,pl}) where {op,args,pl}
+    @compat (; f, x, y, seed, res1, res2) = scen
+    if op == :pushforward || op == :pullback
+        new_seed = Batch((seed, -seed))
+        new_res1 = Batch((res1, -res1))
+        return Scenario{op,args,pl}(f; x, y, seed=new_seed, res1=new_res1, res2)
+    elseif op == :hvp
+        new_seed = Batch((seed, -seed))
+        new_res2 = Batch((res2, -res2))
+        return Scenario{op,args,pl}(f; x, y, seed=new_seed, res1, res2=new_res2)
+    end
+end
+
+function add_batched(scens::AbstractVector{<:Scenario})
+    batchifiable_scens = filter(s -> operator(s) in (:pushforward, :pullback, :hvp), scens)
+    return vcat(scens, batchify.(batchifiable_scens))
+end
+
+function remove_batched(scens::AbstractVector{<:Scenario})
+    return filter(s -> !isa(s.seed, Batch), scens)
+end
+
 struct MyClosure{args,F,X,Y}
     f::F
     x_buffer::Vector{X}
