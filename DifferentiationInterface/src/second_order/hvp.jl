@@ -70,8 +70,6 @@ struct ReverseOverReverseHVPExtras{G<:Gradient,E<:PullbackExtras} <: HVPExtras
     outer_pullback_extras::E
 end
 
-### Different point
-
 function prepare_hvp(f::F, backend::AbstractADType, x, dx) where {F}
     return prepare_hvp(f, SecondOrder(backend, backend), x, dx)
 end
@@ -107,19 +105,6 @@ function prepare_hvp_aux(f::F, backend::SecondOrder, x, dx, ::ReverseOverReverse
     inner_gradient = Gradient(f, nested(inner(backend)))
     outer_pullback_extras = prepare_pullback(inner_gradient, outer(backend), x, dx)
     return ReverseOverReverseHVPExtras(inner_gradient, outer_pullback_extras)
-end
-
-### Same point
-
-function prepare_hvp_same_point(
-    f::F, backend::AbstractADType, x, dx, extras::HVPExtras
-) where {F}
-    return extras
-end
-
-function prepare_hvp_same_point(f::F, backend::AbstractADType, x, dx) where {F}
-    extras = prepare_hvp(f, backend, x, dx)
-    return prepare_hvp_same_point(f, backend, x, dx, extras)
 end
 
 ## One argument

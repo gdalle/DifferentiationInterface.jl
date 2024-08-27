@@ -10,42 +10,12 @@ function pullback_batched! end
 
 ## Preparation
 
-### Different point
-
 function prepare_pullback_batched(f::F, backend::AbstractADType, x, dy::Batch) where {F}
     return prepare_pullback(f, backend, x, first(dy.elements))
 end
 
 function prepare_pullback_batched(f!::F, y, backend::AbstractADType, x, dy::Batch) where {F}
     return prepare_pullback(f!, y, backend, x, first(dy.elements))
-end
-
-### Same point
-
-function prepare_pullback_batched_same_point(
-    f::F, backend::AbstractADType, x, dy::Batch, extras::PullbackExtras
-) where {F}
-    return prepare_pullback_same_point(f, backend, x, first(dy.elements), extras)
-end
-
-function prepare_pullback_batched_same_point(
-    f!::F, y, backend::AbstractADType, x, dy::Batch, extras::PullbackExtras
-) where {F}
-    return prepare_pullback_same_point(f!, y, backend, x, first(dy.elements), extras)
-end
-
-function prepare_pullback_batched_same_point(
-    f::F, backend::AbstractADType, x, dy::Batch
-) where {F}
-    extras = prepare_pullback_batched(f, backend, x, dy)
-    return prepare_pullback_batched_same_point(f, backend, x, dy, extras)
-end
-
-function prepare_pullback_batched_same_point(
-    f!::F, y, backend::AbstractADType, x, dy::Batch
-) where {F}
-    extras = prepare_pullback_batched(f!, y, backend, x, dy)
-    return prepare_pullback_batched_same_point(f!, y, backend, x, dy, extras)
 end
 
 ## One argument

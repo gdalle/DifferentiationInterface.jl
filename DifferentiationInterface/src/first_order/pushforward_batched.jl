@@ -10,8 +10,6 @@ function pushforward_batched! end
 
 ## Preparation
 
-### Different point
-
 function prepare_pushforward_batched(f::F, backend::AbstractADType, x, dx::Batch) where {F}
     return prepare_pushforward(f, backend, x, first(dx.elements))
 end
@@ -20,34 +18,6 @@ function prepare_pushforward_batched(
     f!::F, y, backend::AbstractADType, x, dx::Batch
 ) where {F}
     return prepare_pushforward(f!, y, backend, x, first(dx.elements))
-end
-
-### Same point
-
-function prepare_pushforward_batched_same_point(
-    f::F, backend::AbstractADType, x, dx::Batch
-) where {F}
-    extras = prepare_pushforward_batched(f, backend, x, dx)
-    return prepare_pushforward_batched_same_point(f, backend, x, dx, extras)
-end
-
-function prepare_pushforward_batched_same_point(
-    f!::F, y, backend::AbstractADType, x, dx::Batch
-) where {F}
-    extras = prepare_pushforward_batched(f!, y, backend, x, dx)
-    return prepare_pushforward_batched_same_point(f!, y, backend, x, dx, extras)
-end
-
-function prepare_pushforward_batched_same_point(
-    f::F, backend::AbstractADType, x, dx::Batch, extras::PushforwardExtras
-) where {F}
-    return prepare_pushforward_same_point(f, backend, x, first(dx.elements), extras)
-end
-
-function prepare_pushforward_batched_same_point(
-    f!::F, y, backend::AbstractADType, x, dx::Batch, extras::PushforwardExtras
-) where {F}
-    return prepare_pushforward_same_point(f!, y, backend, x, first(dx.elements), extras)
 end
 
 ## One argument
