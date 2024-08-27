@@ -60,7 +60,7 @@ function DI.value_and_pullback(
     backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},function_annotation},
     x,
     ty::Tangents{1},
-    ::NoPullbackExtras,
+    extras::NoPullbackExtras,
 ) where {function_annotation}
     if eltype(ty) <: Number
         dy = only(ty)
