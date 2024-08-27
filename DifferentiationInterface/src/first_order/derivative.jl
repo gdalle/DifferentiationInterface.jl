@@ -54,15 +54,6 @@ function derivative! end
 
 ## Preparation
 
-"""
-    DerivativeExtras
-
-Abstract type for additional information needed by [`derivative`](@ref) and its variants.
-"""
-abstract type DerivativeExtras <: Extras end
-
-struct NoDerivativeExtras <: DerivativeExtras end
-
 struct PushforwardDerivativeExtras{E<:PushforwardExtras} <: DerivativeExtras
     pushforward_extras::E
 end

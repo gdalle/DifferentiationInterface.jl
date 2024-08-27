@@ -87,16 +87,7 @@ function pullback! end
 
 ### Extras types
 
-"""
-    PullbackExtras
-
-Abstract type for additional information needed by [`pullback`](@ref) and its variants.
-"""
-abstract type PullbackExtras <: Extras end
-
-struct NoPullbackExtras <: PullbackExtras end
-
-struct PushforwardPullbackExtras{E} <: PullbackExtras
+struct PushforwardPullbackExtras{E<:PushforwardExtras} <: PullbackExtras
     pushforward_extras::E
 end
 

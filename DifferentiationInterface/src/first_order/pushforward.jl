@@ -87,16 +87,7 @@ function pushforward! end
 
 ### Extras types
 
-"""
-    PushforwardExtras
-
-Abstract type for additional information needed by [`pushforward`](@ref) and its variants.
-"""
-abstract type PushforwardExtras <: Extras end
-
-struct NoPushforwardExtras <: PushforwardExtras end
-
-struct PullbackPushforwardExtras{E} <: PushforwardExtras
+struct PullbackPushforwardExtras{E<:PullbackExtras} <: PushforwardExtras
     pullback_extras::E
 end
 

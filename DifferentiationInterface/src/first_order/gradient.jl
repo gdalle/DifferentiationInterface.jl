@@ -48,15 +48,6 @@ function gradient! end
 
 ## Preparation
 
-"""
-    GradientExtras
-
-Abstract type for additional information needed by [`gradient`](@ref) and its variants.
-"""
-abstract type GradientExtras <: Extras end
-
-struct NoGradientExtras <: GradientExtras end
-
 struct PullbackGradientExtras{E<:PullbackExtras} <: GradientExtras
     pullback_extras::E
 end

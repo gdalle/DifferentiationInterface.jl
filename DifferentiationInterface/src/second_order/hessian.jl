@@ -48,15 +48,6 @@ function value_gradient_and_hessian! end
 
 ## Preparation
 
-"""
-    HessianExtras
-
-Abstract type for additional information needed by [`hessian`](@ref) and its variants.
-"""
-abstract type HessianExtras <: Extras end
-
-struct NoHessianExtras <: HessianExtras end
-
 struct HVPGradientHessianExtras{B,D,R,E2<:HVPExtras,E1<:GradientExtras} <: HessianExtras
     batched_seeds::Vector{Batch{B,D}}
     batched_results::Vector{Batch{B,R}}
