@@ -92,14 +92,14 @@ struct PushforwardPullbackExtras{E<:PushforwardExtras} <: PullbackExtras
 end
 
 function prepare_pullback(f::F, backend::AbstractADType, x, dy) where {F}
-    return prepare_pullback_aux(f, backend, x, dy, pullback_performance(backend))
+    return _prepare_pullback_aux(f, backend, x, dy, pullback_performance(backend))
 end
 
 function prepare_pullback(f!::F, y, backend::AbstractADType, x, dy) where {F}
-    return prepare_pullback_aux(f!, y, backend, x, dy, pullback_performance(backend))
+    return _prepare_pullback_aux(f!, y, backend, x, dy, pullback_performance(backend))
 end
 
-function prepare_pullback_aux(
+function _prepare_pullback_aux(
     f::F, backend::AbstractADType, x, dy, ::PullbackSlow
 ) where {F}
     dx = x isa Number ? one(x) : basis(backend, x, first(CartesianIndices(x)))
@@ -107,7 +107,7 @@ function prepare_pullback_aux(
     return PushforwardPullbackExtras(pushforward_extras)
 end
 
-function prepare_pullback_aux(
+function _prepare_pullback_aux(
     f!::F, y, backend::AbstractADType, x, dy, ::PullbackSlow
 ) where {F}
     dx = x isa Number ? one(x) : basis(backend, x, first(CartesianIndices(x)))
@@ -115,34 +115,42 @@ function prepare_pullback_aux(
     return PushforwardPullbackExtras(pushforward_extras)
 end
 
-function prepare_pullback_aux(f, backend::AbstractADType, x, dy, ::PullbackFast)
+function _prepare_pullback_aux(f, backend::AbstractADType, x, dy, ::PullbackFast)
     throw(MissingBackendError(backend))
 end
 
-function prepare_pullback_aux(f!, y, backend::AbstractADType, x, dy, ::PullbackFast)
+function _prepare_pullback_aux(f!, y, backend::AbstractADType, x, dy, ::PullbackFast)
     throw(MissingBackendError(backend))
 end
 
 ## One argument
+
+function _pullback_via_pushforward(
+    f::F, backend::AbstractADType, x::Number, dy, pushforward_extras::PushforwardExtras
+) where {F}
+    dx = dot(dy, pushforward(f, backend, x, one(x), pushforward_extras))
+    return dx
+end
+
+function _pullback_via_pushforward(
+    f::F,
+    backend::AbstractADType,
+    x::AbstractArray,
+    dy,
+    pushforward_extras::PushforwardExtras,
+) where {F}
+    dx = map(CartesianIndices(x)) do j
+        dot(dy, pushforward(f, backend, x, basis(backend, x, j), pushforward_extras))
+    end
+    return dx
+end
 
 function value_and_pullback(
     f::F, backend::AbstractADType, x, dy, extras::PushforwardPullbackExtras
 ) where {F}
     @compat (; pushforward_extras) = extras
     y = f(x)
-    dx = if x isa Number && y isa Number
-        dy * pushforward(f, backend, x, one(x), pushforward_extras)
-    elseif x isa Number && y isa AbstractArray
-        dot(dy, pushforward(f, backend, x, one(x), pushforward_extras))
-    elseif x isa AbstractArray && y isa Number
-        map(CartesianIndices(x)) do j
-            dy * pushforward(f, backend, x, basis(backend, x, j), pushforward_extras)
-        end
-    elseif x isa AbstractArray && y isa AbstractArray
-        map(CartesianIndices(x)) do j
-            dot(dy, pushforward(f, backend, x, basis(backend, x, j), pushforward_extras))
-        end
-    end
+    dx = _pullback_via_pushforward(f, backend, x, dy, pushforward_extras)
     return y, dx
 end
 
@@ -165,17 +173,32 @@ end
 
 ## Two arguments
 
+function _pullback_via_pushforward(
+    f!::F, y, backend::AbstractADType, x::Number, dy, pushforward_extras::PushforwardExtras
+) where {F}
+    dx = dot(dy, pushforward(f!, y, backend, x, one(x), pushforward_extras))
+    return dx
+end
+
+function _pullback_via_pushforward(
+    f!::F,
+    y,
+    backend::AbstractADType,
+    x::AbstractArray,
+    dy,
+    pushforward_extras::PushforwardExtras,
+) where {F}
+    dx = map(CartesianIndices(x)) do j
+        dot(dy, pushforward(f!, y, backend, x, basis(backend, x, j), pushforward_extras))
+    end
+    return dx
+end
+
 function value_and_pullback(
     f!::F, y, backend::AbstractADType, x, dy, extras::PushforwardPullbackExtras
 ) where {F}
     @compat (; pushforward_extras) = extras
-    dx = if x isa Number && y isa AbstractArray
-        dot(dy, pushforward(f!, y, backend, x, one(x), pushforward_extras))
-    elseif x isa AbstractArray && y isa AbstractArray
-        map(CartesianIndices(x)) do j
-            dot(dy, pushforward(f!, y, backend, x, basis(backend, x, j), pushforward_extras))
-        end
-    end
+    dx = _pullback_via_pushforward(f!, y, backend, x, dy, pushforward_extras)
     f!(y, x)
     return y, dx
 end

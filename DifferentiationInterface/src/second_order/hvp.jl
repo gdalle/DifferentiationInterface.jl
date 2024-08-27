@@ -66,24 +66,24 @@ function prepare_hvp(f::F, backend::AbstractADType, x, dx) where {F}
 end
 
 function prepare_hvp(f::F, backend::SecondOrder, x, dx) where {F}
-    return prepare_hvp_aux(f, backend, x, dx, hvp_mode(backend))
+    return _prepare_hvp_aux(f, backend, x, dx, hvp_mode(backend))
 end
 
-function prepare_hvp_aux(f::F, backend::SecondOrder, x, dx, ::ForwardOverForward) where {F}
+function _prepare_hvp_aux(f::F, backend::SecondOrder, x, dx, ::ForwardOverForward) where {F}
     # pushforward of many pushforwards in theory, but pushforward of gradient in practice
     inner_gradient = Gradient(f, nested(inner(backend)))
     outer_pushforward_extras = prepare_pushforward(inner_gradient, outer(backend), x, dx)
     return ForwardOverForwardHVPExtras(inner_gradient, outer_pushforward_extras)
 end
 
-function prepare_hvp_aux(f::F, backend::SecondOrder, x, dx, ::ForwardOverReverse) where {F}
+function _prepare_hvp_aux(f::F, backend::SecondOrder, x, dx, ::ForwardOverReverse) where {F}
     # pushforward of gradient
     inner_gradient = Gradient(f, nested(inner(backend)))
     outer_pushforward_extras = prepare_pushforward(inner_gradient, outer(backend), x, dx)
     return ForwardOverReverseHVPExtras(inner_gradient, outer_pushforward_extras)
 end
 
-function prepare_hvp_aux(f::F, backend::SecondOrder, x, dx, ::ReverseOverForward) where {F}
+function _prepare_hvp_aux(f::F, backend::SecondOrder, x, dx, ::ReverseOverForward) where {F}
     # gradient of pushforward
     # uses dx in the closure so it can't be stored
     inner_pushforward = PushforwardFixedSeed(f, nested(inner(backend)), dx)
@@ -91,7 +91,7 @@ function prepare_hvp_aux(f::F, backend::SecondOrder, x, dx, ::ReverseOverForward
     return ReverseOverForwardHVPExtras(outer_gradient_extras)
 end
 
-function prepare_hvp_aux(f::F, backend::SecondOrder, x, dx, ::ReverseOverReverse) where {F}
+function _prepare_hvp_aux(f::F, backend::SecondOrder, x, dx, ::ReverseOverReverse) where {F}
     # pullback of gradient
     inner_gradient = Gradient(f, nested(inner(backend)))
     outer_pullback_extras = prepare_pullback(inner_gradient, outer(backend), x, dx)

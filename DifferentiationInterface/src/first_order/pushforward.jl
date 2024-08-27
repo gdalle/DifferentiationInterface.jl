@@ -92,14 +92,14 @@ struct PullbackPushforwardExtras{E<:PullbackExtras} <: PushforwardExtras
 end
 
 function prepare_pushforward(f::F, backend::AbstractADType, x, dx) where {F}
-    return prepare_pushforward_aux(f, backend, x, dx, pushforward_performance(backend))
+    return _prepare_pushforward_aux(f, backend, x, dx, pushforward_performance(backend))
 end
 
 function prepare_pushforward(f!::F, y, backend::AbstractADType, x, dx) where {F}
-    return prepare_pushforward_aux(f!, y, backend, x, dx, pushforward_performance(backend))
+    return _prepare_pushforward_aux(f!, y, backend, x, dx, pushforward_performance(backend))
 end
 
-function prepare_pushforward_aux(
+function _prepare_pushforward_aux(
     f::F, backend::AbstractADType, x, dx, ::PushforwardSlow
 ) where {F}
     y = f(x)
@@ -108,7 +108,7 @@ function prepare_pushforward_aux(
     return PullbackPushforwardExtras(pullback_extras)
 end
 
-function prepare_pushforward_aux(
+function _prepare_pushforward_aux(
     f!::F, y, backend::AbstractADType, x, dx, ::PushforwardSlow
 ) where {F}
     dy = y isa Number ? one(y) : basis(backend, y, first(CartesianIndices(y)))
@@ -116,34 +116,38 @@ function prepare_pushforward_aux(
     return PullbackPushforwardExtras(pullback_extras)
 end
 
-function prepare_pushforward_aux(f, backend::AbstractADType, x, dx, ::PushforwardFast)
+function _prepare_pushforward_aux(f, backend::AbstractADType, x, dx, ::PushforwardFast)
     throw(MissingBackendError(backend))
 end
 
-function prepare_pushforward_aux(f!, y, backend::AbstractADType, x, dx, ::PushforwardFast)
+function _prepare_pushforward_aux(f!, y, backend::AbstractADType, x, dx, ::PushforwardFast)
     throw(MissingBackendError(backend))
 end
 
 ## One argument
+
+function _pushforward_via_pullback(
+    f::F, backend::AbstractADType, x, dx, pullback_extras::PullbackExtras, y::Number
+) where {F}
+    dy = dot(dx, pullback(f, backend, x, one(y), pullback_extras))
+    return dy
+end
+
+function _pushforward_via_pullback(
+    f::F, backend::AbstractADType, x, dx, pullback_extras::PullbackExtras, y::AbstractArray
+) where {F}
+    dy = map(CartesianIndices(y)) do i
+        dot(dx, pullback(f, backend, x, basis(backend, y, i), pullback_extras))
+    end
+    return dy
+end
 
 function value_and_pushforward(
     f::F, backend::AbstractADType, x, dx, extras::PullbackPushforwardExtras
 ) where {F}
     @compat (; pullback_extras) = extras
     y = f(x)
-    dy = if x isa Number && y isa Number
-        dx * pullback(f, backend, x, one(y), pullback_extras)
-    elseif x isa AbstractArray && y isa Number
-        dot(dx, pullback(f, backend, x, one(y), pullback_extras))
-    elseif x isa Number && y isa AbstractArray
-        map(CartesianIndices(y)) do i
-            dx * pullback(f, backend, x, basis(backend, y, i), pullback_extras)
-        end
-    elseif x isa AbstractArray && y isa AbstractArray
-        map(CartesianIndices(y)) do i
-            dot(dx, pullback(f, backend, x, basis(backend, y, i), pullback_extras))
-        end
-    end
+    dy = _pushforward_via_pullback(f, backend, x, dx, pullback_extras, y)
     return y, dy
 end
 
@@ -168,19 +172,20 @@ end
 
 ## Two arguments
 
+function _pushforward_via_pullback(
+    f!::F, y::AbstractArray, backend::AbstractADType, x, dx, pullback_extras::PullbackExtras
+) where {F}
+    dy = map(CartesianIndices(y)) do i
+        dot(dx, pullback(f!, y, backend, x, basis(backend, y, i), pullback_extras))
+    end
+    return dy
+end
+
 function value_and_pushforward(
     f!::F, y, backend::AbstractADType, x, dx, extras::PullbackPushforwardExtras
 ) where {F}
     @compat (; pullback_extras) = extras
-    dy = if x isa Number && y isa AbstractArray
-        map(CartesianIndices(y)) do i
-            dx * pullback(f!, y, backend, x, basis(backend, y, i), pullback_extras)
-        end
-    elseif x isa AbstractArray && y isa AbstractArray
-        map(CartesianIndices(y)) do i
-            dot(dx, pullback(f!, y, backend, x, basis(backend, y, i), pullback_extras))
-        end
-    end
+    dy = _pushforward_via_pullback(f!, y, backend, x, dx, pullback_extras)
     f!(y, x)
     return y, dy
 end

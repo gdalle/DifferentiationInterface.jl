@@ -66,18 +66,18 @@ end
 
 function prepare_jacobian(f::F, backend::AutoSparse, x) where {F}
     y = f(x)
-    return prepare_sparse_jacobian_aux(
+    return _prepare_sparse_jacobian_aux(
         (f,), backend, x, y, pushforward_performance(backend)
     )
 end
 
 function prepare_jacobian(f!::F, y, backend::AutoSparse, x) where {F}
-    return prepare_sparse_jacobian_aux(
+    return _prepare_sparse_jacobian_aux(
         (f!, y), backend, x, y, pushforward_performance(backend)
     )
 end
 
-function prepare_sparse_jacobian_aux(
+function _prepare_sparse_jacobian_aux(
     f_or_f!y::FY, backend::AutoSparse, x, y, ::PushforwardFast
 ) where {FY}
     dense_backend = dense_ad(backend)
@@ -112,7 +112,7 @@ function prepare_sparse_jacobian_aux(
     )
 end
 
-function prepare_sparse_jacobian_aux(
+function _prepare_sparse_jacobian_aux(
     f_or_f!y::FY, backend::AutoSparse, x, y, ::PushforwardSlow
 ) where {FY}
     dense_backend = dense_ad(backend)
@@ -150,13 +150,13 @@ end
 ## One argument
 
 function jacobian(f::F, backend::AutoSparse, x, extras::SparseJacobianExtras) where {F}
-    return sparse_jacobian_aux((f,), backend, x, extras)
+    return _sparse_jacobian_aux((f,), backend, x, extras)
 end
 
 function jacobian!(
     f::F, jac, backend::AutoSparse, x, extras::SparseJacobianExtras
 ) where {F}
-    return sparse_jacobian_aux!((f,), jac, backend, x, extras)
+    return _sparse_jacobian_aux!((f,), jac, backend, x, extras)
 end
 
 function value_and_jacobian(
@@ -174,13 +174,13 @@ end
 ## Two arguments
 
 function jacobian(f!::F, y, backend::AutoSparse, x, extras::SparseJacobianExtras) where {F}
-    return sparse_jacobian_aux((f!, y), backend, x, extras)
+    return _sparse_jacobian_aux((f!, y), backend, x, extras)
 end
 
 function jacobian!(
     f!::F, y, jac, backend::AutoSparse, x, extras::SparseJacobianExtras
 ) where {F}
-    return sparse_jacobian_aux!((f!, y), jac, backend, x, extras)
+    return _sparse_jacobian_aux!((f!, y), jac, backend, x, extras)
 end
 
 function value_and_jacobian(
@@ -201,7 +201,7 @@ end
 
 ## Common auxiliaries
 
-function sparse_jacobian_aux(
+function _sparse_jacobian_aux(
     f_or_f!y::FY, backend::AutoSparse, x, extras::PushforwardSparseJacobianExtras{B}
 ) where {FY,B}
     @compat (; coloring_result, batched_seeds, pushforward_batched_extras) = extras
@@ -230,7 +230,7 @@ function sparse_jacobian_aux(
     return decompress(compressed_matrix, coloring_result)
 end
 
-function sparse_jacobian_aux(
+function _sparse_jacobian_aux(
     f_or_f!y::FY, backend::AutoSparse, x, extras::PullbackSparseJacobianExtras{B}
 ) where {FY,B}
     @compat (; coloring_result, batched_seeds, pullback_batched_extras) = extras
@@ -259,7 +259,7 @@ function sparse_jacobian_aux(
     return decompress(compressed_matrix, coloring_result)
 end
 
-function sparse_jacobian_aux!(
+function _sparse_jacobian_aux!(
     f_or_f!y::FY, jac, backend::AutoSparse, x, extras::PushforwardSparseJacobianExtras{B}
 ) where {FY,B}
     @compat (;
@@ -298,7 +298,7 @@ function sparse_jacobian_aux!(
     return jac
 end
 
-function sparse_jacobian_aux!(
+function _sparse_jacobian_aux!(
     f_or_f!y::FY, jac, backend::AutoSparse, x, extras::PullbackSparseJacobianExtras{B}
 ) where {FY,B}
     @compat (;
