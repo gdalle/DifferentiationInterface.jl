@@ -92,7 +92,7 @@ function DI.value_and_pullback(
     extras::NoPullbackExtras,
 )
     dx = make_zero(x)
-    return DI.value_and_pullback!(f, Tangents(dx), backend, x, ty, extras)
+    return DI.value_and_pullback!(f, SingleTangent(dx), backend, x, ty, extras)
 end
 
 function DI.pullback(
