@@ -30,11 +30,11 @@ function DI.pushforward(
     tx::Tangents,
     extras::FastDifferentiationTwoArgPushforwardExtras,
 )
-    dy = map(tx.d) do dx
+    dys = map(tx.d) do dx
         v_vec = vcat(myvec(x), myvec(dx))
         reshape(extras.jvp_exe(v_vec), size(y))
     end
-    return Tangents(dy...)
+    return Tangents(dys)
 end
 
 function DI.pushforward!(
@@ -113,7 +113,7 @@ function DI.pullback(
     ty::Tangents,
     extras::FastDifferentiationTwoArgPullbackExtras,
 )
-    dy = map(ty.d) do dy
+    dxs = map(ty.d) do dy
         v_vec = vcat(myvec(x), myvec(dy))
         if x isa Number
             return only(extras.vjp_exe(v_vec))
@@ -121,7 +121,7 @@ function DI.pullback(
             return reshape(extras.vjp_exe(v_vec), size(x))
         end
     end
-    return Tangents(dy...)
+    return Tangents(dxs)
 end
 
 function DI.pullback!(

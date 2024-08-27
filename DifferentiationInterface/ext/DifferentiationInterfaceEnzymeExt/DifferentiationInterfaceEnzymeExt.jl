@@ -15,6 +15,7 @@ using DifferentiationInterface:
     NoPullbackExtras,
     NoPushforwardExtras,
     Tangents,
+    SingleTangent,
     pick_batchsize
 using DocStringExtensions
 using Enzyme:

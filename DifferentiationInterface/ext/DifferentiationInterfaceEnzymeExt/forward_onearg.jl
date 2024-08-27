@@ -13,11 +13,11 @@ function DI.value_and_pushforward(
     tx::Tangents,
     extras::NoPushforwardExtras,
 )
-    dy = map(tx.d) do dx
+    dys = map(tx.d) do dx
         DI.pushforward(f, backend, x, dx, extras)
     end
     y = f(x)
-    return y, Tangents(dy...)
+    return y, Tangents(dys)
 end
 
 function DI.value_and_pushforward(
@@ -36,7 +36,7 @@ function DI.value_and_pushforward(
     else
         autodiff(forward_mode(backend), f_and_df, Duplicated, x_and_dx)
     end
-    return y, Tangents(new_dy)
+    return y, SingleTangent(new_dy)
 end
 
 function DI.pushforward(
@@ -55,7 +55,7 @@ function DI.pushforward(
     else
         only(autodiff(forward_mode(backend), f_and_df, DuplicatedNoNeed, x_and_dx))
     end
-    return Tangents(new_dy)
+    return SingleTangent(new_dy)
 end
 
 function DI.value_and_pushforward!(

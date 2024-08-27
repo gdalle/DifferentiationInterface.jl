@@ -1,12 +1,12 @@
 function batchify(scen::Scenario{op,args,pl}) where {op,args,pl}
     @compat (; f, x, y, seed, res1, res2) = scen
     if op == :pushforward || op == :pullback
-        new_seed = Tangents(seed, -seed)
-        new_res1 = Tangents(res1, -res1)
+        new_seed = Tangents((seed, -seed))
+        new_res1 = Tangents((res1, -res1))
         return Scenario{op,args,pl}(f; x, y, seed=new_seed, res1=new_res1, res2)
     elseif op == :hvp
-        new_seed = Tangents(seed, -seed)
-        new_res2 = Tangents(res2, -res2)
+        new_seed = Tangents((seed, -seed))
+        new_res2 = Tangents((res2, -res2))
         return Scenario{op,args,pl}(f; x, y, seed=new_seed, res1, res2=new_res2)
     end
 end

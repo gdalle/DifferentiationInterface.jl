@@ -25,30 +25,24 @@ end
 
 function DI.value_and_pullback(f, ::AutoTracker, x, ty::Tangents, ::NoPullbackExtras)
     y, pb = forward(f, x)
-    dx = map(ty.d) do dy
-        data(only(pb(dy)))
-    end
-    return y, Tangents(dx...)
+    dxs = data.(only.(pb.(ty.d)))
+    return y, Tangents(dxs)
 end
 
 function DI.value_and_pullback(
     f, ::AutoTracker, x, ty::Tangents, extras::TrackerPullbackExtrasSamePoint
 )
     @compat (; y, pb) = extras
-    dx = map(ty.d) do dy
-        data(only(pb(dy)))
-    end
-    return copy(y), Tangents(dx...)
+    dxs = data.(only.(pb.(ty.d)))
+    return copy(y), Tangents(dxs)
 end
 
 function DI.pullback(
     f, ::AutoTracker, x, ty::Tangents, extras::TrackerPullbackExtrasSamePoint
 )
     @compat (; pb) = extras
-    dx = map(ty.d) do dy
-        data(only(pb(dy)))
-    end
-    return Tangents(dx...)
+    dxs = data.(only.(pb.(ty.d)))
+    return Tangents(dxs)
 end
 
 ## Gradient

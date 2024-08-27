@@ -48,15 +48,6 @@ function value_derivative_and_second_derivative! end
 
 ## Preparation
 
-"""
-    SecondDerivativeExtras
-
-Abstract type for additional information needed by [`second_derivative`](@ref) and its variants.
-"""
-abstract type SecondDerivativeExtras <: Extras end
-
-struct NoSecondDerivativeExtras <: SecondDerivativeExtras end
-
 struct InnerDerivative{F,B}
     f::F
     backend::B

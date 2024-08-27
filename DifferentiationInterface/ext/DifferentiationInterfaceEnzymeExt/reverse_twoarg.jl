@@ -14,11 +14,11 @@ function DI.value_and_pullback(
     ty::Tangents,
     extras::NoPullbackExtras,
 )
-    dx = map(ty.d) do dy
+    dxs = map(ty.d) do dy
         DI.pullback(f!, y, backend, x, dy, extras)
     end
     f!(y, x)
-    return y, Tangents(dx...)
+    return y, Tangents(dxs)
 end
 
 function DI.value_and_pullback(
@@ -38,7 +38,7 @@ function DI.value_and_pullback(
     else
         only(autodiff(reverse_mode(backend), f!_and_df!, Const, y_and_dy, Active(x)))
     end
-    return y, Tangents(new_dx)
+    return y, SingleTangent(new_dx)
 end
 
 function DI.value_and_pullback(
@@ -60,5 +60,5 @@ function DI.value_and_pullback(
     else
         autodiff(reverse_mode(backend), f!_and_df!, Const, y_and_dy, x_and_dx)
     end
-    return y, Tangents(dx_sametype)
+    return y, SingleTangent(dx_sametype)
 end

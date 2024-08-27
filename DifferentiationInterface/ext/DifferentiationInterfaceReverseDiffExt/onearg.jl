@@ -6,14 +6,14 @@ function DI.value_and_pullback(
     f, ::AutoReverseDiff, x::AbstractArray, ty::Tangents, ::NoPullbackExtras
 )
     y = f(x)
-    dx = map(ty.d) do dy
+    dxs = map(ty.d) do dy
         if y isa Number
             dy .* gradient(f, x)
         elseif y isa AbstractArray
             gradient(z -> dot(f(z), dy), x)
         end
     end
-    return y, Tangents(dx...)
+    return y, Tangents(dxs)
 end
 
 function DI.value_and_pullback!(

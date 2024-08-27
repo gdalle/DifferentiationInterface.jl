@@ -48,15 +48,6 @@ function value_gradient_and_hessian! end
 
 ## Preparation
 
-"""
-    HessianExtras
-
-Abstract type for additional information needed by [`hessian`](@ref) and its variants.
-"""
-abstract type HessianExtras <: Extras end
-
-struct NoHessianExtras <: HessianExtras end
-
 struct HVPGradientHessianExtras{B,D,R,E2<:HVPExtras,E1<:GradientExtras} <: HessianExtras
     batched_seeds::Vector{Tangents{B,D}}
     batched_results::Vector{Tangents{B,R}}
@@ -70,14 +61,14 @@ function prepare_hessian(f::F, backend::AbstractADType, x) where {F}
     B = pick_batchsize(maybe_outer(backend), N)
     seeds = [basis(backend, x, ind) for ind in CartesianIndices(x)]
     batched_seeds = [
-        Tangents(ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % N], Val(B))...) for
+        Tangents(ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % N], Val(B))) for
         a in 1:div(N, B, RoundUp)
     ]
-    batched_results = [Tangents(ntuple(b -> similar(x), Val(B))...) for _ in batched_seeds]
+    batched_results = [Tangents(ntuple(b -> similar(x), Val(B))) for _ in batched_seeds]
     hvp_extras = prepare_hvp(f, backend, x, batched_seeds[1])
     gradient_extras = prepare_gradient(f, maybe_inner(backend), x)
-    D = eltype(batched_seeds[1])
-    R = eltype(batched_results[1])
+    D = tuptype(batched_seeds[1])
+    R = tuptype(batched_results[1])
     E2, E1 = typeof(hvp_extras), typeof(gradient_extras)
     return HVPGradientHessianExtras{B,D,R,E2,E1}(
         batched_seeds, batched_results, hvp_extras, gradient_extras, N

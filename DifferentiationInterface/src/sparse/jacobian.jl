@@ -91,10 +91,10 @@ function prepare_sparse_jacobian_aux(
     seeds = [multibasis(backend, x, CartesianIndices(x)[group]) for group in groups]
     compressed_matrix = stack(_ -> vec(similar(y)), groups; dims=2)
     batched_seeds = [
-        Tangents(ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % Ng], Val(B))...) for
+        Tangents(ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % Ng], Val(B))) for
         a in 1:div(Ng, B, RoundUp)
     ]
-    batched_results = [Tangents(ntuple(b -> similar(y), Val(B))...) for _ in batched_seeds]
+    batched_results = [Tangents(ntuple(b -> similar(y), Val(B))) for _ in batched_seeds]
     pushforward_extras = prepare_pushforward(
         f_or_f!y..., dense_backend, x, batched_seeds[1]
     )
@@ -125,10 +125,10 @@ function prepare_sparse_jacobian_aux(
     seeds = [multibasis(backend, y, CartesianIndices(y)[group]) for group in groups]
     compressed_matrix = stack(_ -> vec(similar(x)), groups; dims=1)
     batched_seeds = [
-        Tangents(ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % Ng], Val(B))...) for
+        Tangents(ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % Ng], Val(B))) for
         a in 1:div(Ng, B, RoundUp)
     ]
-    batched_results = [Tangents(ntuple(b -> similar(x), Val(B))...) for _ in batched_seeds]
+    batched_results = [Tangents(ntuple(b -> similar(x), Val(B))) for _ in batched_seeds]
     pullback_extras = prepare_pullback(f_or_f!y..., dense_backend, x, batched_seeds[1])
     return PullbackSparseJacobianExtras{B}(;
         coloring_result, compressed_matrix, batched_seeds, batched_results, pullback_extras

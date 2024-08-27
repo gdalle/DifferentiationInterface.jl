@@ -30,7 +30,7 @@ function DI.pushforward(
     tx::Tangents,
     extras::FastDifferentiationOneArgPushforwardExtras,
 )
-    dy = map(tx.d) do dx
+    dys = map(tx.d) do dx
         v_vec = vcat(myvec(x), myvec(dx))
         if extras.y_prototype isa Number
             return only(extras.jvp_exe(v_vec))
@@ -38,7 +38,7 @@ function DI.pushforward(
             return reshape(extras.jvp_exe(v_vec), size(extras.y_prototype))
         end
     end
-    return Tangents(dy...)
+    return Tangents(dys)
 end
 
 function DI.pushforward!(
@@ -108,7 +108,7 @@ function DI.pullback(
     ty::Tangents,
     extras::FastDifferentiationOneArgPullbackExtras,
 )
-    dx = map(ty.d) do dy
+    dxs = map(ty.d) do dy
         v_vec = vcat(myvec(x), myvec(dy))
         if x isa Number
             return only(extras.vjp_exe(v_vec))
@@ -116,7 +116,7 @@ function DI.pullback(
             return reshape(extras.vjp_exe(v_vec), size(x))
         end
     end
-    return Tangents(dx...)
+    return Tangents(dxs)
 end
 
 function DI.pullback!(
@@ -426,12 +426,12 @@ end
 function DI.hvp(
     f, ::AutoFastDifferentiation, x, tx::Tangents, extras::FastDifferentiationHVPExtras
 )
-    dg = map(tx.d) do dx
+    dgs = map(tx.d) do dx
         v_vec = vcat(vec(x), vec(dx))
         dg_vec = extras.hvp_exe(v_vec)
         return reshape(dg_vec, size(x))
     end
-    return Tangents(dg...)
+    return Tangents(dgs)
 end
 
 function DI.hvp!(

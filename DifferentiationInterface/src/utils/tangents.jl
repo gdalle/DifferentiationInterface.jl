@@ -8,23 +8,24 @@ Returns `1` for backends which have not overloaded it.
 pick_batchsize(::AbstractADType, dimension::Integer) = 1
 
 """
-    Tangents{B,T}
+    Tangents{B}
 
-Storage for `B` (co)tangents of type `T` (`NTuple` wrapper).
+Storage for `B` (co)tangents (`NTuple` wrapper).
 
-`Tangents{B}` with `B > 1` can be used as seed to trigger Tangentsed-mode `pushforward`, `pullback` and `hvp`.
+`Tangents{B}` with `B > 1` can be used as seed to trigger batched-mode `pushforward`, `pullback` and `hvp`.
 
 # Fields
 
-- `d::NTuple{B,T}`
+- `d::NTuple{B}`
 """
-struct Tangents{B,T}
-    d::NTuple{B,T}
+struct Tangents{B,T<:NTuple{B}}
+    d::T
 end
 
-Tangents(d::Vararg{T,B}) where {T,B} = Tangents{B,T}(d)
+SingleTangent(x) = Tangents((x,))
 
-Base.eltype(::Tangents{B,T}) where {B,T} = T
+Base.eltype(::Tangents{B,T}) where {B,T} = eltype(T)
+tuptype(::Tangents{B,T}) where {B,T} = T
 
 Base.only(t::Tangents) = only(t.d)
 Base.first(t::Tangents) = first(t.d)

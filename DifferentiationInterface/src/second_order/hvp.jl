@@ -40,15 +40,6 @@ function hvp! end
 
 ## Preparation
 
-"""
-    HVPExtras
-
-Abstract type for additional information needed by [`hvp`](@ref) and its variants.
-"""
-abstract type HVPExtras <: Extras end
-
-struct NoHVPExtras <: HVPExtras end
-
 struct ForwardOverForwardHVPExtras{G<:Gradient,E<:PushforwardExtras} <: HVPExtras
     inner_gradient::G
     outer_pushforward_extras::E
@@ -132,11 +123,11 @@ end
 function hvp(
     f::F, backend::SecondOrder, x, tx::Tangents, ::ReverseOverForwardHVPExtras
 ) where {F}
-    dg = map(tx.d) do dx
+    dgs = map(tx.d) do dx
         inner_pushforward = PushforwardFixedSeed(f, nested(inner(backend)), Tangents(dx))
         gradient(only ∘ inner_pushforward, outer(backend), x)
     end
-    return Tangents(dg...)
+    return Tangents(dgs)
 end
 
 function hvp(
@@ -181,7 +172,7 @@ function hvp!(
 ) where {F}
     for b in eachindex(tx.d, tg.d)
         inner_pushforward = PushforwardFixedSeed(
-            f, nested(inner(backend)), Tangents(tx.d[b])
+            f, nested(inner(backend)), SingleTangent(tx.d[b])
         )
         gradient!(only ∘ inner_pushforward, tg.d[b], outer(backend), x)
     end
