@@ -54,15 +54,6 @@ function jacobian! end
 
 ## Preparation
 
-"""
-    JacobianExtras
-
-Abstract type for additional information needed by [`jacobian`](@ref) and its variants.
-"""
-abstract type JacobianExtras <: Extras end
-
-struct NoJacobianExtras <: JacobianExtras end
-
 struct PushforwardJacobianExtras{B,D,R,E<:PushforwardExtras} <: JacobianExtras
     batched_seeds::Vector{Batch{B,D}}
     batched_results::Vector{Batch{B,R}}
