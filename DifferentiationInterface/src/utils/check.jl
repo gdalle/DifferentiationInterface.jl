@@ -36,9 +36,7 @@ function check_hessian(backend::AbstractADType; verbose=true)
         ]
         return isapprox(hess, hess_th; rtol=1e-3)
     catch exception
-        if verbose
-            @warn "Backend $backend does not support hessian" exception
-        end
+        verbose && @warn "Backend $backend does not support hessian" exception
         return false
     end
 end

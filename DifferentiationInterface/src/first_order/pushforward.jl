@@ -222,6 +222,7 @@ function PushforwardFixedSeed(f, backend::AbstractADType, dx)
     return PushforwardFixedSeed(f, backend, dx, nothing)
 end
 
+# not covered but don't remove, Enzyme messes with code coverage
 function (pfs::PushforwardFixedSeed{F,B,DX,Nothing})(x) where {F,B,DX}
     @compat (; f, backend, dx) = pfs
     return pushforward(f, backend, x, dx)
