@@ -69,7 +69,7 @@ function DI.value_and_pushforward!(
     ty::Tangents,
     backend::AutoSymbolics,
     x,
-    tx::Tangents{1},
+    tx::Tangents,
     extras::SymbolicsTwoArgPushforwardExtras,
 )
     DI.pushforward!(f!, y, ty, backend, x, tx, extras)

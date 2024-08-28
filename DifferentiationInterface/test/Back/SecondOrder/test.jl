@@ -31,7 +31,6 @@ twoarg_backends = [
 ]
 
 for backend in vcat(onearg_backends, twoarg_backends)
-    @show backend
     @test check_available(backend)
     if backend in onearg_backends
         @test !check_twoarg(backend)

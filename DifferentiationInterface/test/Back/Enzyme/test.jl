@@ -10,7 +10,6 @@ using StableRNGs
 using Test
 
 LOGGING = get(ENV, "CI", "false") == "false"
-LOGGING = true
 
 dense_backends = [
     AutoEnzyme(; mode=nothing),
@@ -39,7 +38,6 @@ sparse_backends =
 
 @testset "Checks" begin
     @testset "Check $(typeof(backend))" for backend in vcat(dense_backends, sparse_backends)
-        @show backend
         @test check_available(backend)
         @test check_twoarg(backend)
         @test check_hessian(backend; verbose=false)
