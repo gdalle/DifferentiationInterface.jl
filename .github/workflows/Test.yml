@@ -84,6 +84,8 @@ jobs:
           - version: 'pre'
             group: Formalities
           - version: 'pre'
+            group: Back/ChainRulesCore
+          - version: 'pre'
             group: Back/Enzyme
           - version: 'pre'
             group: Back/Tapir
