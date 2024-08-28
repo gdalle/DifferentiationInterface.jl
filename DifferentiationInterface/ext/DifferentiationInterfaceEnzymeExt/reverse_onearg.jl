@@ -14,7 +14,7 @@ function DI.value_and_pullback(
     extras::NoPullbackExtras,
 )
     dxs = map(ty.d) do dy
-        DI.pullback(f, backend, x, dy, extras)
+        only(DI.pullback(f, backend, x, SingleTangent(dy), extras))
     end
     y = f(x)
     return y, Tangents(dxs)

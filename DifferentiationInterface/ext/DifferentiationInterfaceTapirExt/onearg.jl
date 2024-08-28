@@ -16,7 +16,15 @@ function DI.prepare_pullback(f, backend::AutoTapir, x, ty::Tangents)
     return extras
 end
 
-# TODO: implement Tangents{B}
+function DI.value_and_pullback(
+    f, backend::AutoTapir, x, ty::Tangents, extras::TapirOneArgPullbackExtras
+)
+    y = f(x)
+    dxs = map(ty.d) do dy
+        only(DI.pullback(f, backend, x, SingleTangent(dy), extras))
+    end
+    return y, Tangents(dxs)
+end
 
 function DI.value_and_pullback(
     f, ::AutoTapir, x, ty::Tangents{1}, extras::TapirOneArgPullbackExtras{Y}
