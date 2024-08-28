@@ -22,8 +22,6 @@ Used to test error messages.
 struct AutoBrokenReverse <: AbstractADType end
 ADTypes.mode(::AutoBrokenReverse) = ADTypes.ReverseMode()
 
-test_logger = TestLogger();
-
 ## Test exceptions
 @testset "MissingBackendError" begin
     x = [1.0]
