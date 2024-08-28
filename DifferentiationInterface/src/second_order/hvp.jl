@@ -124,7 +124,7 @@ function hvp(
     f::F, backend::SecondOrder, x, tx::Tangents, ::ReverseOverForwardHVPExtras
 ) where {F}
     dgs = map(tx.d) do dx
-        inner_pushforward = PushforwardFixedSeed(f, nested(inner(backend)), Tangents(dx))
+        inner_pushforward = PushforwardFixedSeed(f, nested(inner(backend)), SingleTangent(dx))
         gradient(only ∘ inner_pushforward, outer(backend), x)
     end
     return Tangents(dgs)
