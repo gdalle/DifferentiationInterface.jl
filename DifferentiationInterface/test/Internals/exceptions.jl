@@ -22,12 +22,12 @@ Used to test error messages.
 struct AutoBrokenReverse <: AbstractADType end
 ADTypes.mode(::AutoBrokenReverse) = ADTypes.ReverseMode()
 
+test_logger = TestLogger();
+
 ## Test exceptions
 @testset "MissingBackendError" begin
     x = [1.0]
     y = similar(x)
-    dx = similar(x)
-    dy = similar(y)
 
     @test_throws DI.MissingBackendError jacobian(copy, AutoBrokenForward(), x)
     @test_throws DI.MissingBackendError jacobian(copy, AutoBrokenReverse(), x)
@@ -37,4 +37,7 @@ ADTypes.mode(::AutoBrokenReverse) = ADTypes.ReverseMode()
 
     @test_throws DI.MissingBackendError hessian(sum, AutoBrokenForward(), x)
     @test_throws DI.MissingBackendError hessian(sum, AutoBrokenReverse(), x)
+
+    sprint(showerror, DI.MissingBackendError(AutoBrokenForward()))
+    sprint(showerror, DI.MissingBackendError(AutoBrokenReverse()))
 end

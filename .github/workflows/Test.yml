@@ -34,6 +34,7 @@ jobs:
         group:
           - Formalities
           - Internals
+          - Back/ChainRulesCore
           - Back/Diffractor
           - Back/Enzyme
           - Back/FastDifferentiation
@@ -55,6 +56,8 @@ jobs:
           # lts
           - version: 'lts'
             group: Formalities
+          - version: 'lts'
+            group: Back/ChainRulesCore
           - version: 'lts'
             group: Back/Diffractor
           - version: 'lts'
