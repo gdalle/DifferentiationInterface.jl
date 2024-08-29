@@ -3,7 +3,7 @@ module DifferentiationInterfaceFiniteDifferencesExt
 using ADTypes: AutoFiniteDifferences
 import DifferentiationInterface as DI
 using DifferentiationInterface:
-    NoGradientExtras, NoJacobianExtras, NoPullbackExtras, NoPushforwardExtras
+    NoGradientExtras, NoJacobianExtras, NoPullbackExtras, NoPushforwardExtras, Tangents
 using FillArrays: OneElement
 using FiniteDifferences: FiniteDifferences, grad, jacobian, jvp, j′vp
 using LinearAlgebra: dot
@@ -13,30 +13,40 @@ DI.twoarg_support(::AutoFiniteDifferences) = DI.TwoArgNotSupported()
 
 ## Pushforward
 
-DI.prepare_pushforward(f, ::AutoFiniteDifferences, x, dx) = NoPushforwardExtras()
+function DI.prepare_pushforward(f, ::AutoFiniteDifferences, x, tx::Tangents)
+    return NoPushforwardExtras()
+end
 
-function DI.pushforward(f, backend::AutoFiniteDifferences, x, dx, ::NoPushforwardExtras)
-    return jvp(backend.fdm, f, (x, dx))
+function DI.pushforward(
+    f, backend::AutoFiniteDifferences, x, tx::Tangents, ::NoPushforwardExtras
+)
+    dys = map(tx.d) do dx
+        jvp(backend.fdm, f, (x, dx))
+    end
+    return Tangents(dys)
 end
 
 function DI.value_and_pushforward(
-    f, backend::AutoFiniteDifferences, x, dx, extras::NoPushforwardExtras
+    f, backend::AutoFiniteDifferences, x, tx::Tangents, extras::NoPushforwardExtras
 )
-    return f(x), DI.pushforward(f, backend, x, dx, extras)
+    return f(x), DI.pushforward(f, backend, x, tx, extras)
 end
 
 ## Pullback
 
-DI.prepare_pullback(f, ::AutoFiniteDifferences, x, dy) = NoPullbackExtras()
+DI.prepare_pullback(f, ::AutoFiniteDifferences, x, ty::Tangents) = NoPullbackExtras()
 
-function DI.pullback(f, backend::AutoFiniteDifferences, x, dy, ::NoPullbackExtras)
-    return only(j′vp(backend.fdm, f, dy, x))
+function DI.pullback(f, backend::AutoFiniteDifferences, x, ty::Tangents, ::NoPullbackExtras)
+    dxs = map(ty.d) do dy
+        only(j′vp(backend.fdm, f, dy, x))
+    end
+    return Tangents(dxs)
 end
 
 function DI.value_and_pullback(
-    f, backend::AutoFiniteDifferences, x, dy, extras::NoPullbackExtras
+    f, backend::AutoFiniteDifferences, x, ty::Tangents, extras::NoPullbackExtras
 )
-    return f(x), DI.pullback(f, backend, x, dy, extras)
+    return f(x), DI.pullback(f, backend, x, ty, extras)
 end
 
 ## Gradient

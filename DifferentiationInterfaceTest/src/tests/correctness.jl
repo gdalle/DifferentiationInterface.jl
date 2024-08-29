@@ -23,27 +23,15 @@ function test_correctness(
 )
     @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
 
-    extras_candidates = if seed isa Batch
-        [
-            prepare_pushforward_batched(f, ba, mycopy_random(x), mycopy_random(seed)),
-            prepare_pushforward_batched_same_point(f, ba, x, mycopy_random(seed)),
-        ]
-    else
-        [
-            prepare_pushforward(f, ba, mycopy_random(x), mycopy_random(seed)),
-            prepare_pushforward_same_point(f, ba, x, mycopy_random(seed)),
-        ]
-    end
+    extras_candidates = [
+        prepare_pushforward(f, ba, mycopy_random(x), mycopy_random(seed)),
+        prepare_pushforward_same_point(f, ba, x, mycopy_random(seed)),
+    ]
     extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
-        if seed isa Batch
-            y1, dy1 = value_and_pushforward_batched(f, ba, x, seed, extras_tup...)
-            dy2 = pushforward_batched(f, ba, x, seed, extras_tup...)
-        else
-            y1, dy1 = value_and_pushforward(f, ba, x, seed, extras_tup...)
-            dy2 = pushforward(f, ba, x, seed, extras_tup...)
-        end
+        y1, dy1 = value_and_pushforward(f, ba, x, seed, extras_tup...)
+        dy2 = pushforward(f, ba, x, seed, extras_tup...)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
@@ -72,30 +60,18 @@ function test_correctness(
 )
     @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
 
-    extras_candidates = if seed isa Batch
-        [
-            prepare_pushforward_batched(f, ba, mycopy_random(x), mycopy_random(seed)),
-            prepare_pushforward_batched_same_point(f, ba, x, mycopy_random(seed)),
-        ]
-    else
-        [
-            prepare_pushforward(f, ba, mycopy_random(x), mycopy_random(seed)),
-            prepare_pushforward_same_point(f, ba, x, mycopy_random(seed)),
-        ]
-    end
+    extras_candidates = [
+        prepare_pushforward(f, ba, mycopy_random(x), mycopy_random(seed)),
+        prepare_pushforward_same_point(f, ba, x, mycopy_random(seed)),
+    ]
     extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         dy1_in = mysimilar(res1)
         dy2_in = mysimilar(res1)
 
-        if seed isa Batch
-            y1, dy1 = value_and_pushforward_batched!(f, dy1_in, ba, x, seed, extras_tup...)
-            dy2 = pushforward_batched!(f, dy2_in, ba, x, seed, extras_tup...)
-        else
-            y1, dy1 = value_and_pushforward!(f, dy1_in, ba, x, seed, extras_tup...)
-            dy2 = pushforward!(f, dy2_in, ba, x, seed, extras_tup...)
-        end
+        y1, dy1 = value_and_pushforward!(f, dy1_in, ba, x, seed, extras_tup...)
+        dy2 = pushforward!(f, dy2_in, ba, x, seed, extras_tup...)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
@@ -127,36 +103,18 @@ function test_correctness(
     @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
     f! = f
 
-    extras_candidates = if seed isa Batch
-        [
-            prepare_pushforward_batched(
-                f!, mysimilar(y), ba, mycopy_random(x), mycopy_random(seed)
-            ),
-            prepare_pushforward_batched_same_point(
-                f!, mysimilar(y), ba, x, mycopy_random(seed)
-            ),
-        ]
-    else
-        [
-            prepare_pushforward(
-                f!, mysimilar(y), ba, mycopy_random(x), mycopy_random(seed)
-            ),
-            prepare_pushforward_same_point(f!, mysimilar(y), ba, x, mycopy_random(seed)),
-        ]
-    end
+    extras_candidates = [
+        prepare_pushforward(f!, mysimilar(y), ba, mycopy_random(x), mycopy_random(seed)),
+        prepare_pushforward_same_point(f!, mysimilar(y), ba, x, mycopy_random(seed)),
+    ]
     extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         y1_in = mysimilar(y)
         y2_in = mysimilar(y)
 
-        if seed isa Batch
-            y1, dy1 = value_and_pushforward_batched(f!, y1_in, ba, x, seed, extras_tup...)
-            dy2 = pushforward_batched(f!, y2_in, ba, x, seed, extras_tup...)
-        else
-            y1, dy1 = value_and_pushforward(f!, y1_in, ba, x, seed, extras_tup...)
-            dy2 = pushforward(f!, y2_in, ba, x, seed, extras_tup...)
-        end
+        y1, dy1 = value_and_pushforward(f!, y1_in, ba, x, seed, extras_tup...)
+        dy2 = pushforward(f!, y2_in, ba, x, seed, extras_tup...)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
@@ -187,38 +145,18 @@ function test_correctness(
     @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
     f! = f
 
-    extras_candidates = if seed isa Batch
-        [
-            prepare_pushforward_batched(
-                f!, mysimilar(y), ba, mycopy_random(x), mycopy_random(seed)
-            ),
-            prepare_pushforward_batched_same_point(
-                f!, mysimilar(y), ba, x, mycopy_random(seed)
-            ),
-        ]
-    else
-        [
-            prepare_pushforward(
-                f!, mysimilar(y), ba, mycopy_random(x), mycopy_random(seed)
-            ),
-            prepare_pushforward_same_point(f!, mysimilar(y), ba, x, mycopy_random(seed)),
-        ]
-    end
+    extras_candidates = [
+        prepare_pushforward(f!, mysimilar(y), ba, mycopy_random(x), mycopy_random(seed)),
+        prepare_pushforward_same_point(f!, mysimilar(y), ba, x, mycopy_random(seed)),
+    ]
     extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         y1_in, dy1_in = mysimilar(y), mysimilar(res1)
         y2_in, dy2_in = mysimilar(y), mysimilar(res1)
 
-        if seed isa Batch
-            y1, dy1 = value_and_pushforward_batched!(
-                f!, y1_in, dy1_in, ba, x, seed, extras_tup...
-            )
-            dy2 = pushforward_batched!(f!, y2_in, dy2_in, ba, x, seed, extras_tup...)
-        else
-            y1, dy1 = value_and_pushforward!(f!, y1_in, dy1_in, ba, x, seed, extras_tup...)
-            dy2 = pushforward!(f!, y2_in, dy2_in, ba, x, seed, extras_tup...)
-        end
+        y1, dy1 = value_and_pushforward!(f!, y1_in, dy1_in, ba, x, seed, extras_tup...)
+        dy2 = pushforward!(f!, y2_in, dy2_in, ba, x, seed, extras_tup...)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
@@ -252,27 +190,15 @@ function test_correctness(
 )
     @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
 
-    extras_candidates = if seed isa Batch
-        [
-            prepare_pullback_batched(f, ba, mycopy_random(x), mycopy_random(seed)),
-            prepare_pullback_batched_same_point(f, ba, x, mycopy_random(seed)),
-        ]
-    else
-        [
-            prepare_pullback(f, ba, mycopy_random(x), mycopy_random(seed)),
-            prepare_pullback_same_point(f, ba, x, mycopy_random(seed)),
-        ]
-    end
+    extras_candidates = [
+        prepare_pullback(f, ba, mycopy_random(x), mycopy_random(seed)),
+        prepare_pullback_same_point(f, ba, x, mycopy_random(seed)),
+    ]
     extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
-        if seed isa Batch
-            y1, dx1 = value_and_pullback_batched(f, ba, x, seed, extras_tup...)
-            dx2 = pullback_batched(f, ba, x, seed, extras_tup...)
-        else
-            y1, dx1 = value_and_pullback(f, ba, x, seed, extras_tup...)
-            dx2 = pullback(f, ba, x, seed, extras_tup...)
-        end
+        y1, dx1 = value_and_pullback(f, ba, x, seed, extras_tup...)
+        dx2 = pullback(f, ba, x, seed, extras_tup...)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
@@ -301,30 +227,18 @@ function test_correctness(
 )
     @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
 
-    extras_candidates = if seed isa Batch
-        [
-            prepare_pullback_batched(f, ba, mycopy_random(x), mycopy_random(seed)),
-            prepare_pullback_batched_same_point(f, ba, x, mycopy_random(seed)),
-        ]
-    else
-        [
-            prepare_pullback(f, ba, mycopy_random(x), mycopy_random(seed)),
-            prepare_pullback_same_point(f, ba, x, mycopy_random(seed)),
-        ]
-    end
+    extras_candidates = [
+        prepare_pullback(f, ba, mycopy_random(x), mycopy_random(seed)),
+        prepare_pullback_same_point(f, ba, x, mycopy_random(seed)),
+    ]
     extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         dx1_in = mysimilar(res1)
         dx2_in = mysimilar(res1)
 
-        if seed isa Batch
-            y1, dx1 = value_and_pullback_batched!(f, dx1_in, ba, x, seed, extras_tup...)
-            dx2 = pullback_batched!(f, dx2_in, ba, x, seed, extras_tup...)
-        else
-            y1, dx1 = value_and_pullback!(f, dx1_in, ba, x, seed, extras_tup...)
-            dx2 = pullback!(f, dx2_in, ba, x, seed, extras_tup...)
-        end
+        y1, dx1 = value_and_pullback!(f, dx1_in, ba, x, seed, extras_tup...)
+        dx2 = pullback!(f, dx2_in, ba, x, seed, extras_tup...)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
@@ -356,34 +270,18 @@ function test_correctness(
     @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
     f! = f
 
-    extras_candidates = if seed isa Batch
-        [
-            prepare_pullback_batched(
-                f!, mysimilar(y), ba, mycopy_random(x), mycopy_random(seed)
-            ),
-            prepare_pullback_batched_same_point(
-                f!, mysimilar(y), ba, x, mycopy_random(seed)
-            ),
-        ]
-    else
-        [
-            prepare_pullback(f!, mysimilar(y), ba, mycopy_random(x), mycopy_random(seed)),
-            prepare_pullback_same_point(f!, mysimilar(y), ba, x, mycopy_random(seed)),
-        ]
-    end
+    extras_candidates = [
+        prepare_pullback(f!, mysimilar(y), ba, mycopy_random(x), mycopy_random(seed)),
+        prepare_pullback_same_point(f!, mysimilar(y), ba, x, mycopy_random(seed)),
+    ]
     extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         y1_in = mysimilar(y)
         y2_in = mysimilar(y)
 
-        if seed isa Batch
-            y1, dx1 = value_and_pullback_batched(f!, y1_in, ba, x, seed, extras_tup...)
-            dx2 = pullback_batched(f!, y2_in, ba, x, seed, extras_tup...)
-        else
-            y1, dx1 = value_and_pullback(f!, y1_in, ba, x, seed, extras_tup...)
-            dx2 = pullback(f!, y2_in, ba, x, seed, extras_tup...)
-        end
+        y1, dx1 = value_and_pullback(f!, y1_in, ba, x, seed, extras_tup...)
+        dx2 = pullback(f!, y2_in, ba, x, seed, extras_tup...)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
@@ -414,36 +312,18 @@ function test_correctness(
     @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
     f! = f
 
-    extras_candidates = if seed isa Batch
-        [
-            prepare_pullback_batched(
-                f!, mysimilar(y), ba, mycopy_random(x), mycopy_random(seed)
-            ),
-            prepare_pullback_batched_same_point(
-                f!, mysimilar(y), ba, x, mycopy_random(seed)
-            ),
-        ]
-    else
-        [
-            prepare_pullback(f!, mysimilar(y), ba, mycopy_random(x), mycopy_random(seed)),
-            prepare_pullback_same_point(f!, mysimilar(y), ba, x, mycopy_random(seed)),
-        ]
-    end
+    extras_candidates = [
+        prepare_pullback(f!, mysimilar(y), ba, mycopy_random(x), mycopy_random(seed)),
+        prepare_pullback_same_point(f!, mysimilar(y), ba, x, mycopy_random(seed)),
+    ]
     extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         y1_in, dx1_in = mysimilar(y), mysimilar(res1)
         y2_in, dx2_in = mysimilar(y), mysimilar(res1)
 
-        if seed isa Batch
-            y1, dx1 = value_and_pullback_batched!(
-                f!, y1_in, dx1_in, ba, x, seed, extras_tup...
-            )
-            dx2 = pullback_batched!(f!, y2_in, dx2_in, ba, x, seed, extras_tup...)
-        else
-            y1, dx1 = value_and_pullback!(f!, y1_in, dx1_in, ba, x, seed, extras_tup...)
-            dx2 = pullback!(f!, y2_in, dx2_in, ba, x, seed, extras_tup...)
-        end
+        y1, dx1 = value_and_pullback!(f!, y1_in, dx1_in, ba, x, seed, extras_tup...)
+        dx2 = pullback!(f!, y2_in, dx2_in, ba, x, seed, extras_tup...)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
@@ -948,25 +828,14 @@ function test_correctness(
 )
     @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
 
-    extras_candidates = if seed isa Batch
-        [
-            prepare_hvp_batched(f, ba, mycopy_random(x), mycopy_random(seed)),
-            prepare_hvp_batched_same_point(f, ba, x, mycopy_random(seed)),
-        ]
-    else
-        [
-            prepare_hvp(f, ba, mycopy_random(x), mycopy_random(seed)),
-            prepare_hvp_same_point(f, ba, x, mycopy_random(seed)),
-        ]
-    end
+    extras_candidates = [
+        prepare_hvp(f, ba, mycopy_random(x), mycopy_random(seed)),
+        prepare_hvp_same_point(f, ba, x, mycopy_random(seed)),
+    ]
     extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
-        if seed isa Batch
-            dg1 = hvp_batched(f, ba, x, seed, extras_tup...)
-        else
-            dg1 = hvp(f, ba, x, seed, extras_tup...)
-        end
+        dg1 = hvp(f, ba, x, seed, extras_tup...)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
@@ -991,27 +860,16 @@ function test_correctness(
 )
     @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
 
-    extras_candidates = if seed isa Batch
-        [
-            prepare_hvp_batched(f, ba, mycopy_random(x), mycopy_random(seed)),
-            prepare_hvp_batched_same_point(f, ba, x, mycopy_random(seed)),
-        ]
-    else
-        [
-            prepare_hvp(f, ba, mycopy_random(x), mycopy_random(seed)),
-            prepare_hvp_same_point(f, ba, x, mycopy_random(seed)),
-        ]
-    end
+    extras_candidates = [
+        prepare_hvp(f, ba, mycopy_random(x), mycopy_random(seed)),
+        prepare_hvp_same_point(f, ba, x, mycopy_random(seed)),
+    ]
     extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         dg1_in = mysimilar(res2)
 
-        if seed isa Batch
-            dg1 = hvp_batched!(f, dg1_in, ba, x, seed, extras_tup...)
-        else
-            dg1 = hvp!(f, dg1_in, ba, x, seed, extras_tup...)
-        end
+        dg1 = hvp!(f, dg1_in, ba, x, seed, extras_tup...)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin

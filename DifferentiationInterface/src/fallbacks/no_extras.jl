@@ -60,8 +60,7 @@ for op in (:second_derivative, :hessian)
     end
 end
 
-for op in
-    (:pushforward, :pushforward_batched, :pullback, :pullback_batched, :hvp, :hvp_batched)
+for op in (:pushforward, :pullback, :hvp)
     op! = Symbol(op, "!")
     val_prefix = "value_and_"
     val_and_op = Symbol(val_prefix, op)

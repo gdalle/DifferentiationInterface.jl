@@ -5,7 +5,6 @@ using Base: Fix1, Fix2
 using Compat
 import DifferentiationInterface as DI
 using DifferentiationInterface:
-    Batch,
     DerivativeExtras,
     GradientExtras,
     HessianExtras,
@@ -15,6 +14,7 @@ using DifferentiationInterface:
     NoSecondDerivativeExtras,
     PushforwardExtras,
     SecondOrder,
+    Tangents,
     inner,
     outer
 using ForwardDiff.DiffResults:

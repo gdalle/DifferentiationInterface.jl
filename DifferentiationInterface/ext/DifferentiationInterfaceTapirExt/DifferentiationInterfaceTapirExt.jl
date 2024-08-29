@@ -2,7 +2,7 @@ module DifferentiationInterfaceTapirExt
 
 using ADTypes: ADTypes, AutoTapir
 import DifferentiationInterface as DI
-using DifferentiationInterface: PullbackExtras
+using DifferentiationInterface: PullbackExtras, Tangents, SingleTangent
 using Tapir:
     CoDual,
     NoTangent,

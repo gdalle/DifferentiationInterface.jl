@@ -1,20 +1,20 @@
 ## Pushforward
 
-DI.prepare_pushforward(f!, y, ::AutoFiniteDiff, x, dx) = NoPushforwardExtras()
+DI.prepare_pushforward(f!, y, ::AutoFiniteDiff, x, tx::Tangents) = NoPushforwardExtras()
 
 function DI.value_and_pushforward(
-    f!, y, backend::AutoFiniteDiff, x, dx, ::NoPushforwardExtras
+    f!, y, backend::AutoFiniteDiff, x, tx::Tangents, ::NoPushforwardExtras
 )
-    function step(t::Number)::AbstractArray
-        new_y = similar(y)
-        f!(new_y, x .+ t .* dx)
-        return new_y
+    dys = map(tx.d) do dx
+        function step(t::Number)::AbstractArray
+            new_y = similar(y)
+            f!(new_y, x .+ t .* dx)
+            return new_y
+        end
+        finite_difference_derivative(step, zero(eltype(x)), fdtype(backend), eltype(y), y)
     end
-    new_dy = finite_difference_derivative(
-        step, zero(eltype(x)), fdtype(backend), eltype(y), y
-    )
     f!(y, x)
-    return y, new_dy
+    return y, Tangents(dys)
 end
 
 ## Derivative

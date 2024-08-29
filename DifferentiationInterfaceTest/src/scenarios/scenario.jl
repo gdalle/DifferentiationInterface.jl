@@ -90,17 +90,9 @@ end
 function Base.show(
     io::IO, scen::S
 ) where {op,args,pl,F,X,Y,D,S<:Scenario{op,args,pl,F,X,Y,D}}
-    if D <: Batch
-        print(
-            io,
-            "Scenario{$(repr(op)),$(repr(args)),$(repr(pl))} $(string(scen.f)) : $X -> $Y (batched)",
-        )
-    else
-        print(
-            io,
-            "Scenario{$(repr(op)),$(repr(args)),$(repr(pl))} $(string(scen.f)) : $X -> $Y",
-        )
-    end
+    return print(
+        io, "Scenario{$(repr(op)),$(repr(args)),$(repr(pl))} $(string(scen.f)) : $X -> $Y"
+    )
 end
 
 """

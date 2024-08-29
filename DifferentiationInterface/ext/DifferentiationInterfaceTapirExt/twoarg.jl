@@ -2,7 +2,7 @@ struct TapirTwoArgPullbackExtras{R} <: PullbackExtras
     rrule::R
 end
 
-function DI.prepare_pullback(f!, y, backend::AutoTapir, x, dy)
+function DI.prepare_pullback(f!, y, backend::AutoTapir, x, ty::Tangents)
     rrule = build_rrule(
         TapirInterpreter(),
         Tuple{typeof(f!),typeof(y),typeof(x)};
@@ -10,13 +10,26 @@ function DI.prepare_pullback(f!, y, backend::AutoTapir, x, dy)
         silence_safety_messages=false,
     )
     extras = TapirTwoArgPullbackExtras(rrule)
-    DI.value_and_pullback(f!, y, backend, x, dy, extras)  # warm up
+    DI.value_and_pullback(f!, y, backend, x, ty, extras)  # warm up
     return extras
 end
 
 # see https://github.com/withbayes/Tapir.jl/issues/113#issuecomment-2036718992
 
-function DI.value_and_pullback(f!, y, ::AutoTapir, x, dy, extras::TapirTwoArgPullbackExtras)
+function DI.value_and_pullback(
+    f!, y, backend::AutoTapir, x, ty::Tangents, extras::TapirTwoArgPullbackExtras
+)
+    dxs = map(ty.d) do dy
+        only(DI.pullback(f!, y, backend, x, SingleTangent(dy), extras))
+    end
+    f!(y, x)
+    return y, Tangents(dxs)
+end
+
+function DI.value_and_pullback(
+    f!, y, ::AutoTapir, x, ty::Tangents{1}, extras::TapirTwoArgPullbackExtras
+)
+    dy = only(ty)
     dy_righttype = convert(tangent_type(typeof(y)), copy(dy))
     dx_righttype = zero_tangent(x)
 
@@ -54,5 +67,5 @@ function DI.value_and_pullback(f!, y, ::AutoTapir, x, dy, extras::TapirTwoArgPul
     # Run the reverse-pass.
     _, _, new_dx = pb!!(NoRData())
 
-    return y, tangent(fdata(dx_righttype), new_dx)
+    return y, SingleTangent(tangent(fdata(dx_righttype), new_dx))
 end

@@ -3,13 +3,13 @@ module DifferentiationInterfaceZygoteExt
 using ADTypes: AutoForwardDiff, AutoZygote
 import DifferentiationInterface as DI
 using DifferentiationInterface:
-    Batch,
     HVPExtras,
     NoGradientExtras,
     NoHessianExtras,
     NoJacobianExtras,
     NoPullbackExtras,
-    PullbackExtras
+    PullbackExtras,
+    Tangents
 using DocStringExtensions
 using ForwardDiff: ForwardDiff
 using Zygote:
@@ -26,30 +26,39 @@ struct ZygotePullbackExtrasSamePoint{Y,PB} <: PullbackExtras
     pb::PB
 end
 
-DI.prepare_pullback(f, ::AutoZygote, x, dy) = NoPullbackExtras()
+DI.prepare_pullback(f, ::AutoZygote, x, ty::Tangents) = NoPullbackExtras()
 
-function DI.prepare_pullback_same_point(
-    f, ::AutoZygote, x, dy, ::PullbackExtras=NoPullbackExtras()
-)
+function DI.prepare_pullback_same_point(f, ::AutoZygote, x, ty::Tangents, ::PullbackExtras)
     y, pb = pullback(f, x)
     return ZygotePullbackExtrasSamePoint(y, pb)
 end
 
-function DI.value_and_pullback(f, ::AutoZygote, x, dy, ::NoPullbackExtras)
+function DI.value_and_pullback(f, ::AutoZygote, x, ty::Tangents, ::NoPullbackExtras)
     y, pb = pullback(f, x)
-    return y, only(pb(dy))
+    dxs = map(ty.d) do dy
+        only(pb(dy))
+    end
+    return y, Tangents(dxs)
 end
 
 function DI.value_and_pullback(
-    f, ::AutoZygote, x, dy, extras::ZygotePullbackExtrasSamePoint
+    f, ::AutoZygote, x, ty::Tangents, extras::ZygotePullbackExtrasSamePoint
 )
     @compat (; y, pb) = extras
-    return copy(y), only(pb(dy))
+    dxs = map(ty.d) do dy
+        only(pb(dy))
+    end
+    return copy(y), Tangents(dxs)
 end
 
-function DI.pullback(f, ::AutoZygote, x, dy, extras::ZygotePullbackExtrasSamePoint)
+function DI.pullback(
+    f, ::AutoZygote, x, ty::Tangents, extras::ZygotePullbackExtrasSamePoint
+)
     @compat (; pb) = extras
-    return only(pb(dy))
+    dxs = map(ty.d) do dy
+        only(pb(dy))
+    end
+    return Tangents(dxs)
 end
 
 ## Gradient
@@ -104,47 +113,20 @@ struct ZygoteHVPExtras{G,PE} <: HVPExtras
     pushforward_extras::PE
 end
 
-function DI.prepare_hvp(f, ::AutoZygote, x, dx)
+function DI.prepare_hvp(f, ::AutoZygote, x, tx::Tangents)
     ∇f(x) = only(gradient(f, x))
-    pushforward_extras = DI.prepare_pushforward(∇f, AutoForwardDiff(), x, dx)
+    pushforward_extras = DI.prepare_pushforward(∇f, AutoForwardDiff(), x, tx)
     return ZygoteHVPExtras(∇f, pushforward_extras)
 end
 
-function DI.hvp(f, ::AutoZygote, x, dx, extras::ZygoteHVPExtras)
+function DI.hvp(f, ::AutoZygote, x, tx::Tangents, extras::ZygoteHVPExtras)
     @compat (; ∇f, pushforward_extras) = extras
-    return DI.pushforward(∇f, AutoForwardDiff(), x, dx, pushforward_extras)
+    return DI.pushforward(∇f, AutoForwardDiff(), x, tx, pushforward_extras)
 end
 
-function DI.hvp!(f, dg, ::AutoZygote, x, dx, extras::ZygoteHVPExtras)
+function DI.hvp!(f, tg::Tangents, ::AutoZygote, x, tx::Tangents, extras::ZygoteHVPExtras)
     @compat (; ∇f, pushforward_extras) = extras
-    return DI.pushforward!(∇f, dg, AutoForwardDiff(), x, dx, pushforward_extras)
-end
-
-struct ZygoteHVPBatchedExtras{G,PE} <: HVPExtras
-    ∇f::G
-    pushforward_batched_extras::PE
-end
-
-function DI.prepare_hvp_batched(f, ::AutoZygote, x, dx::Batch)
-    ∇f(x) = only(gradient(f, x))
-    pushforward_batched_extras = DI.prepare_pushforward_batched(
-        ∇f, AutoForwardDiff(), x, dx
-    )
-    return ZygoteHVPBatchedExtras(∇f, pushforward_batched_extras)
-end
-
-function DI.hvp_batched(f, ::AutoZygote, x, dx::Batch, extras::ZygoteHVPBatchedExtras)
-    @compat (; ∇f, pushforward_batched_extras) = extras
-    return DI.pushforward_batched(∇f, AutoForwardDiff(), x, dx, pushforward_batched_extras)
-end
-
-function DI.hvp_batched!(
-    f, dg::Batch, ::AutoZygote, x, dx::Batch, extras::ZygoteHVPBatchedExtras
-)
-    @compat (; ∇f, pushforward_batched_extras) = extras
-    return DI.pushforward_batched!(
-        ∇f, dg, AutoForwardDiff(), x, dx, pushforward_batched_extras
-    )
+    return DI.pushforward!(∇f, tg, AutoForwardDiff(), x, tx, pushforward_extras)
 end
 
 ## Hessian

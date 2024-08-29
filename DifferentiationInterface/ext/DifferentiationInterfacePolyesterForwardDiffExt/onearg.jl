@@ -1,32 +1,42 @@
 
 ## Pushforward
 
-function DI.prepare_pushforward(f, backend::AutoPolyesterForwardDiff, x, dx)
-    return DI.prepare_pushforward(f, single_threaded(backend), x, dx)
+function DI.prepare_pushforward(f, backend::AutoPolyesterForwardDiff, x, tx::Tangents)
+    return DI.prepare_pushforward(f, single_threaded(backend), x, tx)
 end
 
 function DI.value_and_pushforward(
-    f, backend::AutoPolyesterForwardDiff, x, dx, extras::PushforwardExtras
+    f, backend::AutoPolyesterForwardDiff, x, tx::Tangents, extras::PushforwardExtras
 )
-    return DI.value_and_pushforward(f, single_threaded(backend), x, dx, extras)
+    return DI.value_and_pushforward(f, single_threaded(backend), x, tx, extras)
 end
 
 function DI.value_and_pushforward!(
-    f, dy, backend::AutoPolyesterForwardDiff, x, dx, extras::PushforwardExtras
+    f,
+    ty::Tangents,
+    backend::AutoPolyesterForwardDiff,
+    x,
+    tx::Tangents,
+    extras::PushforwardExtras,
 )
-    return DI.value_and_pushforward!(f, dy, single_threaded(backend), x, dx, extras)
+    return DI.value_and_pushforward!(f, ty, single_threaded(backend), x, tx, extras)
 end
 
 function DI.pushforward(
-    f, backend::AutoPolyesterForwardDiff, x, dx, extras::PushforwardExtras
+    f, backend::AutoPolyesterForwardDiff, x, tx::Tangents, extras::PushforwardExtras
 )
-    return DI.pushforward(f, single_threaded(backend), x, dx, extras)
+    return DI.pushforward(f, single_threaded(backend), x, tx, extras)
 end
 
 function DI.pushforward!(
-    f, dy, backend::AutoPolyesterForwardDiff, x, dx, extras::PushforwardExtras
+    f,
+    ty::Tangents,
+    backend::AutoPolyesterForwardDiff,
+    x,
+    tx::Tangents,
+    extras::PushforwardExtras,
 )
-    return DI.pushforward!(f, dy, single_threaded(backend), x, dx, extras)
+    return DI.pushforward!(f, ty, single_threaded(backend), x, tx, extras)
 end
 
 ## Derivative

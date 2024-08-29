@@ -2,7 +2,7 @@ module DifferentiationInterfaceTrackerExt
 
 using ADTypes: AutoTracker
 import DifferentiationInterface as DI
-using DifferentiationInterface: NoGradientExtras, NoPullbackExtras, PullbackExtras
+using DifferentiationInterface: NoGradientExtras, NoPullbackExtras, PullbackExtras, Tangents
 using Tracker: Tracker, back, data, forward, gradient, jacobian, param, withgradient
 using Compat
 
@@ -16,30 +16,39 @@ struct TrackerPullbackExtrasSamePoint{Y,PB} <: PullbackExtras
     pb::PB
 end
 
-DI.prepare_pullback(f, ::AutoTracker, x, dy) = NoPullbackExtras()
+DI.prepare_pullback(f, ::AutoTracker, x, ty::Tangents) = NoPullbackExtras()
 
-function DI.prepare_pullback_same_point(
-    f, ::AutoTracker, x, dy, ::PullbackExtras=NoPullbackExtras()
-)
+function DI.prepare_pullback_same_point(f, ::AutoTracker, x, ty::Tangents, ::PullbackExtras)
     y, pb = forward(f, x)
     return TrackerPullbackExtrasSamePoint(y, pb)
 end
 
-function DI.value_and_pullback(f, ::AutoTracker, x, dy, ::NoPullbackExtras)
+function DI.value_and_pullback(f, ::AutoTracker, x, ty::Tangents, ::NoPullbackExtras)
     y, pb = forward(f, x)
-    return y, data(only(pb(dy)))
+    dxs = map(ty.d) do dy
+        data(only(pb(dy)))
+    end
+    return y, Tangents(dxs)
 end
 
 function DI.value_and_pullback(
-    f, ::AutoTracker, x, dy, extras::TrackerPullbackExtrasSamePoint
+    f, ::AutoTracker, x, ty::Tangents, extras::TrackerPullbackExtrasSamePoint
 )
     @compat (; y, pb) = extras
-    return copy(y), data(only(pb(dy)))
+    dxs = map(ty.d) do dy
+        data(only(pb(dy)))
+    end
+    return copy(y), Tangents(dxs)
 end
 
-function DI.pullback(f, ::AutoTracker, x, dy, extras::TrackerPullbackExtrasSamePoint)
+function DI.pullback(
+    f, ::AutoTracker, x, ty::Tangents, extras::TrackerPullbackExtrasSamePoint
+)
     @compat (; pb) = extras
-    return data(only(pb(dy)))
+    dxs = map(ty.d) do dy
+        data(only(pb(dy)))
+    end
+    return Tangents(dxs)
 end
 
 ## Gradient

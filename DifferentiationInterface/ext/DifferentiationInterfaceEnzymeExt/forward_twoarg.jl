@@ -1,6 +1,8 @@
 ## Pushforward
 
-function DI.prepare_pushforward(f!, y, ::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}}, x, dx)
+function DI.prepare_pushforward(
+    f!, y, ::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}}, x, tx::Tangents
+)
     return NoPushforwardExtras()
 end
 
@@ -9,9 +11,25 @@ function DI.value_and_pushforward(
     y,
     backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
-    dx,
+    tx::Tangents,
+    extras::NoPushforwardExtras,
+)
+    dys = map(tx.d) do dx
+        DI.pushforward(f!, y, backend, x, dx, extras)
+    end
+    f!(y, x)
+    return y, Tangents(dys)
+end
+
+function DI.value_and_pushforward(
+    f!,
+    y,
+    backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}},
+    x,
+    tx::Tangents{1},
     ::NoPushforwardExtras,
 )
+    dx = only(tx)
     f!_and_df! = get_f_and_df(f!, backend)
     dx_sametype = convert(typeof(x), dx)
     dy_sametype = make_zero(y)
@@ -22,5 +40,5 @@ function DI.value_and_pushforward(
     else
         autodiff(forward_mode(backend), f!_and_df!, Const, y_and_dy, x_and_dx)
     end
-    return y, dy_sametype
+    return y, SingleTangent(dy_sametype)
 end

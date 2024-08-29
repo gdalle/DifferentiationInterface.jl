@@ -4,90 +4,79 @@ struct ForwardDiffOneArgPushforwardExtras{T,X} <: PushforwardExtras
     xdual_tmp::X
 end
 
-function DI.prepare_pushforward(f::F, backend::AutoForwardDiff, x, dx) where {F}
+function DI.prepare_pushforward(f::F, backend::AutoForwardDiff, x, tx::Tangents) where {F}
     T = tag_type(f, backend, x)
-    xdual_tmp = make_dual_similar(T, x, dx)
-    return ForwardDiffOneArgPushforwardExtras{T,typeof(xdual_tmp)}(xdual_tmp)
-end
-
-function DI.prepare_pushforward_batched(
-    f::F, backend::AutoForwardDiff, x, dx::Batch
-) where {F}
-    T = tag_type(f, backend, x)
-    xdual_tmp = make_dual_similar(T, x, dx)
+    xdual_tmp = make_dual_similar(T, x, tx)
     return ForwardDiffOneArgPushforwardExtras{T,typeof(xdual_tmp)}(xdual_tmp)
 end
 
 function compute_ydual_onearg(
-    f::F, x::Number, dx, extras::ForwardDiffOneArgPushforwardExtras{T}
+    f::F, x::Number, tx::Tangents, extras::ForwardDiffOneArgPushforwardExtras{T}
 ) where {F,T}
-    xdual_tmp = make_dual(T, x, dx)
+    xdual_tmp = make_dual(T, x, tx)
     ydual = f(xdual_tmp)
     return ydual
 end
 
 function compute_ydual_onearg(
-    f::F, x, dx, extras::ForwardDiffOneArgPushforwardExtras{T}
+    f::F, x, tx::Tangents, extras::ForwardDiffOneArgPushforwardExtras{T}
 ) where {F,T}
     @compat (; xdual_tmp) = extras
-    make_dual!(T, xdual_tmp, x, dx)
+    make_dual!(T, xdual_tmp, x, tx)
     ydual = f(xdual_tmp)
     return ydual
 end
 
 function DI.value_and_pushforward(
-    f::F, ::AutoForwardDiff, x, dx, extras::ForwardDiffOneArgPushforwardExtras{T}
-) where {F,T}
-    ydual = compute_ydual_onearg(f, x, dx, extras)
+    f::F,
+    ::AutoForwardDiff,
+    x,
+    tx::Tangents{B},
+    extras::ForwardDiffOneArgPushforwardExtras{T},
+) where {F,T,B}
+    ydual = compute_ydual_onearg(f, x, tx, extras)
     y = myvalue(T, ydual)
-    new_dy = myderivative(T, ydual)
-    return y, new_dy
-end
-
-function DI.pushforward(
-    f::F, ::AutoForwardDiff, x, dx, extras::ForwardDiffOneArgPushforwardExtras{T}
-) where {F,T}
-    ydual = compute_ydual_onearg(f, x, dx, extras)
-    new_dy = myderivative(T, ydual)
-    return new_dy
+    ty = mypartials(T, Val(B), ydual)
+    return y, ty
 end
 
 function DI.value_and_pushforward!(
-    f::F, dy, ::AutoForwardDiff, x, dx, extras::ForwardDiffOneArgPushforwardExtras{T}
+    f::F,
+    ty::Tangents,
+    ::AutoForwardDiff,
+    x,
+    tx::Tangents,
+    extras::ForwardDiffOneArgPushforwardExtras{T},
 ) where {F,T}
-    ydual = compute_ydual_onearg(f, x, dx, extras)
+    ydual = compute_ydual_onearg(f, x, tx, extras)
     y = myvalue(T, ydual)
-    myderivative!(T, dy, ydual)
-    return y, dy
+    mypartials!(T, ty, ydual)
+    return y, ty
+end
+
+function DI.pushforward(
+    f::F,
+    ::AutoForwardDiff,
+    x,
+    tx::Tangents{B},
+    extras::ForwardDiffOneArgPushforwardExtras{T},
+) where {F,T,B}
+    ydual = compute_ydual_onearg(f, x, tx, extras)
+    ty = mypartials(T, Val(B), ydual)
+    return ty
 end
 
 function DI.pushforward!(
-    f::F, dy, ::AutoForwardDiff, x, dx, extras::ForwardDiffOneArgPushforwardExtras{T}
-) where {F,T}
-    ydual = compute_ydual_onearg(f, x, dx, extras)
-    myderivative!(T, dy, ydual)
-    return dy
-end
-
-function DI.pushforward_batched(
-    f::F, ::AutoForwardDiff, x, dx::Batch{B}, extras::ForwardDiffOneArgPushforwardExtras{T}
-) where {F,T,B}
-    ydual = compute_ydual_onearg(f, x, dx, extras)
-    new_dy = mypartials(T, Val(B), ydual)
-    return new_dy
-end
-
-function DI.pushforward_batched!(
     f::F,
-    dy::Batch{B},
+    ty::Tangents,
     ::AutoForwardDiff,
     x,
-    dx::Batch{B},
+    tx::Tangents,
     extras::ForwardDiffOneArgPushforwardExtras{T},
-) where {F,T,B}
-    ydual = compute_ydual_onearg(f, x, dx, extras)
-    mypartials!(T, dy, ydual)
-    return dy
+) where {F,T}
+    ydual = compute_ydual_onearg(f, x, tx, extras)
+    mypartials!(T, ty, ydual)
+    return ty
 end
 
 ## Gradient

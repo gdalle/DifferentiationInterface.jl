@@ -1,39 +1,44 @@
 ## Pullback
 
-DI.prepare_pullback(f, ::AutoReverseDiff, x, dy) = NoPullbackExtras()
+DI.prepare_pullback(f, ::AutoReverseDiff, x, ty::Tangents) = NoPullbackExtras()
 
 function DI.value_and_pullback(
-    f, ::AutoReverseDiff, x::AbstractArray, dy, ::NoPullbackExtras
+    f, ::AutoReverseDiff, x::AbstractArray, ty::Tangents, ::NoPullbackExtras
 )
     y = f(x)
-    dx = if y isa Number
-        dy .* gradient(f, x)
-    elseif y isa AbstractArray
-        gradient(z -> dot(f(z), dy), x)
+    dxs = map(ty.d) do dy
+        if y isa Number
+            dy .* gradient(f, x)
+        elseif y isa AbstractArray
+            gradient(z -> dot(f(z), dy), x)
+        end
     end
-    return y, dx
+    return y, Tangents(dxs)
 end
 
 function DI.value_and_pullback!(
-    f, dx, ::AutoReverseDiff, x::AbstractArray, dy, ::NoPullbackExtras
+    f, tx::Tangents, ::AutoReverseDiff, x::AbstractArray, ty::Tangents, ::NoPullbackExtras
 )
     y = f(x)
-    dx = if y isa Number
-        dx = gradient!(dx, f, x)
-        dx .*= dy
-    elseif y isa AbstractArray
-        gradient!(dx, z -> dot(f(z), dy), x)
+    for b in eachindex(tx.d, ty.d)
+        dx, dy = tx.d[b], ty.d[b]
+        if y isa Number
+            dx = gradient!(dx, f, x)
+            dx .*= dy
+        elseif y isa AbstractArray
+            gradient!(dx, z -> dot(f(z), dy), x)
+        end
     end
-    return y, dx
+    return y, tx
 end
 
 function DI.value_and_pullback(
-    f, backend::AutoReverseDiff, x::Number, dy, ::NoPullbackExtras
+    f, backend::AutoReverseDiff, x::Number, ty::Tangents, ::NoPullbackExtras
 )
     x_array = [x]
     f_array = f ∘ only
-    y, dx_array = DI.value_and_pullback(f_array, backend, x_array, dy)
-    return y, only(dx_array)
+    y, tx_array = DI.value_and_pullback(f_array, backend, x_array, ty)
+    return y, Tangents(only.(tx_array.d))
 end
 
 ## Gradient

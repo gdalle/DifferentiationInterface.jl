@@ -1,68 +1,91 @@
 ## Pullback
 
-DI.prepare_pullback(f!, y, ::AutoReverseDiff, x, dy) = NoPullbackExtras()
+DI.prepare_pullback(f!, y, ::AutoReverseDiff, x, ty::Tangents) = NoPullbackExtras()
 
 ### Array in
 
 function DI.value_and_pullback(
-    f!, y, ::AutoReverseDiff, x::AbstractArray, dy, ::NoPullbackExtras
+    f!, y, ::AutoReverseDiff, x::AbstractArray, ty::Tangents, ::NoPullbackExtras
 )
-    function dotproduct_closure(x)
-        y_copy = similar(y, eltype(x))
-        f!(y_copy, x)
-        return dot(y_copy, dy)
+    dxs = map(ty.d) do dy
+        function dotproduct_closure(x)
+            y_copy = similar(y, eltype(x))
+            f!(y_copy, x)
+            return dot(y_copy, dy)
+        end
+        gradient(dotproduct_closure, x)
     end
-    dx = gradient(dotproduct_closure, x)
     f!(y, x)
-    return y, dx
+    return y, Tangents(dxs)
 end
 
 function DI.value_and_pullback!(
-    f!, y, dx, ::AutoReverseDiff, x::AbstractArray, dy, ::NoPullbackExtras
+    f!,
+    y,
+    tx::Tangents,
+    ::AutoReverseDiff,
+    x::AbstractArray,
+    ty::Tangents,
+    ::NoPullbackExtras,
 )
-    function dotproduct_closure(x)
-        y_copy = similar(y, eltype(x))
-        f!(y_copy, x)
-        return dot(y_copy, dy)
+    for b in eachindex(tx.d, ty.d)
+        dx, dy = tx.d[b], ty.d[b]
+        function dotproduct_closure(x)
+            y_copy = similar(y, eltype(x))
+            f!(y_copy, x)
+            return dot(y_copy, dy)
+        end
+        gradient!(dx, dotproduct_closure, x)
     end
-    dx = gradient!(dx, dotproduct_closure, x)
     f!(y, x)
-    return y, dx
+    return y, tx
 end
 
-function DI.pullback(f!, y, ::AutoReverseDiff, x::AbstractArray, dy, ::NoPullbackExtras)
-    function dotproduct_closure(x)
-        y_copy = similar(y, eltype(x))
-        f!(y_copy, x)
-        return dot(y_copy, dy)
+function DI.pullback(
+    f!, y, ::AutoReverseDiff, x::AbstractArray, ty::Tangents, ::NoPullbackExtras
+)
+    dxs = map(ty.d) do dy
+        function dotproduct_closure(x)
+            y_copy = similar(y, eltype(x))
+            f!(y_copy, x)
+            return dot(y_copy, dy)
+        end
+        gradient(dotproduct_closure, x)
     end
-    dx = gradient(dotproduct_closure, x)
-    return dx
+    return Tangents(dxs)
 end
 
 function DI.pullback!(
-    f!, y, dx, ::AutoReverseDiff, x::AbstractArray, dy, ::NoPullbackExtras
+    f!,
+    y,
+    tx::Tangents,
+    ::AutoReverseDiff,
+    x::AbstractArray,
+    ty::Tangents,
+    ::NoPullbackExtras,
 )
-    function dotproduct_closure(x)
-        y_copy = similar(y, eltype(x))
-        f!(y_copy, x)
-        return dot(y_copy, dy)
+    for b in eachindex(tx.d, ty.d)
+        dx, dy = tx.d[b], ty.d[b]
+        function dotproduct_closure(x)
+            y_copy = similar(y, eltype(x))
+            f!(y_copy, x)
+            return dot(y_copy, dy)
+        end
+        gradient!(dx, dotproduct_closure, x)
     end
-    dx = gradient!(dx, dotproduct_closure, x)
-    return dx
+    return tx
 end
 
 ### Number in, not supported
 
 function DI.value_and_pullback(
-    f!, y, backend::AutoReverseDiff, x::Number, dy, ::NoPullbackExtras
-)
+    f!, y, backend::AutoReverseDiff, x::Number, ty::Tangents{B}, ::NoPullbackExtras
+) where {B}
     x_array = [x]
-    dx_array = similar(x_array)
     f!_array(_y::AbstractArray, _x_array) = f!(_y, only(_x_array))
-    new_extras = DI.prepare_pullback(f!_array, y, backend, x_array, dy)
-    y, dx_array = DI.value_and_pullback(f!_array, y, backend, x_array, dy, new_extras)
-    return y, only(dx_array)
+    new_extras = DI.prepare_pullback(f!_array, y, backend, x_array, ty)
+    y, tx_array = DI.value_and_pullback(f!_array, y, backend, x_array, ty, new_extras)
+    return y, Tangents(only.(tx_array.d))
 end
 
 ## Jacobian

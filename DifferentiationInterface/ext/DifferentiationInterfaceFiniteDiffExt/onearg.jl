@@ -1,20 +1,24 @@
 ## Pushforward
 
-DI.prepare_pushforward(f, ::AutoFiniteDiff, x, dx) = NoPushforwardExtras()
+DI.prepare_pushforward(f, ::AutoFiniteDiff, x, tx::Tangents) = NoPushforwardExtras()
 
-function DI.pushforward(f, backend::AutoFiniteDiff, x, dx, ::NoPushforwardExtras)
-    step(t::Number) = f(x .+ t .* dx)
-    new_dy = finite_difference_derivative(step, zero(eltype(x)), fdtype(backend))
-    return new_dy
+function DI.pushforward(f, backend::AutoFiniteDiff, x, tx::Tangents, ::NoPushforwardExtras)
+    dys = map(tx.d) do dx
+        step(t::Number) = f(x .+ t .* dx)
+        finite_difference_derivative(step, zero(eltype(x)), fdtype(backend))
+    end
+    return Tangents(dys)
 end
 
-function DI.value_and_pushforward(f, backend::AutoFiniteDiff, x, dx, ::NoPushforwardExtras)
+function DI.value_and_pushforward(
+    f, backend::AutoFiniteDiff, x, tx::Tangents, ::NoPushforwardExtras
+)
     y = f(x)
-    step(t::Number) = f(x .+ t .* dx)
-    new_dy = finite_difference_derivative(
-        step, zero(eltype(x)), fdtype(backend), eltype(y), y
-    )
-    return y, new_dy
+    dys = map(tx.d) do dx
+        step(t::Number) = f(x .+ t .* dx)
+        finite_difference_derivative(step, zero(eltype(x)), fdtype(backend), eltype(y), y)
+    end
+    return y, Tangents(dys)
 end
 
 ## Derivative

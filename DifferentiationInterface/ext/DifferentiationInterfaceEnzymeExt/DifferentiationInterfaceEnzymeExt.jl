@@ -6,6 +6,7 @@ using DifferentiationInterface:
     DerivativeExtras,
     GradientExtras,
     JacobianExtras,
+    HVPExtras,
     PullbackExtras,
     PushforwardExtras,
     NoDerivativeExtras,
@@ -13,6 +14,8 @@ using DifferentiationInterface:
     NoJacobianExtras,
     NoPullbackExtras,
     NoPushforwardExtras,
+    Tangents,
+    SingleTangent,
     pick_batchsize
 using DocStringExtensions
 using Enzyme:

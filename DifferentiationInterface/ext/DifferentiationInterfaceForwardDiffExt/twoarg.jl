@@ -5,103 +5,89 @@ struct ForwardDiffTwoArgPushforwardExtras{T,X,Y} <: PushforwardExtras
     ydual_tmp::Y
 end
 
-function DI.prepare_pushforward(f!::F, y, backend::AutoForwardDiff, x, dx) where {F}
-    T = tag_type(f!, backend, x)
-    xdual_tmp = make_dual_similar(T, x, dx)
-    ydual_tmp = make_dual_similar(T, y, dx)  # dx only for batch size
-    return ForwardDiffTwoArgPushforwardExtras{T,typeof(xdual_tmp),typeof(ydual_tmp)}(
-        xdual_tmp, ydual_tmp
-    )
-end
-
-function DI.prepare_pushforward_batched(
-    f!::F, y, backend::AutoForwardDiff, x, dx::Batch
+function DI.prepare_pushforward(
+    f!::F, y, backend::AutoForwardDiff, x, tx::Tangents
 ) where {F}
     T = tag_type(f!, backend, x)
-    xdual_tmp = make_dual_similar(T, x, dx)
-    ydual_tmp = make_dual_similar(T, y, dx)  # dx only for batch size
+    xdual_tmp = make_dual_similar(T, x, tx)
+    ydual_tmp = make_dual_similar(T, y, tx)  # dx only for batch size
     return ForwardDiffTwoArgPushforwardExtras{T,typeof(xdual_tmp),typeof(ydual_tmp)}(
         xdual_tmp, ydual_tmp
     )
 end
 
 function compute_ydual_twoarg(
-    f!::F, y, x::Number, dx, extras::ForwardDiffTwoArgPushforwardExtras{T}
+    f!::F, y, x::Number, tx::Tangents, extras::ForwardDiffTwoArgPushforwardExtras{T}
 ) where {F,T}
     @compat (; ydual_tmp) = extras
-    xdual_tmp = make_dual(T, x, dx)
+    xdual_tmp = make_dual(T, x, tx)
     f!(ydual_tmp, xdual_tmp)
     return ydual_tmp
 end
 
 function compute_ydual_twoarg(
-    f!::F, y, x, dx, extras::ForwardDiffTwoArgPushforwardExtras{T}
+    f!::F, y, x, tx::Tangents, extras::ForwardDiffTwoArgPushforwardExtras{T}
 ) where {F,T}
     @compat (; xdual_tmp, ydual_tmp) = extras
-    make_dual!(T, xdual_tmp, x, dx)
+    make_dual!(T, xdual_tmp, x, tx)
     f!(ydual_tmp, xdual_tmp)
     return ydual_tmp
 end
 
 function DI.value_and_pushforward(
-    f!::F, y, ::AutoForwardDiff, x, dx, extras::ForwardDiffTwoArgPushforwardExtras{T}
-) where {F,T}
-    ydual_tmp = compute_ydual_twoarg(f!, y, x, dx, extras)
+    f!::F,
+    y,
+    ::AutoForwardDiff,
+    x,
+    tx::Tangents{B},
+    extras::ForwardDiffTwoArgPushforwardExtras{T},
+) where {F,T,B}
+    ydual_tmp = compute_ydual_twoarg(f!, y, x, tx, extras)
     myvalue!(T, y, ydual_tmp)
-    dy = myderivative(T, ydual_tmp)
-    return y, dy
-end
-
-function DI.pushforward(
-    f!::F, y, ::AutoForwardDiff, x, dx, extras::ForwardDiffTwoArgPushforwardExtras{T}
-) where {F,T}
-    ydual_tmp = compute_ydual_twoarg(f!, y, x, dx, extras)
-    dy = myderivative(T, ydual_tmp)
-    return dy
+    ty = mypartials(T, Val(B), ydual_tmp)
+    return y, ty
 end
 
 function DI.value_and_pushforward!(
-    f!::F, y, dy, ::AutoForwardDiff, x, dx, extras::ForwardDiffTwoArgPushforwardExtras{T}
+    f!::F,
+    y,
+    ty::Tangents,
+    ::AutoForwardDiff,
+    x,
+    tx::Tangents,
+    extras::ForwardDiffTwoArgPushforwardExtras{T},
 ) where {F,T}
-    ydual_tmp = compute_ydual_twoarg(f!, y, x, dx, extras)
+    ydual_tmp = compute_ydual_twoarg(f!, y, x, tx, extras)
     myvalue!(T, y, ydual_tmp)
-    myderivative!(T, dy, ydual_tmp)
-    return y, dy
+    mypartials!(T, ty, ydual_tmp)
+    return y, ty
+end
+
+function DI.pushforward(
+    f!::F,
+    y,
+    ::AutoForwardDiff,
+    x,
+    tx::Tangents{B},
+    extras::ForwardDiffTwoArgPushforwardExtras{T},
+) where {F,T,B}
+    ydual_tmp = compute_ydual_twoarg(f!, y, x, tx, extras)
+    ty = mypartials(T, Val(B), ydual_tmp)
+    return ty
 end
 
 function DI.pushforward!(
-    f!::F, y, dy, ::AutoForwardDiff, x, dx, extras::ForwardDiffTwoArgPushforwardExtras{T}
+    f!::F,
+    y,
+    ty::Tangents,
+    ::AutoForwardDiff,
+    x,
+    tx::Tangents,
+    extras::ForwardDiffTwoArgPushforwardExtras{T},
 ) where {F,T}
-    ydual_tmp = compute_ydual_twoarg(f!, y, x, dx, extras)
-    myderivative!(T, dy, ydual_tmp)
-    return dy
-end
-
-function DI.pushforward_batched(
-    f!::F,
-    y,
-    ::AutoForwardDiff,
-    x,
-    dx::Batch{B},
-    extras::ForwardDiffTwoArgPushforwardExtras{T},
-) where {F,T,B}
-    ydual_tmp = compute_ydual_twoarg(f!, y, x, dx, extras)
-    dy = mypartials(T, Val(B), ydual_tmp)
-    return dy
-end
-
-function DI.pushforward_batched!(
-    f!::F,
-    y,
-    dy::Batch{B},
-    ::AutoForwardDiff,
-    x,
-    dx::Batch{B},
-    extras::ForwardDiffTwoArgPushforwardExtras{T},
-) where {F,T,B}
-    ydual_tmp = compute_ydual_twoarg(f!, y, x, dx, extras)
-    mypartials!(T, dy, ydual_tmp)
-    return dy
+    ydual_tmp = compute_ydual_twoarg(f!, y, x, tx, extras)
+    mypartials!(T, ty, ydual_tmp)
+    return ty
 end
 
 ## Derivative

@@ -11,6 +11,7 @@ using DifferentiationInterface:
     PullbackExtras,
     PushforwardExtras,
     SecondDerivativeExtras,
+    Tangents,
     maybe_dense_ad
 using FastDifferentiation:
     derivative,

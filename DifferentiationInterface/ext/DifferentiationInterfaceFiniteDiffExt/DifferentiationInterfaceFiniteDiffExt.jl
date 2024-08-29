@@ -14,7 +14,8 @@ using DifferentiationInterface:
     NoHessianExtras,
     NoJacobianExtras,
     NoPullbackExtras,
-    NoPushforwardExtras
+    NoPushforwardExtras,
+    Tangents
 using FiniteDiff:
     DerivativeCache,
     GradientCache,

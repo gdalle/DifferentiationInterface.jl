@@ -5,7 +5,8 @@ struct SymbolicsOneArgPushforwardExtras{E1,E1!} <: PushforwardExtras
     pf_exe!::E1!
 end
 
-function DI.prepare_pushforward(f, ::AutoSymbolics, x, dx)
+function DI.prepare_pushforward(f, ::AutoSymbolics, x, tx::Tangents)
+    dx = first(tx)
     x_var = if x isa Number
         variable(:x)
     else
@@ -29,30 +30,47 @@ function DI.prepare_pushforward(f, ::AutoSymbolics, x, dx)
     return SymbolicsOneArgPushforwardExtras(pf_exe, pf_exe!)
 end
 
-function DI.pushforward(f, ::AutoSymbolics, x, dx, extras::SymbolicsOneArgPushforwardExtras)
-    v_vec = vcat(myvec(x), myvec(dx))
-    dy = extras.pf_exe(v_vec)
-    return dy
+function DI.pushforward(
+    f, ::AutoSymbolics, x, tx::Tangents, extras::SymbolicsOneArgPushforwardExtras
+)
+    dys = map(tx.d) do dx
+        v_vec = vcat(myvec(x), myvec(dx))
+        dy = extras.pf_exe(v_vec)
+    end
+    return Tangents(dys)
 end
 
 function DI.pushforward!(
-    f, dy, ::AutoSymbolics, x, dx, extras::SymbolicsOneArgPushforwardExtras
+    f,
+    ty::Tangents,
+    ::AutoSymbolics,
+    x,
+    tx::Tangents,
+    extras::SymbolicsOneArgPushforwardExtras,
 )
-    v_vec = vcat(myvec(x), myvec(dx))
-    extras.pf_exe!(dy, v_vec)
-    return dy
+    for b in eachindex(tx.d, ty.d)
+        dx, dy = tx.d[b], ty.d[b]
+        v_vec = vcat(myvec(x), myvec(dx))
+        extras.pf_exe!(dy, v_vec)
+    end
+    return ty
 end
 
 function DI.value_and_pushforward(
-    f, backend::AutoSymbolics, x, dx, extras::SymbolicsOneArgPushforwardExtras
+    f, backend::AutoSymbolics, x, tx::Tangents, extras::SymbolicsOneArgPushforwardExtras
 )
-    return f(x), DI.pushforward(f, backend, x, dx, extras)
+    return f(x), DI.pushforward(f, backend, x, tx, extras)
 end
 
 function DI.value_and_pushforward!(
-    f, dy, backend::AutoSymbolics, x, dx, extras::SymbolicsOneArgPushforwardExtras
+    f,
+    ty::Tangents,
+    backend::AutoSymbolics,
+    x,
+    tx::Tangents,
+    extras::SymbolicsOneArgPushforwardExtras,
 )
-    return f(x), DI.pushforward!(f, dy, backend, x, dx, extras)
+    return f(x), DI.pushforward!(f, ty, backend, x, tx, extras)
 end
 
 ## Derivative
