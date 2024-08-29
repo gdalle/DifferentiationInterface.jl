@@ -34,5 +34,5 @@ function DI.pullback(
     f, ::AutoReverseChainRules, x, ty::Tangents, extras::ChainRulesPullbackExtrasSamePoint
 )
     @compat (; pb) = extras
-    return Tangents(last.(pb.(dy)))
+    return Tangents(last.(pb.(ty.d)))
 end
