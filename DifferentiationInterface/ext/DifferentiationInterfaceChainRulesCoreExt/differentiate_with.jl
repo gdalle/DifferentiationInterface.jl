@@ -1,8 +1,11 @@
+# forward mode unused for lack of implementations
+#=
 function ChainRulesCore.frule((_, dx), dw::DifferentiateWith, x)
     @compat (; f, backend) = dw
     y, dy = DI.value_and_pushforward(f, backend, x, dx)
     return y, dy
 end
+=#
 
 function ChainRulesCore.rrule(dw::DifferentiateWith, x)
     @compat (; f, backend) = dw

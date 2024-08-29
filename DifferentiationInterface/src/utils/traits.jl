@@ -121,8 +121,6 @@ Traits identifying second-order backends that compute HVPs in forward over forwa
 """
 struct ForwardOverForward <: HVPMode end
 
-hvp_mode(::AbstractADType) = error("HVP mode undefined for first order backend")
-
 function hvp_mode(ba::SecondOrder)
     if Bool(pushforward_performance(outer(ba))) && Bool(pullback_performance(inner(ba)))
         return ForwardOverReverse()
@@ -133,8 +131,6 @@ function hvp_mode(ba::SecondOrder)
     elseif Bool(pushforward_performance(outer(ba))) &&
         Bool(pushforward_performance(inner(ba)))
         return ForwardOverForward()
-    else
-        error("HVP mode unknown")
     end
 end
 

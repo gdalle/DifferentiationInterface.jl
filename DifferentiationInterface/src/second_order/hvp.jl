@@ -87,7 +87,7 @@ function _prepare_hvp_aux(
     f::F, backend::SecondOrder, x, tx::Tangents, ::ReverseOverForward
 ) where {F}
     # gradient of pushforward
-    # uses dx in the closure so it can't be stored
+    # uses dx in the closure so it can't be prepared
     return ReverseOverForwardHVPExtras()
 end
 
