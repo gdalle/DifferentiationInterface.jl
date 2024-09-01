@@ -77,6 +77,7 @@ include("sparse/hessian.jl")
 include("misc/differentiate_with.jl")
 include("misc/sparsity_detector.jl")
 include("misc/from_primitive.jl")
+include("misc/zero_backends.jl")
 
 function __init__()
     @require_extensions

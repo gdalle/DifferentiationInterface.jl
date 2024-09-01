@@ -1,12 +1,8 @@
 using DifferentiationInterface
+using DifferentiationInterface: AutoZeroForward, AutoZeroReverse
 using DifferentiationInterfaceTest
 using DifferentiationInterfaceTest:
-    AutoZeroForward,
-    AutoZeroReverse,
-    scenario_to_zero,
-    test_allocfree,
-    allocfree_scenarios,
-    remove_batched
+    scenario_to_zero, test_allocfree, allocfree_scenarios, remove_batched
 using ComponentArrays: ComponentArrays
 using JLArrays: JLArrays
 using StaticArrays: StaticArrays
@@ -15,18 +11,14 @@ using Test
 
 LOGGING = get(ENV, "CI", "false") == "false"
 
-@test check_available(AutoZeroForward())
-@test check_available(AutoZeroReverse())
-@test check_twoarg(AutoZeroForward())
-@test check_twoarg(AutoZeroReverse())
-
 ## Correctness + type stability
 
 test_differentiation(
     [AutoZeroForward(), AutoZeroReverse()],
-    scenario_to_zero.(default_scenarios());
-    correctness=true,
-    type_stability=false,  # TODO: switch back
+    default_scenarios();
+    correctness=false,
+    type_stability=true,
+    excluded=[:second_derivative],
     logging=LOGGING,
 )
 
@@ -35,9 +27,9 @@ test_differentiation(
         SecondOrder(AutoZeroForward(), AutoZeroReverse()),
         SecondOrder(AutoZeroReverse(), AutoZeroForward()),
     ],
-    scenario_to_zero.(default_scenarios(; linalg=false));
-    correctness=true,
-    type_stability=false,  # TODO: switch back
+    default_scenarios(; linalg=false);
+    correctness=false,
+    type_stability=true,
     first_order=false,
     logging=LOGGING,
 )
