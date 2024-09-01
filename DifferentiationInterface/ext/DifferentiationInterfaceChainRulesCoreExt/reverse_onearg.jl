@@ -8,7 +8,7 @@ end
 DI.prepare_pullback(f, ::AutoReverseChainRules, x, ty::Tangents) = NoPullbackExtras()
 
 function DI.prepare_pullback_same_point(
-    f, ::PullbackExtras, backend::AutoReverseChainRules, x, ty::Tangents
+    f, ::NoPullbackExtras, backend::AutoReverseChainRules, x, ty::Tangents
 )
     rc = ruleconfig(backend)
     y, pb = rrule_via_ad(rc, f, x)

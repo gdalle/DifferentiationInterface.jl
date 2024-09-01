@@ -23,39 +23,40 @@ struct FiniteDiffTwoArgDerivativeExtras{C} <: DerivativeExtras
     cache::C
 end
 
-function DI.prepare_derivative(f!, y, ::AutoFiniteDiff, x)
-    cache = nothing
+function DI.prepare_derivative(f!, y, backend::AutoFiniteDiff, x)
+    df = similar(y)
+    cache = GradientCache(df, x, fdtype(backend), eltype(y), FUNCTION_INPLACE)
     return FiniteDiffTwoArgDerivativeExtras(cache)
 end
 
 function DI.value_and_derivative(
-    f!, y, ::FiniteDiffTwoArgDerivativeExtras, backend::AutoFiniteDiff, x
+    f!, y, extras::FiniteDiffTwoArgDerivativeExtras, backend::AutoFiniteDiff, x
 )
     f!(y, x)
-    der = finite_difference_gradient(f!, x, fdtype(backend), eltype(y), FUNCTION_INPLACE, y)
+    der = finite_difference_gradient(f!, x, extras.cache)
     return y, der
 end
 
 function DI.value_and_derivative!(
-    f!, y, der, ::FiniteDiffTwoArgDerivativeExtras, backend::AutoFiniteDiff, x
+    f!, y, der, extras::FiniteDiffTwoArgDerivativeExtras, backend::AutoFiniteDiff, x
 )
     f!(y, x)
-    finite_difference_gradient!(der, f!, x, fdtype(backend), eltype(y), FUNCTION_INPLACE, y)
+    finite_difference_gradient!(der, f!, x, extras.cache)
     return y, der
 end
 
 function DI.derivative(
-    f!, y, ::FiniteDiffTwoArgDerivativeExtras, backend::AutoFiniteDiff, x
+    f!, y, extras::FiniteDiffTwoArgDerivativeExtras, backend::AutoFiniteDiff, x
 )
     f!(y, x)
-    der = finite_difference_gradient(f!, x, fdtype(backend), eltype(y), FUNCTION_INPLACE, y)
+    der = finite_difference_gradient(f!, x, extras.cache)
     return der
 end
 
 function DI.derivative!(
-    f!, y, der, ::FiniteDiffTwoArgDerivativeExtras, backend::AutoFiniteDiff, x
+    f!, y, der, extras::FiniteDiffTwoArgDerivativeExtras, backend::AutoFiniteDiff, x
 )
-    finite_difference_gradient!(der, f!, x, fdtype(backend), eltype(y), FUNCTION_INPLACE)
+    finite_difference_gradient!(der, f!, x, extras.cache)
     return der
 end
 
