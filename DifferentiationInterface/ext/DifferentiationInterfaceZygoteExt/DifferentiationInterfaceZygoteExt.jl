@@ -28,7 +28,9 @@ end
 
 DI.prepare_pullback(f, ::AutoZygote, x, ty::Tangents) = NoPullbackExtras()
 
-function DI.prepare_pullback_same_point(f, ::AutoZygote, x, ty::Tangents, ::PullbackExtras)
+function DI.prepare_pullback_same_point(
+    f, ::AutoZygote, x, ty::Tangents, ::NoPullbackExtras
+)
     y, pb = pullback(f, x)
     return ZygotePullbackExtrasSamePoint(y, pb)
 end

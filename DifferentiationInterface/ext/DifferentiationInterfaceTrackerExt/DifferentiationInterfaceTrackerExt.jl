@@ -18,7 +18,9 @@ end
 
 DI.prepare_pullback(f, ::AutoTracker, x, ty::Tangents) = NoPullbackExtras()
 
-function DI.prepare_pullback_same_point(f, ::AutoTracker, x, ty::Tangents, ::PullbackExtras)
+function DI.prepare_pullback_same_point(
+    f, ::AutoTracker, x, ty::Tangents, ::NoPullbackExtras
+)
     y, pb = forward(f, x)
     return TrackerPullbackExtrasSamePoint(y, pb)
 end
