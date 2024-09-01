@@ -1,25 +1,21 @@
 ## Pushforward
 
 function test_jet(ba::AbstractADType, scen::Scenario{:pushforward,1,:outofplace})
-    @compat (; f, x, y, seed) = deepcopy(scen)
+    @compat (; f, x, y, seed, res1) = deepcopy(scen)
     extras = prepare_pushforward(f, ba, x, seed)
 
-    if Bool(pushforward_performance(ba))
-        JET.@test_opt value_and_pushforward(f, ba, x, seed, extras)
-        JET.@test_opt pushforward(f, ba, x, seed, extras)
-    end
+    JET.@test_opt value_and_pushforward(f, ba, x, seed, extras)
+    JET.@test_opt pushforward(f, ba, x, seed, extras)
     return nothing
 end
 
 function test_jet(ba::AbstractADType, scen::Scenario{:pushforward,1,:inplace})
     @compat (; f, x, y, seed) = deepcopy(scen)
     extras = prepare_pushforward(f, ba, x, seed)
-    dy_in = mysimilar(y)
+    res1 = mysimilar(scen.res1)
 
-    if Bool(pushforward_performance(ba))
-        JET.@test_opt value_and_pushforward!(f, dy_in, ba, x, seed, extras)
-        JET.@test_opt pushforward!(f, dy_in, ba, x, seed, extras)
-    end
+    JET.@test_opt value_and_pushforward!(f, res1, ba, x, seed, extras)
+    JET.@test_opt pushforward!(f, res1, ba, x, seed, extras)
     return nothing
 end
 
@@ -29,10 +25,8 @@ function test_jet(ba::AbstractADType, scen::Scenario{:pushforward,2,:outofplace}
     extras = prepare_pushforward(f!, mysimilar(y), ba, x, seed)
     y_in = mysimilar(y)
 
-    if Bool(pushforward_performance(ba))
-        JET.@test_opt value_and_pushforward(f!, y_in, ba, x, seed, extras)
-        JET.@test_opt pushforward(f!, y_in, ba, x, seed, extras)
-    end
+    JET.@test_opt value_and_pushforward(f!, y_in, ba, x, seed, extras)
+    JET.@test_opt pushforward(f!, y_in, ba, x, seed, extras)
     return nothing
 end
 
@@ -40,12 +34,10 @@ function test_jet(ba::AbstractADType, scen::Scenario{:pushforward,2,:inplace})
     @compat (; f, x, y, seed) = deepcopy(scen)
     f! = f
     extras = prepare_pushforward(f!, mysimilar(y), ba, x, seed)
-    y_in, dy_in = mysimilar(y), mysimilar(y)
+    y_in, res1 = mysimilar(y), mysimilar(scen.res1)
 
-    if Bool(pushforward_performance(ba))
-        JET.@test_opt value_and_pushforward!(f!, y_in, dy_in, ba, x, seed, extras)
-        JET.@test_opt pushforward!(f!, y_in, dy_in, ba, x, seed, extras)
-    end
+    JET.@test_opt value_and_pushforward!(f!, y_in, res1, ba, x, seed, extras)
+    JET.@test_opt pushforward!(f!, y_in, res1, ba, x, seed, extras)
     return nothing
 end
 
@@ -55,22 +47,18 @@ function test_jet(ba::AbstractADType, scen::Scenario{:pullback,1,:outofplace})
     @compat (; f, x, seed) = deepcopy(scen)
     extras = prepare_pullback(f, ba, x, seed)
 
-    if Bool(pullback_performance(ba))
-        JET.@test_opt value_and_pullback(f, ba, x, seed, extras)
-        JET.@test_opt pullback(f, ba, x, seed, extras)
-    end
+    JET.@test_opt value_and_pullback(f, ba, x, seed, extras)
+    JET.@test_opt pullback(f, ba, x, seed, extras)
     return nothing
 end
 
 function test_jet(ba::AbstractADType, scen::Scenario{:pullback,1,:inplace})
     @compat (; f, x, seed) = deepcopy(scen)
     extras = prepare_pullback(f, ba, x, seed)
-    dx_in = mysimilar(x)
+    res1 = mysimilar(scen.res1)
 
-    if Bool(pullback_performance(ba))
-        JET.@test_opt value_and_pullback!(f, dx_in, ba, x, seed, extras)
-        JET.@test_opt pullback!(f, dx_in, ba, x, seed, extras)
-    end
+    JET.@test_opt value_and_pullback!(f, res1, ba, x, seed, extras)
+    JET.@test_opt pullback!(f, res1, ba, x, seed, extras)
     return nothing
 end
 
@@ -80,10 +68,8 @@ function test_jet(ba::AbstractADType, scen::Scenario{:pullback,2,:outofplace})
     extras = prepare_pullback(f!, mysimilar(y), ba, x, seed)
     y_in = mysimilar(y)
 
-    if Bool(pullback_performance(ba))
-        JET.@test_opt value_and_pullback(f!, y_in, ba, x, seed, extras)
-        JET.@test_opt pullback(f!, y_in, ba, x, seed, extras)
-    end
+    JET.@test_opt value_and_pullback(f!, y_in, ba, x, seed, extras)
+    JET.@test_opt pullback(f!, y_in, ba, x, seed, extras)
     return nothing
 end
 
@@ -91,12 +77,10 @@ function test_jet(ba::AbstractADType, scen::Scenario{:pullback,2,:inplace})
     @compat (; f, x, y, seed) = deepcopy(scen)
     f! = f
     extras = prepare_pullback(f!, mysimilar(y), ba, x, seed)
-    y_in, dx_in = mysimilar(y), mysimilar(x)
+    y_in, res1 = mysimilar(y), mysimilar(scen.res1)
 
-    if Bool(pullback_performance(ba))
-        JET.@test_opt value_and_pullback!(f!, y_in, dx_in, ba, x, seed, extras)
-        JET.@test_opt pullback!(f!, y_in, dx_in, ba, x, seed, extras)
-    end
+    JET.@test_opt value_and_pullback!(f!, y_in, res1, ba, x, seed, extras)
+    JET.@test_opt pullback!(f!, y_in, res1, ba, x, seed, extras)
     return nothing
 end
 
@@ -244,9 +228,9 @@ end
 function test_jet(ba::AbstractADType, scen::Scenario{:hvp,1,:inplace})
     @compat (; f, x, seed) = deepcopy(scen)
     extras = prepare_hvp(f, ba, x, seed)
-    p_in = mysimilar(x)
+    res2 = mysimilar(scen.res2)
 
-    JET.@test_opt hvp!(f, p_in, ba, x, seed, extras)
+    JET.@test_opt hvp!(f, res2, ba, x, seed, extras)
     return nothing
 end
 

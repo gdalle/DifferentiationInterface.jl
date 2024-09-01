@@ -18,7 +18,7 @@ GROUP = get(ENV, "JULIA_DIT_TEST_GROUP", "All")
 
     if GROUP == "Zero" || GROUP == "All"
         @testset verbose = false "Zero" begin
-            include("zero.jl")
+            include("zero_backends.jl")
         end
     end
 
