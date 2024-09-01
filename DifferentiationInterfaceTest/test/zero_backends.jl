@@ -1,90 +1,44 @@
+using ADTypes
 using DifferentiationInterface
 using DifferentiationInterface: AutoZeroForward, AutoZeroReverse
 using DifferentiationInterfaceTest
-using DifferentiationInterfaceTest:
-    scenario_to_zero, test_allocfree, allocfree_scenarios, remove_batched
-using ComponentArrays: ComponentArrays
-using JLArrays: JLArrays
-using StaticArrays: StaticArrays
+using DifferentiationInterfaceTest: test_allocfree, allocfree_scenarios, remove_batched
 
 using Test
 
 LOGGING = get(ENV, "CI", "false") == "false"
 
-## Correctness + type stability
+## Type stability
 
 test_differentiation(
     [AutoZeroForward(), AutoZeroReverse()],
-    default_scenarios();
+    zero.(default_scenarios());
     correctness=false,
     type_stability=true,
     excluded=[:second_derivative],
     logging=LOGGING,
 )
 
-test_differentiation(
-    [
-        SecondOrder(AutoZeroForward(), AutoZeroReverse()),
-        SecondOrder(AutoZeroReverse(), AutoZeroForward()),
-    ],
-    default_scenarios(; linalg=false);
-    correctness=false,
-    type_stability=true,
-    first_order=false,
-    logging=LOGGING,
-)
-
 ## Benchmark
 
-data1 = benchmark_differentiation(
-    [AutoZeroForward(), AutoZeroReverse()],
-    remove_batched(default_scenarios());
-    logging=LOGGING,
-);
-
-data2 = benchmark_differentiation(
-    [SecondOrder(AutoZeroForward(), AutoZeroReverse())],
-    remove_batched(default_scenarios());
-    first_order=false,
-    logging=LOGGING,
-);
+data1 = benchmark_differentiation([AutoZeroForward()], default_scenarios(); logging=LOGGING);
 
 struct FakeBackend <: ADTypes.AbstractADType end
 ADTypes.mode(::FakeBackend) = ADTypes.ForwardMode()
 
-data3 = benchmark_differentiation(
-    [FakeBackend()], remove_batched(default_scenarios()); logging=false
-);
+data2 = benchmark_differentiation([FakeBackend()], default_scenarios(); logging=false);
 
 @testset "Benchmarking DataFrame" begin
-    for col in eachcol(vcat(data1, data2))
+    for col in eachcol(data1)
         if eltype(col) <: AbstractFloat
             @test !any(isnan, col)
         end
     end
-    for col in eachcol(data3)
+    for col in eachcol(data2)
         if eltype(col) <: AbstractFloat
             @test all(isnan, col)
         end
     end
-end
-
-## Weird arrays
-
-test_differentiation(
-    [AutoZeroForward(), AutoZeroReverse()],
-    scenario_to_zero.(vcat(component_scenarios(), static_scenarios()));
-    correctness=true,
-    logging=LOGGING,
-)
-
-if VERSION >= v"1.10"
-    test_differentiation(
-        [AutoZeroForward(), AutoZeroReverse()],
-        scenario_to_zero.(gpu_scenarios());
-        correctness=true,
-        logging=LOGGING,
-    )
 end
 
 ## Allocations

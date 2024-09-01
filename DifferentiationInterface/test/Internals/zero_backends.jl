@@ -1,6 +1,9 @@
 using DifferentiationInterface
 using DifferentiationInterface: AutoZeroForward, AutoZeroReverse
 using DifferentiationInterfaceTest
+using ComponentArrays: ComponentArrays
+using JLArrays: JLArrays
+using StaticArrays: StaticArrays
 using Test
 
 LOGGING = get(ENV, "CI", "false") == "false"
@@ -16,8 +19,8 @@ end
 
 test_differentiation(
     zero_backends,
-    default_scenarios();
-    correctness=false,
+    zero.(default_scenarios());
+    correctness=true,
     type_stability=true,
     excluded=[:second_derivative],
     logging=LOGGING,
@@ -28,9 +31,27 @@ test_differentiation(
         SecondOrder(AutoZeroForward(), AutoZeroReverse()),
         SecondOrder(AutoZeroReverse(), AutoZeroForward()),
     ],
-    default_scenarios(; linalg=false);
+    default_scenarios();
     correctness=false,
     type_stability=true,
     first_order=false,
     logging=LOGGING,
 )
+
+## Weird arrays
+
+test_differentiation(
+    [AutoZeroForward(), AutoZeroReverse()],
+    zero.(vcat(component_scenarios(), static_scenarios()));
+    correctness=true,
+    logging=LOGGING,
+)
+
+if VERSION >= v"1.10"
+    test_differentiation(
+        [AutoZeroForward(), AutoZeroReverse()],
+        zero.(gpu_scenarios());
+        correctness=true,
+        logging=LOGGING,
+    )
+end

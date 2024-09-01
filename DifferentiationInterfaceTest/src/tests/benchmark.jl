@@ -168,19 +168,19 @@ function run_benchmark!(
         # benchmark
         extras = prepare_pushforward(f, ba, x, seed)
         bench0 = @be prepare_pushforward(f, ba, x, seed) samples = 1 evals = 1
-        bench1 = @be (dy=mysimilar(y), ext=deepcopy(extras)) value_and_pushforward!(
+        bench1 = @be (dy=mysimilar(scen.res1), ext=deepcopy(extras)) value_and_pushforward!(
             f, _.dy, ba, x, seed, _.ext
         ) evals = 1
-        bench2 = @be (dy=mysimilar(y), ext=deepcopy(extras)) pushforward!(
+        bench2 = @be (dy=mysimilar(scen.res1), ext=deepcopy(extras)) pushforward!(
             f, _.dy, ba, x, seed, _.ext
         ) evals = 1
         # count
         cc = CallCounter(f)
         extras = prepare_pushforward(cc, ba, x, seed)
         calls0 = reset_count!(cc)
-        value_and_pushforward!(cc, mysimilar(y), ba, x, seed, extras)
+        value_and_pushforward!(cc, mysimilar(scen.res1), ba, x, seed, extras)
         calls1 = reset_count!(cc)
-        pushforward!(cc, mysimilar(y), ba, x, seed, extras)
+        pushforward!(cc, mysimilar(scen.res1), ba, x, seed, extras)
         calls2 = reset_count!(cc)
         (; bench0, bench1, bench2, calls0, calls1, calls2)
     catch e
@@ -250,19 +250,19 @@ function run_benchmark!(
         extras = prepare_pushforward(f!, y, ba, x, seed)
         bench0 = @be mysimilar(y) prepare_pushforward(f!, _, ba, x, seed) evals = 1 samples =
             1
-        bench1 = @be (y=mysimilar(y), dy=mysimilar(y), ext=deepcopy(extras)) value_and_pushforward!(
+        bench1 = @be (y=mysimilar(y), dy=mysimilar(scen.res1), ext=deepcopy(extras)) value_and_pushforward!(
             f!, _.y, _.dy, ba, x, seed, _.ext
         ) evals = 1
-        bench2 = @be (y=mysimilar(y), dy=mysimilar(y), ext=deepcopy(extras)) pushforward!(
+        bench2 = @be (y=mysimilar(y), dy=mysimilar(scen.res1), ext=deepcopy(extras)) pushforward!(
             f!, _.y, _.dy, ba, x, seed, _.ext
         ) evals = 1
         # count
         cc! = CallCounter(f!)
         extras = prepare_pushforward(cc!, mysimilar(y), ba, x, seed)
         calls0 = reset_count!(cc!)
-        value_and_pushforward!(cc!, mysimilar(y), mysimilar(y), ba, x, seed, extras)
+        value_and_pushforward!(cc!, mysimilar(y), mysimilar(scen.res1), ba, x, seed, extras)
         calls1 = reset_count!(cc!)
-        pushforward!(cc!, mysimilar(y), mysimilar(y), ba, x, seed, extras)
+        pushforward!(cc!, mysimilar(y), mysimilar(scen.res1), ba, x, seed, extras)
         calls2 = reset_count!(cc!)
         (; bench0, bench1, bench2, calls0, calls1, calls2)
     catch e
@@ -326,19 +326,19 @@ function run_benchmark!(
         # benchmark
         extras = prepare_pullback(f, ba, x, seed)
         bench0 = @be prepare_pullback(f, ba, x, seed) samples = 1 evals = 1
-        bench1 = @be (dx=mysimilar(x), ext=deepcopy(extras)) value_and_pullback!(
+        bench1 = @be (dx=mysimilar(scen.res1), ext=deepcopy(extras)) value_and_pullback!(
             f, _.dx, ba, x, seed, _.ext
         ) evals = 1
-        bench2 = @be (dx=mysimilar(x), ext=deepcopy(extras)) pullback!(
+        bench2 = @be (dx=mysimilar(scen.res1), ext=deepcopy(extras)) pullback!(
             f, _.dx, ba, x, seed, _.ext
         ) evals = 1
         # count
         cc = CallCounter(f)
         extras = prepare_pullback(cc, ba, x, seed)
         calls0 = reset_count!(cc)
-        value_and_pullback!(cc, mysimilar(x), ba, x, seed, extras)
+        value_and_pullback!(cc, mysimilar(scen.res1), ba, x, seed, extras)
         calls1 = reset_count!(cc)
-        pullback!(cc, mysimilar(x), ba, x, seed, extras)
+        pullback!(cc, mysimilar(scen.res1), ba, x, seed, extras)
         calls2 = reset_count!(cc)
         (; bench0, bench1, bench2, calls0, calls1, calls2)
     catch e
@@ -408,19 +408,19 @@ function run_benchmark!(
         extras = prepare_pullback(f!, mysimilar(y), ba, x, seed)
         bench0 = @be mysimilar(y) prepare_pullback(f!, _, ba, x, seed) samples = 1 evals =
             1
-        bench1 = @be (y=mysimilar(y), dx=mysimilar(x), ext=deepcopy(extras)) value_and_pullback!(
+        bench1 = @be (y=mysimilar(y), dx=mysimilar(scen.res1), ext=deepcopy(extras)) value_and_pullback!(
             f!, _.y, _.dx, ba, x, seed, _.ext
         ) evals = 1
-        bench2 = @be (y=mysimilar(y), dx=mysimilar(x), ext=deepcopy(extras)) pullback!(
+        bench2 = @be (y=mysimilar(y), dx=mysimilar(scen.res1), ext=deepcopy(extras)) pullback!(
             f!, _.y, _.dx, ba, x, seed, _.ext
         ) evals = 1
         # count
         cc! = CallCounter(f!)
         extras = prepare_pullback(cc!, mysimilar(y), ba, x, seed)
         calls0 = reset_count!(cc!)
-        value_and_pullback!(cc!, mysimilar(y), mysimilar(x), ba, x, seed, extras)
+        value_and_pullback!(cc!, mysimilar(y), mysimilar(scen.res1), ba, x, seed, extras)
         calls1 = reset_count!(cc!)
-        pullback!(cc!, mysimilar(y), mysimilar(x), ba, x, seed, extras)
+        pullback!(cc!, mysimilar(y), mysimilar(scen.res1), ba, x, seed, extras)
         calls2 = reset_count!(cc!)
         (; bench0, bench1, bench2, calls0, calls1, calls2)
     catch e
@@ -946,14 +946,14 @@ function run_benchmark!(
         # benchmark
         extras = prepare_hvp(f, ba, x, seed)
         bench0 = @be prepare_hvp(f, ba, x, seed) samples = 1 evals = 1
-        bench1 = @be (dg=mysimilar(x), ext=deepcopy(extras)) hvp!(
+        bench1 = @be (dg=mysimilar(scen.res2), ext=deepcopy(extras)) hvp!(
             f, _.dg, ba, x, seed, _.ext
         ) evals = 1
         # count
         cc = CallCounter(f)
         extras = prepare_hvp(cc, ba, x, seed)
         calls0 = reset_count!(cc)
-        hvp!(cc, mysimilar(x), ba, x, seed, extras)
+        hvp!(cc, mysimilar(scen.res2), ba, x, seed, extras)
         calls1 = reset_count!(cc)
         (; bench0, bench1, calls0, calls1)
     catch e

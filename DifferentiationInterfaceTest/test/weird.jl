@@ -21,12 +21,15 @@ using Zygote: Zygote
 
 LOGGING = get(ENV, "CI", "false") == "false"
 
+## Weird arrays
+
 test_differentiation(
-    AutoForwardDiff(),
-    vcat(component_scenarios(), static_scenarios());
-    correctness=true,
-    logging=LOGGING,
+    AutoForwardDiff(), vcat(component_scenarios(), static_scenarios()); logging=LOGGING
 )
+
+test_differentiation(AutoZygote(), gpu_scenarios(); second_order=false, logging=LOGGING)
+
+## Closures
 
 test_differentiation(
     AutoFiniteDiff(),
@@ -35,9 +38,7 @@ test_differentiation(
     logging=LOGGING,
 );
 
-test_differentiation(
-    AutoZygote(), gpu_scenarios(); correctness=true, second_order=false, logging=LOGGING
-)
+## Neural nets
 
 Random.seed!(0)
 
