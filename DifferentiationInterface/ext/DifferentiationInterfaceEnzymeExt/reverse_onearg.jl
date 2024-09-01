@@ -79,7 +79,7 @@ function DI.value_and_pullback(
         return y, SingleTangent(dx_sametype)
     else
         dx = make_zero(x)
-        return DI.value_and_pullback!(f, SingleTangent(dx), backend, x, ty, extras)
+        return DI.value_and_pullback!(f, SingleTangent(dx), extras, backend, x, ty)
     end
 end
 

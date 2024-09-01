@@ -67,7 +67,7 @@ function test_sparsity(ba::AbstractADType, scen::Scenario{:hessian,1,:outofplace
     @compat (; f, x, y) = deepcopy(scen)
     extras = prepare_hessian(f, ba, x)
 
-    hess1 = hessian(f, ba, x, extras)
+    hess1 = hessian(f, extras, ba, x)
     _, _, hess2 = value_gradient_and_hessian(f, extras, ba, x)
 
     @testset "Sparsity pattern" begin

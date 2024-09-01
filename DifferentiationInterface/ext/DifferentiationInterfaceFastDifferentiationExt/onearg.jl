@@ -64,7 +64,7 @@ function DI.value_and_pushforward(
     x,
     tx::Tangents,
 )
-    return f(x), DI.pushforward(f, backend, x, tx, extras)
+    return f(x), DI.pushforward(f, extras, backend, x, tx)
 end
 
 function DI.value_and_pushforward!(
@@ -75,7 +75,7 @@ function DI.value_and_pushforward!(
     x,
     tx::Tangents,
 )
-    return f(x), DI.pushforward!(f, ty, backend, x, tx, extras)
+    return f(x), DI.pushforward!(f, ty, extras, backend, x, tx)
 end
 
 ## Pullback
@@ -142,7 +142,7 @@ function DI.value_and_pullback(
     x,
     ty::Tangents,
 )
-    return f(x), DI.pullback(f, backend, x, ty, extras)
+    return f(x), DI.pullback(f, extras, backend, x, ty)
 end
 
 function DI.value_and_pullback!(
@@ -153,7 +153,7 @@ function DI.value_and_pullback!(
     x,
     ty::Tangents,
 )
-    return f(x), DI.pullback!(f, tx, backend, x, ty, extras)
+    return f(x), DI.pullback!(f, tx, extras, backend, x, ty)
 end
 
 ## Derivative

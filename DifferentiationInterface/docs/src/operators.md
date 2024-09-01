@@ -108,12 +108,11 @@ The idea is that you prepare only once, which can be costly, but then call the o
 
 ```julia
 operator(f, backend, x, [v])  # slow because it includes preparation
-operator(f, backend, x, [v], extras)  # fast because it skips preparation
+operator(f, extras, backend, x, [v])  # fast because it skips preparation
 ```
 
 !!! warning
-    The `extras` object is always mutated when given to an operator, even though it is the last argument.
-    This convention holds regardless of the bang `!` in the operator name.
+    The `extras` object is always mutated, regardless of the bang `!` in the operator name.
 
 ### Reusing preparation
 
