@@ -1,4 +1,10 @@
-zero!(x::AbstractArray) = x .= zero(eltype(x))
+struct ReturnZero{T}
+    template::T
+end
+
+(rz::ReturnZero)(i) = zero(rz.template)
+
+_zero!(x::AbstractArray) = x .= zero(eltype(x))
 
 ## Forward
 
@@ -21,7 +27,7 @@ function value_and_pushforward(
     f, ::AutoZeroForward, x, tx::Tangents{B}, ::NoPushforwardExtras
 ) where {B}
     y = f(x)
-    dys = ntuple(Returns(zero(y)), Val(B))
+    dys = ntuple(ReturnZero(y), Val(B))
     return y, Tangents(dys)
 end
 
@@ -29,16 +35,17 @@ function value_and_pushforward(
     f!, y, ::AutoZeroForward, x, tx::Tangents{B}, ::NoPushforwardExtras
 ) where {B}
     f!(y, x)
-    dys = ntuple(Returns(zero(y)), Val(B))
+    dys = ntuple(ReturnZero(y), Val(B))
     return y, Tangents(dys)
 end
 
 function value_and_pushforward!(
     f, ty::Tangents, ::AutoZeroForward, x, tx::Tangents, ::NoPushforwardExtras
 )
+    error()
     y = f(x)
     for b in eachindex(ty.d)
-        zero!(ty.d[b])
+        _zero!(ty.d[b])
     end
     return y, ty
 end
@@ -46,9 +53,10 @@ end
 function value_and_pushforward!(
     f!, y, ty::Tangents, ::AutoZeroForward, x, tx::Tangents, ::NoPushforwardExtras
 )
+    error()
     f!(y, x)
     for b in eachindex(ty.d)
-        zero!(ty.d[b])
+        _zero!(ty.d[b])
     end
     return y, ty
 end
@@ -74,7 +82,7 @@ function value_and_pullback(
     f, ::AutoZeroReverse, x, ty::Tangents{B}, ::NoPullbackExtras
 ) where {B}
     y = f(x)
-    dxs = ntuple(Returns(zero(x)), Val(B))
+    dxs = ntuple(ReturnZero(x), Val(B))
     return y, Tangents(dxs)
 end
 
@@ -82,7 +90,7 @@ function value_and_pullback(
     f!, y, ::AutoZeroReverse, x, ty::Tangents{B}, ::NoPullbackExtras
 ) where {B}
     f!(y, x)
-    dxs = ntuple(Returns(zero(x)), Val(B))
+    dxs = ntuple(ReturnZero(x), Val(B))
     return y, Tangents(dxs)
 end
 
@@ -91,7 +99,7 @@ function value_and_pullback!(
 )
     y = f(x)
     for b in eachindex(tx.d)
-        zero!(tx.d[b])
+        _zero!(tx.d[b])
     end
     return y, tx
 end
@@ -101,7 +109,7 @@ function value_and_pullback!(
 )
     f!(y, x)
     for b in eachindex(tx.d)
-        zero!(tx.d[b])
+        _zero!(tx.d[b])
     end
     return y, tx
 end
