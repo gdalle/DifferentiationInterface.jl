@@ -3,7 +3,7 @@
 DI.prepare_pullback(f, ::AutoReverseDiff, x, ty::Tangents) = NoPullbackExtras()
 
 function DI.value_and_pullback(
-    f, ::AutoReverseDiff, x::AbstractArray, ty::Tangents, ::NoPullbackExtras
+    f, ::NoPullbackExtras, ::AutoReverseDiff, x::AbstractArray, ty::Tangents
 )
     y = f(x)
     dxs = map(ty.d) do dy
@@ -17,7 +17,7 @@ function DI.value_and_pullback(
 end
 
 function DI.value_and_pullback!(
-    f, tx::Tangents, ::AutoReverseDiff, x::AbstractArray, ty::Tangents, ::NoPullbackExtras
+    f, ::NoPullbackExtras, tx::Tangents, ::AutoReverseDiff, x::AbstractArray, ty::Tangents
 )
     y = f(x)
     for b in eachindex(tx.d, ty.d)
@@ -33,7 +33,7 @@ function DI.value_and_pullback!(
 end
 
 function DI.value_and_pullback(
-    f, backend::AutoReverseDiff, x::Number, ty::Tangents, ::NoPullbackExtras
+    f, ::NoPullbackExtras, backend::AutoReverseDiff, x::Number, ty::Tangents
 )
     x_array = [x]
     f_array = f ∘ only
@@ -60,9 +60,9 @@ end
 function DI.value_and_gradient!(
     f,
     grad::AbstractArray,
+    extras::ReverseDiffGradientExtras,
     ::AutoReverseDiff,
     x::AbstractArray,
-    extras::ReverseDiffGradientExtras,
 )
     y = f(x)  # TODO: remove once ReverseDiff#251 is fixed
     result = MutableDiffResult(y, (grad,))
@@ -71,24 +71,24 @@ function DI.value_and_gradient!(
 end
 
 function DI.value_and_gradient(
-    f, backend::AutoReverseDiff, x::AbstractArray, extras::ReverseDiffGradientExtras
+    f, extras::ReverseDiffGradientExtras, backend::AutoReverseDiff, x::AbstractArray
 )
     grad = similar(x)
-    return DI.value_and_gradient!(f, grad, backend, x, extras)
+    return DI.value_and_gradient!(f, grad, extras, backend, x)
 end
 
 function DI.gradient!(
     _f,
     grad::AbstractArray,
+    extras::ReverseDiffGradientExtras,
     ::AutoReverseDiff,
     x::AbstractArray,
-    extras::ReverseDiffGradientExtras,
 )
     return gradient!(grad, extras.tape, x)
 end
 
 function DI.gradient(
-    _f, ::AutoReverseDiff, x::AbstractArray, extras::ReverseDiffGradientExtras
+    _f, extras::ReverseDiffGradientExtras, ::AutoReverseDiff, x::AbstractArray
 )
     return gradient!(extras.tape, x)
 end
@@ -112,9 +112,9 @@ end
 function DI.value_and_jacobian!(
     f,
     jac::AbstractMatrix,
+    extras::ReverseDiffOneArgJacobianExtras,
     ::AutoReverseDiff,
     x::AbstractArray,
-    extras::ReverseDiffOneArgJacobianExtras,
 )
     y = f(x)
     result = MutableDiffResult(y, (jac,))
@@ -123,7 +123,7 @@ function DI.value_and_jacobian!(
 end
 
 function DI.value_and_jacobian(
-    f, ::AutoReverseDiff, x::AbstractArray, extras::ReverseDiffOneArgJacobianExtras
+    f, extras::ReverseDiffOneArgJacobianExtras, ::AutoReverseDiff, x::AbstractArray
 )
     return f(x), jacobian!(extras.tape, x)
 end
@@ -131,15 +131,15 @@ end
 function DI.jacobian!(
     _f,
     jac::AbstractMatrix,
+    extras::ReverseDiffOneArgJacobianExtras,
     ::AutoReverseDiff,
     x::AbstractArray,
-    extras::ReverseDiffOneArgJacobianExtras,
 )
     return jacobian!(jac, extras.tape, x)
 end
 
 function DI.jacobian(
-    f, ::AutoReverseDiff, x::AbstractArray, extras::ReverseDiffOneArgJacobianExtras
+    f, extras::ReverseDiffOneArgJacobianExtras, ::AutoReverseDiff, x::AbstractArray
 )
     return jacobian!(extras.tape, x)
 end
@@ -161,15 +161,15 @@ end
 function DI.hessian!(
     _f,
     hess::AbstractMatrix,
+    extras::ReverseDiffHessianExtras,
     ::AutoReverseDiff,
     x::AbstractArray,
-    extras::ReverseDiffHessianExtras,
 )
     return hessian!(hess, extras.tape, x)
 end
 
 function DI.hessian(
-    _f, ::AutoReverseDiff, x::AbstractArray, extras::ReverseDiffHessianExtras
+    _f, extras::ReverseDiffHessianExtras, ::AutoReverseDiff, x::AbstractArray
 )
     return hessian!(extras.tape, x)
 end
@@ -178,9 +178,9 @@ function DI.value_gradient_and_hessian!(
     f,
     grad,
     hess::AbstractMatrix,
+    extras::ReverseDiffHessianExtras,
     ::AutoReverseDiff,
     x::AbstractArray,
-    extras::ReverseDiffHessianExtras,
 )
     y = f(x)  # TODO: remove once ReverseDiff#251 is fixed
     result = MutableDiffResult(y, (grad, hess))
@@ -191,7 +191,7 @@ function DI.value_gradient_and_hessian!(
 end
 
 function DI.value_gradient_and_hessian(
-    f, ::AutoReverseDiff, x::AbstractArray, extras::ReverseDiffHessianExtras
+    f, extras::ReverseDiffHessianExtras, ::AutoReverseDiff, x::AbstractArray
 )
     y = f(x)  # TODO: remove once ReverseDiff#251 is fixed
     result = MutableDiffResult(y, (similar(x), similar(x, length(x), length(x))))

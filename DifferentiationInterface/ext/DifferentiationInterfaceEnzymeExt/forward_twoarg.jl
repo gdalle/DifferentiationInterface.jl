@@ -9,13 +9,13 @@ end
 function DI.value_and_pushforward(
     f!,
     y,
+    extras::NoPushforwardExtras,
     backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
     tx::Tangents,
-    extras::NoPushforwardExtras,
 )
     dys = map(tx.d) do dx
-        DI.pushforward(f!, y, backend, x, dx, extras)
+        DI.pushforward(f!, y, extras, backend, x, dx)
     end
     f!(y, x)
     return y, Tangents(dys)
@@ -24,10 +24,10 @@ end
 function DI.value_and_pushforward(
     f!,
     y,
+    ::NoPushforwardExtras,
     backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
     tx::Tangents{1},
-    ::NoPushforwardExtras,
 )
     dx = only(tx)
     f!_and_df! = get_f_and_df(f!, backend)

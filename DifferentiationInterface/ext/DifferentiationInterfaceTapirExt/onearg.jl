@@ -17,17 +17,17 @@ function DI.prepare_pullback(f, backend::AutoTapir, x, ty::Tangents)
 end
 
 function DI.value_and_pullback(
-    f, backend::AutoTapir, x, ty::Tangents, extras::TapirOneArgPullbackExtras
+    f, extras::TapirOneArgPullbackExtras, backend::AutoTapir, x, ty::Tangents
 )
     y = f(x)
     dxs = map(ty.d) do dy
-        only(DI.pullback(f, backend, x, SingleTangent(dy), extras))
+        only(DI.pullback(f, extras, backend, x, SingleTangent(dy)))
     end
     return y, Tangents(dxs)
 end
 
 function DI.value_and_pullback(
-    f, ::AutoTapir, x, ty::Tangents{1}, extras::TapirOneArgPullbackExtras{Y}
+    f, extras::TapirOneArgPullbackExtras{Y}, ::AutoTapir, x, ty::Tangents{1}
 ) where {Y}
     dy = only(ty)
     dy_righttype = convert(tangent_type(Y), dy)
@@ -36,7 +36,7 @@ function DI.value_and_pullback(
 end
 
 function DI.value_and_pullback!(
-    f, tx::Tangents, ::AutoTapir, x, ty::Tangents{1}, extras::TapirOneArgPullbackExtras{Y}
+    f, extras::TapirOneArgPullbackExtras{Y}, tx::Tangents, ::AutoTapir, x, ty::Tangents{1}
 ) where {Y}
     dx, dy = only(tx), only(ty)
     dy_righttype = convert(tangent_type(Y), dy)
@@ -49,13 +49,13 @@ function DI.value_and_pullback!(
 end
 
 function DI.pullback(
-    f, backend::AutoTapir, x, ty::Tangents, extras::TapirOneArgPullbackExtras
+    f, extras::TapirOneArgPullbackExtras, backend::AutoTapir, x, ty::Tangents
 )
-    return DI.value_and_pullback(f, backend, x, ty, extras)[2]
+    return DI.value_and_pullback(f, extras, backend, x, ty)[2]
 end
 
 function DI.pullback!(
-    f, tx::Tangents, backend::AutoTapir, x, ty::Tangents, extras::TapirOneArgPullbackExtras
+    f, tx::Tangents, extras::TapirOneArgPullbackExtras, backend::AutoTapir, x, ty::Tangents
 )
-    return DI.value_and_pullback!(f, tx, backend, x, ty, extras)[2]
+    return DI.value_and_pullback!(f, tx, extras, backend, x, ty)[2]
 end

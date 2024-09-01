@@ -8,13 +8,13 @@ end
 
 function DI.value_and_pullback(
     f,
+    extras::NoPullbackExtras,
     backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
     ty::Tangents,
-    extras::NoPullbackExtras,
 )
     dxs = map(ty.d) do dy
-        only(DI.pullback(f, backend, x, SingleTangent(dy), extras))
+        only(DI.pullback(f, extras, backend, x, SingleTangent(dy)))
     end
     y = f(x)
     return y, Tangents(dxs)
@@ -24,10 +24,10 @@ end
 
 function DI.value_and_pullback(
     f,
+    ::NoPullbackExtras,
     backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},function_annotation},
     x::Number,
     ty::Tangents{1},
-    ::NoPullbackExtras,
 ) where {function_annotation}
     if eltype(ty) <: Number
         dy = only(ty)
@@ -57,10 +57,10 @@ end
 
 function DI.value_and_pullback(
     f,
+    extras::NoPullbackExtras,
     backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},function_annotation},
     x,
     ty::Tangents{1},
-    extras::NoPullbackExtras,
 ) where {function_annotation}
     if eltype(ty) <: Number
         dy = only(ty)
@@ -85,12 +85,12 @@ end
 
 function DI.pullback(
     f,
+    extras::NoPullbackExtras,
     backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
     ty::Tangents,
-    extras::NoPullbackExtras,
 )
-    return DI.value_and_pullback(f, backend, x, ty, extras)[2]
+    return DI.value_and_pullback(f, extras, backend, x, ty)[2]
 end
 
 ### In-place
@@ -98,10 +98,10 @@ end
 function DI.value_and_pullback!(
     f,
     tx::Tangents{1},
+    ::NoPullbackExtras,
     backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},function_annotation},
     x,
     ty::Tangents{1},
-    ::NoPullbackExtras,
 ) where {function_annotation}
     if eltype(ty) <: Number
         dx, dy = only(tx), only(ty)
@@ -143,12 +143,12 @@ end
 function DI.pullback!(
     f,
     tx::Tangents,
+    extras::NoPullbackExtras,
     backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
     ty::Tangents,
-    extras::NoPullbackExtras,
 )
-    return DI.value_and_pullback!(f, tx, backend, x, ty, extras)[2]
+    return DI.value_and_pullback!(f, tx, extras, backend, x, ty)[2]
 end
 
 ## Gradient
@@ -161,9 +161,9 @@ end
 
 function DI.gradient(
     f,
+    ::NoGradientExtras,
     backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}},
     x,
-    ::NoGradientExtras,
 )
     f_and_df = get_f_and_df(f, backend)
     if backend isa AutoDeferredEnzyme
@@ -178,9 +178,9 @@ end
 function DI.gradient!(
     f,
     grad,
+    ::NoGradientExtras,
     backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}},
     x,
-    ::NoGradientExtras,
 )
     f_and_df = get_f_and_df(f, backend)
     grad_sametype = convert(typeof(x), grad)
@@ -197,21 +197,21 @@ end
 
 function DI.value_and_gradient(
     f,
+    ::NoGradientExtras,
     backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}},
     x,
-    ::NoGradientExtras,
 )
-    return DI.value_and_pullback(f, backend, x, true, NoPullbackExtras())
+    return DI.value_and_pullback(f, NoPullbackExtras(), backend, x, true)
 end
 
 function DI.value_and_gradient!(
     f,
     grad,
+    ::NoGradientExtras,
     backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}},
     x,
-    ::NoGradientExtras,
 )
-    return DI.value_and_pullback!(f, grad, backend, x, true, NoPullbackExtras())
+    return DI.value_and_pullback!(f, grad, NoPullbackExtras(), backend, x, true)
 end
 
 ## Jacobian

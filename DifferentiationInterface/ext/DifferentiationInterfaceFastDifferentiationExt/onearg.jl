@@ -25,10 +25,10 @@ end
 
 function DI.pushforward(
     f,
+    extras::FastDifferentiationOneArgPushforwardExtras,
     ::AutoFastDifferentiation,
     x,
     tx::Tangents,
-    extras::FastDifferentiationOneArgPushforwardExtras,
 )
     dys = map(tx.d) do dx
         v_vec = vcat(myvec(x), myvec(dx))
@@ -44,10 +44,10 @@ end
 function DI.pushforward!(
     f,
     ty::Tangents,
+    extras::FastDifferentiationOneArgPushforwardExtras,
     ::AutoFastDifferentiation,
     x,
     tx::Tangents,
-    extras::FastDifferentiationOneArgPushforwardExtras,
 )
     for b in eachindex(tx.d, ty.d)
         dx, dy = tx.d[b], ty.d[b]
@@ -59,10 +59,10 @@ end
 
 function DI.value_and_pushforward(
     f,
+    extras::FastDifferentiationOneArgPushforwardExtras,
     backend::AutoFastDifferentiation,
     x,
     tx::Tangents,
-    extras::FastDifferentiationOneArgPushforwardExtras,
 )
     return f(x), DI.pushforward(f, backend, x, tx, extras)
 end
@@ -70,10 +70,10 @@ end
 function DI.value_and_pushforward!(
     f,
     ty::Tangents,
+    extras::FastDifferentiationOneArgPushforwardExtras,
     backend::AutoFastDifferentiation,
     x,
     tx::Tangents,
-    extras::FastDifferentiationOneArgPushforwardExtras,
 )
     return f(x), DI.pushforward!(f, ty, backend, x, tx, extras)
 end
@@ -103,10 +103,10 @@ end
 
 function DI.pullback(
     f,
+    extras::FastDifferentiationOneArgPullbackExtras,
     ::AutoFastDifferentiation,
     x,
     ty::Tangents,
-    extras::FastDifferentiationOneArgPullbackExtras,
 )
     dxs = map(ty.d) do dy
         v_vec = vcat(myvec(x), myvec(dy))
@@ -122,10 +122,10 @@ end
 function DI.pullback!(
     f,
     tx::Tangents,
+    extras::FastDifferentiationOneArgPullbackExtras,
     ::AutoFastDifferentiation,
     x,
     ty::Tangents,
-    extras::FastDifferentiationOneArgPullbackExtras,
 )
     for b in eachindex(tx.d, ty.d)
         dx, dy = tx.d[b], ty.d[b]
@@ -137,10 +137,10 @@ end
 
 function DI.value_and_pullback(
     f,
+    extras::FastDifferentiationOneArgPullbackExtras,
     backend::AutoFastDifferentiation,
     x,
     ty::Tangents,
-    extras::FastDifferentiationOneArgPullbackExtras,
 )
     return f(x), DI.pullback(f, backend, x, ty, extras)
 end
@@ -148,10 +148,10 @@ end
 function DI.value_and_pullback!(
     f,
     tx::Tangents,
+    extras::FastDifferentiationOneArgPullbackExtras,
     backend::AutoFastDifferentiation,
     x,
     ty::Tangents,
-    extras::FastDifferentiationOneArgPullbackExtras,
 )
     return f(x), DI.pullback!(f, tx, backend, x, ty, extras)
 end
@@ -178,7 +178,7 @@ function DI.prepare_derivative(f, ::AutoFastDifferentiation, x)
 end
 
 function DI.derivative(
-    f, ::AutoFastDifferentiation, x, extras::FastDifferentiationOneArgDerivativeExtras
+    f, extras::FastDifferentiationOneArgDerivativeExtras, ::AutoFastDifferentiation, x
 )
     if extras.y_prototype isa Number
         return only(extras.der_exe(monovec(x)))
@@ -188,7 +188,7 @@ function DI.derivative(
 end
 
 function DI.derivative!(
-    f, der, ::AutoFastDifferentiation, x, extras::FastDifferentiationOneArgDerivativeExtras
+    f, der, extras::FastDifferentiationOneArgDerivativeExtras, ::AutoFastDifferentiation, x
 )
     extras.der_exe!(vec(der), monovec(x))
     return der
@@ -196,21 +196,21 @@ end
 
 function DI.value_and_derivative(
     f,
+    extras::FastDifferentiationOneArgDerivativeExtras,
     backend::AutoFastDifferentiation,
     x,
-    extras::FastDifferentiationOneArgDerivativeExtras,
 )
-    return f(x), DI.derivative(f, backend, x, extras)
+    return f(x), DI.derivative(f, extras, backend, x)
 end
 
 function DI.value_and_derivative!(
     f,
     der,
+    extras::FastDifferentiationOneArgDerivativeExtras,
     backend::AutoFastDifferentiation,
     x,
-    extras::FastDifferentiationOneArgDerivativeExtras,
 )
-    return f(x), DI.derivative!(f, der, backend, x, extras)
+    return f(x), DI.derivative!(f, der, extras, x, backend)
 end
 
 ## Gradient
@@ -233,7 +233,7 @@ function DI.prepare_gradient(f, backend::AutoFastDifferentiation, x)
 end
 
 function DI.gradient(
-    f, ::AutoFastDifferentiation, x, extras::FastDifferentiationOneArgGradientExtras
+    f, extras::FastDifferentiationOneArgGradientExtras, ::AutoFastDifferentiation, x
 )
     jac = extras.jac_exe(vec(x))
     grad_vec = @view jac[1, :]
@@ -241,26 +241,26 @@ function DI.gradient(
 end
 
 function DI.gradient!(
-    f, grad, ::AutoFastDifferentiation, x, extras::FastDifferentiationOneArgGradientExtras
+    f, grad, extras::FastDifferentiationOneArgGradientExtras, ::AutoFastDifferentiation, x
 )
     extras.jac_exe!(reshape(grad, 1, length(grad)), vec(x))
     return grad
 end
 
 function DI.value_and_gradient(
-    f, backend::AutoFastDifferentiation, x, extras::FastDifferentiationOneArgGradientExtras
+    f, extras::FastDifferentiationOneArgGradientExtras, backend::AutoFastDifferentiation, x
 )
-    return f(x), DI.gradient(f, backend, x, extras)
+    return f(x), DI.gradient(f, extras, backend, x)
 end
 
 function DI.value_and_gradient!(
     f,
     grad,
+    extras::FastDifferentiationOneArgGradientExtras,
     backend::AutoFastDifferentiation,
     x,
-    extras::FastDifferentiationOneArgGradientExtras,
 )
-    return f(x), DI.gradient!(f, grad, backend, x, extras)
+    return f(x), DI.gradient!(f, grad, extras, backend, x)
 end
 
 ## Jacobian
@@ -292,9 +292,9 @@ end
 
 function DI.jacobian(
     f,
+    extras::FastDifferentiationOneArgJacobianExtras,
     ::Union{AutoFastDifferentiation,AutoSparse{<:AutoFastDifferentiation}},
     x,
-    extras::FastDifferentiationOneArgJacobianExtras,
 )
     return extras.jac_exe(vec(x))
 end
@@ -302,9 +302,9 @@ end
 function DI.jacobian!(
     f,
     jac,
+    extras::FastDifferentiationOneArgJacobianExtras,
     ::Union{AutoFastDifferentiation,AutoSparse{<:AutoFastDifferentiation}},
     x,
-    extras::FastDifferentiationOneArgJacobianExtras,
 )
     extras.jac_exe!(jac, vec(x))
     return jac
@@ -312,21 +312,21 @@ end
 
 function DI.value_and_jacobian(
     f,
+    extras::FastDifferentiationOneArgJacobianExtras,
     backend::Union{AutoFastDifferentiation,AutoSparse{<:AutoFastDifferentiation}},
     x,
-    extras::FastDifferentiationOneArgJacobianExtras,
 )
-    return f(x), DI.jacobian(f, backend, x, extras)
+    return f(x), DI.jacobian(f, extras, backend, x)
 end
 
 function DI.value_and_jacobian!(
     f,
     jac,
+    extras::FastDifferentiationOneArgJacobianExtras,
     backend::Union{AutoFastDifferentiation,AutoSparse{<:AutoFastDifferentiation}},
     x,
-    extras::FastDifferentiationOneArgJacobianExtras,
 )
-    return f(x), DI.jacobian!(f, jac, backend, x, extras)
+    return f(x), DI.jacobian!(f, jac, extras, backend, x)
 end
 
 ## Second derivative
@@ -359,9 +359,9 @@ end
 
 function DI.second_derivative(
     f,
+    extras::FastDifferentiationAllocatingSecondDerivativeExtras,
     ::AutoFastDifferentiation,
     x,
-    extras::FastDifferentiationAllocatingSecondDerivativeExtras,
 )
     if extras.y_prototype isa Number
         return only(extras.der2_exe(monovec(x)))
@@ -373,9 +373,9 @@ end
 function DI.second_derivative!(
     f,
     der2,
+    extras::FastDifferentiationAllocatingSecondDerivativeExtras,
     backend::AutoFastDifferentiation,
     x,
-    extras::FastDifferentiationAllocatingSecondDerivativeExtras,
 )
     extras.der2_exe!(vec(der2), monovec(x))
     return der2
@@ -383,12 +383,12 @@ end
 
 function DI.value_derivative_and_second_derivative(
     f,
+    extras::FastDifferentiationAllocatingSecondDerivativeExtras,
     backend::AutoFastDifferentiation,
     x,
-    extras::FastDifferentiationAllocatingSecondDerivativeExtras,
 )
-    y, der = DI.value_and_derivative(f, backend, x, extras.derivative_extras)
-    der2 = DI.second_derivative(f, backend, x, extras)
+    y, der = DI.value_and_derivative(f, extras.derivative_extras, backend, x)
+    der2 = DI.second_derivative(f, extras, backend, x)
     return y, der, der2
 end
 
@@ -396,12 +396,12 @@ function DI.value_derivative_and_second_derivative!(
     f,
     der,
     der2,
+    extras::FastDifferentiationAllocatingSecondDerivativeExtras,
     backend::AutoFastDifferentiation,
     x,
-    extras::FastDifferentiationAllocatingSecondDerivativeExtras,
 )
-    y, _ = DI.value_and_derivative!(f, der, backend, x, extras.derivative_extras)
-    DI.second_derivative!(f, der2, backend, x, extras)
+    y, _ = DI.value_and_derivative!(f, der, extras.derivative_extras, backend, x)
+    DI.second_derivative!(f, der2, extras, backend, x)
     return y, der, der2
 end
 
@@ -424,7 +424,7 @@ function DI.prepare_hvp(f, ::AutoFastDifferentiation, x, tx::Tangents)
 end
 
 function DI.hvp(
-    f, ::AutoFastDifferentiation, x, tx::Tangents, extras::FastDifferentiationHVPExtras
+    f, extras::FastDifferentiationHVPExtras, ::AutoFastDifferentiation, x, tx::Tangents
 )
     dgs = map(tx.d) do dx
         v_vec = vcat(vec(x), vec(dx))
@@ -437,10 +437,10 @@ end
 function DI.hvp!(
     f,
     tg::Tangents,
+    extras::FastDifferentiationHVPExtras,
     ::AutoFastDifferentiation,
     x,
     tx::Tangents,
-    extras::FastDifferentiationHVPExtras,
 )
     for b in eachindex(tx.d, tg.d)
         dx, dg = tx.d[b], tg.d[b]
@@ -480,9 +480,9 @@ end
 
 function DI.hessian(
     f,
+    extras::FastDifferentiationHessianExtras,
     backend::Union{AutoFastDifferentiation,AutoSparse{<:AutoFastDifferentiation}},
     x,
-    extras::FastDifferentiationHessianExtras,
 )
     return extras.hess_exe(vec(x))
 end
@@ -490,9 +490,9 @@ end
 function DI.hessian!(
     f,
     hess,
+    extras::FastDifferentiationHessianExtras,
     backend::Union{AutoFastDifferentiation,AutoSparse{<:AutoFastDifferentiation}},
     x,
-    extras::FastDifferentiationHessianExtras,
 )
     extras.hess_exe!(hess, vec(x))
     return hess
@@ -500,12 +500,12 @@ end
 
 function DI.value_gradient_and_hessian(
     f,
+    extras::FastDifferentiationHessianExtras,
     backend::Union{AutoFastDifferentiation,AutoSparse{<:AutoFastDifferentiation}},
     x,
-    extras::FastDifferentiationHessianExtras,
 )
-    y, grad = DI.value_and_gradient(f, maybe_dense_ad(backend), x, extras.gradient_extras)
-    hess = DI.hessian(f, backend, x, extras)
+    y, grad = DI.value_and_gradient(f, extras.gradient_extras, maybe_dense_ad(backend), x)
+    hess = DI.hessian(f, extras, backend, x)
     return y, grad, hess
 end
 
@@ -513,13 +513,13 @@ function DI.value_gradient_and_hessian!(
     f,
     grad,
     hess,
+    extras::FastDifferentiationHessianExtras,
     backend::Union{AutoFastDifferentiation,AutoSparse{<:AutoFastDifferentiation}},
     x,
-    extras::FastDifferentiationHessianExtras,
 )
     y, _ = DI.value_and_gradient!(
-        f, grad, maybe_dense_ad(backend), x, extras.gradient_extras
+        f, grad, extras.gradient_extras, maybe_dense_ad(backend), x
     )
-    DI.hessian!(f, hess, backend, x, extras)
+    DI.hessian!(f, hess, extras, backend, x)
     return y, grad, hess
 end

@@ -25,10 +25,10 @@ end
 function DI.pushforward(
     f!,
     y,
+    extras::FastDifferentiationTwoArgPushforwardExtras,
     ::AutoFastDifferentiation,
     x,
     tx::Tangents,
-    extras::FastDifferentiationTwoArgPushforwardExtras,
 )
     dys = map(tx.d) do dx
         v_vec = vcat(myvec(x), myvec(dx))
@@ -41,10 +41,10 @@ function DI.pushforward!(
     f!,
     y,
     ty::Tangents,
+    extras::FastDifferentiationTwoArgPushforwardExtras,
     ::AutoFastDifferentiation,
     x,
     tx::Tangents,
-    extras::FastDifferentiationTwoArgPushforwardExtras,
 )
     for b in eachindex(tx.d, ty.d)
         dx, dy = tx.d[b], ty.d[b]
@@ -62,7 +62,7 @@ function DI.value_and_pushforward(
     tx::Tangents,
     extras::FastDifferentiationTwoArgPushforwardExtras,
 )
-    ty = DI.pushforward(f!, y, backend, x, tx, extras)
+    ty = DI.pushforward(f!, y, extras, backend, x, tx)
     f!(y, x)
     return y, ty
 end
@@ -71,12 +71,12 @@ function DI.value_and_pushforward!(
     f!,
     y,
     ty::Tangents,
+    extras::FastDifferentiationTwoArgPushforwardExtras,
     backend::AutoFastDifferentiation,
     x,
     tx::Tangents,
-    extras::FastDifferentiationTwoArgPushforwardExtras,
 )
-    DI.pushforward!(f!, y, ty, backend, x, tx, extras)
+    DI.pushforward!(f!, y, ty, extras, backend, x, tx)
     f!(y, x)
     return y, ty
 end
@@ -108,10 +108,10 @@ end
 function DI.pullback(
     f!,
     y,
+    extras::FastDifferentiationTwoArgPullbackExtras,
     ::AutoFastDifferentiation,
     x,
     ty::Tangents,
-    extras::FastDifferentiationTwoArgPullbackExtras,
 )
     dxs = map(ty.d) do dy
         v_vec = vcat(myvec(x), myvec(dy))
@@ -128,10 +128,10 @@ function DI.pullback!(
     f!,
     y,
     tx::Tangents,
+    extras::FastDifferentiationTwoArgPullbackExtras,
     ::AutoFastDifferentiation,
     x,
     ty::Tangents,
-    extras::FastDifferentiationTwoArgPullbackExtras,
 )
     for b in eachindex(tx.d, ty.d)
         dx, dy = tx.d[b], ty.d[b]
@@ -144,12 +144,12 @@ end
 function DI.value_and_pullback(
     f!,
     y,
+    extras::FastDifferentiationTwoArgPullbackExtras,
     backend::AutoFastDifferentiation,
     x,
     ty::Tangents,
-    extras::FastDifferentiationTwoArgPullbackExtras,
 )
-    tx = DI.pullback(f!, y, backend, x, ty, extras)
+    tx = DI.pullback(f!, y, extras, backend, x, ty)
     f!(y, x)
     return y, tx
 end
@@ -158,12 +158,12 @@ function DI.value_and_pullback!(
     f!,
     y,
     tx::Tangents,
+    extras::FastDifferentiationTwoArgPullbackExtras,
     backend::AutoFastDifferentiation,
     x,
     ty::Tangents,
-    extras::FastDifferentiationTwoArgPullbackExtras,
 )
-    DI.pullback!(f!, y, tx, backend, x, ty, extras)
+    DI.pullback!(f!, y, tx, extras, backend, x, ty)
     f!(y, x)
     return y, tx
 end
@@ -189,7 +189,7 @@ function DI.prepare_derivative(f!, y, ::AutoFastDifferentiation, x)
 end
 
 function DI.value_and_derivative(
-    f!, y, ::AutoFastDifferentiation, x, extras::FastDifferentiationTwoArgDerivativeExtras
+    f!, y, extras::FastDifferentiationTwoArgDerivativeExtras, ::AutoFastDifferentiation, x
 )
     f!(y, x)
     der = reshape(extras.der_exe(monovec(x)), size(y))
@@ -200,9 +200,9 @@ function DI.value_and_derivative!(
     f!,
     y,
     der,
+    extras::FastDifferentiationTwoArgDerivativeExtras,
     ::AutoFastDifferentiation,
     x,
-    extras::FastDifferentiationTwoArgDerivativeExtras,
 )
     f!(y, x)
     extras.der_exe!(der, monovec(x))
@@ -210,7 +210,7 @@ function DI.value_and_derivative!(
 end
 
 function DI.derivative(
-    f!, y, ::AutoFastDifferentiation, x, extras::FastDifferentiationTwoArgDerivativeExtras
+    f!, y, extras::FastDifferentiationTwoArgDerivativeExtras, ::AutoFastDifferentiation, x
 )
     der = reshape(extras.der_exe(monovec(x)), size(y))
     return der
@@ -220,9 +220,9 @@ function DI.derivative!(
     f!,
     y,
     der,
+    extras::FastDifferentiationTwoArgDerivativeExtras,
     ::AutoFastDifferentiation,
     x,
-    extras::FastDifferentiationTwoArgDerivativeExtras,
 )
     extras.der_exe!(der, monovec(x))
     return der
@@ -257,9 +257,9 @@ end
 function DI.value_and_jacobian(
     f!,
     y,
+    extras::FastDifferentiationTwoArgJacobianExtras,
     ::Union{AutoFastDifferentiation,AutoSparse{<:AutoFastDifferentiation}},
     x,
-    extras::FastDifferentiationTwoArgJacobianExtras,
 )
     f!(y, x)
     jac = extras.jac_exe(vec(x))
@@ -270,9 +270,9 @@ function DI.value_and_jacobian!(
     f!,
     y,
     jac,
+    extras::FastDifferentiationTwoArgJacobianExtras,
     ::Union{AutoFastDifferentiation,AutoSparse{<:AutoFastDifferentiation}},
     x,
-    extras::FastDifferentiationTwoArgJacobianExtras,
 )
     f!(y, x)
     extras.jac_exe!(jac, vec(x))
@@ -282,9 +282,9 @@ end
 function DI.jacobian(
     f!,
     y,
+    extras::FastDifferentiationTwoArgJacobianExtras,
     ::Union{AutoFastDifferentiation,AutoSparse{<:AutoFastDifferentiation}},
     x,
-    extras::FastDifferentiationTwoArgJacobianExtras,
 )
     jac = extras.jac_exe(vec(x))
     return jac
@@ -294,9 +294,9 @@ function DI.jacobian!(
     f!,
     y,
     jac,
+    extras::FastDifferentiationTwoArgJacobianExtras,
     ::Union{AutoFastDifferentiation,AutoSparse{<:AutoFastDifferentiation}},
     x,
-    extras::FastDifferentiationTwoArgJacobianExtras,
 )
     extras.jac_exe!(jac, vec(x))
     return jac

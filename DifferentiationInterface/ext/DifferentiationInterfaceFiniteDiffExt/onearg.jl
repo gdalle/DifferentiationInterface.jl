@@ -2,7 +2,7 @@
 
 DI.prepare_pushforward(f, ::AutoFiniteDiff, x, tx::Tangents) = NoPushforwardExtras()
 
-function DI.pushforward(f, backend::AutoFiniteDiff, x, tx::Tangents, ::NoPushforwardExtras)
+function DI.pushforward(f, ::NoPushforwardExtras, backend::AutoFiniteDiff, x, tx::Tangents)
     dys = map(tx.d) do dx
         step(t::Number) = f(x .+ t .* dx)
         finite_difference_derivative(step, zero(eltype(x)), fdtype(backend))
@@ -11,7 +11,7 @@ function DI.pushforward(f, backend::AutoFiniteDiff, x, tx::Tangents, ::NoPushfor
 end
 
 function DI.value_and_pushforward(
-    f, backend::AutoFiniteDiff, x, tx::Tangents, ::NoPushforwardExtras
+    f, ::NoPushforwardExtras, backend::AutoFiniteDiff, x, tx::Tangents
 )
     y = f(x)
     dys = map(tx.d) do dx
@@ -41,13 +41,13 @@ end
 ### Scalar to scalar
 
 function DI.derivative(
-    f, backend::AutoFiniteDiff, x, ::FiniteDiffOneArgDerivativeExtras{Nothing}
+    f, ::FiniteDiffOneArgDerivativeExtras{Nothing}, backend::AutoFiniteDiff, x
 )
     return finite_difference_derivative(f, x, fdtype(backend))
 end
 
 function DI.value_and_derivative(
-    f, backend::AutoFiniteDiff, x, ::FiniteDiffOneArgDerivativeExtras{Nothing}
+    f, ::FiniteDiffOneArgDerivativeExtras{Nothing}, backend::AutoFiniteDiff, x
 )
     y = f(x)
     return y, finite_difference_derivative(f, x, fdtype(backend), eltype(y), y)
@@ -56,26 +56,26 @@ end
 ### Scalar to array
 
 function DI.derivative(
-    f, ::AutoFiniteDiff, x, extras::FiniteDiffOneArgDerivativeExtras{<:GradientCache}
+    f, extras::FiniteDiffOneArgDerivativeExtras{<:GradientCache}, ::AutoFiniteDiff, x
 )
     return finite_difference_gradient(f, x, extras.cache)
 end
 
 function DI.derivative!(
-    f, der, ::AutoFiniteDiff, x, extras::FiniteDiffOneArgDerivativeExtras{<:GradientCache}
+    f, der, extras::FiniteDiffOneArgDerivativeExtras{<:GradientCache}, ::AutoFiniteDiff, x
 )
     return finite_difference_gradient!(der, f, x, extras.cache)
 end
 
 function DI.value_and_derivative(
-    f, ::AutoFiniteDiff, x, extras::FiniteDiffOneArgDerivativeExtras{<:GradientCache}
+    f, extras::FiniteDiffOneArgDerivativeExtras{<:GradientCache}, ::AutoFiniteDiff, x
 )
     y = f(x)
     return y, finite_difference_gradient(f, x, extras.cache)
 end
 
 function DI.value_and_derivative!(
-    f, der, ::AutoFiniteDiff, x, extras::FiniteDiffOneArgDerivativeExtras{<:GradientCache}
+    f, der, extras::FiniteDiffOneArgDerivativeExtras{<:GradientCache}, ::AutoFiniteDiff, x
 )
     return f(x), finite_difference_gradient!(der, f, x, extras.cache)
 end
@@ -94,25 +94,25 @@ function DI.prepare_gradient(f, backend::AutoFiniteDiff, x)
 end
 
 function DI.gradient(
-    f, ::AutoFiniteDiff, x::AbstractArray, extras::FiniteDiffGradientExtras
+    f, extras::FiniteDiffGradientExtras, ::AutoFiniteDiff, x::AbstractArray
 )
     return finite_difference_gradient(f, x, extras.cache)
 end
 
 function DI.value_and_gradient(
-    f, ::AutoFiniteDiff, x::AbstractArray, extras::FiniteDiffGradientExtras
+    f, extras::FiniteDiffGradientExtras, ::AutoFiniteDiff, x::AbstractArray
 )
     return f(x), finite_difference_gradient(f, x, extras.cache)
 end
 
 function DI.gradient!(
-    f, grad, ::AutoFiniteDiff, x::AbstractArray, extras::FiniteDiffGradientExtras
+    f, grad, extras::FiniteDiffGradientExtras, ::AutoFiniteDiff, x::AbstractArray
 )
     return finite_difference_gradient!(grad, f, x, extras.cache)
 end
 
 function DI.value_and_gradient!(
-    f, grad, ::AutoFiniteDiff, x::AbstractArray, extras::FiniteDiffGradientExtras
+    f, grad, extras::FiniteDiffGradientExtras, ::AutoFiniteDiff, x::AbstractArray
 )
     return f(x), finite_difference_gradient!(grad, f, x, extras.cache)
 end
@@ -132,23 +132,23 @@ function DI.prepare_jacobian(f, backend::AutoFiniteDiff, x)
     return FiniteDiffOneArgJacobianExtras(cache)
 end
 
-function DI.jacobian(f, ::AutoFiniteDiff, x, extras::FiniteDiffOneArgJacobianExtras)
+function DI.jacobian(f, extras::FiniteDiffOneArgJacobianExtras, ::AutoFiniteDiff, x)
     return finite_difference_jacobian(f, x, extras.cache)
 end
 
 function DI.value_and_jacobian(
-    f, ::AutoFiniteDiff, x, extras::FiniteDiffOneArgJacobianExtras
+    f, extras::FiniteDiffOneArgJacobianExtras, ::AutoFiniteDiff, x
 )
     y = f(x)
     return y, finite_difference_jacobian(f, x, extras.cache, y)
 end
 
-function DI.jacobian!(f, jac, ::AutoFiniteDiff, x, extras::FiniteDiffOneArgJacobianExtras)
+function DI.jacobian!(f, jac, extras::FiniteDiffOneArgJacobianExtras, ::AutoFiniteDiff, x)
     return copyto!(jac, finite_difference_jacobian(f, x, extras.cache; jac_prototype=jac))
 end
 
 function DI.value_and_jacobian!(
-    f, jac, ::AutoFiniteDiff, x, extras::FiniteDiffOneArgJacobianExtras
+    f, jac, extras::FiniteDiffOneArgJacobianExtras, ::AutoFiniteDiff, x
 )
     y = f(x)
     return y,
@@ -170,16 +170,16 @@ function DI.prepare_hessian(f, backend::AutoFiniteDiff, x)
     return FiniteDiffHessianExtras(gradient_cache, hessian_cache)
 end
 
-function DI.hessian(f, backend::AutoFiniteDiff, x, extras::FiniteDiffHessianExtras)
+function DI.hessian(f, extras::FiniteDiffHessianExtras, backend::AutoFiniteDiff, x)
     return finite_difference_hessian(f, x, extras.hessian_cache)
 end
 
-function DI.hessian!(f, hess, backend::AutoFiniteDiff, x, extras::FiniteDiffHessianExtras)
+function DI.hessian!(f, hess, extras::FiniteDiffHessianExtras, backend::AutoFiniteDiff, x)
     return finite_difference_hessian!(hess, f, x, extras.hessian_cache)
 end
 
 function DI.value_gradient_and_hessian(
-    f, backend::AutoFiniteDiff, x, extras::FiniteDiffHessianExtras
+    f, extras::FiniteDiffHessianExtras, backend::AutoFiniteDiff, x
 )
     grad = finite_difference_gradient(f, x, extras.gradient_cache)
     hess = finite_difference_hessian(f, x, extras.hessian_cache)
@@ -187,7 +187,7 @@ function DI.value_gradient_and_hessian(
 end
 
 function DI.value_gradient_and_hessian!(
-    f, grad, hess, backend::AutoFiniteDiff, x, extras::FiniteDiffHessianExtras
+    f, grad, hess, extras::FiniteDiffHessianExtras, backend::AutoFiniteDiff, x
 )
     finite_difference_gradient!(grad, f, x, extras.gradient_cache)
     finite_difference_hessian!(hess, f, x, extras.hessian_cache)

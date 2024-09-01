@@ -11,6 +11,6 @@ function ChainRulesCore.rrule(dw::DifferentiateWith, x)
     @compat (; f, backend) = dw
     y = f(x)
     extras_same = DI.prepare_pullback_same_point(f, backend, x, y)
-    pullbackfunc(dy) = (NoTangent(), DI.pullback(f, backend, x, dy, extras_same))
+    pullbackfunc(dy) = (NoTangent(), DI.pullback(f, extras_same, backend, x, dy))
     return y, pullbackfunc
 end

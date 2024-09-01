@@ -17,17 +17,17 @@ end
 # see https://github.com/withbayes/Tapir.jl/issues/113#issuecomment-2036718992
 
 function DI.value_and_pullback(
-    f!, y, backend::AutoTapir, x, ty::Tangents, extras::TapirTwoArgPullbackExtras
+    f!, y, extras::TapirTwoArgPullbackExtras, backend::AutoTapir, x, ty::Tangents
 )
     dxs = map(ty.d) do dy
-        only(DI.pullback(f!, y, backend, x, SingleTangent(dy), extras))
+        only(DI.pullback(f!, y, extras, backend, x, SingleTangent(dy)))
     end
     f!(y, x)
     return y, Tangents(dxs)
 end
 
 function DI.value_and_pullback(
-    f!, y, ::AutoTapir, x, ty::Tangents{1}, extras::TapirTwoArgPullbackExtras
+    f!, y, extras::TapirTwoArgPullbackExtras, ::AutoTapir, x, ty::Tangents{1}
 )
     dy = only(ty)
     dy_righttype = convert(tangent_type(typeof(y)), copy(dy))
