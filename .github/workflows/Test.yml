@@ -86,13 +86,7 @@ jobs:
           - version: 'pre'
             group: Back/ChainRulesCore
           - version: 'pre'
-            group: Back/Enzyme
-          - version: 'pre'
             group: Back/Tapir
-          - version: 'pre'
-            group: Back/SecondOrder
-          - version: 'pre'
-            group: Down/Detector
     env:
       SHOULDRUN: ${{ matrix.version == '1' || !github.event.pull_request.draft }}
       JULIA_DI_TEST_GROUP: ${{ matrix.group }}
