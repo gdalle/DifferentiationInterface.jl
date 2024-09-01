@@ -42,7 +42,6 @@ end
 function value_and_pushforward!(
     f, ty::Tangents, ::AutoZeroForward, x, tx::Tangents, ::NoPushforwardExtras
 )
-    error()
     y = f(x)
     for b in eachindex(ty.d)
         _zero!(ty.d[b])
@@ -53,7 +52,6 @@ end
 function value_and_pushforward!(
     f!, y, ty::Tangents, ::AutoZeroForward, x, tx::Tangents, ::NoPushforwardExtras
 )
-    error()
     f!(y, x)
     for b in eachindex(ty.d)
         _zero!(ty.d[b])
