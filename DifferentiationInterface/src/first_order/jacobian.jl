@@ -193,7 +193,7 @@ function _jacobian_aux(
 end
 
 function _jacobian_aux(
-    f_or_f!y::FY, backend::AbstractADType, x, extras::PullbackJacobianExtras{B}
+    f_or_f!y::FY, extras::PullbackJacobianExtras{B}, backend::AbstractADType, x
 ) where {FY,B}
     @compat (; batched_seeds, pullback_extras, M) = extras
 
@@ -214,7 +214,7 @@ function _jacobian_aux(
 end
 
 function _jacobian_aux!(
-    f_or_f!y::FY, jac, backend::AbstractADType, x, extras::PushforwardJacobianExtras{B}
+    f_or_f!y::FY, jac, extras::PushforwardJacobianExtras{B}, backend::AbstractADType, x
 ) where {FY,B}
     @compat (; batched_seeds, batched_results, pushforward_extras, N) = extras
 

@@ -42,7 +42,7 @@ function DI.value_and_pushforward(
     x,
     tx::Tangents{B},
 ) where {F,T,B}
-    ydual_tmp = compute_ydual_twoarg(f, y, extras, x, tx)
+    ydual_tmp = compute_ydual_twoarg(f!, y, extras, x, tx)
     myvalue!(T, y, ydual_tmp)
     ty = mypartials(T, Val(B), ydual_tmp)
     return y, ty

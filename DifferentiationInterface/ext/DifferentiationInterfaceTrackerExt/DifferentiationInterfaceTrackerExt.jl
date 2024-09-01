@@ -67,7 +67,7 @@ function DI.gradient(f, ::NoGradientExtras, ::AutoTracker, x)
     return data(only(grad))
 end
 
-function DI.value_and_gradient!(f, extras::NoGradientExtras, grad, backend::AutoTracker, x)
+function DI.value_and_gradient!(f, grad, extras::NoGradientExtras, backend::AutoTracker, x)
     y, new_grad = DI.value_and_gradient(f, extras, backend, x)
     return y, copyto!(grad, new_grad)
 end

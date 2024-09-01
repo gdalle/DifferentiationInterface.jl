@@ -790,7 +790,7 @@ function test_correctness(
 
         der12_in, der22_in = mysimilar(y), mysimilar(y)
         y2, der12, der22 = value_derivative_and_second_derivative!(
-            f, der12_in, der22_in, ba, x, extras_tup...
+            f, der12_in, der22_in, extras_tup..., ba, x
         )
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
@@ -942,7 +942,7 @@ function test_correctness(
         hess1 = hessian!(f, hess1_in, extras_tup..., ba, x)
         grad2_in, hess2_in = mysimilar(new_scen.res1), mysimilar(new_scen.res2)
         y2, grad2, hess2 = value_gradient_and_hessian!(
-            f, grad2_in, hess2_in, ba, x, extras_tup...
+            f, grad2_in, hess2_in, extras_tup..., ba, x
         )
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)

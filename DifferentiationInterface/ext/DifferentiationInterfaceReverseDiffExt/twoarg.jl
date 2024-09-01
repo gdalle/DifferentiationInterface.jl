@@ -83,8 +83,7 @@ function DI.value_and_pullback(
 ) where {B}
     x_array = [x]
     f!_array(_y::AbstractArray, _x_array) = f!(_y, only(_x_array))
-    new_extras = DI.prepare_pullback(f!_array, y, backend, x_array, ty)
-    y, tx_array = DI.value_and_pullback(f!_array, y, backend, x_array, ty, new_extras)
+    y, tx_array = DI.value_and_pullback(f!_array, y, backend, x_array, ty)
     return y, Tangents(only.(tx_array.d))
 end
 

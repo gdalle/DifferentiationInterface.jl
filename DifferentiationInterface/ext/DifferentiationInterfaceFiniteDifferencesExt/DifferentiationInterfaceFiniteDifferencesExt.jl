@@ -88,7 +88,7 @@ function DI.value_and_jacobian(
     return f(x), DI.jacobian(f, extras, backend, x)
 end
 
-function DI.jacobian!(f, jac, x, extras::NoJacobianExtras, backend::AutoFiniteDifferences)
+function DI.jacobian!(f, jac, extras::NoJacobianExtras, x, backend::AutoFiniteDifferences)
     return copyto!(jac, DI.jacobian(f, extras, backend, x))
 end
 

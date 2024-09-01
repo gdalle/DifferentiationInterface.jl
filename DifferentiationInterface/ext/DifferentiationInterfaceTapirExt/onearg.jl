@@ -12,7 +12,7 @@ function DI.prepare_pullback(f, backend::AutoTapir, x, ty::Tangents)
         silence_safety_messages=false,
     )
     extras = TapirOneArgPullbackExtras(y, rrule)
-    DI.value_and_pullback(f, backend, x, ty, extras)  # warm up
+    DI.value_and_pullback(f, extras, backend, x, ty)  # warm up
     return extras
 end
 
