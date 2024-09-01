@@ -30,8 +30,8 @@ function test_correctness(
     extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
-        y1, dy1 = value_and_pushforward(f, ba, x, seed, extras_tup...)
-        dy2 = pushforward(f, ba, x, seed, extras_tup...)
+        y1, dy1 = value_and_pushforward(f, extras_tup..., ba, x, seed)
+        dy2 = pushforward(f, extras_tup..., ba, x, seed)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
@@ -70,8 +70,8 @@ function test_correctness(
         dy1_in = mysimilar(res1)
         dy2_in = mysimilar(res1)
 
-        y1, dy1 = value_and_pushforward!(f, dy1_in, ba, x, seed, extras_tup...)
-        dy2 = pushforward!(f, dy2_in, ba, x, seed, extras_tup...)
+        y1, dy1 = value_and_pushforward!(f, dy1_in, extras_tup..., ba, x, seed)
+        dy2 = pushforward!(f, dy2_in, extras_tup..., ba, x, seed)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
@@ -113,8 +113,8 @@ function test_correctness(
         y1_in = mysimilar(y)
         y2_in = mysimilar(y)
 
-        y1, dy1 = value_and_pushforward(f!, y1_in, ba, x, seed, extras_tup...)
-        dy2 = pushforward(f!, y2_in, ba, x, seed, extras_tup...)
+        y1, dy1 = value_and_pushforward(f!, y1_in, extras_tup..., ba, x, seed)
+        dy2 = pushforward(f!, y2_in, extras_tup..., ba, x, seed)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
@@ -155,8 +155,8 @@ function test_correctness(
         y1_in, dy1_in = mysimilar(y), mysimilar(res1)
         y2_in, dy2_in = mysimilar(y), mysimilar(res1)
 
-        y1, dy1 = value_and_pushforward!(f!, y1_in, dy1_in, ba, x, seed, extras_tup...)
-        dy2 = pushforward!(f!, y2_in, dy2_in, ba, x, seed, extras_tup...)
+        y1, dy1 = value_and_pushforward!(f!, y1_in, dy1_in, extras_tup..., ba, x, seed)
+        dy2 = pushforward!(f!, y2_in, dy2_in, extras_tup..., ba, x, seed)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
@@ -197,8 +197,8 @@ function test_correctness(
     extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
-        y1, dx1 = value_and_pullback(f, ba, x, seed, extras_tup...)
-        dx2 = pullback(f, ba, x, seed, extras_tup...)
+        y1, dx1 = value_and_pullback(f, extras_tup..., ba, x, seed)
+        dx2 = pullback(f, extras_tup..., ba, x, seed)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
@@ -237,8 +237,8 @@ function test_correctness(
         dx1_in = mysimilar(res1)
         dx2_in = mysimilar(res1)
 
-        y1, dx1 = value_and_pullback!(f, dx1_in, ba, x, seed, extras_tup...)
-        dx2 = pullback!(f, dx2_in, ba, x, seed, extras_tup...)
+        y1, dx1 = value_and_pullback!(f, dx1_in, extras_tup..., ba, x, seed)
+        dx2 = pullback!(f, dx2_in, extras_tup..., ba, x, seed)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
@@ -280,8 +280,8 @@ function test_correctness(
         y1_in = mysimilar(y)
         y2_in = mysimilar(y)
 
-        y1, dx1 = value_and_pullback(f!, y1_in, ba, x, seed, extras_tup...)
-        dx2 = pullback(f!, y2_in, ba, x, seed, extras_tup...)
+        y1, dx1 = value_and_pullback(f!, y1_in, extras_tup..., ba, x, seed)
+        dx2 = pullback(f!, y2_in, extras_tup..., ba, x, seed)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
@@ -322,8 +322,8 @@ function test_correctness(
         y1_in, dx1_in = mysimilar(y), mysimilar(res1)
         y2_in, dx2_in = mysimilar(y), mysimilar(res1)
 
-        y1, dx1 = value_and_pullback!(f!, y1_in, dx1_in, ba, x, seed, extras_tup...)
-        dx2 = pullback!(f!, y2_in, dx2_in, ba, x, seed, extras_tup...)
+        y1, dx1 = value_and_pullback!(f!, y1_in, dx1_in, extras_tup..., ba, x, seed)
+        dx2 = pullback!(f!, y2_in, dx2_in, extras_tup..., ba, x, seed)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
@@ -361,8 +361,8 @@ function test_correctness(
     extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
-        y1, der1 = value_and_derivative(f, ba, x, extras_tup...)
-        der2 = derivative(f, ba, x, extras_tup...)
+        y1, der1 = value_and_derivative(f, extras_tup..., ba, x)
+        der2 = derivative(f, extras_tup..., ba, x)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
@@ -396,10 +396,10 @@ function test_correctness(
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         der1_in = mysimilar(y)
-        y1, der1 = value_and_derivative!(f, der1_in, ba, x, extras_tup...)
+        y1, der1 = value_and_derivative!(f, der1_in, extras_tup..., ba, x)
 
         der2_in = mysimilar(y)
-        der2 = derivative!(f, der2_in, ba, x, extras_tup...)
+        der2 = derivative!(f, der2_in, extras_tup..., ba, x)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
@@ -436,10 +436,10 @@ function test_correctness(
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         y1_in = mysimilar(y)
-        y1, der1 = value_and_derivative(f!, y1_in, ba, x, extras_tup...)
+        y1, der1 = value_and_derivative(f!, y1_in, extras_tup..., ba, x)
 
         y2_in = mysimilar(y)
-        der2 = derivative(f!, y2_in, ba, x, extras_tup...)
+        der2 = derivative(f!, y2_in, extras_tup..., ba, x)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
@@ -475,10 +475,10 @@ function test_correctness(
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         y1_in, der1_in = mysimilar(y), mysimilar(y)
-        y1, der1 = value_and_derivative!(f!, y1_in, der1_in, ba, x, extras_tup...)
+        y1, der1 = value_and_derivative!(f!, y1_in, der1_in, extras_tup..., ba, x)
 
         y2_in, der2_in = mysimilar(y), mysimilar(y)
-        der2 = derivative!(f!, y2_in, der2_in, ba, x, extras_tup...)
+        der2 = derivative!(f!, y2_in, der2_in, extras_tup..., ba, x)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
@@ -516,9 +516,9 @@ function test_correctness(
     extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
-        y1, grad1 = value_and_gradient(f, ba, x, extras_tup...)
+        y1, grad1 = value_and_gradient(f, extras_tup..., ba, x)
 
-        grad2 = gradient(f, ba, x, extras_tup...)
+        grad2 = gradient(f, extras_tup..., ba, x)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
@@ -552,10 +552,10 @@ function test_correctness(
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         grad1_in = mysimilar(x)
-        y1, grad1 = value_and_gradient!(f, grad1_in, ba, x, extras_tup...)
+        y1, grad1 = value_and_gradient!(f, grad1_in, extras_tup..., ba, x)
 
         grad2_in = mysimilar(x)
-        grad2 = gradient!(f, grad2_in, ba, x, extras_tup...)
+        grad2 = gradient!(f, grad2_in, extras_tup..., ba, x)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
@@ -592,9 +592,9 @@ function test_correctness(
     extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
-        y1, jac1 = value_and_jacobian(f, ba, x, extras_tup...)
+        y1, jac1 = value_and_jacobian(f, extras_tup..., ba, x)
 
-        jac2 = jacobian(f, ba, x, extras_tup...)
+        jac2 = jacobian(f, extras_tup..., ba, x)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
@@ -628,10 +628,10 @@ function test_correctness(
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         jac1_in = mysimilar(new_scen.res1)
-        y1, jac1 = value_and_jacobian!(f, jac1_in, ba, x, extras_tup...)
+        y1, jac1 = value_and_jacobian!(f, jac1_in, extras_tup..., ba, x)
 
         jac2_in = mysimilar(new_scen.res1)
-        jac2 = jacobian!(f, jac2_in, ba, x, extras_tup...)
+        jac2 = jacobian!(f, jac2_in, extras_tup..., ba, x)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
@@ -668,10 +668,10 @@ function test_correctness(
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         y1_in = mysimilar(y)
-        y1, jac1 = value_and_jacobian(f!, y1_in, ba, x, extras_tup...)
+        y1, jac1 = value_and_jacobian(f!, y1_in, extras_tup..., ba, x)
 
         y2_in = mysimilar(y)
-        jac2 = jacobian(f!, y2_in, ba, x, extras_tup...)
+        jac2 = jacobian(f!, y2_in, extras_tup..., ba, x)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
@@ -707,10 +707,10 @@ function test_correctness(
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         y1_in, jac1_in = mysimilar(y), mysimilar(new_scen.res1)
-        y1, jac1 = value_and_jacobian!(f!, y1_in, jac1_in, ba, x, extras_tup...)
+        y1, jac1 = value_and_jacobian!(f!, y1_in, jac1_in, extras_tup..., ba, x)
 
         y2_in, jac2_in = mysimilar(y), mysimilar(new_scen.res1)
-        jac2 = jacobian!(f!, y2_in, jac2_in, ba, x, extras_tup...)
+        jac2 = jacobian!(f!, y2_in, jac2_in, extras_tup..., ba, x)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
@@ -748,8 +748,8 @@ function test_correctness(
     extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
-        der21 = second_derivative(f, ba, x, extras_tup...)
-        y2, der12, der22 = value_derivative_and_second_derivative(f, ba, x, extras_tup...)
+        der21 = second_derivative(f, extras_tup..., ba, x)
+        y2, der12, der22 = value_derivative_and_second_derivative(f, extras_tup..., ba, x)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
@@ -786,7 +786,7 @@ function test_correctness(
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         der21_in = mysimilar(y)
-        der21 = second_derivative!(f, der21_in, ba, x, extras_tup...)
+        der21 = second_derivative!(f, der21_in, extras_tup..., ba, x)
 
         der12_in, der22_in = mysimilar(y), mysimilar(y)
         y2, der12, der22 = value_derivative_and_second_derivative!(
@@ -835,7 +835,7 @@ function test_correctness(
     extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
-        dg1 = hvp(f, ba, x, seed, extras_tup...)
+        dg1 = hvp(f, extras_tup..., ba, x, seed)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
@@ -869,7 +869,7 @@ function test_correctness(
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         dg1_in = mysimilar(res2)
 
-        dg1 = hvp!(f, dg1_in, ba, x, seed, extras_tup...)
+        dg1 = hvp!(f, dg1_in, extras_tup..., ba, x, seed)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
@@ -901,8 +901,8 @@ function test_correctness(
     extras_tup_candidates = vcat((), tuple.(extras_candidates))
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
-        hess1 = hessian(f, ba, x, extras_tup...)
-        y2, grad2, hess2 = value_gradient_and_hessian(f, ba, x, extras_tup...)
+        hess1 = hessian(f, extras_tup..., ba, x)
+        y2, grad2, hess2 = value_gradient_and_hessian(f, extras_tup..., ba, x)
 
         let (≈)(x, y) = isapprox(x, y; atol, rtol)
             @testset "Extras type" begin
@@ -939,7 +939,7 @@ function test_correctness(
 
     @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
         hess1_in = mysimilar(new_scen.res2)
-        hess1 = hessian!(f, hess1_in, ba, x, extras_tup...)
+        hess1 = hessian!(f, hess1_in, extras_tup..., ba, x)
         grad2_in, hess2_in = mysimilar(new_scen.res1), mysimilar(new_scen.res2)
         y2, grad2, hess2 = value_gradient_and_hessian!(
             f, grad2_in, hess2_in, ba, x, extras_tup...

@@ -13,8 +13,8 @@ Create an `extras` object that can be given to [`jacobian`](@ref) and its varian
 function prepare_jacobian end
 
 """
-    value_and_jacobian(f,     backend, x, [extras]) -> (y, jac)
-    value_and_jacobian(f!, y, backend, x, [extras]) -> (y, jac)
+    value_and_jacobian(f,     [extras,] backend, x) -> (y, jac)
+    value_and_jacobian(f!, y, [extras,] backend, x) -> (y, jac)
 
 Compute the value and the Jacobian matrix of the function `f` at point `x`.
 
@@ -23,8 +23,8 @@ $(document_preparation("jacobian"))
 function value_and_jacobian end
 
 """
-    value_and_jacobian!(f,     jac, backend, x, [extras]) -> (y, jac)
-    value_and_jacobian!(f!, y, jac, backend, x, [extras]) -> (y, jac)
+    value_and_jacobian!(f,     jac, [extras,] backend, x) -> (y, jac)
+    value_and_jacobian!(f!, y, jac, [extras,] backend, x) -> (y, jac)
 
 Compute the value and the Jacobian matrix of the function `f` at point `x`, overwriting `jac`.
     
@@ -33,8 +33,8 @@ $(document_preparation("jacobian"))
 function value_and_jacobian! end
 
 """
-    jacobian(f,     backend, x, [extras]) -> jac
-    jacobian(f!, y, backend, x, [extras]) -> jac
+    jacobian(f,     [extras,] backend, x) -> jac
+    jacobian(f!, y, [extras,] backend, x) -> jac
 
 Compute the Jacobian matrix of the function `f` at point `x`.
 
@@ -43,8 +43,8 @@ $(document_preparation("jacobian"))
 function jacobian end
 
 """
-    jacobian!(f,     jac, backend, x, [extras]) -> jac
-    jacobian!(f!, y, jac, backend, x, [extras]) -> jac
+    jacobian!(f,     jac, [extras,] backend, x) -> jac
+    jacobian!(f!, y, jac, [extras,] backend, x) -> jac
 
 Compute the Jacobian matrix of the function `f` at point `x`, overwriting `jac`.
 
@@ -119,50 +119,50 @@ end
 
 ## One argument
 
-function jacobian(f::F, backend::AbstractADType, x, extras::JacobianExtras) where {F}
-    return _jacobian_aux((f,), backend, x, extras)
+function jacobian(f::F, extras::JacobianExtras, backend::AbstractADType, x) where {F}
+    return _jacobian_aux((f,), extras, backend, x)
 end
 
-function jacobian!(f::F, jac, backend::AbstractADType, x, extras::JacobianExtras) where {F}
-    return _jacobian_aux!((f,), jac, backend, x, extras)
+function jacobian!(f::F, jac, extras::JacobianExtras, backend::AbstractADType, x) where {F}
+    return _jacobian_aux!((f,), jac, extras, backend, x)
 end
 
 function value_and_jacobian(
-    f::F, backend::AbstractADType, x, extras::JacobianExtras
+    f::F, extras::JacobianExtras, backend::AbstractADType, x
 ) where {F}
-    return f(x), jacobian(f, backend, x, extras)
+    return f(x), jacobian(f, extras, backend, x)
 end
 
 function value_and_jacobian!(
-    f::F, jac, backend::AbstractADType, x, extras::JacobianExtras
+    f::F, jac, extras::JacobianExtras, backend::AbstractADType, x
 ) where {F}
-    return f(x), jacobian!(f, jac, backend, x, extras)
+    return f(x), jacobian!(f, jac, extras, backend, x)
 end
 
 ## Two arguments
 
-function jacobian(f!::F, y, backend::AbstractADType, x, extras::JacobianExtras) where {F}
-    return _jacobian_aux((f!, y), backend, x, extras)
+function jacobian(f!::F, y, extras::JacobianExtras, backend::AbstractADType, x) where {F}
+    return _jacobian_aux((f!, y), extras, backend, x)
 end
 
 function jacobian!(
-    f!::F, y, jac, backend::AbstractADType, x, extras::JacobianExtras
+    f!::F, y, jac, extras::JacobianExtras, backend::AbstractADType, x
 ) where {F}
-    return _jacobian_aux!((f!, y), jac, backend, x, extras)
+    return _jacobian_aux!((f!, y), jac, extras, backend, x)
 end
 
 function value_and_jacobian(
-    f!::F, y, backend::AbstractADType, x, extras::JacobianExtras
+    f!::F, y, extras::JacobianExtras, backend::AbstractADType, x
 ) where {F}
-    jac = jacobian(f!, y, backend, x, extras)
+    jac = jacobian(f!, y, extras, backend, x)
     f!(y, x)
     return y, jac
 end
 
 function value_and_jacobian!(
-    f!::F, y, jac, backend::AbstractADType, x, extras::JacobianExtras
+    f!::F, y, jac, extras::JacobianExtras, backend::AbstractADType, x
 ) where {F}
-    jacobian!(f!, y, jac, backend, x, extras)
+    jacobian!(f!, y, jac, extras, backend, x)
     f!(y, x)
     return y, jac
 end
@@ -170,17 +170,17 @@ end
 ## Common auxiliaries
 
 function _jacobian_aux(
-    f_or_f!y::FY, backend::AbstractADType, x, extras::PushforwardJacobianExtras{B}
+    f_or_f!y::FY, extras::PushforwardJacobianExtras{B}, backend::AbstractADType, x
 ) where {FY,B}
     @compat (; batched_seeds, pushforward_extras, N) = extras
 
     pushforward_extras_same = prepare_pushforward_same_point(
-        f_or_f!y..., backend, x, batched_seeds[1], pushforward_extras
+        f_or_f!y..., pushforward_extras, backend, x, batched_seeds[1]
     )
 
     jac_blocks = map(eachindex(batched_seeds)) do a
         dy_batch = pushforward(
-            f_or_f!y..., backend, x, batched_seeds[a], pushforward_extras_same
+            f_or_f!y..., pushforward_extras_same, backend, x, batched_seeds[a]
         )
         stack(vec, dy_batch.d; dims=2)
     end
@@ -198,11 +198,11 @@ function _jacobian_aux(
     @compat (; batched_seeds, pullback_extras, M) = extras
 
     pullback_extras_same = prepare_pullback_same_point(
-        f_or_f!y..., backend, x, batched_seeds[1], extras.pullback_extras
+        f_or_f!y..., extras.pullback_extras, backend, x, batched_seeds[1]
     )
 
     jac_blocks = map(eachindex(batched_seeds)) do a
-        dx_batch = pullback(f_or_f!y..., backend, x, batched_seeds[a], pullback_extras_same)
+        dx_batch = pullback(f_or_f!y..., pullback_extras_same, backend, x, batched_seeds[a])
         stack(vec, dx_batch.d; dims=1)
     end
 
@@ -219,17 +219,17 @@ function _jacobian_aux!(
     @compat (; batched_seeds, batched_results, pushforward_extras, N) = extras
 
     pushforward_extras_same = prepare_pushforward_same_point(
-        f_or_f!y..., backend, x, batched_seeds[1], pushforward_extras
+        f_or_f!y..., pushforward_extras, backend, x, batched_seeds[1]
     )
 
     for a in eachindex(batched_seeds, batched_results)
         pushforward!(
             f_or_f!y...,
             batched_results[a],
+            pushforward_extras_same,
             backend,
             x,
             batched_seeds[a],
-            pushforward_extras_same,
         )
 
         for b in eachindex(batched_results[a].d)
@@ -248,17 +248,17 @@ function _jacobian_aux!(
     @compat (; batched_seeds, batched_results, pullback_extras, M) = extras
 
     pullback_extras_same = prepare_pullback_same_point(
-        f_or_f!y..., backend, x, batched_seeds[1], extras.pullback_extras
+        f_or_f!y..., extras.pullback_extras, backend, x, batched_seeds[1]
     )
 
     for a in eachindex(batched_seeds, batched_results)
         pullback!(
             f_or_f!y...,
             batched_results[a],
+            pullback_extras_same,
             backend,
             x,
             batched_seeds[a],
-            pullback_extras_same,
         )
 
         for b in eachindex(batched_results[a].d)

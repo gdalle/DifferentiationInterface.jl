@@ -18,7 +18,7 @@ DI.prepare_pushforward(f, ::AutoZeroForward, x, tx::Tangents) = NoPushforwardExt
 DI.prepare_pushforward(f!, y, ::AutoZeroForward, x, tx::Tangents) = NoPushforwardExtras()
 
 function DI.value_and_pushforward(
-    f, ::AutoZeroForward, x, tx::Tangents{B}, ::NoPushforwardExtras
+    f, ::NoPushforwardExtras, ::AutoZeroForward, x, tx::Tangents{B}
 ) where {B}
     y = f(x)
     dys = ntuple(Returns(zero(y)), Val(B))
@@ -26,7 +26,7 @@ function DI.value_and_pushforward(
 end
 
 function DI.value_and_pushforward(
-    f!, y, ::AutoZeroForward, x, tx::Tangents{B}, ::NoPushforwardExtras
+    f!, y, ::NoPushforwardExtras, ::AutoZeroForward, x, tx::Tangents{B}
 ) where {B}
     f!(y, x)
     dys = ntuple(Returns(zero(y)), Val(B))
@@ -34,7 +34,7 @@ function DI.value_and_pushforward(
 end
 
 function DI.value_and_pushforward!(
-    f, ty::Tangents, ::AutoZeroForward, x, tx::Tangents, ::NoPushforwardExtras
+    f, ty::Tangents, ::NoPushforwardExtras, ::AutoZeroForward, x, tx::Tangents
 )
     y = f(x)
     for b in eachindex(ty.d)
@@ -44,7 +44,7 @@ function DI.value_and_pushforward!(
 end
 
 function DI.value_and_pushforward!(
-    f!, y, ty::Tangents, ::AutoZeroForward, x, tx::Tangents, ::NoPushforwardExtras
+    f!, y, ty::Tangents, ::NoPushforwardExtras, ::AutoZeroForward, x, tx::Tangents
 )
     f!(y, x)
     for b in eachindex(ty.d)
@@ -71,7 +71,7 @@ DI.prepare_pullback(f, ::AutoZeroReverse, x, ty::Tangents) = NoPullbackExtras()
 DI.prepare_pullback(f!, y, ::AutoZeroReverse, x, ty::Tangents) = NoPullbackExtras()
 
 function DI.value_and_pullback(
-    f, ::AutoZeroReverse, x, ty::Tangents{B}, ::NoPullbackExtras
+    f, ::NoPullbackExtras, ::AutoZeroReverse, x, ty::Tangents{B}
 ) where {B}
     y = f(x)
     dxs = ntuple(Returns(zero(x)), Val(B))
@@ -79,7 +79,7 @@ function DI.value_and_pullback(
 end
 
 function DI.value_and_pullback(
-    f!, y, ::AutoZeroReverse, x, ty::Tangents{B}, ::NoPullbackExtras
+    f!, y, ::NoPullbackExtras, ::AutoZeroReverse, x, ty::Tangents{B}
 ) where {B}
     f!(y, x)
     dxs = ntuple(Returns(zero(x)), Val(B))
@@ -87,7 +87,7 @@ function DI.value_and_pullback(
 end
 
 function DI.value_and_pullback!(
-    f, tx::Tangents, ::AutoZeroReverse, x, ty::Tangents, ::NoPullbackExtras
+    f, tx::Tangents, ::NoPullbackExtras, ::AutoZeroReverse, x, ty::Tangents
 )
     y = f(x)
     for b in eachindex(tx.d)
@@ -97,7 +97,7 @@ function DI.value_and_pullback!(
 end
 
 function DI.value_and_pullback!(
-    f!, y, tx::Tangents, ::AutoZeroReverse, x, ty::Tangents, ::NoPullbackExtras
+    f!, y, tx::Tangents, ::NoPullbackExtras, ::AutoZeroReverse, x, ty::Tangents
 )
     f!(y, x)
     for b in eachindex(tx.d)

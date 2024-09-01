@@ -11,7 +11,7 @@ Create an `extras` object that can be given to [`second_derivative`](@ref) and i
 function prepare_second_derivative end
 
 """
-    second_derivative(f, backend, x, [extras]) -> der2
+    second_derivative(f, [extras,] backend, x) -> der2
 
 Compute the second derivative of the function `f` at point `x`.
 
@@ -20,7 +20,7 @@ $(document_preparation("second_derivative"))
 function second_derivative end
 
 """
-    second_derivative!(f, der2, backend, x, [extras]) -> der2
+    second_derivative!(f, der2, [extras,] backend, x) -> der2
 
 Compute the second derivative of the function `f` at point `x`, overwriting `der2`.
 
@@ -29,7 +29,7 @@ $(document_preparation("second_derivative"))
 function second_derivative! end
 
 """
-    value_derivative_and_second_derivative(f, backend, x, [extras]) -> (y, der, der2)
+    value_derivative_and_second_derivative(f, [extras,] backend, x) -> (y, der, der2)
 
 Compute the value, first derivative and second derivative of the function `f` at point `x`.
 
@@ -38,7 +38,7 @@ $(document_preparation("second_derivative"))
 function value_derivative_and_second_derivative end
 
 """
-    value_derivative_and_second_derivative!(f, der, der2, backend, x, [extras]) -> (y, der, der2)
+    value_derivative_and_second_derivative!(f, der, der2, [extras,] backend, x) -> (y, der, der2)
 
 Compute the value, first derivative and second derivative of the function `f` at point `x`, overwriting `der` and `der2`.
 
@@ -77,65 +77,65 @@ end
 ## One argument
 
 function second_derivative(
-    f::F, backend::AbstractADType, x, extras::SecondDerivativeExtras
+    f::F, extras::SecondDerivativeExtras, backend::AbstractADType, x
 ) where {F}
-    return second_derivative(f, SecondOrder(backend, backend), x, extras)
+    return second_derivative(f, extras, SecondOrder(backend, backend), x)
 end
 
 function second_derivative(
-    f::F, backend::SecondOrder, x, extras::ClosureSecondDerivativeExtras
+    f::F, extras::ClosureSecondDerivativeExtras, backend::SecondOrder, x
 ) where {F}
     @compat (; inner_derivative, outer_derivative_extras) = extras
-    return derivative(inner_derivative, outer(backend), x, outer_derivative_extras)
+    return derivative(inner_derivative, outer_derivative_extras, outer(backend), x)
 end
 
 function value_derivative_and_second_derivative(
-    f::F, backend::AbstractADType, x, extras::SecondDerivativeExtras
+    f::F, extras::SecondDerivativeExtras, backend::AbstractADType, x
 ) where {F}
     return value_derivative_and_second_derivative(
-        f, SecondOrder(backend, backend), x, extras
+        f, extras, SecondOrder(backend, backend), x
     )
 end
 
 function value_derivative_and_second_derivative(
-    f::F, backend::SecondOrder, x, extras::ClosureSecondDerivativeExtras
+    f::F, extras::ClosureSecondDerivativeExtras, backend::SecondOrder, x
 ) where {F}
     @compat (; inner_derivative, outer_derivative_extras) = extras
     y = f(x)
     der, der2 = value_and_derivative(
-        inner_derivative, outer(backend), x, outer_derivative_extras
+        inner_derivative, outer_derivative_extras, outer(backend), x
     )
     return y, der, der2
 end
 
 function second_derivative!(
-    f::F, der2, backend::AbstractADType, x, extras::SecondDerivativeExtras
+    f::F, der2, extras::SecondDerivativeExtras, backend::AbstractADType, x
 ) where {F}
-    return second_derivative!(f, der2, SecondOrder(backend, backend), x, extras)
+    return second_derivative!(f, der2, extras, SecondOrder(backend, backend), x)
 end
 
 function second_derivative!(
-    f::F, der2, backend::SecondOrder, x, extras::SecondDerivativeExtras
+    f::F, der2, extras::SecondDerivativeExtras, backend::SecondOrder, x
 ) where {F}
     @compat (; inner_derivative, outer_derivative_extras) = extras
-    return derivative!(inner_derivative, der2, outer(backend), x, outer_derivative_extras)
+    return derivative!(inner_derivative, der2, outer_derivative_extras, outer(backend), x)
 end
 
 function value_derivative_and_second_derivative!(
-    f::F, der, der2, backend::AbstractADType, x, extras::SecondDerivativeExtras
+    f::F, der, der2, extras::SecondDerivativeExtras, backend::AbstractADType, x
 ) where {F}
     return value_derivative_and_second_derivative!(
-        f, der, der2, SecondOrder(backend, backend), x, extras
+        f, der, der2, extras, SecondOrder(backend, backend), x
     )
 end
 
 function value_derivative_and_second_derivative!(
-    f::F, der, der2, backend::SecondOrder, x, extras::SecondDerivativeExtras
+    f::F, der, der2, extras::SecondDerivativeExtras, backend::SecondOrder, x
 ) where {F}
     @compat (; inner_derivative, outer_derivative_extras) = extras
     y = f(x)
     new_der, _ = value_and_derivative!(
-        inner_derivative, der2, outer(backend), x, outer_derivative_extras
+        inner_derivative, der2, outer_derivative_extras, outer(backend), x
     )
     return y, copyto!(der, new_der), der2
 end

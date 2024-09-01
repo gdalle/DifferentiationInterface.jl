@@ -11,7 +11,7 @@ Create an `extras` object that can be given to [`gradient`](@ref) and its varian
 function prepare_gradient end
 
 """
-    value_and_gradient(f, backend, x, [extras]) -> (y, grad)
+    value_and_gradient(f, [extras,] backend, x) -> (y, grad)
 
 Compute the value and the gradient of the function `f` at point `x`.
 
@@ -20,7 +20,7 @@ $(document_preparation("gradient"))
 function value_and_gradient end
 
 """
-    value_and_gradient!(f, grad, backend, x, [extras]) -> (y, grad)
+    value_and_gradient!(f, [extras,] grad, backend, x) -> (y, grad)
 
 Compute the value and the gradient of the function `f` at point `x`, overwriting `grad`.
 
@@ -29,7 +29,7 @@ $(document_preparation("gradient"))
 function value_and_gradient! end
 
 """
-    gradient(f, backend, x, [extras]) -> grad
+    gradient(f, [extras,] backend, x) -> grad
 
 Compute the gradient of the function `f` at point `x`.
 
@@ -38,7 +38,7 @@ $(document_preparation("gradient"))
 function gradient end
 
 """
-    gradient!(f, grad, backend, x, [extras]) -> grad
+    gradient!(f, grad, [extras,] backend, x) -> grad
 
 Compute the gradient of the function `f` at point `x`, overwriting `grad`.
 
@@ -60,33 +60,33 @@ end
 ## One argument
 
 function value_and_gradient(
-    f::F, backend::AbstractADType, x, extras::PullbackGradientExtras
+    f::F, extras::PullbackGradientExtras, backend::AbstractADType, x
 ) where {F}
-    y, tx = value_and_pullback(f, backend, x, SingleTangent(true), extras.pullback_extras)
+    y, tx = value_and_pullback(f, extras.pullback_extras, backend, x, SingleTangent(true))
     return y, only(tx)
 end
 
 function value_and_gradient!(
-    f::F, grad, backend::AbstractADType, x, extras::PullbackGradientExtras
+    f::F, grad, extras::PullbackGradientExtras, backend::AbstractADType, x
 ) where {F}
     y, _ = value_and_pullback!(
-        f, SingleTangent(grad), backend, x, SingleTangent(true), extras.pullback_extras
+        f, SingleTangent(grad), extras.pullback_extras, backend, x, SingleTangent(true)
     )
     return y, grad
 end
 
 function gradient(
-    f::F, backend::AbstractADType, x, extras::PullbackGradientExtras
+    f::F, extras::PullbackGradientExtras, backend::AbstractADType, x
 ) where {F}
-    tx = pullback(f, backend, x, SingleTangent(true), extras.pullback_extras)
+    tx = pullback(f, extras.pullback_extras, backend, x, SingleTangent(true))
     return only(tx)
 end
 
 function gradient!(
-    f::F, grad, backend::AbstractADType, x, extras::PullbackGradientExtras
+    f::F, grad, extras::PullbackGradientExtras, backend::AbstractADType, x
 ) where {F}
     pullback!(
-        f, SingleTangent(grad), backend, x, SingleTangent(true), extras.pullback_extras
+        f, SingleTangent(grad), extras.pullback_extras, backend, x, SingleTangent(true)
     )
     return grad
 end
@@ -138,5 +138,5 @@ end
 
 function (g::Gradient{F,B,<:GradientExtras})(x) where {F,B}
     @compat (; f, backend, extras) = g
-    return gradient(f, backend, x, extras)
+    return gradient(f, extras, backend, x)
 end

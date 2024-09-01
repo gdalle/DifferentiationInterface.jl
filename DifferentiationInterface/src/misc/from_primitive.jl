@@ -39,12 +39,12 @@ end
 
 function value_and_pushforward(
     f,
+    extras::FromPrimitivePushforwardExtras,
     fromprim::AutoForwardFromPrimitive,
     x,
     tx::Tangents,
-    extras::FromPrimitivePushforwardExtras,
 )
-    return value_and_pushforward(f, fromprim.backend, x, tx, extras.pushforward_extras)
+    return value_and_pushforward(f, extras.pushforward_extras, fromprim.backend, x, tx)
 end
 
 function value_and_pushforward(
@@ -55,31 +55,31 @@ function value_and_pushforward(
     tx::Tangents,
     extras::FromPrimitivePushforwardExtras,
 )
-    return value_and_pushforward(f!, y, fromprim.backend, x, tx, extras.pushforward_extras)
+    return value_and_pushforward(f!, y, extras.pushforward_extras, fromprim.backend, x, tx)
 end
 
 function value_and_pushforward!(
     f,
     ty::Tangents,
+    extras::FromPrimitivePushforwardExtras,
     fromprim::AutoForwardFromPrimitive,
     x,
     tx::Tangents,
-    extras::FromPrimitivePushforwardExtras,
 )
-    return value_and_pushforward!(f, ty, fromprim.backend, x, tx, extras.pushforward_extras)
+    return value_and_pushforward!(f, ty, extras.pushforward_extras, fromprim.backend, x, tx)
 end
 
 function value_and_pushforward!(
     f!,
     y,
     ty::Tangents,
+    extras::FromPrimitivePushforwardExtras,
     fromprim::AutoForwardFromPrimitive,
     x,
     tx::Tangents,
-    extras::FromPrimitivePushforwardExtras,
 )
     return value_and_pushforward!(
-        f!, y, ty, fromprim.backend, x, tx, extras.pushforward_extras
+        f!, y, ty, extras.pushforward_extras, fromprim.backend, x, tx
     )
 end
 
@@ -105,44 +105,44 @@ end
 
 function value_and_pullback(
     f,
+    extras::FromPrimitivePullbackExtras,
     fromprim::AutoReverseFromPrimitive,
     x,
     ty::Tangents,
-    extras::FromPrimitivePullbackExtras,
 )
-    return value_and_pullback(f, fromprim.backend, x, ty, extras.pullback_extras)
+    return value_and_pullback(f, extras.pullback_extras, fromprim.backend, x, ty)
 end
 
 function value_and_pullback(
     f!,
     y,
+    extras::FromPrimitivePullbackExtras,
     fromprim::AutoReverseFromPrimitive,
     x,
     ty::Tangents,
-    extras::FromPrimitivePullbackExtras,
 )
-    return value_and_pullback(f!, y, fromprim.backend, x, ty, extras.pullback_extras)
+    return value_and_pullback(f!, y, extras.pullback_extras, fromprim.backend, x, ty)
 end
 
 function value_and_pullback!(
     f,
     tx::Tangents,
+    extras::FromPrimitivePullbackExtras,
     fromprim::AutoReverseFromPrimitive,
     x,
     ty::Tangents,
-    extras::FromPrimitivePullbackExtras,
 )
-    return value_and_pullback!(f, tx, fromprim.backend, x, ty, extras.pullback_extras)
+    return value_and_pullback!(f, tx, extras.pullback_extras, fromprim.backend, x, ty)
 end
 
 function value_and_pullback!(
     f!,
     y,
     tx::Tangents,
+    extras::FromPrimitivePullbackExtras,
     fromprim::AutoReverseFromPrimitive,
     x,
     ty::Tangents,
-    extras::FromPrimitivePullbackExtras,
 )
-    return value_and_pullback!(f!, y, tx, fromprim.backend, x, ty, extras.pullback_extras)
+    return value_and_pullback!(f!, y, tx, extras.pullback_extras, fromprim.backend, x, ty)
 end
