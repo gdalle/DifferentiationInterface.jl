@@ -69,6 +69,7 @@ include("tests/correctness_eval.jl")
 end
 include("tests/sparsity.jl")
 include("tests/benchmark.jl")
+include("tests/benchmark_eval.jl")
 include("test_differentiation.jl")
 
 function __init__()
