@@ -1,5 +1,3 @@
-## No overwrite
-
 function test_scen_intact(new_scen, scen; isequal)
     @testset "Scenario intact" begin
         for n in fieldnames(typeof(scen))
@@ -9,961 +7,427 @@ function test_scen_intact(new_scen, scen; isequal)
     end
 end
 
-testset_name(k) = k == 1 ? "No prep" : (k == 2 ? "Different point" : "Same point")
-
-## Pushforward
-
-function test_correctness(
-    ba::AbstractADType,
-    scen::Scenario{:pushforward,1,:outofplace};
-    isequal::Function,
-    isapprox::Function,
-    atol,
-    rtol,
-)
-    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
-
-    extras_candidates = [
-        prepare_pushforward(f, ba, mycopy_random(x), mycopy_random(seed)),
-        prepare_pushforward_same_point(f, ba, x, mycopy_random(seed)),
-    ]
-    extras_tup_candidates = vcat((), tuple.(extras_candidates))
-
-    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
-        y1, dy1 = value_and_pushforward(f, ba, x, seed, extras_tup...)
-        dy2 = pushforward(f, ba, x, seed, extras_tup...)
-
-        let (≈)(x, y) = isapprox(x, y; atol, rtol)
-            @testset "Extras type" begin
-                @test isempty(extras_tup) || only(extras_tup) isa PushforwardExtras
-            end
-            @testset "Primal value" begin
-                @test y1 ≈ scen.y
-            end
-            @testset "Tangent value" begin
-                @test dy1 ≈ scen.res1
-                @test dy2 ≈ scen.res1
-            end
-        end
+for op in [
+    :derivative,
+    :gradient,
+    :hessian,
+    :hvp,
+    :jacobian,
+    :pullback,
+    :pushforward,
+    :second_derivative,
+]
+    op! = Symbol(op, "!")
+    val_prefix = if op == :second_derivative
+        "value_derivative_and_"
+    elseif op in [:hessian, :hvp]
+        "value_gradient_and_"
+    else
+        "value_and_"
     end
-    test_scen_intact(new_scen, scen; isequal)
-    return nothing
-end
+    val_and_op = Symbol(val_prefix, op)
+    val_and_op! = Symbol(val_prefix, op!)
+    prep_op = Symbol("prepare_", op)
+    prep_op_same = Symbol("prepare_", op, "_same_point")
 
-function test_correctness(
-    ba::AbstractADType,
-    scen::Scenario{:pushforward,1,:inplace};
-    isequal::Function,
-    isapprox::Function,
-    atol,
-    rtol,
-)
-    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
-
-    extras_candidates = [
-        prepare_pushforward(f, ba, mycopy_random(x), mycopy_random(seed)),
-        prepare_pushforward_same_point(f, ba, x, mycopy_random(seed)),
-    ]
-    extras_tup_candidates = vcat((), tuple.(extras_candidates))
-
-    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
-        dy1_in = mysimilar(res1)
-        dy2_in = mysimilar(res1)
-
-        y1, dy1 = value_and_pushforward!(f, dy1_in, ba, x, seed, extras_tup...)
-        dy2 = pushforward!(f, dy2_in, ba, x, seed, extras_tup...)
-
-        let (≈)(x, y) = isapprox(x, y; atol, rtol)
-            @testset "Extras type" begin
-                @test isempty(extras_tup) || only(extras_tup) isa PushforwardExtras
-            end
-            @testset "Primal value" begin
-                @test y1 ≈ scen.y
-            end
-            @testset "Tangent value" begin
-                @test dy1_in ≈ scen.res1
-                @test dy1 ≈ scen.res1
-                @test dy2_in ≈ scen.res1
-                @test dy2 ≈ scen.res1
-            end
-        end
+    E = if op == :derivative
+        DerivativeExtras
+    elseif op == :gradient
+        GradientExtras
+    elseif op == :hessian
+        HessianExtras
+    elseif op == :hvp
+        HVPExtras
+    elseif op == :jacobian
+        JacobianExtras
+    elseif op == :pullback
+        PullbackExtras
+    elseif op == :pushforward
+        PushforwardExtras
+    elseif op == :second_derivative
+        SecondDerivativeExtras
     end
-    test_scen_intact(new_scen, scen; isequal)
-    return nothing
-end
 
-function test_correctness(
-    ba::AbstractADType,
-    scen::Scenario{:pushforward,2,:outofplace};
-    isequal::Function,
-    isapprox::Function,
-    atol,
-    rtol,
-)
-    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
-    f! = f
-
-    extras_candidates = [
-        prepare_pushforward(f!, mysimilar(y), ba, mycopy_random(x), mycopy_random(seed)),
-        prepare_pushforward_same_point(f!, mysimilar(y), ba, x, mycopy_random(seed)),
-    ]
-    extras_tup_candidates = vcat((), tuple.(extras_candidates))
-
-    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
-        y1_in = mysimilar(y)
-        y2_in = mysimilar(y)
-
-        y1, dy1 = value_and_pushforward(f!, y1_in, ba, x, seed, extras_tup...)
-        dy2 = pushforward(f!, y2_in, ba, x, seed, extras_tup...)
-
-        let (≈)(x, y) = isapprox(x, y; atol, rtol)
-            @testset "Extras type" begin
-                @test isempty(extras_tup) || only(extras_tup) isa PushforwardExtras
-            end
-            @testset "Primal value" begin
-                @test y1_in ≈ scen.y
-                @test y1 ≈ scen.y
-            end
-            @testset "Tangent value" begin
-                @test dy1 ≈ scen.res1
-                @test dy2 ≈ scen.res1
-            end
-        end
-    end
-    test_scen_intact(new_scen, scen; isequal)
-    return nothing
-end
-
-function test_correctness(
-    ba::AbstractADType,
-    scen::Scenario{:pushforward,2,:inplace};
-    isequal::Function,
-    isapprox::Function,
-    atol,
-    rtol,
-)
-    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
-    f! = f
-
-    extras_candidates = [
-        prepare_pushforward(f!, mysimilar(y), ba, mycopy_random(x), mycopy_random(seed)),
-        prepare_pushforward_same_point(f!, mysimilar(y), ba, x, mycopy_random(seed)),
-    ]
-    extras_tup_candidates = vcat((), tuple.(extras_candidates))
-
-    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
-        y1_in, dy1_in = mysimilar(y), mysimilar(res1)
-        y2_in, dy2_in = mysimilar(y), mysimilar(res1)
-
-        y1, dy1 = value_and_pushforward!(f!, y1_in, dy1_in, ba, x, seed, extras_tup...)
-        dy2 = pushforward!(f!, y2_in, dy2_in, ba, x, seed, extras_tup...)
-
-        let (≈)(x, y) = isapprox(x, y; atol, rtol)
-            @testset "Extras type" begin
-                @test isempty(extras_tup) || only(extras_tup) isa PushforwardExtras
-            end
-            @testset "Primal value" begin
-                @test y1_in ≈ scen.y
-                @test y1 ≈ scen.y
-            end
-            @testset "Tangent value" begin
-                @test dy1_in ≈ scen.res1
-                @test dy1 ≈ scen.res1
-                @test dy2_in ≈ scen.res1
-                @test dy2 ≈ scen.res1
-            end
-        end
-    end
-    test_scen_intact(new_scen, scen; isequal)
-    return nothing
-end
-
-## Pullback
-
-function test_correctness(
-    ba::AbstractADType,
-    scen::Scenario{:pullback,1,:outofplace};
-    isequal::Function,
-    isapprox::Function,
-    atol,
-    rtol,
-)
-    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
-
-    extras_candidates = [
-        prepare_pullback(f, ba, mycopy_random(x), mycopy_random(seed)),
-        prepare_pullback_same_point(f, ba, x, mycopy_random(seed)),
-    ]
-    extras_tup_candidates = vcat((), tuple.(extras_candidates))
-
-    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
-        y1, dx1 = value_and_pullback(f, ba, x, seed, extras_tup...)
-        dx2 = pullback(f, ba, x, seed, extras_tup...)
-
-        let (≈)(x, y) = isapprox(x, y; atol, rtol)
-            @testset "Extras type" begin
-                @test isempty(extras_tup) || only(extras_tup) isa PullbackExtras
-            end
-            @testset "Primal value" begin
-                @test y1 ≈ scen.y
-            end
-            @testset "Cotangent value" begin
-                @test dx1 ≈ scen.res1
-                @test dx2 ≈ scen.res1
-            end
-        end
-    end
-    test_scen_intact(new_scen, scen; isequal)
-    return nothing
-end
-
-function test_correctness(
-    ba::AbstractADType,
-    scen::Scenario{:pullback,1,:inplace};
-    isequal::Function,
-    isapprox::Function,
-    atol,
-    rtol,
-)
-    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
-
-    extras_candidates = [
-        prepare_pullback(f, ba, mycopy_random(x), mycopy_random(seed)),
-        prepare_pullback_same_point(f, ba, x, mycopy_random(seed)),
-    ]
-    extras_tup_candidates = vcat((), tuple.(extras_candidates))
-
-    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
-        dx1_in = mysimilar(res1)
-        dx2_in = mysimilar(res1)
-
-        y1, dx1 = value_and_pullback!(f, dx1_in, ba, x, seed, extras_tup...)
-        dx2 = pullback!(f, dx2_in, ba, x, seed, extras_tup...)
-
-        let (≈)(x, y) = isapprox(x, y; atol, rtol)
-            @testset "Extras type" begin
-                @test isempty(extras_tup) || only(extras_tup) isa PullbackExtras
-            end
-            @testset "Primal value" begin
-                @test y1 ≈ scen.y
-            end
-            @testset "Cotangent value" begin
-                @test dx1_in ≈ scen.res1
-                @test dx1 ≈ scen.res1
-                @test dx2_in ≈ scen.res1
-                @test dx2 ≈ scen.res1
-            end
-        end
-    end
-    test_scen_intact(new_scen, scen; isequal)
-    return nothing
-end
-
-function test_correctness(
-    ba::AbstractADType,
-    scen::Scenario{:pullback,2,:outofplace};
-    isequal::Function,
-    isapprox::Function,
-    atol,
-    rtol,
-)
-    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
-    f! = f
-
-    extras_candidates = [
-        prepare_pullback(f!, mysimilar(y), ba, mycopy_random(x), mycopy_random(seed)),
-        prepare_pullback_same_point(f!, mysimilar(y), ba, x, mycopy_random(seed)),
-    ]
-    extras_tup_candidates = vcat((), tuple.(extras_candidates))
-
-    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
-        y1_in = mysimilar(y)
-        y2_in = mysimilar(y)
-
-        y1, dx1 = value_and_pullback(f!, y1_in, ba, x, seed, extras_tup...)
-        dx2 = pullback(f!, y2_in, ba, x, seed, extras_tup...)
-
-        let (≈)(x, y) = isapprox(x, y; atol, rtol)
-            @testset "Extras type" begin
-                @test isempty(extras_tup) || only(extras_tup) isa PullbackExtras
-            end
-            @testset "Primal value" begin
-                @test y1_in ≈ scen.y
-                @test y1 ≈ scen.y
-            end
-            @testset "Cotangent value" begin
-                @test dx1 ≈ scen.res1
-                @test dx2 ≈ scen.res1
-            end
-        end
-    end
-    test_scen_intact(new_scen, scen; isequal)
-    return nothing
-end
-
-function test_correctness(
-    ba::AbstractADType,
-    scen::Scenario{:pullback,2,:inplace};
-    isequal::Function,
-    isapprox::Function,
-    atol,
-    rtol,
-)
-    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
-    f! = f
-
-    extras_candidates = [
-        prepare_pullback(f!, mysimilar(y), ba, mycopy_random(x), mycopy_random(seed)),
-        prepare_pullback_same_point(f!, mysimilar(y), ba, x, mycopy_random(seed)),
-    ]
-    extras_tup_candidates = vcat((), tuple.(extras_candidates))
-
-    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
-        y1_in, dx1_in = mysimilar(y), mysimilar(res1)
-        y2_in, dx2_in = mysimilar(y), mysimilar(res1)
-
-        y1, dx1 = value_and_pullback!(f!, y1_in, dx1_in, ba, x, seed, extras_tup...)
-        dx2 = pullback!(f!, y2_in, dx2_in, ba, x, seed, extras_tup...)
-
-        let (≈)(x, y) = isapprox(x, y; atol, rtol)
-            @testset "Extras type" begin
-                @test isempty(extras_tup) || only(extras_tup) isa PullbackExtras
-            end
-            @testset "Primal value" begin
-                @test y1_in ≈ scen.y
-                @test y1 ≈ scen.y
-            end
-            @testset "Cotangent value" begin
-                @test dx1_in ≈ scen.res1
-                @test dx1 ≈ scen.res1
-                @test dx2_in ≈ scen.res1
-                @test dx2 ≈ scen.res1
-            end
-        end
-    end
-    test_scen_intact(new_scen, scen; isequal)
-    return nothing
-end
-
-## Derivative
-
-function test_correctness(
-    ba::AbstractADType,
-    scen::Scenario{:derivative,1,:outofplace};
-    isequal::Function,
-    isapprox::Function,
-    atol,
-    rtol,
-)
-    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
-
-    extras_candidates = [prepare_derivative(f, ba, mycopy_random(x))]
-    extras_tup_candidates = vcat((), tuple.(extras_candidates))
-
-    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
-        y1, der1 = value_and_derivative(f, ba, x, extras_tup...)
-        der2 = derivative(f, ba, x, extras_tup...)
-
-        let (≈)(x, y) = isapprox(x, y; atol, rtol)
-            @testset "Extras type" begin
-                @test isempty(extras_tup) || only(extras_tup) isa DerivativeExtras
-            end
-            @testset "Primal value" begin
-                @test y1 ≈ scen.y
-            end
-            @testset "Derivative value" begin
-                @test der1 ≈ scen.res1
-                @test der2 ≈ scen.res1
-            end
-        end
-    end
-    test_scen_intact(new_scen, scen; isequal)
-    return nothing
-end
-
-function test_correctness(
-    ba::AbstractADType,
-    scen::Scenario{:derivative,1,:inplace};
-    isequal::Function,
-    isapprox::Function,
-    atol,
-    rtol,
-)
-    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
-
-    extras_candidates = [prepare_derivative(f, ba, mycopy_random(x))]
-    extras_tup_candidates = vcat((), tuple.(extras_candidates))
-
-    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
-        der1_in = mysimilar(y)
-        y1, der1 = value_and_derivative!(f, der1_in, ba, x, extras_tup...)
-
-        der2_in = mysimilar(y)
-        der2 = derivative!(f, der2_in, ba, x, extras_tup...)
-
-        let (≈)(x, y) = isapprox(x, y; atol, rtol)
-            @testset "Extras type" begin
-                @test isempty(extras_tup) || only(extras_tup) isa DerivativeExtras
-            end
-            @testset "Primal value" begin
-                @test y1 ≈ scen.y
-            end
-            @testset "Derivative value" begin
-                @test der1_in ≈ scen.res1
-                @test der1 ≈ scen.res1
-                @test der2_in ≈ scen.res1
-                @test der2 ≈ scen.res1
-            end
-        end
-    end
-    test_scen_intact(new_scen, scen; isequal)
-    return nothing
-end
-
-function test_correctness(
-    ba::AbstractADType,
-    scen::Scenario{:derivative,2,:outofplace};
-    isequal::Function,
-    isapprox::Function,
-    atol,
-    rtol,
-)
-    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
-    f! = f
-
-    extras_candidates = [prepare_derivative(f!, mysimilar(y), ba, mycopy_random(x))]
-    extras_tup_candidates = vcat((), tuple.(extras_candidates))
-
-    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
-        y1_in = mysimilar(y)
-        y1, der1 = value_and_derivative(f!, y1_in, ba, x, extras_tup...)
-
-        y2_in = mysimilar(y)
-        der2 = derivative(f!, y2_in, ba, x, extras_tup...)
-
-        let (≈)(x, y) = isapprox(x, y; atol, rtol)
-            @testset "Extras type" begin
-                @test isempty(extras_tup) || only(extras_tup) isa DerivativeExtras
-            end
-            @testset "Primal value" begin
-                @test y1_in ≈ scen.y
-                @test y1 ≈ scen.y
-            end
-            @testset "Derivative value" begin
-                @test der1 ≈ scen.res1
-                @test der2 ≈ scen.res1
-            end
-        end
-    end
-    test_scen_intact(new_scen, scen; isequal)
-    return nothing
-end
-
-function test_correctness(
-    ba::AbstractADType,
-    scen::Scenario{:derivative,2,:inplace};
-    isequal::Function,
-    isapprox::Function,
-    atol,
-    rtol,
-)
-    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
-    f! = f
-
-    extras_candidates = [prepare_derivative(f!, mysimilar(y), ba, mycopy_random(x))]
-    extras_tup_candidates = vcat((), tuple.(extras_candidates))
-
-    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
-        y1_in, der1_in = mysimilar(y), mysimilar(y)
-        y1, der1 = value_and_derivative!(f!, y1_in, der1_in, ba, x, extras_tup...)
-
-        y2_in, der2_in = mysimilar(y), mysimilar(y)
-        der2 = derivative!(f!, y2_in, der2_in, ba, x, extras_tup...)
-
-        let (≈)(x, y) = isapprox(x, y; atol, rtol)
-            @testset "Extras type" begin
-                @test isempty(extras_tup) || only(extras_tup) isa DerivativeExtras
-            end
-            @testset "Primal value" begin
-                @test y1_in ≈ scen.y
-                @test y1 ≈ scen.y
-            end
-            @testset "Derivative value" begin
-                @test der1_in ≈ scen.res1
-                @test der1 ≈ scen.res1
-                @test der2_in ≈ scen.res1
-                @test der2 ≈ scen.res1
-            end
-        end
-    end
-    test_scen_intact(new_scen, scen; isequal)
-    return nothing
-end
-
-## Gradient
-
-function test_correctness(
-    ba::AbstractADType,
-    scen::Scenario{:gradient,1,:outofplace};
-    isequal::Function,
-    isapprox::Function,
-    atol,
-    rtol,
-)
-    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
-
-    extras_candidates = [prepare_gradient(f, ba, mycopy_random(x))]
-    extras_tup_candidates = vcat((), tuple.(extras_candidates))
-
-    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
-        y1, grad1 = value_and_gradient(f, ba, x, extras_tup...)
-
-        grad2 = gradient(f, ba, x, extras_tup...)
-
-        let (≈)(x, y) = isapprox(x, y; atol, rtol)
-            @testset "Extras type" begin
-                @test isempty(extras_tup) || only(extras_tup) isa GradientExtras
-            end
-            @testset "Primal value" begin
-                @test y1 ≈ scen.y
-            end
-            @testset "Gradient value" begin
-                @test grad1 ≈ scen.res1
-                @test grad2 ≈ scen.res1
-            end
-        end
-    end
-    test_scen_intact(new_scen, scen; isequal)
-    return nothing
-end
-
-function test_correctness(
-    ba::AbstractADType,
-    scen::Scenario{:gradient,1,:inplace};
-    isequal::Function,
-    isapprox::Function,
-    atol,
-    rtol,
-)
-    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
-
-    extras_candidates = [prepare_gradient(f, ba, mycopy_random(x))]
-    extras_tup_candidates = vcat((), tuple.(extras_candidates))
-
-    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
-        grad1_in = mysimilar(x)
-        y1, grad1 = value_and_gradient!(f, grad1_in, ba, x, extras_tup...)
-
-        grad2_in = mysimilar(x)
-        grad2 = gradient!(f, grad2_in, ba, x, extras_tup...)
-
-        let (≈)(x, y) = isapprox(x, y; atol, rtol)
-            @testset "Extras type" begin
-                @test isempty(extras_tup) || only(extras_tup) isa GradientExtras
-            end
-            @testset "Primal value" begin
-                @test y1 ≈ scen.y
-            end
-            @testset "Gradient value" begin
-                @test grad1_in ≈ scen.res1
-                @test grad1 ≈ scen.res1
-                @test grad2_in ≈ scen.res1
-                @test grad2 ≈ scen.res1
-            end
-        end
-    end
-    test_scen_intact(new_scen, scen; isequal)
-    return nothing
-end
-
-## Jacobian
-
-function test_correctness(
-    ba::AbstractADType,
-    scen::Scenario{:jacobian,1,:outofplace};
-    isequal::Function,
-    isapprox::Function,
-    atol,
-    rtol,
-)
-    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
-
-    extras_candidates = [prepare_jacobian(f, ba, mycopy_random(x))]
-    extras_tup_candidates = vcat((), tuple.(extras_candidates))
-
-    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
-        y1, jac1 = value_and_jacobian(f, ba, x, extras_tup...)
-
-        jac2 = jacobian(f, ba, x, extras_tup...)
-
-        let (≈)(x, y) = isapprox(x, y; atol, rtol)
-            @testset "Extras type" begin
-                @test isempty(extras_tup) || only(extras_tup) isa JacobianExtras
-            end
-            @testset "Primal value" begin
-                @test y1 ≈ scen.y
-            end
-            @testset "Jacobian value" begin
-                @test jac1 ≈ scen.res1
-                @test jac2 ≈ scen.res1
-            end
-        end
-    end
-    test_scen_intact(new_scen, scen; isequal)
-    return nothing
-end
-
-function test_correctness(
-    ba::AbstractADType,
-    scen::Scenario{:jacobian,1,:inplace};
-    isequal::Function,
-    isapprox::Function,
-    atol,
-    rtol,
-)
-    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
-
-    extras_candidates = [prepare_jacobian(f, ba, mycopy_random(x))]
-    extras_tup_candidates = vcat((), tuple.(extras_candidates))
-
-    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
-        jac1_in = mysimilar(new_scen.res1)
-        y1, jac1 = value_and_jacobian!(f, jac1_in, ba, x, extras_tup...)
-
-        jac2_in = mysimilar(new_scen.res1)
-        jac2 = jacobian!(f, jac2_in, ba, x, extras_tup...)
-
-        let (≈)(x, y) = isapprox(x, y; atol, rtol)
-            @testset "Extras type" begin
-                @test isempty(extras_tup) || only(extras_tup) isa JacobianExtras
-            end
-            @testset "Primal value" begin
-                @test y1 ≈ scen.y
-            end
-            @testset "Jacobian value" begin
-                @test jac1_in ≈ scen.res1
-                @test jac1 ≈ scen.res1
-                @test jac2_in ≈ scen.res1
-                @test jac2 ≈ scen.res1
-            end
-        end
-    end
-    test_scen_intact(new_scen, scen; isequal)
-    return nothing
-end
-
-function test_correctness(
-    ba::AbstractADType,
-    scen::Scenario{:jacobian,2,:outofplace};
-    isequal::Function,
-    isapprox::Function,
-    atol,
-    rtol,
-)
-    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
-    f! = f
-
-    extras_candidates = [prepare_jacobian(f!, mysimilar(y), ba, mycopy_random(x))]
-    extras_tup_candidates = vcat((), tuple.(extras_candidates))
-
-    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
-        y1_in = mysimilar(y)
-        y1, jac1 = value_and_jacobian(f!, y1_in, ba, x, extras_tup...)
-
-        y2_in = mysimilar(y)
-        jac2 = jacobian(f!, y2_in, ba, x, extras_tup...)
-
-        let (≈)(x, y) = isapprox(x, y; atol, rtol)
-            @testset "Extras type" begin
-                @test isempty(extras_tup) || only(extras_tup) isa JacobianExtras
-            end
-            @testset "Primal value" begin
-                @test y1_in ≈ scen.y
-                @test y1 ≈ scen.y
-            end
-            @testset "Jacobian value" begin
-                @test jac1 ≈ scen.res1
-                @test jac2 ≈ scen.res1
-            end
-        end
-    end
-    test_scen_intact(new_scen, scen; isequal)
-    return nothing
-end
-
-function test_correctness(
-    ba::AbstractADType,
-    scen::Scenario{:jacobian,2,:inplace};
-    isequal::Function,
-    isapprox::Function,
-    atol,
-    rtol,
-)
-    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
-    f! = f
-
-    extras_candidates = [prepare_jacobian(f!, mysimilar(y), ba, mycopy_random(x))]
-    extras_tup_candidates = vcat((), tuple.(extras_candidates))
-
-    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
-        y1_in, jac1_in = mysimilar(y), mysimilar(new_scen.res1)
-        y1, jac1 = value_and_jacobian!(f!, y1_in, jac1_in, ba, x, extras_tup...)
-
-        y2_in, jac2_in = mysimilar(y), mysimilar(new_scen.res1)
-        jac2 = jacobian!(f!, y2_in, jac2_in, ba, x, extras_tup...)
-
-        let (≈)(x, y) = isapprox(x, y; atol, rtol)
-            @testset "Extras type" begin
-                @test isempty(extras_tup) || only(extras_tup) isa JacobianExtras
-            end
-            @testset "Primal value" begin
-                @test y1_in ≈ scen.y
-                @test y1 ≈ scen.y
-            end
-            @testset "Jacobian value" begin
-                @test jac1_in ≈ scen.res1
-                @test jac1 ≈ scen.res1
-                @test jac2_in ≈ scen.res1
-                @test jac2 ≈ scen.res1
-            end
-        end
-    end
-    test_scen_intact(new_scen, scen; isequal)
-    return nothing
-end
-
-## Second derivative
-
-function test_correctness(
-    ba::AbstractADType,
-    scen::Scenario{:second_derivative,1,:outofplace};
-    isequal::Function,
-    isapprox::Function,
-    atol,
-    rtol,
-)
-    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
-
-    extras_candidates = [prepare_second_derivative(f, ba, mycopy_random(x))]
-    extras_tup_candidates = vcat((), tuple.(extras_candidates))
-
-    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
-        der21 = second_derivative(f, ba, x, extras_tup...)
-        y2, der12, der22 = value_derivative_and_second_derivative(f, ba, x, extras_tup...)
-
-        let (≈)(x, y) = isapprox(x, y; atol, rtol)
-            @testset "Extras type" begin
-                @test isempty(extras_tup) || only(extras_tup) isa SecondDerivativeExtras
-            end
-            @testset "Primal value" begin
-                @test y2 ≈ scen.y
-            end
-            @testset "First derivative value" begin
-                @test der12 ≈ scen.res1
-            end
-            @testset "Second derivative value" begin
-                @test der21 ≈ scen.res2
-                @test der22 ≈ scen.res2
-            end
-        end
-    end
-    test_scen_intact(new_scen, scen; isequal)
-    return nothing
-end
-
-function test_correctness(
-    ba::AbstractADType,
-    scen::Scenario{:second_derivative,1,:inplace};
-    isequal::Function,
-    isapprox::Function,
-    atol,
-    rtol,
-)
-    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
-
-    extras_candidates = [prepare_second_derivative(f, ba, mycopy_random(x))]
-    extras_tup_candidates = vcat((), tuple.(extras_candidates))
-
-    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
-        der21_in = mysimilar(y)
-        der21 = second_derivative!(f, der21_in, ba, x, extras_tup...)
-
-        der12_in, der22_in = mysimilar(y), mysimilar(y)
-        y2, der12, der22 = value_derivative_and_second_derivative!(
-            f, der12_in, der22_in, ba, x, extras_tup...
+    S1out = Scenario{op,1,:outofplace}
+    S1in = Scenario{op,1,:inplace}
+    S2out = Scenario{op,2,:outofplace}
+    S2in = Scenario{op,2,:inplace}
+
+    if op in [:derivative, :gradient, :jacobian]
+        @eval function test_correctness(
+            ba::AbstractADType,
+            scen::$S1out;
+            isequal::Function,
+            isapprox::Function,
+            atol::Real,
+            rtol::Real,
         )
-
-        let (≈)(x, y) = isapprox(x, y; atol, rtol)
-            @testset "Extras type" begin
-                @test isempty(extras_tup) || only(extras_tup) isa SecondDerivativeExtras
+            @compat (; f, x, y, res1) = new_scen = deepcopy(scen)
+            xrand = mycopy_random(x)
+            extup_cands = [(), ($prep_op(f, ba, xrand),)]
+            for extup in extup_cands
+                y_out_val, res1_out_val = $val_and_op(f, ba, x, deepcopy(extup)...)
+                res1_out_noval = $op(f, ba, x, deepcopy(extup)...)
+                let (≈)(x, y) = isapprox(x, y; atol, rtol)
+                    @test isempty(extup) || only(extup) isa $E
+                    @test y_out_val ≈ scen.y
+                    @test res1_out_val ≈ scen.res1
+                    @test res1_out_noval ≈ scen.res1
+                end
             end
-            @testset "Primal value" begin
-                @test y2 ≈ scen.y
-            end
-            @testset "Derivative value" begin
-                @test der12_in ≈ scen.res1
-                @test der12 ≈ scen.res1
-            end
-            @testset "Second derivative value" begin
-                @test der21_in ≈ scen.res2
-                @test der22_in ≈ scen.res2
-                @test der21 ≈ scen.res2
-                @test der22 ≈ scen.res2
-            end
+            test_scen_intact(new_scen, scen; isequal)
+            return nothing
         end
-    end
-    test_scen_intact(new_scen, scen; isequal)
-    return nothing
-end
 
-## Hessian-vector product
-
-function test_correctness(
-    ba::AbstractADType,
-    scen::Scenario{:hvp,1,:outofplace};
-    isequal::Function,
-    isapprox::Function,
-    atol,
-    rtol,
-)
-    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
-
-    extras_candidates = [
-        prepare_hvp(f, ba, mycopy_random(x), mycopy_random(seed)),
-        prepare_hvp_same_point(f, ba, x, mycopy_random(seed)),
-    ]
-    extras_tup_candidates = vcat((), tuple.(extras_candidates))
-
-    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
-        dg1 = hvp(f, ba, x, seed, extras_tup...)
-
-        let (≈)(x, y) = isapprox(x, y; atol, rtol)
-            @testset "Extras type" begin
-                @test isempty(extras_tup) || only(extras_tup) isa HVPExtras
-            end
-            @testset "HVP value" begin
-                @test dg1 ≈ scen.res2
-            end
-        end
-    end
-    test_scen_intact(new_scen, scen; isequal)
-    return nothing
-end
-
-function test_correctness(
-    ba::AbstractADType,
-    scen::Scenario{:hvp,1,:inplace};
-    isequal::Function,
-    isapprox::Function,
-    atol,
-    rtol,
-)
-    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
-
-    extras_candidates = [
-        prepare_hvp(f, ba, mycopy_random(x), mycopy_random(seed)),
-        prepare_hvp_same_point(f, ba, x, mycopy_random(seed)),
-    ]
-    extras_tup_candidates = vcat((), tuple.(extras_candidates))
-
-    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
-        dg1_in = mysimilar(res2)
-
-        dg1 = hvp!(f, dg1_in, ba, x, seed, extras_tup...)
-
-        let (≈)(x, y) = isapprox(x, y; atol, rtol)
-            @testset "Extras type" begin
-                @test isempty(extras_tup) || only(extras_tup) isa HVPExtras
-            end
-            @testset "HVP value" begin
-                @test dg1_in ≈ scen.res2
-                @test dg1 ≈ scen.res2
-            end
-        end
-    end
-    test_scen_intact(new_scen, scen; isequal)
-    return nothing
-end
-
-## Hessian
-
-function test_correctness(
-    ba::AbstractADType,
-    scen::Scenario{:hessian,1,:outofplace};
-    isequal::Function,
-    isapprox::Function,
-    atol,
-    rtol,
-)
-    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
-
-    extras_candidates = [prepare_hessian(f, ba, mycopy_random(x))]
-    extras_tup_candidates = vcat((), tuple.(extras_candidates))
-
-    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
-        hess1 = hessian(f, ba, x, extras_tup...)
-        y2, grad2, hess2 = value_gradient_and_hessian(f, ba, x, extras_tup...)
-
-        let (≈)(x, y) = isapprox(x, y; atol, rtol)
-            @testset "Extras type" begin
-                @test isempty(extras_tup) || only(extras_tup) isa HessianExtras
-            end
-            @testset "Primal value" begin
-                @test y2 ≈ scen.y
-            end
-            @testset "Gradient value" begin
-                @test grad2 ≈ scen.res1
-            end
-            @testset "Hessian value" begin
-                @test hess1 ≈ scen.res2
-                @test hess2 ≈ scen.res2
-            end
-        end
-    end
-    test_scen_intact(new_scen, scen; isequal)
-    return nothing
-end
-
-function test_correctness(
-    ba::AbstractADType,
-    scen::Scenario{:hessian,1,:inplace};
-    isequal::Function,
-    isapprox::Function,
-    atol,
-    rtol,
-)
-    @compat (; f, x, y, seed, res1, res2) = new_scen = deepcopy(scen)
-
-    extras_candidates = [prepare_hessian(f, ba, mycopy_random(x))]
-    extras_tup_candidates = vcat((), tuple.(extras_candidates))
-
-    @testset "$(testset_name(k))" for (k, extras_tup) in enumerate(extras_tup_candidates)
-        hess1_in = mysimilar(new_scen.res2)
-        hess1 = hessian!(f, hess1_in, ba, x, extras_tup...)
-        grad2_in, hess2_in = mysimilar(new_scen.res1), mysimilar(new_scen.res2)
-        y2, grad2, hess2 = value_gradient_and_hessian!(
-            f, grad2_in, hess2_in, ba, x, extras_tup...
+        @eval function test_correctness(
+            ba::AbstractADType,
+            scen::$S1in;
+            isequal::Function,
+            isapprox::Function,
+            atol::Real,
+            rtol::Real,
         )
+            @compat (; f, x, y, res1) = new_scen = deepcopy(scen)
+            xrand = mycopy_random(x)
+            extup_cands = [(), ($prep_op(f, ba, xrand),)]
+            for extup in extup_cands
+                res1_in_val = mysimilar(res1)
+                res1_in_noval = mysimilar(res1)
+                y_out_val, res1_out_val = $val_and_op!(
+                    f, res1_in_val, ba, x, deepcopy(extup)...
+                )
+                res1_out_noval = $op!(f, res1_in_noval, ba, x, deepcopy(extup)...)
+                let (≈)(x, y) = isapprox(x, y; atol, rtol)
+                    @test isempty(extup) || only(extup) isa $E
+                    @test y_out_val ≈ scen.y
+                    @test res1_in_val ≈ scen.res1
+                    @test res1_out_val ≈ scen.res1
+                    @test res1_in_noval ≈ scen.res1
+                    @test res1_out_noval ≈ scen.res1
+                end
+            end
+            test_scen_intact(new_scen, scen; isequal)
+            return nothing
+        end
 
-        let (≈)(x, y) = isapprox(x, y; atol, rtol)
-            @testset "Extras type" begin
-                @test isempty(extras_tup) || only(extras_tup) isa HessianExtras
+        op == :gradient && continue
+
+        @eval function test_correctness(
+            ba::AbstractADType,
+            scen::$S2out;
+            isequal::Function,
+            isapprox::Function,
+            atol::Real,
+            rtol::Real,
+        )
+            @compat (; f, x, y, res1) = new_scen = deepcopy(scen)
+            xrand, yrand = mycopy_random(x), mycopy_random(y)
+            extup_cands = [(), ($prep_op(f, yrand, ba, xrand),)]
+            for extup in extup_cands
+                y_in_val = mysimilar(y)
+                y_in_noval = mysimilar(y)
+                y_out_val, res1_out_val = $val_and_op(
+                    f, y_in_val, ba, x, deepcopy(extup)...
+                )
+                res1_out_noval = $op(f, y_in_noval, ba, x, deepcopy(extup)...)
+                let (≈)(x, y) = isapprox(x, y; atol, rtol)
+                    @test isempty(extup) || only(extup) isa $E
+                    @test y_in_val ≈ scen.y
+                    @test y_out_val ≈ scen.y
+                    @test res1_out_val ≈ scen.res1
+                    @test res1_out_noval ≈ scen.res1
+                end
             end
-            @testset "Primal value" begin
-                @test y2 ≈ scen.y
+            test_scen_intact(new_scen, scen; isequal)
+            return nothing
+        end
+
+        @eval function test_correctness(
+            ba::AbstractADType,
+            scen::$S2in;
+            isequal::Function,
+            isapprox::Function,
+            atol::Real,
+            rtol::Real,
+        )
+            @compat (; f, x, y, res1) = new_scen = deepcopy(scen)
+            xrand, yrand = mycopy_random(x), mycopy_random(y)
+            extup_cands = [(), ($prep_op(f, yrand, ba, xrand),)]
+            for extup in extup_cands
+                y_in_val, res1_in_val = mysimilar(y), mysimilar(res1)
+                y_in_noval, res1_in_noval = mysimilar(y), mysimilar(res1)
+                y_out_val, res1_out_val = $val_and_op!(
+                    f, y_in_val, res1_in_val, ba, x, deepcopy(extup)...
+                )
+                res1_out_noval = $op!(
+                    f, y_in_noval, res1_in_noval, ba, x, deepcopy(extup)...
+                )
+                let (≈)(x, y) = isapprox(x, y; atol, rtol)
+                    @test isempty(extup) || only(extup) isa $E
+                    @test y_in_val ≈ scen.y
+                    @test y_out_val ≈ scen.y
+                    @test res1_in_val ≈ scen.res1
+                    @test res1_out_val ≈ scen.res1
+                    @test res1_in_noval ≈ scen.res1
+                    @test res1_out_noval ≈ scen.res1
+                end
             end
-            @testset "Gradient value" begin
-                @test grad2_in ≈ scen.res1
-                @test grad2 ≈ scen.res1
+            test_scen_intact(new_scen, scen; isequal)
+            return nothing
+        end
+
+    elseif op in [:second_derivative, :hessian]
+        @eval function test_correctness(
+            ba::AbstractADType,
+            scen::$S1out;
+            isequal::Function,
+            isapprox::Function,
+            atol::Real,
+            rtol::Real,
+        )
+            @compat (; f, x, y, res1, res2) = new_scen = deepcopy(scen)
+            xrand = mycopy_random(x)
+            extup_cands = [(), ($prep_op(f, ba, xrand),)]
+            for extup in extup_cands
+                y_out_val, res1_out_val, res2_out_val = $val_and_op(
+                    f, ba, x, deepcopy(extup)...
+                )
+                res2_out_noval = $op(f, ba, x, deepcopy(extup)...)
+                let (≈)(x, y) = isapprox(x, y; atol, rtol)
+                    @test isempty(extup) || only(extup) isa $E
+                    @test y_out_val ≈ scen.y
+                    @test res1_out_val ≈ scen.res1
+                    @test res2_out_val ≈ scen.res2
+                    @test res2_out_noval ≈ scen.res2
+                end
             end
-            @testset "Hessian value" begin
-                @test hess1_in ≈ scen.res2
-                @test hess2_in ≈ scen.res2
-                @test hess1 ≈ scen.res2
-                @test hess2 ≈ scen.res2
+            test_scen_intact(new_scen, scen; isequal)
+            return nothing
+        end
+
+        @eval function test_correctness(
+            ba::AbstractADType,
+            scen::$S1in;
+            isequal::Function,
+            isapprox::Function,
+            atol::Real,
+            rtol::Real,
+        )
+            @compat (; f, x, y, res1, res2) = new_scen = deepcopy(scen)
+            xrand = mycopy_random(x)
+            extup_cands = [(), ($prep_op(f, ba, xrand),)]
+            for extup in extup_cands
+                res1_in_val, res2_in_val = mysimilar(res1), mysimilar(res2)
+                res2_in_noval = mysimilar(res2)
+                y_out_val, res1_out_val, res2_out_val = $val_and_op!(
+                    f, res1_in_val, res2_in_val, ba, x, deepcopy(extup)...
+                )
+                res2_out_noval = $op!(f, res2_in_noval, ba, x, deepcopy(extup)...)
+                let (≈)(x, y) = isapprox(x, y; atol, rtol)
+                    @test isempty(extup) || only(extup) isa $E
+                    @test y_out_val ≈ scen.y
+                    @test res1_in_val ≈ scen.res1
+                    @test res1_out_val ≈ scen.res1
+                    @test res2_in_val ≈ scen.res2
+                    @test res2_out_val ≈ scen.res2
+                    @test res2_in_noval ≈ scen.res2
+                    @test res2_out_noval ≈ scen.res2
+                end
             end
+            test_scen_intact(new_scen, scen; isequal)
+            return nothing
+        end
+
+    elseif op in [:pushforward, :pullback]
+        @eval function test_correctness(
+            ba::AbstractADType,
+            scen::$S1out;
+            isequal::Function,
+            isapprox::Function,
+            atol::Real,
+            rtol::Real,
+        )
+            @compat (; f, x, y, seed, res1) = new_scen = deepcopy(scen)
+            xrand, seedrand = mycopy_random(x), mycopy_random(seed)
+            extup_cands = [
+                (),
+                ($prep_op(f, ba, xrand, seedrand),),
+                ($prep_op_same(f, ba, x, seedrand),),
+            ]
+            for extup in extup_cands
+                y_out_val, res1_out_val = $val_and_op(f, ba, x, seed, deepcopy(extup)...)
+                res1_out_noval = $op(f, ba, x, seed, deepcopy(extup)...)
+                let (≈)(x, y) = isapprox(x, y; atol, rtol)
+                    @test isempty(extup) || only(extup) isa $E
+                    @test y_out_val ≈ scen.y
+                    @test res1_out_val ≈ scen.res1
+                    @test res1_out_noval ≈ scen.res1
+                end
+            end
+            test_scen_intact(new_scen, scen; isequal)
+            return nothing
+        end
+
+        @eval function test_correctness(
+            ba::AbstractADType,
+            scen::$S1in;
+            isequal::Function,
+            isapprox::Function,
+            atol::Real,
+            rtol::Real,
+        )
+            @compat (; f, x, y, seed, res1) = new_scen = deepcopy(scen)
+            xrand, seedrand = mycopy_random(x), mycopy_random(seed)
+            extup_cands = [
+                (),
+                ($prep_op(f, ba, xrand, seedrand),),
+                ($prep_op_same(f, ba, x, seedrand),),
+            ]
+            for extup in extup_cands
+                res1_in_val = mysimilar(res1)
+                res1_in_noval = mysimilar(res1)
+                y_out_val, res1_out_val = $val_and_op!(
+                    f, res1_in_val, ba, x, seed, deepcopy(extup)...
+                )
+                res1_out_noval = $op!(f, res1_in_noval, ba, x, seed, deepcopy(extup)...)
+                let (≈)(x, y) = isapprox(x, y; atol, rtol)
+                    @test isempty(extup) || only(extup) isa $E
+                    @test y_out_val ≈ scen.y
+                    @test res1_in_val ≈ scen.res1
+                    @test res1_out_val ≈ scen.res1
+                    @test res1_in_noval ≈ scen.res1
+                    @test res1_out_noval ≈ scen.res1
+                end
+            end
+            test_scen_intact(new_scen, scen; isequal)
+            return nothing
+        end
+
+        @eval function test_correctness(
+            ba::AbstractADType,
+            scen::$S2out;
+            isequal::Function,
+            isapprox::Function,
+            atol::Real,
+            rtol::Real,
+        )
+            @compat (; f, x, y, seed, res1) = new_scen = deepcopy(scen)
+            xrand, yrand, seedrand = mycopy_random(x), mycopy_random(y), mycopy_random(seed)
+            extup_cands = [
+                (),
+                ($prep_op(f, yrand, ba, xrand, seedrand),),
+                ($prep_op_same(f, yrand, ba, x, seedrand),),
+            ]
+            for extup in extup_cands
+                y_in_val = mysimilar(y)
+                y_in_noval = mysimilar(y)
+                y_out_val, res1_out_val = $val_and_op(
+                    f, y_in_val, ba, x, seed, deepcopy(extup)...
+                )
+                res1_out_noval = $op(f, y_in_noval, ba, x, seed, deepcopy(extup)...)
+                let (≈)(x, y) = isapprox(x, y; atol, rtol)
+                    @test isempty(extup) || only(extup) isa $E
+                    @test y_in_val ≈ scen.y
+                    @test y_out_val ≈ scen.y
+                    @test res1_out_val ≈ scen.res1
+                    @test res1_out_noval ≈ scen.res1
+                end
+            end
+            test_scen_intact(new_scen, scen; isequal)
+            return nothing
+        end
+
+        @eval function test_correctness(
+            ba::AbstractADType,
+            scen::$S2in;
+            isequal::Function,
+            isapprox::Function,
+            atol::Real,
+            rtol::Real,
+        )
+            @compat (; f, x, y, seed, res1) = new_scen = deepcopy(scen)
+            xrand, yrand, seedrand = mycopy_random(x), mycopy_random(y), mycopy_random(seed)
+            extup_cands = [
+                (),
+                ($prep_op(f, yrand, ba, xrand, seedrand),),
+                ($prep_op_same(f, yrand, ba, x, seedrand),),
+            ]
+            for extup in extup_cands
+                y_in_val, res1_in_val = mysimilar(y), mysimilar(res1)
+                y_in_noval, res1_in_noval = mysimilar(y), mysimilar(res1)
+                y_out_val, res1_out_val = $val_and_op!(
+                    f, y_in_val, res1_in_val, ba, x, seed, deepcopy(extup)...
+                )
+                res1_out_noval = $op!(
+                    f, y_in_noval, res1_in_noval, ba, x, seed, deepcopy(extup)...
+                )
+                let (≈)(x, y) = isapprox(x, y; atol, rtol)
+                    @test isempty(extup) || only(extup) isa $E
+                    @test y_in_val ≈ scen.y
+                    @test y_out_val ≈ scen.y
+                    @test res1_in_val ≈ scen.res1
+                    @test res1_out_val ≈ scen.res1
+                    @test res1_in_noval ≈ scen.res1
+                    @test res1_out_noval ≈ scen.res1
+                end
+            end
+            test_scen_intact(new_scen, scen; isequal)
+            return nothing
+        end
+
+    elseif op in [:hvp]
+        @eval function test_correctness(
+            ba::AbstractADType,
+            scen::$S1out;
+            isequal::Function,
+            isapprox::Function,
+            atol::Real,
+            rtol::Real,
+        )
+            @compat (; f, x, y, seed, res2) = new_scen = deepcopy(scen)
+            xrand, seedrand = mycopy_random(x), mycopy_random(seed)
+            extup_cands = [
+                (),
+                ($prep_op(f, ba, xrand, seedrand),),
+                ($prep_op_same(f, ba, x, seedrand),),
+            ]
+            for extup in extup_cands
+                res2_out_noval = $op(f, ba, x, seed, deepcopy(extup)...)
+                let (≈)(x, y) = isapprox(x, y; atol, rtol)
+                    @test isempty(extup) || only(extup) isa $E
+                    @test res2_out_noval ≈ scen.res2
+                end
+            end
+            test_scen_intact(new_scen, scen; isequal)
+            return nothing
+        end
+
+        @eval function test_correctness(
+            ba::AbstractADType,
+            scen::$S1in;
+            isequal::Function,
+            isapprox::Function,
+            atol::Real,
+            rtol::Real,
+        )
+            @compat (; f, x, y, seed, res2) = new_scen = deepcopy(scen)
+            xrand, seedrand = mycopy_random(x), mycopy_random(seed)
+            extup_cands = [
+                (),
+                ($prep_op(f, ba, xrand, seedrand),),
+                ($prep_op_same(f, ba, x, seedrand),),
+            ]
+            for extup in extup_cands
+                res2_in_noval = mysimilar(res2)
+                res2_out_noval = $op!(f, res2_in_noval, ba, x, seed, deepcopy(extup)...)
+                let (≈)(x, y) = isapprox(x, y; atol, rtol)
+                    @test isempty(extup) || only(extup) isa $E
+                    @test res2_in_noval ≈ scen.res2
+                    @test res2_out_noval ≈ scen.res2
+                end
+            end
+            test_scen_intact(new_scen, scen; isequal)
+            return nothing
         end
     end
-    test_scen_intact(new_scen, scen; isequal)
-    return nothing
 end
