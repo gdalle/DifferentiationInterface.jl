@@ -63,9 +63,9 @@ include("scenarios/extensions.jl")
 include("utils/misc.jl")
 include("utils/filter.jl")
 
-include("tests/correctness.jl")
+include("tests/correctness_eval.jl")
 @static if VERSION >= v"1.7"
-    include("tests/type_stability.jl")
+    include("tests/type_stability_eval.jl")
 end
 include("tests/sparsity.jl")
 include("tests/benchmark.jl")
