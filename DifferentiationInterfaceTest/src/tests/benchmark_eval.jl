@@ -32,7 +32,7 @@ for op in [
         scenario::Union{$S1out,$S1in,$S2out,$S2in};
         logging::Bool,
     )
-        (; bench0, bench1, bench2, calls0, calls1, calls2) = try
+        @compat (; bench0, bench1, bench2, calls0, calls1, calls2) = try
             run_benchmark_aux(backend, scenario)
         catch exception
             logging && @warn "Error during benchmarking" backend scenario exception
