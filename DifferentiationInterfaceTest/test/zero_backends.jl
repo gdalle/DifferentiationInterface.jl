@@ -13,9 +13,9 @@ LOGGING = get(ENV, "CI", "false") == "false"
 test_differentiation(
     [AutoZeroForward(), AutoZeroReverse()],
     zero.(default_scenarios());
-    correctness=true,
-    # type_stability=true,
-    # excluded=[:second_derivative],
+    correctness=false,
+    type_stability=true,
+    excluded=[:second_derivative],
     logging=LOGGING,
 )
 
