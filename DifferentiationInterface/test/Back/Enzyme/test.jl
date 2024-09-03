@@ -13,6 +13,7 @@ LOGGING = get(ENV, "CI", "false") == "false"
 
 dense_backends = [
     AutoEnzyme(; mode=nothing),
+    AutoEnzyme(; mode=nothing, function_annotation=Enzyme.Const),
     AutoEnzyme(; mode=Enzyme.Forward),
     AutoEnzyme(; mode=Enzyme.Forward, function_annotation=Enzyme.Const),
     AutoEnzyme(; mode=Enzyme.Reverse),
