@@ -144,7 +144,7 @@ end
 function jacobian!(
     f::F, jac, extras::SparseJacobianExtras, backend::AutoSparse, x
 ) where {F}
-    return _sparse_jacobian_aux!((f,), extras, jac, backend, x)
+    return _sparse_jacobian_aux!((f,), jac, extras, backend, x)
 end
 
 function value_and_jacobian(

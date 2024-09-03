@@ -117,7 +117,7 @@ end
 function DI.value_and_derivative!(
     f!, y, der, extras::SymbolicsTwoArgDerivativeExtras, backend::AutoSymbolics, x
 )
-    DI.derivative!(f!, y, der, extras, x, backend)
+    DI.derivative!(f!, y, der, extras, backend, x)
     f!(y, x)
     return y, der
 end
@@ -188,7 +188,7 @@ function DI.value_and_jacobian!(
     backend::Union{AutoSymbolics,AutoSparse{<:AutoSymbolics}},
     x,
 )
-    DI.jacobian!(f!, y, jac, extras, x, backend)
+    DI.jacobian!(f!, y, jac, extras, backend, x)
     f!(y, x)
     return y, jac
 end

@@ -153,7 +153,7 @@ function DI.value_gradient_and_hessian!(
     f, grad, hess, extras::NoHessianExtras, backend::AutoZygote, x
 )
     y, _ = DI.value_and_gradient!(f, grad, NoGradientExtras(), backend, x)
-    DI.hessian!(f, hess, extras, x, backend)
+    DI.hessian!(f, hess, extras, backend, x)
     return y, grad, hess
 end
 

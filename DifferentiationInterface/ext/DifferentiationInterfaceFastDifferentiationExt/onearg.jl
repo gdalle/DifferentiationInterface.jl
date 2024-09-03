@@ -210,7 +210,7 @@ function DI.value_and_derivative!(
     backend::AutoFastDifferentiation,
     x,
 )
-    return f(x), DI.derivative!(f, der, extras, x, backend)
+    return f(x), DI.derivative!(f, der, extras, backend, x)
 end
 
 ## Gradient
