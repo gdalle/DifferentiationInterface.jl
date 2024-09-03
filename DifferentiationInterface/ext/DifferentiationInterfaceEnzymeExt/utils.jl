@@ -1,10 +1,3 @@
-## DI boilerplate
-
-DI.check_available(::AutoEnzyme) = true
-
-# until https://github.com/EnzymeAD/Enzyme.jl/pull/1545 is merged
-DI.pick_batchsize(::AnyAutoEnzyme, dimension::Integer) = min(dimension, 16)
-
 ## Useful closures
 
 struct Converter{X} end
@@ -84,3 +77,10 @@ function my_set_err_if_func_written(
         ReturnPrimal,ReturnShadow,Width,ModifiedBetween,ABI,true
     }()
 end
+
+## DI boilerplate
+
+DI.check_available(::AutoEnzyme) = true
+
+# until https://github.com/EnzymeAD/Enzyme.jl/pull/1545 is merged
+DI.pick_batchsize(::AnyAutoEnzyme, dimension::Integer) = min(dimension, 16)
