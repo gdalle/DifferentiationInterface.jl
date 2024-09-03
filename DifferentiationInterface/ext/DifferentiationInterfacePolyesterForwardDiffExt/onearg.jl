@@ -41,32 +41,28 @@ end
 
 ## Derivative
 
-function DI.prepare_derivative(
-    f, backend::AutoPolyesterForwardDiff, x
-)::PushforwardDerivativeExtras
+function DI.prepare_derivative(f, backend::AutoPolyesterForwardDiff, x)
     return DI.prepare_derivative(f, single_threaded(backend), x)
 end
 
 function DI.value_and_derivative(
-    f, backend::AutoPolyesterForwardDiff, x, extras::PushforwardDerivativeExtras
+    f, backend::AutoPolyesterForwardDiff, x, extras::DerivativeExtras
 )
     return DI.value_and_derivative(f, single_threaded(backend), x, extras)
 end
 
 function DI.value_and_derivative!(
-    f, der, backend::AutoPolyesterForwardDiff, x, extras::PushforwardDerivativeExtras
+    f, der, backend::AutoPolyesterForwardDiff, x, extras::DerivativeExtras
 )
     return DI.value_and_derivative!(f, der, single_threaded(backend), x, extras)
 end
 
-function DI.derivative(
-    f, backend::AutoPolyesterForwardDiff, x, extras::PushforwardDerivativeExtras
-)
+function DI.derivative(f, backend::AutoPolyesterForwardDiff, x, extras::DerivativeExtras)
     return DI.derivative(f, single_threaded(backend), x, extras)
 end
 
 function DI.derivative!(
-    f, der, backend::AutoPolyesterForwardDiff, x, extras::PushforwardDerivativeExtras
+    f, der, backend::AutoPolyesterForwardDiff, x, extras::DerivativeExtras
 )
     return DI.derivative!(f, der, single_threaded(backend), x, extras)
 end
@@ -179,4 +175,36 @@ function DI.value_gradient_and_hessian!(
     return DI.value_gradient_and_hessian!(
         f, grad, hess, single_threaded(backend), x, extras
     )
+end
+
+## Second derivative
+
+function DI.prepare_second_derivative(f, backend::AutoPolyesterForwardDiff, x)
+    return DI.prepare_second_derivative(f, single_threaded(backend), x)
+end
+
+function DI.value_derivative_and_second_derivative(
+    f, backend::AutoPolyesterForwardDiff, x, extras::SecondDerivativeExtras
+)
+    return DI.value_derivative_and_second_derivative(f, single_threaded(backend), x, extras)
+end
+
+function DI.value_derivative_and_second_derivative!(
+    f, der, der2, backend::AutoPolyesterForwardDiff, x, extras::SecondDerivativeExtras
+)
+    return DI.value_derivative_and_second_derivative!(
+        f, der, der2, single_threaded(backend), x, extras
+    )
+end
+
+function DI.second_derivative(
+    f, backend::AutoPolyesterForwardDiff, x, extras::SecondDerivativeExtras
+)
+    return DI.second_derivative(f, single_threaded(backend), x, extras)
+end
+
+function DI.second_derivative!(
+    f, der2, backend::AutoPolyesterForwardDiff, x, extras::SecondDerivativeExtras
+)
+    return DI.second_derivative!(f, der2, single_threaded(backend), x, extras)
 end

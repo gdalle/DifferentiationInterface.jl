@@ -79,6 +79,52 @@ function DI.pushforward!(
     return ty
 end
 
+## Derivative
+
+struct ForwardDiffOneArgDerivativeExtras{E} <: DerivativeExtras
+    pushforward_extras::E
+end
+
+function DI.prepare_derivative(f::F, backend::AutoForwardDiff, x) where {F}
+    pushforward_extras = DI.prepare_pushforward(f, backend, x, SingleTangent(one(x)))
+    return ForwardDiffOneArgDerivativeExtras(pushforward_extras)
+end
+
+function DI.value_and_derivative(
+    f::F, backend::AutoForwardDiff, x, extras::ForwardDiffOneArgDerivativeExtras
+) where {F}
+    y, ty = DI.value_and_pushforward(
+        f, backend, x, SingleTangent(one(x)), extras.pushforward_extras
+    )
+    return y, only(ty)
+end
+
+function DI.value_and_derivative!(
+    f::F, der, backend::AutoForwardDiff, x, extras::ForwardDiffOneArgDerivativeExtras
+) where {F}
+    y, _ = DI.value_and_pushforward!(
+        f, SingleTangent(der), backend, x, SingleTangent(one(x)), extras.pushforward_extras
+    )
+    return y, der
+end
+
+function DI.derivative(
+    f::F, backend::AutoForwardDiff, x, extras::ForwardDiffOneArgDerivativeExtras
+) where {F}
+    return only(
+        DI.pushforward(f, backend, x, SingleTangent(one(x)), extras.pushforward_extras)
+    )
+end
+
+function DI.derivative!(
+    f::F, der, backend::AutoForwardDiff, x, extras::ForwardDiffOneArgDerivativeExtras
+) where {F}
+    DI.pushforward!(
+        f, SingleTangent(der), backend, x, SingleTangent(one(x)), extras.pushforward_extras
+    )
+    return der
+end
+
 ## Gradient
 
 ### Unprepared
