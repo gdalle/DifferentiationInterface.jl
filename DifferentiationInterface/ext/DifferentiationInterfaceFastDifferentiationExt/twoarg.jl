@@ -57,10 +57,10 @@ end
 function DI.value_and_pushforward(
     f!,
     y,
+    extras::FastDifferentiationTwoArgPushforwardExtras,
     backend::AutoFastDifferentiation,
     x,
     tx::Tangents,
-    extras::FastDifferentiationTwoArgPushforwardExtras,
 )
     ty = DI.pushforward(f!, y, extras, backend, x, tx)
     f!(y, x)
