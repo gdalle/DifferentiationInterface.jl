@@ -31,7 +31,7 @@ function DI.prepare_pushforward(f, ::AutoSymbolics, x, tx::Tangents)
 end
 
 function DI.pushforward(
-    f, ::AutoSymbolics, x, tx::Tangents, extras::SymbolicsOneArgPushforwardExtras
+    f, extras::SymbolicsOneArgPushforwardExtras, ::AutoSymbolics, x, tx::Tangents
 )
     dys = map(tx.d) do dx
         v_vec = vcat(myvec(x), myvec(dx))

@@ -50,10 +50,10 @@ end
 function value_and_pushforward(
     f!,
     y,
+    extras::FromPrimitivePushforwardExtras,
     fromprim::AutoForwardFromPrimitive,
     x,
     tx::Tangents,
-    extras::FromPrimitivePushforwardExtras,
 )
     return value_and_pushforward(f!, y, extras.pushforward_extras, fromprim.backend, x, tx)
 end

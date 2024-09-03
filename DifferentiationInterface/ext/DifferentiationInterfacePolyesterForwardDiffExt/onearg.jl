@@ -41,9 +41,7 @@ end
 
 ## Derivative
 
-function DI.prepare_derivative(
-    f, backend::AutoPolyesterForwardDiff, x
-)::PushforwardDerivativeExtras
+function DI.prepare_derivative(f, backend::AutoPolyesterForwardDiff, x)
     return DI.prepare_derivative(f, single_threaded(backend), x)
 end
 

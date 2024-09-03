@@ -126,7 +126,7 @@ function DI.hvp(f, extras::ZygoteHVPExtras, ::AutoZygote, x, tx::Tangents)
     return DI.pushforward(∇f, pushforward_extras, AutoForwardDiff(), x, tx)
 end
 
-function DI.hvp!(f, extras::ZygoteHVPExtras, tg::Tangents, ::AutoZygote, x, tx::Tangents)
+function DI.hvp!(f, tg::Tangents, extras::ZygoteHVPExtras, ::AutoZygote, x, tx::Tangents)
     @compat (; ∇f, pushforward_extras) = extras
     return DI.pushforward!(∇f, tg, pushforward_extras, AutoForwardDiff(), x, tx)
 end
