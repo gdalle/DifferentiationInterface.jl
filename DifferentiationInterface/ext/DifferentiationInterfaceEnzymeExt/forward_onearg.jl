@@ -11,51 +11,41 @@ function DI.value_and_pushforward(
     backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
     tx::Tangents,
-    extras::NoPushforwardExtras,
-)
-    dys = map(tx.d) do dx
-        DI.pushforward(f, backend, x, dx, extras)
-    end
-    y = f(x)
-    return y, Tangents(dys)
-end
-
-function DI.value_and_pushforward(
-    f,
-    backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}},
-    x,
-    tx::Tangents{1},
     ::NoPushforwardExtras,
 )
-    dx = only(tx)
-    f_and_df = get_f_and_df(f, backend)
-    dx_sametype = convert(typeof(x), dx)
-    x_and_dx = Duplicated(x, dx_sametype)
-    y, new_dy = if backend isa AutoDeferredEnzyme
-        autodiff_deferred(forward_mode(backend), f_and_df, Duplicated, x_and_dx)
+    f_and_dfs = get_f_and_df(f, backend, tx)
+    conv_x = Converter(x)
+    dxs_sametype = map(conv_x, tx.d)
+    x_and_dxs = BatchDuplicated(x, dxs_sametype)
+    y, dys = if backend isa AutoDeferredEnzyme
+        autodiff_deferred(forward_mode(backend), f_and_dfs, BatchDuplicated, x_and_dxs)
     else
-        autodiff(forward_mode(backend), f_and_df, Duplicated, x_and_dx)
+        autodiff(forward_mode(backend), f_and_dfs, BatchDuplicated, x_and_dxs)
     end
-    return y, SingleTangent(new_dy)
+    return y, Tangents(tuple(dys...))
 end
 
 function DI.pushforward(
     f,
     backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
-    tx::Tangents{1},
+    tx::Tangents,
     ::NoPushforwardExtras,
 )
-    dx = only(tx)
-    f_and_df = get_f_and_df(f, backend)
-    dx_sametype = convert(typeof(x), dx)
-    x_and_dx = Duplicated(x, dx_sametype)
-    new_dy = if backend isa AutoDeferredEnzyme
-        only(autodiff_deferred(forward_mode(backend), f_and_df, DuplicatedNoNeed, x_and_dx))
+    f_and_dfs = get_f_and_df(f, backend, tx)
+    conv = Converter(x)
+    dxs_sametype = map(conv, tx.d)
+    x_and_dxs = BatchDuplicated(x, dxs_sametype)
+    dys = if backend isa AutoDeferredEnzyme
+        only(
+            autodiff_deferred(
+                forward_mode(backend), f_and_dfs, BatchDuplicatedNoNeed, x_and_dxs
+            ),
+        )
     else
-        only(autodiff(forward_mode(backend), f_and_df, DuplicatedNoNeed, x_and_dx))
+        only(autodiff(forward_mode(backend), f_and_dfs, BatchDuplicatedNoNeed, x_and_dxs))
     end
-    return SingleTangent(new_dy)
+    return Tangents(tuple(dys...))
 end
 
 function DI.value_and_pushforward!(

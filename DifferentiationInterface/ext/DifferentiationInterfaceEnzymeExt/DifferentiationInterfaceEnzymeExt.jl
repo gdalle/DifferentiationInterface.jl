@@ -22,6 +22,8 @@ using DocStringExtensions
 using Enzyme:
     Active,
     Annotation,
+    BatchDuplicated,
+    BatchDuplicatedNoNeed,
     Const,
     Duplicated,
     DuplicatedNoNeed,

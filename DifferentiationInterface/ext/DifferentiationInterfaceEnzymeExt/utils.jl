@@ -1,3 +1,23 @@
+## DI boilerplate
+
+DI.check_available(::AutoEnzyme) = true
+
+# until https://github.com/EnzymeAD/Enzyme.jl/pull/1545 is merged
+DI.pick_batchsize(::AnyAutoEnzyme, dimension::Integer) = min(dimension, 16)
+
+## Useful closures
+
+struct Converter{X} end
+Converter(::X) where {X} = Converter{X}()
+(c::Converter{X})(y) where {X} = convert(X, y)
+
+struct Zero{X}
+    x::X
+end
+(z::Zero{X})(_) where {X} = make_zero(z.x)
+
+## Nested backend
+
 struct AutoDeferredEnzyme{M,A} <: ADTypes.AbstractADType
     mode::M
 end
@@ -12,6 +32,8 @@ end
 
 const AnyAutoEnzyme{M,A} = Union{AutoEnzyme{M,A},AutoDeferredEnzyme{M,A}}
 
+## Mode objects
+
 # forward mode if possible
 forward_mode(backend::AnyAutoEnzyme{<:Mode}) = backend.mode
 forward_mode(::AnyAutoEnzyme{Nothing}) = Forward
@@ -20,12 +42,13 @@ forward_mode(::AnyAutoEnzyme{Nothing}) = Forward
 reverse_mode(backend::AnyAutoEnzyme{<:Mode}) = backend.mode
 reverse_mode(::AnyAutoEnzyme{Nothing}) = Reverse
 
-DI.check_available(::AutoEnzyme) = true
-
-# until https://github.com/EnzymeAD/Enzyme.jl/pull/1545 is merged
-DI.pick_batchsize(::AnyAutoEnzyme, dimension::Integer) = min(dimension, 16)
+## Annotations
 
 function get_f_and_df(f, ::AnyAutoEnzyme{M,Nothing}) where {M}
+    return f
+end
+
+function get_f_and_df(f, ::AnyAutoEnzyme{M,Nothing}, t::Tangents) where {M}
     return f
 end
 
@@ -33,8 +56,18 @@ function get_f_and_df(f, ::AnyAutoEnzyme{M,<:Const}) where {M}
     return Const(f)
 end
 
-function get_f_and_df(f, ::AnyAutoEnzyme{M,<:Duplicated}) where {M}
+function get_f_and_df(f, ::AnyAutoEnzyme{M,<:Const}, t::Tangents) where {M}
+    return Const(f)
+end
+
+function get_f_and_df(f, ::AnyAutoEnzyme{M,<:Union{Duplicated,BatchDuplicated}}) where {M}
     return Duplicated(f, make_zero(f))
+end
+
+function get_f_and_df(
+    f, ::AnyAutoEnzyme{M,<:Union{Duplicated,BatchDuplicated}}, t::Tangents
+) where {M}
+    return BatchDuplicated(f, map(Zero(f), t.d))
 end
 
 force_annotation(f::Annotation) = f
