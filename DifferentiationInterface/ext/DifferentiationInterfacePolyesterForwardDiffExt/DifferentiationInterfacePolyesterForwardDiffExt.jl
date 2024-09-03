@@ -12,7 +12,6 @@ using DifferentiationInterface:
     NoHessianExtras,
     NoJacobianExtras,
     PushforwardExtras,
-    PushforwardDerivativeExtras,
     Tangents
 using DocStringExtensions
 using LinearAlgebra: mul!
