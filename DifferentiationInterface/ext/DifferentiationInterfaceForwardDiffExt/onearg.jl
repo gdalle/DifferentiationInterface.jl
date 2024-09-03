@@ -91,36 +91,36 @@ function DI.prepare_derivative(f::F, backend::AutoForwardDiff, x) where {F}
 end
 
 function DI.value_and_derivative(
-    f::F, extras::ForwardDiffOneArgDerivativeExtras, backend::AutoForwardDiff, x
+    f::F, backend::AutoForwardDiff, x, extras::ForwardDiffOneArgDerivativeExtras
 ) where {F}
     y, ty = DI.value_and_pushforward(
-        f, extras.pushforward_extras, backend, x, SingleTangent(one(x))
+        f, backend, x, SingleTangent(one(x), extras.pushforward_extras)
     )
     return y, only(ty)
 end
 
 function DI.value_and_derivative!(
-    f::F, der, extras::ForwardDiffOneArgDerivativeExtras, backend::AutoForwardDiff, x
+    f::F, der, backend::AutoForwardDiff, x, extras::ForwardDiffOneArgDerivativeExtras
 ) where {F}
     y, _ = DI.value_and_pushforward!(
-        f, SingleTangent(der), extras.pushforward_extras, backend, x, SingleTangent(one(x))
+        f, SingleTangent(der), backend, x, SingleTangent(one(x)), extras.pushforward_extras
     )
     return y, der
 end
 
 function DI.derivative(
-    f::F, extras::ForwardDiffOneArgDerivativeExtras, backend::AutoForwardDiff, x
+    f::F, backend::AutoForwardDiff, x, extras::ForwardDiffOneArgDerivativeExtras
 ) where {F}
     return only(
-        DI.pushforward(f, extras.pushforward_extras, backend, x, SingleTangent(one(x)))
+        DI.pushforward(f, backend, x, SingleTangent(one(x)), extras.pushforward_extras)
     )
 end
 
 function DI.derivative!(
-    f::F, der, extras::ForwardDiffOneArgDerivativeExtras, backend::AutoForwardDiff, x
+    f::F, der, backend::AutoForwardDiff, x, extras::ForwardDiffOneArgDerivativeExtras
 ) where {F}
     DI.pushforward!(
-        f, SingleTangent(der), extras.pushforward_extras, backend, x, SingleTangent(one(x))
+        f, SingleTangent(der), backend, x, SingleTangent(one(x)), extras.pushforward_extras
     )
     return der
 end
