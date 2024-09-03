@@ -176,3 +176,35 @@ function DI.value_gradient_and_hessian!(
         f, grad, hess, single_threaded(backend), x, extras
     )
 end
+
+## Second derivative
+
+function DI.prepare_second_derivative(f, backend::AutoPolyesterForwardDiff, x)
+    return DI.prepare_second_derivative(f, single_threaded(backend), x)
+end
+
+function DI.value_derivative_and_second_derivative(
+    f, backend::AutoPolyesterForwardDiff, x, extras::SecondDerivativeExtras
+)
+    return DI.value_derivative_and_second_derivative(f, single_threaded(backend), x, extras)
+end
+
+function DI.value_derivative_and_second_derivative!(
+    f, der, der2, backend::AutoPolyesterForwardDiff, x, extras::SecondDerivativeExtras
+)
+    return DI.value_derivative_and_second_derivative!(
+        f, der, der2, single_threaded(backend), x, extras
+    )
+end
+
+function DI.second_derivative(
+    f, backend::AutoPolyesterForwardDiff, x, extras::SecondDerivativeExtras
+)
+    return DI.second_derivative(f, single_threaded(backend), x, extras)
+end
+
+function DI.second_derivative!(
+    f, der2, backend::AutoPolyesterForwardDiff, x, extras::SecondDerivativeExtras
+)
+    return DI.second_derivative!(f, der2, single_threaded(backend), x, extras)
+end
