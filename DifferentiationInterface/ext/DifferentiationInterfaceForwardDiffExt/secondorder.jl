@@ -33,7 +33,7 @@ function DI.prepare_hvp(
     T = tag_type(f, tagged_outer_backend, x)
     xdual = make_dual(T, x, tx)
     gradient_extras = DI.prepare_gradient(f, inner(backend), xdual)
-    inner_gradient = DI.Gradient(f, gradient_extras, inner(backend))
+    inner_gradient = DI.Gradient(f, inner(backend), gradient_extras)
     outer_pushforward_extras = DI.prepare_pushforward(
         inner_gradient, tagged_outer_backend, x, tx
     )
