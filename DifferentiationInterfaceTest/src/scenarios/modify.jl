@@ -9,7 +9,7 @@ maybe_zero(x::AbstractArray) = zero(x)
 maybe_zero(x::Tangents) = Tangents(map(maybe_zero, x.d))
 maybe_zero(::Nothing) = nothing
 
-function scenario_to_zero(scen::Scenario{op,args,pl}) where {op,args,pl}
+function Base.zero(scen::Scenario{op,args,pl}) where {op,args,pl}
     return Scenario{op,args,pl}(
         scen.f;
         x=scen.x,

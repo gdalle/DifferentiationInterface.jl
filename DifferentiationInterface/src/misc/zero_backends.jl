@@ -1,4 +1,10 @@
-zero!(x::AbstractArray) = x .= zero(eltype(x))
+struct ReturnZero{T}
+    template::T
+end
+
+(rz::ReturnZero)(i) = zero(rz.template)
+
+_zero!(x::AbstractArray) = x .= zero(eltype(x))
 
 ## Forward
 
@@ -11,17 +17,17 @@ Used in testing and benchmarking.
 struct AutoZeroForward <: AbstractADType end
 
 ADTypes.mode(::AutoZeroForward) = ForwardMode()
-DI.check_available(::AutoZeroForward) = true
-DI.twoarg_support(::AutoZeroForward) = DI.TwoArgSupported()
+check_available(::AutoZeroForward) = true
+twoarg_support(::AutoZeroForward) = TwoArgSupported()
 
-DI.prepare_pushforward(f, ::AutoZeroForward, x, tx::Tangents) = NoPushforwardExtras()
-DI.prepare_pushforward(f!, y, ::AutoZeroForward, x, tx::Tangents) = NoPushforwardExtras()
+prepare_pushforward(f, ::AutoZeroForward, x, tx::Tangents) = NoPushforwardExtras()
+prepare_pushforward(f!, y, ::AutoZeroForward, x, tx::Tangents) = NoPushforwardExtras()
 
 function DI.value_and_pushforward(
     f, ::NoPushforwardExtras, ::AutoZeroForward, x, tx::Tangents{B}
 ) where {B}
     y = f(x)
-    dys = ntuple(Returns(zero(y)), Val(B))
+    dys = ntuple(ReturnZero(y), Val(B))
     return y, Tangents(dys)
 end
 
@@ -29,7 +35,7 @@ function DI.value_and_pushforward(
     f!, y, ::NoPushforwardExtras, ::AutoZeroForward, x, tx::Tangents{B}
 ) where {B}
     f!(y, x)
-    dys = ntuple(Returns(zero(y)), Val(B))
+    dys = ntuple(ReturnZero(y), Val(B))
     return y, Tangents(dys)
 end
 
@@ -38,7 +44,7 @@ function DI.value_and_pushforward!(
 )
     y = f(x)
     for b in eachindex(ty.d)
-        zero!(ty.d[b])
+        _zero!(ty.d[b])
     end
     return y, ty
 end
@@ -48,7 +54,7 @@ function DI.value_and_pushforward!(
 )
     f!(y, x)
     for b in eachindex(ty.d)
-        zero!(ty.d[b])
+        _zero!(ty.d[b])
     end
     return y, ty
 end
@@ -64,17 +70,17 @@ Used in testing and benchmarking.
 struct AutoZeroReverse <: AbstractADType end
 
 ADTypes.mode(::AutoZeroReverse) = ReverseMode()
-DI.check_available(::AutoZeroReverse) = true
-DI.twoarg_support(::AutoZeroReverse) = DI.TwoArgSupported()
+check_available(::AutoZeroReverse) = true
+twoarg_support(::AutoZeroReverse) = TwoArgSupported()
 
-DI.prepare_pullback(f, ::AutoZeroReverse, x, ty::Tangents) = NoPullbackExtras()
-DI.prepare_pullback(f!, y, ::AutoZeroReverse, x, ty::Tangents) = NoPullbackExtras()
+prepare_pullback(f, ::AutoZeroReverse, x, ty::Tangents) = NoPullbackExtras()
+prepare_pullback(f!, y, ::AutoZeroReverse, x, ty::Tangents) = NoPullbackExtras()
 
 function DI.value_and_pullback(
     f, ::NoPullbackExtras, ::AutoZeroReverse, x, ty::Tangents{B}
 ) where {B}
     y = f(x)
-    dxs = ntuple(Returns(zero(x)), Val(B))
+    dxs = ntuple(ReturnZero(x), Val(B))
     return y, Tangents(dxs)
 end
 
@@ -82,7 +88,7 @@ function DI.value_and_pullback(
     f!, y, ::NoPullbackExtras, ::AutoZeroReverse, x, ty::Tangents{B}
 ) where {B}
     f!(y, x)
-    dxs = ntuple(Returns(zero(x)), Val(B))
+    dxs = ntuple(ReturnZero(x), Val(B))
     return y, Tangents(dxs)
 end
 
@@ -91,7 +97,7 @@ function DI.value_and_pullback!(
 )
     y = f(x)
     for b in eachindex(tx.d)
-        zero!(tx.d[b])
+        _zero!(tx.d[b])
     end
     return y, tx
 end
@@ -101,7 +107,7 @@ function DI.value_and_pullback!(
 )
     f!(y, x)
     for b in eachindex(tx.d)
-        zero!(tx.d[b])
+        _zero!(tx.d[b])
     end
     return y, tx
 end
