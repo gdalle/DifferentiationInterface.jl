@@ -23,7 +23,7 @@ twoarg_support(::AutoZeroForward) = TwoArgSupported()
 prepare_pushforward(f, ::AutoZeroForward, x, tx::Tangents) = NoPushforwardExtras()
 prepare_pushforward(f!, y, ::AutoZeroForward, x, tx::Tangents) = NoPushforwardExtras()
 
-function DI.value_and_pushforward(
+function value_and_pushforward(
     f, ::NoPushforwardExtras, ::AutoZeroForward, x, tx::Tangents{B}
 ) where {B}
     y = f(x)
@@ -31,7 +31,7 @@ function DI.value_and_pushforward(
     return y, Tangents(dys)
 end
 
-function DI.value_and_pushforward(
+function value_and_pushforward(
     f!, y, ::NoPushforwardExtras, ::AutoZeroForward, x, tx::Tangents{B}
 ) where {B}
     f!(y, x)
@@ -39,7 +39,7 @@ function DI.value_and_pushforward(
     return y, Tangents(dys)
 end
 
-function DI.value_and_pushforward!(
+function value_and_pushforward!(
     f, ty::Tangents, ::NoPushforwardExtras, ::AutoZeroForward, x, tx::Tangents
 )
     y = f(x)
@@ -49,7 +49,7 @@ function DI.value_and_pushforward!(
     return y, ty
 end
 
-function DI.value_and_pushforward!(
+function value_and_pushforward!(
     f!, y, ty::Tangents, ::NoPushforwardExtras, ::AutoZeroForward, x, tx::Tangents
 )
     f!(y, x)
@@ -76,7 +76,7 @@ twoarg_support(::AutoZeroReverse) = TwoArgSupported()
 prepare_pullback(f, ::AutoZeroReverse, x, ty::Tangents) = NoPullbackExtras()
 prepare_pullback(f!, y, ::AutoZeroReverse, x, ty::Tangents) = NoPullbackExtras()
 
-function DI.value_and_pullback(
+function value_and_pullback(
     f, ::NoPullbackExtras, ::AutoZeroReverse, x, ty::Tangents{B}
 ) where {B}
     y = f(x)
@@ -84,7 +84,7 @@ function DI.value_and_pullback(
     return y, Tangents(dxs)
 end
 
-function DI.value_and_pullback(
+function value_and_pullback(
     f!, y, ::NoPullbackExtras, ::AutoZeroReverse, x, ty::Tangents{B}
 ) where {B}
     f!(y, x)
@@ -92,7 +92,7 @@ function DI.value_and_pullback(
     return y, Tangents(dxs)
 end
 
-function DI.value_and_pullback!(
+function value_and_pullback!(
     f, tx::Tangents, ::NoPullbackExtras, ::AutoZeroReverse, x, ty::Tangents
 )
     y = f(x)
@@ -102,7 +102,7 @@ function DI.value_and_pullback!(
     return y, tx
 end
 
-function DI.value_and_pullback!(
+function value_and_pullback!(
     f!, y, tx::Tangents, ::NoPullbackExtras, ::AutoZeroReverse, x, ty::Tangents
 )
     f!(y, x)

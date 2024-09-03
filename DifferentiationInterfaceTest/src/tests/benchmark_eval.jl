@@ -57,15 +57,15 @@ for op in [
             # benchmark
             ex = $prep_op(f, ba, x)
             bench0 = @be $prep_op(f, ba, x) samples = 1 evals = 1
-            bench1 = @be ex $val_and_op(f, ba, x, _) evals = 1
-            bench2 = @be ex $op(f, ba, x, _) evals = 1
+            bench1 = @be ex $val_and_op(f, _, ba, x) evals = 1
+            bench2 = @be ex $op(f, _, ba, x) evals = 1
             # count
             cc = CallCounter(f)
             ex = $prep_op(cc, ba, x)
             calls0 = reset_count!(cc)
-            $val_and_op(cc, ba, x, ex)
+            $val_and_op(cc, ex, ba, x)
             calls1 = reset_count!(cc)
-            $op(cc, ba, x, ex)
+            $op(cc, ex, ba, x)
             calls2 = reset_count!(cc)
             return (; bench0, bench1, bench2, calls0, calls1, calls2)
         end
@@ -75,15 +75,15 @@ for op in [
             # benchmark
             ex = $prep_op(f, ba, x)
             bench0 = @be $prep_op(f, ba, x) samples = 1 evals = 1
-            bench1 = @be (res1, ex) $val_and_op!(f, _[1], ba, x, _[2]) evals = 1
-            bench2 = @be (res1, ex) $op!(f, _[1], ba, x, _[2]) evals = 1
+            bench1 = @be (res1, ex) $val_and_op!(f, _[1], _[2], ba, x) evals = 1
+            bench2 = @be (res1, ex) $op!(f, _[1], _[2], ba, x) evals = 1
             # count
             cc = CallCounter(f)
             ex = $prep_op(cc, ba, x)
             calls0 = reset_count!(cc)
-            $val_and_op!(cc, res1, ba, x, ex)
+            $val_and_op!(cc, res1, ex, ba, x)
             calls1 = reset_count!(cc)
-            $op!(cc, res1, ba, x, ex)
+            $op!(cc, res1, ex, ba, x)
             calls2 = reset_count!(cc)
             return (; bench0, bench1, bench2, calls0, calls1, calls2)
         end
@@ -95,15 +95,15 @@ for op in [
             # benchmark
             ex = $prep_op(f, y, ba, x)
             bench0 = @be $prep_op(f, y, ba, x) samples = 1 evals = 1
-            bench1 = @be (y, ex) $val_and_op(f, _[1], ba, x, _[2]) evals = 1
-            bench2 = @be (y, ex) $op(f, _[1], ba, x, _[2]) evals = 1
+            bench1 = @be (y, ex) $val_and_op(f, _[1], _[2], ba, x) evals = 1
+            bench2 = @be (y, ex) $op(f, _[1], _[2], ba, x) evals = 1
             # count
             cc = CallCounter(f)
             ex = $prep_op(cc, y, ba, x)
             calls0 = reset_count!(cc)
-            $val_and_op(cc, y, ba, x, ex)
+            $val_and_op(cc, y, ex, ba, x)
             calls1 = reset_count!(cc)
-            $op(cc, y, ba, x, ex)
+            $op(cc, y, ex, ba, x)
             calls2 = reset_count!(cc)
             return (; bench0, bench1, bench2, calls0, calls1, calls2)
         end
@@ -113,15 +113,15 @@ for op in [
             # benchmark
             ex = $prep_op(f, y, ba, x)
             bench0 = @be $prep_op(f, y, ba, x) samples = 1 evals = 1
-            bench1 = @be (y, res1, ex) $val_and_op!(f, _[1], _[2], ba, x, _[3]) evals = 1
-            bench2 = @be (y, res1, ex) $op!(f, _[1], _[2], ba, x, _[3]) evals = 1
+            bench1 = @be (y, res1, ex) $val_and_op!(f, _[1], _[2], _[3], ba, x) evals = 1
+            bench2 = @be (y, res1, ex) $op!(f, _[1], _[2], _[3], ba, x) evals = 1
             # count
             cc = CallCounter(f)
             ex = $prep_op(cc, y, ba, x)
             calls0 = reset_count!(cc)
-            $val_and_op!(cc, y, res1, ba, x, ex)
+            $val_and_op!(cc, y, res1, ex, ba, x)
             calls1 = reset_count!(cc)
-            $op!(cc, y, res1, ba, x, ex)
+            $op!(cc, y, res1, ex, ba, x)
             calls2 = reset_count!(cc)
             return (; bench0, bench1, bench2, calls0, calls1, calls2)
         end
@@ -132,15 +132,15 @@ for op in [
             # benchmark
             ex = $prep_op(f, ba, x)
             bench0 = @be $prep_op(f, ba, x) samples = 1 evals = 1
-            bench1 = @be ex $val_and_op(f, ba, x, _) evals = 1
-            bench2 = @be ex $op(f, ba, x, _) evals = 1
+            bench1 = @be ex $val_and_op(f, _, ba, x) evals = 1
+            bench2 = @be ex $op(f, _, ba, x) evals = 1
             # count
             cc = CallCounter(f)
             ex = $prep_op(cc, ba, x)
             calls0 = reset_count!(cc)
-            $val_and_op(cc, ba, x, ex)
+            $val_and_op(cc, ex, ba, x)
             calls1 = reset_count!(cc)
-            $op(cc, ba, x, ex)
+            $op(cc, ex, ba, x)
             calls2 = reset_count!(cc)
             return (; bench0, bench1, bench2, calls0, calls1, calls2)
         end
@@ -150,15 +150,15 @@ for op in [
             # benchmark
             ex = $prep_op(f, ba, x)
             bench0 = @be $prep_op(f, ba, x) samples = 1 evals = 1
-            bench1 = @be (res1, res2, ex) $val_and_op!(f, _[1], _[2], ba, x, _[3]) evals = 1
-            bench2 = @be (res2, ex) $op!(f, _[1], ba, x, _[2]) evals = 1
+            bench1 = @be (res1, res2, ex) $val_and_op!(f, _[1], _[2], _[3], ba, x) evals = 1
+            bench2 = @be (res2, ex) $op!(f, _[1], _[2], ba, x) evals = 1
             # count
             cc = CallCounter(f)
             ex = $prep_op(cc, ba, x)
             calls0 = reset_count!(cc)
-            $val_and_op!(cc, res1, res2, ba, x, ex)
+            $val_and_op!(cc, res1, res2, ex, ba, x)
             calls1 = reset_count!(cc)
-            $op!(cc, res2, ba, x, ex)
+            $op!(cc, res2, ex, ba, x)
             calls2 = reset_count!(cc)
             return (; bench0, bench1, bench2, calls0, calls1, calls2)
         end
@@ -169,15 +169,15 @@ for op in [
             # benchmark
             ex = $prep_op(f, ba, x, seed)
             bench0 = @be $prep_op(f, ba, x, seed) samples = 1 evals = 1
-            bench1 = @be ex $val_and_op(f, ba, x, seed, _) evals = 1
-            bench2 = @be ex $op(f, ba, x, seed, _) evals = 1
+            bench1 = @be ex $val_and_op(f, _, ba, x, seed) evals = 1
+            bench2 = @be ex $op(f, _, ba, x, seed) evals = 1
             # count
             cc = CallCounter(f)
             ex = $prep_op(cc, ba, x, seed)
             calls0 = reset_count!(cc)
-            $val_and_op(cc, ba, x, seed, ex)
+            $val_and_op(cc, ex, ba, x, seed)
             calls1 = reset_count!(cc)
-            $op(cc, ba, x, seed, ex)
+            $op(cc, ex, ba, x, seed)
             calls2 = reset_count!(cc)
             return (; bench0, bench1, bench2, calls0, calls1, calls2)
         end
@@ -187,15 +187,15 @@ for op in [
             # benchmark
             ex = $prep_op(f, ba, x, seed)
             bench0 = @be $prep_op(f, ba, x, seed) samples = 1 evals = 1
-            bench1 = @be (res1, ex) $val_and_op!(f, _[1], ba, x, seed, _[2]) evals = 1
-            bench2 = @be (res1, ex) $op!(f, _[1], ba, x, seed, _[2]) evals = 1
+            bench1 = @be (res1, ex) $val_and_op!(f, _[1], _[2], ba, x, seed) evals = 1
+            bench2 = @be (res1, ex) $op!(f, _[1], _[2], ba, x, seed) evals = 1
             # count
             cc = CallCounter(f)
             ex = $prep_op(cc, ba, x, seed)
             calls0 = reset_count!(cc)
-            $val_and_op!(cc, res1, ba, x, seed, ex)
+            $val_and_op!(cc, res1, ex, ba, x, seed)
             calls1 = reset_count!(cc)
-            $op!(cc, res1, ba, x, seed, ex)
+            $op!(cc, res1, ex, ba, x, seed)
             calls2 = reset_count!(cc)
             return (; bench0, bench1, bench2, calls0, calls1, calls2)
         end
@@ -205,15 +205,15 @@ for op in [
             # benchmark
             ex = $prep_op(f, y, ba, x, seed)
             bench0 = @be $prep_op(f, y, ba, x, seed) samples = 1 evals = 1
-            bench1 = @be (y, ex) $val_and_op(f, _[1], ba, x, seed, _[2]) evals = 1
-            bench2 = @be (y, ex) $op(f, _[1], ba, x, seed, _[2]) evals = 1
+            bench1 = @be (y, ex) $val_and_op(f, _[1], _[2], ba, x, seed) evals = 1
+            bench2 = @be (y, ex) $op(f, _[1], _[2], ba, x, seed) evals = 1
             # count
             cc = CallCounter(f)
             ex = $prep_op(cc, y, ba, x, seed)
             calls0 = reset_count!(cc)
-            $val_and_op(cc, y, ba, x, seed, ex)
+            $val_and_op(cc, y, ex, ba, x, seed)
             calls1 = reset_count!(cc)
-            $op(cc, y, ba, x, seed, ex)
+            $op(cc, y, ex, ba, x, seed)
             calls2 = reset_count!(cc)
             return (; bench0, bench1, bench2, calls0, calls1, calls2)
         end
@@ -223,16 +223,16 @@ for op in [
             # benchmark
             ex = $prep_op(f, y, ba, x, seed)
             bench0 = @be $prep_op(f, y, ba, x, seed) samples = 1 evals = 1
-            bench1 = @be (y, res1, ex) $val_and_op!(f, _[1], _[2], ba, x, seed, _[3]) evals =
+            bench1 = @be (y, res1, ex) $val_and_op!(f, _[1], _[2], _[3], ba, x, seed) evals =
                 1
-            bench2 = @be (y, res1, ex) $op!(f, _[1], _[2], ba, x, seed, _[3]) evals = 1
+            bench2 = @be (y, res1, ex) $op!(f, _[1], _[2], _[3], ba, x, seed) evals = 1
             # count
             cc = CallCounter(f)
             ex = $prep_op(cc, y, ba, x, seed)
             calls0 = reset_count!(cc)
-            $val_and_op!(cc, y, res1, ba, x, seed, ex)
+            $val_and_op!(cc, y, res1, ex, ba, x, seed)
             calls1 = reset_count!(cc)
-            $op!(cc, y, res1, ba, x, seed, ex)
+            $op!(cc, y, res1, ex, ba, x, seed)
             calls2 = reset_count!(cc)
             return (; bench0, bench1, bench2, calls0, calls1, calls2)
         end
@@ -244,13 +244,13 @@ for op in [
             ex = $prep_op(f, ba, x, seed)
             bench0 = @be $prep_op(f, ba, x, seed) samples = 1 evals = 1
             bench1 = @be +(1, 1) evals = 1  # TODO: fix
-            bench2 = @be ex $op(f, ba, x, seed, _) evals = 1
+            bench2 = @be ex $op(f, _, ba, x, seed) evals = 1
             # count
             cc = CallCounter(f)
             ex = $prep_op(cc, ba, x, seed)
             calls0 = reset_count!(cc)
             calls1 = -1  # TODO: fix
-            $op(cc, ba, x, seed, ex)
+            $op(cc, ex, ba, x, seed)
             calls2 = reset_count!(cc)
             return (; bench0, bench1, bench2, calls0, calls1, calls2)
         end
@@ -261,13 +261,13 @@ for op in [
             ex = $prep_op(f, ba, x, seed)
             bench0 = @be $prep_op(f, ba, x, seed) samples = 1 evals = 1
             bench1 = @be +(1, 1) evals = 1  # TODO: fix
-            bench2 = @be (res2, ex) $op!(f, _[1], ba, x, seed, _[2]) evals = 1
+            bench2 = @be (res2, ex) $op!(f, _[1], _[2], ba, x, seed) evals = 1
             # count
             cc = CallCounter(f)
             ex = $prep_op(cc, ba, x, seed)
             calls0 = reset_count!(cc)
             calls1 = -1  # TODO: fix
-            $op!(cc, res2, ba, x, seed, ex)
+            $op!(cc, res2, ex, ba, x, seed)
             calls2 = reset_count!(cc)
             return (; bench0, bench1, bench2, calls0, calls1, calls2)
         end

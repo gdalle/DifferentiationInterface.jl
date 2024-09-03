@@ -243,7 +243,7 @@ function _jacobian_aux!(
 end
 
 function _jacobian_aux!(
-    f_or_f!y::FY, jac, backend::AbstractADType, x, extras::PullbackJacobianExtras{B}
+    f_or_f!y::FY, jac, extras::PullbackJacobianExtras{B}, backend::AbstractADType, x
 ) where {FY,B}
     @compat (; batched_seeds, batched_results, pullback_extras, M) = extras
 

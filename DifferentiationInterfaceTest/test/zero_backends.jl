@@ -15,7 +15,7 @@ test_differentiation(
     zero.(default_scenarios());
     correctness=false,
     type_stability=true,
-    excluded=[:second_derivative],
+    # excluded=[:second_derivative],
     logging=LOGGING,
 )
 
