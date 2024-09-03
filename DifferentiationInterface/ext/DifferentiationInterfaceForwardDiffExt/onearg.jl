@@ -94,7 +94,7 @@ function DI.value_and_derivative(
     f::F, backend::AutoForwardDiff, x, extras::ForwardDiffOneArgDerivativeExtras
 ) where {F}
     y, ty = DI.value_and_pushforward(
-        f, backend, x, SingleTangent(one(x), extras.pushforward_extras)
+        f, backend, x, SingleTangent(one(x)), extras.pushforward_extras
     )
     return y, only(ty)
 end
