@@ -216,4 +216,56 @@ end
 
 ## Jacobian
 
-# see https://github.com/EnzymeAD/Enzyme.jl/issues/1391
+struct EnzymeReverseOneArgJacobianExtras{M,B} <: JacobianExtras end
+
+function DI.prepare_jacobian(
+    f, backend::AutoEnzyme{<:ReverseMode,<:Union{Nothing,Const}}, x
+)
+    y = f(x)
+    M = length(y)
+    B = pick_batchsize(backend, M)
+    return EnzymeReverseOneArgJacobianExtras{M,B}()
+end
+
+function DI.jacobian(
+    f,
+    backend::AutoEnzyme{<:ReverseMode,<:Union{Nothing,Const}},
+    x,
+    ::EnzymeReverseOneArgJacobianExtras{M,B},
+) where {M,B}
+    f_and_df = get_f_and_df(f, backend)
+    jac_wrongshape = jacobian(reverse_mode(backend), f_and_df, x, Val(M), Val(B))
+    nx = length(x)
+    ny = length(jac_wrongshape) ÷ length(x)
+    return reshape(jac_wrongshape, ny, nx)
+end
+
+function DI.value_and_jacobian(
+    f,
+    backend::AutoEnzyme{<:ReverseMode,<:Union{Nothing,Const}},
+    x,
+    extras::EnzymeReverseOneArgJacobianExtras,
+)
+    return f(x), DI.jacobian(f, backend, x, extras)
+end
+
+function DI.jacobian!(
+    f,
+    jac,
+    backend::AutoEnzyme{<:ReverseMode,<:Union{Nothing,Const}},
+    x,
+    extras::EnzymeReverseOneArgJacobianExtras,
+)
+    return copyto!(jac, DI.jacobian(f, backend, x, extras))
+end
+
+function DI.value_and_jacobian!(
+    f,
+    jac,
+    backend::AutoEnzyme{<:ReverseMode,<:Union{Nothing,Const}},
+    x,
+    extras::EnzymeReverseOneArgJacobianExtras,
+)
+    y, new_jac = DI.value_and_jacobian(f, backend, x, extras)
+    return y, copyto!(jac, new_jac)
+end
