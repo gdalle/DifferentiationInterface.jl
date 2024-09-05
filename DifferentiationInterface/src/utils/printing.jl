@@ -5,13 +5,13 @@ function package_name(b::AbstractADType)
     return s[5:(k - 1)]
 end
 
-package_name(b::AutoSparse) = package_name(dense_ad(b))
-
 function package_name(b::SecondOrder)
     p1 = package_name(outer(b))
     p2 = package_name(inner(b))
     return p1 == p2 ? p1 : "$p1, $p2"
 end
+
+package_name(b::AutoSparse) = package_name(dense_ad(b))
 
 function document_preparation(operator_name::AbstractString; same_point=false)
     if same_point

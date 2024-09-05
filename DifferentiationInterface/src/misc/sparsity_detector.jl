@@ -4,12 +4,13 @@
 Sparsity pattern detector satisfying the [detection API](https://sciml.github.io/ADTypes.jl/stable/#Sparse-AD) of [ADTypes.jl](https://github.com/SciML/ADTypes.jl).
 
 The nonzeros in a Jacobian or Hessian are detected by computing the relevant matrix with _dense_ AD, and thresholding the entries with a given tolerance (which can be numerically inaccurate).
-
-!!! warning
-    This detector can be very slow, and should only be used if its output can be exploited multiple times to compute many sparse matrices. 
+This process can be very slow, and should only be used if its output can be exploited multiple times to compute many sparse matrices.
 
 !!! danger
     In general, the sparsity pattern you obtain can depend on the provided input `x`. If you want to reuse the pattern, make sure that it is input-agnostic.
+
+!!! warning
+    `DenseSparsityDetector` functionality is now located in a package extension, please load the SparseArrays.jl standard library before you use it.
 
 # Fields
 
@@ -93,119 +94,4 @@ function DenseSparsityDetector(
         )
     end
     return DenseSparsityDetector{method,typeof(backend)}(backend, atol)
-end
-
-## Direct
-
-function ADTypes.jacobian_sparsity(f, x, detector::DenseSparsityDetector{:direct})
-    @compat (; backend, atol) = detector
-    J = jacobian(f, backend, x)
-    return sparse(abs.(J) .> atol)
-end
-
-function ADTypes.jacobian_sparsity(f!, y, x, detector::DenseSparsityDetector{:direct})
-    @compat (; backend, atol) = detector
-    J = jacobian(f!, y, backend, x)
-    return sparse(abs.(J) .> atol)
-end
-
-function ADTypes.hessian_sparsity(f, x, detector::DenseSparsityDetector{:direct})
-    @compat (; backend, atol) = detector
-    H = hessian(f, backend, x)
-    return sparse(abs.(H) .> atol)
-end
-
-## Iterative
-
-function ADTypes.jacobian_sparsity(f, x, detector::DenseSparsityDetector{:iterative})
-    @compat (; backend, atol) = detector
-    y = f(x)
-    n, m = length(x), length(y)
-    I, J = Int[], Int[]
-    if pushforward_performance(backend) isa PushforwardFast
-        p = similar(y)
-        extras = prepare_pushforward_same_point(
-            f, backend, x, basis(backend, x, first(CartesianIndices(x)))
-        )
-        for (kj, j) in enumerate(CartesianIndices(x))
-            pushforward!(f, p, extras, backend, x, basis(backend, x, j))
-            for ki in LinearIndices(p)
-                if abs(p[ki]) > atol
-                    push!(I, ki)
-                    push!(J, kj)
-                end
-            end
-        end
-    else
-        p = similar(x)
-        extras = prepare_pullback_same_point(
-            f, backend, x, basis(backend, y, first(CartesianIndices(y)))
-        )
-        for (ki, i) in enumerate(CartesianIndices(y))
-            pullback!(f, p, extras, backend, x, basis(backend, y, i))
-            for kj in LinearIndices(p)
-                if abs(p[kj]) > atol
-                    push!(I, ki)
-                    push!(J, kj)
-                end
-            end
-        end
-    end
-    return sparse(I, J, ones(Bool, length(I)), m, n)
-end
-
-function ADTypes.jacobian_sparsity(f!, y, x, detector::DenseSparsityDetector{:iterative})
-    @compat (; backend, atol) = detector
-    n, m = length(x), length(y)
-    I, J = Int[], Int[]
-    if pushforward_performance(backend) isa PushforwardFast
-        p = similar(y)
-        extras = prepare_pushforward_same_point(
-            f!, y, backend, x, basis(backend, x, first(CartesianIndices(x)))
-        )
-        for (kj, j) in enumerate(CartesianIndices(x))
-            pushforward!(f!, y, p, extras, backend, x, basis(backend, x, j))
-            for ki in LinearIndices(p)
-                if abs(p[ki]) > atol
-                    push!(I, ki)
-                    push!(J, kj)
-                end
-            end
-        end
-    else
-        p = similar(x)
-        extras = prepare_pullback_same_point(
-            f!, y, backend, x, basis(backend, y, first(CartesianIndices(y)))
-        )
-        for (ki, i) in enumerate(CartesianIndices(y))
-            pullback!(f!, y, p, extras, backend, x, basis(backend, y, i))
-            for kj in LinearIndices(p)
-                if abs(p[kj]) > atol
-                    push!(I, ki)
-                    push!(J, kj)
-                end
-            end
-        end
-    end
-    return sparse(I, J, ones(Bool, length(I)), m, n)
-end
-
-function ADTypes.hessian_sparsity(f, x, detector::DenseSparsityDetector{:iterative})
-    @compat (; backend, atol) = detector
-    n = length(x)
-    I, J = Int[], Int[]
-    p = similar(x)
-    extras = prepare_hvp_same_point(
-        f, backend, x, basis(backend, x, first(CartesianIndices(x)))
-    )
-    for (kj, j) in enumerate(CartesianIndices(x))
-        hvp!(f, p, extras, backend, x, basis(backend, x, j))
-        for ki in LinearIndices(p)
-            if abs(p[ki]) > atol
-                push!(I, ki)
-                push!(J, kj)
-            end
-        end
-    end
-    return sparse(I, J, ones(Bool, length(I)), n, n)
 end

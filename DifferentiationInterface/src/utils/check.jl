@@ -9,6 +9,8 @@ function check_available(backend::SecondOrder)
     return check_available(inner(backend)) && check_available(outer(backend))
 end
 
+check_available(backend::AutoSparse) = check_available(dense_ad(backend))
+
 """
     check_twoarg(backend)
 
