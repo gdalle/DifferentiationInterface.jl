@@ -227,9 +227,9 @@ end
 
 function DI.jacobian(
     f,
+    ::EnzymeReverseOneArgJacobianExtras{M,B},
     backend::AutoEnzyme{<:ReverseMode,Nothing},
     x,
-    ::EnzymeReverseOneArgJacobianExtras{M,B},
 ) where {M,B}
     jac_wrongshape = jacobian(reverse_mode(backend), f, x, Val(M), Val(B))
     nx = length(x)
@@ -239,30 +239,30 @@ end
 
 function DI.value_and_jacobian(
     f,
+    extras::EnzymeReverseOneArgJacobianExtras,
     backend::AutoEnzyme{<:ReverseMode,Nothing},
     x,
-    extras::EnzymeReverseOneArgJacobianExtras,
 )
-    return f(x), DI.jacobian(f, backend, x, extras)
+    return f(x), DI.jacobian(f, extras, backend, x)
 end
 
 function DI.jacobian!(
     f,
     jac,
+    extras::EnzymeReverseOneArgJacobianExtras,
     backend::AutoEnzyme{<:ReverseMode,Nothing},
     x,
-    extras::EnzymeReverseOneArgJacobianExtras,
 )
-    return copyto!(jac, DI.jacobian(f, backend, x, extras))
+    return copyto!(jac, DI.jacobian(f, extras, backend, x))
 end
 
 function DI.value_and_jacobian!(
     f,
     jac,
+    extras::EnzymeReverseOneArgJacobianExtras,
     backend::AutoEnzyme{<:ReverseMode,Nothing},
     x,
-    extras::EnzymeReverseOneArgJacobianExtras,
 )
-    y, new_jac = DI.value_and_jacobian(f, backend, x, extras)
+    y, new_jac = DI.value_and_jacobian(f, extras, backend, x)
     return y, copyto!(jac, new_jac)
 end
