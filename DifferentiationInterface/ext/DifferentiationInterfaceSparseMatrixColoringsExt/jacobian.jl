@@ -150,13 +150,13 @@ end
 function DI.value_and_jacobian(
     f::F, extras::SparseJacobianExtras, backend::AutoSparse, x
 ) where {F}
-    return f(x), DI.jacobian(f, extras, backend, x)
+    return f(x), jacobian(f, extras, backend, x)
 end
 
 function DI.value_and_jacobian!(
     f::F, jac, extras::SparseJacobianExtras, backend::AutoSparse, x
 ) where {F}
-    return f(x), DI.jacobian!(f, jac, extras, backend, x)
+    return f(x), jacobian!(f, jac, extras, backend, x)
 end
 
 ## Two arguments
@@ -176,7 +176,7 @@ end
 function DI.value_and_jacobian(
     f!::F, y, extras::SparseJacobianExtras, backend::AutoSparse, x
 ) where {F}
-    jac = DI.jacobian(f!, y, extras, backend, x)
+    jac = jacobian(f!, y, extras, backend, x)
     f!(y, x)
     return y, jac
 end
@@ -184,7 +184,7 @@ end
 function DI.value_and_jacobian!(
     f!::F, y, jac, extras::SparseJacobianExtras, backend::AutoSparse, x
 ) where {F}
-    DI.jacobian!(f!, y, jac, extras, backend, x)
+    jacobian!(f!, y, jac, extras, backend, x)
     f!(y, x)
     return y, jac
 end

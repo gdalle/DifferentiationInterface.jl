@@ -118,19 +118,19 @@ end
 function DI.value_gradient_and_hessian!(
     f::F, grad, hess, extras::SparseHessianExtras, backend::AutoSparse, x
 ) where {F}
-    y, _ = DI.value_and_gradient!(
+    y, _ = value_and_gradient!(
         f, grad, extras.gradient_extras, maybe_inner(dense_ad(backend)), x
     )
-    DI.hessian!(f, hess, extras, backend, x)
+    hessian!(f, hess, extras, backend, x)
     return y, grad, hess
 end
 
 function DI.value_gradient_and_hessian(
     f::F, extras::SparseHessianExtras, backend::AutoSparse, x
 ) where {F}
-    y, grad = DI.value_and_gradient(
+    y, grad = value_and_gradient(
         f, extras.gradient_extras, maybe_inner(dense_ad(backend)), x
     )
-    hess = DI.hessian(f, extras, backend, x)
+    hess = hessian(f, extras, backend, x)
     return y, grad, hess
 end
