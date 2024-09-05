@@ -1,7 +1,7 @@
 name = "DifferentiationInterfaceTest"
 uuid = "a82114a7-5aa3-49a8-9643-716bb13727a3"
 authors = ["Guillaume Dalle", "Adrian Hill"]
-version = "0.6.0"
+version = "0.6.1"
 
 [deps]
 ADTypes = "47edcb42-4c32-4615-8424-f2b9edc5f35b"
@@ -43,7 +43,7 @@ Chairmarks = "1.2.1"
 Compat = "3.46,4.2"
 ComponentArrays = "0.15"
 DataFrames = "1.6.1"
-DifferentiationInterface = "0.5.16"
+DifferentiationInterface = "0.6.0"
 DocStringExtensions = "0.8,0.9"
 FiniteDiff = "2.23.1"
 FiniteDifferences = "0.12"

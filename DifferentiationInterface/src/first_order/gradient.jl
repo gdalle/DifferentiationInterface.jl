@@ -20,7 +20,7 @@ $(document_preparation("gradient"))
 function value_and_gradient end
 
 """
-    value_and_gradient!(f, [extras,] grad, backend, x) -> (y, grad)
+    value_and_gradient!(f, grad, [extras,] backend, x) -> (y, grad)
 
 Compute the value and the gradient of the function `f` at point `x`, overwriting `grad`.
 
