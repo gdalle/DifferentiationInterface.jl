@@ -35,7 +35,7 @@ end
 
 ## Hessian, one argument
 
-function prepare_hessian(f::F, backend::AutoSparse, x) where {F}
+function DI.prepare_hessian(f::F, backend::AutoSparse, x) where {F}
     dense_backend = dense_ad(backend)
     sparsity = hessian_sparsity(f, x, sparsity_detector(backend))
     problem = ColoringProblem{:symmetric,:column}()
@@ -64,7 +64,9 @@ function prepare_hessian(f::F, backend::AutoSparse, x) where {F}
     )
 end
 
-function hessian(f::F, extras::SparseHessianExtras{B}, backend::AutoSparse, x) where {F,B}
+function DI.hessian(
+    f::F, extras::SparseHessianExtras{B}, backend::AutoSparse, x
+) where {F,B}
     @compat (; coloring_result, batched_seeds, hvp_extras) = extras
     dense_backend = dense_ad(backend)
     Ng = length(column_groups(coloring_result))
@@ -85,7 +87,7 @@ function hessian(f::F, extras::SparseHessianExtras{B}, backend::AutoSparse, x) w
     return decompress(compressed_matrix, coloring_result)
 end
 
-function hessian!(
+function DI.hessian!(
     f::F, hess, extras::SparseHessianExtras{B}, backend::AutoSparse, x
 ) where {F,B}
     @compat (;
@@ -113,7 +115,7 @@ function hessian!(
     return hess
 end
 
-function value_gradient_and_hessian!(
+function DI.value_gradient_and_hessian!(
     f::F, grad, hess, extras::SparseHessianExtras, backend::AutoSparse, x
 ) where {F}
     y, _ = value_and_gradient!(
@@ -123,7 +125,7 @@ function value_gradient_and_hessian!(
     return y, grad, hess
 end
 
-function value_gradient_and_hessian(
+function DI.value_gradient_and_hessian(
     f::F, extras::SparseHessianExtras, backend::AutoSparse, x
 ) where {F}
     y, grad = value_and_gradient(

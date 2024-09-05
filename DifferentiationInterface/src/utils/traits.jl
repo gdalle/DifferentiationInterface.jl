@@ -31,6 +31,8 @@ function twoarg_support(backend::SecondOrder)
     end
 end
 
+twoarg_support(backend::AutoSparse) = twoarg_support(dense_ad(backend))
+
 ## Pushforward
 
 abstract type PushforwardPerformance end
@@ -59,6 +61,7 @@ pushforward_performance(::ForwardMode) = PushforwardFast()
 pushforward_performance(::ForwardOrReverseMode) = PushforwardFast()
 pushforward_performance(::ReverseMode) = PushforwardSlow()
 pushforward_performance(::SymbolicMode) = PushforwardFast()
+pushforward_performance(backend::AutoSparse) = pushforward_performance(dense_ad(backend))
 
 ## Pullback
 
@@ -88,6 +91,7 @@ pullback_performance(::ForwardMode) = PullbackSlow()
 pullback_performance(::ForwardOrReverseMode) = PullbackFast()
 pullback_performance(::ReverseMode) = PullbackFast()
 pullback_performance(::SymbolicMode) = PullbackFast()
+pullback_performance(backend::AutoSparse) = pullback_performance(dense_ad(backend))
 
 ## HVP
 
@@ -133,6 +137,8 @@ function hvp_mode(ba::SecondOrder)
         return ForwardOverForward()
     end
 end
+
+hvp_mode(backend::AutoSparse{<:SecondOrder}) = hvp_mode(dense_ad(backend))
 
 ## Conversions
 

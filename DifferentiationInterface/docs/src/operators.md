@@ -168,16 +168,17 @@ For this to work, three ingredients are needed (read [this survey](https://epubs
    - [`DenseSparsityDetector`](@ref) from DifferentiationInterface.jl (beware that this detector only gives a locally valid pattern)
 3. A coloring algorithm: [`GreedyColoringAlgorithm`](@extref SparseMatrixColorings.GreedyColoringAlgorithm) from [SparseMatrixColorings.jl](https://github.com/gdalle/SparseMatrixColorings.jl) is the only one we support.
 
+!!! warning
+    Generic sparse AD is now located in a package extension which depends on SparseMatrixColorings.jl.
+
 These ingredients can be combined within the [`AutoSparse`](@extref ADTypes.AutoSparse) wrapper, which DifferentiationInterface.jl re-exports.
 Note that for sparse Hessians, you need to put the `SecondOrder` backend inside `AutoSparse`, and not the other way around.
+`AutoSparse` backends only support operators [`jacobian`](@ref) and [`hessian`](@ref) (as well as their variants).
 
 The preparation step of `jacobian` or `hessian` with an `AutoSparse` backend can be long, because it needs to detect the sparsity pattern and color the resulting sparse matrix.
 But after preparation, the more zeros are present in the matrix, the greater the speedup will be compared to dense differentiation.
 
 !!! danger
-    `AutoSparse` backends only support operators [`jacobian`](@ref) and [`hessian`](@ref) (as well as their variants).
-
-!!! warning
     The result of preparation for an `AutoSparse` backend cannot be reused if the sparsity pattern changes.
 
 !!! info

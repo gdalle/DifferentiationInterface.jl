@@ -9,11 +9,16 @@ $(EXPORTS)
 """
 module DifferentiationInterface
 
-using ADTypes: ADTypes, AbstractADType
-using ADTypes: mode, ForwardMode, ForwardOrReverseMode, ReverseMode, SymbolicMode
-using ADTypes: AutoSparse, dense_ad
-using ADTypes: coloring_algorithm
-using ADTypes: sparsity_detector, jacobian_sparsity, hessian_sparsity
+using ADTypes:
+    ADTypes,
+    AbstractADType,
+    AutoSparse,
+    ForwardMode,
+    ForwardOrReverseMode,
+    ReverseMode,
+    SymbolicMode,
+    dense_ad,
+    mode
 using ADTypes:
     AutoChainRules,
     AutoDiffractor,
@@ -33,18 +38,6 @@ using DocStringExtensions
 using FillArrays: OneElement
 using LinearAlgebra: Symmetric, Transpose, dot, parent, transpose
 using PackageExtensionCompat: @require_extensions
-using SparseArrays: SparseMatrixCSC, nonzeros, nzrange, rowvals, sparse
-using SparseMatrixColorings:
-    AbstractColoringResult,
-    ColoringProblem,
-    GreedyColoringAlgorithm,
-    coloring,
-    column_colors,
-    row_colors,
-    column_groups,
-    row_groups,
-    decompress,
-    decompress!
 
 include("second_order/second_order.jl")
 
@@ -70,13 +63,9 @@ include("second_order/hessian.jl")
 include("fallbacks/no_extras.jl")
 include("fallbacks/no_tangents.jl")
 
-include("sparse/fallbacks.jl")
-include("sparse/jacobian.jl")
-include("sparse/hessian.jl")
-
 include("misc/differentiate_with.jl")
-include("misc/sparsity_detector.jl")
 include("misc/from_primitive.jl")
+include("misc/sparsity_detector.jl")
 include("misc/zero_backends.jl")
 
 function __init__()
@@ -135,10 +124,6 @@ export AutoTracker
 export AutoZygote
 
 export AutoSparse
-
-## Re-exported from SparseMatrixColorings
-
-export GreedyColoringAlgorithm
 
 ## Public but not exported
 
