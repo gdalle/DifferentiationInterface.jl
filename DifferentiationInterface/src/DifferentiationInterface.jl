@@ -102,10 +102,10 @@ export prepare_hvp, prepare_hvp_same_point
 export prepare_derivative, prepare_gradient, prepare_jacobian
 export prepare_second_derivative, prepare_hessian
 
-export check_available, check_twoarg, check_hessian
-
 export DifferentiateWith
 export DenseSparsityDetector
+
+export check_available, check_inplace
 
 ## Re-exported from ADTypes
 
@@ -127,7 +127,6 @@ export AutoSparse
 
 ## Public but not exported
 
-@compat public inner
-@compat public outer
+@compat public inner, outer
 
 end # module

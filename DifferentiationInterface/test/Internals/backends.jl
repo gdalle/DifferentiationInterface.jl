@@ -15,7 +15,7 @@ end
         sparse_backend = AutoSparse(backend)
         @test ADTypes.mode(sparse_backend) == ADTypes.mode(backend)
         @test check_available(sparse_backend) == check_available(backend)
-        @test DI.twoarg_support(sparse_backend) == DI.twoarg_support(backend)
+        @test DI.inplace_support(sparse_backend) == DI.inplace_support(backend)
         @test DI.pushforward_performance(sparse_backend) ==
             DI.pushforward_performance(backend)
         @test DI.pullback_performance(sparse_backend) == DI.pullback_performance(backend)

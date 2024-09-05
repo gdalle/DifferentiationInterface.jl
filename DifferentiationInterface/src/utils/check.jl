@@ -12,33 +12,8 @@ end
 check_available(backend::AutoSparse) = check_available(dense_ad(backend))
 
 """
-    check_twoarg(backend)
+    check_inplace(backend)
 
-Check whether `backend` supports differentiation of two-argument functions.
+Check whether `backend` supports differentiation of in-place functions.
 """
-check_twoarg(backend::AbstractADType) = Bool(twoarg_support(backend))
-
-hess_checker(x::AbstractArray) = x[1] * x[1] * x[2] * x[2]
-
-"""
-    check_hessian(backend)
-
-Check whether `backend` supports second order differentiation by trying to compute a hessian.
-
-!!! warning
-    Might take a while due to compilation time.
-"""
-function check_hessian(backend::AbstractADType; verbose=true)
-    try
-        x = [2.0, 3.0]
-        hess = hessian(hess_checker, backend, x)
-        hess_th = [
-            2*abs2(x[2]) 4*x[1]*x[2]
-            4*x[1]*x[2] 2*abs2(x[1])
-        ]
-        return isapprox(hess, hess_th; rtol=1e-3)
-    catch exception
-        verbose && @warn "Backend $backend does not support hessian" exception
-        return false
-    end
-end
+check_inplace(backend::AbstractADType) = Bool(inplace_support(backend))

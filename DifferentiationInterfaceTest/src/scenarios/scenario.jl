@@ -75,7 +75,7 @@ end
 
 function compatible(backend::AbstractADType, scen::Scenario)
     if nb_args(scen) == 2
-        return Bool(twoarg_support(backend))
+        return Bool(inplace_support(backend))
     end
     return true
 end

@@ -9,7 +9,7 @@ using FiniteDifferences: FiniteDifferences, grad, jacobian, jvp, j′vp
 using LinearAlgebra: dot
 
 DI.check_available(::AutoFiniteDifferences) = true
-DI.twoarg_support(::AutoFiniteDifferences) = DI.TwoArgNotSupported()
+DI.inplace_support(::AutoFiniteDifferences) = DI.InPlaceNotSupported()
 
 ## Pushforward
 

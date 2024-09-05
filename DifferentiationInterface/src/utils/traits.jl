@@ -1,37 +1,37 @@
 ## Mutation
 
-abstract type MutationBehavior end
+abstract type InPlaceBehavior end
 
 """
-    TwoArgSupported
+    InPlaceSupported
 
-Trait identifying backends that support two-argument functions `f!(y, x)`.
+Trait identifying backends that support in-place functions `f!(y, x)`.
 """
-struct TwoArgSupported <: MutationBehavior end
-
-"""
-    TwoArgNotSupported
-
-Trait identifying backends that do not support two-argument functions `f!(y, x)`.
-"""
-struct TwoArgNotSupported <: MutationBehavior end
+struct InPlaceSupported <: InPlaceBehavior end
 
 """
-    twoarg_support(backend)
+    InPlaceNotSupported
 
-Return [`TwoArgSupported`](@ref) or [`TwoArgNotSupported`](@ref) in a statically predictable way.
+Trait identifying backends that do not support in-place functions `f!(y, x)`.
 """
-twoarg_support(::AbstractADType) = TwoArgSupported()
+struct InPlaceNotSupported <: InPlaceBehavior end
 
-function twoarg_support(backend::SecondOrder)
-    if Bool(twoarg_support(inner(backend))) && Bool(twoarg_support(outer(backend)))
-        return TwoArgSupported()
+"""
+    inplace_support(backend)
+
+Return [`InPlaceSupported`](@ref) or [`InPlaceNotSupported`](@ref) in a statically predictable way.
+"""
+inplace_support(::AbstractADType) = InPlaceSupported()
+
+function inplace_support(backend::SecondOrder)
+    if Bool(inplace_support(inner(backend))) && Bool(inplace_support(outer(backend)))
+        return InPlaceSupported()
     else
-        return TwoArgNotSupported()
+        return InPlaceNotSupported()
     end
 end
 
-twoarg_support(backend::AutoSparse) = twoarg_support(dense_ad(backend))
+inplace_support(backend::AutoSparse) = inplace_support(dense_ad(backend))
 
 ## Pushforward
 
@@ -142,8 +142,8 @@ hvp_mode(backend::AutoSparse{<:SecondOrder}) = hvp_mode(dense_ad(backend))
 
 ## Conversions
 
-Base.Bool(::TwoArgSupported) = true
-Base.Bool(::TwoArgNotSupported) = false
+Base.Bool(::InPlaceSupported) = true
+Base.Bool(::InPlaceNotSupported) = false
 
 Base.Bool(::PushforwardFast) = true
 Base.Bool(::PushforwardSlow) = false

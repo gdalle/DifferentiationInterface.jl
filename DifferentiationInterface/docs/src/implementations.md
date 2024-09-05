@@ -1,10 +1,6 @@
 # Implementations
 
-DifferentiationInterface.jl provides a handful of [operators](@ref "Operators") like [`gradient`](@ref) or [`jacobian`](@ref), each with several variants:
-
-- **out-of-place** or **in-place** behavior
-- **with** or **without primal** output value
-- support for **one-argument functions** `y = f(x)` or **two-argument functions** `f!(y, x)`
+DifferentiationInterface.jl provides a handful of [operators](@ref "Operators") like [`gradient`](@ref) or [`jacobian`](@ref), each with several variants: out-of-place or in-place behavior, with or without primal output value.
 
 While it is possible to define every operator using just [`pushforward`](@ref) and [`pullback`](@ref), some backends have more efficient implementations of high-level operators.
 When they are available, we nearly always call these backend-specific overloads.
@@ -24,7 +20,7 @@ The cells can have three values:
 ```@setup overloads
 using ADTypes: AbstractADType
 using DifferentiationInterface
-using DifferentiationInterface: twoarg_support, TwoArgSupported
+using DifferentiationInterface: inplace_support, InPlaceSupported
 using Markdown: Markdown
 
 using Diffractor: Diffractor
@@ -152,16 +148,16 @@ function print_overloads(backend, ext::Symbol)
     io = IOBuffer()
     ext = Base.get_extension(DifferentiationInterface, ext)
 
-    println(io, "#### One-argument functions `y = f(x)`")
+    println(io, "#### Out-of-place functions `f(x) = y`")
     println(io)
     print_overload_table(io, operators_and_types_f(backend), ext)
 
-    println(io, "#### Two-argument functions `f!(y, x)`")
+    println(io, "#### In-place functions `f!(y, x) = nothing`")
     println(io)
-    if twoarg_support(backend) == TwoArgSupported()
+    if inplace_support(backend) == InPlaceSupported()
         print_overload_table(io, operators_and_types_f!(backend), ext)
     else
-        println(io, "Backend doesn't support mutating functions.")
+        println(io, "Backend doesn't support in-place functions.")
     end
 
     return Markdown.parse(String(take!(io)))

@@ -8,7 +8,7 @@ Create an `extras` object that can be given to [`pullback`](@ref) and its varian
 
 !!! warning
     If the function changes in any way, the result of preparation will be invalidated, and you will need to run it again.
-    In the two-argument case, `y` is mutated by `f!` during preparation.
+    For in-place functions, `y` is mutated by `f!` during preparation.
 """
 function prepare_pullback end
 
@@ -20,7 +20,7 @@ Create an `extras_same` object that can be given to [`pullback`](@ref) and its v
 
 !!! warning
     If the function or the point changes in any way, the result of preparation will be invalidated, and you will need to run it again.
-    In the two-argument case, `y` is mutated by `f!` during preparation.
+    For in-place functions, `y` is mutated by `f!` during preparation.
 """
 function prepare_pullback_same_point end
 
