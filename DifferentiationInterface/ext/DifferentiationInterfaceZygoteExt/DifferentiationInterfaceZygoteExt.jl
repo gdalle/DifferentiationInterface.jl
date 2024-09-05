@@ -17,7 +17,7 @@ using Zygote:
 using Compat
 
 DI.check_available(::AutoZygote) = true
-DI.twoarg_support(::AutoZygote) = DI.TwoArgNotSupported()
+DI.inplace_support(::AutoZygote) = DI.InPlaceNotSupported()
 
 ## Pullback
 

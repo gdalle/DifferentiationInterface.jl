@@ -17,10 +17,7 @@ An interface to various automatic differentiation (AD) backends in Julia.
 
 ## Goal
 
-This package provides a backend-agnostic syntax to differentiate functions of the following types:
-
-- _one-argument functions_ (allocating): `f(x) = y`
-- _two-argument functions_ (mutating): `f!(y, x) = nothing`
+This package provides a unified syntax to differentiate functions.
 
 ## Features
 

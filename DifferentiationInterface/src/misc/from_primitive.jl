@@ -9,7 +9,7 @@ function multibasis(fromprim::FromPrimitive, x::AbstractArray, inds)
 end
 
 check_available(fromprim::FromPrimitive) = check_available(fromprim.backend)
-twoarg_support(fromprim::FromPrimitive) = twoarg_support(fromprim.backend)
+inplace_support(fromprim::FromPrimitive) = inplace_support(fromprim.backend)
 
 function pick_batchsize(fromprim::FromPrimitive, dimension::Integer)
     return pick_batchsize(fromprim.backend, dimension)

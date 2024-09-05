@@ -5,8 +5,9 @@ This page is about the latter, check out [that page](@ref "Operators") to learn 
 
 ## List of backends
 
-We support all dense backend choices from [ADTypes.jl](https://github.com/SciML/ADTypes.jl):
+We support the following dense backend choices from [ADTypes.jl](https://github.com/SciML/ADTypes.jl):
 
+- [`AutoChainRules`](@extref ADTypes.AutoChainRules)
 - [`AutoDiffractor`](@extref ADTypes.AutoDiffractor)
 - [`AutoEnzyme`](@extref ADTypes.AutoEnzyme)
 - [`AutoFastDifferentiation`](@extref ADTypes.AutoFastDifferentiation)
@@ -37,11 +38,17 @@ We strongly recommend that users upgrade to Julia 1.10 or above, where all backe
 
 ## Features
 
+Given a backend object, you can use:
+
+- [`check_available`](@ref) to know whether the required AD package is loaded
+- [`check_inplace`](@ref) to know whether the backend supports in-place functions (all backends support out-of-place functions)
+
 ```@setup backends
 using ADTypes
 using DifferentiationInterface
 import Markdown
 
+import ChainRulesCore
 import Diffractor
 import Enzyme
 import FastDifferentiation
@@ -56,6 +63,7 @@ import Tracker
 import Zygote
 
 backend_examples = [
+    AutoChainRules(; ruleconfig=Zygote.ZygoteRuleConfig()),
     AutoDiffractor(),
     AutoEnzyme(),
     AutoFastDifferentiation(),
@@ -72,17 +80,16 @@ backend_examples = [
 
 checkmark(x::Bool) = x ? '✅' : '❌'
 unicode_check_available(backend) = checkmark(check_available(backend))
-unicode_check_hessian(backend)   = checkmark(check_hessian(backend; verbose=false))
-unicode_check_twoarg(backend)    = checkmark(check_twoarg(backend))
+unicode_check_inplace(backend)    = checkmark(check_inplace(backend))
 
 io = IOBuffer()
 
 # Table header 
-println(io, "| Backend | Availability | Two-argument functions | Hessian support |")
-println(io, "|:--------|:------------:|:----------------------:|:---------------:|")
+println(io, "| Backend | Availability | In-place functions |")
+println(io, "|:--------|:------------:|:----------------------:|")
 
 for b in backend_examples
-    join(io, ["`$(nameof(typeof(b)))`", unicode_check_available(b), unicode_check_twoarg(b), unicode_check_hessian(b)], '|')
+    join(io, ["`$(nameof(typeof(b)))`", unicode_check_available(b), unicode_check_inplace(b)], '|')
     println(io, '|' )
 end
 backend_table = Markdown.parse(String(take!(io)))
@@ -91,21 +98,6 @@ backend_table = Markdown.parse(String(take!(io)))
 ```@example backends
 backend_table #hide
 ```
-
-### Availability
-
-You can use [`check_available`](@ref) to verify whether a given backend is loaded.
-
-### Support for two-argument functions
-
-All backends are compatible with one-argument functions `f(x) = y`.
-Only some are compatible with two-argument functions `f!(y, x) = nothing`.
-You can use [`check_twoarg`](@ref) to verify this compatibility.
-
-### Support for Hessian
-
-Only some backends are able to compute Hessians.
-You can use [`check_hessian`](@ref) to verify this feature (beware that it will try to compute a small Hessian, so it is not instantaneous like the other checks).
 
 ## Backend switch
 

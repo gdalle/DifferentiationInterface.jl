@@ -40,8 +40,7 @@ sparse_backends =
 @testset "Checks" begin
     @testset "Check $(typeof(backend))" for backend in vcat(dense_backends, sparse_backends)
         @test check_available(backend)
-        @test check_twoarg(backend)
-        @test check_hessian(backend; verbose=false)
+        @test check_inplace(backend)
     end
 end
 

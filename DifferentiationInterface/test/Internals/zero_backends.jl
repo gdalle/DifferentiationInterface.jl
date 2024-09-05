@@ -12,7 +12,7 @@ zero_backends = [AutoZeroForward(), AutoZeroReverse()]
 
 for backend in zero_backends
     @test check_available(backend)
-    @test check_twoarg(backend)
+    @test check_inplace(backend)
 end
 
 ## Type stability

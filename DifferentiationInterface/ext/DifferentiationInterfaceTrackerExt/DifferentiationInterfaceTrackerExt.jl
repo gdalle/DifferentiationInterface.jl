@@ -7,7 +7,7 @@ using Tracker: Tracker, back, data, forward, gradient, jacobian, param, withgrad
 using Compat
 
 DI.check_available(::AutoTracker) = true
-DI.twoarg_support(::AutoTracker) = DI.TwoArgNotSupported()
+DI.inplace_support(::AutoTracker) = DI.InPlaceNotSupported()
 
 ## Pullback
 

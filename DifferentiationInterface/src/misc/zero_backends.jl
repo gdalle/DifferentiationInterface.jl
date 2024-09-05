@@ -18,7 +18,7 @@ struct AutoZeroForward <: AbstractADType end
 
 ADTypes.mode(::AutoZeroForward) = ForwardMode()
 check_available(::AutoZeroForward) = true
-twoarg_support(::AutoZeroForward) = TwoArgSupported()
+inplace_support(::AutoZeroForward) = InPlaceSupported()
 
 prepare_pushforward(f, ::AutoZeroForward, x, tx::Tangents) = NoPushforwardExtras()
 prepare_pushforward(f!, y, ::AutoZeroForward, x, tx::Tangents) = NoPushforwardExtras()
@@ -71,7 +71,7 @@ struct AutoZeroReverse <: AbstractADType end
 
 ADTypes.mode(::AutoZeroReverse) = ReverseMode()
 check_available(::AutoZeroReverse) = true
-twoarg_support(::AutoZeroReverse) = TwoArgSupported()
+inplace_support(::AutoZeroReverse) = InPlaceSupported()
 
 prepare_pullback(f, ::AutoZeroReverse, x, ty::Tangents) = NoPullbackExtras()
 prepare_pullback(f!, y, ::AutoZeroReverse, x, ty::Tangents) = NoPullbackExtras()

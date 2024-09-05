@@ -17,18 +17,24 @@ f_sparse_scalar(x::AbstractVector) = sum(f_sparse_vector(x) .^ 2)
 nothing  # hide
 ```
 
+Let's also pick a random test vector.
+
+```@example tuto2
+x = float.(1:8);
+```
+
 ## Dense backends
 
 When we use the [`jacobian`](@ref) or [`hessian`](@ref) operator with a dense backend, we get a dense matrix with plenty of zeros.
 
 ```@example tuto2
 dense_first_order_backend = AutoForwardDiff()
-J_dense = jacobian(f_sparse_vector, dense_first_order_backend, float.(1:10))
+J_dense = jacobian(f_sparse_vector, dense_first_order_backend, x)
 ```
 
 ```@example tuto2
 dense_second_order_backend = SecondOrder(AutoForwardDiff(), AutoZygote())
-H_dense = hessian(f_sparse_scalar, dense_second_order_backend, float.(1:10))
+H_dense = hessian(f_sparse_scalar, dense_second_order_backend, x)
 ```
 
 The results are correct but the procedure is very slow.
@@ -36,7 +42,7 @@ By using a sparse backend, we can get the runtime to increase with the number of
 
 ## Sparse backends
 
-Recipe to create a sparse backend: combine a dense backend, a sparsity detector and a coloring algorithm inside [`AutoSparse`](@extref ADTypes.AutoSparse).
+Recipe to create a sparse backend: combine a dense backend, a sparsity detector and a compatible coloring algorithm inside [`AutoSparse`](@extref ADTypes.AutoSparse).
 The following are reasonable defaults:
 
 ```@example tuto2
@@ -60,11 +66,11 @@ nothing  # hide
 Now the resulting matrices are sparse:
 
 ```@example tuto2
-jacobian(f_sparse_vector, sparse_first_order_backend, float.(1:10))
+jacobian(f_sparse_vector, sparse_first_order_backend, x)
 ```
 
 ```@example tuto2
-hessian(f_sparse_scalar, sparse_second_order_backend, float.(1:10))
+hessian(f_sparse_scalar, sparse_second_order_backend, x)
 ```
 
 ## Sparse preparation
@@ -76,15 +82,15 @@ The speedup becomes very visible in large dimensions.
 
 ```@example tuto2
 n = 1000
-jac_extras_dense = prepare_jacobian(f_sparse_vector, dense_first_order_backend, randn(n));
-jac_extras_sparse = prepare_jacobian(f_sparse_vector, sparse_first_order_backend, randn(n));
+jac_extras_dense = prepare_jacobian(f_sparse_vector, dense_first_order_backend, zeros(n))
+jac_extras_sparse = prepare_jacobian(f_sparse_vector, sparse_first_order_backend, zeros(n))
 nothing  # hide
 ```
 
 ```@example tuto2
-@benchmark jacobian($f_sparse_vector, $jac_extras_dense, $dense_first_order_backend, $(randn(n))) evals=1
+@benchmark jacobian($f_sparse_vector, $jac_extras_dense, $dense_first_order_backend, $(randn(n)))
 ```
 
 ```@example tuto2
-@benchmark jacobian($f_sparse_vector, $jac_extras_sparse, $sparse_first_order_backend, $(randn(n))) evals=1
+@benchmark jacobian($f_sparse_vector, $jac_extras_sparse, $sparse_first_order_backend, $(randn(n)))
 ```

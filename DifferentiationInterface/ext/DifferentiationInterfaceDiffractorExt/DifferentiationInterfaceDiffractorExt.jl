@@ -6,7 +6,7 @@ using DifferentiationInterface: NoPushforwardExtras, Tangents
 using Diffractor: DiffractorRuleConfig, TaylorTangentIndex, ZeroBundle, bundle, ∂☆
 
 DI.check_available(::AutoDiffractor) = true
-DI.twoarg_support(::AutoDiffractor) = DI.TwoArgNotSupported()
+DI.inplace_support(::AutoDiffractor) = DI.InPlaceNotSupported()
 DI.pullback_performance(::AutoDiffractor) = DI.PullbackSlow()
 
 ## Pushforward

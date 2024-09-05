@@ -28,7 +28,7 @@ using DifferentiationInterface:
     maybe_dense_ad,
     mode,
     outer,
-    twoarg_support,
+    inplace_support,
     pushforward_performance,
     pullback_performance
 using DifferentiationInterface:

@@ -20,7 +20,7 @@ Filtering:
 
 - `input_type=Any`, `output_type=Any`: restrict scenario inputs / outputs to subtypes of this
 - `first_order=true`, `second_order=true`: include first order / second order operators
-- `onearg=true`, `twoarg=true`: include one-argument / two-argument functions
+- `onearg=true`, `twoarg=true`: include out-of-place / in-place functions
 - `inplace=true`, `outofplace=true`: include in-place / out-of-place operators
 
 Options:
