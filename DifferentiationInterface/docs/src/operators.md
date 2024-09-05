@@ -70,8 +70,8 @@ The same operators are defined for both cases, but they have different signature
 
 | signature  | out-of-place                                 | in-place                                              |
 | :--------- | :------------------------------------------- | :---------------------------------------------------- |
-| `f(x)`     | `operator(f,     backend, x, [v], [extras])` | `operator!(f,     result, backend, x, [v], [extras])` |
-| `f!(y, x)` | `operator(f!, y, backend, x, [v], [extras])` | `operator!(f!, y, result, backend, x, [v], [extras])` |
+| `f(x)`     | `operator(f,     [extras,] backend, x, [v])` | `operator!(f,     result, [extras,] backend, x, [v])` |
+| `f!(y, x)` | `operator(f!, y, [extras,] backend, x, [v])` | `operator!(f!, y, result, [extras,] backend, x, [v])` |
 
 !!! warning
     The positional arguments between `f`/`f!` and `backend` are always mutated.
@@ -108,12 +108,11 @@ The idea is that you prepare only once, which can be costly, but then call the o
 
 ```julia
 operator(f, backend, x, [v])  # slow because it includes preparation
-operator(f, backend, x, [v], extras)  # fast because it skips preparation
+operator(f, extras, backend, x, [v])  # fast because it skips preparation
 ```
 
 !!! warning
-    The `extras` object is always mutated when given to an operator, even though it is the last argument.
-    This convention holds regardless of the bang `!` in the operator name.
+    The `extras` object is always mutated, regardless of the bang `!` in the operator name.
 
 ### Reusing preparation
 
@@ -123,7 +122,7 @@ Here are the general rules that we strive to implement:
 |                           | different point                              | same point                                   |
 | :------------------------ | :------------------------------------------- | :------------------------------------------- |
 | the output `extras` of... | `prepare_operator(f, b, x)`                  | `prepare_operator_same_point(f, b, x, v)`    |
-| can be used in...         | `operator(f, b, other_x, extras)`            | `operator(f, b, x, other_v, extras)`         |
+| can be used in...         | `operator(f, extras, b, other_x)`            | `operator(f, extras, b, x, other_v)`         |
 | provided that...          | `other_x` has the same type and shape as `x` | `other_v` has the same type and shape as `v` |
 
 These rules hold for the majority of backends, but there are some exceptions: see [this page](@ref "Preparation") to know more.

@@ -5,7 +5,7 @@ DI.prepare_pullback(f!, y, ::AutoReverseDiff, x, ty::Tangents) = NoPullbackExtra
 ### Array in
 
 function DI.value_and_pullback(
-    f!, y, ::AutoReverseDiff, x::AbstractArray, ty::Tangents, ::NoPullbackExtras
+    f!, y, ::NoPullbackExtras, ::AutoReverseDiff, x::AbstractArray, ty::Tangents
 )
     dxs = map(ty.d) do dy
         function dotproduct_closure(x)
@@ -23,10 +23,10 @@ function DI.value_and_pullback!(
     f!,
     y,
     tx::Tangents,
+    ::NoPullbackExtras,
     ::AutoReverseDiff,
     x::AbstractArray,
     ty::Tangents,
-    ::NoPullbackExtras,
 )
     for b in eachindex(tx.d, ty.d)
         dx, dy = tx.d[b], ty.d[b]
@@ -42,7 +42,7 @@ function DI.value_and_pullback!(
 end
 
 function DI.pullback(
-    f!, y, ::AutoReverseDiff, x::AbstractArray, ty::Tangents, ::NoPullbackExtras
+    f!, y, ::NoPullbackExtras, ::AutoReverseDiff, x::AbstractArray, ty::Tangents
 )
     dxs = map(ty.d) do dy
         function dotproduct_closure(x)
@@ -59,10 +59,10 @@ function DI.pullback!(
     f!,
     y,
     tx::Tangents,
+    ::NoPullbackExtras,
     ::AutoReverseDiff,
     x::AbstractArray,
     ty::Tangents,
-    ::NoPullbackExtras,
 )
     for b in eachindex(tx.d, ty.d)
         dx, dy = tx.d[b], ty.d[b]
@@ -79,12 +79,11 @@ end
 ### Number in, not supported
 
 function DI.value_and_pullback(
-    f!, y, backend::AutoReverseDiff, x::Number, ty::Tangents{B}, ::NoPullbackExtras
+    f!, y, ::NoPullbackExtras, backend::AutoReverseDiff, x::Number, ty::Tangents{B}
 ) where {B}
     x_array = [x]
     f!_array(_y::AbstractArray, _x_array) = f!(_y, only(_x_array))
-    new_extras = DI.prepare_pullback(f!_array, y, backend, x_array, ty)
-    y, tx_array = DI.value_and_pullback(f!_array, y, backend, x_array, ty, new_extras)
+    y, tx_array = DI.value_and_pullback(f!_array, y, backend, x_array, ty)
     return y, Tangents(only.(tx_array.d))
 end
 
@@ -105,7 +104,7 @@ function DI.prepare_jacobian(
 end
 
 function DI.value_and_jacobian(
-    _f!, y, ::AutoReverseDiff, x, extras::ReverseDiffTwoArgJacobianExtras
+    _f!, y, extras::ReverseDiffTwoArgJacobianExtras, ::AutoReverseDiff, x
 )
     jac = similar(y, length(y), length(x))
     result = MutableDiffResult(y, (jac,))
@@ -114,20 +113,20 @@ function DI.value_and_jacobian(
 end
 
 function DI.value_and_jacobian!(
-    _f!, y, jac, ::AutoReverseDiff, x, extras::ReverseDiffTwoArgJacobianExtras
+    _f!, y, jac, extras::ReverseDiffTwoArgJacobianExtras, ::AutoReverseDiff, x
 )
     result = MutableDiffResult(y, (jac,))
     result = jacobian!(result, extras.tape, x)
     return DiffResults.value(result), DiffResults.derivative(result)
 end
 
-function DI.jacobian(_f!, _y, ::AutoReverseDiff, x, extras::ReverseDiffTwoArgJacobianExtras)
+function DI.jacobian(_f!, _y, extras::ReverseDiffTwoArgJacobianExtras, ::AutoReverseDiff, x)
     jac = jacobian!(extras.tape, x)
     return jac
 end
 
 function DI.jacobian!(
-    _f!, _y, jac, ::AutoReverseDiff, x, extras::ReverseDiffTwoArgJacobianExtras
+    _f!, _y, jac, extras::ReverseDiffTwoArgJacobianExtras, ::AutoReverseDiff, x
 )
     jac = jacobian!(jac, extras.tape, x)
     return jac

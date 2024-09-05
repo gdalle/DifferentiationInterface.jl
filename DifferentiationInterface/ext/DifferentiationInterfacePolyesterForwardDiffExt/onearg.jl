@@ -6,37 +6,37 @@ function DI.prepare_pushforward(f, backend::AutoPolyesterForwardDiff, x, tx::Tan
 end
 
 function DI.value_and_pushforward(
-    f, backend::AutoPolyesterForwardDiff, x, tx::Tangents, extras::PushforwardExtras
+    f, extras::PushforwardExtras, backend::AutoPolyesterForwardDiff, x, tx::Tangents
 )
-    return DI.value_and_pushforward(f, single_threaded(backend), x, tx, extras)
+    return DI.value_and_pushforward(f, extras, single_threaded(backend), x, tx)
 end
 
 function DI.value_and_pushforward!(
     f,
     ty::Tangents,
+    extras::PushforwardExtras,
     backend::AutoPolyesterForwardDiff,
     x,
     tx::Tangents,
-    extras::PushforwardExtras,
 )
-    return DI.value_and_pushforward!(f, ty, single_threaded(backend), x, tx, extras)
+    return DI.value_and_pushforward!(f, ty, extras, single_threaded(backend), x, tx)
 end
 
 function DI.pushforward(
-    f, backend::AutoPolyesterForwardDiff, x, tx::Tangents, extras::PushforwardExtras
+    f, extras::PushforwardExtras, backend::AutoPolyesterForwardDiff, x, tx::Tangents
 )
-    return DI.pushforward(f, single_threaded(backend), x, tx, extras)
+    return DI.pushforward(f, extras, single_threaded(backend), x, tx)
 end
 
 function DI.pushforward!(
     f,
     ty::Tangents,
+    extras::PushforwardExtras,
     backend::AutoPolyesterForwardDiff,
     x,
     tx::Tangents,
-    extras::PushforwardExtras,
 )
-    return DI.pushforward!(f, ty, single_threaded(backend), x, tx, extras)
+    return DI.pushforward!(f, ty, extras, single_threaded(backend), x, tx)
 end
 
 ## Derivative
@@ -46,25 +46,25 @@ function DI.prepare_derivative(f, backend::AutoPolyesterForwardDiff, x)
 end
 
 function DI.value_and_derivative(
-    f, backend::AutoPolyesterForwardDiff, x, extras::DerivativeExtras
+    f, extras::DerivativeExtras, backend::AutoPolyesterForwardDiff, x
 )
-    return DI.value_and_derivative(f, single_threaded(backend), x, extras)
+    return DI.value_and_derivative(f, extras, single_threaded(backend), x)
 end
 
 function DI.value_and_derivative!(
-    f, der, backend::AutoPolyesterForwardDiff, x, extras::DerivativeExtras
+    f, der, extras::DerivativeExtras, backend::AutoPolyesterForwardDiff, x
 )
-    return DI.value_and_derivative!(f, der, single_threaded(backend), x, extras)
+    return DI.value_and_derivative!(f, der, extras, single_threaded(backend), x)
 end
 
-function DI.derivative(f, backend::AutoPolyesterForwardDiff, x, extras::DerivativeExtras)
-    return DI.derivative(f, single_threaded(backend), x, extras)
+function DI.derivative(f, extras::DerivativeExtras, backend::AutoPolyesterForwardDiff, x)
+    return DI.derivative(f, extras, single_threaded(backend), x)
 end
 
 function DI.derivative!(
-    f, der, backend::AutoPolyesterForwardDiff, x, extras::DerivativeExtras
+    f, der, extras::DerivativeExtras, backend::AutoPolyesterForwardDiff, x
 )
-    return DI.derivative!(f, der, single_threaded(backend), x, extras)
+    return DI.derivative!(f, der, extras, single_threaded(backend), x)
 end
 
 ## Gradient
@@ -74,41 +74,41 @@ function DI.prepare_gradient(f, backend::AutoPolyesterForwardDiff, x)
 end
 
 function DI.value_and_gradient!(
-    f, grad, ::AutoPolyesterForwardDiff{C}, x::AbstractVector, ::GradientExtras
+    f, grad, ::GradientExtras, ::AutoPolyesterForwardDiff{C}, x::AbstractVector
 ) where {C}
     threaded_gradient!(f, grad, x, Chunk{C}())
     return f(x), grad
 end
 
 function DI.gradient!(
-    f, grad, ::AutoPolyesterForwardDiff{C}, x::AbstractVector, ::GradientExtras
+    f, grad, ::GradientExtras, ::AutoPolyesterForwardDiff{C}, x::AbstractVector
 ) where {C}
     threaded_gradient!(f, grad, x, Chunk{C}())
     return grad
 end
 
 function DI.value_and_gradient!(
-    f, grad, backend::AutoPolyesterForwardDiff{C}, x::AbstractArray, extras::GradientExtras
+    f, grad, extras::GradientExtras, backend::AutoPolyesterForwardDiff{C}, x::AbstractArray
 ) where {C}
-    return DI.value_and_gradient!(f, grad, single_threaded(backend), x, extras)
+    return DI.value_and_gradient!(f, grad, extras, single_threaded(backend), x)
 end
 
 function DI.gradient!(
-    f, grad, backend::AutoPolyesterForwardDiff{C}, x::AbstractArray, extras::GradientExtras
+    f, grad, extras::GradientExtras, backend::AutoPolyesterForwardDiff{C}, x::AbstractArray
 ) where {C}
-    return DI.gradient!(f, grad, single_threaded(backend), x, extras)
+    return DI.gradient!(f, grad, extras, single_threaded(backend), x)
 end
 
 function DI.value_and_gradient(
-    f, backend::AutoPolyesterForwardDiff, x::AbstractArray, extras::GradientExtras
+    f, extras::GradientExtras, backend::AutoPolyesterForwardDiff, x::AbstractArray
 )
-    return DI.value_and_gradient!(f, similar(x), backend, x, extras)
+    return DI.value_and_gradient!(f, similar(x), extras, backend, x)
 end
 
 function DI.gradient(
-    f, backend::AutoPolyesterForwardDiff, x::AbstractArray, extras::GradientExtras
+    f, extras::GradientExtras, backend::AutoPolyesterForwardDiff, x::AbstractArray
 )
-    return DI.gradient!(f, similar(x), backend, x, extras)
+    return DI.gradient!(f, similar(x), extras, backend, x)
 end
 
 ## Jacobian
@@ -118,9 +118,9 @@ DI.prepare_jacobian(f, ::AutoPolyesterForwardDiff, x) = NoJacobianExtras()
 function DI.value_and_jacobian!(
     f,
     jac::AbstractMatrix,
+    ::NoJacobianExtras,
     ::AutoPolyesterForwardDiff{C},
     x::AbstractArray,
-    ::NoJacobianExtras,
 ) where {C}
     return f(x), threaded_jacobian!(f, jac, x, Chunk{C}())
 end
@@ -128,25 +128,25 @@ end
 function DI.jacobian!(
     f,
     jac::AbstractMatrix,
+    ::NoJacobianExtras,
     ::AutoPolyesterForwardDiff{C},
     x::AbstractArray,
-    ::NoJacobianExtras,
 ) where {C}
     return threaded_jacobian!(f, jac, x, Chunk{C}())
 end
 
 function DI.value_and_jacobian(
-    f, backend::AutoPolyesterForwardDiff, x::AbstractArray, extras::NoJacobianExtras
+    f, extras::NoJacobianExtras, backend::AutoPolyesterForwardDiff, x::AbstractArray
 )
     y = f(x)
-    return DI.value_and_jacobian!(f, similar(y, length(y), length(x)), backend, x, extras)
+    return DI.value_and_jacobian!(f, similar(y, length(y), length(x)), extras, backend, x)
 end
 
 function DI.jacobian(
-    f, backend::AutoPolyesterForwardDiff, x::AbstractArray, extras::NoJacobianExtras
+    f, extras::NoJacobianExtras, backend::AutoPolyesterForwardDiff, x::AbstractArray
 )
     y = f(x)
-    return DI.jacobian!(f, similar(y, length(y), length(x)), backend, x, extras)
+    return DI.jacobian!(f, similar(y, length(y), length(x)), extras, backend, x)
 end
 
 ## Hessian
@@ -155,25 +155,25 @@ function DI.prepare_hessian(f, backend::AutoPolyesterForwardDiff, x)
     return DI.prepare_hessian(f, single_threaded(backend), x)
 end
 
-function DI.hessian(f, backend::AutoPolyesterForwardDiff, x, extras::HessianExtras)
-    return DI.hessian(f, single_threaded(backend), x, extras)
+function DI.hessian(f, extras::HessianExtras, backend::AutoPolyesterForwardDiff, x)
+    return DI.hessian(f, extras, single_threaded(backend), x)
 end
 
-function DI.hessian!(f, hess, backend::AutoPolyesterForwardDiff, x, extras::HessianExtras)
-    return DI.hessian!(f, hess, single_threaded(backend), x, extras)
+function DI.hessian!(f, hess, extras::HessianExtras, backend::AutoPolyesterForwardDiff, x)
+    return DI.hessian!(f, hess, extras, single_threaded(backend), x)
 end
 
 function DI.value_gradient_and_hessian(
-    f, backend::AutoPolyesterForwardDiff, x, extras::HessianExtras
+    f, extras::HessianExtras, backend::AutoPolyesterForwardDiff, x
 )
-    return DI.value_gradient_and_hessian(f, single_threaded(backend), x, extras)
+    return DI.value_gradient_and_hessian(f, extras, single_threaded(backend), x)
 end
 
 function DI.value_gradient_and_hessian!(
-    f, grad, hess, backend::AutoPolyesterForwardDiff, x, extras::HessianExtras
+    f, grad, hess, extras::HessianExtras, backend::AutoPolyesterForwardDiff, x
 )
     return DI.value_gradient_and_hessian!(
-        f, grad, hess, single_threaded(backend), x, extras
+        f, grad, hess, extras, single_threaded(backend), x
     )
 end
 
@@ -184,27 +184,27 @@ function DI.prepare_second_derivative(f, backend::AutoPolyesterForwardDiff, x)
 end
 
 function DI.value_derivative_and_second_derivative(
-    f, backend::AutoPolyesterForwardDiff, x, extras::SecondDerivativeExtras
+    f, extras::SecondDerivativeExtras, backend::AutoPolyesterForwardDiff, x
 )
-    return DI.value_derivative_and_second_derivative(f, single_threaded(backend), x, extras)
+    return DI.value_derivative_and_second_derivative(f, extras, single_threaded(backend), x)
 end
 
 function DI.value_derivative_and_second_derivative!(
-    f, der, der2, backend::AutoPolyesterForwardDiff, x, extras::SecondDerivativeExtras
+    f, der, der2, extras::SecondDerivativeExtras, backend::AutoPolyesterForwardDiff, x
 )
     return DI.value_derivative_and_second_derivative!(
-        f, der, der2, single_threaded(backend), x, extras
+        f, der, der2, extras, single_threaded(backend), x
     )
 end
 
 function DI.second_derivative(
-    f, backend::AutoPolyesterForwardDiff, x, extras::SecondDerivativeExtras
+    f, extras::SecondDerivativeExtras, backend::AutoPolyesterForwardDiff, x
 )
-    return DI.second_derivative(f, single_threaded(backend), x, extras)
+    return DI.second_derivative(f, extras, single_threaded(backend), x)
 end
 
 function DI.second_derivative!(
-    f, der2, backend::AutoPolyesterForwardDiff, x, extras::SecondDerivativeExtras
+    f, der2, extras::SecondDerivativeExtras, backend::AutoPolyesterForwardDiff, x
 )
-    return DI.second_derivative!(f, der2, single_threaded(backend), x, extras)
+    return DI.second_derivative!(f, der2, extras, single_threaded(backend), x)
 end

@@ -24,7 +24,7 @@ prepare_pushforward(f, ::AutoZeroForward, x, tx::Tangents) = NoPushforwardExtras
 prepare_pushforward(f!, y, ::AutoZeroForward, x, tx::Tangents) = NoPushforwardExtras()
 
 function value_and_pushforward(
-    f, ::AutoZeroForward, x, tx::Tangents{B}, ::NoPushforwardExtras
+    f, ::NoPushforwardExtras, ::AutoZeroForward, x, tx::Tangents{B}
 ) where {B}
     y = f(x)
     dys = ntuple(ReturnZero(y), Val(B))
@@ -32,7 +32,7 @@ function value_and_pushforward(
 end
 
 function value_and_pushforward(
-    f!, y, ::AutoZeroForward, x, tx::Tangents{B}, ::NoPushforwardExtras
+    f!, y, ::NoPushforwardExtras, ::AutoZeroForward, x, tx::Tangents{B}
 ) where {B}
     f!(y, x)
     dys = ntuple(ReturnZero(y), Val(B))
@@ -40,7 +40,7 @@ function value_and_pushforward(
 end
 
 function value_and_pushforward!(
-    f, ty::Tangents, ::AutoZeroForward, x, tx::Tangents, ::NoPushforwardExtras
+    f, ty::Tangents, ::NoPushforwardExtras, ::AutoZeroForward, x, tx::Tangents
 )
     y = f(x)
     for b in eachindex(ty.d)
@@ -50,7 +50,7 @@ function value_and_pushforward!(
 end
 
 function value_and_pushforward!(
-    f!, y, ty::Tangents, ::AutoZeroForward, x, tx::Tangents, ::NoPushforwardExtras
+    f!, y, ty::Tangents, ::NoPushforwardExtras, ::AutoZeroForward, x, tx::Tangents
 )
     f!(y, x)
     for b in eachindex(ty.d)
@@ -77,7 +77,7 @@ prepare_pullback(f, ::AutoZeroReverse, x, ty::Tangents) = NoPullbackExtras()
 prepare_pullback(f!, y, ::AutoZeroReverse, x, ty::Tangents) = NoPullbackExtras()
 
 function value_and_pullback(
-    f, ::AutoZeroReverse, x, ty::Tangents{B}, ::NoPullbackExtras
+    f, ::NoPullbackExtras, ::AutoZeroReverse, x, ty::Tangents{B}
 ) where {B}
     y = f(x)
     dxs = ntuple(ReturnZero(x), Val(B))
@@ -85,7 +85,7 @@ function value_and_pullback(
 end
 
 function value_and_pullback(
-    f!, y, ::AutoZeroReverse, x, ty::Tangents{B}, ::NoPullbackExtras
+    f!, y, ::NoPullbackExtras, ::AutoZeroReverse, x, ty::Tangents{B}
 ) where {B}
     f!(y, x)
     dxs = ntuple(ReturnZero(x), Val(B))
@@ -93,7 +93,7 @@ function value_and_pullback(
 end
 
 function value_and_pullback!(
-    f, tx::Tangents, ::AutoZeroReverse, x, ty::Tangents, ::NoPullbackExtras
+    f, tx::Tangents, ::NoPullbackExtras, ::AutoZeroReverse, x, ty::Tangents
 )
     y = f(x)
     for b in eachindex(tx.d)
@@ -103,7 +103,7 @@ function value_and_pullback!(
 end
 
 function value_and_pullback!(
-    f!, y, tx::Tangents, ::AutoZeroReverse, x, ty::Tangents, ::NoPullbackExtras
+    f!, y, tx::Tangents, ::NoPullbackExtras, ::AutoZeroReverse, x, ty::Tangents
 )
     f!(y, x)
     for b in eachindex(tx.d)

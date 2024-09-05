@@ -29,13 +29,13 @@ end
 DI.prepare_pullback(f, ::AutoZygote, x, ty::Tangents) = NoPullbackExtras()
 
 function DI.prepare_pullback_same_point(
-    f, ::AutoZygote, x, ty::Tangents, ::NoPullbackExtras
+    f, ::NoPullbackExtras, ::AutoZygote, x, ty::Tangents
 )
     y, pb = pullback(f, x)
     return ZygotePullbackExtrasSamePoint(y, pb)
 end
 
-function DI.value_and_pullback(f, ::AutoZygote, x, ty::Tangents, ::NoPullbackExtras)
+function DI.value_and_pullback(f, ::NoPullbackExtras, ::AutoZygote, x, ty::Tangents)
     y, pb = pullback(f, x)
     dxs = map(ty.d) do dy
         only(pb(dy))
@@ -44,7 +44,7 @@ function DI.value_and_pullback(f, ::AutoZygote, x, ty::Tangents, ::NoPullbackExt
 end
 
 function DI.value_and_pullback(
-    f, ::AutoZygote, x, ty::Tangents, extras::ZygotePullbackExtrasSamePoint
+    f, extras::ZygotePullbackExtrasSamePoint, ::AutoZygote, x, ty::Tangents
 )
     @compat (; y, pb) = extras
     dxs = map(ty.d) do dy
@@ -54,7 +54,7 @@ function DI.value_and_pullback(
 end
 
 function DI.pullback(
-    f, ::AutoZygote, x, ty::Tangents, extras::ZygotePullbackExtrasSamePoint
+    f, extras::ZygotePullbackExtrasSamePoint, ::AutoZygote, x, ty::Tangents
 )
     @compat (; pb) = extras
     dxs = map(ty.d) do dy
@@ -67,43 +67,43 @@ end
 
 DI.prepare_gradient(f, ::AutoZygote, x) = NoGradientExtras()
 
-function DI.value_and_gradient(f, ::AutoZygote, x, ::NoGradientExtras)
+function DI.value_and_gradient(f, ::NoGradientExtras, ::AutoZygote, x)
     @compat (; val, grad) = withgradient(f, x)
     return val, only(grad)
 end
 
-function DI.gradient(f, ::AutoZygote, x, ::NoGradientExtras)
+function DI.gradient(f, ::NoGradientExtras, ::AutoZygote, x)
     return only(gradient(f, x))
 end
 
-function DI.value_and_gradient!(f, grad, backend::AutoZygote, x, extras::NoGradientExtras)
-    y, new_grad = DI.value_and_gradient(f, backend, x, extras)
+function DI.value_and_gradient!(f, grad, extras::NoGradientExtras, backend::AutoZygote, x)
+    y, new_grad = DI.value_and_gradient(f, extras, backend, x)
     return y, copyto!(grad, new_grad)
 end
 
-function DI.gradient!(f, grad, backend::AutoZygote, x, extras::NoGradientExtras)
-    return copyto!(grad, DI.gradient(f, backend, x, extras))
+function DI.gradient!(f, grad, extras::NoGradientExtras, backend::AutoZygote, x)
+    return copyto!(grad, DI.gradient(f, extras, backend, x))
 end
 
 ## Jacobian
 
 DI.prepare_jacobian(f, ::AutoZygote, x) = NoJacobianExtras()
 
-function DI.value_and_jacobian(f, ::AutoZygote, x, ::NoJacobianExtras)
+function DI.value_and_jacobian(f, ::NoJacobianExtras, ::AutoZygote, x)
     return f(x), only(jacobian(f, x))  # https://github.com/FluxML/Zygote.jl/issues/1506
 end
 
-function DI.jacobian(f, ::AutoZygote, x, ::NoJacobianExtras)
+function DI.jacobian(f, ::NoJacobianExtras, ::AutoZygote, x)
     return only(jacobian(f, x))
 end
 
-function DI.value_and_jacobian!(f, jac, backend::AutoZygote, x, extras::NoJacobianExtras)
-    y, new_jac = DI.value_and_jacobian(f, backend, x, extras)
+function DI.value_and_jacobian!(f, jac, extras::NoJacobianExtras, backend::AutoZygote, x)
+    y, new_jac = DI.value_and_jacobian(f, extras, backend, x)
     return y, copyto!(jac, new_jac)
 end
 
-function DI.jacobian!(f, jac, backend::AutoZygote, x, extras::NoJacobianExtras)
-    return copyto!(jac, DI.jacobian(f, backend, x, extras))
+function DI.jacobian!(f, jac, extras::NoJacobianExtras, backend::AutoZygote, x)
+    return copyto!(jac, DI.jacobian(f, extras, backend, x))
 end
 
 ## HVP
@@ -121,39 +121,39 @@ function DI.prepare_hvp(f, ::AutoZygote, x, tx::Tangents)
     return ZygoteHVPExtras(∇f, pushforward_extras)
 end
 
-function DI.hvp(f, ::AutoZygote, x, tx::Tangents, extras::ZygoteHVPExtras)
+function DI.hvp(f, extras::ZygoteHVPExtras, ::AutoZygote, x, tx::Tangents)
     @compat (; ∇f, pushforward_extras) = extras
-    return DI.pushforward(∇f, AutoForwardDiff(), x, tx, pushforward_extras)
+    return DI.pushforward(∇f, pushforward_extras, AutoForwardDiff(), x, tx)
 end
 
-function DI.hvp!(f, tg::Tangents, ::AutoZygote, x, tx::Tangents, extras::ZygoteHVPExtras)
+function DI.hvp!(f, tg::Tangents, extras::ZygoteHVPExtras, ::AutoZygote, x, tx::Tangents)
     @compat (; ∇f, pushforward_extras) = extras
-    return DI.pushforward!(∇f, tg, AutoForwardDiff(), x, tx, pushforward_extras)
+    return DI.pushforward!(∇f, tg, pushforward_extras, AutoForwardDiff(), x, tx)
 end
 
 ## Hessian
 
 DI.prepare_hessian(f, ::AutoZygote, x) = NoHessianExtras()
 
-function DI.hessian(f, ::AutoZygote, x, ::NoHessianExtras)
+function DI.hessian(f, ::NoHessianExtras, ::AutoZygote, x)
     return hessian(f, x)
 end
 
-function DI.hessian!(f, hess, backend::AutoZygote, x, extras::NoHessianExtras)
-    return copyto!(hess, DI.hessian(f, backend, x, extras))
+function DI.hessian!(f, hess, extras::NoHessianExtras, backend::AutoZygote, x)
+    return copyto!(hess, DI.hessian(f, extras, backend, x))
 end
 
-function DI.value_gradient_and_hessian(f, backend::AutoZygote, x, extras::NoHessianExtras)
-    y, grad = DI.value_and_gradient(f, backend, x, NoGradientExtras())
-    hess = DI.hessian(f, backend, x, extras)
+function DI.value_gradient_and_hessian(f, extras::NoHessianExtras, backend::AutoZygote, x)
+    y, grad = DI.value_and_gradient(f, NoGradientExtras(), backend, x)
+    hess = DI.hessian(f, extras, backend, x)
     return y, grad, hess
 end
 
 function DI.value_gradient_and_hessian!(
-    f, grad, hess, backend::AutoZygote, x, extras::NoHessianExtras
+    f, grad, hess, extras::NoHessianExtras, backend::AutoZygote, x
 )
-    y, _ = DI.value_and_gradient!(f, grad, backend, x, NoGradientExtras())
-    DI.hessian!(f, hess, backend, x, extras)
+    y, _ = DI.value_and_gradient!(f, grad, NoGradientExtras(), backend, x)
+    DI.hessian!(f, hess, extras, backend, x)
     return y, grad, hess
 end
 

@@ -44,28 +44,28 @@ end
 
 function DI.hvp(
     f,
+    extras::ForwardDiffOverSomethingHVPExtras,
     ::SecondOrder{<:AutoForwardDiff},
     x,
     tx::Tangents,
-    extras::ForwardDiffOverSomethingHVPExtras,
 )
     @compat (; tagged_outer_backend, inner_gradient, outer_pushforward_extras) = extras
     return DI.pushforward(
-        inner_gradient, tagged_outer_backend, x, tx, outer_pushforward_extras
+        inner_gradient, outer_pushforward_extras, tagged_outer_backend, x, tx
     )
 end
 
 function DI.hvp!(
     f,
     tg::Tangents,
+    extras::ForwardDiffOverSomethingHVPExtras,
     ::SecondOrder{<:AutoForwardDiff},
     x,
     tx::Tangents,
-    extras::ForwardDiffOverSomethingHVPExtras,
 )
     @compat (; tagged_outer_backend, inner_gradient, outer_pushforward_extras) = extras
     DI.pushforward!(
-        inner_gradient, tg, tagged_outer_backend, x, tx, outer_pushforward_extras
+        inner_gradient, tg, outer_pushforward_extras, tagged_outer_backend, x, tx
     )
     return tg
 end

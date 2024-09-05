@@ -128,7 +128,7 @@ function ADTypes.jacobian_sparsity(f, x, detector::DenseSparsityDetector{:iterat
             f, backend, x, basis(backend, x, first(CartesianIndices(x)))
         )
         for (kj, j) in enumerate(CartesianIndices(x))
-            pushforward!(f, p, backend, x, basis(backend, x, j), extras)
+            pushforward!(f, p, extras, backend, x, basis(backend, x, j))
             for ki in LinearIndices(p)
                 if abs(p[ki]) > atol
                     push!(I, ki)
@@ -142,7 +142,7 @@ function ADTypes.jacobian_sparsity(f, x, detector::DenseSparsityDetector{:iterat
             f, backend, x, basis(backend, y, first(CartesianIndices(y)))
         )
         for (ki, i) in enumerate(CartesianIndices(y))
-            pullback!(f, p, backend, x, basis(backend, y, i), extras)
+            pullback!(f, p, extras, backend, x, basis(backend, y, i))
             for kj in LinearIndices(p)
                 if abs(p[kj]) > atol
                     push!(I, ki)
@@ -164,7 +164,7 @@ function ADTypes.jacobian_sparsity(f!, y, x, detector::DenseSparsityDetector{:it
             f!, y, backend, x, basis(backend, x, first(CartesianIndices(x)))
         )
         for (kj, j) in enumerate(CartesianIndices(x))
-            pushforward!(f!, y, p, backend, x, basis(backend, x, j), extras)
+            pushforward!(f!, y, p, extras, backend, x, basis(backend, x, j))
             for ki in LinearIndices(p)
                 if abs(p[ki]) > atol
                     push!(I, ki)
@@ -178,7 +178,7 @@ function ADTypes.jacobian_sparsity(f!, y, x, detector::DenseSparsityDetector{:it
             f!, y, backend, x, basis(backend, y, first(CartesianIndices(y)))
         )
         for (ki, i) in enumerate(CartesianIndices(y))
-            pullback!(f!, y, p, backend, x, basis(backend, y, i), extras)
+            pullback!(f!, y, p, extras, backend, x, basis(backend, y, i))
             for kj in LinearIndices(p)
                 if abs(p[kj]) > atol
                     push!(I, ki)
@@ -199,7 +199,7 @@ function ADTypes.hessian_sparsity(f, x, detector::DenseSparsityDetector{:iterati
         f, backend, x, basis(backend, x, first(CartesianIndices(x)))
     )
     for (kj, j) in enumerate(CartesianIndices(x))
-        hvp!(f, p, backend, x, basis(backend, x, j), extras)
+        hvp!(f, p, extras, backend, x, basis(backend, x, j))
         for ki in LinearIndices(p)
             if abs(p[ki]) > atol
                 push!(I, ki)

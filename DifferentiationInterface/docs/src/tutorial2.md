@@ -82,9 +82,9 @@ nothing  # hide
 ```
 
 ```@example tuto2
-@benchmark jacobian($f_sparse_vector, $dense_first_order_backend, $(randn(n)), $jac_extras_dense) evals=1
+@benchmark jacobian($f_sparse_vector, $jac_extras_dense, $dense_first_order_backend, $(randn(n))) evals=1
 ```
 
 ```@example tuto2
-@benchmark jacobian($f_sparse_vector, $sparse_first_order_backend, $(randn(n)), $jac_extras_sparse) evals=1
+@benchmark jacobian($f_sparse_vector, $jac_extras_sparse, $sparse_first_order_backend, $(randn(n))) evals=1
 ```

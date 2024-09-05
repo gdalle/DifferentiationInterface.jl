@@ -29,7 +29,7 @@ $(document_preparation("hessian"))
 function hessian! end
 
 """
-    value_gradient_and_hessian(f, backend, x, [extras]) -> (y, grad, hess)
+    value_gradient_and_hessian(f, [extras,] backend, x) -> (y, grad, hess)
 
 Compute the value, gradient vector and Hessian matrix of the function `f` at point `x`.
 
@@ -38,7 +38,7 @@ $(document_preparation("hessian"))
 function value_gradient_and_hessian end
 
 """
-    value_gradient_and_hessian!(f, grad, hess, backend, x, [extras]) -> (y, grad, hess)
+    value_gradient_and_hessian!(f, grad, hess, [extras,] backend, x) -> (y, grad, hess)
 
 Compute the value, gradient vector and Hessian matrix of the function `f` at point `x`, overwriting `grad` and `hess`.
 
@@ -78,14 +78,14 @@ end
 ## One argument
 
 function hessian(
-    f::F, backend::AbstractADType, x, extras::HVPGradientHessianExtras{B}
+    f::F, extras::HVPGradientHessianExtras{B}, backend::AbstractADType, x
 ) where {F,B}
     @compat (; batched_seeds, hvp_extras, N) = extras
 
-    hvp_extras_same = prepare_hvp_same_point(f, backend, x, batched_seeds[1], hvp_extras)
+    hvp_extras_same = prepare_hvp_same_point(f, hvp_extras, backend, x, batched_seeds[1])
 
     hess_blocks = map(eachindex(batched_seeds)) do a
-        dg_batch = hvp(f, backend, x, batched_seeds[a], hvp_extras_same)
+        dg_batch = hvp(f, hvp_extras_same, backend, x, batched_seeds[a])
         stack(vec, dg_batch.d; dims=2)
     end
 
@@ -97,14 +97,14 @@ function hessian(
 end
 
 function hessian!(
-    f::F, hess, backend::AbstractADType, x, extras::HVPGradientHessianExtras{B}
+    f::F, hess, extras::HVPGradientHessianExtras{B}, backend::AbstractADType, x
 ) where {F,B}
     @compat (; batched_seeds, batched_results, hvp_extras, N) = extras
 
-    hvp_extras_same = prepare_hvp_same_point(f, backend, x, batched_seeds[1], hvp_extras)
+    hvp_extras_same = prepare_hvp_same_point(f, hvp_extras, backend, x, batched_seeds[1])
 
     for a in eachindex(batched_seeds, batched_results)
-        hvp!(f, batched_results[a], backend, x, batched_seeds[a], hvp_extras_same)
+        hvp!(f, batched_results[a], hvp_extras_same, backend, x, batched_seeds[a])
 
         for b in eachindex(batched_results[a].d)
             copyto!(
@@ -117,17 +117,17 @@ function hessian!(
 end
 
 function value_gradient_and_hessian(
-    f::F, backend::AbstractADType, x, extras::HVPGradientHessianExtras
+    f::F, extras::HVPGradientHessianExtras, backend::AbstractADType, x
 ) where {F}
-    y, grad = value_and_gradient(f, maybe_inner(backend), x, extras.gradient_extras)
-    hess = hessian(f, backend, x, extras)
+    y, grad = value_and_gradient(f, extras.gradient_extras, maybe_inner(backend), x)
+    hess = hessian(f, extras, backend, x)
     return y, grad, hess
 end
 
 function value_gradient_and_hessian!(
-    f::F, grad, hess, backend::AbstractADType, x, extras::HVPGradientHessianExtras
+    f::F, grad, hess, extras::HVPGradientHessianExtras, backend::AbstractADType, x
 ) where {F}
-    y, _ = value_and_gradient!(f, grad, maybe_inner(backend), x, extras.gradient_extras)
-    hessian!(f, hess, backend, x, extras)
+    y, _ = value_and_gradient!(f, grad, extras.gradient_extras, maybe_inner(backend), x)
+    hessian!(f, hess, extras, backend, x)
     return y, grad, hess
 end

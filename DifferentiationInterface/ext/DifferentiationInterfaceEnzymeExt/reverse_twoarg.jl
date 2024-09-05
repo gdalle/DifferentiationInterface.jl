@@ -9,13 +9,13 @@ end
 function DI.value_and_pullback(
     f!,
     y,
+    extras::NoPullbackExtras,
     backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
     ty::Tangents,
-    extras::NoPullbackExtras,
 )
     dxs = map(ty.d) do dy
-        only(DI.pullback(f!, y, backend, x, SingleTangent(dy), extras))
+        only(DI.pullback(f!, y, extras, backend, x, SingleTangent(dy)))
     end
     f!(y, x)
     return y, Tangents(dxs)
@@ -24,10 +24,10 @@ end
 function DI.value_and_pullback(
     f!,
     y,
+    ::NoPullbackExtras,
     backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
     x::Number,
     ty::Tangents{1},
-    ::NoPullbackExtras,
 )
     dy = only(ty)
     f!_and_df! = get_f_and_df(f!, backend)
@@ -44,10 +44,10 @@ end
 function DI.value_and_pullback(
     f!,
     y,
+    ::NoPullbackExtras,
     backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
     x::AbstractArray,
     ty::Tangents{1},
-    ::NoPullbackExtras,
 )
     dy = only(ty)
     f!_and_df! = get_f_and_df(f!, backend)

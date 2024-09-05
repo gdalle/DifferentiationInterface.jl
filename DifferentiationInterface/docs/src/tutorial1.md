@@ -93,14 +93,14 @@ You can thus reuse the `extras` for different values of the input.
 
 ```@example tuto1
 grad = similar(x)
-gradient!(f, grad, backend, x, extras)
+gradient!(f, grad, extras, backend, x)
 grad  # has been mutated
 ```
 
 Preparation makes the gradient computation much faster, and (in this case) allocation-free.
 
 ```@example tuto1
-@benchmark gradient!($f, _grad, $backend, $x, _extras) evals=1 setup=(
+@benchmark gradient!($f, _grad, _extras, $backend, $x) evals=1 setup=(
     _grad=similar($x);
     _extras=prepare_gradient($f, $backend, $x)
 )
@@ -128,7 +128,7 @@ gradient(f, backend2, x)
 And you can run the same benchmarks to see what you gained (although such a small input may not be realistic):
 
 ```@example tuto1
-@benchmark gradient!($f, _grad, $backend2, $x, _extras) evals=1 setup=(
+@benchmark gradient!($f, _grad, _extras, $backend2, $x) evals=1 setup=(
     _grad=similar($x);
     _extras=prepare_gradient($f, $backend2, $x)
 )

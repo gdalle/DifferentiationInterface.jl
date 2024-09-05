@@ -8,7 +8,7 @@ end
 DI.prepare_pullback(f, ::AutoReverseChainRules, x, ty::Tangents) = NoPullbackExtras()
 
 function DI.prepare_pullback_same_point(
-    f, backend::AutoReverseChainRules, x, ty::Tangents, ::NoPullbackExtras
+    f, ::NoPullbackExtras, backend::AutoReverseChainRules, x, ty::Tangents
 )
     rc = ruleconfig(backend)
     y, pb = rrule_via_ad(rc, f, x)
@@ -16,7 +16,7 @@ function DI.prepare_pullback_same_point(
 end
 
 function DI.value_and_pullback(
-    f, backend::AutoReverseChainRules, x, ty::Tangents, ::NoPullbackExtras
+    f, ::NoPullbackExtras, backend::AutoReverseChainRules, x, ty::Tangents
 )
     rc = ruleconfig(backend)
     y, pb = rrule_via_ad(rc, f, x)
@@ -24,14 +24,14 @@ function DI.value_and_pullback(
 end
 
 function DI.value_and_pullback(
-    f, ::AutoReverseChainRules, x, ty::Tangents, extras::ChainRulesPullbackExtrasSamePoint
+    f, extras::ChainRulesPullbackExtrasSamePoint, ::AutoReverseChainRules, x, ty::Tangents
 )
     @compat (; y, pb) = extras
     return copy(y), Tangents(last.(pb.(ty.d)))
 end
 
 function DI.pullback(
-    f, ::AutoReverseChainRules, x, ty::Tangents, extras::ChainRulesPullbackExtrasSamePoint
+    f, extras::ChainRulesPullbackExtrasSamePoint, ::AutoReverseChainRules, x, ty::Tangents
 )
     @compat (; pb) = extras
     return Tangents(last.(pb.(ty.d)))
