@@ -18,7 +18,6 @@ using DifferentiationInterface:
     Tangents,
     SingleTangent,
     pick_batchsize
-using DocStringExtensions
 using Enzyme:
     Active,
     Annotation,
