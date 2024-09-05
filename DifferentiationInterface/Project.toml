@@ -1,7 +1,7 @@
 name = "DifferentiationInterface"
 uuid = "a0c0ee7d-e4b9-4e03-894e-1c5f64a51d63"
 authors = ["Guillaume Dalle", "Adrian Hill"]
-version = "0.5.15"
+version = "0.5.17"
 
 [deps]
 ADTypes = "47edcb42-4c32-4615-8424-f2b9edc5f35b"
@@ -49,7 +49,7 @@ ChainRulesCore = "1.23.0"
 Compat = "3.46,4.2"
 Diffractor = "=0.2.6"
 DocStringExtensions = "0.8,0.9"
-Enzyme = "0.12.28"
+Enzyme = "0.12.35"
 FastDifferentiation = "0.3.9, 0.4"
 FillArrays = "1.7.0"
 FiniteDiff = "2.23.1"

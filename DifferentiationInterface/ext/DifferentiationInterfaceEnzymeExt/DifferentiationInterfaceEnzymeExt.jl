@@ -11,6 +11,7 @@ using DifferentiationInterface:
     PushforwardExtras,
     NoDerivativeExtras,
     NoGradientExtras,
+    NoHVPExtras,
     NoJacobianExtras,
     NoPullbackExtras,
     NoPushforwardExtras,
@@ -41,6 +42,8 @@ using Enzyme:
     gradient,
     gradient!,
     guess_activity,
+    hvp,
+    hvp!,
     jacobian,
     make_zero,
     make_zero!,
@@ -53,5 +56,7 @@ include("forward_twoarg.jl")
 
 include("reverse_onearg.jl")
 include("reverse_twoarg.jl")
+
+include("second_order.jl")
 
 end # module
