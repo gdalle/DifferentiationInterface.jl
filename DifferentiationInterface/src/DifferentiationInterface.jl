@@ -2,10 +2,6 @@
     DifferentiationInterface
 
 An interface to various automatic differentiation backends in Julia.
-
-# Exports
-
-$(EXPORTS)
 """
 module DifferentiationInterface
 
@@ -34,7 +30,6 @@ using ADTypes:
     AutoTracker,
     AutoZygote
 using Compat
-using DocStringExtensions
 using FillArrays: OneElement
 using LinearAlgebra: Symmetric, Transpose, dot, parent, transpose
 using PackageExtensionCompat: @require_extensions

@@ -10,7 +10,6 @@ using DifferentiationInterface:
     NoPullbackExtras,
     PullbackExtras,
     Tangents
-using DocStringExtensions
 using ForwardDiff: ForwardDiff
 using Zygote:
     ZygoteRuleConfig, gradient, hessian, jacobian, pullback, withgradient, withjacobian

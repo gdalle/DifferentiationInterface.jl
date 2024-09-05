@@ -14,7 +14,6 @@ using DifferentiationInterface:
     PushforwardExtras,
     SecondDerivativeExtras,
     Tangents
-using DocStringExtensions
 using LinearAlgebra: mul!
 using PolyesterForwardDiff: threaded_gradient!, threaded_jacobian!
 using PolyesterForwardDiff.ForwardDiff: Chunk

@@ -11,7 +11,6 @@ using DifferentiationInterface:
     Tangents
 using FillArrays: OneElement
 using ReverseDiff.DiffResults: DiffResults, DiffResult, GradientResult, MutableDiffResult
-using DocStringExtensions
 using LinearAlgebra: dot, mul!
 using ReverseDiff:
     CompiledGradient,

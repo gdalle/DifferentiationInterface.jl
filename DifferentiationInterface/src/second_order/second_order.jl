@@ -12,12 +12,11 @@ Combination of two backends for second-order differentiation.
 
 # Fields
 
-$(TYPEDFIELDS)
+- `outer::AbstractADType`: backend for the outer differentiation
+- `inner::AbstractADType`: backend for the inner differentiation
 """
 struct SecondOrder{ADO<:AbstractADType,ADI<:AbstractADType} <: AbstractADType
-    "backend for the outer differentiation"
     outer::ADO
-    "backend for the inner differentiation"
     inner::ADI
 end
 
