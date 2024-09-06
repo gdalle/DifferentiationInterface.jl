@@ -18,10 +18,10 @@ end
 ## Type stability
 
 test_differentiation(
-    zero_backends[1],
+    zero_backends,
     zero.(default_scenarios());
     correctness=true,
-    # type_stability=true,
+    type_stability=true,
     excluded=[:second_derivative],
     logging=LOGGING,
 )
