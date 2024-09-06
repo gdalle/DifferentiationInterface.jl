@@ -13,7 +13,6 @@ using DifferentiationInterface:
     SecondDerivativeExtras,
     Tangents,
     maybe_dense_ad
-using FillArrays: Fill
 using LinearAlgebra: dot
 using Symbolics:
     build_function,
@@ -33,7 +32,7 @@ using Symbolics.RuntimeGeneratedFunctions: RuntimeGeneratedFunction
 DI.check_available(::AutoSymbolics) = true
 DI.pullback_performance(::AutoSymbolics) = DI.PullbackSlow()
 
-monovec(x::Number) = Fill(x, 1)
+monovec(x::Number) = [x]
 
 myvec(x::Number) = monovec(x)
 myvec(x::AbstractArray) = vec(x)

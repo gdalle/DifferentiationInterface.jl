@@ -4,7 +4,6 @@ using ADTypes: AutoFiniteDifferences
 import DifferentiationInterface as DI
 using DifferentiationInterface:
     NoGradientExtras, NoJacobianExtras, NoPullbackExtras, NoPushforwardExtras, Tangents
-using FillArrays: OneElement
 using FiniteDifferences: FiniteDifferences, grad, jacobian, jvp, j′vp
 using LinearAlgebra: dot
 

@@ -24,13 +24,12 @@ using FastDifferentiation:
     make_variables,
     sparse_hessian,
     sparse_jacobian
-using FillArrays: Fill
 using LinearAlgebra: dot
 using FastDifferentiation.RuntimeGeneratedFunctions: RuntimeGeneratedFunction
 
 DI.check_available(::AutoFastDifferentiation) = true
 
-monovec(x::Number) = Fill(x, 1)
+monovec(x::Number) = [x]
 
 myvec(x::Number) = monovec(x)
 myvec(x::AbstractArray) = vec(x)
