@@ -1,9 +1,7 @@
 function test_scen_intact(new_scen, scen; isequal)
-    @testset "Scenario intact" begin
-        for n in fieldnames(typeof(scen))
-            n == :f && continue
-            @test isequal(getfield(new_scen, n), getfield(scen, n))
-        end
+    for n in fieldnames(typeof(scen))
+        n == :f && continue
+        @test isequal(getfield(new_scen, n), getfield(scen, n))
     end
 end
 

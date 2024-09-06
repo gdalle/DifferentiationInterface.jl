@@ -30,7 +30,6 @@ using ADTypes:
     AutoTracker,
     AutoZygote
 using Compat
-using FillArrays: OneElement
 using LinearAlgebra: Symmetric, Transpose, dot, parent, transpose
 using PackageExtensionCompat: @require_extensions
 

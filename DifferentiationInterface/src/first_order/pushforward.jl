@@ -187,7 +187,7 @@ end
 function _pushforward_via_pullback(
     f!::F, y::AbstractArray, pullback_extras::PullbackExtras, backend::AbstractADType, x, dx
 ) where {F}
-    dy = map(CartesianIndices(y)) do i
+    dy = map(CartesianIndices(y)) do i  # preserve shape
         t1 = pullback(f!, y, pullback_extras, backend, x, SingleTangent(basis(backend, y, i)))
         dot(dx, only(t1))
     end

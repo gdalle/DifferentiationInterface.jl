@@ -59,7 +59,7 @@ end
 function prepare_hessian(f::F, backend::AbstractADType, x) where {F}
     N = length(x)
     B = pick_batchsize(maybe_outer(backend), N)
-    seeds = [basis(backend, x, ind) for ind in CartesianIndices(x)]
+    seeds = [basis(backend, x, ind) for ind in eachindex(x)]
     batched_seeds = [
         Tangents(ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % N], Val(B))) for
         a in 1:div(N, B, RoundUp)
