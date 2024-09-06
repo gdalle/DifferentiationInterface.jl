@@ -9,7 +9,6 @@ using DifferentiationInterface:
     JacobianExtras,
     NoPullbackExtras,
     Tangents
-using FillArrays: OneElement
 using ReverseDiff.DiffResults: DiffResults, DiffResult, GradientResult, MutableDiffResult
 using LinearAlgebra: dot, mul!
 using ReverseDiff:
@@ -32,10 +31,8 @@ using ReverseDiff:
 
 DI.check_available(::AutoReverseDiff) = true
 
-function DI.basis(
-    ::AutoReverseDiff, a::AbstractArray{T,N}, i::CartesianIndex{N}
-) where {T,N}
-    return OneElement(one(T), Tuple(i), axes(a))
+function DI.basis(::AutoReverseDiff, a::AbstractArray{T}, i) where {T}
+    return DI.OneElement(i, one(T), a)
 end
 
 include("onearg.jl")

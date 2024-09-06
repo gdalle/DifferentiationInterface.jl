@@ -45,7 +45,7 @@ function DI.prepare_hessian(f::F, backend::AutoSparse, x) where {F}
     groups = column_groups(coloring_result)
     Ng = length(groups)
     B = pick_batchsize(maybe_outer(dense_backend), Ng)
-    seeds = [multibasis(backend, x, CartesianIndices(x)[group]) for group in groups]
+    seeds = [multibasis(backend, x, eachindex(x)[group]) for group in groups]
     compressed_matrix = stack(_ -> vec(similar(x)), groups; dims=2)
     batched_seeds = [
         Tangents(ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % Ng], Val(B))) for

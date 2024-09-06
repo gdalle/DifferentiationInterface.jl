@@ -201,7 +201,7 @@ function _pullback_via_pushforward(
     x::AbstractArray,
     dy,
 ) where {F}
-    dx = map(CartesianIndices(x)) do j
+    dx = map(CartesianIndices(x)) do j  # preserve shape
         t1 = pushforward(
             f!, y, pushforward_extras, backend, x, SingleTangent(basis(backend, x, j))
         )
