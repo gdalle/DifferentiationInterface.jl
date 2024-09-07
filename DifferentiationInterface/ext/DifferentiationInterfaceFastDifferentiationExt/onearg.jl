@@ -426,12 +426,12 @@ end
 function DI.hvp(
     f, extras::FastDifferentiationHVPExtras, ::AutoFastDifferentiation, x, tx::Tangents
 )
-    dgs = map(tx.d) do dx
+    tg = map(tx) do dx
         v_vec = vcat(vec(x), vec(dx))
         dg_vec = extras.hvp_exe(v_vec)
         return reshape(dg_vec, size(x))
     end
-    return Tangents(dgs)
+    return tg
 end
 
 function DI.hvp!(

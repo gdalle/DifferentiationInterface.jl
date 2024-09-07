@@ -84,7 +84,7 @@ function DI.value_and_pullback(
     x_array = [x]
     f!_array(_y::AbstractArray, _x_array) = f!(_y, only(_x_array))
     y, tx_array = DI.value_and_pullback(f!_array, y, backend, x_array, ty)
-    return y, Tangents(only.(tx_array.d))
+    return y, Tangents(only.(tx_array.d)...)
 end
 
 ## Jacobian
