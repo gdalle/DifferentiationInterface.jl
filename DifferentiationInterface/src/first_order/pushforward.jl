@@ -28,7 +28,7 @@ function prepare_pushforward_same_point end
     value_and_pushforward(f,     [extras,] backend, x, tx) -> (y, ty)
     value_and_pushforward(f!, y, [extras,] backend, x, tx) -> (y, ty)
 
-Compute the value and the pushforward of the function `f` at point `x` with tangent `tx`.
+Compute the value and the pushforward of the function `f` at point `x` with tangent `tx` of type [`Tangents`](@ref).
 
 $(document_preparation("pushforward"; same_point=true))
 
@@ -45,7 +45,7 @@ function value_and_pushforward end
     value_and_pushforward!(f,     dy, [extras,] backend, x, tx) -> (y, ty)
     value_and_pushforward!(f!, y, dy, [extras,] backend, x, tx) -> (y, ty)
 
-Compute the value and the pushforward of the function `f` at point `x` with tangent `tx`, overwriting `ty`.
+Compute the value and the pushforward of the function `f` at point `x` with tangent `tx` of type [`Tangents`](@ref), overwriting `ty`.
 
 $(document_preparation("pushforward"; same_point=true))
 
@@ -59,7 +59,7 @@ function value_and_pushforward! end
     pushforward(f,     [extras,] backend, x, tx) -> ty
     pushforward(f!, y, [extras,] backend, x, tx) -> ty
 
-Compute the pushforward of the function `f` at point `x` with tangent `tx`.
+Compute the pushforward of the function `f` at point `x` with tangent `tx` of type [`Tangents`](@ref).
 
 $(document_preparation("pushforward"; same_point=true))
 
@@ -73,7 +73,7 @@ function pushforward end
     pushforward!(f,     dy, [extras,] backend, x, tx) -> ty
     pushforward!(f!, y, dy, [extras,] backend, x, tx) -> ty
 
-Compute the pushforward of the function `f` at point `x` with tangent `tx`, overwriting `ty`.
+Compute the pushforward of the function `f` at point `x` with tangent `tx` of type [`Tangents`](@ref), overwriting `ty`.
 
 $(document_preparation("pushforward"; same_point=true))
 

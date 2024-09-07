@@ -10,14 +10,40 @@ pick_batchsize(::AbstractADType, dimension::Integer) = 1
 """
     Tangents{B}
 
-Storage for `B` (co)tangents (`NTuple` wrapper).
+Storage for a batch of `B` tangents (`NTuple` wrapper).
 
-Must be used for the tangent argument to [`pushforward`](@ref), [`pullback`](@ref) and [`hvp`](@ref).
+Must be passed as an argument to [`pushforward`](@ref), [`pullback`](@ref) and [`hvp`](@ref), in addition to the input `x`.
 
 # Constructors
 
     Tangents(d)
     Tangents(d1, d2, ..., dB)
+
+# Example
+
+```jldoctest
+julia> using DifferentiationInterface
+
+julia> t = Tangents([2.0])
+Tangents{1, Vector{Float64}}(([2.0],))
+
+julia> length(t)
+1
+
+julia> only(t)
+1-element Vector{Float64}:
+ 2.0
+
+julia> t = Tangents([2.0], [4.0], [6.0])
+Tangents{3, Vector{Float64}}(([2.0], [4.0], [6.0]))
+
+julia> length(t)
+3
+
+julia> t[2]
+1-element Vector{Float64}:
+ 4.0
+```
 """
 struct Tangents{B,T}
     d::NTuple{B,T}
@@ -35,7 +61,6 @@ Base.length(::Tangents{B,T}) where {B,T} = B
 Base.eltype(::Tangents{B,T}) where {B,T} = T
 
 Base.only(t::Tangents) = only(t.d)
-Base.first(t::Tangents) = first(t.d)
 Base.getindex(t::Tangents, ind) = t.d[ind]
 Base.firstindex(t::Tangents) = firstindex(t.d)
 Base.lastindex(t::Tangents) = lastindex(t.d)

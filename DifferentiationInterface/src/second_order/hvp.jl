@@ -23,7 +23,7 @@ function prepare_hvp_same_point end
 """
     hvp(f, [extras,] backend, x, tx) -> tg
 
-Compute the Hessian-vector product of `f` at point `x` with tangent `tx`.
+Compute the Hessian-vector product of `f` at point `x` with tangent `tx` of type [`Tangents`](@ref).
 
 $(document_preparation("hvp"; same_point=true))
 """
@@ -32,7 +32,7 @@ function hvp end
 """
     hvp!(f, dg, [extras,] backend, x, tx) -> tg
 
-Compute the Hessian-vector product of `f` at point `x` with tangent `tx`, overwriting `tg`.
+Compute the Hessian-vector product of `f` at point `x` with tangent `tx` of type [`Tangents`](@ref), overwriting `tg`.
 
 $(document_preparation("hvp"; same_point=true))
 """

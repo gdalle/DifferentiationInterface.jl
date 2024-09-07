@@ -28,7 +28,7 @@ function prepare_pullback_same_point end
     value_and_pullback(f,     [extras,] backend, x, ty) -> (y, tx)
     value_and_pullback(f!, y, [extras,] backend, x, ty) -> (y, tx)
 
-Compute the value and the pullback of the function `f` at point `x` with tangent `ty`.
+Compute the value and the pullback of the function `f` at point `x` with tangent `ty` of type [`Tangents`](@ref).
 
 $(document_preparation("pullback"; same_point=true))
 
@@ -45,7 +45,7 @@ function value_and_pullback end
     value_and_pullback!(f,     dx, [extras,] backend, x, ty) -> (y, tx)
     value_and_pullback!(f!, y, dx, [extras,] backend, x, ty) -> (y, tx)
 
-Compute the value and the pullback of the function `f` at point `x` with tangent `ty`, overwriting `tx`.
+Compute the value and the pullback of the function `f` at point `x` with tangent `ty` of type [`Tangents`](@ref), overwriting `dx`.
 
 $(document_preparation("pullback"; same_point=true))
 
@@ -59,7 +59,7 @@ function value_and_pullback! end
     pullback(f,     [extras,] backend, x, ty) -> tx
     pullback(f!, y, [extras,] backend, x, ty) -> tx
 
-Compute the pullback of the function `f` at point `x` with tangent `ty`.
+Compute the pullback of the function `f` at point `x` with tangent `ty` of type [`Tangents`](@ref).
 
 $(document_preparation("pullback"; same_point=true))
 
@@ -73,7 +73,7 @@ function pullback end
     pullback!(f,     dx, [extras,] backend, x, ty) -> tx
     pullback!(f!, y, dx, [extras,] backend, x, ty) -> tx
 
-Compute the pullback of the function `f` at point `x` with tangent `ty`, overwriting `tx`.
+Compute the pullback of the function `f` at point `x` with tangent `ty` of type [`Tangents`](@ref), overwriting `dx`.
 
 $(document_preparation("pullback"; same_point=true))
 

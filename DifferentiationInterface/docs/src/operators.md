@@ -30,7 +30,8 @@ These operators are computed using only the input `x`.
 
 ### Low-level operators
 
-These operators are computed using the input `x` and a tangent `t`, which lives either
+These operators are computed using the input `x` and a tangent `t` of type [`Tangent`](@ref).
+This tangent is essentially an `NTuple`, whose elements live either
 
 - in the same space as `x` (we call it `tx`)
 - or in the same space as `y` (we call it `ty`)
@@ -73,8 +74,8 @@ This results in various operator signatures (the necessary arguments and their o
 
 | function signature    | out-of-place operator        | in-place  operator                    |
 | :-------------------- | :--------------------------- | :------------------------------------ |
-| out-of-place function | `op(f, backend, x, [v])`     | `op!(f, result, backend, x, [v])`     |
-| in-place function     | `op(f!, y, backend, x, [v])` | `op!(f!, y, result, backend, x, [v])` |
+| out-of-place function | `op(f, backend, x, [t])`     | `op!(f, result, backend, x, [t])`     |
+| in-place function     | `op(f!, y, backend, x, [t])` | `op!(f!, y, result, backend, x, [t])` |
 
 !!! warning
     The positional arguments between `f`/`f!` and `backend` are always mutated.
@@ -110,8 +111,8 @@ Preparation creates an object called `extras` which contains the the necessary i
 The idea is that you prepare only once, which can be costly, but then call the operator several times while reusing the same `extras`.
 
 ```julia
-op(f, backend, x, [v])  # slow because it includes preparation
-op(f, extras, backend, x, [v])  # fast because it skips preparation
+op(f, backend, x, [t])  # slow because it includes preparation
+op(f, extras, backend, x, [t])  # fast because it skips preparation
 ```
 
 !!! warning
