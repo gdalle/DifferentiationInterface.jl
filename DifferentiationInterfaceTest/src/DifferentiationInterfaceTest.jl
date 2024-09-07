@@ -22,7 +22,6 @@ using Compat
 using DataFrames: DataFrame
 using DifferentiationInterface
 using DifferentiationInterface:
-    Tangents,
     inner,
     maybe_inner,
     maybe_dense_ad,

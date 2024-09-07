@@ -38,7 +38,7 @@ function DI.pushforward(
             return reshape(extras.jvp_exe(v_vec), size(extras.y_prototype))
         end
     end
-    return Tangents(dys)
+    return Tangents(dys...)
 end
 
 function DI.pushforward!(
@@ -116,7 +116,7 @@ function DI.pullback(
             return reshape(extras.vjp_exe(v_vec), size(x))
         end
     end
-    return Tangents(dxs)
+    return Tangents(dxs...)
 end
 
 function DI.pullback!(

@@ -19,7 +19,7 @@ function DI.pushforward(f, ::NoPushforwardExtras, ::AutoDiffractor, x, tx::Tange
         z = ∂☆{1}()(ZeroBundle{1}(f), bundle(x, dx))
         dy = z[TaylorTangentIndex(1)]
     end
-    return Tangents(dys)
+    return Tangents(dys...)
 end
 
 function DI.value_and_pushforward(

@@ -12,20 +12,30 @@ pick_batchsize(::AbstractADType, dimension::Integer) = 1
 
 Storage for `B` (co)tangents (`NTuple` wrapper).
 
-`Tangents{B}` with `B > 1` can be used as seed to trigger batched-mode `pushforward`, `pullback` and `hvp`.
+Must be used to wrap the seeds for [`pushforward`](@ref), [`pullback`](@ref) and [`hvp`](@ref).
+
+# Constructors
+
+    Tangents(d1)
+    Tangents(d1, d2, ..., dB)
 
 # Fields
 
 - `d::NTuple{B}`
 """
-struct Tangents{B,T<:NTuple{B}}
-    d::T
+struct Tangents{B,T}
+    d::NTuple{B,T}
+
+    function Tangents(d::Vararg{T,B}) where {T,B}
+        return new{B,T}(d)
+    end
+
+    function Tangents()
+        throw(ArgumentError("You must provide at least one tangent."))
+    end
 end
 
-SingleTangent(x) = Tangents((x,))
-
-Base.eltype(::Tangents{B,T}) where {B,T} = eltype(T)
-tuptype(::Tangents{B,T}) where {B,T} = T
+Base.eltype(::Tangents{B,T}) where {B,T} = T
 
 Base.only(t::Tangents) = only(t.d)
 Base.first(t::Tangents) = first(t.d)

@@ -13,7 +13,7 @@ function DI.value_and_pullback(
             gradient(z -> dot(f(z), dy), x)
         end
     end
-    return y, Tangents(dxs)
+    return y, Tangents(dxs...)
 end
 
 function DI.value_and_pullback!(
@@ -38,7 +38,7 @@ function DI.value_and_pullback(
     x_array = [x]
     f_array = f ∘ only
     y, tx_array = DI.value_and_pullback(f_array, backend, x_array, ty)
-    return y, Tangents(only.(tx_array.d))
+    return y, Tangents(only.(tx_array.d)...)
 end
 
 ## Gradient

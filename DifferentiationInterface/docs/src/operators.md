@@ -30,16 +30,16 @@ These operators are computed using only the input `x`.
 
 ### Low-level operators
 
-These operators are computed using the input `x` and a "seed" `v`, which lives either
+These operators are computed using the input `x` and a tangent `t`, which lives either
 
-- in the same space as `x` (we call it `dx`)
-- or in the same space as `y` (we call it `dy`)
+- in the same space as `x` (we call it `tx`)
+- or in the same space as `y` (we call it `ty`)
 
-| operator                    | order | input  `x`      | output   `y` | seed `v` | operator result type | operator result shape |
-| :-------------------------- | :---- | :-------------- | :----------- | :------- | :------------------- | :-------------------- |
-| [`pushforward`](@ref) (JVP) | 1     | `Any`           | `Any`        | `dx`     | same as `y`          | `size(y)`             |
-| [`pullback`](@ref) (VJP)    | 1     | `Any`           | `Any`        | `dy`     | same as `x`          | `size(x)`             |
-| [`hvp`](@ref)               | 2     | `AbstractArray` | `Number`     | `dx`     | same as `x`          | `size(x)`             |
+| operator                    | order | input  `x`      | output   `y` | tangent `t` | operator result type | operator result shape |
+| :-------------------------- | :---- | :-------------- | :----------- | :---------- | :------------------- | :-------------------- |
+| [`pushforward`](@ref) (JVP) | 1     | `Any`           | `Any`        | `tx`        | same as `y`          | `size(y)`             |
+| [`pullback`](@ref) (VJP)    | 1     | `Any`           | `Any`        | `ty`        | same as `x`          | `size(x)`             |
+| [`hvp`](@ref)               | 2     | `AbstractArray` | `Number`     | `tx`        | same as `x`          | `size(x)`             |
 
 ## Variants
 
@@ -103,8 +103,8 @@ In addition, the preparation syntax depends on the number of arguments accepted 
 
 | function signature    | preparation signature                |
 | :-------------------- | :----------------------------------- |
-| out-of-place function | `prepare_op(f, backend, x, [v])`     |
-| in-place function     | `prepare_op(f!, y, backend, x, [v])` |
+| out-of-place function | `prepare_op(f, backend, x, [t])`     |
+| in-place function     | `prepare_op(f!, y, backend, x, [t])` |
 
 Preparation creates an object called `extras` which contains the the necessary information to speed up an operator and its variants.
 The idea is that you prepare only once, which can be costly, but then call the operator several times while reusing the same `extras`.
@@ -124,9 +124,9 @@ Here are the general rules that we strive to implement:
 
 |                           | different point                          | same point                               |
 | :------------------------ | :--------------------------------------- | :--------------------------------------- |
-| the output `extras` of... | `prepare_op(f, b, x)`                    | `prepare_op_same_point(f, b, x, v)`      |
-| can be used in...         | `op(f, extras, b, other_x)`              | `op(f, extras, b, x, other_v)`           |
-| provided that...          | `other_x` has same type and shape as `x` | `other_v` has same type and shape as `v` |
+| the output `extras` of... | `prepare_op(f, b, x)`                    | `prepare_op_same_point(f, b, x, t)`      |
+| can be used in...         | `op(f, extras, b, other_x)`              | `op(f, extras, b, x, other_t)`           |
+| provided that...          | `other_x` has same type and shape as `x` | `other_t` has same type and shape as `t` |
 
 These rules hold for the majority of backends, but there are some exceptions: see [this page](@ref "Preparation") to know more.
 

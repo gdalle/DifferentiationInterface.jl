@@ -48,10 +48,10 @@ function DI.prepare_hessian(f::F, backend::AutoSparse, x) where {F}
     seeds = [multibasis(backend, x, eachindex(x)[group]) for group in groups]
     compressed_matrix = stack(_ -> vec(similar(x)), groups; dims=2)
     batched_seeds = [
-        Tangents(ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % Ng], Val(B))) for
+        Tangents(ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % Ng], Val(B))...) for
         a in 1:div(Ng, B, RoundUp)
     ]
-    batched_results = [Tangents(ntuple(b -> similar(x), Val(B))) for _ in batched_seeds]
+    batched_results = [Tangents(ntuple(b -> similar(x), Val(B))...) for _ in batched_seeds]
     hvp_extras = prepare_hvp(f, dense_backend, x, batched_seeds[1])
     gradient_extras = prepare_gradient(f, maybe_inner(dense_backend), x)
     return SparseHessianExtras{B}(;

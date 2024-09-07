@@ -8,8 +8,8 @@ function identity_scenarios(x::Number; dx::Number, dy::Number)
     der = one(x)
 
     return [
-        PushforwardScenario(f; x, y, dx, dy=dy_from_dx, nb_args, place),
-        PullbackScenario(f; x, y, dy, dx=dx_from_dy, nb_args, place),
+        PushforwardScenario(f; x, y, dx, dy=Tangents(dy_from_dx), nb_args, place),
+        PullbackScenario(f; x, y, dy, dx=Tangents(dx_from_dy), nb_args, place),
         DerivativeScenario(f; x, y, der, nb_args, place),
     ]
 end
@@ -23,8 +23,10 @@ function sum_scenarios(x::AbstractArray; dx::AbstractArray, dy::Number)
     grad = x
 
     return [
-        PushforwardScenario(f; x, y, dx, dy=dy_from_dx, nb_args, place=:outofplace),
-        PullbackScenario(f; x, y, dy, dx=dx_from_dy, nb_args, place=:inplace),
+        PushforwardScenario(
+            f; x, y, dx, dy=Tangents(dy_from_dx), nb_args, place=:outofplace
+        ),
+        PullbackScenario(f; x, y, dy, dx=Tangents(dx_from_dy), nb_args, place=:inplace),
         GradientScenario(f; x, y, grad, nb_args, place=:inplace),
     ]
 end
@@ -40,8 +42,8 @@ function copyto!_scenarios(x::AbstractArray; dx::AbstractArray, dy::AbstractArra
     jac = Matrix(Diagonal(ones(eltype(x), length(x))))
 
     return [
-        PushforwardScenario(f!; x, y, dx, dy=dy_from_dx, nb_args, place),
-        PullbackScenario(f!; x, y, dy, dx=dx_from_dy, nb_args, place),
+        PushforwardScenario(f!; x, y, dx, dy=Tangents(dy_from_dx), nb_args, place),
+        PullbackScenario(f!; x, y, dy, dx=Tangents(dx_from_dy), nb_args, place),
         JacobianScenario(f!; x, y, jac, nb_args, place),
     ]
 end

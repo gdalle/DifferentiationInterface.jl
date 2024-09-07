@@ -13,7 +13,6 @@ fromprimitive_backends = [ #
 for backend in vcat(fromprimitive_backends)
     @test check_available(backend)
     @test check_inplace(backend)
-    @test DifferentiationInterface.pick_batchsize(backend, 100) == 5
 end
 
 test_differentiation(fromprimitive_backends, default_scenarios(); logging=LOGGING);

@@ -100,7 +100,9 @@ $(SIGNATURES)
 
 Construct a [`Scenario`](@ref) to test `pushforward` and its variants.
 """
-function PushforwardScenario(f; x, y, dx, dy=nothing, nb_args, place=:inplace)
+function PushforwardScenario(
+    f; x, y, dx::Tangents, dy::Union{Tangents,Nothing}=nothing, nb_args, place=:inplace
+)
     return Scenario{:pushforward,nb_args,place}(f; x, y, seed=dx, res1=dy, res2=nothing)
 end
 
@@ -109,7 +111,9 @@ $(SIGNATURES)
 
 Construct a [`Scenario`](@ref) to test `pullback` and its variants.
 """
-function PullbackScenario(f; x, y, dy, dx=nothing, nb_args, place=:inplace)
+function PullbackScenario(
+    f; x, y, dy::Tangents, dx::Union{Tangents,Nothing}=nothing, nb_args, place=:inplace
+)
     return Scenario{:pullback,nb_args,place}(f; x, y, seed=dy, res1=dx, res2=nothing)
 end
 
@@ -160,7 +164,16 @@ $(SIGNATURES)
 
 Construct a [`Scenario`](@ref) to test `hvp` and its variants.
 """
-function HVPScenario(f; x, y, dx, grad=nothing, dg=nothing, nb_args, place=:inplace)
+function HVPScenario(
+    f;
+    x,
+    y,
+    dx::Tangents,
+    grad=nothing,
+    dg::Union{Tangents,Nothing}=nothing,
+    nb_args,
+    place=:inplace,
+)
     return Scenario{:hvp,nb_args,place}(f; x, y, seed=dx, res1=grad, res2=dg)
 end
 

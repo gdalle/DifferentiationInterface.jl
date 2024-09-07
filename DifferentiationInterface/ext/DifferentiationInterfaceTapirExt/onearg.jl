@@ -21,9 +21,9 @@ function DI.value_and_pullback(
 )
     y = f(x)
     dxs = map(ty.d) do dy
-        only(DI.pullback(f, extras, backend, x, SingleTangent(dy)))
+        only(DI.pullback(f, extras, backend, x, Tangents(dy)))
     end
-    return y, Tangents(dxs)
+    return y, Tangents(dxs...)
 end
 
 function DI.value_and_pullback(
@@ -32,7 +32,7 @@ function DI.value_and_pullback(
     dy = only(ty)
     dy_righttype = convert(tangent_type(Y), dy)
     new_y, (_, new_dx) = value_and_pullback!!(extras.rrule, dy_righttype, f, x)
-    return new_y, SingleTangent(new_dx)
+    return new_y, Tangents(new_dx)
 end
 
 function DI.value_and_pullback!(

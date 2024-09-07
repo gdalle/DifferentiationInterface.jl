@@ -84,13 +84,13 @@ function _prepare_jacobian_aux(
     B = pick_batchsize(backend, N)
     seeds = [basis(backend, x, ind) for ind in eachindex(x)]
     batched_seeds = [
-        Tangents(ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % N], Val(B))) for
+        Tangents(ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % N], Val(B))...) for
         a in 1:div(N, B, RoundUp)
     ]
-    batched_results = [Tangents(ntuple(b -> similar(y), Val(B))) for _ in batched_seeds]
+    batched_results = [Tangents(ntuple(b -> similar(y), Val(B))...) for _ in batched_seeds]
     pushforward_extras = prepare_pushforward(f_or_f!y..., backend, x, batched_seeds[1])
-    D = tuptype(batched_seeds[1])
-    R = tuptype(batched_results[1])
+    D = eltype(batched_seeds[1])
+    R = eltype(batched_results[1])
     E = typeof(pushforward_extras)
     return PushforwardJacobianExtras{B,D,R,E}(
         batched_seeds, batched_results, pushforward_extras, N
@@ -104,13 +104,13 @@ function _prepare_jacobian_aux(
     B = pick_batchsize(backend, M)
     seeds = [basis(backend, y, ind) for ind in eachindex(y)]
     batched_seeds = [
-        Tangents(ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % M], Val(B))) for
+        Tangents(ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % M], Val(B))...) for
         a in 1:div(M, B, RoundUp)
     ]
-    batched_results = [Tangents(ntuple(b -> similar(x), Val(B))) for _ in batched_seeds]
+    batched_results = [Tangents(ntuple(b -> similar(x), Val(B))...) for _ in batched_seeds]
     pullback_extras = prepare_pullback(f_or_f!y..., backend, x, batched_seeds[1])
-    D = tuptype(batched_seeds[1])
-    R = tuptype(batched_results[1])
+    D = eltype(batched_seeds[1])
+    R = eltype(batched_results[1])
     E = typeof(pullback_extras)
     return PullbackJacobianExtras{B,D,R,E}(
         batched_seeds, batched_results, pullback_extras, M

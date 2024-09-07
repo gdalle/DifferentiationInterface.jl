@@ -1,7 +1,7 @@
 ## Docstrings
 
 """
-    prepare_hvp(f, backend, x, dx) -> extras
+    prepare_hvp(f, backend, x, tx) -> extras
 
 Create an `extras` object that can be given to [`hvp`](@ref) and its variants.
 
@@ -11,7 +11,7 @@ Create an `extras` object that can be given to [`hvp`](@ref) and its variants.
 function prepare_hvp end
 
 """
-    prepare_hvp_same_point(f, backend, x, dx) -> extras_same
+    prepare_hvp_same_point(f, backend, x, tx) -> extras_same
 
 Create an `extras_same` object that can be given to [`hvp`](@ref) and its variants _if they are applied at the same point `x`_.
 
@@ -21,18 +21,18 @@ Create an `extras_same` object that can be given to [`hvp`](@ref) and its varian
 function prepare_hvp_same_point end
 
 """
-    hvp(f, [extras,] backend, x, dx) -> dg
+    hvp(f, [extras,] backend, x, tx) -> tg
 
-Compute the Hessian-vector product of `f` at point `x` with seed `dx`.
+Compute the Hessian-vector product of `f` at point `x` with tangent `tx`.
 
 $(document_preparation("hvp"; same_point=true))
 """
 function hvp end
 
 """
-    hvp!(f, dg, [extras,] backend, x, dx) -> dg
+    hvp!(f, dg, [extras,] backend, x, tx) -> tg
 
-Compute the Hessian-vector product of `f` at point `x` with seed `dx`, overwriting `dg`.
+Compute the Hessian-vector product of `f` at point `x` with tangent `tx`, overwriting `tg`.
 
 $(document_preparation("hvp"; same_point=true))
 """
@@ -124,10 +124,10 @@ function hvp(
     f::F, ::ReverseOverForwardHVPExtras, backend::SecondOrder, x, tx::Tangents
 ) where {F}
     dgs = map(tx.d) do dx
-        inner_pushforward = PushforwardFixedSeed(f, nested(inner(backend)), SingleTangent(dx))
+        inner_pushforward = PushforwardFixedSeed(f, nested(inner(backend)), Tangents(dx))
         gradient(only ∘ inner_pushforward, outer(backend), x)
     end
-    return Tangents(dgs)
+    return Tangents(dgs...)
 end
 
 function hvp(
@@ -172,7 +172,7 @@ function hvp!(
 ) where {F}
     for b in eachindex(tx.d, tg.d)
         inner_pushforward = PushforwardFixedSeed(
-            f, nested(inner(backend)), SingleTangent(tx.d[b])
+            f, nested(inner(backend)), Tangents(tx.d[b])
         )
         gradient!(only ∘ inner_pushforward, tg.d[b], outer(backend), x)
     end

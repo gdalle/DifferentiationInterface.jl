@@ -7,7 +7,7 @@ function DI.pushforward(f, ::NoPushforwardExtras, backend::AutoFiniteDiff, x, tx
         step(t::Number) = f(x .+ t .* dx)
         finite_difference_derivative(step, zero(eltype(x)), fdtype(backend))
     end
-    return Tangents(dys)
+    return Tangents(dys...)
 end
 
 function DI.value_and_pushforward(
@@ -18,7 +18,7 @@ function DI.value_and_pushforward(
         step(t::Number) = f(x .+ t .* dx)
         finite_difference_derivative(step, zero(eltype(x)), fdtype(backend), eltype(y), y)
     end
-    return y, Tangents(dys)
+    return y, Tangents(dys...)
 end
 
 ## Derivative

@@ -37,7 +37,7 @@ function DI.pushforward(
         v_vec = vcat(myvec(x), myvec(dx))
         dy = extras.pf_exe(v_vec)
     end
-    return Tangents(dys)
+    return Tangents(dys...)
 end
 
 function DI.pushforward!(

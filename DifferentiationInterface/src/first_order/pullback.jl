@@ -1,8 +1,8 @@
 ## Docstrings
 
 """
-    prepare_pullback(f,     backend, x, dy) -> extras
-    prepare_pullback(f!, y, backend, x, dy) -> extras
+    prepare_pullback(f,     backend, x, ty) -> extras
+    prepare_pullback(f!, y, backend, x, ty) -> extras
 
 Create an `extras` object that can be given to [`pullback`](@ref) and its variants.
 
@@ -13,8 +13,8 @@ Create an `extras` object that can be given to [`pullback`](@ref) and its varian
 function prepare_pullback end
 
 """
-    prepare_pullback_same_point(f,     backend, x, dy) -> extras_same
-    prepare_pullback_same_point(f!, y, backend, x, dy) -> extras_same
+    prepare_pullback_same_point(f,     backend, x, ty) -> extras_same
+    prepare_pullback_same_point(f!, y, backend, x, ty) -> extras_same
 
 Create an `extras_same` object that can be given to [`pullback`](@ref) and its variants _if they are applied at the same point `x`_.
 
@@ -25,10 +25,10 @@ Create an `extras_same` object that can be given to [`pullback`](@ref) and its v
 function prepare_pullback_same_point end
 
 """
-    value_and_pullback(f,     [extras,] backend, x, dy) -> (y, dx)
-    value_and_pullback(f!, y, [extras,] backend, x, dy) -> (y, dx)
+    value_and_pullback(f,     [extras,] backend, x, ty) -> (y, tx)
+    value_and_pullback(f!, y, [extras,] backend, x, ty) -> (y, tx)
 
-Compute the value and the pullback of the function `f` at point `x` with seed `dy`.
+Compute the value and the pullback of the function `f` at point `x` with tangent `ty`.
 
 $(document_preparation("pullback"; same_point=true))
 
@@ -42,10 +42,10 @@ $(document_preparation("pullback"; same_point=true))
 function value_and_pullback end
 
 """
-    value_and_pullback!(f,     dx, [extras,] backend, x, dy) -> (y, dx)
-    value_and_pullback!(f!, y, dx, [extras,] backend, x, dy) -> (y, dx)
+    value_and_pullback!(f,     dx, [extras,] backend, x, ty) -> (y, tx)
+    value_and_pullback!(f!, y, dx, [extras,] backend, x, ty) -> (y, tx)
 
-Compute the value and the pullback of the function `f` at point `x` with seed `dy`, overwriting `dx`.
+Compute the value and the pullback of the function `f` at point `x` with tangent `ty`, overwriting `tx`.
 
 $(document_preparation("pullback"; same_point=true))
 
@@ -56,10 +56,10 @@ $(document_preparation("pullback"; same_point=true))
 function value_and_pullback! end
 
 """
-    pullback(f,     [extras,] backend, x, dy) -> dx
-    pullback(f!, y, [extras,] backend, x, dy) -> dx
+    pullback(f,     [extras,] backend, x, ty) -> tx
+    pullback(f!, y, [extras,] backend, x, ty) -> tx
 
-Compute the pullback of the function `f` at point `x` with seed `dy`.
+Compute the pullback of the function `f` at point `x` with tangent `ty`.
 
 $(document_preparation("pullback"; same_point=true))
 
@@ -70,10 +70,10 @@ $(document_preparation("pullback"; same_point=true))
 function pullback end
 
 """
-    pullback!(f,     dx, [extras,] backend, x, dy) -> dx
-    pullback!(f!, y, dx, [extras,] backend, x, dy) -> dx
+    pullback!(f,     dx, [extras,] backend, x, ty) -> tx
+    pullback!(f!, y, dx, [extras,] backend, x, ty) -> tx
 
-Compute the pullback of the function `f` at point `x` with seed `dy`, overwriting `dx`.
+Compute the pullback of the function `f` at point `x` with tangent `ty`, overwriting `tx`.
 
 $(document_preparation("pullback"; same_point=true))
 
@@ -101,7 +101,7 @@ function _prepare_pullback_aux(
     f::F, backend::AbstractADType, x, ty::Tangents, ::PullbackSlow
 ) where {F}
     dx = x isa Number ? one(x) : basis(backend, x, first(CartesianIndices(x)))
-    pushforward_extras = prepare_pushforward(f, backend, x, SingleTangent(dx))
+    pushforward_extras = prepare_pushforward(f, backend, x, Tangents(dx))
     return PushforwardPullbackExtras(pushforward_extras)
 end
 
@@ -109,7 +109,7 @@ function _prepare_pullback_aux(
     f!::F, y, backend::AbstractADType, x, ty::Tangents, ::PullbackSlow
 ) where {F}
     dx = x isa Number ? one(x) : basis(backend, x, first(CartesianIndices(x)))
-    pushforward_extras = prepare_pushforward(f!, y, backend, x, SingleTangent(dx))
+    pushforward_extras = prepare_pushforward(f!, y, backend, x, Tangents(dx))
     return PushforwardPullbackExtras(pushforward_extras)
 end
 
@@ -128,7 +128,7 @@ end
 function _pullback_via_pushforward(
     f::F, pushforward_extras::PushforwardExtras, backend::AbstractADType, x::Number, dy
 ) where {F}
-    t1 = pushforward(f, pushforward_extras, backend, x, SingleTangent(one(x)))
+    t1 = pushforward(f, pushforward_extras, backend, x, Tangents(one(x)))
     dx = dot(dy, only(t1))
     return dx
 end
@@ -141,7 +141,7 @@ function _pullback_via_pushforward(
     dy,
 ) where {F}
     dx = map(CartesianIndices(x)) do j
-        t1 = pushforward(f, pushforward_extras, backend, x, SingleTangent(basis(backend, x, j)))
+        t1 = pushforward(f, pushforward_extras, backend, x, Tangents(basis(backend, x, j)))
         dot(dy, only(t1))
     end
     return dx
@@ -154,13 +154,13 @@ function value_and_pullback(
     y = f(x)
     if B == 1
         dx = _pullback_via_pushforward(f, pushforward_extras, backend, x, only(ty))
-        return y, SingleTangent(dx)
+        return y, Tangents(dx)
     else
         dxs = ntuple(
             b -> _pullback_via_pushforward(f, pushforward_extras, backend, x, ty.d[b]),
             Val(B),
         )
-        return y, Tangents(dxs)
+        return y, Tangents(dxs...)
     end
 end
 
@@ -188,7 +188,7 @@ end
 function _pullback_via_pushforward(
     f!::F, y, pushforward_extras::PushforwardExtras, backend::AbstractADType, x::Number, dy
 ) where {F}
-    t1 = pushforward(f!, y, pushforward_extras, backend, x, SingleTangent(one(x)))
+    t1 = pushforward(f!, y, pushforward_extras, backend, x, Tangents(one(x)))
     dx = dot(dy, only(t1))
     return dx
 end
@@ -202,9 +202,7 @@ function _pullback_via_pushforward(
     dy,
 ) where {F}
     dx = map(CartesianIndices(x)) do j  # preserve shape
-        t1 = pushforward(
-            f!, y, pushforward_extras, backend, x, SingleTangent(basis(backend, x, j))
-        )
+        t1 = pushforward(f!, y, pushforward_extras, backend, x, Tangents(basis(backend, x, j)))
         dot(dy, only(t1))
     end
     return dx
@@ -217,14 +215,14 @@ function value_and_pullback(
     if B == 1
         dx = _pullback_via_pushforward(f!, y, pushforward_extras, backend, x, only(ty))
         f!(y, x)
-        return y, SingleTangent(dx)
+        return y, Tangents(dx)
     else
         dxs = ntuple(
             b -> _pullback_via_pushforward(f!, y, pushforward_extras, backend, x, ty.d[b]),
             Val(B),
         )
         f!(y, x)
-        return y, Tangents(dxs)
+        return y, Tangents(dxs...)
     end
 end
 

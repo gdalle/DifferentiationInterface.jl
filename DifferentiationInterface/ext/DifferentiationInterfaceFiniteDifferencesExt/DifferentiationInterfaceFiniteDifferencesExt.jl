@@ -22,7 +22,7 @@ function DI.pushforward(
     dys = map(tx.d) do dx
         jvp(backend.fdm, f, (x, dx))
     end
-    return Tangents(dys)
+    return Tangents(dys...)
 end
 
 function DI.value_and_pushforward(
@@ -39,7 +39,7 @@ function DI.pullback(f, ::NoPullbackExtras, backend::AutoFiniteDifferences, x, t
     dxs = map(ty.d) do dy
         only(j′vp(backend.fdm, f, dy, x))
     end
-    return Tangents(dxs)
+    return Tangents(dxs...)
 end
 
 function DI.value_and_pullback(

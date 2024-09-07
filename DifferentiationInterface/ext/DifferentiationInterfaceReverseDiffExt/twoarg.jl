@@ -16,7 +16,7 @@ function DI.value_and_pullback(
         gradient(dotproduct_closure, x)
     end
     f!(y, x)
-    return y, Tangents(dxs)
+    return y, Tangents(dxs...)
 end
 
 function DI.value_and_pullback!(
@@ -52,7 +52,7 @@ function DI.pullback(
         end
         gradient(dotproduct_closure, x)
     end
-    return Tangents(dxs)
+    return Tangents(dxs...)
 end
 
 function DI.pullback!(

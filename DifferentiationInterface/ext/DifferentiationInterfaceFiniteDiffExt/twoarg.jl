@@ -14,7 +14,7 @@ function DI.value_and_pushforward(
         finite_difference_derivative(step, zero(eltype(x)), fdtype(backend), eltype(y), y)
     end
     f!(y, x)
-    return y, Tangents(dys)
+    return y, Tangents(dys...)
 end
 
 ## Derivative

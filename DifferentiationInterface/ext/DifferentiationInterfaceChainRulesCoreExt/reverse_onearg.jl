@@ -20,19 +20,19 @@ function DI.value_and_pullback(
 )
     rc = ruleconfig(backend)
     y, pb = rrule_via_ad(rc, f, x)
-    return y, Tangents(last.(pb.(ty.d)))
+    return y, Tangents(last.(pb.(ty.d))...)
 end
 
 function DI.value_and_pullback(
     f, extras::ChainRulesPullbackExtrasSamePoint, ::AutoReverseChainRules, x, ty::Tangents
 )
     @compat (; y, pb) = extras
-    return copy(y), Tangents(last.(pb.(ty.d)))
+    return copy(y), Tangents(last.(pb.(ty.d))...)
 end
 
 function DI.pullback(
     f, extras::ChainRulesPullbackExtrasSamePoint, ::AutoReverseChainRules, x, ty::Tangents
 )
     @compat (; pb) = extras
-    return Tangents(last.(pb.(ty.d)))
+    return Tangents(last.(pb.(ty.d))...)
 end
