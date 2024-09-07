@@ -14,12 +14,12 @@ DI.pullback_performance(::AutoDiffractor) = DI.PullbackSlow()
 DI.prepare_pushforward(f, ::AutoDiffractor, x, tx::Tangents) = NoPushforwardExtras()
 
 function DI.pushforward(f, ::NoPushforwardExtras, ::AutoDiffractor, x, tx::Tangents)
-    dys = map(tx.d) do dx
+    ty = map(tx) do dx
         # code copied from Diffractor.jl
         z = ∂☆{1}()(ZeroBundle{1}(f), bundle(x, dx))
         dy = z[TaylorTangentIndex(1)]
     end
-    return Tangents(dys...)
+    return ty
 end
 
 function DI.value_and_pushforward(

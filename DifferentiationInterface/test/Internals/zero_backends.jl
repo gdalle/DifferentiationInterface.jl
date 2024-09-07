@@ -20,8 +20,8 @@ end
 test_differentiation(
     zero_backends,
     zero.(default_scenarios());
-    correctness=false,
-    type_stability=true,
+    correctness=true,
+    # type_stability=true,
     # excluded=[:second_derivative],
     logging=LOGGING,
 )

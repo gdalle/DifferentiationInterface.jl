@@ -12,16 +12,12 @@ pick_batchsize(::AbstractADType, dimension::Integer) = 1
 
 Storage for `B` (co)tangents (`NTuple` wrapper).
 
-Must be used to wrap the seeds for [`pushforward`](@ref), [`pullback`](@ref) and [`hvp`](@ref).
+Must be used for the tangent argument to [`pushforward`](@ref), [`pullback`](@ref) and [`hvp`](@ref).
 
 # Constructors
 
-    Tangents(d1)
+    Tangents(d)
     Tangents(d1, d2, ..., dB)
-
-# Fields
-
-- `d::NTuple{B}`
 """
 struct Tangents{B,T}
     d::NTuple{B,T}
@@ -35,10 +31,16 @@ struct Tangents{B,T}
     end
 end
 
+Base.length(::Tangents{B,T}) where {B,T} = B
 Base.eltype(::Tangents{B,T}) where {B,T} = T
 
 Base.only(t::Tangents) = only(t.d)
 Base.first(t::Tangents) = first(t.d)
+Base.getindex(t::Tangents, ind) = t.d[ind]
+
+Base.iterate(t::Tangents) = iterate(t.d)
+
+Base.map(f, t::Tangents) = Tangents(map(f, t.d)...)
 
 Base.:(==)(t1::Tangents{B}, t2::Tangents{B}) where {B} = t1.d == t2.d
 

@@ -27,16 +27,16 @@ function value_and_pushforward(
     f, ::NoPushforwardExtras, ::AutoZeroForward, x, tx::Tangents{B}
 ) where {B}
     y = f(x)
-    dys = ntuple(ReturnZero(y), Val(B))
-    return y, Tangents(dys...)
+    ty = map(ReturnZero(y), tx)
+    return y, ty
 end
 
 function value_and_pushforward(
     f!, y, ::NoPushforwardExtras, ::AutoZeroForward, x, tx::Tangents{B}
 ) where {B}
     f!(y, x)
-    dys = ntuple(ReturnZero(y), Val(B))
-    return y, Tangents(dys...)
+    ty = map(ReturnZero(y), tx)
+    return y, ty
 end
 
 function value_and_pushforward!(

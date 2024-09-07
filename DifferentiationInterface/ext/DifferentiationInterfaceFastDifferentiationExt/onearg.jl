@@ -30,7 +30,7 @@ function DI.pushforward(
     x,
     tx::Tangents,
 )
-    dys = map(tx.d) do dx
+    ty = map(tx) do dx
         v_vec = vcat(myvec(x), myvec(dx))
         if extras.y_prototype isa Number
             return only(extras.jvp_exe(v_vec))
@@ -38,7 +38,7 @@ function DI.pushforward(
             return reshape(extras.jvp_exe(v_vec), size(extras.y_prototype))
         end
     end
-    return Tangents(dys...)
+    return ty
 end
 
 function DI.pushforward!(
@@ -108,7 +108,7 @@ function DI.pullback(
     x,
     ty::Tangents,
 )
-    dxs = map(ty.d) do dy
+    tx = map(ty) do dy
         v_vec = vcat(myvec(x), myvec(dy))
         if x isa Number
             return only(extras.vjp_exe(v_vec))
@@ -116,7 +116,7 @@ function DI.pullback(
             return reshape(extras.vjp_exe(v_vec), size(x))
         end
     end
-    return Tangents(dxs...)
+    return tx
 end
 
 function DI.pullback!(

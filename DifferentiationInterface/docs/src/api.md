@@ -10,6 +10,10 @@ DifferentiationInterface
 
 ## First order
 
+```@docs
+Tangents
+```
+
 ### Pushforward
 
 ```@docs

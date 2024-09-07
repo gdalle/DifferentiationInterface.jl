@@ -13,11 +13,11 @@ function DI.value_and_pullback(
     x,
     ty::Tangents,
 )
-    dxs = map(ty.d) do dy
+    tx = map(ty) do dy
         only(DI.pullback(f, extras, backend, x, Tangents(dy)))
     end
     y = f(x)
-    return y, Tangents(dxs...)
+    return y, tx
 end
 
 ### Out-of-place

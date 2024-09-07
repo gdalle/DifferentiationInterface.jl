@@ -31,11 +31,11 @@ end
 function DI.pushforward(
     f!, y, extras::SymbolicsTwoArgPushforwardExtras, ::AutoSymbolics, x, tx::Tangents
 )
-    dys = map(tx.d) do dx
+    ty = map(tx) do dx
         v_vec = vcat(myvec(x), myvec(dx))
         dy = extras.pushforward_exe(v_vec)
     end
-    return Tangents(dys...)
+    return ty
 end
 
 function DI.pushforward!(

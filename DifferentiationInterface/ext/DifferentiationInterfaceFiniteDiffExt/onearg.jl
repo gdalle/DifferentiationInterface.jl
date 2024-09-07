@@ -3,22 +3,22 @@
 DI.prepare_pushforward(f, ::AutoFiniteDiff, x, tx::Tangents) = NoPushforwardExtras()
 
 function DI.pushforward(f, ::NoPushforwardExtras, backend::AutoFiniteDiff, x, tx::Tangents)
-    dys = map(tx.d) do dx
+    ty = map(tx) do dx
         step(t::Number) = f(x .+ t .* dx)
         finite_difference_derivative(step, zero(eltype(x)), fdtype(backend))
     end
-    return Tangents(dys...)
+    return ty
 end
 
 function DI.value_and_pushforward(
     f, ::NoPushforwardExtras, backend::AutoFiniteDiff, x, tx::Tangents
 )
     y = f(x)
-    dys = map(tx.d) do dx
+    ty = map(tx) do dx
         step(t::Number) = f(x .+ t .* dx)
         finite_difference_derivative(step, zero(eltype(x)), fdtype(backend), eltype(y), y)
     end
-    return y, Tangents(dys...)
+    return y, ty
 end
 
 ## Derivative

@@ -7,7 +7,7 @@ DI.prepare_pullback(f!, y, ::AutoReverseDiff, x, ty::Tangents) = NoPullbackExtra
 function DI.value_and_pullback(
     f!, y, ::NoPullbackExtras, ::AutoReverseDiff, x::AbstractArray, ty::Tangents
 )
-    dxs = map(ty.d) do dy
+    tx = map(ty) do dy
         function dotproduct_closure(x)
             y_copy = similar(y, eltype(x))
             f!(y_copy, x)
@@ -16,7 +16,7 @@ function DI.value_and_pullback(
         gradient(dotproduct_closure, x)
     end
     f!(y, x)
-    return y, Tangents(dxs...)
+    return y, tx
 end
 
 function DI.value_and_pullback!(
@@ -44,7 +44,7 @@ end
 function DI.pullback(
     f!, y, ::NoPullbackExtras, ::AutoReverseDiff, x::AbstractArray, ty::Tangents
 )
-    dxs = map(ty.d) do dy
+    tx = map(ty) do dy
         function dotproduct_closure(x)
             y_copy = similar(y, eltype(x))
             f!(y_copy, x)
@@ -52,7 +52,7 @@ function DI.pullback(
         end
         gradient(dotproduct_closure, x)
     end
-    return Tangents(dxs...)
+    return tx
 end
 
 function DI.pullback!(
