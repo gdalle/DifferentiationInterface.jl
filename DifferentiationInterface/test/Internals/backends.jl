@@ -1,6 +1,7 @@
 using ADTypes
 using DifferentiationInterface
 import DifferentiationInterface as DI
+using ForwardDiff: ForwardDiff
 using Test
 
 @testset "SecondOrder" begin
