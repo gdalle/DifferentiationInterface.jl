@@ -1,6 +1,7 @@
 using ADTypes
 using DifferentiationInterface
 import DifferentiationInterface as DI
+using ForwardDiff: ForwardDiff
 using Test
 
 @testset "SecondOrder" begin
@@ -33,4 +34,6 @@ end
 
 @testset "Batch size" begin
     @test DI.pick_batchsize(AutoZygote(), 2) == 1
+    @test DI.pick_batchsize(AutoForwardDiff(; chunksize=4), 2) == 2
+    @test DI.pick_batchsize(AutoForwardDiff(; chunksize=4), 6) == 4
 end

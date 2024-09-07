@@ -1,6 +1,7 @@
 module DifferentiationInterfaceTestComponentArraysExt
 
 using ComponentArrays: ComponentVector
+using DifferentiationInterface
 using DifferentiationInterfaceTest
 import DifferentiationInterfaceTest as DIT
 using LinearAlgebra: dot
@@ -37,13 +38,22 @@ function comp_to_num_scenarios_onearg(x::ComponentVector; dx::AbstractVector, dy
         append!(
             scens,
             [
-                PullbackScenario(f; x, y, dy, dx=dx_from_dy, nb_args, place),
+                PullbackScenario(
+                    f; x, y, ty=Tangents(dy), tx=Tangents(dx_from_dy), nb_args, place
+                ),
                 GradientScenario(f; x, y, grad, nb_args, place),
             ],
         )
     end
     for place in (:outofplace,)
-        append!(scens, [PushforwardScenario(f; x, y, dx, dy=dy_from_dx, nb_args, place)])
+        append!(
+            scens,
+            [
+                PushforwardScenario(
+                    f; x, y, tx=Tangents(dx), ty=Tangents(dy_from_dx), nb_args, place
+                ),
+            ],
+        )
     end
     return scens
 end

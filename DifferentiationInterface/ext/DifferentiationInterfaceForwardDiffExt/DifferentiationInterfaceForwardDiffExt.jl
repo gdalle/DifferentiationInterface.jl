@@ -14,7 +14,6 @@ using DifferentiationInterface:
     NoSecondDerivativeExtras,
     PushforwardExtras,
     SecondOrder,
-    SingleTangent,
     Tangents,
     inner,
     outer

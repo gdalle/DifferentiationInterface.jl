@@ -3,7 +3,7 @@ function DI.prepare_hvp(f, ::AnyAutoEnzyme{Nothing,Nothing}, x, tx::Tangents{1})
 end
 
 function DI.hvp(f, ::NoHVPExtras, ::AnyAutoEnzyme{Nothing,Nothing}, x, tx::Tangents{1})
-    return SingleTangent(hvp(f, x, only(tx)))
+    return Tangents(hvp(f, x, only(tx)))
 end
 
 function DI.hvp!(

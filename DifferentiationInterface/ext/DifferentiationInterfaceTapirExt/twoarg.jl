@@ -19,11 +19,11 @@ end
 function DI.value_and_pullback(
     f!, y, extras::TapirTwoArgPullbackExtras, backend::AutoTapir, x, ty::Tangents
 )
-    dxs = map(ty.d) do dy
-        only(DI.pullback(f!, y, extras, backend, x, SingleTangent(dy)))
+    tx = map(ty) do dy
+        only(DI.pullback(f!, y, extras, backend, x, Tangents(dy)))
     end
     f!(y, x)
-    return y, Tangents(dxs)
+    return y, tx
 end
 
 function DI.value_and_pullback(
@@ -67,5 +67,5 @@ function DI.value_and_pullback(
     # Run the reverse-pass.
     _, _, new_dx = pb!!(NoRData())
 
-    return y, SingleTangent(tangent(fdata(dx_righttype), new_dx))
+    return y, Tangents(tangent(fdata(dx_righttype), new_dx))
 end

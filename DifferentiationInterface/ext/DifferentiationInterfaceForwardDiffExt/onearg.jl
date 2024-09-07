@@ -86,7 +86,7 @@ struct ForwardDiffOneArgDerivativeExtras{E} <: DerivativeExtras
 end
 
 function DI.prepare_derivative(f::F, backend::AutoForwardDiff, x) where {F}
-    pushforward_extras = DI.prepare_pushforward(f, backend, x, SingleTangent(one(x)))
+    pushforward_extras = DI.prepare_pushforward(f, backend, x, Tangents(one(x)))
     return ForwardDiffOneArgDerivativeExtras(pushforward_extras)
 end
 
@@ -94,7 +94,7 @@ function DI.value_and_derivative(
     f::F, extras::ForwardDiffOneArgDerivativeExtras, backend::AutoForwardDiff, x
 ) where {F}
     y, ty = DI.value_and_pushforward(
-        f, extras.pushforward_extras, backend, x, SingleTangent(one(x))
+        f, extras.pushforward_extras, backend, x, Tangents(one(x))
     )
     return y, only(ty)
 end
@@ -103,7 +103,7 @@ function DI.value_and_derivative!(
     f::F, der, extras::ForwardDiffOneArgDerivativeExtras, backend::AutoForwardDiff, x
 ) where {F}
     y, _ = DI.value_and_pushforward!(
-        f, SingleTangent(der), extras.pushforward_extras, backend, x, SingleTangent(one(x))
+        f, Tangents(der), extras.pushforward_extras, backend, x, Tangents(one(x))
     )
     return y, der
 end
@@ -111,16 +111,14 @@ end
 function DI.derivative(
     f::F, extras::ForwardDiffOneArgDerivativeExtras, backend::AutoForwardDiff, x
 ) where {F}
-    return only(
-        DI.pushforward(f, extras.pushforward_extras, backend, x, SingleTangent(one(x)))
-    )
+    return only(DI.pushforward(f, extras.pushforward_extras, backend, x, Tangents(one(x))))
 end
 
 function DI.derivative!(
     f::F, der, extras::ForwardDiffOneArgDerivativeExtras, backend::AutoForwardDiff, x
 ) where {F}
     DI.pushforward!(
-        f, SingleTangent(der), extras.pushforward_extras, backend, x, SingleTangent(one(x))
+        f, Tangents(der), extras.pushforward_extras, backend, x, Tangents(one(x))
     )
     return der
 end

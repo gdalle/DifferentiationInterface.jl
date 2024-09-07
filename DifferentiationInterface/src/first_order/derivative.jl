@@ -59,13 +59,11 @@ struct PushforwardDerivativeExtras{E<:PushforwardExtras} <: DerivativeExtras
 end
 
 function prepare_derivative(f::F, backend::AbstractADType, x) where {F}
-    return PushforwardDerivativeExtras(
-        prepare_pushforward(f, backend, x, SingleTangent(one(x)))
-    )
+    return PushforwardDerivativeExtras(prepare_pushforward(f, backend, x, Tangents(one(x))))
 end
 
 function prepare_derivative(f!::F, y, backend::AbstractADType, x) where {F}
-    pushforward_extras = prepare_pushforward(f!, y, backend, x, SingleTangent(one(x)))
+    pushforward_extras = prepare_pushforward(f!, y, backend, x, Tangents(one(x)))
     return PushforwardDerivativeExtras(pushforward_extras)
 end
 
@@ -75,7 +73,7 @@ function value_and_derivative(
     f::F, extras::PushforwardDerivativeExtras, backend::AbstractADType, x
 ) where {F}
     y, ty = value_and_pushforward(
-        f, extras.pushforward_extras, backend, x, SingleTangent(one(x))
+        f, extras.pushforward_extras, backend, x, Tangents(one(x))
     )
     return y, only(ty)
 end
@@ -84,7 +82,7 @@ function value_and_derivative!(
     f::F, der, extras::PushforwardDerivativeExtras, backend::AbstractADType, x
 ) where {F}
     y, _ = value_and_pushforward!(
-        f, SingleTangent(der), extras.pushforward_extras, backend, x, SingleTangent(one(x))
+        f, Tangents(der), extras.pushforward_extras, backend, x, Tangents(one(x))
     )
     return y, der
 end
@@ -92,16 +90,14 @@ end
 function derivative(
     f::F, extras::PushforwardDerivativeExtras, backend::AbstractADType, x
 ) where {F}
-    ty = pushforward(f, extras.pushforward_extras, backend, x, SingleTangent(one(x)))
+    ty = pushforward(f, extras.pushforward_extras, backend, x, Tangents(one(x)))
     return only(ty)
 end
 
 function derivative!(
     f::F, der, extras::PushforwardDerivativeExtras, backend::AbstractADType, x
 ) where {F}
-    pushforward!(
-        f, SingleTangent(der), extras.pushforward_extras, backend, x, SingleTangent(one(x))
-    )
+    pushforward!(f, Tangents(der), extras.pushforward_extras, backend, x, Tangents(one(x)))
     return der
 end
 
@@ -111,7 +107,7 @@ function value_and_derivative(
     f!::F, y, extras::PushforwardDerivativeExtras, backend::AbstractADType, x
 ) where {F}
     y, ty = value_and_pushforward(
-        f!, y, extras.pushforward_extras, backend, x, SingleTangent(one(x))
+        f!, y, extras.pushforward_extras, backend, x, Tangents(one(x))
     )
     return y, only(ty)
 end
@@ -120,13 +116,7 @@ function value_and_derivative!(
     f!::F, y, der, extras::PushforwardDerivativeExtras, backend::AbstractADType, x
 ) where {F}
     y, _ = value_and_pushforward!(
-        f!,
-        y,
-        SingleTangent(der),
-        extras.pushforward_extras,
-        backend,
-        x,
-        SingleTangent(one(x)),
+        f!, y, Tangents(der), extras.pushforward_extras, backend, x, Tangents(one(x))
     )
     return y, der
 end
@@ -134,7 +124,7 @@ end
 function derivative(
     f!::F, y, extras::PushforwardDerivativeExtras, backend::AbstractADType, x
 ) where {F}
-    ty = pushforward(f!, y, extras.pushforward_extras, backend, x, SingleTangent(one(x)))
+    ty = pushforward(f!, y, extras.pushforward_extras, backend, x, Tangents(one(x)))
     return only(ty)
 end
 
@@ -142,13 +132,7 @@ function derivative!(
     f!::F, y, der, extras::PushforwardDerivativeExtras, backend::AbstractADType, x
 ) where {F}
     pushforward!(
-        f!,
-        y,
-        SingleTangent(der),
-        extras.pushforward_extras,
-        backend,
-        x,
-        SingleTangent(one(x)),
+        f!, y, Tangents(der), extras.pushforward_extras, backend, x, Tangents(one(x))
     )
     return der
 end

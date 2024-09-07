@@ -53,7 +53,7 @@ struct PullbackGradientExtras{E<:PullbackExtras} <: GradientExtras
 end
 
 function prepare_gradient(f::F, backend::AbstractADType, x) where {F}
-    pullback_extras = prepare_pullback(f, backend, x, SingleTangent(true))
+    pullback_extras = prepare_pullback(f, backend, x, Tangents(true))
     return PullbackGradientExtras(pullback_extras)
 end
 
@@ -62,7 +62,7 @@ end
 function value_and_gradient(
     f::F, extras::PullbackGradientExtras, backend::AbstractADType, x
 ) where {F}
-    y, tx = value_and_pullback(f, extras.pullback_extras, backend, x, SingleTangent(true))
+    y, tx = value_and_pullback(f, extras.pullback_extras, backend, x, Tangents(true))
     return y, only(tx)
 end
 
@@ -70,7 +70,7 @@ function value_and_gradient!(
     f::F, grad, extras::PullbackGradientExtras, backend::AbstractADType, x
 ) where {F}
     y, _ = value_and_pullback!(
-        f, SingleTangent(grad), extras.pullback_extras, backend, x, SingleTangent(true)
+        f, Tangents(grad), extras.pullback_extras, backend, x, Tangents(true)
     )
     return y, grad
 end
@@ -78,16 +78,14 @@ end
 function gradient(
     f::F, extras::PullbackGradientExtras, backend::AbstractADType, x
 ) where {F}
-    tx = pullback(f, extras.pullback_extras, backend, x, SingleTangent(true))
+    tx = pullback(f, extras.pullback_extras, backend, x, Tangents(true))
     return only(tx)
 end
 
 function gradient!(
     f::F, grad, extras::PullbackGradientExtras, backend::AbstractADType, x
 ) where {F}
-    pullback!(
-        f, SingleTangent(grad), extras.pullback_extras, backend, x, SingleTangent(true)
-    )
+    pullback!(f, Tangents(grad), extras.pullback_extras, backend, x, Tangents(true))
     return grad
 end
 

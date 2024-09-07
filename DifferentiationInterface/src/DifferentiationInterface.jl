@@ -55,7 +55,6 @@ include("second_order/hvp.jl")
 include("second_order/hessian.jl")
 
 include("fallbacks/no_extras.jl")
-include("fallbacks/no_tangents.jl")
 
 include("misc/differentiate_with.jl")
 include("misc/from_primitive.jl")
@@ -68,6 +67,7 @@ end
 
 ## Exported
 
+export Tangents
 export SecondOrder
 
 export value_and_pushforward!, value_and_pushforward
