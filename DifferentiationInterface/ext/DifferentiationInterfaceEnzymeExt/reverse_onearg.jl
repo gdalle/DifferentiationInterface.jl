@@ -201,7 +201,8 @@ function DI.value_and_gradient(
     backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}},
     x,
 )
-    return DI.value_and_pullback(f, NoPullbackExtras(), backend, x, true)
+    y, tx = DI.value_and_pullback(f, NoPullbackExtras(), backend, x, Tangents(true))
+    return y, only(tx)
 end
 
 function DI.value_and_gradient!(
@@ -211,7 +212,10 @@ function DI.value_and_gradient!(
     backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}},
     x,
 )
-    return DI.value_and_pullback!(f, grad, NoPullbackExtras(), backend, x, true)
+    y, _ = DI.value_and_pullback!(
+        f, Tangents(grad), NoPullbackExtras(), backend, x, Tangents(true)
+    )
+    return y, grad
 end
 
 ## Jacobian
