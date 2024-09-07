@@ -39,7 +39,7 @@ function comp_to_num_scenarios_onearg(x::ComponentVector; dx::AbstractVector, dy
             scens,
             [
                 PullbackScenario(
-                    f; x, y, dy=Tangents(dy), dx=Tangents(dx_from_dy), nb_args, place
+                    f; x, y, ty=Tangents(dy), tx=Tangents(dx_from_dy), nb_args, place
                 ),
                 GradientScenario(f; x, y, grad, nb_args, place),
             ],
@@ -50,7 +50,7 @@ function comp_to_num_scenarios_onearg(x::ComponentVector; dx::AbstractVector, dy
             scens,
             [
                 PushforwardScenario(
-                    f; x, y, dx=Tangents(dx), dy=Tangenta(dy_from_dx), nb_args, place
+                    f; x, y, tx=Tangents(dx), ty=Tangents(dy_from_dx), nb_args, place
                 ),
             ],
         )
