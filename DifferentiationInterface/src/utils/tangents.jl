@@ -37,8 +37,11 @@ Base.eltype(::Tangents{B,T}) where {B,T} = T
 Base.only(t::Tangents) = only(t.d)
 Base.first(t::Tangents) = first(t.d)
 Base.getindex(t::Tangents, ind) = t.d[ind]
+Base.firstindex(t::Tangents) = firstindex(t.d)
+Base.lastindex(t::Tangents) = lastindex(t.d)
 
 Base.iterate(t::Tangents) = iterate(t.d)
+Base.iterate(t::Tangents, state) = iterate(t.d, state)
 
 Base.map(f, t::Tangents) = Tangents(map(f, t.d)...)
 
