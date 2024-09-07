@@ -15,7 +15,6 @@ using DifferentiationInterface:
     PushforwardExtras,
     SecondOrder,
     Tangents,
-    Tangents,
     inner,
     outer
 using ForwardDiff.DiffResults:

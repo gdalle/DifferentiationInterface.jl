@@ -20,7 +20,6 @@ using DifferentiationInterface:
     PushforwardExtras,
     PushforwardFast,
     PushforwardSlow,
-    Tangents,
     dense_ad,
     maybe_dense_ad,
     maybe_inner,

@@ -16,7 +16,6 @@ using DifferentiationInterface:
     NoPullbackExtras,
     NoPushforwardExtras,
     Tangents,
-    Tangents,
     pick_batchsize
 using Enzyme:
     Active,
