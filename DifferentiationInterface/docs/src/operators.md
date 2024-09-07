@@ -30,7 +30,7 @@ These operators are computed using only the input `x`.
 
 ### Low-level operators
 
-These operators are computed using the input `x` and a tangent `t` of type [`Tangent`](@ref).
+These operators are computed using the input `x` and a tangent `t` of type [`Tangents`](@ref).
 This tangent is essentially an `NTuple`, whose elements live either
 
 - in the same space as `x` (we call it `tx`)
