@@ -65,7 +65,7 @@ function _prepare_hvp_aux(
     f::F, backend::AbstractADType, x, tx::Tangents, ::ForwardOverForward
 ) where {F}
     # pushforward of many pushforwards in theory, but pushforward of gradient in practice
-    inner_gradient = Gradient(f, nested(maybe_inner(backend)))
+    inner_gradient(x) = gradient(f, nested(maybe_inner(backend)), x)
     outer_pushforward_extras = prepare_pushforward(
         inner_gradient, maybe_outer(backend), x, tx
     )
@@ -76,7 +76,7 @@ function _prepare_hvp_aux(
     f::F, backend::AbstractADType, x, tx::Tangents, ::ForwardOverReverse
 ) where {F}
     # pushforward of gradient
-    inner_gradient = Gradient(f, nested(maybe_inner(backend)))
+    inner_gradient(x) = gradient(f, nested(maybe_inner(backend)), x)
     outer_pushforward_extras = prepare_pushforward(
         inner_gradient, maybe_outer(backend), x, tx
     )
@@ -95,7 +95,7 @@ function _prepare_hvp_aux(
     f::F, backend::AbstractADType, x, tx::Tangents, ::ReverseOverReverse
 ) where {F}
     # pullback of gradient
-    inner_gradient = Gradient(f, nested(maybe_inner(backend)))
+    inner_gradient(x) = gradient(f, nested(maybe_inner(backend)), x)
     outer_pullback_extras = prepare_pullback(inner_gradient, maybe_outer(backend), x, tx)
     return ReverseOverReverseHVPExtras(inner_gradient, outer_pullback_extras)
 end
@@ -124,7 +124,9 @@ function hvp(
     f::F, ::ReverseOverForwardHVPExtras, backend::AbstractADType, x, tx::Tangents
 ) where {F}
     dgs = map(tx.d) do dx
-        inner_pushforward = PushforwardFixedSeed(f, nested(maybe_inner(backend)), Tangents(dx))
+        function inner_pushforward(x)
+            return only(pushforward(f, nested(maybe_inner(backend)), x, Tangents(tx.d[b])))
+        end
         gradient(only ∘ inner_pushforward, maybe_outer(backend), x)
     end
     return Tangents(dgs...)
@@ -174,9 +176,9 @@ function hvp!(
     tx::Tangents,
 ) where {F}
     for b in eachindex(tx.d, tg.d)
-        inner_pushforward = PushforwardFixedSeed(
-            f, nested(maybe_inner(backend)), Tangents(tx.d[b])
-        )
+        function inner_pushforward(x)
+            return only(pushforward(f, nested(maybe_inner(backend)), x, Tangents(tx.d[b])))
+        end
         gradient!(only ∘ inner_pushforward, tg.d[b], maybe_outer(backend), x)
     end
     return tg
