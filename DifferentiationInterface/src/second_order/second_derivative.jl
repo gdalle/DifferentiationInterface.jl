@@ -56,8 +56,9 @@ end
 function prepare_second_derivative(
     f::F, backend::AbstractADType, x, contexts::Vararg{Context,C}
 ) where {F,C}
-    function inner_derivative(x, contexts...)
-        return derivative(f, nested(maybe_inner(backend)), x, contexts...)
+    function inner_derivative(_x, unannotated_contexts...)
+        annotated_contexts = map.(typeof.(contexts), unannotated_contexts)
+        return derivative(f, nested(maybe_inner(backend)), _x, annotated_contexts...)
     end
     outer_derivative_extras = prepare_derivative(
         inner_derivative, maybe_outer(backend), x, contexts...
@@ -88,7 +89,7 @@ function value_derivative_and_second_derivative(
     contexts::Vararg{Context,C},
 ) where {F,C}
     @compat (; inner_derivative, outer_derivative_extras) = extras
-    y = f(x)
+    y = f(x, map(unwrap, contexts)...)
     der, der2 = value_and_derivative(
         inner_derivative, outer_derivative_extras, maybe_outer(backend), x, contexts...
     )
@@ -124,7 +125,7 @@ function value_derivative_and_second_derivative!(
     contexts::Vararg{Context,C},
 ) where {F,C}
     @compat (; inner_derivative, outer_derivative_extras) = extras
-    y = f(x)
+    y = f(x, map(unwrap, contexts)...)
     new_der, _ = value_and_derivative!(
         inner_derivative,
         der2,

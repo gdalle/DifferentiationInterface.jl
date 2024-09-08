@@ -72,8 +72,9 @@ function _prepare_hvp_aux(
     contexts::Vararg{Context,C},
 ) where {F,C}
     # pushforward of many pushforwards in theory, but pushforward of gradient in practice
-    function inner_gradient(x, contexts...)
-        return gradient(f, nested(maybe_inner(backend)), x, contexts...)
+    function inner_gradient(_x, unannotated_contexts...)
+        annotated_contexts = map.(typeof.(contexts), unannotated_contexts)
+        return gradient(f, nested(maybe_inner(backend)), _x, annotated_contexts...)
     end
     outer_pushforward_extras = prepare_pushforward(
         inner_gradient, maybe_outer(backend), x, tx, contexts...
@@ -90,8 +91,9 @@ function _prepare_hvp_aux(
     contexts::Vararg{Context,C},
 ) where {F,C}
     # pushforward of gradient
-    function inner_gradient(x, contexts...)
-        return gradient(f, nested(maybe_inner(backend)), x, contexts...)
+    function inner_gradient(_x, unannotated_contexts...)
+        annotated_contexts = map.(typeof.(contexts), unannotated_contexts)
+        return gradient(f, nested(maybe_inner(backend)), _x, annotated_contexts...)
     end
     outer_pushforward_extras = prepare_pushforward(
         inner_gradient, maybe_outer(backend), x, tx, contexts...
@@ -121,8 +123,9 @@ function _prepare_hvp_aux(
     contexts::Vararg{Context,C},
 ) where {F,C}
     # pullback of gradient
-    function inner_gradient(x, contexts...)
-        return gradient(f, nested(maybe_inner(backend)), x, contexts...)
+    function inner_gradient(_x, unannotated_contexts...)
+        annotated_contexts = map.(typeof.(contexts), unannotated_contexts)
+        return gradient(f, nested(maybe_inner(backend)), _x, annotated_contexts...)
     end
     outer_pullback_extras = prepare_pullback(
         inner_gradient, maybe_outer(backend), x, tx, contexts...
@@ -169,9 +172,9 @@ function hvp(
     contexts::Vararg{Context,C},
 ) where {F,C}
     dgs = map(tx.d) do dx
-        function inner_pushforward(x)
+        function inner_pushforward(_x)
             return only(
-                pushforward(f, nested(maybe_inner(backend)), x, Tangents(dx), contexts...),
+                pushforward(f, nested(maybe_inner(backend)), _x, Tangents(dx), contexts...),
             )
         end
         gradient(only ∘ inner_pushforward, maybe_outer(backend), x, contexts...)

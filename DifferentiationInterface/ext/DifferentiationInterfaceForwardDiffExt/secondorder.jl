@@ -36,8 +36,9 @@ function DI.prepare_hvp(
     T = tag_type(f, tagged_outer_backend, x)
     xdual = make_dual(T, x, tx)
     gradient_extras = DI.prepare_gradient(f, inner(backend), xdual, contexts...)
-    function inner_gradient(x, contexts...)
-        return DI.gradient(f, gradient_extras, inner(backend), x, contexts...)
+    function inner_gradient(x, unannotated_contexts...)
+        annotated_contexts = map.(typeof.(contexts), unannotated_contexts)
+        return DI.gradient(f, gradient_extras, inner(backend), x, unannotated_contexts...)
     end
     outer_pushforward_extras = DI.prepare_pushforward(
         inner_gradient, tagged_outer_backend, x, tx, contexts...

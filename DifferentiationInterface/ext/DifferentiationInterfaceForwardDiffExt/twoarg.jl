@@ -6,8 +6,8 @@ struct ForwardDiffTwoArgPushforwardExtras{T,X,Y} <: PushforwardExtras
 end
 
 function DI.prepare_pushforward(
-    f!::F, y, backend::AutoForwardDiff, x, tx::Tangents
-) where {F}
+    f!::F, y, backend::AutoForwardDiff, x, tx::Tangents, contexts::Vararg{Context,C}
+) where {F,C}
     T = tag_type(f!, backend, x)
     xdual_tmp = make_dual_similar(T, x, tx)
     ydual_tmp = make_dual_similar(T, y, tx)  # dx only for batch size
@@ -17,20 +17,30 @@ function DI.prepare_pushforward(
 end
 
 function compute_ydual_twoarg(
-    f!::F, y, extras::ForwardDiffTwoArgPushforwardExtras{T}, x::Number, tx::Tangents
-) where {F,T}
+    f!::F,
+    y,
+    extras::ForwardDiffTwoArgPushforwardExtras{T},
+    x::Number,
+    tx::Tangents,
+    contexts::Vararg{Context,C},
+) where {F,T,C}
     @compat (; ydual_tmp) = extras
     xdual_tmp = make_dual(T, x, tx)
-    f!(ydual_tmp, xdual_tmp)
+    f!(ydual_tmp, xdual_tmp, map(unwrap, contexts)...)
     return ydual_tmp
 end
 
 function compute_ydual_twoarg(
-    f!::F, y, extras::ForwardDiffTwoArgPushforwardExtras{T}, x, tx::Tangents
-) where {F,T}
+    f!::F,
+    y,
+    extras::ForwardDiffTwoArgPushforwardExtras{T},
+    x,
+    tx::Tangents,
+    contexts::Vararg{Context,C},
+) where {F,T,C}
     @compat (; xdual_tmp, ydual_tmp) = extras
     make_dual!(T, xdual_tmp, x, tx)
-    f!(ydual_tmp, xdual_tmp)
+    f!(ydual_tmp, xdual_tmp, map(unwrap, contexts)...)
     return ydual_tmp
 end
 
@@ -41,8 +51,9 @@ function DI.value_and_pushforward(
     ::AutoForwardDiff,
     x,
     tx::Tangents{B},
-) where {F,T,B}
-    ydual_tmp = compute_ydual_twoarg(f!, y, extras, x, tx)
+    contexts::Vararg{Context,C},
+) where {F,T,B,C}
+    ydual_tmp = compute_ydual_twoarg(f!, y, extras, x, tx, contexts...)
     myvalue!(T, y, ydual_tmp)
     ty = mypartials(T, Val(B), ydual_tmp)
     return y, ty
@@ -56,8 +67,9 @@ function DI.value_and_pushforward!(
     ::AutoForwardDiff,
     x,
     tx::Tangents,
-) where {F,T}
-    ydual_tmp = compute_ydual_twoarg(f!, y, extras, x, tx)
+    contexts::Vararg{Context,C},
+) where {F,T,C}
+    ydual_tmp = compute_ydual_twoarg(f!, y, extras, x, tx, contexts...)
     myvalue!(T, y, ydual_tmp)
     mypartials!(T, ty, ydual_tmp)
     return y, ty
@@ -70,8 +82,9 @@ function DI.pushforward(
     ::AutoForwardDiff,
     x,
     tx::Tangents{B},
-) where {F,T,B}
-    ydual_tmp = compute_ydual_twoarg(f!, y, extras, x, tx)
+    contexts::Vararg{Context,C},
+) where {F,T,B,C}
+    ydual_tmp = compute_ydual_twoarg(f!, y, extras, x, tx, contexts...)
     ty = mypartials(T, Val(B), ydual_tmp)
     return ty
 end
@@ -84,8 +97,9 @@ function DI.pushforward!(
     ::AutoForwardDiff,
     x,
     tx::Tangents,
-) where {F,T}
-    ydual_tmp = compute_ydual_twoarg(f!, y, extras, x, tx)
+    contexts::Vararg{Context,C},
+) where {F,T,C}
+    ydual_tmp = compute_ydual_twoarg(f!, y, extras, x, tx, contexts...)
     mypartials!(T, ty, ydual_tmp)
     return ty
 end
