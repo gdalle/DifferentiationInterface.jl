@@ -1,6 +1,12 @@
 function change_function(scen::Scenario{op,args,pl}, new_f) where {op,args,pl}
     return Scenario{op,args,pl}(
-        new_f; x=scen.x, y=scen.y, seed=scen.seed, res1=scen.res1, res2=scen.res2
+        new_f;
+        x=scen.x,
+        y=scen.y,
+        seed=scen.seed,
+        res1=scen.res1,
+        res2=scen.res2,
+        contexts=scen.contexts,
     )
 end
 
