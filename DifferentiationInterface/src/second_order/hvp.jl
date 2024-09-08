@@ -71,9 +71,10 @@ function _prepare_hvp_aux(
     tx::Tangents,
     contexts::Vararg{Context,C},
 ) where {F,C}
+    rewrap = Rewrap(contexts...)
     # pushforward of many pushforwards in theory, but pushforward of gradient in practice
     function inner_gradient(_x, unannotated_contexts...)
-        annotated_contexts = map.(typeof.(contexts), unannotated_contexts)
+        annotated_contexts = rewrap(unannotated_contexts...)
         return gradient(f, nested(maybe_inner(backend)), _x, annotated_contexts...)
     end
     outer_pushforward_extras = prepare_pushforward(
@@ -90,9 +91,10 @@ function _prepare_hvp_aux(
     tx::Tangents,
     contexts::Vararg{Context,C},
 ) where {F,C}
+    rewrap = Rewrap(contexts...)
     # pushforward of gradient
     function inner_gradient(_x, unannotated_contexts...)
-        annotated_contexts = map.(typeof.(contexts), unannotated_contexts)
+        annotated_contexts = rewrap(unannotated_contexts...)
         return gradient(f, nested(maybe_inner(backend)), _x, annotated_contexts...)
     end
     outer_pushforward_extras = prepare_pushforward(
@@ -122,9 +124,10 @@ function _prepare_hvp_aux(
     tx::Tangents,
     contexts::Vararg{Context,C},
 ) where {F,C}
+    rewrap = Rewrap(contexts...)
     # pullback of gradient
     function inner_gradient(_x, unannotated_contexts...)
-        annotated_contexts = map.(typeof.(contexts), unannotated_contexts)
+        annotated_contexts = rewrap(unannotated_contexts...)
         return gradient(f, nested(maybe_inner(backend)), _x, annotated_contexts...)
     end
     outer_pullback_extras = prepare_pullback(
@@ -171,10 +174,18 @@ function hvp(
     tx::Tangents,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    dgs = map(tx.d) do dx
-        function inner_pushforward(_x)
+    rewrap = Rewrap(contexts)
+    tg = map(tx) do dx
+        function inner_pushforward(_x, unannotated_contexts...)
+            annotated_contexts = rewrap(unannotated_contexts...)
             return only(
-                pushforward(f, nested(maybe_inner(backend)), _x, Tangents(dx), contexts...),
+                pushforward(
+                    f,
+                    nested(maybe_inner(backend)),
+                    _x,
+                    Tangents(dx),
+                    annotated_contexts...,
+                ),
             )
         end
         gradient(only ∘ inner_pushforward, maybe_outer(backend), x, contexts...)
@@ -247,11 +258,17 @@ function hvp!(
     tx::Tangents,
     contexts::Vararg{Context,C},
 ) where {F,C}
+    rewrap = Rewrap(contexts)
     for b in eachindex(tx.d, tg.d)
-        function inner_pushforward(x)
+        function inner_pushforward(_x, unannotated_contexts...)
+            annotated_contexts = rewrap(unannotated_contexts...)
             return only(
                 pushforward(
-                    f, nested(maybe_inner(backend)), x, Tangents(tx.d[b]), contexts...
+                    f,
+                    nested(maybe_inner(backend)),
+                    _x,
+                    Tangents(tx.d[b]),
+                    annotated_contexts...,
                 ),
             )
         end

@@ -56,8 +56,9 @@ end
 function prepare_second_derivative(
     f::F, backend::AbstractADType, x, contexts::Vararg{Context,C}
 ) where {F,C}
+    rewrap = Rewrap(contexts...)
     function inner_derivative(_x, unannotated_contexts...)
-        annotated_contexts = map.(typeof.(contexts), unannotated_contexts)
+        annotated_contexts = rewrap(unannotated_contexts...)
         return derivative(f, nested(maybe_inner(backend)), _x, annotated_contexts...)
     end
     outer_derivative_extras = prepare_derivative(
