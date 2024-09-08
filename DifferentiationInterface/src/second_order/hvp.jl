@@ -90,7 +90,9 @@ function _prepare_hvp_aux(
     contexts::Vararg{Context,C},
 ) where {F,C}
     # pushforward of gradient
-    inner_gradient(, contexts...) = gradient(f, nested(maybe_inner(backend)), x, contexts...)
+    function inner_gradient(x, contexts...)
+        return gradient(f, nested(maybe_inner(backend)), x, contexts...)
+    end
     outer_pushforward_extras = prepare_pushforward(
         inner_gradient, maybe_outer(backend), x, tx, contexts...
     )
@@ -119,7 +121,9 @@ function _prepare_hvp_aux(
     contexts::Vararg{Context,C},
 ) where {F,C}
     # pullback of gradient
-    inner_gradient(x, contexts...) = gradient(f, nested(maybe_inner(backend)), x, contexts...)
+    function inner_gradient(x, contexts...)
+        return gradient(f, nested(maybe_inner(backend)), x, contexts...)
+    end
     outer_pullback_extras = prepare_pullback(
         inner_gradient, maybe_outer(backend), x, tx, contexts...
     )
@@ -172,7 +176,7 @@ function hvp(
         end
         gradient(only ∘ inner_pushforward, maybe_outer(backend), x, contexts...)
     end
-    return Tangents(dgs...)
+    return tg
 end
 
 function hvp(

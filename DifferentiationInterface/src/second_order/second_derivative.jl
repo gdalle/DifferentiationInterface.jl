@@ -57,7 +57,7 @@ function prepare_second_derivative(
     f::F, backend::AbstractADType, x, contexts::Vararg{Context,C}
 ) where {F,C}
     function inner_derivative(x, contexts...)
-        return InnerDerivative(f, nested(maybe_inner(backend)), x, contexts...)
+        return derivative(f, nested(maybe_inner(backend)), x, contexts...)
     end
     outer_derivative_extras = prepare_derivative(
         inner_derivative, maybe_outer(backend), x, contexts...
