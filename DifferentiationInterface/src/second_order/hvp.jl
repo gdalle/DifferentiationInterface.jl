@@ -174,7 +174,7 @@ function hvp(
     tx::Tangents,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    rewrap = Rewrap(contexts)
+    rewrap = Rewrap(contexts...)
     tg = map(tx) do dx
         function inner_pushforward(_x, unannotated_contexts...)
             annotated_contexts = rewrap(unannotated_contexts...)
@@ -258,7 +258,7 @@ function hvp!(
     tx::Tangents,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    rewrap = Rewrap(contexts)
+    rewrap = Rewrap(contexts...)
     for b in eachindex(tx.d, tg.d)
         function inner_pushforward(_x, unannotated_contexts...)
             annotated_contexts = rewrap(unannotated_contexts...)
