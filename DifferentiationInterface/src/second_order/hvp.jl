@@ -123,13 +123,13 @@ end
 function hvp(
     f::F, ::ReverseOverForwardHVPExtras, backend::AbstractADType, x, tx::Tangents
 ) where {F}
-    dgs = map(tx.d) do dx
+    tg = map(tx) do dx
         function inner_pushforward(x)
-            return only(pushforward(f, nested(maybe_inner(backend)), x, Tangents(tx.d[b])))
+            return only(pushforward(f, nested(maybe_inner(backend)), x, Tangents(dx)))
         end
         gradient(only ∘ inner_pushforward, maybe_outer(backend), x)
     end
-    return Tangents(dgs...)
+    return tg
 end
 
 function hvp(
