@@ -43,6 +43,7 @@ include("utils/check.jl")
 include("utils/exceptions.jl")
 include("utils/maybe.jl")
 include("utils/printing.jl")
+include("utils/context.jl")
 
 include("first_order/pushforward.jl")
 include("first_order/pullback.jl")
@@ -68,6 +69,7 @@ end
 ## Exported
 
 export Tangents
+export Context, Constant
 export SecondOrder
 
 export value_and_pushforward!, value_and_pushforward
