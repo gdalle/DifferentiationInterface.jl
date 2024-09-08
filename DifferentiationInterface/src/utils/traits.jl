@@ -125,6 +125,8 @@ Traits identifying second-order backends that compute HVPs in forward over forwa
 """
 struct ForwardOverForward <: HVPMode end
 
+hvp_mode(backend::AbstractADType) = hvp_mode(SecondOrder(backend, backend))
+
 function hvp_mode(ba::SecondOrder)
     if Bool(pushforward_performance(outer(ba))) && Bool(pullback_performance(inner(ba)))
         return ForwardOverReverse()
