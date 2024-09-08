@@ -68,18 +68,31 @@ struct PullbackJacobianExtras{B,D,R,E<:PullbackExtras} <: JacobianExtras
     M::Int
 end
 
-function prepare_jacobian(f::F, backend::AbstractADType, x) where {F}
-    y = f(x)
-    return _prepare_jacobian_aux((f,), backend, x, y, pushforward_performance(backend))
+function prepare_jacobian(
+    f::F, backend::AbstractADType, x, contexts::Vararg{Context,C}
+) where {F,C}
+    y = f(x, map(unwrap, contexts)...)
+    return _prepare_jacobian_aux(
+        pushforward_performance(backend), y, (f,), backend, x, contexts...
+    )
 end
 
-function prepare_jacobian(f!::F, y, backend::AbstractADType, x) where {F}
-    return _prepare_jacobian_aux((f!, y), backend, x, y, pushforward_performance(backend))
+function prepare_jacobian(
+    f!::F, y, backend::AbstractADType, x, contexts::Vararg{Context,C}
+) where {F,C}
+    return _prepare_jacobian_aux(
+        pushforward_performance(backend), y, (f!, y), backend, x, contexts...
+    )
 end
 
 function _prepare_jacobian_aux(
-    f_or_f!y::FY, backend::AbstractADType, x, y, ::PushforwardFast
-) where {FY}
+    ::PushforwardFast,
+    y,
+    f_or_f!y::FY,
+    backend::AbstractADType,
+    x,
+    contexts::Vararg{Context,C},
+) where {FY,C}
     N = length(x)
     B = pick_batchsize(backend, N)
     seeds = [basis(backend, x, ind) for ind in eachindex(x)]
@@ -88,7 +101,9 @@ function _prepare_jacobian_aux(
         a in 1:div(N, B, RoundUp)
     ]
     batched_results = [Tangents(ntuple(b -> similar(y), Val(B))...) for _ in batched_seeds]
-    pushforward_extras = prepare_pushforward(f_or_f!y..., backend, x, batched_seeds[1])
+    pushforward_extras = prepare_pushforward(
+        f_or_f!y..., backend, x, batched_seeds[1], contexts...
+    )
     D = eltype(batched_seeds[1])
     R = eltype(batched_results[1])
     E = typeof(pushforward_extras)
@@ -98,8 +113,13 @@ function _prepare_jacobian_aux(
 end
 
 function _prepare_jacobian_aux(
-    f_or_f!y::FY, backend::AbstractADType, x, y, ::PushforwardSlow
-) where {FY}
+    ::PushforwardSlow,
+    y,
+    f_or_f!y::FY,
+    backend::AbstractADType,
+    x,
+    contexts::Vararg{Context,C},
+) where {FY,C}
     M = length(y)
     B = pick_batchsize(backend, M)
     seeds = [basis(backend, y, ind) for ind in eachindex(y)]
@@ -108,7 +128,9 @@ function _prepare_jacobian_aux(
         a in 1:div(M, B, RoundUp)
     ]
     batched_results = [Tangents(ntuple(b -> similar(x), Val(B))...) for _ in batched_seeds]
-    pullback_extras = prepare_pullback(f_or_f!y..., backend, x, batched_seeds[1])
+    pullback_extras = prepare_pullback(
+        f_or_f!y..., backend, x, batched_seeds[1], contexts...
+    )
     D = eltype(batched_seeds[1])
     R = eltype(batched_results[1])
     E = typeof(pullback_extras)
@@ -119,68 +141,116 @@ end
 
 ## One argument
 
-function jacobian(f::F, extras::JacobianExtras, backend::AbstractADType, x) where {F}
+function jacobian(
+    f::F, extras::JacobianExtras, backend::AbstractADType, x, contexts::Vararg{Context,C}
+) where {F,C}
     return _jacobian_aux((f,), extras, backend, x)
 end
 
-function jacobian!(f::F, jac, extras::JacobianExtras, backend::AbstractADType, x) where {F}
-    return _jacobian_aux!((f,), jac, extras, backend, x)
+function jacobian!(
+    f::F,
+    jac,
+    extras::JacobianExtras,
+    backend::AbstractADType,
+    x,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    return _jacobian_aux!((f,), jac, extras, backend, x, contexts...)
 end
 
 function value_and_jacobian(
-    f::F, extras::JacobianExtras, backend::AbstractADType, x
-) where {F}
-    return f(x), jacobian(f, extras, backend, x)
+    f::F, extras::JacobianExtras, backend::AbstractADType, x, contexts::Vararg{Context,C}
+) where {F,C}
+    return f(x), jacobian(f, extras, backend, x, contexts...)
 end
 
 function value_and_jacobian!(
-    f::F, jac, extras::JacobianExtras, backend::AbstractADType, x
-) where {F}
-    return f(x), jacobian!(f, jac, extras, backend, x)
+    f::F,
+    jac,
+    extras::JacobianExtras,
+    backend::AbstractADType,
+    x,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    return f(x, map(unwrap, contexts)...),
+    jacobian!(f, jac, extras, backend, x, contexts...)
 end
 
 ## Two arguments
 
-function jacobian(f!::F, y, extras::JacobianExtras, backend::AbstractADType, x) where {F}
-    return _jacobian_aux((f!, y), extras, backend, x)
+function jacobian(
+    f!::F,
+    y,
+    extras::JacobianExtras,
+    backend::AbstractADType,
+    x,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    return _jacobian_aux((f!, y), extras, backend, x, contexts...)
 end
 
 function jacobian!(
-    f!::F, y, jac, extras::JacobianExtras, backend::AbstractADType, x
-) where {F}
-    return _jacobian_aux!((f!, y), jac, extras, backend, x)
+    f!::F,
+    y,
+    jac,
+    extras::JacobianExtras,
+    backend::AbstractADType,
+    x,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    return _jacobian_aux!((f!, y), jac, extras, backend, x, contexts...)
 end
 
 function value_and_jacobian(
-    f!::F, y, extras::JacobianExtras, backend::AbstractADType, x
-) where {F}
-    jac = jacobian(f!, y, extras, backend, x)
-    f!(y, x)
+    f!::F,
+    y,
+    extras::JacobianExtras,
+    backend::AbstractADType,
+    x,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    jac = jacobian(f!, y, extras, backend, x, contexts...)
+    f!(y, x, map(unwrap, contexts)...)
     return y, jac
 end
 
 function value_and_jacobian!(
-    f!::F, y, jac, extras::JacobianExtras, backend::AbstractADType, x
-) where {F}
-    jacobian!(f!, y, jac, extras, backend, x)
-    f!(y, x)
+    f!::F,
+    y,
+    jac,
+    extras::JacobianExtras,
+    backend::AbstractADType,
+    x,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    jacobian!(f!, y, jac, extras, backend, x, contexts...)
+    f!(y, x, map(unwrap, contexts)...)
     return y, jac
 end
 
 ## Common auxiliaries
 
 function _jacobian_aux(
-    f_or_f!y::FY, extras::PushforwardJacobianExtras{B}, backend::AbstractADType, x
-) where {FY,B}
+    f_or_f!y::FY,
+    extras::PushforwardJacobianExtras{B},
+    backend::AbstractADType,
+    x,
+    contexts::Vararg{Context,C},
+) where {FY,B,C}
     @compat (; batched_seeds, pushforward_extras, N) = extras
 
     pushforward_extras_same = prepare_pushforward_same_point(
-        f_or_f!y..., pushforward_extras, backend, x, batched_seeds[1]
+        f_or_f!y..., pushforward_extras, backend, x, batched_seeds[1], contexts...
     )
 
     jac_blocks = map(eachindex(batched_seeds)) do a
         dy_batch = pushforward(
-            f_or_f!y..., pushforward_extras_same, backend, x, batched_seeds[a]
+            f_or_f!y...,
+            pushforward_extras_same,
+            backend,
+            x,
+            batched_seeds[a],
+            contexts...,
         )
         stack(vec, dy_batch.d; dims=2)
     end
@@ -193,16 +263,22 @@ function _jacobian_aux(
 end
 
 function _jacobian_aux(
-    f_or_f!y::FY, extras::PullbackJacobianExtras{B}, backend::AbstractADType, x
-) where {FY,B}
+    f_or_f!y::FY,
+    extras::PullbackJacobianExtras{B},
+    backend::AbstractADType,
+    x,
+    contexts::Vararg{Context,C},
+) where {FY,B,C}
     @compat (; batched_seeds, pullback_extras, M) = extras
 
     pullback_extras_same = prepare_pullback_same_point(
-        f_or_f!y..., extras.pullback_extras, backend, x, batched_seeds[1]
+        f_or_f!y..., extras.pullback_extras, backend, x, batched_seeds[1], contexts...
     )
 
     jac_blocks = map(eachindex(batched_seeds)) do a
-        dx_batch = pullback(f_or_f!y..., pullback_extras_same, backend, x, batched_seeds[a])
+        dx_batch = pullback(
+            f_or_f!y..., pullback_extras_same, backend, x, batched_seeds[a], contexts...
+        )
         stack(vec, dx_batch.d; dims=1)
     end
 
@@ -214,12 +290,17 @@ function _jacobian_aux(
 end
 
 function _jacobian_aux!(
-    f_or_f!y::FY, jac, extras::PushforwardJacobianExtras{B}, backend::AbstractADType, x
-) where {FY,B}
+    f_or_f!y::FY,
+    jac,
+    extras::PushforwardJacobianExtras{B},
+    backend::AbstractADType,
+    x,
+    contexts::Vararg{Context,C},
+) where {FY,B,C}
     @compat (; batched_seeds, batched_results, pushforward_extras, N) = extras
 
     pushforward_extras_same = prepare_pushforward_same_point(
-        f_or_f!y..., pushforward_extras, backend, x, batched_seeds[1]
+        f_or_f!y..., pushforward_extras, backend, x, batched_seeds[1], contexts...
     )
 
     for a in eachindex(batched_seeds, batched_results)
@@ -230,6 +311,7 @@ function _jacobian_aux!(
             backend,
             x,
             batched_seeds[a],
+            contexts...,
         )
 
         for b in eachindex(batched_results[a].d)
@@ -243,12 +325,17 @@ function _jacobian_aux!(
 end
 
 function _jacobian_aux!(
-    f_or_f!y::FY, jac, extras::PullbackJacobianExtras{B}, backend::AbstractADType, x
-) where {FY,B}
+    f_or_f!y::FY,
+    jac,
+    extras::PullbackJacobianExtras{B},
+    backend::AbstractADType,
+    x,
+    contexts::Vararg{Context,C},
+) where {FY,B,C}
     @compat (; batched_seeds, batched_results, pullback_extras, M) = extras
 
     pullback_extras_same = prepare_pullback_same_point(
-        f_or_f!y..., extras.pullback_extras, backend, x, batched_seeds[1]
+        f_or_f!y..., extras.pullback_extras, backend, x, batched_seeds[1], contexts...
     )
 
     for a in eachindex(batched_seeds, batched_results)
@@ -259,6 +346,7 @@ function _jacobian_aux!(
             backend,
             x,
             batched_seeds[a],
+            contexts...,
         )
 
         for b in eachindex(batched_results[a].d)

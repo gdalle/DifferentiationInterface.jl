@@ -3,7 +3,7 @@ struct FixTail{F,A<:Tuple}
     tail_args::A
 end
 
-function (ft::FixTail)(args::Vararg{Any,N}) where N
+function (ft::FixTail)(args::Vararg{Any,N}) where {N}
     return ft.f(args..., ft.tail_args...)
 end
 
