@@ -16,7 +16,8 @@ using DifferentiationInterface:
     SecondOrder,
     Tangents,
     inner,
-    outer
+    outer,
+    unwrap
 using ForwardDiff.DiffResults:
     DiffResults, DiffResult, GradientResult, HessianResult, MutableDiffResult
 using ForwardDiff:

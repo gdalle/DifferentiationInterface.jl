@@ -72,7 +72,7 @@ function DI.hessian(
     backend::AutoSparse,
     x,
     contexts::Vararg{Context,C},
-) where {F,B}
+) where {F,B,C}
     @compat (; coloring_result, batched_seeds, hvp_extras) = extras
     dense_backend = dense_ad(backend)
     Ng = length(column_groups(coloring_result))
@@ -100,7 +100,7 @@ function DI.hessian!(
     backend::AutoSparse,
     x,
     contexts::Vararg{Context,C},
-) where {F,B}
+) where {F,B,C}
     @compat (;
         coloring_result, compressed_matrix, batched_seeds, batched_results, hvp_extras
     ) = extras

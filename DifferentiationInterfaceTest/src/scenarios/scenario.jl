@@ -103,9 +103,18 @@ $(SIGNATURES)
 Construct a [`Scenario`](@ref) to test `pushforward` and its variants.
 """
 function PushforwardScenario(
-    f; x, y, tx::Tangents, ty::Union{Tangents,Nothing}=nothing, nb_args, place=:inplace
+    f;
+    x,
+    y,
+    tx::Tangents,
+    ty::Union{Tangents,Nothing}=nothing,
+    contexts=(),
+    nb_args,
+    place=:inplace,
 )
-    return Scenario{:pushforward,nb_args,place}(f; x, y, seed=tx, res1=ty, res2=nothing)
+    return Scenario{:pushforward,nb_args,place}(
+        f; x, y, seed=tx, res1=ty, res2=nothing, contexts
+    )
 end
 
 """

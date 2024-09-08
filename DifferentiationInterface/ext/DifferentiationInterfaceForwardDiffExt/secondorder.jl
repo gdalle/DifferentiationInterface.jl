@@ -18,9 +18,8 @@ function tag_backend_hvp(f, backend::AutoForwardDiff, x)
     return backend
 end
 
-struct ForwardDiffOverSomethingHVPExtras{
-    B<:AutoForwardDiff,G<:DI.Gradient,E<:PushforwardExtras
-} <: HVPExtras
+struct ForwardDiffOverSomethingHVPExtras{B<:AutoForwardDiff,G,E<:PushforwardExtras} <:
+       HVPExtras
     tagged_outer_backend::B
     inner_gradient::G
     outer_pushforward_extras::E
@@ -33,7 +32,9 @@ function DI.prepare_hvp(
     T = tag_type(f, tagged_outer_backend, x)
     xdual = make_dual(T, x, tx)
     gradient_extras = DI.prepare_gradient(f, inner(backend), xdual)
-    inner_gradient = DI.Gradient(f, inner(backend), gradient_extras)
+    function inner_gradient(x, contexts...)
+        return DI.gradient(f, gradient_extras, inner(backend), x, contexts...)
+    end
     outer_pushforward_extras = DI.prepare_pushforward(
         inner_gradient, tagged_outer_backend, x, tx
     )

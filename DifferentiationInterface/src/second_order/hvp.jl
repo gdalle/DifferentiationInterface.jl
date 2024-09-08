@@ -40,19 +40,19 @@ function hvp! end
 
 ## Preparation
 
-struct ForwardOverForwardHVPExtras{G<:Gradient,E<:PushforwardExtras} <: HVPExtras
+struct ForwardOverForwardHVPExtras{G,E<:PushforwardExtras} <: HVPExtras
     inner_gradient::G
     outer_pushforward_extras::E
 end
 
-struct ForwardOverReverseHVPExtras{G<:Gradient,E<:PushforwardExtras} <: HVPExtras
+struct ForwardOverReverseHVPExtras{G,E<:PushforwardExtras} <: HVPExtras
     inner_gradient::G
     outer_pushforward_extras::E
 end
 
 struct ReverseOverForwardHVPExtras <: HVPExtras end
 
-struct ReverseOverReverseHVPExtras{G<:Gradient,E<:PullbackExtras} <: HVPExtras
+struct ReverseOverReverseHVPExtras{G,E<:PullbackExtras} <: HVPExtras
     inner_gradient::G
     outer_pullback_extras::E
 end
@@ -72,7 +72,9 @@ function _prepare_hvp_aux(
     contexts::Vararg{Context,C},
 ) where {F,C}
     # pushforward of many pushforwards in theory, but pushforward of gradient in practice
-    inner_gradient = Gradient(f, nested(maybe_inner(backend)), contexts)
+    function inner_gradient(x, contexts...)
+        return gradient(f, nested(maybe_inner(backend)), x, contexts...)
+    end
     outer_pushforward_extras = prepare_pushforward(
         inner_gradient, maybe_outer(backend), x, tx, contexts...
     )
@@ -88,7 +90,7 @@ function _prepare_hvp_aux(
     contexts::Vararg{Context,C},
 ) where {F,C}
     # pushforward of gradient
-    inner_gradient = Gradient(f, nested(maybe_inner(backend)), contexts)
+    inner_gradient(, contexts...) = gradient(f, nested(maybe_inner(backend)), x, contexts...)
     outer_pushforward_extras = prepare_pushforward(
         inner_gradient, maybe_outer(backend), x, tx, contexts...
     )
@@ -117,7 +119,7 @@ function _prepare_hvp_aux(
     contexts::Vararg{Context,C},
 ) where {F,C}
     # pullback of gradient
-    inner_gradient = Gradient(f, nested(maybe_inner(backend)), contexts)
+    inner_gradient(x, contexts...) = gradient(f, nested(maybe_inner(backend)), x, contexts...)
     outer_pullback_extras = prepare_pullback(
         inner_gradient, maybe_outer(backend), x, tx, contexts...
     )
@@ -163,9 +165,11 @@ function hvp(
     contexts::Vararg{Context,C},
 ) where {F,C}
     dgs = map(tx.d) do dx
-        inner_pushforward = PushforwardFixedSeed(
-            f, nested(maybe_inner(backend)), Tangents(dx), contexts
-        )
+        function inner_pushforward(x)
+            return only(
+                pushforward(f, nested(maybe_inner(backend)), x, Tangents(dx), contexts...),
+            )
+        end
         gradient(only ∘ inner_pushforward, maybe_outer(backend), x, contexts...)
     end
     return Tangents(dgs...)
@@ -237,9 +241,13 @@ function hvp!(
     contexts::Vararg{Context,C},
 ) where {F,C}
     for b in eachindex(tx.d, tg.d)
-        inner_pushforward = PushforwardFixedSeed(
-            f, nested(maybe_inner(backend)), Tangents(tx.d[b]), contexts
-        )
+        function inner_pushforward(x)
+            return only(
+                pushforward(
+                    f, nested(maybe_inner(backend)), x, Tangents(tx.d[b]), contexts...
+                ),
+            )
+        end
         gradient!(only ∘ inner_pushforward, tg.d[b], maybe_outer(backend), x, contexts...)
     end
     return tg

@@ -48,19 +48,7 @@ function value_derivative_and_second_derivative! end
 
 ## Preparation
 
-struct InnerDerivative{F,B,C}
-    f::F
-    backend::B
-    contexts::C
-end
-
-function (id::InnerDerivative)(x)
-    @compat (; f, backend, contexts) = id
-    return derivative(f, backend, x, contexts...)
-end
-
-struct ClosureSecondDerivativeExtras{ID<:InnerDerivative,E<:DerivativeExtras} <:
-       SecondDerivativeExtras
+struct ClosureSecondDerivativeExtras{ID,E<:DerivativeExtras} <: SecondDerivativeExtras
     inner_derivative::ID
     outer_derivative_extras::E
 end
@@ -68,7 +56,9 @@ end
 function prepare_second_derivative(
     f::F, backend::AbstractADType, x, contexts::Vararg{Context,C}
 ) where {F,C}
-    inner_derivative = InnerDerivative(f, nested(maybe_inner(backend)), contexts)
+    function inner_derivative(x, contexts...)
+        return InnerDerivative(f, nested(maybe_inner(backend)), x, contexts...)
+    end
     outer_derivative_extras = prepare_derivative(
         inner_derivative, maybe_outer(backend), x, contexts...
     )

@@ -238,7 +238,7 @@ function _sparse_jacobian_aux(
     backend::AutoSparse,
     x,
     contexts::Vararg{Context,C},
-) where {FY,B}
+) where {FY,B,C}
     @compat (; coloring_result, batched_seeds, pushforward_extras) = extras
     dense_backend = dense_ad(backend)
     Ng = length(column_groups(coloring_result))
@@ -272,7 +272,7 @@ function _sparse_jacobian_aux(
     backend::AutoSparse,
     x,
     contexts::Vararg{Context,C},
-) where {FY,B}
+) where {FY,B,C}
     @compat (; coloring_result, batched_seeds, pullback_extras) = extras
     dense_backend = dense_ad(backend)
     Ng = length(row_groups(coloring_result))
@@ -307,7 +307,7 @@ function _sparse_jacobian_aux!(
     backend::AutoSparse,
     x,
     contexts::Vararg{Context,C},
-) where {FY,B}
+) where {FY,B,C}
     @compat (;
         coloring_result,
         compressed_matrix,
@@ -352,7 +352,7 @@ function _sparse_jacobian_aux!(
     backend::AutoSparse,
     x,
     contexts::Vararg{Context,C},
-) where {FY,B}
+) where {FY,B,C}
     @compat (;
         coloring_result, compressed_matrix, batched_seeds, batched_results, pullback_extras
     ) = extras

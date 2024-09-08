@@ -483,48 +483,16 @@ for op in [
                 y_in1_noval, res1_in1_noval = mysimilar(y), mysimilar(res1)
                 y_in2_noval, res1_in2_noval = mysimilar(y), mysimilar(res1)
                 y_out1_val, res1_out1_val = $val_and_op!(
-                    f,
-                    y_in1_val,
-                    res1_in1_val,
-                    extup_val...,
-                    ba,
-                    x,
-                    seed,
-                    contexts...,
-                    contexts...,
+                    f, y_in1_val, res1_in1_val, extup_val..., ba, x, seed, contexts...
                 )
                 y_out2_val, res1_out2_val = $val_and_op!(
-                    f,
-                    y_in2_val,
-                    res1_in2_val,
-                    extup_val...,
-                    ba,
-                    x,
-                    seed,
-                    contexts...,
-                    contexts...,
+                    f, y_in2_val, res1_in2_val, extup_val..., ba, x, seed, contexts...
                 )
                 res1_out1_noval = $op!(
-                    f,
-                    y_in1_noval,
-                    res1_in1_noval,
-                    extup_noval...,
-                    ba,
-                    x,
-                    seed,
-                    contexts...,
-                    contexts...,
+                    f, y_in1_noval, res1_in1_noval, extup_noval..., ba, x, seed, contexts...
                 )
                 res1_out2_noval = $op!(
-                    f,
-                    y_in2_noval,
-                    res1_in2_noval,
-                    extup_noval...,
-                    ba,
-                    x,
-                    seed,
-                    contexts...,
-                    contexts...,
+                    f, y_in2_noval, res1_in2_noval, extup_noval..., ba, x, seed, contexts...
                 )
                 let (≈)(x, y) = isapprox(x, y; atol, rtol)
                     @test isempty(extup_noval) || only(extup_noval) isa $E

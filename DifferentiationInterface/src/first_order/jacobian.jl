@@ -144,7 +144,7 @@ end
 function jacobian(
     f::F, extras::JacobianExtras, backend::AbstractADType, x, contexts::Vararg{Context,C}
 ) where {F,C}
-    return _jacobian_aux((f,), extras, backend, x)
+    return _jacobian_aux((f,), extras, backend, x, contexts...)
 end
 
 function jacobian!(
@@ -161,7 +161,7 @@ end
 function value_and_jacobian(
     f::F, extras::JacobianExtras, backend::AbstractADType, x, contexts::Vararg{Context,C}
 ) where {F,C}
-    return f(x), jacobian(f, extras, backend, x, contexts...)
+    return f(x, map(unwrap, contexts)...), jacobian(f, extras, backend, x, contexts...)
 end
 
 function value_and_jacobian!(
