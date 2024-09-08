@@ -87,56 +87,68 @@ for op in (:pushforward, :pullback, :hvp)
         HVPExtras
     end
     # 1-arg
-    @eval function $prep_op_same_point(f::F, backend::AbstractADType, x, seed) where {F}
+    @eval function $prep_op_same_point(
+        f::F, backend::AbstractADType, x, seed::Tangents
+    ) where {F}
         ex = $prep_op(f, backend, x, seed)
         return $prep_op_same_point(f, ex, backend, x, seed)
     end
     @eval function $prep_op_same_point(
-        f::F, ex::$E, backend::AbstractADType, x, seed
+        f::F, ex::$E, backend::AbstractADType, x, seed::Tangents
     ) where {F}
         return ex
     end
-    @eval function $op(f::F, backend::AbstractADType, x, seed) where {F}
+    @eval function $op(f::F, backend::AbstractADType, x, seed::Tangents) where {F}
         ex = $prep_op(f, backend, x, seed)
         return $op(f, ex, backend, x, seed)
     end
-    @eval function $op!(f::F, result, backend::AbstractADType, x, seed) where {F}
+    @eval function $op!(
+        f::F, result::Tangents, backend::AbstractADType, x, seed::Tangents
+    ) where {F}
         ex = $prep_op(f, backend, x, seed)
         return $op!(f, result, ex, backend, x, seed)
     end
     op == :hvp && continue
-    @eval function $val_and_op(f::F, backend::AbstractADType, x, seed) where {F}
+    @eval function $val_and_op(f::F, backend::AbstractADType, x, seed::Tangents) where {F}
         ex = $prep_op(f, backend, x, seed)
         return $val_and_op(f, ex, backend, x, seed)
     end
-    @eval function $val_and_op!(f::F, result, backend::AbstractADType, x, seed) where {F}
+    @eval function $val_and_op!(
+        f::F, result::Tangents, backend::AbstractADType, x, seed::Tangents
+    ) where {F}
         ex = $prep_op(f, backend, x, seed)
         return $val_and_op!(f, result, ex, backend, x, seed)
     end
     # 2-arg
-    @eval function $prep_op_same_point(f!::F, y, backend::AbstractADType, x, seed) where {F}
+    @eval function $prep_op_same_point(
+        f!::F, y, backend::AbstractADType, x, seed::Tangents
+    ) where {F}
         ex = $prep_op(f!, y, backend, x, seed)
         return $prep_op_same_point(f!, y, ex, backend, x, seed)
     end
     @eval function $prep_op_same_point(
-        f!::F, y, ex::$E, backend::AbstractADType, x, seed
+        f!::F, y, ex::$E, backend::AbstractADType, x, seed::Tangents
     ) where {F}
         return ex
     end
-    @eval function $op(f!::F, y, backend::AbstractADType, x, seed) where {F}
+    @eval function $op(f!::F, y, backend::AbstractADType, x, seed::Tangents) where {F}
         ex = $prep_op(f!, y, backend, x, seed)
         return $op(f!, y, ex, backend, x, seed)
     end
-    @eval function $op!(f!::F, y, result, backend::AbstractADType, x, seed) where {F}
+    @eval function $op!(
+        f!::F, y, result::Tangents, backend::AbstractADType, x, seed::Tangents
+    ) where {F}
         ex = $prep_op(f!, y, backend, x, seed)
         return $op!(f!, y, result, ex, backend, x, seed)
     end
-    @eval function $val_and_op(f!::F, y, backend::AbstractADType, x, seed) where {F}
+    @eval function $val_and_op(
+        f!::F, y, backend::AbstractADType, x, seed::Tangents
+    ) where {F}
         ex = $prep_op(f!, y, backend, x, seed)
         return $val_and_op(f!, y, ex, backend, x, seed)
     end
     @eval function $val_and_op!(
-        f!::F, y, result, backend::AbstractADType, x, seed
+        f!::F, y, result::Tangents, backend::AbstractADType, x, seed::Tangents
     ) where {F}
         ex = $prep_op(f!, y, backend, x, seed)
         return $val_and_op!(f!, y, result, ex, backend, x, seed)
