@@ -40,19 +40,19 @@ function hvp! end
 
 ## Preparation
 
-struct ForwardOverForwardHVPExtras{G<:Gradient,E<:PushforwardExtras} <: HVPExtras
+struct ForwardOverForwardHVPExtras{G,E<:PushforwardExtras} <: HVPExtras
     inner_gradient::G
     outer_pushforward_extras::E
 end
 
-struct ForwardOverReverseHVPExtras{G<:Gradient,E<:PushforwardExtras} <: HVPExtras
+struct ForwardOverReverseHVPExtras{G,E<:PushforwardExtras} <: HVPExtras
     inner_gradient::G
     outer_pushforward_extras::E
 end
 
 struct ReverseOverForwardHVPExtras <: HVPExtras end
 
-struct ReverseOverReverseHVPExtras{G<:Gradient,E<:PullbackExtras} <: HVPExtras
+struct ReverseOverReverseHVPExtras{G,E<:PullbackExtras} <: HVPExtras
     inner_gradient::G
     outer_pullback_extras::E
 end

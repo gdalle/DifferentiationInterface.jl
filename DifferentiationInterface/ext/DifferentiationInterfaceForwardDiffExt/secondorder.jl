@@ -18,9 +18,8 @@ function tag_backend_hvp(f, backend::AutoForwardDiff, x)
     return backend
 end
 
-struct ForwardDiffOverSomethingHVPExtras{
-    B<:AutoForwardDiff,G<:DI.Gradient,E<:PushforwardExtras
-} <: HVPExtras
+struct ForwardDiffOverSomethingHVPExtras{B<:AutoForwardDiff,G,E<:PushforwardExtras} <:
+       HVPExtras
     tagged_outer_backend::B
     inner_gradient::G
     outer_pushforward_extras::E
