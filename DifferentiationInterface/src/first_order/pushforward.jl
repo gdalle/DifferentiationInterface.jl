@@ -242,22 +242,3 @@ function pushforward!(
 ) where {F}
     return value_and_pushforward!(f!, y, ty, extras, backend, x, tx)[2]
 end
-
-## Functors
-
-struct PushforwardFixedSeed{F,B,TX,E}
-    f::F
-    backend::B
-    tx::TX
-    extras::E
-end
-
-function PushforwardFixedSeed(f, backend::AbstractADType, tx)
-    return PushforwardFixedSeed(f, backend, tx, nothing)
-end
-
-# not covered but don't remove, Enzyme messes with code coverage
-function (pfs::PushforwardFixedSeed{F,B,TX,Nothing})(x) where {F,B,TX}
-    @compat (; f, backend, tx) = pfs
-    return pushforward(f, backend, x, tx)
-end
