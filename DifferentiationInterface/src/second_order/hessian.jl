@@ -11,7 +11,7 @@ Create an `extras` object that can be given to [`hessian`](@ref) and its variant
 function prepare_hessian end
 
 """
-    hessian(f, backend, x, [extras]) -> hess
+    hessian(f, [extras,] backend, x) -> hess
 
 Compute the Hessian matrix of the function `f` at point `x`.
 
@@ -20,7 +20,7 @@ $(document_preparation("hessian"))
 function hessian end
 
 """
-    hessian!(f, hess, backend, x, [extras]) -> hess
+    hessian!(f, hess, [extras,] backend, x) -> hess
 
 Compute the Hessian matrix of the function `f` at point `x`, overwriting `hess`.
 

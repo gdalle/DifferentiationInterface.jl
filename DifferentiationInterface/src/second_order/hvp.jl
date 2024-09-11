@@ -30,7 +30,7 @@ $(document_preparation("hvp"; same_point=true))
 function hvp end
 
 """
-    hvp!(f, dg, [extras,] backend, x, tx) -> tg
+    hvp!(f, tg, [extras,] backend, x, tx) -> tg
 
 Compute the Hessian-vector product of `f` at point `x` with tangent `tx` of type [`Tangents`](@ref), overwriting `tg`.
 
