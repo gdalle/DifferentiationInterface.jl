@@ -6,7 +6,7 @@ end
 function DI.prepare_pullback(f, backend::AutoTapir, x, ty::Tangents)
     y = f(x)
     rrule = build_rrule(
-        TapirInterpreter(),
+        get_tapir_interpreter(),
         Tuple{typeof(f),typeof(x)};
         safety_on=backend.safe_mode,
         silence_safety_messages=false,
