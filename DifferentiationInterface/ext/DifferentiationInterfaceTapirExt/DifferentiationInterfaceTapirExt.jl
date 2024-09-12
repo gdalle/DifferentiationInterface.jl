@@ -19,7 +19,7 @@ using Tapir:
     fdata,
     rdata,
     __value_and_pullback!!,
-    TapirInterpreter
+    get_tapir_interpreter
 
 DI.check_available(::AutoTapir) = true
 
