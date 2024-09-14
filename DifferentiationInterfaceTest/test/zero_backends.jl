@@ -26,7 +26,9 @@ data1 = benchmark_differentiation([AutoZeroForward()], default_scenarios(); logg
 struct FakeBackend <: ADTypes.AbstractADType end
 ADTypes.mode(::FakeBackend) = ADTypes.ForwardMode()
 
-data2 = benchmark_differentiation([FakeBackend()], default_scenarios(); logging=false);
+data2 = benchmark_differentiation(
+    [FakeBackend()], remove_batched(default_scenarios()); logging=false
+);
 
 @testset "Benchmarking DataFrame" begin
     for col in eachcol(data1)

@@ -65,7 +65,7 @@ function DI.prepare_jacobian(
 ) where {F,C}
     y = f(x, map(unwrap, contexts)...)
     return _prepare_sparse_jacobian_aux(
-        pushforward_performance(backend), y, (f,), backend, x
+        pushforward_performance(backend), y, (f,), backend, x, contexts...
     )
 end
 
@@ -73,7 +73,7 @@ function DI.prepare_jacobian(
     f!::F, y, backend::AutoSparse, x, contexts::Vararg{Context,C}
 ) where {F,C}
     return _prepare_sparse_jacobian_aux(
-        pushforward_performance(backend), y, (f!, y), backend, x
+        pushforward_performance(backend), y, (f!, y), backend, x, contexts...
     )
 end
 

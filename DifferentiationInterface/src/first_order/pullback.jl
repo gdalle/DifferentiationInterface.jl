@@ -92,13 +92,17 @@ end
 function prepare_pullback(
     f::F, backend::AbstractADType, x, ty::Tangents, contexts::Vararg{Context,C}
 ) where {F,C}
-    return _prepare_pullback_aux(pullback_performance(backend), f, backend, x, ty)
+    return _prepare_pullback_aux(
+        pullback_performance(backend), f, backend, x, ty, contexts...
+    )
 end
 
 function prepare_pullback(
     f!::F, y, backend::AbstractADType, x, ty::Tangents, contexts::Vararg{Context,C}
 ) where {F,C}
-    return _prepare_pullback_aux(pullback_performance(backend), f!, y, backend, x, ty)
+    return _prepare_pullback_aux(
+        pullback_performance(backend), f!, y, backend, x, ty, contexts...
+    )
 end
 
 function _prepare_pullback_aux(

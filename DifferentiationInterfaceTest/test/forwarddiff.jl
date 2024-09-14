@@ -1,6 +1,7 @@
 using ADTypes
 using DifferentiationInterface
 using DifferentiationInterfaceTest
+using DifferentiationInterfaceTest: insert_context
 using ForwardDiff: ForwardDiff
 using SparseConnectivityTracer
 using SparseMatrixColorings
@@ -21,3 +22,12 @@ sparse_backend = AutoSparse(
     coloring_algorithm=GreedyColoringAlgorithm(),
 )
 test_differentiation(sparse_backend, sparse_scenarios(); sparsity=true, logging=LOGGING)
+
+## Contexts
+
+test_differentiation(
+    AutoForwardDiff(), insert_context.(default_scenarios()); logging=LOGGING
+);
+test_differentiation(
+    sparse_backend, insert_context.(sparse_scenarios()); sparsity=true, logging=LOGGING
+)
