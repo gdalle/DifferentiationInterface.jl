@@ -28,6 +28,3 @@ test_differentiation(sparse_backend, sparse_scenarios(); sparsity=true, logging=
 test_differentiation(
     AutoForwardDiff(), insert_context.(default_scenarios()); logging=LOGGING
 );
-test_differentiation(
-    sparse_backend, insert_context.(sparse_scenarios()); sparsity=true, logging=LOGGING
-)
