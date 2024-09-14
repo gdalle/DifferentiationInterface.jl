@@ -1,6 +1,7 @@
 using DifferentiationInterface
 using DifferentiationInterface: AutoZeroForward, AutoZeroReverse
 using DifferentiationInterfaceTest
+using DifferentiationInterfaceTest: insert_context
 using ComponentArrays: ComponentArrays
 using JLArrays: JLArrays
 using StaticArrays: StaticArrays
@@ -35,6 +36,15 @@ test_differentiation(
     correctness=false,
     type_stability=true,
     first_order=false,
+    logging=LOGGING,
+)
+
+## Contexts
+
+test_differentiation(
+    zero_backends,
+    insert_context.(zero.(default_scenarios()));
+    correctness=true,
     logging=LOGGING,
 )
 

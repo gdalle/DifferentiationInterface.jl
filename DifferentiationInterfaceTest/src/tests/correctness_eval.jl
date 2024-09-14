@@ -60,16 +60,16 @@ for op in [
             atol::Real,
             rtol::Real,
         )
-            @compat (; f, x, y, res1) = new_scen = deepcopy(scen)
+            @compat (; f, x, y, res1, contexts) = new_scen = deepcopy(scen)
             xrand = mycopy_random(x)
             extup_cands_val, extup_cands_noval = map(1:2) do _
-                [(), ($prep_op(f, ba, xrand),)]
+                [(), ($prep_op(f, ba, xrand, contexts...),)]
             end
             for (extup_val, extup_noval) in zip(extup_cands_val, extup_cands_noval)
-                y_out1_val, res1_out1_val = $val_and_op(f, extup_val..., ba, x)
-                y_out2_val, res1_out2_val = $val_and_op(f, extup_val..., ba, x)
-                res1_out1_noval = $op(f, extup_noval..., ba, x)
-                res1_out2_noval = $op(f, extup_noval..., ba, x)
+                y_out1_val, res1_out1_val = $val_and_op(f, extup_val..., ba, x, contexts...)
+                y_out2_val, res1_out2_val = $val_and_op(f, extup_val..., ba, x, contexts...)
+                res1_out1_noval = $op(f, extup_noval..., ba, x, contexts...)
+                res1_out2_noval = $op(f, extup_noval..., ba, x, contexts...)
                 let (≈)(x, y) = isapprox(x, y; atol, rtol)
                     @test isempty(extup_noval) || only(extup_noval) isa $E
                     @test y_out1_val ≈ scen.y
@@ -92,10 +92,10 @@ for op in [
             atol::Real,
             rtol::Real,
         )
-            @compat (; f, x, y, res1) = new_scen = deepcopy(scen)
+            @compat (; f, x, y, res1, contexts) = new_scen = deepcopy(scen)
             xrand = mycopy_random(x)
             extup_cands_val, extup_cands_noval = map(1:2) do _
-                [(), ($prep_op(f, ba, xrand),)]
+                [(), ($prep_op(f, ba, xrand, contexts...),)]
             end
             for (extup_val, extup_noval) in zip(extup_cands_val, extup_cands_noval)
                 res1_in1_val = mysimilar(res1)
@@ -103,13 +103,17 @@ for op in [
                 res1_in1_noval = mysimilar(res1)
                 res1_in2_noval = mysimilar(res1)
                 y_out1_val, res1_out1_val = $val_and_op!(
-                    f, res1_in1_val, extup_val..., ba, x
+                    f, res1_in1_val, extup_val..., ba, x, contexts...
                 )
                 y_out2_val, res1_out2_val = $val_and_op!(
-                    f, res1_in2_val, extup_val..., ba, x
+                    f, res1_in2_val, extup_val..., ba, x, contexts...
                 )
-                res1_out1_noval = $op!(f, res1_in1_noval, extup_noval..., ba, x)
-                res1_out2_noval = $op!(f, res1_in2_noval, extup_noval..., ba, x)
+                res1_out1_noval = $op!(
+                    f, res1_in1_noval, extup_noval..., ba, x, contexts...
+                )
+                res1_out2_noval = $op!(
+                    f, res1_in2_noval, extup_noval..., ba, x, contexts...
+                )
                 let (≈)(x, y) = isapprox(x, y; atol, rtol)
                     @test isempty(extup_noval) || only(extup_noval) isa $E
                     @test y_out1_val ≈ scen.y
@@ -138,20 +142,24 @@ for op in [
             atol::Real,
             rtol::Real,
         )
-            @compat (; f, x, y, res1) = new_scen = deepcopy(scen)
+            @compat (; f, x, y, res1, contexts) = new_scen = deepcopy(scen)
             xrand, yrand = mycopy_random(x), mycopy_random(y)
             extup_cands_val, extup_cands_noval = map(1:2) do _
-                [(), ($prep_op(f, yrand, ba, xrand),)]
+                [(), ($prep_op(f, yrand, ba, xrand, contexts...),)]
             end
             for (extup_val, extup_noval) in zip(extup_cands_val, extup_cands_noval)
                 y_in1_val = mysimilar(y)
                 y_in2_val = mysimilar(y)
                 y_in1_noval = mysimilar(y)
                 y_in2_noval = mysimilar(y)
-                y_out1_val, res1_out1_val = $val_and_op(f, y_in1_val, extup_val..., ba, x)
-                y_out2_val, res1_out2_val = $val_and_op(f, y_in2_val, extup_val..., ba, x)
-                res1_out1_noval = $op(f, y_in1_noval, extup_noval..., ba, x)
-                res1_out2_noval = $op(f, y_in2_noval, extup_noval..., ba, x)
+                y_out1_val, res1_out1_val = $val_and_op(
+                    f, y_in1_val, extup_val..., ba, x, contexts...
+                )
+                y_out2_val, res1_out2_val = $val_and_op(
+                    f, y_in2_val, extup_val..., ba, x, contexts...
+                )
+                res1_out1_noval = $op(f, y_in1_noval, extup_noval..., ba, x, contexts...)
+                res1_out2_noval = $op(f, y_in2_noval, extup_noval..., ba, x, contexts...)
                 let (≈)(x, y) = isapprox(x, y; atol, rtol)
                     @test isempty(extup_noval) || only(extup_noval) isa $E
                     @test y_in1_val ≈ scen.y
@@ -176,10 +184,10 @@ for op in [
             atol::Real,
             rtol::Real,
         )
-            @compat (; f, x, y, res1) = new_scen = deepcopy(scen)
+            @compat (; f, x, y, res1, contexts) = new_scen = deepcopy(scen)
             xrand, yrand = mycopy_random(x), mycopy_random(y)
             extup_cands_val, extup_cands_noval = map(1:2) do _
-                [(), ($prep_op(f, yrand, ba, xrand),)]
+                [(), ($prep_op(f, yrand, ba, xrand, contexts...),)]
             end
             for (extup_val, extup_noval) in zip(extup_cands_val, extup_cands_noval)
                 y_in1_val, res1_in1_val = mysimilar(y), mysimilar(res1)
@@ -187,16 +195,16 @@ for op in [
                 y_in1_noval, res1_in1_noval = mysimilar(y), mysimilar(res1)
                 y_in2_noval, res1_in2_noval = mysimilar(y), mysimilar(res1)
                 y_out1_val, res1_out1_val = $val_and_op!(
-                    f, y_in1_val, res1_in1_val, extup_val..., ba, x
+                    f, y_in1_val, res1_in1_val, extup_val..., ba, x, contexts...
                 )
                 y_out2_val, res1_out2_val = $val_and_op!(
-                    f, y_in2_val, res1_in2_val, extup_val..., ba, x
+                    f, y_in2_val, res1_in2_val, extup_val..., ba, x, contexts...
                 )
                 res1_out1_noval = $op!(
-                    f, y_in1_noval, res1_in1_noval, extup_noval..., ba, x
+                    f, y_in1_noval, res1_in1_noval, extup_noval..., ba, x, contexts...
                 )
                 res1_out2_noval = $op!(
-                    f, y_in2_noval, res1_in2_noval, extup_noval..., ba, x
+                    f, y_in2_noval, res1_in2_noval, extup_noval..., ba, x, contexts...
                 )
                 let (≈)(x, y) = isapprox(x, y; atol, rtol)
                     @test isempty(extup_noval) || only(extup_noval) isa $E
@@ -227,20 +235,20 @@ for op in [
             atol::Real,
             rtol::Real,
         )
-            @compat (; f, x, y, res1, res2) = new_scen = deepcopy(scen)
+            @compat (; f, x, y, res1, res2, contexts) = new_scen = deepcopy(scen)
             xrand = mycopy_random(x)
             extup_cands_val, extup_cands_noval = map(1:2) do _
-                [(), ($prep_op(f, ba, xrand),)]
+                [(), ($prep_op(f, ba, xrand, contexts...),)]
             end
             for (extup_val, extup_noval) in zip(extup_cands_val, extup_cands_noval)
                 y_out1_val, res1_out1_val, res2_out1_val = $val_and_op(
-                    f, extup_val..., ba, x
+                    f, extup_val..., ba, x, contexts...
                 )
                 y_out2_val, res1_out2_val, res2_out2_val = $val_and_op(
-                    f, extup_val..., ba, x
+                    f, extup_val..., ba, x, contexts...
                 )
-                res2_out1_noval = $op(f, extup_noval..., ba, x)
-                res2_out2_noval = $op(f, extup_noval..., ba, x)
+                res2_out1_noval = $op(f, extup_noval..., ba, x, contexts...)
+                res2_out2_noval = $op(f, extup_noval..., ba, x, contexts...)
                 let (≈)(x, y) = isapprox(x, y; atol, rtol)
                     @test isempty(extup_noval) || only(extup_noval) isa $E
                     @test y_out1_val ≈ scen.y
@@ -265,10 +273,10 @@ for op in [
             atol::Real,
             rtol::Real,
         )
-            @compat (; f, x, y, res1, res2) = new_scen = deepcopy(scen)
+            @compat (; f, x, y, res1, res2, contexts) = new_scen = deepcopy(scen)
             xrand = mycopy_random(x)
             extup_cands_val, extup_cands_noval = map(1:2) do _
-                [(), ($prep_op(f, ba, xrand),)]
+                [(), ($prep_op(f, ba, xrand, contexts...),)]
             end
             for (extup_val, extup_noval) in zip(extup_cands_val, extup_cands_noval)
                 res1_in1_val, res2_in1_val = mysimilar(res1), mysimilar(res2)
@@ -276,13 +284,17 @@ for op in [
                 res2_in1_noval = mysimilar(res2)
                 res2_in2_noval = mysimilar(res2)
                 y_out1_val, res1_out1_val, res2_out1_val = $val_and_op!(
-                    f, res1_in1_val, res2_in1_val, extup_val..., ba, x
+                    f, res1_in1_val, res2_in1_val, extup_val..., ba, x, contexts...
                 )
                 y_out2_val, res1_out2_val, res2_out2_val = $val_and_op!(
-                    f, res1_in2_val, res2_in2_val, extup_val..., ba, x
+                    f, res1_in2_val, res2_in2_val, extup_val..., ba, x, contexts...
                 )
-                res2_out1_noval = $op!(f, res2_in1_noval, extup_noval..., ba, x)
-                res2_out2_noval = $op!(f, res2_in2_noval, extup_noval..., ba, x)
+                res2_out1_noval = $op!(
+                    f, res2_in1_noval, extup_noval..., ba, x, contexts...
+                )
+                res2_out2_noval = $op!(
+                    f, res2_in2_noval, extup_noval..., ba, x, contexts...
+                )
                 let (≈)(x, y) = isapprox(x, y; atol, rtol)
                     @test isempty(extup_noval) || only(extup_noval) isa $E
                     @test y_out1_val ≈ scen.y
@@ -314,16 +326,24 @@ for op in [
             atol::Real,
             rtol::Real,
         )
-            @compat (; f, x, y, seed, res1) = new_scen = deepcopy(scen)
+            @compat (; f, x, y, seed, res1, contexts) = new_scen = deepcopy(scen)
             xrand, seedrand = mycopy_random(x), mycopy_random(seed)
             extup_cands_val, extup_cands_noval = map(1:2) do _
-                [(), ($prep_op(f, ba, xrand, seedrand),), ($prep_op_same(f, ba, x, seedrand),)]
+                [
+                    (),
+                    ($prep_op(f, ba, xrand, seedrand, contexts...),),
+                    ($prep_op_same(f, ba, x, seedrand, contexts...),),
+                ]
             end
             for (extup_val, extup_noval) in zip(extup_cands_val, extup_cands_noval)
-                y_out1_val, res1_out1_val = $val_and_op(f, extup_val..., ba, x, seed)
-                y_out2_val, res1_out2_val = $val_and_op(f, extup_val..., ba, x, seed)
-                res1_out1_noval = $op(f, extup_noval..., ba, x, seed)
-                res1_out2_noval = $op(f, extup_noval..., ba, x, seed)
+                y_out1_val, res1_out1_val = $val_and_op(
+                    f, extup_val..., ba, x, seed, contexts...
+                )
+                y_out2_val, res1_out2_val = $val_and_op(
+                    f, extup_val..., ba, x, seed, contexts...
+                )
+                res1_out1_noval = $op(f, extup_noval..., ba, x, seed, contexts...)
+                res1_out2_noval = $op(f, extup_noval..., ba, x, seed, contexts...)
                 let (≈)(x, y) = isapprox(x, y; atol, rtol)
                     @test isempty(extup_noval) || only(extup_noval) isa $E
                     @test y_out1_val ≈ scen.y
@@ -346,10 +366,14 @@ for op in [
             atol::Real,
             rtol::Real,
         )
-            @compat (; f, x, y, seed, res1) = new_scen = deepcopy(scen)
+            @compat (; f, x, y, seed, res1, contexts) = new_scen = deepcopy(scen)
             xrand, seedrand = mycopy_random(x), mycopy_random(seed)
             extup_cands_val, extup_cands_noval = map(1:2) do _
-                [(), ($prep_op(f, ba, xrand, seedrand),), ($prep_op_same(f, ba, x, seedrand),)]
+                [
+                    (),
+                    ($prep_op(f, ba, xrand, seedrand, contexts...),),
+                    ($prep_op_same(f, ba, x, seedrand, contexts...),),
+                ]
             end
             for (extup_val, extup_noval) in zip(extup_cands_val, extup_cands_noval)
                 res1_in1_val = mysimilar(res1)
@@ -357,13 +381,17 @@ for op in [
                 res1_in1_noval = mysimilar(res1)
                 res1_in2_noval = mysimilar(res1)
                 y_out1_val, res1_out1_val = $val_and_op!(
-                    f, res1_in1_val, extup_val..., ba, x, seed
+                    f, res1_in1_val, extup_val..., ba, x, seed, contexts...
                 )
                 y_out2_val, res1_out2_val = $val_and_op!(
-                    f, res1_in2_val, extup_val..., ba, x, seed
+                    f, res1_in2_val, extup_val..., ba, x, seed, contexts...
                 )
-                res1_out1_noval = $op!(f, res1_in1_noval, extup_noval..., ba, x, seed)
-                res1_out2_noval = $op!(f, res1_in2_noval, extup_noval..., ba, x, seed)
+                res1_out1_noval = $op!(
+                    f, res1_in1_noval, extup_noval..., ba, x, seed, contexts...
+                )
+                res1_out2_noval = $op!(
+                    f, res1_in2_noval, extup_noval..., ba, x, seed, contexts...
+                )
                 let (≈)(x, y) = isapprox(x, y; atol, rtol)
                     @test isempty(extup_noval) || only(extup_noval) isa $E
                     @test y_out1_val ≈ scen.y
@@ -390,13 +418,13 @@ for op in [
             atol::Real,
             rtol::Real,
         )
-            @compat (; f, x, y, seed, res1) = new_scen = deepcopy(scen)
+            @compat (; f, x, y, seed, res1, contexts) = new_scen = deepcopy(scen)
             xrand, yrand, seedrand = mycopy_random(x), mycopy_random(y), mycopy_random(seed)
             extup_cands_val, extup_cands_noval = map(1:2) do _
                 [
                     (),
-                    ($prep_op(f, yrand, ba, xrand, seedrand),),
-                    ($prep_op_same(f, yrand, ba, x, seedrand),),
+                    ($prep_op(f, yrand, ba, xrand, seedrand, contexts...),),
+                    ($prep_op_same(f, yrand, ba, x, seedrand, contexts...),),
                 ]
             end
             for (extup_val, extup_noval) in zip(extup_cands_val, extup_cands_noval)
@@ -405,13 +433,17 @@ for op in [
                 y_in1_noval = mysimilar(y)
                 y_in2_noval = mysimilar(y)
                 y_out1_val, res1_out1_val = $val_and_op(
-                    f, y_in1_val, extup_val..., ba, x, seed
+                    f, y_in1_val, extup_val..., ba, x, seed, contexts...
                 )
                 y_out2_val, res1_out2_val = $val_and_op(
-                    f, y_in2_val, extup_val..., ba, x, seed
+                    f, y_in2_val, extup_val..., ba, x, seed, contexts...
                 )
-                res1_out1_noval = $op(f, y_in1_noval, extup_noval..., ba, x, seed)
-                res1_out2_noval = $op(f, y_in2_noval, extup_noval..., ba, x, seed)
+                res1_out1_noval = $op(
+                    f, y_in1_noval, extup_noval..., ba, x, seed, contexts...
+                )
+                res1_out2_noval = $op(
+                    f, y_in2_noval, extup_noval..., ba, x, seed, contexts...
+                )
                 let (≈)(x, y) = isapprox(x, y; atol, rtol)
                     @test isempty(extup_noval) || only(extup_noval) isa $E
                     @test y_in1_val ≈ scen.y
@@ -436,13 +468,13 @@ for op in [
             atol::Real,
             rtol::Real,
         )
-            @compat (; f, x, y, seed, res1) = new_scen = deepcopy(scen)
+            @compat (; f, x, y, seed, res1, contexts) = new_scen = deepcopy(scen)
             xrand, yrand, seedrand = mycopy_random(x), mycopy_random(y), mycopy_random(seed)
             extup_cands_val, extup_cands_noval = map(1:2) do _
                 [
                     (),
-                    ($prep_op(f, yrand, ba, xrand, seedrand),),
-                    ($prep_op_same(f, yrand, ba, x, seedrand),),
+                    ($prep_op(f, yrand, ba, xrand, seedrand, contexts..., contexts...),),
+                    ($prep_op_same(f, yrand, ba, x, seedrand, contexts..., contexts...),),
                 ]
             end
             for (extup_val, extup_noval) in zip(extup_cands_val, extup_cands_noval)
@@ -451,16 +483,16 @@ for op in [
                 y_in1_noval, res1_in1_noval = mysimilar(y), mysimilar(res1)
                 y_in2_noval, res1_in2_noval = mysimilar(y), mysimilar(res1)
                 y_out1_val, res1_out1_val = $val_and_op!(
-                    f, y_in1_val, res1_in1_val, extup_val..., ba, x, seed
+                    f, y_in1_val, res1_in1_val, extup_val..., ba, x, seed, contexts...
                 )
                 y_out2_val, res1_out2_val = $val_and_op!(
-                    f, y_in2_val, res1_in2_val, extup_val..., ba, x, seed
+                    f, y_in2_val, res1_in2_val, extup_val..., ba, x, seed, contexts...
                 )
                 res1_out1_noval = $op!(
-                    f, y_in1_noval, res1_in1_noval, extup_noval..., ba, x, seed
+                    f, y_in1_noval, res1_in1_noval, extup_noval..., ba, x, seed, contexts...
                 )
                 res1_out2_noval = $op!(
-                    f, y_in2_noval, res1_in2_noval, extup_noval..., ba, x, seed
+                    f, y_in2_noval, res1_in2_noval, extup_noval..., ba, x, seed, contexts...
                 )
                 let (≈)(x, y) = isapprox(x, y; atol, rtol)
                     @test isempty(extup_noval) || only(extup_noval) isa $E
@@ -491,16 +523,16 @@ for op in [
             atol::Real,
             rtol::Real,
         )
-            @compat (; f, x, y, seed, res2) = new_scen = deepcopy(scen)
+            @compat (; f, x, y, seed, res2, contexts) = new_scen = deepcopy(scen)
             xrand, seedrand = mycopy_random(x), mycopy_random(seed)
             extup_cands_noval = [
                 (),
-                ($prep_op(f, ba, xrand, seedrand),),
-                ($prep_op_same(f, ba, x, seedrand),),
+                ($prep_op(f, ba, xrand, seedrand, contexts...),),
+                ($prep_op_same(f, ba, x, seedrand, contexts...),),
             ]
             for extup_noval in extup_cands_noval
-                res2_out1_noval = $op(f, extup_noval..., ba, x, seed)
-                res2_out2_noval = $op(f, extup_noval..., ba, x, seed)
+                res2_out1_noval = $op(f, extup_noval..., ba, x, seed, contexts...)
+                res2_out2_noval = $op(f, extup_noval..., ba, x, seed, contexts...)
                 let (≈)(x, y) = isapprox(x, y; atol, rtol)
                     @test isempty(extup_noval) || only(extup_noval) isa $E
                     @test res2_out1_noval ≈ scen.res2
@@ -519,18 +551,22 @@ for op in [
             atol::Real,
             rtol::Real,
         )
-            @compat (; f, x, y, seed, res2) = new_scen = deepcopy(scen)
+            @compat (; f, x, y, seed, res2, contexts) = new_scen = deepcopy(scen)
             xrand, seedrand = mycopy_random(x), mycopy_random(seed)
             extup_cands_noval = [
                 (),
-                ($prep_op(f, ba, xrand, seedrand),),
-                ($prep_op_same(f, ba, x, seedrand),),
+                ($prep_op(f, ba, xrand, seedrand, contexts...),),
+                ($prep_op_same(f, ba, x, seedrand, contexts...),),
             ]
             for extup_noval in extup_cands_noval
                 res2_in1_noval = mysimilar(res2)
                 res2_in2_noval = mysimilar(res2)
-                res2_out1_noval = $op!(f, res2_in1_noval, extup_noval..., ba, x, seed)
-                res2_out2_noval = $op!(f, res2_in2_noval, extup_noval..., ba, x, seed)
+                res2_out1_noval = $op!(
+                    f, res2_in1_noval, extup_noval..., ba, x, seed, contexts...
+                )
+                res2_out2_noval = $op!(
+                    f, res2_in2_noval, extup_noval..., ba, x, seed, contexts...
+                )
                 let (≈)(x, y) = isapprox(x, y; atol, rtol)
                     @test isempty(extup_noval) || only(extup_noval) isa $E
                     @test res2_in1_noval ≈ scen.res2

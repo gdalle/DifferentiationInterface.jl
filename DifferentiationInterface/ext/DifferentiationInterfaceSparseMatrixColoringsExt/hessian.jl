@@ -35,7 +35,9 @@ end
 
 ## Hessian, one argument
 
-function DI.prepare_hessian(f::F, backend::AutoSparse, x) where {F}
+function DI.prepare_hessian(
+    f::F, backend::AutoSparse, x, contexts::Vararg{Context,C}
+) where {F,C}
     dense_backend = dense_ad(backend)
     sparsity = hessian_sparsity(f, x, sparsity_detector(backend))
     problem = ColoringProblem{:symmetric,:column}()
@@ -52,8 +54,8 @@ function DI.prepare_hessian(f::F, backend::AutoSparse, x) where {F}
         a in 1:div(Ng, B, RoundUp)
     ]
     batched_results = [Tangents(ntuple(b -> similar(x), Val(B))...) for _ in batched_seeds]
-    hvp_extras = prepare_hvp(f, dense_backend, x, batched_seeds[1])
-    gradient_extras = prepare_gradient(f, maybe_inner(dense_backend), x)
+    hvp_extras = prepare_hvp(f, dense_backend, x, batched_seeds[1], contexts...)
+    gradient_extras = prepare_gradient(f, maybe_inner(dense_backend), x, contexts...)
     return SparseHessianExtras{B}(;
         coloring_result,
         compressed_matrix,
@@ -65,18 +67,22 @@ function DI.prepare_hessian(f::F, backend::AutoSparse, x) where {F}
 end
 
 function DI.hessian(
-    f::F, extras::SparseHessianExtras{B}, backend::AutoSparse, x
-) where {F,B}
+    f::F,
+    extras::SparseHessianExtras{B},
+    backend::AutoSparse,
+    x,
+    contexts::Vararg{Context,C},
+) where {F,B,C}
     @compat (; coloring_result, batched_seeds, hvp_extras) = extras
     dense_backend = dense_ad(backend)
     Ng = length(column_groups(coloring_result))
 
     hvp_extras_same = prepare_hvp_same_point(
-        f, hvp_extras, dense_backend, x, batched_seeds[1]
+        f, hvp_extras, dense_backend, x, batched_seeds[1], contexts...
     )
 
     compressed_blocks = map(eachindex(batched_seeds)) do a
-        dg_batch = hvp(f, hvp_extras_same, dense_backend, x, batched_seeds[a])
+        dg_batch = hvp(f, hvp_extras_same, dense_backend, x, batched_seeds[a], contexts...)
         stack(vec, dg_batch.d; dims=2)
     end
 
@@ -88,8 +94,13 @@ function DI.hessian(
 end
 
 function DI.hessian!(
-    f::F, hess, extras::SparseHessianExtras{B}, backend::AutoSparse, x
-) where {F,B}
+    f::F,
+    hess,
+    extras::SparseHessianExtras{B},
+    backend::AutoSparse,
+    x,
+    contexts::Vararg{Context,C},
+) where {F,B,C}
     @compat (;
         coloring_result, compressed_matrix, batched_seeds, batched_results, hvp_extras
     ) = extras
@@ -97,11 +108,19 @@ function DI.hessian!(
     Ng = length(column_groups(coloring_result))
 
     hvp_extras_same = prepare_hvp_same_point(
-        f, hvp_extras, dense_backend, x, batched_seeds[1]
+        f, hvp_extras, dense_backend, x, batched_seeds[1], contexts...
     )
 
     for a in eachindex(batched_seeds, batched_results)
-        hvp!(f, batched_results[a], hvp_extras_same, dense_backend, x, batched_seeds[a])
+        hvp!(
+            f,
+            batched_results[a],
+            hvp_extras_same,
+            dense_backend,
+            x,
+            batched_seeds[a],
+            contexts...,
+        )
 
         for b in eachindex(batched_results[a].d)
             copyto!(
@@ -116,21 +135,27 @@ function DI.hessian!(
 end
 
 function DI.value_gradient_and_hessian!(
-    f::F, grad, hess, extras::SparseHessianExtras, backend::AutoSparse, x
-) where {F}
+    f::F,
+    grad,
+    hess,
+    extras::SparseHessianExtras,
+    backend::AutoSparse,
+    x,
+    contexts::Vararg{Context,C},
+) where {F,C}
     y, _ = value_and_gradient!(
-        f, grad, extras.gradient_extras, maybe_inner(dense_ad(backend)), x
+        f, grad, extras.gradient_extras, maybe_inner(dense_ad(backend)), x, contexts...
     )
-    hessian!(f, hess, extras, backend, x)
+    hessian!(f, hess, extras, backend, x, contexts...)
     return y, grad, hess
 end
 
 function DI.value_gradient_and_hessian(
-    f::F, extras::SparseHessianExtras, backend::AutoSparse, x
-) where {F}
+    f::F, extras::SparseHessianExtras, backend::AutoSparse, x, contexts::Vararg{Context,C}
+) where {F,C}
     y, grad = value_and_gradient(
-        f, extras.gradient_extras, maybe_inner(dense_ad(backend)), x
+        f, extras.gradient_extras, maybe_inner(dense_ad(backend)), x, contexts...
     )
-    hess = hessian(f, extras, backend, x)
+    hess = hessian(f, extras, backend, x, contexts...)
     return y, grad, hess
 end

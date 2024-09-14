@@ -52,39 +52,63 @@ struct PullbackGradientExtras{E<:PullbackExtras} <: GradientExtras
     pullback_extras::E
 end
 
-function prepare_gradient(f::F, backend::AbstractADType, x) where {F}
-    pullback_extras = prepare_pullback(f, backend, x, Tangents(true))
+function prepare_gradient(
+    f::F, backend::AbstractADType, x, contexts::Vararg{Context,C}
+) where {F,C}
+    pullback_extras = prepare_pullback(f, backend, x, Tangents(true), contexts...)
     return PullbackGradientExtras(pullback_extras)
 end
 
 ## One argument
 
 function value_and_gradient(
-    f::F, extras::PullbackGradientExtras, backend::AbstractADType, x
-) where {F}
-    y, tx = value_and_pullback(f, extras.pullback_extras, backend, x, Tangents(true))
+    f::F,
+    extras::PullbackGradientExtras,
+    backend::AbstractADType,
+    x,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    y, tx = value_and_pullback(
+        f, extras.pullback_extras, backend, x, Tangents(true), contexts...
+    )
     return y, only(tx)
 end
 
 function value_and_gradient!(
-    f::F, grad, extras::PullbackGradientExtras, backend::AbstractADType, x
-) where {F}
+    f::F,
+    grad,
+    extras::PullbackGradientExtras,
+    backend::AbstractADType,
+    x,
+    contexts::Vararg{Context,C},
+) where {F,C}
     y, _ = value_and_pullback!(
-        f, Tangents(grad), extras.pullback_extras, backend, x, Tangents(true)
+        f, Tangents(grad), extras.pullback_extras, backend, x, Tangents(true), contexts...
     )
     return y, grad
 end
 
 function gradient(
-    f::F, extras::PullbackGradientExtras, backend::AbstractADType, x
-) where {F}
-    tx = pullback(f, extras.pullback_extras, backend, x, Tangents(true))
+    f::F,
+    extras::PullbackGradientExtras,
+    backend::AbstractADType,
+    x,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    tx = pullback(f, extras.pullback_extras, backend, x, Tangents(true), contexts...)
     return only(tx)
 end
 
 function gradient!(
-    f::F, grad, extras::PullbackGradientExtras, backend::AbstractADType, x
-) where {F}
-    pullback!(f, Tangents(grad), extras.pullback_extras, backend, x, Tangents(true))
+    f::F,
+    grad,
+    extras::PullbackGradientExtras,
+    backend::AbstractADType,
+    x,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    pullback!(
+        f, Tangents(grad), extras.pullback_extras, backend, x, Tangents(true), contexts...
+    )
     return grad
 end

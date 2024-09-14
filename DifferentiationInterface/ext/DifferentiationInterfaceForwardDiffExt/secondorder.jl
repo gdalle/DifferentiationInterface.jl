@@ -26,15 +26,22 @@ struct ForwardDiffOverSomethingHVPExtras{B<:AutoForwardDiff,G,E<:PushforwardExtr
 end
 
 function DI.prepare_hvp(
-    f::F, backend::SecondOrder{<:AutoForwardDiff}, x, tx::Tangents
-) where {F}
+    f::F,
+    backend::SecondOrder{<:AutoForwardDiff},
+    x,
+    tx::Tangents,
+    contexts::Vararg{Context,C},
+) where {F,C}
     tagged_outer_backend = tag_backend_hvp(f, outer(backend), x)
     T = tag_type(f, tagged_outer_backend, x)
     xdual = make_dual(T, x, tx)
-    gradient_extras = DI.prepare_gradient(f, inner(backend), xdual)
-    inner_gradient(x) = DI.gradient(f, gradient_extras, inner(backend), x)
+    gradient_extras = DI.prepare_gradient(f, inner(backend), xdual, contexts...)
+    function inner_gradient(x, unannotated_contexts...)
+        annotated_contexts = map.(typeof.(contexts), unannotated_contexts)
+        return DI.gradient(f, gradient_extras, inner(backend), x, unannotated_contexts...)
+    end
     outer_pushforward_extras = DI.prepare_pushforward(
-        inner_gradient, tagged_outer_backend, x, tx
+        inner_gradient, tagged_outer_backend, x, tx, contexts...
     )
     return ForwardDiffOverSomethingHVPExtras(
         tagged_outer_backend, inner_gradient, outer_pushforward_extras
@@ -42,29 +49,37 @@ function DI.prepare_hvp(
 end
 
 function DI.hvp(
-    f,
+    f::F,
     extras::ForwardDiffOverSomethingHVPExtras,
     ::SecondOrder{<:AutoForwardDiff},
     x,
     tx::Tangents,
-)
+    contexts::Vararg{Context,C},
+) where {F,C}
     @compat (; tagged_outer_backend, inner_gradient, outer_pushforward_extras) = extras
     return DI.pushforward(
-        inner_gradient, outer_pushforward_extras, tagged_outer_backend, x, tx
+        inner_gradient, outer_pushforward_extras, tagged_outer_backend, x, tx, contexts...
     )
 end
 
 function DI.hvp!(
-    f,
+    f::F,
     tg::Tangents,
     extras::ForwardDiffOverSomethingHVPExtras,
     ::SecondOrder{<:AutoForwardDiff},
     x,
     tx::Tangents,
-)
+    contexts::Vararg{Context,C},
+) where {F,C}
     @compat (; tagged_outer_backend, inner_gradient, outer_pushforward_extras) = extras
     DI.pushforward!(
-        inner_gradient, tg, outer_pushforward_extras, tagged_outer_backend, x, tx
+        inner_gradient,
+        tg,
+        outer_pushforward_extras,
+        tagged_outer_backend,
+        x,
+        tx,
+        contexts...,
     )
     return tg
 end

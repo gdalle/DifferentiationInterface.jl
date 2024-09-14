@@ -32,7 +32,7 @@ For example:
 - the keyword `grad` of `GradientScenario` becomes `res1`
 - the keyword `hess` of `HessianScenario` becomes `res2`, and the keyword `grad` becomes `res1`
 """
-struct Scenario{op,args,pl,F,X,Y,D,R1,R2}
+struct Scenario{op,args,pl,F,X,Y,D,R1,R2,C}
     "function `f` (if `args==1`) or `f!` (if `args==2`) to apply"
     f::F
     "primal input"
@@ -45,11 +45,13 @@ struct Scenario{op,args,pl,F,X,Y,D,R1,R2}
     res1::R1
     "second-order result of the operator (when it makes sense)"
     res2::R2
+    "contexts"
+    contexts::C
 
     function Scenario{op,args,pl}(
-        f::F; x::X, y::Y, seed::D, res1::R1, res2::R2
-    ) where {op,args,pl,F,X,Y,D,R1,R2}
-        return new{op,args,pl,F,X,Y,D,R1,R2}(f, x, y, seed, res1, res2)
+        f::F; x::X, y::Y, seed::D, res1::R1, res2::R2, contexts::C
+    ) where {op,args,pl,F,X,Y,D,R1,R2,C}
+        return new{op,args,pl,F,X,Y,D,R1,R2,C}(f, x, y, seed, res1, res2, contexts)
     end
 end
 
@@ -101,9 +103,18 @@ $(SIGNATURES)
 Construct a [`Scenario`](@ref) to test `pushforward` and its variants.
 """
 function PushforwardScenario(
-    f; x, y, tx::Tangents, ty::Union{Tangents,Nothing}=nothing, nb_args, place=:inplace
+    f;
+    x,
+    y,
+    tx::Tangents,
+    ty::Union{Tangents,Nothing}=nothing,
+    contexts=(),
+    nb_args,
+    place=:inplace,
 )
-    return Scenario{:pushforward,nb_args,place}(f; x, y, seed=tx, res1=ty, res2=nothing)
+    return Scenario{:pushforward,nb_args,place}(
+        f; x, y, seed=tx, res1=ty, res2=nothing, contexts
+    )
 end
 
 """
@@ -112,9 +123,18 @@ $(SIGNATURES)
 Construct a [`Scenario`](@ref) to test `pullback` and its variants.
 """
 function PullbackScenario(
-    f; x, y, ty::Tangents, tx::Union{Tangents,Nothing}=nothing, nb_args, place=:inplace
+    f;
+    x,
+    y,
+    ty::Tangents,
+    tx::Union{Tangents,Nothing}=nothing,
+    contexts=(),
+    nb_args,
+    place=:inplace,
 )
-    return Scenario{:pullback,nb_args,place}(f; x, y, seed=ty, res1=tx, res2=nothing)
+    return Scenario{:pullback,nb_args,place}(
+        f; x, y, seed=ty, res1=tx, res2=nothing, contexts
+    )
 end
 
 """
@@ -122,9 +142,9 @@ $(SIGNATURES)
 
 Construct a [`Scenario`](@ref) to test `derivative` and its variants.
 """
-function DerivativeScenario(f; x, y, der=nothing, nb_args, place=:inplace)
+function DerivativeScenario(f; x, y, der=nothing, contexts=(), nb_args, place=:inplace)
     return Scenario{:derivative,nb_args,place}(
-        f; x, y, seed=nothing, res1=der, res2=nothing
+        f; x, y, seed=nothing, res1=der, res2=nothing, contexts
     )
 end
 
@@ -133,8 +153,10 @@ $(SIGNATURES)
 
 Construct a [`Scenario`](@ref) to test `gradient` and its variants.
 """
-function GradientScenario(f; x, y, grad=nothing, nb_args, place=:inplace)
-    return Scenario{:gradient,nb_args,place}(f; x, y, seed=nothing, res1=grad, res2=nothing)
+function GradientScenario(f; x, y, grad=nothing, contexts=(), nb_args, place=:inplace)
+    return Scenario{:gradient,nb_args,place}(
+        f; x, y, seed=nothing, res1=grad, res2=nothing, contexts
+    )
 end
 
 """
@@ -142,8 +164,10 @@ $(SIGNATURES)
 
 Construct a [`Scenario`](@ref) to test `jacobian` and its variants.
 """
-function JacobianScenario(f; x, y, jac=nothing, nb_args, place=:inplace)
-    return Scenario{:jacobian,nb_args,place}(f; x, y, seed=nothing, res1=jac, res2=nothing)
+function JacobianScenario(f; x, y, jac=nothing, contexts=(), nb_args, place=:inplace)
+    return Scenario{:jacobian,nb_args,place}(
+        f; x, y, seed=nothing, res1=jac, res2=nothing, contexts
+    )
 end
 
 """
@@ -152,10 +176,10 @@ $(SIGNATURES)
 Construct a [`Scenario`](@ref) to test `second_derivative` and its variants.
 """
 function SecondDerivativeScenario(
-    f; x, y, der=nothing, der2=nothing, nb_args, place=:inplace
+    f; x, y, der=nothing, der2=nothing, contexts=(), nb_args, place=:inplace
 )
     return Scenario{:second_derivative,nb_args,place}(
-        f; x, y, seed=nothing, res1=der, res2=der2
+        f; x, y, seed=nothing, res1=der, res2=der2, contexts
     )
 end
 
@@ -171,10 +195,11 @@ function HVPScenario(
     tx::Tangents,
     grad=nothing,
     tg::Union{Tangents,Nothing}=nothing,
+    contexts=(),
     nb_args,
     place=:inplace,
 )
-    return Scenario{:hvp,nb_args,place}(f; x, y, seed=tx, res1=grad, res2=tg)
+    return Scenario{:hvp,nb_args,place}(f; x, y, seed=tx, res1=grad, res2=tg, contexts)
 end
 
 """
@@ -182,6 +207,10 @@ $(SIGNATURES)
 
 Construct a [`Scenario`](@ref) to test `hessian` and its variants.
 """
-function HessianScenario(f; x, y, grad=nothing, hess=nothing, nb_args, place=:inplace)
-    return Scenario{:hessian,nb_args,place}(f; x, y, seed=nothing, res1=grad, res2=hess)
+function HessianScenario(
+    f; x, y, grad=nothing, hess=nothing, contexts=(), nb_args, place=:inplace
+)
+    return Scenario{:hessian,nb_args,place}(
+        f; x, y, seed=nothing, res1=grad, res2=hess, contexts
+    )
 end

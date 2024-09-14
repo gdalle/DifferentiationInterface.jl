@@ -53,48 +53,87 @@ struct ClosureSecondDerivativeExtras{ID,E<:DerivativeExtras} <: SecondDerivative
     outer_derivative_extras::E
 end
 
-function prepare_second_derivative(f::F, backend::AbstractADType, x) where {F}
-    inner_derivative(x) = derivative(f, nested(maybe_inner(backend)), x)
-    outer_derivative_extras = prepare_derivative(inner_derivative, maybe_outer(backend), x)
+function prepare_second_derivative(
+    f::F, backend::AbstractADType, x, contexts::Vararg{Context,C}
+) where {F,C}
+    rewrap = Rewrap(contexts...)
+    function inner_derivative(_x, unannotated_contexts...)
+        annotated_contexts = rewrap(unannotated_contexts...)
+        return derivative(f, nested(maybe_inner(backend)), _x, annotated_contexts...)
+    end
+    outer_derivative_extras = prepare_derivative(
+        inner_derivative, maybe_outer(backend), x, contexts...
+    )
     return ClosureSecondDerivativeExtras(inner_derivative, outer_derivative_extras)
 end
 
 ## One argument
 
 function second_derivative(
-    f::F, extras::ClosureSecondDerivativeExtras, backend::AbstractADType, x
-) where {F}
+    f::F,
+    extras::ClosureSecondDerivativeExtras,
+    backend::AbstractADType,
+    x,
+    contexts::Vararg{Context,C},
+) where {F,C}
     @compat (; inner_derivative, outer_derivative_extras) = extras
-    return derivative(inner_derivative, outer_derivative_extras, maybe_outer(backend), x)
+    return derivative(
+        inner_derivative, outer_derivative_extras, maybe_outer(backend), x, contexts...
+    )
 end
 
 function value_derivative_and_second_derivative(
-    f::F, extras::ClosureSecondDerivativeExtras, backend::AbstractADType, x
-) where {F}
+    f::F,
+    extras::ClosureSecondDerivativeExtras,
+    backend::AbstractADType,
+    x,
+    contexts::Vararg{Context,C},
+) where {F,C}
     @compat (; inner_derivative, outer_derivative_extras) = extras
-    y = f(x)
+    y = f(x, map(unwrap, contexts)...)
     der, der2 = value_and_derivative(
-        inner_derivative, outer_derivative_extras, maybe_outer(backend), x
+        inner_derivative, outer_derivative_extras, maybe_outer(backend), x, contexts...
     )
     return y, der, der2
 end
 
 function second_derivative!(
-    f::F, der2, extras::SecondDerivativeExtras, backend::AbstractADType, x
-) where {F}
+    f::F,
+    der2,
+    extras::SecondDerivativeExtras,
+    backend::AbstractADType,
+    x,
+    contexts::Vararg{Context,C},
+) where {F,C}
     @compat (; inner_derivative, outer_derivative_extras) = extras
     return derivative!(
-        inner_derivative, der2, outer_derivative_extras, maybe_outer(backend), x
+        inner_derivative,
+        der2,
+        outer_derivative_extras,
+        maybe_outer(backend),
+        x,
+        contexts...,
     )
 end
 
 function value_derivative_and_second_derivative!(
-    f::F, der, der2, extras::SecondDerivativeExtras, backend::AbstractADType, x
-) where {F}
+    f::F,
+    der,
+    der2,
+    extras::SecondDerivativeExtras,
+    backend::AbstractADType,
+    x,
+    contexts::Vararg{Context,C},
+) where {F,C}
     @compat (; inner_derivative, outer_derivative_extras) = extras
-    y = f(x)
+    y = f(x, map(unwrap, contexts)...)
     new_der, _ = value_and_derivative!(
-        inner_derivative, der2, outer_derivative_extras, maybe_outer(backend), x
+        inner_derivative,
+        der2,
+        outer_derivative_extras,
+        maybe_outer(backend),
+        x,
+        contexts...,
     )
     return y, copyto!(der, new_der), der2
 end

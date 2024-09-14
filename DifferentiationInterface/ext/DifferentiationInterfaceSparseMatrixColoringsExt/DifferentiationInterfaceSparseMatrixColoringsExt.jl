@@ -26,7 +26,8 @@ using DifferentiationInterface:
     maybe_outer,
     multibasis,
     pick_batchsize,
-    pushforward_performance
+    pushforward_performance,
+    unwrap
 import DifferentiationInterface as DI
 using SparseMatrixColorings:
     AbstractColoringResult,
