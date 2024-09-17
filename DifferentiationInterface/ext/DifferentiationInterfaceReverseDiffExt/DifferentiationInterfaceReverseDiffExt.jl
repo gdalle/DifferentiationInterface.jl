@@ -3,9 +3,13 @@ module DifferentiationInterfaceReverseDiffExt
 using ADTypes: AutoReverseDiff
 import DifferentiationInterface as DI
 using DifferentiationInterface:
-    DerivativeExtras, GradientExtras, HessianExtras, JacobianExtras, NoPullbackExtras
+    DerivativeExtras,
+    GradientExtras,
+    HessianExtras,
+    JacobianExtras,
+    NoPullbackExtras,
+    Tangents
 using ReverseDiff.DiffResults: DiffResults, DiffResult, GradientResult, MutableDiffResult
-using DocStringExtensions
 using LinearAlgebra: dot, mul!
 using ReverseDiff:
     CompiledGradient,
@@ -26,6 +30,10 @@ using ReverseDiff:
     jacobian!
 
 DI.check_available(::AutoReverseDiff) = true
+
+function DI.basis(::AutoReverseDiff, a::AbstractArray{T}, i) where {T}
+    return DI.OneElement(i, one(T), a)
+end
 
 include("onearg.jl")
 include("twoarg.jl")

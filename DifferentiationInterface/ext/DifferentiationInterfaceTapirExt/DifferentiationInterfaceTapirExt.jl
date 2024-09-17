@@ -2,7 +2,7 @@ module DifferentiationInterfaceTapirExt
 
 using ADTypes: ADTypes, AutoTapir
 import DifferentiationInterface as DI
-using DifferentiationInterface: PullbackExtras
+using DifferentiationInterface: PullbackExtras, Tangents
 using Tapir:
     CoDual,
     NoTangent,
@@ -19,7 +19,7 @@ using Tapir:
     fdata,
     rdata,
     __value_and_pullback!!,
-    TapirInterpreter
+    get_tapir_interpreter
 
 DI.check_available(::AutoTapir) = true
 

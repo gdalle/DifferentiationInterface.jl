@@ -7,7 +7,7 @@ This works by defining new rules overriding the behavior of the outer backend th
 
 !!! warning
     This is an experimental functionality, whose API cannot yet be considered stable.
-    At the moment, it only supports one-argument functions, and rules are only defined for [ChainRules.jl](https://github.com/JuliaDiff/ChainRules.jl)-compatible outer backends.
+    It only supports out-of-place functions, and rules are only defined for [ChainRules.jl](https://github.com/JuliaDiff/ChainRules.jl)-compatible outer backends.
 
 # Fields
 

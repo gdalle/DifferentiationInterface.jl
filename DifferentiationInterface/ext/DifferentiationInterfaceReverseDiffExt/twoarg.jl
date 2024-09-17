@@ -1,68 +1,90 @@
 ## Pullback
 
-DI.prepare_pullback(f!, y, ::AutoReverseDiff, x, dy) = NoPullbackExtras()
+DI.prepare_pullback(f!, y, ::AutoReverseDiff, x, ty::Tangents) = NoPullbackExtras()
 
 ### Array in
 
 function DI.value_and_pullback(
-    f!, y, ::AutoReverseDiff, x::AbstractArray, dy, ::NoPullbackExtras
+    f!, y, ::NoPullbackExtras, ::AutoReverseDiff, x::AbstractArray, ty::Tangents
 )
-    function dotproduct_closure(x)
-        y_copy = similar(y, eltype(x))
-        f!(y_copy, x)
-        return dot(y_copy, dy)
+    tx = map(ty) do dy
+        function dotproduct_closure(x)
+            y_copy = similar(y, eltype(x))
+            f!(y_copy, x)
+            return dot(y_copy, dy)
+        end
+        gradient(dotproduct_closure, x)
     end
-    dx = gradient(dotproduct_closure, x)
     f!(y, x)
-    return y, dx
+    return y, tx
 end
 
 function DI.value_and_pullback!(
-    f!, y, dx, ::AutoReverseDiff, x::AbstractArray, dy, ::NoPullbackExtras
+    f!,
+    y,
+    tx::Tangents,
+    ::NoPullbackExtras,
+    ::AutoReverseDiff,
+    x::AbstractArray,
+    ty::Tangents,
 )
-    function dotproduct_closure(x)
-        y_copy = similar(y, eltype(x))
-        f!(y_copy, x)
-        return dot(y_copy, dy)
+    for b in eachindex(tx.d, ty.d)
+        dx, dy = tx.d[b], ty.d[b]
+        function dotproduct_closure(x)
+            y_copy = similar(y, eltype(x))
+            f!(y_copy, x)
+            return dot(y_copy, dy)
+        end
+        gradient!(dx, dotproduct_closure, x)
     end
-    dx = gradient!(dx, dotproduct_closure, x)
     f!(y, x)
-    return y, dx
+    return y, tx
 end
 
-function DI.pullback(f!, y, ::AutoReverseDiff, x::AbstractArray, dy, ::NoPullbackExtras)
-    function dotproduct_closure(x)
-        y_copy = similar(y, eltype(x))
-        f!(y_copy, x)
-        return dot(y_copy, dy)
+function DI.pullback(
+    f!, y, ::NoPullbackExtras, ::AutoReverseDiff, x::AbstractArray, ty::Tangents
+)
+    tx = map(ty) do dy
+        function dotproduct_closure(x)
+            y_copy = similar(y, eltype(x))
+            f!(y_copy, x)
+            return dot(y_copy, dy)
+        end
+        gradient(dotproduct_closure, x)
     end
-    dx = gradient(dotproduct_closure, x)
-    return dx
+    return tx
 end
 
 function DI.pullback!(
-    f!, y, dx, ::AutoReverseDiff, x::AbstractArray, dy, ::NoPullbackExtras
+    f!,
+    y,
+    tx::Tangents,
+    ::NoPullbackExtras,
+    ::AutoReverseDiff,
+    x::AbstractArray,
+    ty::Tangents,
 )
-    function dotproduct_closure(x)
-        y_copy = similar(y, eltype(x))
-        f!(y_copy, x)
-        return dot(y_copy, dy)
+    for b in eachindex(tx.d, ty.d)
+        dx, dy = tx.d[b], ty.d[b]
+        function dotproduct_closure(x)
+            y_copy = similar(y, eltype(x))
+            f!(y_copy, x)
+            return dot(y_copy, dy)
+        end
+        gradient!(dx, dotproduct_closure, x)
     end
-    dx = gradient!(dx, dotproduct_closure, x)
-    return dx
+    return tx
 end
 
 ### Number in, not supported
 
 function DI.value_and_pullback(
-    f!, y, backend::AutoReverseDiff, x::Number, dy, ::NoPullbackExtras
-)
+    f!, y, ::NoPullbackExtras, backend::AutoReverseDiff, x::Number, ty::Tangents{B}
+) where {B}
     x_array = [x]
-    dx_array = similar(x_array)
     f!_array(_y::AbstractArray, _x_array) = f!(_y, only(_x_array))
-    new_extras = DI.prepare_pullback(f!_array, y, backend, x_array, dy)
-    y, dx_array = DI.value_and_pullback(f!_array, y, backend, x_array, dy, new_extras)
-    return y, only(dx_array)
+    y, tx_array = DI.value_and_pullback(f!_array, y, backend, x_array, ty)
+    return y, Tangents(only.(tx_array.d)...)
 end
 
 ## Jacobian
@@ -82,7 +104,7 @@ function DI.prepare_jacobian(
 end
 
 function DI.value_and_jacobian(
-    _f!, y, ::AutoReverseDiff, x, extras::ReverseDiffTwoArgJacobianExtras
+    _f!, y, extras::ReverseDiffTwoArgJacobianExtras, ::AutoReverseDiff, x
 )
     jac = similar(y, length(y), length(x))
     result = MutableDiffResult(y, (jac,))
@@ -91,20 +113,20 @@ function DI.value_and_jacobian(
 end
 
 function DI.value_and_jacobian!(
-    _f!, y, jac, ::AutoReverseDiff, x, extras::ReverseDiffTwoArgJacobianExtras
+    _f!, y, jac, extras::ReverseDiffTwoArgJacobianExtras, ::AutoReverseDiff, x
 )
     result = MutableDiffResult(y, (jac,))
     result = jacobian!(result, extras.tape, x)
     return DiffResults.value(result), DiffResults.derivative(result)
 end
 
-function DI.jacobian(_f!, _y, ::AutoReverseDiff, x, extras::ReverseDiffTwoArgJacobianExtras)
+function DI.jacobian(_f!, _y, extras::ReverseDiffTwoArgJacobianExtras, ::AutoReverseDiff, x)
     jac = jacobian!(extras.tape, x)
     return jac
 end
 
 function DI.jacobian!(
-    _f!, _y, jac, ::AutoReverseDiff, x, extras::ReverseDiffTwoArgJacobianExtras
+    _f!, _y, jac, extras::ReverseDiffTwoArgJacobianExtras, ::AutoReverseDiff, x
 )
     jac = jacobian!(jac, extras.tape, x)
     return jac

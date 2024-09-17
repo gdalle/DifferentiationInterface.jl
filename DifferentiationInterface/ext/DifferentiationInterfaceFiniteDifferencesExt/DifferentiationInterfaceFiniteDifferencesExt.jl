@@ -3,68 +3,73 @@ module DifferentiationInterfaceFiniteDifferencesExt
 using ADTypes: AutoFiniteDifferences
 import DifferentiationInterface as DI
 using DifferentiationInterface:
-    NoGradientExtras, NoJacobianExtras, NoPullbackExtras, NoPushforwardExtras
-using FillArrays: OneElement
+    NoGradientExtras, NoJacobianExtras, NoPullbackExtras, NoPushforwardExtras, Tangents
 using FiniteDifferences: FiniteDifferences, grad, jacobian, jvp, j′vp
 using LinearAlgebra: dot
 
 DI.check_available(::AutoFiniteDifferences) = true
-DI.twoarg_support(::AutoFiniteDifferences) = DI.TwoArgNotSupported()
-
-function FiniteDifferences.to_vec(a::OneElement)  # TODO: remove type piracy (https://github.com/JuliaDiff/FiniteDifferences.jl/issues/141)
-    return FiniteDifferences.to_vec(collect(a))
-end
+DI.inplace_support(::AutoFiniteDifferences) = DI.InPlaceNotSupported()
 
 ## Pushforward
 
-DI.prepare_pushforward(f, ::AutoFiniteDifferences, x, dx) = NoPushforwardExtras()
+function DI.prepare_pushforward(f, ::AutoFiniteDifferences, x, tx::Tangents)
+    return NoPushforwardExtras()
+end
 
-function DI.pushforward(f, backend::AutoFiniteDifferences, x, dx, ::NoPushforwardExtras)
-    return jvp(backend.fdm, f, (x, dx))
+function DI.pushforward(
+    f, ::NoPushforwardExtras, backend::AutoFiniteDifferences, x, tx::Tangents
+)
+    ty = map(tx) do dx
+        jvp(backend.fdm, f, (x, dx))
+    end
+    return ty
 end
 
 function DI.value_and_pushforward(
-    f, backend::AutoFiniteDifferences, x, dx, extras::NoPushforwardExtras
+    f, extras::NoPushforwardExtras, backend::AutoFiniteDifferences, x, tx::Tangents
 )
-    return f(x), DI.pushforward(f, backend, x, dx, extras)
+    return f(x), DI.pushforward(f, extras, backend, x, tx)
 end
 
 ## Pullback
 
-DI.prepare_pullback(f, ::AutoFiniteDifferences, x, dy) = NoPullbackExtras()
+DI.prepare_pullback(f, ::AutoFiniteDifferences, x, ty::Tangents) = NoPullbackExtras()
 
-function DI.pullback(f, backend::AutoFiniteDifferences, x, dy, ::NoPullbackExtras)
-    return only(j′vp(backend.fdm, f, dy, x))
+function DI.pullback(f, ::NoPullbackExtras, backend::AutoFiniteDifferences, x, ty::Tangents)
+    tx = map(ty) do dy
+        only(j′vp(backend.fdm, f, dy, x))
+    end
+    return tx
 end
 
 function DI.value_and_pullback(
-    f, backend::AutoFiniteDifferences, x, dy, extras::NoPullbackExtras
+    f, extras::NoPullbackExtras, backend::AutoFiniteDifferences, x, ty::Tangents
 )
-    return f(x), DI.pullback(f, backend, x, dy, extras)
+    return f(x), DI.pullback(f, extras, backend, x, ty)
 end
 
 ## Gradient
 
 DI.prepare_gradient(f, ::AutoFiniteDifferences, x) = NoGradientExtras()
 
-function DI.gradient(f, backend::AutoFiniteDifferences, x, ::NoGradientExtras)
+function DI.gradient(f, ::NoGradientExtras, backend::AutoFiniteDifferences, x)
     return only(grad(backend.fdm, f, x))
 end
 
 function DI.value_and_gradient(
-    f, backend::AutoFiniteDifferences, x, extras::NoGradientExtras
+    f, extras::NoGradientExtras, backend::AutoFiniteDifferences, x
 )
-    return f(x), DI.gradient(f, backend, x, extras)
+    return f(x), DI.gradient(f, extras, backend, x)
 end
 
-function DI.gradient!(f, grad, backend::AutoFiniteDifferences, x, extras::NoGradientExtras)
-    return copyto!(grad, DI.gradient(f, backend, x, extras))
+function DI.gradient!(f, grad, extras::NoGradientExtras, backend::AutoFiniteDifferences, x)
+    return copyto!(grad, DI.gradient(f, extras, backend, x))
 end
 
 function DI.value_and_gradient!(
-    f, grad, backend::AutoFiniteDifferences, x, extras::NoGradientExtras
+    f, grad, extras::NoGradientExtras, backend::AutoFiniteDifferences, x
 )
-    y, new_grad = DI.value_and_gradient(f, backend, x, extras)
+    y, new_grad = DI.value_and_gradient(f, extras, backend, x)
     return y, copyto!(grad, new_grad)
 end
 
@@ -72,24 +77,24 @@ end
 
 DI.prepare_jacobian(f, ::AutoFiniteDifferences, x) = NoJacobianExtras()
 
-function DI.jacobian(f, backend::AutoFiniteDifferences, x, ::NoJacobianExtras)
+function DI.jacobian(f, ::NoJacobianExtras, backend::AutoFiniteDifferences, x)
     return only(jacobian(backend.fdm, f, x))
 end
 
 function DI.value_and_jacobian(
-    f, backend::AutoFiniteDifferences, x, extras::NoJacobianExtras
+    f, extras::NoJacobianExtras, backend::AutoFiniteDifferences, x
 )
-    return f(x), DI.jacobian(f, backend, x, extras)
+    return f(x), DI.jacobian(f, extras, backend, x)
 end
 
-function DI.jacobian!(f, jac, backend::AutoFiniteDifferences, x, extras::NoJacobianExtras)
-    return copyto!(jac, DI.jacobian(f, backend, x, extras))
+function DI.jacobian!(f, jac, extras::NoJacobianExtras, backend::AutoFiniteDifferences, x)
+    return copyto!(jac, DI.jacobian(f, extras, backend, x))
 end
 
 function DI.value_and_jacobian!(
-    f, jac, backend::AutoFiniteDifferences, x, extras::NoJacobianExtras
+    f, jac, extras::NoJacobianExtras, backend::AutoFiniteDifferences, x
 )
-    y, new_jac = DI.value_and_jacobian(f, backend, x)
+    y, new_jac = DI.value_and_jacobian(f, extras, backend, x)
     return y, copyto!(jac, new_jac)
 end
 

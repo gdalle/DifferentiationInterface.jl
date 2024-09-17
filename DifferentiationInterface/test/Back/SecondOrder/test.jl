@@ -33,11 +33,10 @@ twoarg_backends = [
 for backend in vcat(onearg_backends, twoarg_backends)
     @test check_available(backend)
     if backend in onearg_backends
-        @test !check_twoarg(backend)
+        @test !check_inplace(backend)
     else
-        @test check_twoarg(backend)
+        @test check_inplace(backend)
     end
-    @test check_hessian(backend)
 end
 
 test_differentiation(

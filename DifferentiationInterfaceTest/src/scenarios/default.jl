@@ -36,8 +36,10 @@ function num_to_num_scenarios(x::Number; dx::Number, dy::Number)
 
     # everyone out of place
     scens = Scenario[
-        PushforwardScenario(f; x, y, dx, dy=dy_from_dx, nb_args, place),
-        PullbackScenario(f; x, y, dy, dx=dx_from_dy, nb_args, place),
+        PushforwardScenario(
+            f; x, y, tx=Tangents(dx), ty=Tangents(dy_from_dx), nb_args, place
+        ),
+        PullbackScenario(f; x, y, ty=Tangents(dy), tx=Tangents(dx_from_dy), nb_args, place),
         DerivativeScenario(f; x, y, der, nb_args, place),
         SecondDerivativeScenario(f; x, y, der, der2, nb_args, place),
     ]
@@ -51,26 +53,38 @@ function num_to_num_scenarios(x::Number; dx::Number, dy::Number)
             scens,
             [
                 PushforwardScenario(
-                    num_to_num_vec; x=[x], y=[y], dx=[dx], dy=[dy_from_dx], nb_args=1, place
+                    num_to_num_vec;
+                    x=[x],
+                    y=[y],
+                    tx=Tangents([dx]),
+                    ty=Tangents([dy_from_dx]),
+                    nb_args=1,
+                    place,
                 ),
                 PushforwardScenario(
                     num_to_num_vec!;
                     x=[x],
                     y=[y],
-                    dx=[dx],
-                    dy=[dy_from_dx],
+                    tx=Tangents([dx]),
+                    ty=Tangents([dy_from_dx]),
                     nb_args=2,
                     place,
                 ),
                 PullbackScenario(
-                    num_to_num_vec; x=[x], y=[y], dy=[dy], dx=[dx_from_dy], nb_args=1, place
+                    num_to_num_vec;
+                    x=[x],
+                    y=[y],
+                    ty=Tangents([dy]),
+                    tx=Tangents([dx_from_dy]),
+                    nb_args=1,
+                    place,
                 ),
                 PullbackScenario(
                     num_to_num_vec!;
                     x=[x],
                     y=[y],
-                    dy=[dy],
-                    dx=[dx_from_dy],
+                    ty=Tangents([dy]),
+                    tx=Tangents([dx_from_dy]),
                     nb_args=2,
                     place,
                 ),
@@ -142,14 +156,23 @@ function num_to_arr_scenarios_onearg(
         append!(
             scens,
             [
-                PushforwardScenario(f; x, y, dx, dy=dy_from_dx, nb_args, place),
+                PushforwardScenario(
+                    f; x, y, tx=Tangents(dx), ty=Tangents(dy_from_dx), nb_args, place
+                ),
                 DerivativeScenario(f; x, y, der, nb_args, place),
                 SecondDerivativeScenario(f; x, y, der, der2, nb_args, place),
             ],
         )
     end
     for place in (:outofplace,)
-        append!(scens, [PullbackScenario(f; x, y, dy, dx=dx_from_dy, nb_args, place)])
+        append!(
+            scens,
+            [
+                PullbackScenario(
+                    f; x, y, ty=Tangents(dy), tx=Tangents(dx_from_dy), nb_args, place
+                ),
+            ],
+        )
     end
     return scens
 end
@@ -171,13 +194,22 @@ function num_to_arr_scenarios_twoarg(
         append!(
             scens,
             [
-                PushforwardScenario(f!; x, y, dx, dy=dy_from_dx, nb_args, place),
+                PushforwardScenario(
+                    f!; x, y, tx=Tangents(dx), ty=Tangents(dy_from_dx), nb_args, place
+                ),
                 DerivativeScenario(f!; x, y, der, nb_args, place),
             ],
         )
     end
     for place in (:outofplace,)
-        append!(scens, [PullbackScenario(f!; x, y, dy, dx=dx_from_dy, nb_args, place)])
+        append!(
+            scens,
+            [
+                PullbackScenario(
+                    f!; x, y, ty=Tangents(dy), tx=Tangents(dx_from_dy), nb_args, place
+                ),
+            ],
+        )
     end
     return scens
 end
@@ -259,15 +291,26 @@ function arr_to_num_scenarios_onearg(
         append!(
             scens,
             [
-                PullbackScenario(f; x, y, dy, dx=dx_from_dy, nb_args, place),
+                PullbackScenario(
+                    f; x, y, ty=Tangents(dy), tx=Tangents(dx_from_dy), nb_args, place
+                ),
                 GradientScenario(f; x, y, grad, nb_args, place),
-                HVPScenario(f; x, y, dx, grad, dg, nb_args, place),
+                HVPScenario(
+                    f; x, y, tx=Tangents(dx), grad, tg=Tangents(dg), nb_args, place
+                ),
                 HessianScenario(f; x, y, grad, hess, nb_args, place),
             ],
         )
     end
     for place in (:outofplace,)
-        append!(scens, [PushforwardScenario(f; x, y, dx, dy=dy_from_dx, nb_args, place)])
+        append!(
+            scens,
+            [
+                PushforwardScenario(
+                    f; x, y, tx=Tangents(dx), ty=Tangents(dy_from_dx), nb_args, place
+                ),
+            ],
+        )
     end
     return scens
 end
@@ -280,8 +323,12 @@ function all_array_to_array_scenarios(f; x, y, dx, dy, dy_from_dx, dx_from_dy, j
         append!(
             scens,
             [
-                PushforwardScenario(f; x, y, dx, dy=dy_from_dx, nb_args, place),
-                PullbackScenario(f; x, y, dy, dx=dx_from_dy, nb_args, place),
+                PushforwardScenario(
+                    f; x, y, tx=Tangents(dx), ty=Tangents(dy_from_dx), nb_args, place
+                ),
+                PullbackScenario(
+                    f; x, y, ty=Tangents(dy), tx=Tangents(dx_from_dy), nb_args, place
+                ),
                 JacobianScenario(f; x, y, jac, nb_args, place),
             ],
         )
@@ -529,5 +576,5 @@ function default_scenarios(rng::AbstractRNG=default_rng(); linalg=true)
         mat_to_vec_scenarios_twoarg(x_2_3; dx=dx_2_3, dy=dy_12),
         mat_to_mat_scenarios_twoarg(x_2_3; dx=dx_2_3, dy=dy_6_2),
     )
-    return scens
+    return add_batched(scens)
 end

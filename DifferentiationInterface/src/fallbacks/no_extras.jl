@@ -5,31 +5,55 @@ for op in (:derivative, :gradient, :jacobian)
     val_and_op! = Symbol(val_prefix, op!)
     prep_op = Symbol("prepare_", op)
     # 1-arg
-    @eval function $op(f::F, backend::AbstractADType, x) where {F}
-        return $op(f, backend, x, $prep_op(f, backend, x))
+    @eval function $op(
+        f::F, backend::AbstractADType, x, contexts::Vararg{Context,C}
+    ) where {F,C}
+        ex = $prep_op(f, backend, x, contexts...)
+        return $op(f, ex, backend, x, contexts...)
     end
-    @eval function $op!(f::F, result, backend::AbstractADType, x) where {F}
-        return $op!(f, result, backend, x, $prep_op(f, backend, x))
+    @eval function $op!(
+        f::F, result, backend::AbstractADType, x, contexts::Vararg{Context,C}
+    ) where {F,C}
+        ex = $prep_op(f, backend, x, contexts...)
+        return $op!(f, result, ex, backend, x, contexts...)
     end
-    @eval function $val_and_op(f::F, backend::AbstractADType, x) where {F}
-        return $val_and_op(f, backend, x, $prep_op(f, backend, x))
+    @eval function $val_and_op(
+        f::F, backend::AbstractADType, x, contexts::Vararg{Context,C}
+    ) where {F,C}
+        ex = $prep_op(f, backend, x, contexts...)
+        return $val_and_op(f, ex, backend, x, contexts...)
     end
-    @eval function $val_and_op!(f::F, result, backend::AbstractADType, x) where {F}
-        return $val_and_op!(f, result, backend, x, $prep_op(f, backend, x))
+    @eval function $val_and_op!(
+        f::F, result, backend::AbstractADType, x, contexts::Vararg{Context,C}
+    ) where {F,C}
+        ex = $prep_op(f, backend, x, contexts...)
+        return $val_and_op!(f, result, ex, backend, x, contexts...)
     end
     op == :gradient && continue
     # 2-arg
-    @eval function $op(f!::F, y, backend::AbstractADType, x) where {F}
-        return $op(f!, y, backend, x, $prep_op(f!, y, backend, x))
+    @eval function $op(
+        f!::F, y, backend::AbstractADType, x, contexts::Vararg{Context,C}
+    ) where {F,C}
+        ex = $prep_op(f!, y, backend, x, contexts...)
+        return $op(f!, y, ex, backend, x, contexts...)
     end
-    @eval function $op!(f!::F, y, result, backend::AbstractADType, x) where {F}
-        return $op!(f!, y, result, backend, x, $prep_op(f!, y, backend, x))
+    @eval function $op!(
+        f!::F, y, result, backend::AbstractADType, x, contexts::Vararg{Context,C}
+    ) where {F,C}
+        ex = $prep_op(f!, y, backend, x, contexts...)
+        return $op!(f!, y, result, ex, backend, x, contexts...)
     end
-    @eval function $val_and_op(f!::F, y, backend::AbstractADType, x) where {F}
-        return $val_and_op(f!, y, backend, x, $prep_op(f!, y, backend, x))
+    @eval function $val_and_op(
+        f!::F, y, backend::AbstractADType, x, contexts::Vararg{Context,C}
+    ) where {F,C}
+        ex = $prep_op(f!, y, backend, x, contexts...)
+        return $val_and_op(f!, y, ex, backend, x, contexts...)
     end
-    @eval function $val_and_op!(f!::F, y, result, backend::AbstractADType, x) where {F}
-        return $val_and_op!(f!, y, result, backend, x, $prep_op(f!, y, backend, x))
+    @eval function $val_and_op!(
+        f!::F, y, result, backend::AbstractADType, x, contexts::Vararg{Context,C}
+    ) where {F,C}
+        ex = $prep_op(f!, y, backend, x, contexts...)
+        return $val_and_op!(f!, y, result, ex, backend, x, contexts...)
     end
 end
 
@@ -44,58 +68,150 @@ for op in (:second_derivative, :hessian)
     val_and_op! = Symbol(val_prefix, op!)
     prep_op = Symbol("prepare_", op)
     # 1-arg
-    @eval function $op(f::F, backend::AbstractADType, x) where {F}
-        return $op(f, backend, x, $prep_op(f, backend, x))
+    @eval function $op(
+        f::F, backend::AbstractADType, x, contexts::Vararg{Context,C}
+    ) where {F,C}
+        ex = $prep_op(f, backend, x, contexts...)
+        return $op(f, ex, backend, x, contexts...)
     end
-    @eval function $op!(f::F, result2, backend::AbstractADType, x) where {F}
-        return $op!(f, result2, backend, x, $prep_op(f, backend, x))
+    @eval function $op!(
+        f::F, result2, backend::AbstractADType, x, contexts::Vararg{Context,C}
+    ) where {F,C}
+        ex = $prep_op(f, backend, x, contexts...)
+        return $op!(f, result2, ex, backend, x, contexts...)
     end
-    @eval function $val_and_op(f::F, backend::AbstractADType, x) where {F}
-        return $val_and_op(f, backend, x, $prep_op(f, backend, x))
+    @eval function $val_and_op(
+        f::F, backend::AbstractADType, x, contexts::Vararg{Context,C}
+    ) where {F,C}
+        ex = $prep_op(f, backend, x, contexts...)
+        return $val_and_op(f, ex, backend, x, contexts...)
     end
     @eval function $val_and_op!(
-        f::F, result1, result2, backend::AbstractADType, x
-    ) where {F}
-        return $val_and_op!(f, result1, result2, backend, x, $prep_op(f, backend, x))
+        f::F, result1, result2, backend::AbstractADType, x, contexts::Vararg{Context,C}
+    ) where {F,C}
+        ex = $prep_op(f, backend, x, contexts...)
+        return $val_and_op!(f, result1, result2, ex, backend, x, contexts...)
     end
 end
 
-for op in
-    (:pushforward, :pushforward_batched, :pullback, :pullback_batched, :hvp, :hvp_batched)
+for op in (:pushforward, :pullback, :hvp)
     op! = Symbol(op, "!")
     val_prefix = "value_and_"
     val_and_op = Symbol(val_prefix, op)
     val_and_op! = Symbol(val_prefix, op!)
     prep_op = Symbol("prepare_", op)
-    # 1-arg
-    @eval function $op(f::F, backend::AbstractADType, x, seed) where {F}
-        return $op(f, backend, x, seed, $prep_op(f, backend, x, seed))
+    prep_op_same_point = Symbol("prepare_", op, "_same_point")
+    E = if startswith(string(op), "pushforward")
+        PushforwardExtras
+    elseif startswith(string(op), "pullback")
+        PullbackExtras
+    elseif startswith(string(op), "hvp")
+        HVPExtras
     end
-    @eval function $op!(f::F, result, backend::AbstractADType, x, seed) where {F}
-        return $op!(f, result, backend, x, seed, $prep_op(f, backend, x, seed))
+    # 1-arg
+    @eval function $prep_op_same_point(
+        f::F, backend::AbstractADType, x, seed::Tangents, contexts::Vararg{Context,C}
+    ) where {F,C}
+        ex = $prep_op(f, backend, x, seed, contexts...)
+        return $prep_op_same_point(f, ex, backend, x, seed, contexts...)
+    end
+    @eval function $prep_op_same_point(
+        f::F,
+        ex::$E,
+        backend::AbstractADType,
+        x,
+        seed::Tangents,
+        contexts::Vararg{Context,C},
+    ) where {F,C}
+        return ex
+    end
+    @eval function $op(
+        f::F, backend::AbstractADType, x, seed::Tangents, contexts::Vararg{Context,C}
+    ) where {F,C}
+        ex = $prep_op(f, backend, x, seed, contexts...)
+        return $op(f, ex, backend, x, seed, contexts...)
+    end
+    @eval function $op!(
+        f::F,
+        result::Tangents,
+        backend::AbstractADType,
+        x,
+        seed::Tangents,
+        contexts::Vararg{Context,C},
+    ) where {F,C}
+        ex = $prep_op(f, backend, x, seed, contexts...)
+        return $op!(f, result, ex, backend, x, seed, contexts...)
     end
     op == :hvp && continue
-    # 2-arg
-    @eval function $val_and_op(f::F, backend::AbstractADType, x, seed) where {F}
-        return $val_and_op(f, backend, x, seed, $prep_op(f, backend, x, seed))
-    end
-    @eval function $val_and_op!(f::F, result, backend::AbstractADType, x, seed) where {F}
-        return $val_and_op!(f, result, backend, x, seed, $prep_op(f, backend, x, seed))
-    end
-    @eval function $op(f!::F, y, backend::AbstractADType, x, seed) where {F}
-        return $op(f!, y, backend, x, seed, $prep_op(f!, y, backend, x, seed))
-    end
-    @eval function $op!(f!::F, y, result, backend::AbstractADType, x, seed) where {F}
-        return $op!(f!, y, result, backend, x, seed, $prep_op(f!, y, backend, x, seed))
-    end
-    @eval function $val_and_op(f!::F, y, backend::AbstractADType, x, seed) where {F}
-        return $val_and_op(f!, y, backend, x, seed, $prep_op(f!, y, backend, x, seed))
+    @eval function $val_and_op(
+        f::F, backend::AbstractADType, x, seed::Tangents, contexts::Vararg{Context,C}
+    ) where {F,C}
+        ex = $prep_op(f, backend, x, seed, contexts...)
+        return $val_and_op(f, ex, backend, x, seed, contexts...)
     end
     @eval function $val_and_op!(
-        f!::F, y, result, backend::AbstractADType, x, seed
-    ) where {F}
-        return $val_and_op!(
-            f!, y, result, backend, x, seed, $prep_op(f!, y, backend, x, seed)
-        )
+        f::F,
+        result::Tangents,
+        backend::AbstractADType,
+        x,
+        seed::Tangents,
+        contexts::Vararg{Context,C},
+    ) where {F,C}
+        ex = $prep_op(f, backend, x, seed, contexts...)
+        return $val_and_op!(f, result, ex, backend, x, seed, contexts...)
+    end
+    # 2-arg
+    @eval function $prep_op_same_point(
+        f!::F, y, backend::AbstractADType, x, seed::Tangents, contexts::Vararg{Context,C}
+    ) where {F,C}
+        ex = $prep_op(f!, y, backend, x, seed, contexts...)
+        return $prep_op_same_point(f!, y, ex, backend, x, seed, contexts...)
+    end
+    @eval function $prep_op_same_point(
+        f!::F,
+        y,
+        ex::$E,
+        backend::AbstractADType,
+        x,
+        seed::Tangents,
+        contexts::Vararg{Context,C},
+    ) where {F,C}
+        return ex
+    end
+    @eval function $op(
+        f!::F, y, backend::AbstractADType, x, seed::Tangents, contexts::Vararg{Context,C}
+    ) where {F,C}
+        ex = $prep_op(f!, y, backend, x, seed, contexts...)
+        return $op(f!, y, ex, backend, x, seed, contexts...)
+    end
+    @eval function $op!(
+        f!::F,
+        y,
+        result::Tangents,
+        backend::AbstractADType,
+        x,
+        seed::Tangents,
+        contexts::Vararg{Context,C},
+    ) where {F,C}
+        ex = $prep_op(f!, y, backend, x, seed, contexts...)
+        return $op!(f!, y, result, ex, backend, x, seed, contexts...)
+    end
+    @eval function $val_and_op(
+        f!::F, y, backend::AbstractADType, x, seed::Tangents, contexts::Vararg{Context,C}
+    ) where {F,C}
+        ex = $prep_op(f!, y, backend, x, seed, contexts...)
+        return $val_and_op(f!, y, ex, backend, x, seed, contexts...)
+    end
+    @eval function $val_and_op!(
+        f!::F,
+        y,
+        result::Tangents,
+        backend::AbstractADType,
+        x,
+        seed::Tangents,
+        contexts::Vararg{Context,C},
+    ) where {F,C}
+        ex = $prep_op(f!, y, backend, x, seed, contexts...)
+        return $val_and_op!(f!, y, result, ex, backend, x, seed, contexts...)
     end
 end

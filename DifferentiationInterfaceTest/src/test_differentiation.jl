@@ -20,7 +20,7 @@ Filtering:
 
 - `input_type=Any`, `output_type=Any`: restrict scenario inputs / outputs to subtypes of this
 - `first_order=true`, `second_order=true`: include first order / second order operators
-- `onearg=true`, `twoarg=true`: include one-argument / two-argument functions
+- `onearg=true`, `twoarg=true`: include out-of-place / in-place functions
 - `inplace=true`, `outofplace=true`: include in-place / out-of-place operators
 
 Options:
@@ -99,7 +99,8 @@ function test_differentiation(
                             (:input_size, mysize(scen.x)),
                             (:output_type, typeof(scen.y)),
                             (:output_size, mysize(scen.y)),
-                            (:batched_seed, scen.seed isa Batch),
+                            (:batched_seed, scen.seed isa Tangents),
+                            (:with_context, length(scen.contexts) > 0),
                         ],
                     )
                     correctness && @testset "Correctness" begin
@@ -188,7 +189,8 @@ function benchmark_differentiation(
                         (:input_size, mysize(scen.x)),
                         (:output_type, typeof(scen.y)),
                         (:output_size, mysize(scen.y)),
-                        (:batched_seed, scen.seed isa Batch),
+                        (:batched_seed, scen.seed isa Tangents),
+                        (:with_context, length(scen.contexts) > 0),
                     ],
                 )
                 run_benchmark!(benchmark_data, backend, scen; logging)

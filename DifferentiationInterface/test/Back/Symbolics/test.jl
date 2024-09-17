@@ -9,8 +9,7 @@ LOGGING = get(ENV, "CI", "false") == "false"
 
 for backend in [AutoSymbolics(), AutoSparse(AutoSymbolics())]
     @test check_available(backend)
-    @test check_twoarg(backend)
-    @test check_hessian(backend)
+    @test check_inplace(backend)
 end
 
 test_differentiation(AutoSymbolics(); logging=LOGGING);

@@ -3,7 +3,6 @@ Pkg.add("ForwardDiff")
 
 using ComponentArrays: ComponentArrays
 using DifferentiationInterface, DifferentiationInterfaceTest
-using DifferentiationInterfaceTest: add_batchified!
 using ForwardDiff: ForwardDiff
 using SparseConnectivityTracer, SparseMatrixColorings
 using StaticArrays: StaticArrays
@@ -23,17 +22,16 @@ sparse_backends = [
 
 for backend in vcat(dense_backends, sparse_backends)
     @test check_available(backend)
-    @test check_twoarg(backend)
-    @test check_hessian(backend)
+    @test check_inplace(backend)
 end
 
 ## Dense backends
 
-test_differentiation(dense_backends, add_batchified!(default_scenarios()); logging=LOGGING);
+test_differentiation(dense_backends, default_scenarios(); logging=LOGGING);
 
 test_differentiation(
     dense_backends,
-    add_batchified!(default_scenarios());
+    default_scenarios();
     correctness=false,
     type_stability=true,
     second_order=false,

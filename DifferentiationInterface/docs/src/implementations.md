@@ -1,10 +1,6 @@
 # Implementations
 
-DifferentiationInterface.jl provides a handful of [operators](@ref "Operators") like [`gradient`](@ref) or [`jacobian`](@ref), each with several variants:
-
-- **out-of-place** or **in-place** behavior
-- **with** or **without primal** output value
-- support for **one-argument functions** `y = f(x)` or **two-argument functions** `f!(y, x)`
+DifferentiationInterface.jl provides a handful of [operators](@ref "Operators") like [`gradient`](@ref) or [`jacobian`](@ref), each with several variants: out-of-place or in-place behavior, with or without primal output value.
 
 While it is possible to define every operator using just [`pushforward`](@ref) and [`pullback`](@ref), some backends have more efficient implementations of high-level operators.
 When they are available, we nearly always call these backend-specific overloads.
@@ -24,7 +20,7 @@ The cells can have three values:
 ```@setup overloads
 using ADTypes: AbstractADType
 using DifferentiationInterface
-using DifferentiationInterface: twoarg_support, TwoArgSupported
+using DifferentiationInterface: inplace_support, InPlaceSupported
 using Markdown: Markdown
 
 using Diffractor: Diffractor
@@ -48,46 +44,46 @@ function operators_and_types_f(backend::T) where {T<:AbstractADType}
         # (val_and_op,  types_val_and_op),
         # (val_and_op!, types_val_and_op!),
         (
-            (:derivative, (Any, T, Any, Any)),
-            (:derivative!, (Any, Any, T, Any, Any)),
-            (:value_and_derivative, (Any, T, Any, Any)),
-            (:value_and_derivative!, (Any, Any, T, Any, Any)),
+            (:derivative, (Any, Any, T, Any)),
+            (:derivative!, (Any, Any, Any, T, Any)),
+            (:value_and_derivative, (Any, Any, T, Any)),
+            (:value_and_derivative!, (Any, Any, Any, T, Any)),
         ),
         (
-            (:gradient, (Any, T, Any, Any)),
-            (:gradient!, (Any, Any, T, Any, Any)),
-            (:value_and_gradient, (Any, T, Any, Any)),
-            (:value_and_gradient!, (Any, Any, T, Any, Any)),
+            (:gradient, (Any, Any, T, Any)),
+            (:gradient!, (Any, Any, Any, T, Any)),
+            (:value_and_gradient, (Any, Any, T, Any)),
+            (:value_and_gradient!, (Any, Any, Any, T, Any)),
         ),
         (
-            (:jacobian, (Any, T, Any, Any)),
-            (:jacobian!, (Any, Any, T, Any, Any)),
-            (:value_and_jacobian, (Any, T, Any, Any)),
-            (:value_and_jacobian!, (Any, Any, T, Any, Any)),
+            (:jacobian, (Any, Any, T, Any)),
+            (:jacobian!, (Any, Any, Any, T, Any)),
+            (:value_and_jacobian, (Any, Any, T, Any)),
+            (:value_and_jacobian!, (Any, Any, Any, T, Any)),
         ),
         (
-            (:hessian, (Any, T, Any, Any)),
-            (:hessian!, (Any, Any, T, Any, Any)),
+            (:hessian, (Any, Any, T, Any)),
+            (:hessian!, (Any, Any, Any, T, Any)),
             (nothing, nothing),
             (nothing, nothing),
         ),
         (
-            (:hvp, (Any, T, Any, Any, Any)),
-            (:hvp!, (Any, Any, T, Any, Any, Any)),
+            (:hvp, (Any, Any, T, Any, Any)),
+            (:hvp!, (Any, Any, Any, T, Any, Any)),
             (nothing, nothing),
             (nothing, nothing),
         ),
         (
-            (:pullback, (Any, T, Any, Any, Any)),
-            (:pullback!, (Any, Any, T, Any, Any, Any)),
-            (:value_and_pullback, (Any, T, Any, Any, Any)),
-            (:value_and_pullback!, (Any, Any, T, Any, Any, Any)),
+            (:pullback, (Any, Any, T, Any, Any)),
+            (:pullback!, (Any, Any, Any, T, Any, Any)),
+            (:value_and_pullback, (Any, Any, T, Any, Any)),
+            (:value_and_pullback!, (Any, Any, Any, T, Any, Any)),
         ),
         (
-            (:pushforward, (Any, T, Any, Any, Any)),
-            (:pushforward!, (Any, Any, T, Any, Any, Any)),
-            (:value_and_pushforward, (Any, T, Any, Any, Any)),
-            (:value_and_pushforward!, (Any, Any, T, Any, Any, Any)),
+            (:pushforward, (Any, Any, T, Any, Any)),
+            (:pushforward!, (Any, Any, Any, T, Any, Any)),
+            (:value_and_pushforward, (Any, Any, T, Any, Any)),
+            (:value_and_pushforward!, (Any, Any, Any, T, Any, Any)),
         ),
     )
 end
@@ -95,28 +91,28 @@ end
 function operators_and_types_f!(backend::T) where {T<:AbstractADType}
     return (
         (
-            (:derivative, (Any, Any, T, Any, Any)),
-            (:derivative!, (Any, Any, Any, T, Any, Any)),
-            (:value_and_derivative, (Any, Any, T, Any, Any)),
-            (:value_and_derivative!, (Any, Any, Any, T, Any, Any)),
+            (:derivative, (Any, Any, Any, T, Any)),
+            (:derivative!, (Any, Any, Any, Any, T, Any)),
+            (:value_and_derivative, (Any, Any, Any, T, Any)),
+            (:value_and_derivative!, (Any, Any, Any, Any, T, Any)),
         ),
         (
-            (:jacobian, (Any, Any, T, Any, Any)),
-            (:jacobian!, (Any, Any, Any, T, Any, Any)),
-            (:value_and_jacobian, (Any, Any, T, Any, Any)),
-            (:value_and_jacobian!, (Any, Any, Any, T, Any, Any)),
+            (:jacobian, (Any, Any, Any, T, Any)),
+            (:jacobian!, (Any, Any, Any, Any, T, Any)),
+            (:value_and_jacobian, (Any, Any, Any, T, Any)),
+            (:value_and_jacobian!, (Any, Any, Any, Any, T, Any)),
         ),
         (
-            (:pullback, (Any, Any, T, Any, Any, Any)),
-            (:pullback!, (Any, Any, Any, T, Any, Any, Any)),
-            (:value_and_pullback, (Any, Any, T, Any, Any, Any)),
-            (:value_and_pullback!, (Any, Any, Any, T, Any, Any, Any)),
+            (:pullback, (Any, Any, Any, T, Any, Any)),
+            (:pullback!, (Any, Any, Any, Any, T, Any, Any)),
+            (:value_and_pullback, (Any, Any, Any, T, Any, Any)),
+            (:value_and_pullback!, (Any, Any, Any, Any, T, Any, Any)),
         ),
         (
-            (:pushforward, (Any, Any, T, Any, Any, Any)),
-            (:pushforward!, (Any, Any, Any, T, Any, Any, Any)),
-            (:value_and_pushforward, (Any, Any, T, Any, Any, Any)),
-            (:value_and_pushforward!, (Any, Any, Any, T, Any, Any, Any)),
+            (:pushforward, (Any, Any, Any, T, Any, Any)),
+            (:pushforward!, (Any, Any, Any, Any, T, Any, Any)),
+            (:value_and_pushforward, (Any, Any, Any, T, Any, Any)),
+            (:value_and_pushforward!, (Any, Any, Any, Any, T, Any, Any)),
         ),
     )
 end
@@ -153,16 +149,16 @@ function print_overloads(backend, ext::Symbol)
     io = IOBuffer()
     ext = Base.get_extension(DifferentiationInterface, ext)
 
-    println(io, "#### One-argument functions `y = f(x)`")
+    println(io, "#### Out-of-place functions `f(x) = y`")
     println(io)
     print_overload_table(io, operators_and_types_f(backend), ext)
 
-    println(io, "#### Two-argument functions `f!(y, x)`")
+    println(io, "#### In-place functions `f!(y, x) = nothing`")
     println(io)
-    if twoarg_support(backend) == TwoArgSupported()
+    if inplace_support(backend) == InPlaceSupported()
         print_overload_table(io, operators_and_types_f!(backend), ext)
     else
-        println(io, "Backend doesn't support mutating functions.")
+        println(io, "Backend doesn't support in-place functions.")
     end
 
     return Markdown.parse(String(take!(io)))

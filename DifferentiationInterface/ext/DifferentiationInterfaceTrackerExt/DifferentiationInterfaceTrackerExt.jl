@@ -2,12 +2,12 @@ module DifferentiationInterfaceTrackerExt
 
 using ADTypes: AutoTracker
 import DifferentiationInterface as DI
-using DifferentiationInterface: NoGradientExtras, NoPullbackExtras, PullbackExtras
+using DifferentiationInterface: NoGradientExtras, NoPullbackExtras, PullbackExtras, Tangents
 using Tracker: Tracker, back, data, forward, gradient, jacobian, param, withgradient
 using Compat
 
 DI.check_available(::AutoTracker) = true
-DI.twoarg_support(::AutoTracker) = DI.TwoArgNotSupported()
+DI.inplace_support(::AutoTracker) = DI.InPlaceNotSupported()
 
 ## Pullback
 
@@ -16,53 +16,64 @@ struct TrackerPullbackExtrasSamePoint{Y,PB} <: PullbackExtras
     pb::PB
 end
 
-DI.prepare_pullback(f, ::AutoTracker, x, dy) = NoPullbackExtras()
+DI.prepare_pullback(f, ::AutoTracker, x, ty::Tangents) = NoPullbackExtras()
 
 function DI.prepare_pullback_same_point(
-    f, ::AutoTracker, x, dy, ::PullbackExtras=NoPullbackExtras()
+    f, ::NoPullbackExtras, ::AutoTracker, x, ty::Tangents
 )
     y, pb = forward(f, x)
     return TrackerPullbackExtrasSamePoint(y, pb)
 end
 
-function DI.value_and_pullback(f, ::AutoTracker, x, dy, ::NoPullbackExtras)
+function DI.value_and_pullback(f, ::NoPullbackExtras, ::AutoTracker, x, ty::Tangents)
     y, pb = forward(f, x)
-    return y, data(only(pb(dy)))
+    tx = map(ty) do dy
+        data(only(pb(dy)))
+    end
+    return y, tx
 end
 
 function DI.value_and_pullback(
-    f, ::AutoTracker, x, dy, extras::TrackerPullbackExtrasSamePoint
+    f, extras::TrackerPullbackExtrasSamePoint, ::AutoTracker, x, ty::Tangents
 )
     @compat (; y, pb) = extras
-    return copy(y), data(only(pb(dy)))
+    tx = map(ty) do dy
+        data(only(pb(dy)))
+    end
+    return copy(y), tx
 end
 
-function DI.pullback(f, ::AutoTracker, x, dy, extras::TrackerPullbackExtrasSamePoint)
+function DI.pullback(
+    f, extras::TrackerPullbackExtrasSamePoint, ::AutoTracker, x, ty::Tangents
+)
     @compat (; pb) = extras
-    return data(only(pb(dy)))
+    tx = map(ty) do dy
+        data(only(pb(dy)))
+    end
+    return tx
 end
 
 ## Gradient
 
 DI.prepare_gradient(f, ::AutoTracker, x) = NoGradientExtras()
 
-function DI.value_and_gradient(f, ::AutoTracker, x, ::NoGradientExtras)
+function DI.value_and_gradient(f, ::NoGradientExtras, ::AutoTracker, x)
     @compat (; val, grad) = withgradient(f, x)
     return val, data(only(grad))
 end
 
-function DI.gradient(f, ::AutoTracker, x, ::NoGradientExtras)
+function DI.gradient(f, ::NoGradientExtras, ::AutoTracker, x)
     @compat (; grad) = withgradient(f, x)
     return data(only(grad))
 end
 
-function DI.value_and_gradient!(f, grad, backend::AutoTracker, x, extras::NoGradientExtras)
-    y, new_grad = DI.value_and_gradient(f, backend, x, extras)
+function DI.value_and_gradient!(f, grad, extras::NoGradientExtras, backend::AutoTracker, x)
+    y, new_grad = DI.value_and_gradient(f, extras, backend, x)
     return y, copyto!(grad, new_grad)
 end
 
-function DI.gradient!(f, grad, backend::AutoTracker, x, extras::NoGradientExtras)
-    return copyto!(grad, DI.gradient(f, backend, x, extras))
+function DI.gradient!(f, grad, extras::NoGradientExtras, backend::AutoTracker, x)
+    return copyto!(grad, DI.gradient(f, extras, backend, x))
 end
 
 end

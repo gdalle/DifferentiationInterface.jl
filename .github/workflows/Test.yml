@@ -34,6 +34,7 @@ jobs:
         group:
           - Formalities
           - Internals
+          - Back/ChainRulesCore
           - Back/Diffractor
           - Back/Enzyme
           - Back/FastDifferentiation
@@ -56,6 +57,8 @@ jobs:
           # lts
           - version: 'lts'
             group: Formalities
+          - version: 'lts'
+            group: Back/ChainRulesCore
           - version: 'lts'
             group: Back/Diffractor
           - version: 'lts'
@@ -83,6 +86,8 @@ jobs:
           # pre-release
           - version: 'pre'
             group: Formalities
+          - version: 'pre'
+            group: Back/ChainRulesCore
           - version: 'pre'
             group: Back/Enzyme
           - version: 'pre'
@@ -120,6 +125,8 @@ jobs:
         if: ${{ env.SHOULDRUN == 'true' }}
         with:
           files: lcov.info
+          flags: DI
+          name: ${{ matrix.version }} - DI (${{ matrix.group }})
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
 
@@ -176,5 +183,7 @@ jobs:
         if: ${{ env.SHOULDRUN == 'true' }}
         with:
           files: lcov.info
+          flags: DIT
+          name: ${{ matrix.version }} - DIT (${{ matrix.group }})
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true

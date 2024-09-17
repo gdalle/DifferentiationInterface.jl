@@ -1,17 +1,35 @@
 ## Pullback
 
-function DI.prepare_pullback(f!, y, ::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, dy)
+function DI.prepare_pullback(
+    f!, y, ::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, ty::Tangents
+)
     return NoPullbackExtras()
 end
 
 function DI.value_and_pullback(
     f!,
     y,
+    extras::NoPullbackExtras,
+    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
+    x,
+    ty::Tangents,
+)
+    tx = map(ty) do dy
+        only(DI.pullback(f!, y, extras, backend, x, Tangents(dy)))
+    end
+    f!(y, x)
+    return y, tx
+end
+
+function DI.value_and_pullback(
+    f!,
+    y,
+    ::NoPullbackExtras,
     backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
     x::Number,
-    dy,
-    ::NoPullbackExtras,
+    ty::Tangents{1},
 )
+    dy = only(ty)
     f!_and_df! = get_f_and_df(f!, backend)
     dy_sametype = convert(typeof(y), copy(dy))
     y_and_dy = Duplicated(y, dy_sametype)
@@ -20,17 +38,18 @@ function DI.value_and_pullback(
     else
         only(autodiff(reverse_mode(backend), f!_and_df!, Const, y_and_dy, Active(x)))
     end
-    return y, new_dx
+    return y, Tangents(new_dx)
 end
 
 function DI.value_and_pullback(
     f!,
     y,
+    ::NoPullbackExtras,
     backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
     x::AbstractArray,
-    dy,
-    ::NoPullbackExtras,
+    ty::Tangents{1},
 )
+    dy = only(ty)
     f!_and_df! = get_f_and_df(f!, backend)
     dx_sametype = make_zero(x)
     dy_sametype = convert(typeof(y), copy(dy))
@@ -41,5 +60,5 @@ function DI.value_and_pullback(
     else
         autodiff(reverse_mode(backend), f!_and_df!, Const, y_and_dy, x_and_dx)
     end
-    return y, dx_sametype
+    return y, Tangents(dx_sametype)
 end

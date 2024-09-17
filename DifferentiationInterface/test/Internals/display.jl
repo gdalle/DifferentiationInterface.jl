@@ -16,3 +16,6 @@ diffwith = DifferentiateWith(exp, AutoForwardDiff())
 
 @test DifferentiationInterface.package_name(AutoForwardDiff()) == "ForwardDiff"
 @test DifferentiationInterface.package_name(AutoZygote()) == "Zygote"
+@test DifferentiationInterface.package_name(AutoSparse(AutoForwardDiff())) == "ForwardDiff"
+@test DifferentiationInterface.package_name(SecondOrder(AutoForwardDiff(), AutoZygote())) ==
+    "ForwardDiff, Zygote"

@@ -12,14 +12,10 @@ A common use case of automatic differentiation (AD) is optimizing real-valued fu
 Let's define a simple objective (the squared norm) and a random input vector
 
 ```@example tuto1
-function f(x::AbstractVector{T}) where {T}
-    y = zero(T)
-    for i in eachindex(x)
-        y += abs2(x[i])
-    end
-    return y
-end
+f(x) = sum(abs2, x)
+```
 
+```@example tuto1
 x = collect(1.0:5.0)
 ```
 
@@ -67,10 +63,10 @@ grad  # has been mutated
 ```
 
 The bang indicates that one of the arguments of `gradient!` might be mutated.
-More precisely, our convention is that _every positional argument between the function and the backend is mutated (and the `extras` too, see below)_.
+More precisely, our convention is that _every positional argument between the function and the backend is mutated_.
 
 ```@example tuto1
-@benchmark gradient!($f, _grad, $backend, $x) evals=1 setup=(_grad=similar($x))
+@benchmark gradient!($f, $grad, $backend, $x)
 ```
 
 For some reason the in-place version is not much better than your first attempt.
@@ -84,7 +80,7 @@ These objects can be reused between gradient computations, even on different inp
 We abstract away the preparation step behind a backend-agnostic syntax:
 
 ```@example tuto1
-extras = prepare_gradient(f, backend, randn(eltype(x), size(x)))
+extras = prepare_gradient(f, backend, zero(x))
 ```
 
 You don't need to know what this object is, you just need to pass it to the gradient operator.
@@ -93,17 +89,14 @@ You can thus reuse the `extras` for different values of the input.
 
 ```@example tuto1
 grad = similar(x)
-gradient!(f, grad, backend, x, extras)
+gradient!(f, grad, extras, backend, x)
 grad  # has been mutated
 ```
 
 Preparation makes the gradient computation much faster, and (in this case) allocation-free.
 
 ```@example tuto1
-@benchmark gradient!($f, _grad, $backend, $x, _extras) evals=1 setup=(
-    _grad=similar($x);
-    _extras=prepare_gradient($f, $backend, $x)
-)
+@benchmark gradient!($f, $grad, $extras, $backend, $x)
 ```
 
 Beware that the `extras` object is nearly always mutated by differentiation operators, even though it is given as the last positional argument.
@@ -128,10 +121,9 @@ gradient(f, backend2, x)
 And you can run the same benchmarks to see what you gained (although such a small input may not be realistic):
 
 ```@example tuto1
-@benchmark gradient!($f, _grad, $backend2, $x, _extras) evals=1 setup=(
-    _grad=similar($x);
-    _extras=prepare_gradient($f, $backend2, $x)
-)
+extras2 = prepare_gradient(f, backend2, zero(x))
+
+@benchmark gradient!($f, $grad, $extras2, $backend2, $x)
 ```
 
 In short, DifferentiationInterface.jl allows for easy testing and comparison of AD backends.

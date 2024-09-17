@@ -13,6 +13,7 @@ LOGGING = get(ENV, "CI", "false") == "false"
 
 dense_backends = [
     AutoEnzyme(; mode=nothing),
+    AutoEnzyme(; mode=nothing, function_annotation=Enzyme.Const),
     AutoEnzyme(; mode=Enzyme.Forward),
     AutoEnzyme(; mode=Enzyme.Forward, function_annotation=Enzyme.Const),
     AutoEnzyme(; mode=Enzyme.Reverse),
@@ -39,8 +40,7 @@ sparse_backends =
 @testset "Checks" begin
     @testset "Check $(typeof(backend))" for backend in vcat(dense_backends, sparse_backends)
         @test check_available(backend)
-        @test check_twoarg(backend)
-        @test check_hessian(backend; verbose=false)
+        @test check_inplace(backend)
     end
 end
 
@@ -80,7 +80,8 @@ test_differentiation(
 );
 
 test_differentiation(
-    AutoEnzyme(; mode=Enzyme.Forward);  # TODO: add more
+    AutoEnzyme(; mode=Enzyme.Forward),  # TODO: add more
+    DIT.remove_batched(default_scenarios());
     correctness=false,
     type_stability=true,
     second_order=false,

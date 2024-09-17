@@ -11,7 +11,7 @@ Create an `extras` object that can be given to [`hessian`](@ref) and its variant
 function prepare_hessian end
 
 """
-    hessian(f, backend, x, [extras]) -> hess
+    hessian(f, [extras,] backend, x) -> hess
 
 Compute the Hessian matrix of the function `f` at point `x`.
 
@@ -20,7 +20,7 @@ $(document_preparation("hessian"))
 function hessian end
 
 """
-    hessian!(f, hess, backend, x, [extras]) -> hess
+    hessian!(f, hess, [extras,] backend, x) -> hess
 
 Compute the Hessian matrix of the function `f` at point `x`, overwriting `hess`.
 
@@ -29,7 +29,7 @@ $(document_preparation("hessian"))
 function hessian! end
 
 """
-    value_gradient_and_hessian(f, backend, x, [extras]) -> (y, grad, hess)
+    value_gradient_and_hessian(f, [extras,] backend, x) -> (y, grad, hess)
 
 Compute the value, gradient vector and Hessian matrix of the function `f` at point `x`.
 
@@ -38,7 +38,7 @@ $(document_preparation("hessian"))
 function value_gradient_and_hessian end
 
 """
-    value_gradient_and_hessian!(f, grad, hess, backend, x, [extras]) -> (y, grad, hess)
+    value_gradient_and_hessian!(f, grad, hess, [extras,] backend, x) -> (y, grad, hess)
 
 Compute the value, gradient vector and Hessian matrix of the function `f` at point `x`, overwriting `grad` and `hess`.
 
@@ -48,57 +48,53 @@ function value_gradient_and_hessian! end
 
 ## Preparation
 
-"""
-    HessianExtras
-
-Abstract type for additional information needed by [`hessian`](@ref) and its variants.
-"""
-abstract type HessianExtras <: Extras end
-
-struct NoHessianExtras <: HessianExtras end
-
 struct HVPGradientHessianExtras{B,D,R,E2<:HVPExtras,E1<:GradientExtras} <: HessianExtras
-    batched_seeds::Vector{Batch{B,D}}
-    batched_results::Vector{Batch{B,R}}
-    hvp_batched_extras::E2
+    batched_seeds::Vector{Tangents{B,D}}
+    batched_results::Vector{Tangents{B,R}}
+    hvp_extras::E2
     gradient_extras::E1
     N::Int
 end
 
-function prepare_hessian(f::F, backend::AbstractADType, x) where {F}
+function prepare_hessian(
+    f::F, backend::AbstractADType, x, contexts::Vararg{Context,C}
+) where {F,C}
     N = length(x)
     B = pick_batchsize(maybe_outer(backend), N)
-    seeds = [basis(backend, x, ind) for ind in CartesianIndices(x)]
-    batched_seeds =
-        Batch.([
-            ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % N], Val(B)) for
-            a in 1:div(N, B, RoundUp)
-        ])
-    batched_results = Batch.([ntuple(b -> similar(x), Val(B)) for _ in batched_seeds])
-    hvp_batched_extras = prepare_hvp_batched(f, backend, x, batched_seeds[1])
-    gradient_extras = prepare_gradient(f, maybe_inner(backend), x)
+    seeds = [basis(backend, x, ind) for ind in eachindex(x)]
+    batched_seeds = [
+        Tangents(ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % N], Val(B))...) for
+        a in 1:div(N, B, RoundUp)
+    ]
+    batched_results = [Tangents(ntuple(b -> similar(x), Val(B))...) for _ in batched_seeds]
+    hvp_extras = prepare_hvp(f, backend, x, batched_seeds[1], contexts...)
+    gradient_extras = prepare_gradient(f, maybe_inner(backend), x, contexts...)
     D = eltype(batched_seeds[1])
     R = eltype(batched_results[1])
-    E2, E1 = typeof(hvp_batched_extras), typeof(gradient_extras)
+    E2, E1 = typeof(hvp_extras), typeof(gradient_extras)
     return HVPGradientHessianExtras{B,D,R,E2,E1}(
-        batched_seeds, batched_results, hvp_batched_extras, gradient_extras, N
+        batched_seeds, batched_results, hvp_extras, gradient_extras, N
     )
 end
 
 ## One argument
 
 function hessian(
-    f::F, backend::AbstractADType, x, extras::HVPGradientHessianExtras{B}
-) where {F,B}
-    @compat (; batched_seeds, hvp_batched_extras, N) = extras
+    f::F,
+    extras::HVPGradientHessianExtras{B},
+    backend::AbstractADType,
+    x,
+    contexts::Vararg{Context,C},
+) where {F,B,C}
+    @compat (; batched_seeds, hvp_extras, N) = extras
 
-    hvp_batched_extras_same = prepare_hvp_batched_same_point(
-        f, backend, x, batched_seeds[1], hvp_batched_extras
+    hvp_extras_same = prepare_hvp_same_point(
+        f, hvp_extras, backend, x, batched_seeds[1], contexts...
     )
 
     hess_blocks = map(eachindex(batched_seeds)) do a
-        dg_batch = hvp_batched(f, backend, x, batched_seeds[a], hvp_batched_extras_same)
-        stack(vec, dg_batch.elements; dims=2)
+        dg_batch = hvp(f, hvp_extras_same, backend, x, batched_seeds[a], contexts...)
+        stack(vec, dg_batch.d; dims=2)
     end
 
     hess = reduce(hcat, hess_blocks)
@@ -109,23 +105,33 @@ function hessian(
 end
 
 function hessian!(
-    f::F, hess, backend::AbstractADType, x, extras::HVPGradientHessianExtras{B}
-) where {F,B}
-    @compat (; batched_seeds, batched_results, hvp_batched_extras, N) = extras
+    f::F,
+    hess,
+    extras::HVPGradientHessianExtras{B},
+    backend::AbstractADType,
+    x,
+    contexts::Vararg{Context,C},
+) where {F,B,C}
+    @compat (; batched_seeds, batched_results, hvp_extras, N) = extras
 
-    hvp_batched_extras_same = prepare_hvp_batched_same_point(
-        f, backend, x, batched_seeds[1], hvp_batched_extras
+    hvp_extras_same = prepare_hvp_same_point(
+        f, hvp_extras, backend, x, batched_seeds[1], contexts...
     )
 
     for a in eachindex(batched_seeds, batched_results)
-        hvp_batched!(
-            f, batched_results[a], backend, x, batched_seeds[a], hvp_batched_extras_same
+        hvp!(
+            f,
+            batched_results[a],
+            hvp_extras_same,
+            backend,
+            x,
+            batched_seeds[a],
+            contexts...,
         )
 
-        for b in eachindex(batched_results[a].elements)
+        for b in eachindex(batched_results[a].d)
             copyto!(
-                view(hess, :, 1 + ((a - 1) * B + (b - 1)) % N),
-                vec(batched_results[a].elements[b]),
+                view(hess, :, 1 + ((a - 1) * B + (b - 1)) % N), vec(batched_results[a].d[b])
             )
         end
     end
@@ -134,17 +140,31 @@ function hessian!(
 end
 
 function value_gradient_and_hessian(
-    f::F, backend::AbstractADType, x, extras::HVPGradientHessianExtras
-) where {F}
-    y, grad = value_and_gradient(f, maybe_inner(backend), x, extras.gradient_extras)
-    hess = hessian(f, backend, x, extras)
+    f::F,
+    extras::HVPGradientHessianExtras,
+    backend::AbstractADType,
+    x,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    y, grad = value_and_gradient(
+        f, extras.gradient_extras, maybe_inner(backend), x, contexts...
+    )
+    hess = hessian(f, extras, backend, x, contexts...)
     return y, grad, hess
 end
 
 function value_gradient_and_hessian!(
-    f::F, grad, hess, backend::AbstractADType, x, extras::HVPGradientHessianExtras
-) where {F}
-    y, _ = value_and_gradient!(f, grad, maybe_inner(backend), x, extras.gradient_extras)
-    hessian!(f, hess, backend, x, extras)
+    f::F,
+    grad,
+    hess,
+    extras::HVPGradientHessianExtras,
+    backend::AbstractADType,
+    x,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    y, _ = value_and_gradient!(
+        f, grad, extras.gradient_extras, maybe_inner(backend), x, contexts...
+    )
+    hessian!(f, hess, extras, backend, x, contexts...)
     return y, grad, hess
 end
