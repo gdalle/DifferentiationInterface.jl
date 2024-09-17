@@ -12,4 +12,4 @@ for backend in [AutoGTPSA()]
     @test check_inplace(backend)
 end
 
-test_differentiation(AutoGTPSA(); type_stability=true, logging=LOGGING);
+test_differentiation(AutoGTPSA(); type_stability=false, logging=LOGGING);

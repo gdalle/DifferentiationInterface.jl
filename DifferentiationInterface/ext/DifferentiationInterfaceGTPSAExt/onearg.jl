@@ -97,7 +97,7 @@ function DI.pushforward!(
 end
 
 function DI.value_and_pushforward(
-    f, extras::GTPSAPushforwardExtras, backend::AutoGTPSA, x, dx
+    f, extras::GTPSAPushforwardExtras, backend::AutoGTPSA, x, tx::Tangents
 )
     ys_and_dys = map(tx.d) do dx
         if x isa Number
@@ -465,7 +465,7 @@ function DI.prepare_hvp(f, backend::AutoGTPSA{D}, x, tx::Tangents) where {D}
 end
 
 function DI.hvp(f, extras::GTPSAHVPExtras, backend::AutoGTPSA{D}, x, tx::Tangents) where {D}
-    DI.hessian!(f, extras.hess, backend, x, extras.hessextras)
+    DI.hessian!(f, extras.hess, extras.hessextras, backend, x)
     tg = map(tx) do dx
         dg = similar(x, eltype(extras.hess))
         dg .= 0
@@ -484,9 +484,9 @@ end
 function DI.hvp!(
     f, tg::Tangents, extras::GTPSAHVPExtras, backend::AutoGTPSA{D}, x, tx::Tangents
 ) where {D}
-    DI.hessian!(f, extras.hess, backend, x, extras.hessextras)
+    DI.hessian!(f, extras.hess, extras.hessextras, backend, x)
     for b in eachindex(tg.d)
-        dg = tg.d[b]
+        dx, dg = tx.d[b], tg.d[b]
         dg .= 0
         j = 1
         for dxi in dx

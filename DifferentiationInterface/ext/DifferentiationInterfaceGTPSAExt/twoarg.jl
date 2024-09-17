@@ -143,7 +143,7 @@ function DI.value_and_pushforward!(
     tx::Tangents,
 )
     for b in eachindex(tx.d, ty.d)
-        dx, dy = tx.d, ty.d
+        dx, dy = tx.d[b], ty.d[b]
         if x isa Number
             extras.xt[0] = x
             extras.xt[1] = dx
