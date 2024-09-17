@@ -17,9 +17,7 @@ An interface to various automatic differentiation (AD) backends in Julia.
 
 ## Goal
 
-This package provides a unified syntax to differentiate functions.
-
-## Features
+This package provides a unified syntax to differentiate functions, including:
 
 - First- and second-order operators (gradients, Jacobians, Hessians and more)
 - In-place and out-of-place differentiation
