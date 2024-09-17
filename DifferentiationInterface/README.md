@@ -17,20 +17,18 @@ An interface to various automatic differentiation (AD) backends in Julia.
 
 ## Goal
 
-This package provides a unified syntax to differentiate functions.
-
-## Features
+This package provides a unified syntax to differentiate functions, including:
 
 - First- and second-order operators (gradients, Jacobians, Hessians and more)
 - In-place and out-of-place differentiation
-- Preparation mechanism (e.g. to create a config or tape)
+- Preparation mechanism (e.g. to pre-allocate a cache or record a tape)
 - Built-in sparsity handling
 - Thorough validation on standard inputs and outputs (numbers, vectors, matrices)
 - Testing and benchmarking utilities accessible to users with [DifferentiationInterfaceTest](https://github.com/gdalle/DifferentiationInterface.jl/tree/main/DifferentiationInterfaceTest)
 
 ## Compatibility
 
-We support all of the backends defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl):
+We support the following backends defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl):
 
 - [ChainRulesCore.jl](https://github.com/JuliaDiff/ChainRulesCore.jl)
 - [Diffractor.jl](https://github.com/JuliaDiff/Diffractor.jl)
@@ -87,7 +85,7 @@ value_and_gradient(f, AutoEnzyme(),      x) # returns (5.0, [2.0, 4.0]) with Enz
 value_and_gradient(f, AutoZygote(),      x) # returns (5.0, [2.0, 4.0]) with Zygote.jl
 ```
 
-To improve your performance by up to several orders of magnitude compared to this example, take a look at the [DifferentiationInterface tutorial](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterface/stable/tutorial1/) and its section on operator preparation.
+To improve your performance by up to several orders of magnitude compared to this example, take a look at the tutorial and its section on operator preparation.
 
 ## Citation
 
