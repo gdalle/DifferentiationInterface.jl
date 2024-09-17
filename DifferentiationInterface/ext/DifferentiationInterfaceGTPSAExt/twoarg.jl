@@ -4,13 +4,14 @@ struct GTPSATwoArgPushforwardExtras{X,Y} <: PushforwardExtras
     yt::Y
 end
 
-function DI.prepare_pushforward(f!, y, backend::AutoGTPSA{D}, x, dx) where {D}
+function DI.prepare_pushforward(f!, y, backend::AutoGTPSA{D}, x, tx::Tangents) where {D}
     if D != Nothing
         d = backend.descriptor
     else
         d = Descriptor(length(x), 1)
     end
 
+    dx = first(tx)
     if x isa Number
         xt = TPS{promote_type(typeof(dx), typeof(x), Float64)}(; use=d)
     else
@@ -31,113 +32,141 @@ function DI.prepare_pushforward(f!, y, backend::AutoGTPSA{D}, x, dx) where {D}
 end
 
 function DI.pushforward(
-    f!, y, backend::AutoGTPSA, x, dx, extras::GTPSATwoArgPushforwardExtras
+    f!, y, extras::GTPSATwoArgPushforwardExtras, backend::AutoGTPSA, x, tx::Tangents
 )
-    if x isa Number
-        extras.xt[0] = x
-        extras.xt[1] = dx
-    else
-        j = 1
-        for i in eachindex(x)
-            extras.xt[i][0] = x[i]
-            extras.xt[i][j] = dx[i]
-            j += 1
+    ty = map(tx) do dx
+        if x isa Number
+            extras.xt[0] = x
+            extras.xt[1] = dx
+        else
+            j = 1
+            for i in eachindex(x)
+                extras.xt[i][0] = x[i]
+                extras.xt[i][j] = dx[i]
+                j += 1
+            end
         end
+
+        f!(extras.yt, extras.xt)
+        map!(t -> t[0], y, extras.yt)
+        dy = similar(extras.yt, eltype(eltype(extras.yt)))
+        dy .= 0
+        for i in eachindex(extras.yt)
+            for j in 1:length(dx)
+                dy[i] += extras.yt[i][j]
+            end
+        end
+        return dy
     end
 
-    f!(extras.yt, extras.xt)
-    map!(t -> t[0], y, extras.yt)
-    dy = similar(extras.yt, eltype(eltype(extras.yt)))
-    dy .= 0
-    for i in eachindex(extras.yt)
-        for j in 1:length(dx)
-            dy[i] += extras.yt[i][j]
-        end
-    end
-
-    return dy
+    return ty
 end
 
 function DI.pushforward!(
-    f!, y, dy, backend::AutoGTPSA, x, dx, extras::GTPSATwoArgPushforwardExtras
+    f!,
+    y,
+    ty::Tangents,
+    extras::GTPSATwoArgPushforwardExtras,
+    backend::AutoGTPSA,
+    x,
+    tx::Tangents,
 )
-    if x isa Number
-        extras.xt[0] = x
-        extras.xt[1] = dx
-    else
-        j = 1
-        for i in eachindex(x)
-            extras.xt[i][0] = x[i]
-            extras.xt[i][j] = dx[i]
-            j += 1
+    for b in eachindex(tx.d, ty.d)
+        dx, dy = tx.d[b], ty.d[b]
+        if x isa Number
+            extras.xt[0] = x
+            extras.xt[1] = dx
+        else
+            j = 1
+            for i in eachindex(x)
+                extras.xt[i][0] = x[i]
+                extras.xt[i][j] = dx[i]
+                j += 1
+            end
+        end
+
+        f!(extras.yt, extras.xt)
+        map!(t -> t[0], y, extras.yt)
+        dy .= 0
+        for i in eachindex(extras.yt)
+            for j in 1:length(dx)
+                dy[i] += extras.yt[i][j]
+            end
         end
     end
 
-    f!(extras.yt, extras.xt)
-    map!(t -> t[0], y, extras.yt)
-    dy .= 0
-    for i in eachindex(extras.yt)
-        for j in 1:length(dx)
-            dy[i] += extras.yt[i][j]
-        end
-    end
-
-    return dy
+    return ty
 end
 
 function DI.value_and_pushforward(
-    f!, y, backend::AutoGTPSA, x, dx, extras::GTPSATwoArgPushforwardExtras
+    f!, y, extras::GTPSATwoArgPushforwardExtras, backend::AutoGTPSA, x, tx::Tangents
 )
-    if x isa Number
-        extras.xt[0] = x
-        extras.xt[1] = dx
-    else
-        j = 1
-        for i in eachindex(x)
-            extras.xt[i][0] = x[i]
-            extras.xt[i][j] = dx[i]
-            j += 1
+    ys_and_dys = map(tx.d) do dx
+        if x isa Number
+            extras.xt[0] = x
+            extras.xt[1] = dx
+        else
+            j = 1
+            for i in eachindex(x)
+                extras.xt[i][0] = x[i]
+                extras.xt[i][j] = dx[i]
+                j += 1
+            end
         end
+
+        f!(extras.yt, extras.xt)
+        dy = similar(extras.yt, eltype(eltype(extras.yt)))
+        dy .= 0
+        for i in eachindex(extras.yt)
+            for j in 1:length(dx)
+                dy[i] += extras.yt[i][j]
+            end
+        end
+        map!(t -> t[0], y, extras.yt)
+
+        return y, dy
     end
 
-    f!(extras.yt, extras.xt)
-    dy = similar(extras.yt, eltype(eltype(extras.yt)))
-    dy .= 0
-    for i in eachindex(extras.yt)
-        for j in 1:length(dx)
-            dy[i] += extras.yt[i][j]
-        end
-    end
-    map!(t -> t[0], y, extras.yt)
-
-    return y, dy
+    y = first(ys_and_dys[1])
+    dys = last.(ys_and_dys)
+    ty = Tangents(dys...)
+    return y, ty
 end
 
 function DI.value_and_pushforward!(
-    f!, y, dy, backend::AutoGTPSA, x, dx, extras::GTPSATwoArgPushforwardExtras
+    f!,
+    y,
+    ty::Tangents,
+    extras::GTPSATwoArgPushforwardExtras,
+    backend::AutoGTPSA,
+    x,
+    tx::Tangents,
 )
-    if x isa Number
-        extras.xt[0] = x
-        extras.xt[1] = dx
-    else
-        j = 1
-        for i in eachindex(x)
-            extras.xt[i][0] = x[i]
-            extras.xt[i][j] = dx[i]
-            j += 1
+    for b in eachindex(tx.d, ty.d)
+        dx, dy = tx.d, ty.d
+        if x isa Number
+            extras.xt[0] = x
+            extras.xt[1] = dx
+        else
+            j = 1
+            for i in eachindex(x)
+                extras.xt[i][0] = x[i]
+                extras.xt[i][j] = dx[i]
+                j += 1
+            end
+        end
+
+        f!(extras.yt, extras.xt)
+        map!(t -> t[0], y, extras.yt)
+        dy .= 0
+        for i in eachindex(extras.yt)
+            for j in 1:length(dx)
+                dy[i] += extras.yt[i][j]
+            end
         end
     end
 
-    f!(extras.yt, extras.xt)
-    map!(t -> t[0], y, extras.yt)
-    dy .= 0
-    for i in eachindex(extras.yt)
-        for j in 1:length(dx)
-            dy[i] += extras.yt[i][j]
-        end
-    end
-
-    return y, dy
+    return y, ty
 end
 
 ## Jacobian
@@ -176,7 +205,7 @@ function DI.prepare_jacobian(f!, y, backend::AutoGTPSA{D}, x) where {D}
     return GTPSATwoArgJacobianExtras(xt, yt)
 end
 
-function DI.jacobian(f!, y, ::AutoGTPSA, x, extras::GTPSATwoArgJacobianExtras)
+function DI.jacobian(f!, y, extras::GTPSATwoArgJacobianExtras, ::AutoGTPSA, x)
     foreach((t, xi) -> t[0] = xi, extras.xt, x) # Set the scalar part
     f!(extras.yt, extras.xt)
     jac = similar(x, eltype(eltype(extras.yt)), (length(extras.yt), length(x)))
@@ -185,7 +214,7 @@ function DI.jacobian(f!, y, ::AutoGTPSA, x, extras::GTPSATwoArgJacobianExtras)
     return jac
 end
 
-function DI.jacobian!(f!, y, jac, ::AutoGTPSA, x, extras::GTPSATwoArgJacobianExtras)
+function DI.jacobian!(f!, y, jac, extras::GTPSATwoArgJacobianExtras, ::AutoGTPSA, x)
     foreach((t, xi) -> t[0] = xi, extras.xt, x) # Set the scalar part
     f!(extras.yt, extras.xt)
     GTPSA.jacobian!(jac, extras.yt; include_params=true)
@@ -193,7 +222,7 @@ function DI.jacobian!(f!, y, jac, ::AutoGTPSA, x, extras::GTPSATwoArgJacobianExt
     return jac
 end
 
-function DI.value_and_jacobian(f!, y, ::AutoGTPSA, x, extras::GTPSATwoArgJacobianExtras)
+function DI.value_and_jacobian(f!, y, extras::GTPSATwoArgJacobianExtras, ::AutoGTPSA, x)
     foreach((t, xi) -> t[0] = xi, extras.xt, x) # Set the scalar part
     f!(extras.yt, extras.xt)
     jac = similar(x, eltype(eltype(extras.yt)), (length(extras.yt), length(x)))
@@ -203,7 +232,7 @@ function DI.value_and_jacobian(f!, y, ::AutoGTPSA, x, extras::GTPSATwoArgJacobia
 end
 
 function DI.value_and_jacobian!(
-    f!, y, jac, ::AutoGTPSA, x, extras::GTPSATwoArgJacobianExtras
+    f!, y, jac, extras::GTPSATwoArgJacobianExtras, ::AutoGTPSA, x
 )
     foreach((t, xi) -> t[0] = xi, extras.xt, x) # Set the scalar part
     f!(extras.yt, extras.xt)

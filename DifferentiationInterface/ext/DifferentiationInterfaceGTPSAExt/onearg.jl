@@ -3,13 +3,14 @@ struct GTPSAPushforwardExtras{X} <: PushforwardExtras
     xt::X
 end
 
-function DI.prepare_pushforward(f, backend::AutoGTPSA{D}, x, dx) where {D}
+function DI.prepare_pushforward(f, backend::AutoGTPSA{D}, x, tx::Tangents) where {D}
     if D != Nothing
         d = backend.descriptor
     else
         d = Descriptor(length(x), 1)
     end
 
+    dx = first(tx)
     if x isa Number
         xt = TPS{promote_type(typeof(dx), typeof(x), Float64)}(; use=d)
         return GTPSAPushforwardExtras(xt)
@@ -24,134 +25,151 @@ function DI.prepare_pushforward(f, backend::AutoGTPSA{D}, x, dx) where {D}
     end
 end
 
-function DI.pushforward(f, backend::AutoGTPSA, x, dx, extras::GTPSAPushforwardExtras)
-    if x isa Number
-        extras.xt[0] = x
-        extras.xt[1] = dx
-    else
-        j = 1
-        for i in eachindex(x)
-            extras.xt[i][0] = x[i]
-            extras.xt[i][j] = dx[i]
-            j += 1
-        end
-    end
-
-    yt = f(extras.xt)
-    if yt isa Number
-        if dx isa Number
-            return yt[1]
+function DI.pushforward(
+    f, extras::GTPSAPushforwardExtras, backend::AutoGTPSA, x, tx::Tangents
+)
+    ty = map(tx) do dx
+        if x isa Number
+            extras.xt[0] = x
+            extras.xt[1] = dx
         else
-            dy = 0
-            for j in 1:length(dx)
-                dy += yt[j]
+            j = 1
+            for i in eachindex(x)
+                extras.xt[i][0] = x[i]
+                extras.xt[i][j] = dx[i]
+                j += 1
+            end
+        end
+
+        yt = f(extras.xt)
+        if yt isa Number
+            if dx isa Number
+                return yt[1]
+            else
+                dy = 0
+                for j in 1:length(dx)
+                    dy += yt[j]
+                end
+
+                return dy
+            end
+        else
+            dy = similar(yt, eltype(eltype(yt)))
+            dy .= 0
+            for i in eachindex(yt)
+                for j in 1:length(dx)
+                    dy[i] += yt[i][j]
+                end
             end
 
             return dy
         end
-    else
-        dy = similar(yt, eltype(eltype(yt)))
+    end
+    return ty
+end
+
+function DI.pushforward!(
+    f, ty::Tangents, extras::GTPSAPushforwardExtras, backend::AutoGTPSA, x, tx::Tangents
+)
+    for b in eachindex(tx.d, ty.d)
+        dx, dy = tx.d[b], ty.d[b]
+        if x isa Number
+            extras.xt[0] = x
+            extras.xt[1] = dx
+        else
+            j = 1
+            for i in eachindex(x)
+                extras.xt[i][0] = x[i]
+                extras.xt[i][j] = dx[i]
+                j += 1
+            end
+        end
+
+        yt = f(extras.xt)
         dy .= 0
         for i in eachindex(yt)
             for j in 1:length(dx)
                 dy[i] += yt[i][j]
             end
         end
-
-        return dy
     end
-end
-
-function DI.pushforward!(f, dy, backend::AutoGTPSA, x, dx, extras::GTPSAPushforwardExtras)
-    if x isa Number
-        extras.xt[0] = x
-        extras.xt[1] = dx
-    else
-        j = 1
-        for i in eachindex(x)
-            extras.xt[i][0] = x[i]
-            extras.xt[i][j] = dx[i]
-            j += 1
-        end
-    end
-
-    yt = f(extras.xt)
-    dy .= 0
-    for i in eachindex(yt)
-        for j in 1:length(dx)
-            dy[i] += yt[i][j]
-        end
-    end
-
-    return dy
+    return ty
 end
 
 function DI.value_and_pushforward(
-    f, backend::AutoGTPSA, x, dx, extras::GTPSAPushforwardExtras
+    f, extras::GTPSAPushforwardExtras, backend::AutoGTPSA, x, dx
 )
-    if x isa Number
-        extras.xt[0] = x
-        extras.xt[1] = dx
-    else
-        j = 1
-        for i in eachindex(x)
-            extras.xt[i][0] = x[i]
-            extras.xt[i][j] = dx[i]
-            j += 1
+    ys_and_dys = map(tx.d) do dx
+        if x isa Number
+            extras.xt[0] = x
+            extras.xt[1] = dx
+        else
+            j = 1
+            for i in eachindex(x)
+                extras.xt[i][0] = x[i]
+                extras.xt[i][j] = dx[i]
+                j += 1
+            end
+        end
+
+        yt = f(extras.xt)
+        if yt isa Number
+            if dx isa Number
+                return yt[0], yt[1]
+            else
+                dy = 0
+                for j in 1:length(dx)
+                    dy += yt[j]
+                end
+
+                return yt[0], dy
+            end
+        else
+            dy = similar(yt, eltype(eltype(yt)))
+            dy .= 0
+            for i in eachindex(yt)
+                for j in 1:length(dx)
+                    dy[i] += yt[i][j]
+                end
+            end
+            y = map(t -> t[0], yt)
+
+            return y, dy
         end
     end
+    y = first(ys_and_dys[1])
+    dys = last.(ys_and_dys)
+    ty = Tangents(dys...)
+    return y, ty
+end
 
-    yt = f(extras.xt)
-    if yt isa Number
-        if dx isa Number
-            return yt[0], yt[1]
+function DI.value_and_pushforward!(
+    f, ty::Tangents, extras::GTPSAPushforwardExtras, backend::AutoGTPSA, x, tx::Tangents
+)
+    for b in eachindex(tx.d, ty.d)
+        dx, dy = tx.d[b], ty.d[b]
+        if x isa Number
+            extras.xt[0] = x
+            extras.xt[1] = dx
         else
-            dy = 0
-            for j in 1:length(dx)
-                dy += yt[j]
+            j = 1
+            for i in eachindex(x)
+                extras.xt[i][0] = x[i]
+                extras.xt[i][j] = dx[i]
+                j += 1
             end
-
-            return yt[0], dy
         end
-    else
-        dy = similar(yt, eltype(eltype(yt)))
+
+        yt = f(extras.xt)
         dy .= 0
         for i in eachindex(yt)
             for j in 1:length(dx)
                 dy[i] += yt[i][j]
             end
         end
-        y = map(t -> t[0], yt)
-
-        return y, dy
     end
-end
-
-function DI.value_and_pushforward!(
-    f, dy, backend::AutoGTPSA, x, dx, extras::GTPSAPushforwardExtras
-)
-    if x isa Number
-        extras.xt[0] = x
-        extras.xt[1] = dx
-    else
-        j = 1
-        for i in eachindex(x)
-            extras.xt[i][0] = x[i]
-            extras.xt[i][j] = dx[i]
-            j += 1
-        end
-    end
-
-    yt = f(extras.xt)
-    dy .= 0
-    for i in eachindex(yt)
-        for j in 1:length(dx)
-            dy[i] += yt[i][j]
-        end
-    end
-    y = map(t -> t[0], yt)
-
-    return y, dy
+    y = f(x)  # TODO: optimize
+    return y, ty
 end
 
 ## Gradient
@@ -183,7 +201,7 @@ function DI.prepare_gradient(f, backend::AutoGTPSA{D}, x) where {D}
     return GTPSAGradientExtras(xt)
 end
 
-function DI.gradient(f, ::AutoGTPSA, x, extras::GTPSAGradientExtras)
+function DI.gradient(f, extras::GTPSAGradientExtras, ::AutoGTPSA, x)
     foreach((t, xi) -> t[0] = xi, extras.xt, x) # Set the scalar part
     yt = f(extras.xt)
     grad = similar(x, eltype(eltype(yt)))
@@ -191,14 +209,14 @@ function DI.gradient(f, ::AutoGTPSA, x, extras::GTPSAGradientExtras)
     return grad
 end
 
-function DI.gradient!(f, grad, ::AutoGTPSA, x, extras::GTPSAGradientExtras)
+function DI.gradient!(f, grad, extras::GTPSAGradientExtras, ::AutoGTPSA, x)
     foreach((t, xi) -> t[0] = xi, extras.xt, x) # Set the scalar part
     yt = f(extras.xt)
     GTPSA.gradient!(grad, yt; include_params=true)
     return grad
 end
 
-function DI.value_and_gradient(f, ::AutoGTPSA, x, extras::GTPSAGradientExtras)
+function DI.value_and_gradient(f, extras::GTPSAGradientExtras, ::AutoGTPSA, x)
     foreach((t, xi) -> t[0] = xi, extras.xt, x) # Set the scalar part
     yt = f(extras.xt)
     grad = similar(x, eltype(eltype(yt)))
@@ -207,7 +225,7 @@ function DI.value_and_gradient(f, ::AutoGTPSA, x, extras::GTPSAGradientExtras)
     return y, grad
 end
 
-function DI.value_and_gradient!(f, grad, ::AutoGTPSA, x, extras::GTPSAGradientExtras)
+function DI.value_and_gradient!(f, grad, extras::GTPSAGradientExtras, ::AutoGTPSA, x)
     foreach((t, xi) -> t[0] = xi, extras.xt, x) # Set the scalar part
     yt = f(extras.xt)
     GTPSA.gradient!(grad, yt; include_params=true)
@@ -244,7 +262,7 @@ function DI.prepare_jacobian(f, backend::AutoGTPSA{D}, x) where {D}
     return GTPSAJacobianExtras(xt)
 end
 
-function DI.jacobian(f, ::AutoGTPSA, x, extras::GTPSAJacobianExtras)
+function DI.jacobian(f, extras::GTPSAJacobianExtras, ::AutoGTPSA, x)
     foreach((t, xi) -> t[0] = xi, extras.xt, x) # Set the scalar part
     yt = f(extras.xt)
     jac = similar(x, eltype(eltype(yt)), (length(yt), length(x)))
@@ -252,14 +270,14 @@ function DI.jacobian(f, ::AutoGTPSA, x, extras::GTPSAJacobianExtras)
     return jac
 end
 
-function DI.jacobian!(f, jac, ::AutoGTPSA, x, extras::GTPSAJacobianExtras)
+function DI.jacobian!(f, jac, extras::GTPSAJacobianExtras, ::AutoGTPSA, x)
     foreach((t, xi) -> t[0] = xi, extras.xt, x) # Set the scalar part
     yt = f(extras.xt)
     GTPSA.jacobian!(jac, yt; include_params=true)
     return jac
 end
 
-function DI.value_and_jacobian(f, ::AutoGTPSA, x, extras::GTPSAJacobianExtras)
+function DI.value_and_jacobian(f, extras::GTPSAJacobianExtras, ::AutoGTPSA, x)
     foreach((t, xi) -> t[0] = xi, extras.xt, x) # Set the scalar part
     yt = f(extras.xt)
     jac = similar(x, eltype(eltype(yt)), (length(yt), length(x)))
@@ -268,7 +286,7 @@ function DI.value_and_jacobian(f, ::AutoGTPSA, x, extras::GTPSAJacobianExtras)
     return y, jac
 end
 
-function DI.value_and_jacobian!(f, jac, ::AutoGTPSA, x, extras::GTPSAJacobianExtras)
+function DI.value_and_jacobian!(f, jac, extras::GTPSAJacobianExtras, ::AutoGTPSA, x)
     foreach((t, xi) -> t[0] = xi, extras.xt, x) # Set the scalar part
     yt = f(extras.xt)
     GTPSA.jacobian!(jac, yt; include_params=true)
@@ -293,7 +311,7 @@ function DI.prepare_second_derivative(f, backend::AutoGTPSA{D}, x) where {D}
     return GTPSASecondDerivativeExtras(xt)
 end
 
-function DI.second_derivative(f, ::AutoGTPSA, x, extras::GTPSASecondDerivativeExtras)
+function DI.second_derivative(f, extras::GTPSASecondDerivativeExtras, ::AutoGTPSA, x)
     extras.xt[0] = x
     yt = f(extras.xt)
     if yt isa Number
@@ -307,7 +325,7 @@ function DI.second_derivative(f, ::AutoGTPSA, x, extras::GTPSASecondDerivativeEx
     end
 end
 
-function DI.second_derivative!(f, der2, ::AutoGTPSA, x, extras::GTPSASecondDerivativeExtras)
+function DI.second_derivative!(f, der2, extras::GTPSASecondDerivativeExtras, ::AutoGTPSA, x)
     extras.xt[0] = x
     yt = f(extras.xt)
     for i in eachindex(yt)
@@ -317,7 +335,7 @@ function DI.second_derivative!(f, der2, ::AutoGTPSA, x, extras::GTPSASecondDeriv
 end
 
 function DI.value_derivative_and_second_derivative(
-    f, ::AutoGTPSA, x, extras::GTPSASecondDerivativeExtras
+    f, extras::GTPSASecondDerivativeExtras, ::AutoGTPSA, x
 )
     extras.xt[0] = x
     yt = f(extras.xt)
@@ -336,7 +354,7 @@ function DI.value_derivative_and_second_derivative(
 end
 
 function DI.value_derivative_and_second_derivative!(
-    f, der, der2, ::AutoGTPSA, x, extras::GTPSASecondDerivativeExtras
+    f, der, der2, extras::GTPSASecondDerivativeExtras, ::AutoGTPSA, x
 )
     extras.xt[0] = x
     yt = f(extras.xt)
@@ -382,24 +400,30 @@ function DI.prepare_hessian(f, backend::AutoGTPSA{D}, x) where {D}
     return GTPSAHessianExtras(xt, m)
 end
 
-function DI.hessian(f, ::AutoGTPSA{D}, x, extras::GTPSAHessianExtras) where {D}
+function DI.hessian(f, extras::GTPSAHessianExtras, ::AutoGTPSA{D}, x) where {D}
     foreach((t, xi) -> t[0] = xi, extras.xt, x) # Set the scalar part
     yt = f(extras.xt)
     hess = similar(x, eltype(eltype(yt)), (length(x), length(x)))
     unsafe_fast = D == Nothing ? true : false
-    GTPSA.hessian!(hess, yt; include_params=true, unsafe_fast=unsafe_fast, tmp_mono=extras.m)
+    GTPSA.hessian!(
+        hess, yt; include_params=true, unsafe_fast=unsafe_fast, tmp_mono=extras.m
+    )
     return hess
 end
 
-function DI.hessian!(f, hess, ::AutoGTPSA{D}, x, extras::GTPSAHessianExtras) where {D}
+function DI.hessian!(f, hess, extras::GTPSAHessianExtras, ::AutoGTPSA{D}, x) where {D}
     foreach((t, xi) -> t[0] = xi, extras.xt, x) # Set the scalar part
     yt = f(extras.xt)
     unsafe_fast = D == Nothing ? true : false
-    GTPSA.hessian!(hess, yt; include_params=true, unsafe_fast=unsafe_fast, tmp_mono=extras.m)
+    GTPSA.hessian!(
+        hess, yt; include_params=true, unsafe_fast=unsafe_fast, tmp_mono=extras.m
+    )
     return hess
 end
 
-function DI.value_gradient_and_hessian(f, ::AutoGTPSA{D}, x, extras::GTPSAHessianExtras) where {D}
+function DI.value_gradient_and_hessian(
+    f, extras::GTPSAHessianExtras, ::AutoGTPSA{D}, x
+) where {D}
     foreach((t, xi) -> t[0] = xi, extras.xt, x) # Set the scalar part
     yt = f(extras.xt)
     y = map(t -> t[0], yt)
@@ -407,58 +431,70 @@ function DI.value_gradient_and_hessian(f, ::AutoGTPSA{D}, x, extras::GTPSAHessia
     GTPSA.gradient!(grad, yt; include_params=true)
     hess = similar(x, eltype(eltype(yt)), (length(x), length(x)))
     unsafe_fast = D == Nothing ? true : false
-    GTPSA.hessian!(hess, yt; include_params=true, unsafe_fast=unsafe_fast, tmp_mono=extras.m)
+    GTPSA.hessian!(
+        hess, yt; include_params=true, unsafe_fast=unsafe_fast, tmp_mono=extras.m
+    )
     return y, grad, hess
 end
 
 function DI.value_gradient_and_hessian!(
-    f, grad, hess, ::AutoGTPSA{D}, x, extras::GTPSAHessianExtras
+    f, grad, hess, extras::GTPSAHessianExtras, ::AutoGTPSA{D}, x
 ) where {D}
     foreach((t, xi) -> t[0] = xi, extras.xt, x) # Set the scalar part
     yt = f(extras.xt)
     y = map(t -> t[0], yt)
     GTPSA.gradient!(grad, yt; include_params=true)
     unsafe_fast = D == Nothing ? true : false
-    GTPSA.hessian!(hess, yt; include_params=true, unsafe_fast=unsafe_fast, tmp_mono=extras.m)
+    GTPSA.hessian!(
+        hess, yt; include_params=true, unsafe_fast=unsafe_fast, tmp_mono=extras.m
+    )
     return y, grad, hess
 end
 
 # HVP
+
 struct GTPSAHVPExtras{E,H} <: HVPExtras
     hessextras::E
     hess::H
 end
 
-function DI.prepare_hvp(f, backend::AutoGTPSA{D}, x, dx) where {D}
+function DI.prepare_hvp(f, backend::AutoGTPSA{D}, x, tx::Tangents) where {D}
     hessextras = DI.prepare_hessian(f, backend, x)
     hess = similar(x, typeof(f(x)), (length(x), length(x)))
     return GTPSAHVPExtras(hessextras, hess)
 end
 
-function DI.hvp(f, backend::AutoGTPSA{D}, x, dx, extras::GTPSAHVPExtras) where {D}
+function DI.hvp(f, extras::GTPSAHVPExtras, backend::AutoGTPSA{D}, x, tx::Tangents) where {D}
     DI.hessian!(f, extras.hess, backend, x, extras.hessextras)
-    dg = similar(x, eltype(extras.hess))
-    dg .= 0
-    j = 1
-    for dxi in dx
-        for i in 1:size(extras.hess,2)
-            dg[i] += extras.hess[i,j]*dxi
+    tg = map(tx) do dx
+        dg = similar(x, eltype(extras.hess))
+        dg .= 0
+        j = 1
+        for dxi in dx
+            for i in 1:size(extras.hess, 2)
+                dg[i] += extras.hess[i, j] * dxi
+            end
+            j += 1
         end
-        j += 1
+        return dg
     end
-    return dg
+    return tg
 end
 
-function DI.hvp!(f, dg, backend::AutoGTPSA{D}, x, dx, extras::GTPSAHVPExtras) where {D}
+function DI.hvp!(
+    f, tg::Tangents, extras::GTPSAHVPExtras, backend::AutoGTPSA{D}, x, tx::Tangents
+) where {D}
     DI.hessian!(f, extras.hess, backend, x, extras.hessextras)
-    dg .= 0
-    j = 1
-    for dxi in dx
-        for i in 1:size(extras.hess,2)
-            dg[i] += extras.hess[i,j]*dxi
+    for b in eachindex(tg.d)
+        dg = tg.d[b]
+        dg .= 0
+        j = 1
+        for dxi in dx
+            for i in 1:size(extras.hess, 2)
+                dg[i] += extras.hess[i, j] * dxi
+            end
+            j += 1
         end
-        j += 1
     end
-    return dg
+    return tg
 end
-
