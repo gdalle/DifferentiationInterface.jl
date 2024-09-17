@@ -9,7 +9,8 @@ using DifferentiationInterface:
     JacobianExtras,
     HessianExtras,
     PushforwardExtras,
-    HVPExtras
+    HVPExtras,
+    Tangents
 using GTPSA
 
 DI.check_available(::AutoGTPSA) = true
