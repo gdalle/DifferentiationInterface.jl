@@ -1,10 +1,7 @@
 # Dev guide
 
 This page is important reading if you want to contribute to DifferentiationInterface.jl.
-It is not part of the public API.
-
-!!! warning
-    The content below may become outdated, in which case you should refer to the source code as the ground truth.
+It is not part of the public API and the content below may become outdated, in which case you should refer to the source code as the ground truth.
 
 ## General principles
 

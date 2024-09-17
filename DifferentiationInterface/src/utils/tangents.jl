@@ -10,13 +10,13 @@ pick_batchsize(::AbstractADType, dimension::Integer) = 1
 """
     Tangents{B}
 
-Storage for a batch of `B` tangents (`NTuple` wrapper).
+Storage for a batch of `B` tangents (behaves like an `NTuple`).
 
 Must be passed as an argument to [`pushforward`](@ref), [`pullback`](@ref) and [`hvp`](@ref), in addition to the input `x`.
 
 # Constructors
 
-    Tangents(d)
+    Tangents(d1)
     Tangents(d1, d2, ..., dB)
 
 # Example
@@ -24,15 +24,14 @@ Must be passed as an argument to [`pushforward`](@ref), [`pullback`](@ref) and [
 ```jldoctest
 julia> using DifferentiationInterface
 
-julia> t = Tangents([2.0])
-Tangents{1, Vector{Float64}}(([2.0],))
+julia> t = Tangents(2.0)
+Tangents{1, Float64}((2.0,))
 
 julia> length(t)
 1
 
 julia> only(t)
-1-element Vector{Float64}:
- 2.0
+2.0
 
 julia> t = Tangents([2.0], [4.0], [6.0])
 Tangents{3, Vector{Float64}}(([2.0], [4.0], [6.0]))
