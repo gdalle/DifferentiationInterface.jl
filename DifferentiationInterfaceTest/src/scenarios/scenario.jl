@@ -16,17 +16,6 @@ Store a testing scenario composed of a function and its input + output for a giv
 
 This generic type should never be used directly: use the specific constructor corresponding to the operator you want to test, or a predefined list of scenarios.
 
-# Constructors
-
-- [`PushforwardScenario`](@ref)
-- [`PullbackScenario`](@ref)
-- [`DerivativeScenario`](@ref)
-- [`GradientScenario`](@ref)
-- [`JacobianScenario`](@ref)
-- [`SecondDerivativeScenario`](@ref)
-- [`HVPScenario`](@ref)
-- [`HessianScenario`](@ref)
-
 # Type parameters
 
 - `op`: one  of `:pushforward`, `:pullback`, `:derivative`, `:gradient`, `:jacobian`,`:second_derivative`, `:hvp`, `:hessian`
