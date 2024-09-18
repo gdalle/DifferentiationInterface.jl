@@ -166,33 +166,17 @@ function DI.gradient(
     x,
 )
     f_and_df = get_f_and_df(f, backend)
-    if backend isa AutoDeferredEnzyme
-        grad = make_zero(x)
-        autodiff_deferred(reverse_mode(backend), f_and_df, Active, Duplicated(x, grad))
-        return grad
-    else
-        return gradient(reverse_mode(backend), f_and_df, x)
-    end
+    gradient(mode_noprimal(backend), f_and_df, x)[1]
 end
 
 function DI.gradient!(
     f,
     grad,
-    ::NoGradientExtras,
+    extras::NoGradientExtras,
     backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}},
     x,
 )
-    f_and_df = get_f_and_df(f, backend)
-    grad_sametype = convert(typeof(x), grad)
-    make_zero!(grad_sametype)
-    if backend isa AutoDeferredEnzyme
-        autodiff_deferred(
-            reverse_mode(backend), f_and_df, Active, Duplicated(x, grad_sametype)
-        )
-    else
-        gradient!(reverse_mode(backend), grad_sametype, f_and_df, x)
-    end
-    return copyto!(grad, grad_sametype)
+    return copyto!(grad, DI.gradient(f, grad, extras, backend, x))
 end
 
 function DI.value_and_gradient(
@@ -201,8 +185,9 @@ function DI.value_and_gradient(
     backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}},
     x,
 )
-    y, tx = DI.value_and_pullback(f, NoPullbackExtras(), backend, x, Tangents(true))
-    return y, only(tx)
+    f_and_df = get_f_and_df(f, backend)
+    gr = gradient(mode_withprimal(backend), f_and_df, x)
+    return gr.val, gr.derivs[1]    
 end
 
 function DI.value_and_gradient!(
@@ -235,19 +220,17 @@ function DI.jacobian(
     backend::AutoEnzyme{<:ReverseMode,Nothing},
     x,
 ) where {M,B}
-    jac_wrongshape = jacobian(reverse_mode(backend), f, x, Val(M), Val(B))
-    nx = length(x)
-    ny = length(jac_wrongshape) ÷ length(x)
-    return reshape(jac_wrongshape, ny, nx)
+    jacobian(mode_noprimal(backend), f, x; n_outs=Val(M), chunk=Val(B))[1]
 end
 
 function DI.value_and_jacobian(
     f,
-    extras::EnzymeReverseOneArgJacobianExtras,
+    extras::EnzymeReverseOneArgJacobianExtras{M,B},
     backend::AutoEnzyme{<:ReverseMode,Nothing},
     x,
-)
-    return f(x), DI.jacobian(f, extras, backend, x)
+) where {M,B}
+    jac = jacobian(mode_withprimal(backend), f, x; n_outs=Val(M), chunk=Val(B))[1]
+    return jac.val, jac.derivs[1]
 end
 
 function DI.jacobian!(

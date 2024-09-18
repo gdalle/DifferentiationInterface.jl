@@ -12,13 +12,21 @@ end
 
 const AnyAutoEnzyme{M,A} = Union{AutoEnzyme{M,A},AutoDeferredEnzyme{M,A}}
 
-# forward mode if possible
-forward_mode(backend::AnyAutoEnzyme{<:Mode}) = backend.mode
-forward_mode(::AnyAutoEnzyme{Nothing}) = Forward
+mode_noprimal(::Type{ForwardMode{wp,FFIABI,A,B}}) where {wp,FFIABI,A,B} = ForwardMode{false,FFIABI,A,B}()
+mode_noprimal(::Type{ReverseMode{wp,C,FFIABI,A,B}}) where {wp,C,FFIABI,A,B} = ReverseMode{false,C,FFIABI,A,B}()
 
-# reverse mode if possible
-reverse_mode(backend::AnyAutoEnzyme{<:Mode}) = backend.mode
-reverse_mode(::AnyAutoEnzyme{Nothing}) = Reverse
+mode_noprimal(mode::Mode) = mode_noprimal(typeof(mode))
+
+mode_withprimal(::Type{ForwardMode{wp,FFIABI,A,B}}) where {wp,FFIABI,A,B} = ForwardMode{true,FFIABI,A,B}()
+mode_withprimal(::Type{ReverseMode{wp,C,FFIABI,A,B}}) where {wp,C,FFIABI,A,B} = ReverseMode{true,FFIABI,A,B}()
+
+mode_withprimal(mode::Mode) = mode_withprimal(typeof(mode))
+
+mode_noprimal(backend::AnyAutoEnzyme) = mode_noprimal(backend.mode)
+mode_noprimal(::AnyAutoEnzyme{Nothing}) = Forward
+
+mode_withprimal(backend::AnyAutoEnzyme) = mode_withprimal(backend.mode)
+mode_withprimal(::AnyAutoEnzyme{Nothing}) = Forward
 
 DI.check_available(::AutoEnzyme) = true
 
