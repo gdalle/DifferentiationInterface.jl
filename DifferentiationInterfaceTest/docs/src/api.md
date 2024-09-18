@@ -12,6 +12,7 @@ DifferentiationInterfaceTest
 ## Entry points
 
 ```@docs
+Scenario
 test_differentiation
 benchmark_differentiation
 DifferentiationBenchmarkDataRow
