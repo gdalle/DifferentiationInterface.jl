@@ -35,8 +35,6 @@ DifferentiationInterfaceTest.jl relies with so-called "scenarios", in which you 
 - the input `x` of the function `f`
 - the reference first-order result `res1` of the operator
 
-There is one scenario constructor per operator, and so here we will use [`GradientScenario`](@ref):
-
 ```@example tuto
 xv = rand(Float32, 3)
 xm = rand(Float64, 3, 2)
