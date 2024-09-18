@@ -25,4 +25,9 @@ sparse_backend = AutoSparse(
     sparsity_detector=TracerSparsityDetector(),
     coloring_algorithm=GreedyColoringAlgorithm(),
 )
-test_differentiation(sparse_backend, sparse_scenarios(); sparsity=true, logging=LOGGING)
+test_differentiation(
+    sparse_backend,
+    sparse_scenarios(; include_constantified=true);
+    sparsity=true,
+    logging=LOGGING,
+)

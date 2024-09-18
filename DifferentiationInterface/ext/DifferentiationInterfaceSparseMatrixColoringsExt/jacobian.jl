@@ -81,7 +81,10 @@ function _prepare_sparse_jacobian_aux(
     ::PushforwardFast, y, f_or_f!y::FY, backend::AutoSparse, x, contexts::Vararg{Context,C}
 ) where {FY,C}
     dense_backend = dense_ad(backend)
-    sparsity = jacobian_sparsity(f_or_f!y..., x, sparsity_detector(backend))
+
+    sparsity = jacobian_sparsity(
+        with_context(f_or_f!y..., contexts...)..., x, sparsity_detector(backend)
+    )
     problem = ColoringProblem{:nonsymmetric,:column}()
     coloring_result = coloring(
         sparsity,
@@ -115,7 +118,9 @@ function _prepare_sparse_jacobian_aux(
     ::PushforwardSlow, y, f_or_f!y::FY, backend::AutoSparse, x, contexts::Vararg{Context,C}
 ) where {FY,C}
     dense_backend = dense_ad(backend)
-    sparsity = jacobian_sparsity(f_or_f!y..., x, sparsity_detector(backend))
+    sparsity = jacobian_sparsity(
+        with_context(f_or_f!y..., contexts...)..., x, sparsity_detector(backend)
+    )
     problem = ColoringProblem{:nonsymmetric,:row}()
     coloring_result = coloring(
         sparsity,
@@ -163,7 +168,7 @@ end
 function DI.value_and_jacobian(
     f::F, extras::SparseJacobianExtras, backend::AutoSparse, x, contexts::Vararg{Context,C}
 ) where {F,C}
-    return f(x), jacobian(f, extras, backend, x, contexts...)
+    return f(x, map(unwrap, contexts)...), jacobian(f, extras, backend, x, contexts...)
 end
 
 function DI.value_and_jacobian!(
