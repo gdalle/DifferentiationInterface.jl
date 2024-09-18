@@ -5,14 +5,14 @@ end
 
 CallCounter(f::F) where {F} = CallCounter{F}(f, Ref(0))
 
-function (cc::CallCounter)(x)
+function (cc::CallCounter)(x, args...)
     cc.count[] += 1
-    return cc.f(x)
+    return cc.f(x, args...)
 end
 
-function (cc::CallCounter)(y, x)
+function (cc::CallCounter)(y, x, args...)
     cc.count[] += 1
-    return cc.f(y, x)
+    return cc.f(y, x, args...)
 end
 
 function reset_count!(cc::CallCounter)

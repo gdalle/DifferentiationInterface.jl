@@ -20,7 +20,9 @@ test_differentiation(
 
 ## Benchmark
 
-data1 = benchmark_differentiation([AutoZeroForward()], default_scenarios(); logging=LOGGING);
+data1 = benchmark_differentiation(
+    [AutoZeroForward()], default_scenarios(; include_constantified=true); logging=LOGGING
+);
 
 struct FakeBackend <: ADTypes.AbstractADType end
 ADTypes.mode(::FakeBackend) = ADTypes.ForwardMode()

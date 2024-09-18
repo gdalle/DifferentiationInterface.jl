@@ -33,7 +33,7 @@ DifferentiationInterfaceTest.jl relies with so-called "scenarios", in which you 
 - the behavior of the operator (either `:in` or `:out` of place)
 - the function `f`
 - the input `x` of the function `f`
-- the reference output `grad` of the operator
+- the reference first-order result `res1` of the operator
 
 There is one scenario constructor per operator, and so here we will use [`GradientScenario`](@ref):
 
@@ -41,8 +41,8 @@ There is one scenario constructor per operator, and so here we will use [`Gradie
 xv = rand(Float32, 3)
 xm = rand(Float64, 3, 2)
 scenarios = [
-    Scenario{:gradient,:out}(f, xv, grad=∇f(xv)),
-    Scenario{:gradient,:out}(f, xm, grad=∇f(xm))
+    Scenario{:gradient,:out}(f, xv; res1=∇f(xv)),
+    Scenario{:gradient,:out}(f, xm; res1=∇f(xm))
 ];
 nothing  # hide
 ```

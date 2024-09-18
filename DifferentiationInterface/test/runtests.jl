@@ -43,7 +43,9 @@ end
                 subtest(category, folder)
             end
         end
-    elseif startswith(GROUP, "Back") || startswith(GROUP, "Down")
+    elseif startswith(GROUP, "Back") ||
+        startswith(GROUP, "Down") ||
+        startswith(GROUP, "Misc")
         category, folder = split(GROUP, '/')
         @testset verbose = true "$category" begin
             @testset verbose = true "$folder" begin
