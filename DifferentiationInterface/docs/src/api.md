@@ -137,7 +137,3 @@ Modules = [DifferentiationInterface]
 Public = false
 Filter = t -> !(Symbol(t) in [:outer, :inner])
 ```
-
-```@docs
-AutoGTPSA
-```
