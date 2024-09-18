@@ -28,8 +28,6 @@ function sum_scenarios(x::AbstractArray; dx::AbstractArray, dy::Number)
 end
 
 function copyto!_scenarios(x::AbstractArray; dx::AbstractArray, dy::AbstractArray)
-    nb_args = 2
-    place = :inplace
     f! = copyto!
     y = similar(x)
     f!(y, x)

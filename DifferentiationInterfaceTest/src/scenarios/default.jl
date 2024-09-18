@@ -25,8 +25,6 @@ function num_to_num_vec!(y, x)
 end
 
 function num_to_num_scenarios(x::Number; dx::Number, dy::Number)
-    nb_args = 1
-    place = :outofplace
     f = num_to_num
     y = f(x)
     dy_from_dx = num_to_num_pushforward(x, dx)
@@ -157,7 +155,6 @@ end
 function num_to_arr_scenarios_twoarg(
     x::Number, ::Type{A}; dx::Number, dy::AbstractArray
 ) where {A<:AbstractArray}
-    nb_args = 2
     f! = num_to_arr!
     y = similar(num_to_arr(x, A))
     f!(y, x)
@@ -251,7 +248,6 @@ arr_to_num_hvp(x, dx) = reshape(arr_to_num_hessian(x) * vec(dx), size(x))
 function arr_to_num_scenarios_onearg(
     x::AbstractArray; dx::AbstractArray, dy::Number, linalg=true
 )
-    nb_args = 1
     f = linalg ? arr_to_num_linalg : arr_to_num_no_linalg
     y = f(x)
     dy_from_dx = arr_to_num_pushforward(x, dx)
