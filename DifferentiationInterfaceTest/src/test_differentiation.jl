@@ -158,16 +158,7 @@ function benchmark_differentiation(
     logging::Bool=false,
 )
     scenarios = filter_scenarios(
-        scenarios;
-        first_order,
-        second_order,
-        input_type,
-        output_type,
-        onearg,
-        twoarg,
-        inplace,
-        outofplace,
-        excluded,
+        scenarios; first_order, second_order, input_type, output_type, excluded
     )
 
     benchmark_data = DifferentiationBenchmarkDataRow[]
