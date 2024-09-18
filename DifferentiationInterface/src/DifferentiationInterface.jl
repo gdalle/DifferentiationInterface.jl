@@ -62,8 +62,6 @@ include("misc/from_primitive.jl")
 include("misc/sparsity_detector.jl")
 include("misc/zero_backends.jl")
 
-include("misc/temp_backends.jl")
-
 function __init__()
     @require_extensions
 end
@@ -121,7 +119,6 @@ export AutoSymbolics
 export AutoTapir
 export AutoTracker
 export AutoZygote
-export AutoGTPSA  # temporary
 
 export AutoSparse
 

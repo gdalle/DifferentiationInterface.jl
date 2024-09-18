@@ -11,6 +11,7 @@ We support the following dense backend choices from [ADTypes.jl](https://github.
 - [`AutoFiniteDiff`](@extref ADTypes.AutoFiniteDiff)
 - [`AutoFiniteDifferences`](@extref ADTypes.AutoFiniteDifferences)
 - [`AutoForwardDiff`](@extref ADTypes.AutoForwardDiff)
+- [`AutoGTPSA`](@extref ADTypes.AutoGTPSA)
 - [`AutoPolyesterForwardDiff`](@extref ADTypes.AutoPolyesterForwardDiff)
 - [`AutoReverseDiff`](@extref ADTypes.AutoReverseDiff)
 - [`AutoSymbolics`](@extref ADTypes.AutoSymbolics)
@@ -55,6 +56,7 @@ In practice, many AD backends have custom implementations for high-level operato
     | `AutoFiniteDiff`           | 🔀    | ❌    | ✅     | ✅      | ✅     | ✅      | ❌     | ❌      |
     | `AutoFiniteDifferences`    | 🔀    | ❌    | ❌     | ✅      | ✅     | ❌      | ❌     | ❌      |
     | `AutoForwardDiff`          | ✅    | ❌    | ✅     | ✅      | ✅     | ✅      | ✅     | ✅      |
+    | `AutoGTPSA`                | ✅    | ❌    | ❌     | ✅      | ✅     | ✅      | ✅     | ✅      |
     | `AutoPolyesterForwardDiff` | 🔀    | ❌    | 🔀     | ✅      | ✅     | 🔀      | 🔀     | 🔀      |
     | `AutoReverseDiff`          | ❌    | 🔀    | ❌     | ✅      | ✅     | ✅      | ❌     | ❌      |
     | `AutoSymbolics`            | ✅    | ❌    | ✅     | ✅      | ✅     | ✅      | ❌     | ❌      |

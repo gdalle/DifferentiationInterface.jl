@@ -1,7 +1,7 @@
 module DifferentiationInterfaceGTPSAExt
 
 import DifferentiationInterface as DI
-using DifferentiationInterface: AutoGTPSA  # TODO: replace with ADTypes
+using ADTypes: AutoGTPSA
 using DifferentiationInterface:
     DerivativeExtras,
     SecondDerivativeExtras,
