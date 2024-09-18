@@ -26,7 +26,7 @@ mode_noprimal(backend::AnyAutoEnzyme) = mode_noprimal(backend.mode)
 mode_noprimal(::AnyAutoEnzyme{Nothing}) = Forward
 
 mode_withprimal(backend::AnyAutoEnzyme) = mode_withprimal(backend.mode)
-mode_withprimal(::AnyAutoEnzyme{Nothing}) = Forward
+mode_withprimal(::AnyAutoEnzyme{Nothing}) = ForwardWithPrimal
 
 DI.check_available(::AutoEnzyme) = true
 
