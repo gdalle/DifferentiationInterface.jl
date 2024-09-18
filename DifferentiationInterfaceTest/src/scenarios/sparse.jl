@@ -177,12 +177,12 @@ function sumdiffcube_hessian(x::AbstractVector)
 end
 
 function sparse_vec_to_num_scenarios(x::AbstractVector)
-    nb_args = 1
     f = sumdiffcube
     y = f(x)
     grad = sumdiffcube_gradient(x)
     hess = sumdiffcube_hessian(x)
 
+    scens = Scenario[]
     for pl_op in (:out, :in)
         append!(scens, [Scenario{:hessian,pl_op}(f, x; res1=grad, res2=hess)])
     end
@@ -202,7 +202,6 @@ function sumdiffcube_mat_hessian(x::AbstractMatrix)
 end
 
 function sparse_mat_to_num_scenarios(x::AbstractMatrix)
-    nb_args = 1
     f = sumdiffcube_mat
     y = f(x)
     grad = sumdiffcube_mat_gradient(x)
