@@ -36,12 +36,12 @@ function sparse_vec_to_vec_scenarios(x::AbstractVector)
     jac = diffsquare_jacobian(x)
 
     scens = Scenario[]
-    for place in (:outofplace, :inplace)
+    for pl_op in (:out, :in)
         append!(
             scens,
             [
-                JacobianScenario(f; x, y, jac, nb_args=1, place),
-                JacobianScenario(f!; x, y, jac, nb_args=2, place),
+                Scenario{:jacobian,pl_op}(f, x; res1=jac),
+                Scenario{:jacobian,pl_op}(f!, y, x; res1=jac),
             ],
         )
     end
@@ -72,12 +72,12 @@ function sparse_mat_to_vec_scenarios(x::AbstractMatrix)
     jac = diffsquarecube_matvec_jacobian(x)
 
     scens = Scenario[]
-    for place in (:outofplace, :inplace)
+    for pl_op in (:out, :in)
         append!(
             scens,
             [
-                JacobianScenario(f; x, y, jac, nb_args=1, place),
-                JacobianScenario(f!; x, y, jac, nb_args=2, place),
+                Scenario{:jacobian,pl_op}(f, x; res1=jac),
+                Scenario{:jacobian,pl_op}(f!, y, x; res1=jac),
             ],
         )
     end
@@ -105,12 +105,12 @@ function sparse_vec_to_mat_scenarios(x::AbstractVector)
     jac = diffsquarecube_vecmat_jacobian(vec(x))
 
     scens = Scenario[]
-    for place in (:outofplace, :inplace)
+    for pl_op in (:out, :in)
         append!(
             scens,
             [
-                JacobianScenario(f; x, y, jac, nb_args=1, place),
-                JacobianScenario(f!; x, y, jac, nb_args=2, place),
+                Scenario{:jacobian,pl_op}(f, x; res1=jac),
+                Scenario{:jacobian,pl_op}(f!, y, x; res1=jac),
             ],
         )
     end
@@ -140,12 +140,12 @@ function sparse_mat_to_mat_scenarios(x::AbstractMatrix)
     jac = diffsquarecube_matmat_jacobian(x)
 
     scens = Scenario[]
-    for place in (:outofplace, :inplace)
+    for pl_op in (:out, :in)
         append!(
             scens,
             [
-                JacobianScenario(f; x, y, jac, nb_args=1, place),
-                JacobianScenario(f!; x, y, jac, nb_args=2, place),
+                Scenario{:jacobian,pl_op}(f, x; res1=jac),
+                Scenario{:jacobian,pl_op}(f!, y, x; res1=jac),
             ],
         )
     end
@@ -183,9 +183,8 @@ function sparse_vec_to_num_scenarios(x::AbstractVector)
     grad = sumdiffcube_gradient(x)
     hess = sumdiffcube_hessian(x)
 
-    scens = Scenario[]
-    for place in (:outofplace, :inplace)
-        append!(scens, [HessianScenario(f; x, y, grad, hess, nb_args, place)])
+    for pl_op in (:out, :in)
+        append!(scens, [Scenario{:hessian,pl_op}(f, x; res1=grad, res2=hess)])
     end
     return scens
 end
@@ -210,8 +209,8 @@ function sparse_mat_to_num_scenarios(x::AbstractMatrix)
     hess = sumdiffcube_mat_hessian(x)
 
     scens = Scenario[]
-    for place in (:outofplace, :inplace)
-        append!(scens, [HessianScenario(f; x, y, grad, hess, nb_args, place)])
+    for pl_op in (:out, :in)
+        append!(scens, [Scenario{:hessian,pl_op}(f, x; res1=grad, res2=hess)])
     end
     return scens
 end

@@ -1,3 +1,28 @@
+function filter_scenarios(
+    scenarios::Vector{<:Scenario};
+    input_type::Type,
+    output_type::Type,
+    first_order::Bool,
+    second_order::Bool,
+    onearg::Bool,
+    twoarg::Bool,
+    inplace::Bool,
+    outofplace::Bool,
+    excluded::Vector{Symbol},
+)
+    scenarios = filter(s -> (s.x isa input_type && s.y isa output_type), scenarios)
+    !first_order && (scenarios = filter(s -> order(s) != 1, scenarios))
+    !second_order && (scenarios = filter(s -> order(s) != 2, scenarios))
+    !onearg && (scenarios = filter(s -> nb_args(s) != 1, scenarios))
+    !twoarg && (scenarios = filter(s -> nb_args(s) != 2, scenarios))
+    !inplace && (scenarios = filter(s -> place(s) != :inplace, scenarios))
+    !outofplace && (scenarios = filter(s -> place(s) != :outofplace, scenarios))
+    scenarios = filter(s -> !(operator(s) in excluded), scenarios)
+    # sort for nice printing
+    scenarios = sort(scenarios; by=s -> (operator(s), string(s.f)))
+    return scenarios
+end
+
 """
 $(TYPEDSIGNATURES)
 
@@ -92,15 +117,15 @@ function test_differentiation(
                             (:backend, "$backend - $i/$(length(backends))"),
                             (:scenario_type, "$op - $j/$(length(grouped_scenarios))"),
                             (:scenario, "$k/$(length(op_group))"),
-                            (:arguments, nb_args(scen)),
-                            (:place, place(scen)),
+                            (:operator_place, operator_place(scen)),
+                            (:function_place, function_place(scen)),
                             (:function, scen.f),
                             (:input_type, typeof(scen.x)),
                             (:input_size, mysize(scen.x)),
                             (:output_type, typeof(scen.y)),
                             (:output_size, mysize(scen.y)),
-                            (:batched_seed, scen.seed isa Tangents),
-                            (:with_context, length(scen.contexts) > 0),
+                            (:batched_tang, scen.tang isa Tangents),
+                            (:with_contexts, length(scen.contexts) > 0),
                         ],
                     )
                     correctness && @testset "Correctness" begin
@@ -182,15 +207,15 @@ function benchmark_differentiation(
                         (:backend, "$backend - $i/$(length(backends))"),
                         (:scenario_type, "$op - $j/$(length(grouped_scenarios))"),
                         (:scenario, "$k/$(length(op_group))"),
-                        (:arguments, nb_args(scen)),
-                        (:place, place(scen)),
+                        (:operator_place, operator_place(scen)),
+                        (:function_place, function_place(scen)),
                         (:function, scen.f),
                         (:input_type, typeof(scen.x)),
                         (:input_size, mysize(scen.x)),
                         (:output_type, typeof(scen.y)),
                         (:output_size, mysize(scen.y)),
-                        (:batched_seed, scen.seed isa Tangents),
-                        (:with_context, length(scen.contexts) > 0),
+                        (:batched_tang, scen.tang isa Tangents),
+                        (:with_contexts, length(scen.contexts) > 0),
                     ],
                 )
                 run_benchmark!(benchmark_data, backend, scen; logging)

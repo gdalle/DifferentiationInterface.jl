@@ -20,10 +20,10 @@ for op in [
     val_and_op! = Symbol(val_prefix, op!)
     prep_op = Symbol("prepare_", op)
 
-    S1out = Scenario{op,1,:outofplace}
-    S1in = Scenario{op,1,:inplace}
-    S2out = Scenario{op,2,:outofplace}
-    S2in = Scenario{op,2,:inplace}
+    S1out = Scenario{op,:out,:out}
+    S1in = Scenario{op,:in,:out}
+    S2out = Scenario{op,:out,:in}
+    S2in = Scenario{op,:in,:in}
 
     if op in [:derivative, :gradient, :jacobian]
         @eval function test_jet(ba::AbstractADType, scen::$S1out)
@@ -85,54 +85,54 @@ for op in [
 
     elseif op in [:pushforward, :pullback]
         @eval function test_jet(ba::AbstractADType, scen::$S1out)
-            @compat (; f, x, seed) = deepcopy(scen)
-            ex = $prep_op(f, ba, x, seed)
-            JET.@test_opt $op(f, ex, ba, x, seed)
-            JET.@test_call $op(f, ex, ba, x, seed)
-            JET.@test_opt $val_and_op(f, ex, ba, x, seed)
-            JET.@test_call $val_and_op(f, ex, ba, x, seed)
+            @compat (; f, x, tang) = deepcopy(scen)
+            ex = $prep_op(f, ba, x, tang)
+            JET.@test_opt $op(f, ex, ba, x, tang)
+            JET.@test_call $op(f, ex, ba, x, tang)
+            JET.@test_opt $val_and_op(f, ex, ba, x, tang)
+            JET.@test_call $val_and_op(f, ex, ba, x, tang)
         end
 
         @eval function test_jet(ba::AbstractADType, scen::$S1in)
-            @compat (; f, x, seed, res1, res2) = deepcopy(scen)
-            ex = $prep_op(f, ba, x, seed)
-            JET.@test_opt $op!(f, res1, ex, ba, x, seed)
-            JET.@test_call $op!(f, res1, ex, ba, x, seed)
-            JET.@test_opt $val_and_op!(f, res1, ex, ba, x, seed)
-            JET.@test_call $val_and_op!(f, res1, ex, ba, x, seed)
+            @compat (; f, x, tang, res1, res2) = deepcopy(scen)
+            ex = $prep_op(f, ba, x, tang)
+            JET.@test_opt $op!(f, res1, ex, ba, x, tang)
+            JET.@test_call $op!(f, res1, ex, ba, x, tang)
+            JET.@test_opt $val_and_op!(f, res1, ex, ba, x, tang)
+            JET.@test_call $val_and_op!(f, res1, ex, ba, x, tang)
         end
 
         @eval function test_jet(ba::AbstractADType, scen::$S2out)
-            @compat (; f, x, y, seed) = deepcopy(scen)
-            ex = $prep_op(f, y, ba, x, seed)
-            JET.@test_opt $op(f, y, ex, ba, x, seed)
-            JET.@test_call $op(f, y, ex, ba, x, seed)
-            JET.@test_opt $val_and_op(f, y, ex, ba, x, seed)
-            JET.@test_call $val_and_op(f, y, ex, ba, x, seed)
+            @compat (; f, x, y, tang) = deepcopy(scen)
+            ex = $prep_op(f, y, ba, x, tang)
+            JET.@test_opt $op(f, y, ex, ba, x, tang)
+            JET.@test_call $op(f, y, ex, ba, x, tang)
+            JET.@test_opt $val_and_op(f, y, ex, ba, x, tang)
+            JET.@test_call $val_and_op(f, y, ex, ba, x, tang)
         end
 
         @eval function test_jet(ba::AbstractADType, scen::$S2in)
-            @compat (; f, x, y, seed, res1) = deepcopy(scen)
-            ex = $prep_op(f, y, ba, x, seed)
-            JET.@test_opt $op!(f, y, res1, ex, ba, x, seed)
-            JET.@test_call $op!(f, y, res1, ex, ba, x, seed)
-            JET.@test_opt $val_and_op!(f, y, res1, ex, ba, x, seed)
-            JET.@test_call $val_and_op!(f, y, res1, ex, ba, x, seed)
+            @compat (; f, x, y, tang, res1) = deepcopy(scen)
+            ex = $prep_op(f, y, ba, x, tang)
+            JET.@test_opt $op!(f, y, res1, ex, ba, x, tang)
+            JET.@test_call $op!(f, y, res1, ex, ba, x, tang)
+            JET.@test_opt $val_and_op!(f, y, res1, ex, ba, x, tang)
+            JET.@test_call $val_and_op!(f, y, res1, ex, ba, x, tang)
         end
 
     elseif op in [:hvp]
         @eval function test_jet(ba::AbstractADType, scen::$S1out)
-            @compat (; f, x, seed) = deepcopy(scen)
-            ex = $prep_op(f, ba, x, seed)
-            JET.@test_opt $op(f, ex, ba, x, seed)
-            JET.@test_call $op(f, ex, ba, x, seed)
+            @compat (; f, x, tang) = deepcopy(scen)
+            ex = $prep_op(f, ba, x, tang)
+            JET.@test_opt $op(f, ex, ba, x, tang)
+            JET.@test_call $op(f, ex, ba, x, tang)
         end
 
         @eval function test_jet(ba::AbstractADType, scen::$S1in)
-            @compat (; f, x, seed, res1, res2) = deepcopy(scen)
-            ex = $prep_op(f, ba, x, seed)
-            JET.@test_opt $op!(f, res2, ex, ba, x, seed)
-            JET.@test_call $op!(f, res2, ex, ba, x, seed)
+            @compat (; f, x, tang, res1, res2) = deepcopy(scen)
+            ex = $prep_op(f, ba, x, tang)
+            JET.@test_opt $op!(f, res2, ex, ba, x, tang)
+            JET.@test_call $op!(f, res2, ex, ba, x, tang)
         end
     end
 end

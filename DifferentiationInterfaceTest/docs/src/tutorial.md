@@ -29,11 +29,11 @@ Of course we know the true gradient mapping:
 
 DifferentiationInterfaceTest.jl relies with so-called "scenarios", in which you encapsulate the information needed for your test:
 
+- the operator category (`:gradient`)
+- the behavior of the operator (either `:in` or `:out` of place)
 - the function `f`
-- the input `x` and output `y` of the function `f`
-- the reference output of the operator (here `grad`)
-- the number of arguments for `f` (either `1` or `2`)
-- the behavior of the operator (either `:inplace` or `:outofplace`)
+- the input `x` of the function `f`
+- the reference output `grad` of the operator
 
 There is one scenario constructor per operator, and so here we will use [`GradientScenario`](@ref):
 
@@ -41,8 +41,8 @@ There is one scenario constructor per operator, and so here we will use [`Gradie
 xv = rand(Float32, 3)
 xm = rand(Float64, 3, 2)
 scenarios = [
-    GradientScenario(f; x=xv, y=f(xv), grad=∇f(xv), nb_args=1, place=:inplace),
-    GradientScenario(f; x=xm, y=f(xm), grad=∇f(xm), nb_args=1, place=:inplace)
+    Scenario{:gradient,:out}(f, xv, grad=∇f(xv)),
+    Scenario{:gradient,:out}(f, xm, grad=∇f(xm))
 ];
 nothing  # hide
 ```

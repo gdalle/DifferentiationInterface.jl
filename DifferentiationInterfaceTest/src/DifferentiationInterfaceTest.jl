@@ -52,15 +52,14 @@ using Random: AbstractRNG, default_rng, rand!
 using SparseArrays: SparseArrays, SparseMatrixCSC, nnz, spdiagm
 using Test: @testset, @test
 
+include("utils.jl")
+
 include("scenarios/scenario.jl")
 include("scenarios/modify.jl")
 include("scenarios/default.jl")
 include("scenarios/sparse.jl")
 include("scenarios/allocfree.jl")
 include("scenarios/extensions.jl")
-
-include("utils/misc.jl")
-include("utils/filter.jl")
 
 include("tests/correctness_eval.jl")
 @static if VERSION >= v"1.7"

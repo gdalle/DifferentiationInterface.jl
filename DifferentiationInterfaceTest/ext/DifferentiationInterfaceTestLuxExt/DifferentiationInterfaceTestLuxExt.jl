@@ -128,7 +128,7 @@ function DIT.lux_scenarios(rng::AbstractRNG=default_rng())
         loss = SquareLoss(model, x, st)
         l = loss(ps)
         g = DI.gradient(loss, DI.AutoFiniteDiff(), ps)
-        scen = GradientScenario(loss; x=ps, y=l, grad=g, nb_args=1, place=:outofplace)
+        scen = Scenario{:gradient,:out}(loss, ps; res1=g)
         push!(scens, scen)
     end
 

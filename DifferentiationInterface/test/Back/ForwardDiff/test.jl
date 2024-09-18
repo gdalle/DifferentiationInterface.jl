@@ -31,7 +31,7 @@ test_differentiation(dense_backends, default_scenarios(); logging=LOGGING);
 
 test_differentiation(
     dense_backends,
-    default_scenarios();
+    default_scenarios(; include_constantified=true);
     correctness=false,
     type_stability=true,
     second_order=false,

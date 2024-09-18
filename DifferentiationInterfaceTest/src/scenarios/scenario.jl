@@ -1,5 +1,16 @@
+const ALL_OPS = (
+    :pushforward,
+    :pullback,
+    :derivative,
+    :gradient,
+    :jacobian,
+    :hessian,
+    :hvp,
+    :second_derivative,
+)
+
 """
-    Scenario{op,args,pl}
+    Scenario{op,pl_op,pl_fun}
 
 Store a testing scenario composed of a function and its input + output for a given operator.
 
@@ -19,67 +30,73 @@ This generic type should never be used directly: use the specific constructor co
 # Type parameters
 
 - `op`: one  of `:pushforward`, `:pullback`, `:derivative`, `:gradient`, `:jacobian`,`:second_derivative`, `:hvp`, `:hessian`
-- `args`: either `1` (for `f(x) = y`) or `2` (for `f!(y, x) = nothing`)
-- `pl`: either `:inplace` or `:outofplace`
+- `pl_op`: either `:in` (for `op!(f, result, backend, x)`) or `:out` (for `result = op(f, backend, x)`)
+- `pl_fun`: either `:in` (for `f!(y, x)`) or `:out` (for `y = f(x)`)
+
+# Constructors
+
+    Scenario{op,pl_op}(f, x; tang, contexts, res1, res2)
+    Scenario{op,pl_op}(f!, y, x; tang, contexts, res1, res2)
 
 # Fields
 
 $(TYPEDFIELDS)
-
-Note that the `res1` and `res2` fields are given more meaningful names in the keyword arguments of each specialized constructor.
-For example:
-
-- the keyword `grad` of `GradientScenario` becomes `res1`
-- the keyword `hess` of `HessianScenario` becomes `res2`, and the keyword `grad` becomes `res1`
 """
-struct Scenario{op,args,pl,F,X,Y,D,R1,R2,C}
+struct Scenario{op,pl_op,pl_fun,F,X,Y,T<:Union{Nothing,Tangents},C<:Tuple,R1,R2}
     "function `f` (if `args==1`) or `f!` (if `args==2`) to apply"
     f::F
     "primal input"
     x::X
     "primal output"
     y::Y
-    "seed for pushforward, pullback or HVP"
-    seed::D
-    "first-order result of the operator"
-    res1::R1
-    "second-order result of the operator (when it makes sense)"
-    res2::R2
-    "contexts"
+    "tangents for pushforward, pullback or HVP"
+    tang::T
+    "contexts (if applicable)"
     contexts::C
+    "first-order result of the operator (if applicable)"
+    res1::R1
+    "second-order result of the operator (if applicable)"
+    res2::R2
+end
 
-    function Scenario{op,args,pl}(
-        f::F; x::X, y::Y, seed::D, res1::R1, res2::R2, contexts::C
-    ) where {op,args,pl,F,X,Y,D,R1,R2,C}
-        return new{op,args,pl,F,X,Y,D,R1,R2,C}(f, x, y, seed, res1, res2, contexts)
-    end
+function Scenario{op,pl_op,pl_fun}(
+    f::F; x::X, y::Y, tang::T, contexts::C, res1::R1, res2::R2
+) where {op,pl_op,pl_fun,F,X,Y,T,C,R1,R2}
+    return Scenario{op,pl_op,pl_fun,F,X,Y,T,C,R1,R2}(f, x, y, tang, contexts, res1, res2)
+end
+
+function Scenario{op,pl_op}(
+    f, x; tang=nothing, contexts=(), res1=nothing, res2=nothing
+) where {op,pl_op}
+    @assert op in ALL_OPS
+    @assert pl_op in (:in, :out)
+    y = f(x)
+    return Scenario{op,pl_op,:out}(f; x, y, tang, contexts, res1, res2)
+end
+
+function Scenario{op,pl_op}(
+    f!, y, x; tang=nothing, contexts=(), res1=nothing, res2=nothing
+) where {op,pl_op}
+    @assert op in ALL_OPS
+    @assert pl_op in (:in, :out)
+    f!(y, x)
+    return Scenario{op,pl_op,:in}(f!; x, y, tang, contexts, res1, res2)
 end
 
 operator(::Scenario{op}) where {op} = op
-nb_args(::Scenario{op,args}) where {op,args} = args
-place(::Scenario{op,args,pl}) where {op,args,pl} = pl
+operator_place(::Scenario{op,pl_op}) where {op,pl_op} = pl_op
+function_place(::Scenario{op,pl_op,pl_fun}) where {op,pl_op,pl_fun} = pl_fun
 
-function order(
-    ::Union{
-        Scenario{:pushforward},
-        Scenario{:pullback},
-        Scenario{:derivative},
-        Scenario{:gradient},
-        Scenario{:jacobian},
-    },
-)
-    return 1
-end
-
-function order(::Union{Scenario{:second_derivative},Scenario{:hvp},Scenario{:hessian}})
-    return 2
+function order(scen::Scenario)
+    if operator(scen) in [:pushforward, :pullback, :derivative, :gradient, :jacobian]
+        return 1
+    elseif operator(scen) in [:hvp, :hessian, :second_derivative]
+        return 2
+    end
 end
 
 function compatible(backend::AbstractADType, scen::Scenario)
-    if nb_args(scen) == 2
-        return Bool(inplace_support(backend))
-    end
-    return true
+    return function_place(scen) == :out || Bool(inplace_support(backend))
 end
 
 function group_by_operator(scenarios::AbstractVector{<:Scenario})
@@ -90,127 +107,11 @@ function group_by_operator(scenarios::AbstractVector{<:Scenario})
 end
 
 function Base.show(
-    io::IO, scen::S
-) where {op,args,pl,F,X,Y,D,S<:Scenario{op,args,pl,F,X,Y,D}}
-    return print(
-        io, "Scenario{$(repr(op)),$(repr(args)),$(repr(pl))} $(string(scen.f)) : $X -> $Y"
-    )
-end
-
-"""
-$(SIGNATURES)
-
-Construct a [`Scenario`](@ref) to test `pushforward` and its variants.
-"""
-function PushforwardScenario(
-    f;
-    x,
-    y,
-    tx::Tangents,
-    ty::Union{Tangents,Nothing}=nothing,
-    contexts=(),
-    nb_args,
-    place=:inplace,
-)
-    return Scenario{:pushforward,nb_args,place}(
-        f; x, y, seed=tx, res1=ty, res2=nothing, contexts
-    )
-end
-
-"""
-$(SIGNATURES)
-
-Construct a [`Scenario`](@ref) to test `pullback` and its variants.
-"""
-function PullbackScenario(
-    f;
-    x,
-    y,
-    ty::Tangents,
-    tx::Union{Tangents,Nothing}=nothing,
-    contexts=(),
-    nb_args,
-    place=:inplace,
-)
-    return Scenario{:pullback,nb_args,place}(
-        f; x, y, seed=ty, res1=tx, res2=nothing, contexts
-    )
-end
-
-"""
-$(SIGNATURES)
-
-Construct a [`Scenario`](@ref) to test `derivative` and its variants.
-"""
-function DerivativeScenario(f; x, y, der=nothing, contexts=(), nb_args, place=:inplace)
-    return Scenario{:derivative,nb_args,place}(
-        f; x, y, seed=nothing, res1=der, res2=nothing, contexts
-    )
-end
-
-"""
-$(SIGNATURES)
-
-Construct a [`Scenario`](@ref) to test `gradient` and its variants.
-"""
-function GradientScenario(f; x, y, grad=nothing, contexts=(), nb_args, place=:inplace)
-    return Scenario{:gradient,nb_args,place}(
-        f; x, y, seed=nothing, res1=grad, res2=nothing, contexts
-    )
-end
-
-"""
-$(SIGNATURES)
-
-Construct a [`Scenario`](@ref) to test `jacobian` and its variants.
-"""
-function JacobianScenario(f; x, y, jac=nothing, contexts=(), nb_args, place=:inplace)
-    return Scenario{:jacobian,nb_args,place}(
-        f; x, y, seed=nothing, res1=jac, res2=nothing, contexts
-    )
-end
-
-"""
-$(SIGNATURES)
-
-Construct a [`Scenario`](@ref) to test `second_derivative` and its variants.
-"""
-function SecondDerivativeScenario(
-    f; x, y, der=nothing, der2=nothing, contexts=(), nb_args, place=:inplace
-)
-    return Scenario{:second_derivative,nb_args,place}(
-        f; x, y, seed=nothing, res1=der, res2=der2, contexts
-    )
-end
-
-"""
-$(SIGNATURES)
-
-Construct a [`Scenario`](@ref) to test `hvp` and its variants.
-"""
-function HVPScenario(
-    f;
-    x,
-    y,
-    tx::Tangents,
-    grad=nothing,
-    tg::Union{Tangents,Nothing}=nothing,
-    contexts=(),
-    nb_args,
-    place=:inplace,
-)
-    return Scenario{:hvp,nb_args,place}(f; x, y, seed=tx, res1=grad, res2=tg, contexts)
-end
-
-"""
-$(SIGNATURES)
-
-Construct a [`Scenario`](@ref) to test `hessian` and its variants.
-"""
-function HessianScenario(
-    f; x, y, grad=nothing, hess=nothing, contexts=(), nb_args, place=:inplace
-)
-    return Scenario{:hessian,nb_args,place}(
-        f; x, y, seed=nothing, res1=grad, res2=hess, contexts
-    )
+    io::IO, scen::Scenario{op,pl_op,pl_fun,F,X,Y,T}
+) where {op,pl_op,pl_fun,F,X,Y,T}
+    print(io, "Scenario{$(repr(op)),$(repr(pl_op))} $(string(scen.f)) : $X -> $Y")
+    if op in (:pushforward, :pullback, :hvp)
+        print(io, " ($(length(scen.tang)) tangents)")
+    end
+    return nothing
 end

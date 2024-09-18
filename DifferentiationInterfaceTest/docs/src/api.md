@@ -29,20 +29,6 @@ gpu_scenarios
 static_scenarios
 ```
 
-## Scenario types
-
-```@docs
-Scenario
-PushforwardScenario
-PullbackScenario
-DerivativeScenario
-GradientScenario
-JacobianScenario
-SecondDerivativeScenario
-HVPScenario
-HessianScenario
-```
-
 ## Internals
 
 This is not part of the public API.
