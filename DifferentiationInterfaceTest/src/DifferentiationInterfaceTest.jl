@@ -75,14 +75,6 @@ function __init__()
 end
 
 export Scenario
-export PushforwardScenario,
-    PullbackScenario,
-    DerivativeScenario,
-    GradientScenario,
-    JacobianScenario,
-    SecondDerivativeScenario,
-    HVPScenario,
-    HessianScenario
 export default_scenarios, sparse_scenarios
 export test_differentiation, benchmark_differentiation
 export DifferentiationBenchmarkDataRow
