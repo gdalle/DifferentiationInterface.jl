@@ -35,17 +35,7 @@ function DI.pushforward(
     f!, y, extras::GTPSATwoArgPushforwardExtras, backend::AutoGTPSA, x, tx::Tangents
 )
     ty = map(tx) do dx
-        if x isa Number
-            extras.xt[0] = x
-            extras.xt[1] = dx
-        else
-            j = 1
-            for i in eachindex(x)
-                extras.xt[i][0] = x[i]
-                extras.xt[i][j] = dx[i]
-                j += 1
-            end
-        end
+        initialize!(extras.xt, x, dx)
 
         f!(extras.yt, extras.xt)
         map!(t -> t[0], y, extras.yt)
@@ -73,17 +63,7 @@ function DI.pushforward!(
 )
     for b in eachindex(tx.d, ty.d)
         dx, dy = tx.d[b], ty.d[b]
-        if x isa Number
-            extras.xt[0] = x
-            extras.xt[1] = dx
-        else
-            j = 1
-            for i in eachindex(x)
-                extras.xt[i][0] = x[i]
-                extras.xt[i][j] = dx[i]
-                j += 1
-            end
-        end
+        initialize!(extras.xt, x, dx)
 
         f!(extras.yt, extras.xt)
         map!(t -> t[0], y, extras.yt)
@@ -102,17 +82,7 @@ function DI.value_and_pushforward(
     f!, y, extras::GTPSATwoArgPushforwardExtras, backend::AutoGTPSA, x, tx::Tangents
 )
     ys_and_dys = map(tx.d) do dx
-        if x isa Number
-            extras.xt[0] = x
-            extras.xt[1] = dx
-        else
-            j = 1
-            for i in eachindex(x)
-                extras.xt[i][0] = x[i]
-                extras.xt[i][j] = dx[i]
-                j += 1
-            end
-        end
+        initialize!(extras.xt, x, dx)
 
         f!(extras.yt, extras.xt)
         dy = similar(extras.yt, eltype(eltype(extras.yt)))
@@ -144,17 +114,7 @@ function DI.value_and_pushforward!(
 )
     for b in eachindex(tx.d, ty.d)
         dx, dy = tx.d[b], ty.d[b]
-        if x isa Number
-            extras.xt[0] = x
-            extras.xt[1] = dx
-        else
-            j = 1
-            for i in eachindex(x)
-                extras.xt[i][0] = x[i]
-                extras.xt[i][j] = dx[i]
-                j += 1
-            end
-        end
+        initialize!(extras.xt, x, dx)
 
         f!(extras.yt, extras.xt)
         map!(t -> t[0], y, extras.yt)

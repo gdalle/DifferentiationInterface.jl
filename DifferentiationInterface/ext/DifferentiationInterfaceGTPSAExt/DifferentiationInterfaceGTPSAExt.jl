@@ -15,6 +15,7 @@ using GTPSA
 
 DI.check_available(::AutoGTPSA) = true
 
+include("utils.jl")
 include("onearg.jl")
 include("twoarg.jl")
 

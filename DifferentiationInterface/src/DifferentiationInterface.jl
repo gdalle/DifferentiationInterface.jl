@@ -23,6 +23,7 @@ using ADTypes:
     AutoFiniteDiff,
     AutoFiniteDifferences,
     AutoForwardDiff,
+    AutoGTPSA,
     AutoPolyesterForwardDiff,
     AutoReverseDiff,
     AutoSymbolics,
