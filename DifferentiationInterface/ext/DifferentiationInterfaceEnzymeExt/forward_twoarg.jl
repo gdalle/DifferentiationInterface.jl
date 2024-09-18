@@ -36,9 +36,9 @@ function DI.value_and_pushforward(
     y_and_dy = Duplicated(y, dy_sametype)
     x_and_dx = Duplicated(x, dx_sametype)
     if backend isa AutoDeferredEnzyme
-        autodiff_deferred(forward_mode(backend), f!_and_df!, Const, y_and_dy, x_and_dx)
+        autodiff_deferred(mode_noprimal(backend), f!_and_df!, Const, y_and_dy, x_and_dx)
     else
-        autodiff(forward_mode(backend), f!_and_df!, Const, y_and_dy, x_and_dx)
+        autodiff(mode_noprimal(backend), f!_and_df!, Const, y_and_dy, x_and_dx)
     end
     return y, Tangents(dy_sametype)
 end

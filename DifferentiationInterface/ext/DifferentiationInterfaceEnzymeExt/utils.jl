@@ -52,10 +52,10 @@ force_annotation(f) = Const(f)
 
 function my_set_err_if_func_written(
     ::EnzymeCore.ReverseModeSplit{
-        ReturnPrimal,ReturnShadow,Width,ModifiedBetween,ABI,ErrIfFuncWritten
+        ReturnPrimal,A,ReturnShadow,Width,ModifiedBetween,ABI,ErrIfFuncWritten
     },
-) where {ReturnPrimal,ReturnShadow,Width,ModifiedBetween,ABI,ErrIfFuncWritten}
+) where {ReturnPrimal,A,ReturnShadow,Width,ModifiedBetween,ABI,ErrIfFuncWritten}
     return EnzymeCore.ReverseModeSplit{
-        ReturnPrimal,ReturnShadow,Width,ModifiedBetween,ABI,true
+        ReturnPrimal,A,ReturnShadow,Width,ModifiedBetween,ABI,true
     }()
 end

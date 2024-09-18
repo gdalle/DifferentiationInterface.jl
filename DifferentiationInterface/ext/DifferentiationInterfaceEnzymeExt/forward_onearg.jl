@@ -31,10 +31,10 @@ function DI.value_and_pushforward(
     f_and_df = get_f_and_df(f, backend)
     dx_sametype = convert(typeof(x), dx)
     x_and_dx = Duplicated(x, dx_sametype)
-    y, new_dy = if backend isa AutoDeferredEnzyme
-        autodiff_deferred(mode_noprimal(backend), f_and_df, Duplicated, x_and_dx)
+    new_dy, y = if backend isa AutoDeferredEnzyme
+        values(autodiff_deferred(mode_withprimal(backend), f_and_df, x_and_dx))
     else
-        autodiff(mode_noprimal(backend), f_and_df, Duplicated, x_and_dx)
+        values(autodiff(mode_withprimal(backend), f_and_df, x_and_dx))
     end
     return y, Tangents(new_dy)
 end
@@ -51,9 +51,9 @@ function DI.pushforward(
     dx_sametype = convert(typeof(x), dx)
     x_and_dx = Duplicated(x, dx_sametype)
     new_dy = if backend isa AutoDeferredEnzyme
-        only(autodiff_deferred(mode_noprimal(backend), f_and_df, DuplicatedNoNeed, x_and_dx))
+        only(autodiff_deferred(mode_noprimal(backend), f_and_df, x_and_dx))
     else
-        only(autodiff(mode_noprimal(backend), f_and_df, DuplicatedNoNeed, x_and_dx))
+        only(autodiff(mode_noprimal(backend), f_and_df, x_and_dx))
     end
     return Tangents(new_dy)
 end
@@ -138,7 +138,7 @@ function DI.value_and_gradient!(
     x,
 ) where {B}
     f_and_df = get_f_and_df(f, backend)
-    gr = gradient(forward_mode(backend), f_and_df, x, Val(B); shadows=extras.shadow)
+    gr = gradient(mode_withprimal(backend), f_and_df, x, Val(B); shadows=extras.shadow)
     return gr.val, copyto!(grad, gr.derivs[1])
 end
 
