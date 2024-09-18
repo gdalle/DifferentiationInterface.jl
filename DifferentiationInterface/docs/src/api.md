@@ -8,11 +8,15 @@ CollapsedDocStrings = true
 DifferentiationInterface
 ```
 
-## First order
+## Argument wrappers
 
 ```@docs
+Context
+Constant
 Tangents
 ```
+
+## First order
 
 ### Pushforward
 

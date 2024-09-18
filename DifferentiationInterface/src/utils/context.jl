@@ -7,8 +7,44 @@ function (ft::FixTail)(args::Vararg{Any,N}) where {N}
     return ft.f(args..., ft.tail_args...)
 end
 
+"""
+    Context
+
+Abstract supertype for additional context arguments, which can be passed to differentiation operators after the active input `x` but are not differentiated.
+
+# See also
+
+- [`Constant`](@ref)
+"""
 abstract type Context end
 
+"""
+    Constant
+
+Concrete type of [`Context`](@ref) argument which is kept constant during differentiation.
+
+Note that an operator can be prepared with an arbitrary value of the constant.
+
+# Example
+
+```jldoctest
+julia> using DifferentiationInterface
+
+julia> import ForwardDiff
+
+julia> f(x, c) = c * sum(abs2, x);
+
+julia> gradient(f, AutoForwardDiff(), [1.0, 2.0], Constant(10))
+2-element Vector{Float64}:
+ 20.0
+ 40.0
+
+julia> gradient(f, AutoForwardDiff(), [1.0, 2.0], Constant(100))
+2-element Vector{Float64}:
+ 200.0
+ 400.0
+```
+"""
 struct Constant{T} <: Context
     data::T
 end
