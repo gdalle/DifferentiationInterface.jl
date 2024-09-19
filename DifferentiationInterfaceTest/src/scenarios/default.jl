@@ -548,9 +548,10 @@ function default_scenarios(
         mat_to_mat_scenarios_twoarg(x_2_3; dx=dx_2_3, dy=dy_6_2),
     )
 
+    include_batchified && append!(scens, batchify(scens))
+
     final_scens = Scenario[]
     include_normal && append!(final_scens, scens)
-    include_batchified && append!(final_scens, batchify(scens))
     include_closurified && append!(final_scens, closurify(scens))
     include_constantified && append!(final_scens, constantify(scens))
 
