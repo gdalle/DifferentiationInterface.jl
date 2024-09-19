@@ -311,6 +311,24 @@ function DI.value_derivative_and_second_derivative!(
     return y, der, der2
 end
 
+## HVP
+
+function DI.prepare_hvp(f::F, backend::AutoForwardDiff, x, tx::Tangents) where {F}
+    return DI.prepare_hvp(f, SecondOrder(backend, backend), x, tx)
+end
+
+function DI.hvp(
+    f::F, extras::HVPExtras, backend::AutoForwardDiff, x, tx::Tangents
+) where {F}
+    return DI.hvp(f, extras, SecondOrder(backend, backend), x, tx)
+end
+
+function DI.hvp!(
+    f::F, tg::Tangents, extras::HVPExtras, backend::AutoForwardDiff, x, tx::Tangents
+) where {F}
+    return DI.hvp!(f, tg, extras, SecondOrder(backend, backend), x, tx)
+end
+
 ## Hessian
 
 ### Unprepared

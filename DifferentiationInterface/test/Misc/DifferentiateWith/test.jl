@@ -10,10 +10,10 @@ using Test
 LOGGING = get(ENV, "CI", "false") == "false"
 
 function zygote_breaking_scenarios()
-    onearg_scens = filter(default_scenarios()) do scen
-        DIT.nb_args(scen) == 1
+    outofplace_scens = filter(default_scenarios()) do scen
+        DIT.operator_place(scen) == :out
     end
-    bad_onearg_scens = map(onearg_scens) do scen
+    bad_outofplace_scens = map(outofplace_scens) do scen
         function bad_f(x)
             a = Vector{eltype(x)}(undef, 1)
             a[1] = sum(x)
@@ -23,7 +23,7 @@ function zygote_breaking_scenarios()
         bad_scen = DIT.change_function(scen, wrapped_bad_f)
         return bad_scen
     end
-    return bad_onearg_scens
+    return bad_outofplace_scens
 end
 
 test_differentiation(

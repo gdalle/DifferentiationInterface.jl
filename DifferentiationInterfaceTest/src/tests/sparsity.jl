@@ -1,9 +1,6 @@
-mynnz(A::AbstractMatrix) = nnz(A)
-mynnz(A::Union{Transpose,Adjoint}) = nnz(parent(A))  # fix for Julia 1.6
-
 ## Jacobian
 
-function test_sparsity(ba::AbstractADType, scen::Scenario{:jacobian,1,:outofplace})
+function test_sparsity(ba::AbstractADType, scen::Scenario{:jacobian,:out,:out})
     @compat (; f, x, y, contexts) = scen = deepcopy(scen)
     extras = prepare_jacobian(f, ba, x, contexts...)
 
@@ -17,7 +14,7 @@ function test_sparsity(ba::AbstractADType, scen::Scenario{:jacobian,1,:outofplac
     return nothing
 end
 
-function test_sparsity(ba::AbstractADType, scen::Scenario{:jacobian,1,:inplace})
+function test_sparsity(ba::AbstractADType, scen::Scenario{:jacobian,:in,:out})
     @compat (; f, x, y, contexts) = deepcopy(scen)
     extras = prepare_jacobian(f, ba, x, contexts...)
 
@@ -31,7 +28,7 @@ function test_sparsity(ba::AbstractADType, scen::Scenario{:jacobian,1,:inplace})
     return nothing
 end
 
-function test_sparsity(ba::AbstractADType, scen::Scenario{:jacobian,2,:outofplace})
+function test_sparsity(ba::AbstractADType, scen::Scenario{:jacobian,:out,:in})
     @compat (; f, x, y, contexts) = deepcopy(scen)
     f! = f
     extras = prepare_jacobian(f!, mysimilar(y), ba, x, contexts...)
@@ -46,7 +43,7 @@ function test_sparsity(ba::AbstractADType, scen::Scenario{:jacobian,2,:outofplac
     return nothing
 end
 
-function test_sparsity(ba::AbstractADType, scen::Scenario{:jacobian,2,:inplace})
+function test_sparsity(ba::AbstractADType, scen::Scenario{:jacobian,:in,:in})
     @compat (; f, x, y, contexts) = deepcopy(scen)
     f! = f
     extras = prepare_jacobian(f!, mysimilar(y), ba, x, contexts...)
@@ -65,7 +62,7 @@ end
 
 ## Hessian
 
-function test_sparsity(ba::AbstractADType, scen::Scenario{:hessian,1,:outofplace})
+function test_sparsity(ba::AbstractADType, scen::Scenario{:hessian,:out,:out})
     @compat (; f, x, y, contexts) = deepcopy(scen)
     extras = prepare_hessian(f, ba, x, contexts...)
 
@@ -79,7 +76,7 @@ function test_sparsity(ba::AbstractADType, scen::Scenario{:hessian,1,:outofplace
     return nothing
 end
 
-function test_sparsity(ba::AbstractADType, scen::Scenario{:hessian,1,:inplace})
+function test_sparsity(ba::AbstractADType, scen::Scenario{:hessian,:in,:out})
     @compat (; f, x, y, contexts) = deepcopy(scen)
     extras = prepare_hessian(f, ba, x, contexts...)
 

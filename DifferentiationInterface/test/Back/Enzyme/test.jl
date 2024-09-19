@@ -55,7 +55,7 @@ test_differentiation(
 
 test_differentiation(
     duplicated_function_backends,
-    DIT.make_closure.(default_scenarios());
+    default_scenarios(; include_normal=false, include_closurified=true);
     second_order=false,
     logging=LOGGING,
 );
@@ -81,7 +81,7 @@ test_differentiation(
 
 test_differentiation(
     AutoEnzyme(; mode=Enzyme.Forward),  # TODO: add more
-    DIT.remove_batched(default_scenarios());
+    default_scenarios(; include_batchified=false);
     correctness=false,
     type_stability=true,
     second_order=false,
