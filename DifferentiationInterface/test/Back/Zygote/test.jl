@@ -30,6 +30,13 @@ end
 
 test_differentiation(AutoZygote(); excluded=[:second_derivative], logging=LOGGING);
 
+test_differentiation(
+    AutoZygote(),
+    default_scenarios(; include_normal=false, include_constantified=true);
+    second_order=false,
+    logging=LOGGING,
+);
+
 if VERSION >= v"1.10"
     test_differentiation(
         AutoZygote(),
