@@ -220,7 +220,7 @@ function DI.jacobian(
     backend::AutoEnzyme{<:ReverseMode,Nothing},
     x,
 ) where {M,B}
-    J = jacobian(mode_noprimal(backend), f, x; n_outs=Val(M), chunk=Val(B))[1]
+    J = jacobian(mode_noprimal(backend), f, x; n_outs=Val((M,)), chunk=Val(B))[1]
     flatjac(x, J)
 end
 
@@ -230,8 +230,7 @@ function DI.value_and_jacobian(
     backend::AutoEnzyme{<:ReverseMode,Nothing},
     x,
 ) where {M,B}
-    #TODO: right now this is giving different outputs if you pass args Enzyme #1863
-    jac = jacobian(mode_withprimal(backend), f, x)#; n_outs=Val(M), chunk=Val(B))
+    jac = jacobian(mode_withprimal(backend), f, x; n_outs=Val((M,)), chunk=Val(B))
     return jac.val, flatjac(x, jac.derivs[1])
 end
 
