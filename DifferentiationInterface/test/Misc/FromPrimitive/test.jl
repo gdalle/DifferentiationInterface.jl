@@ -1,7 +1,6 @@
 using DifferentiationInterface, DifferentiationInterfaceTest
 using DifferentiationInterface: AutoForwardFromPrimitive, AutoReverseFromPrimitive
 using DifferentiationInterfaceTest
-using DifferentiationInterfaceTest: insert_context
 using ForwardDiff: ForwardDiff
 using Test
 
@@ -17,8 +16,6 @@ for backend in vcat(fromprimitive_backends)
     @test check_inplace(backend)
 end
 
-test_differentiation(fromprimitive_backends, default_scenarios(); logging=LOGGING);
-
 test_differentiation(
-    fromprimitive_backends, insert_context.(default_scenarios()); logging=LOGGING
+    fromprimitive_backends, default_scenarios(; include_constantified=true); logging=LOGGING
 );

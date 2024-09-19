@@ -39,7 +39,9 @@ function DI.prepare_hessian(
     f::F, backend::AutoSparse, x, contexts::Vararg{Context,C}
 ) where {F,C}
     dense_backend = dense_ad(backend)
-    sparsity = hessian_sparsity(f, x, sparsity_detector(backend))
+    sparsity = hessian_sparsity(
+        with_context(f, contexts...)..., x, sparsity_detector(backend)
+    )
     problem = ColoringProblem{:symmetric,:column}()
     coloring_result = coloring(
         sparsity, problem, coloring_algorithm(backend); decompression_eltype=eltype(x)

@@ -89,7 +89,7 @@ function DIT.flux_scenarios(rng::AbstractRNG=default_rng())
     l = loss(model)
     g = gradient_finite_differences(loss, model)
 
-    scen = GradientScenario(loss; x=model, y=l, grad=g, nb_args=1, place=:outofplace)
+    scen = Scenario{:gradient,:out}(loss, model; res1=g)
     push!(scens, scen)
 
     # Layers
@@ -124,7 +124,7 @@ function DIT.flux_scenarios(rng::AbstractRNG=default_rng())
         loss = SquareLossOnInput(x)
         l = loss(model)
         g = gradient_finite_differences(loss, model)
-        scen = GradientScenario(loss; x=model, y=l, grad=g, nb_args=1, place=:outofplace)
+        scen = Scenario{:gradient,:out}(loss, model; res1=g)
         push!(scens, scen)
     end
 
@@ -139,7 +139,7 @@ function DIT.flux_scenarios(rng::AbstractRNG=default_rng())
         loss = SquareLossOnInputIterated(x)
         l = loss(model)
         g = gradient_finite_differences(loss, model)
-        scen = GradientScenario(loss; x=model, y=l, grad=g, nb_args=1, place=:outofplace)
+        scen = Scenario{:gradient,:out}(loss, model; res1=g)
         push!(scens, scen)
     end
 

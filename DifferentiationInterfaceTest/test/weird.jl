@@ -33,7 +33,7 @@ test_differentiation(AutoZygote(), gpu_scenarios(); second_order=false, logging=
 
 test_differentiation(
     AutoFiniteDiff(),
-    DIT.make_closure.(default_scenarios());
+    default_scenarios(; include_normal=false, include_closurified=true);
     second_order=false,
     logging=LOGGING,
 );

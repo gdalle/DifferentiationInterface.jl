@@ -34,23 +34,23 @@ function comp_to_num_scenarios_onearg(x::ComponentVector; dx::AbstractVector, dy
 
     # pushforward stays out of place
     scens = Scenario[]
-    for place in (:outofplace, :inplace)
+    for pl_op in (:out, :in)
         append!(
             scens,
             [
-                PullbackScenario(
-                    f; x, y, ty=Tangents(dy), tx=Tangents(dx_from_dy), nb_args, place
+                Scenario{:pullback,pl_op}(
+                    f, x; tang=Tangents(dy), res1=Tangents(dx_from_dy)
                 ),
-                GradientScenario(f; x, y, grad, nb_args, place),
+                Scenario{:gradient,pl_op}(f, x; res1=grad),
             ],
         )
     end
-    for place in (:outofplace,)
+    for pl_op in (:out,)
         append!(
             scens,
             [
-                PushforwardScenario(
-                    f; x, y, tx=Tangents(dx), ty=Tangents(dy_from_dx), nb_args, place
+                Scenario{:pushforward,pl_op}(
+                    f, x; tang=Tangents(dx), res1=Tangents(dy_from_dx)
                 ),
             ],
         )

@@ -2,7 +2,7 @@ using ADTypes
 using DifferentiationInterface
 using DifferentiationInterface: AutoZeroForward, AutoZeroReverse
 using DifferentiationInterfaceTest
-using DifferentiationInterfaceTest: test_allocfree, allocfree_scenarios, remove_batched
+using DifferentiationInterfaceTest: test_allocfree, allocfree_scenarios
 
 using Test
 
@@ -13,22 +13,21 @@ LOGGING = get(ENV, "CI", "false") == "false"
 test_differentiation(
     [AutoZeroForward(), AutoZeroReverse()],
     zero.(default_scenarios());
-    correctness=false,
+    correctness=true,
     type_stability=true,
-    excluded=[:second_derivative],
     logging=LOGGING,
 )
 
 ## Benchmark
 
-data1 = benchmark_differentiation([AutoZeroForward()], default_scenarios(); logging=LOGGING);
+data1 = benchmark_differentiation(
+    [AutoZeroForward()], default_scenarios(; include_constantified=true); logging=LOGGING
+);
 
 struct FakeBackend <: ADTypes.AbstractADType end
 ADTypes.mode(::FakeBackend) = ADTypes.ForwardMode()
 
-data2 = benchmark_differentiation(
-    [FakeBackend()], remove_batched(default_scenarios()); logging=false
-);
+data2 = benchmark_differentiation([FakeBackend()], default_scenarios(); logging=false);
 
 @testset "Benchmarking DataFrame" begin
     for col in eachcol(data1)

@@ -1,18 +1,22 @@
 using ADTypes
 using DifferentiationInterface
 using DifferentiationInterfaceTest
-using DifferentiationInterfaceTest: insert_context
 using ForwardDiff: ForwardDiff
 using SparseConnectivityTracer
 using SparseMatrixColorings
-using ComponentArrays: ComponentArrays
-using StaticArrays: StaticArrays
+using Random
 
 LOGGING = get(ENV, "CI", "false") == "false"
 
 ## Dense
 
-test_differentiation(AutoForwardDiff(); logging=LOGGING)
+test_differentiation(
+    AutoForwardDiff(),
+    default_scenarios(
+        Random.default_rng(); include_batchified=true, include_constantified=true
+    );
+    logging=LOGGING,
+)
 
 ## Sparse
 
@@ -21,10 +25,9 @@ sparse_backend = AutoSparse(
     sparsity_detector=TracerSparsityDetector(),
     coloring_algorithm=GreedyColoringAlgorithm(),
 )
-test_differentiation(sparse_backend, sparse_scenarios(); sparsity=true, logging=LOGGING)
-
-## Contexts
-
 test_differentiation(
-    AutoForwardDiff(), insert_context.(default_scenarios()); logging=LOGGING
-);
+    sparse_backend,
+    sparse_scenarios(; include_constantified=true);
+    sparsity=true,
+    logging=LOGGING,
+)
