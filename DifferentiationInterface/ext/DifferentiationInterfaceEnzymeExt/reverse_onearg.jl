@@ -176,7 +176,7 @@ function DI.gradient!(
     backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}},
     x,
 )
-    return copyto!(grad, DI.gradient(f, grad, extras, backend, x))
+    return copyto!(grad, DI.gradient(f, extras, backend, x))
 end
 
 function DI.value_and_gradient(
@@ -220,7 +220,8 @@ function DI.jacobian(
     backend::AutoEnzyme{<:ReverseMode,Nothing},
     x,
 ) where {M,B}
-    jacobian(mode_noprimal(backend), f, x; n_outs=Val(M), chunk=Val(B))[1]
+    J = jacobian(mode_noprimal(backend), f, x; n_outs=Val(M), chunk=Val(B))[1]
+    flatjac(x, J)
 end
 
 function DI.value_and_jacobian(
@@ -229,8 +230,9 @@ function DI.value_and_jacobian(
     backend::AutoEnzyme{<:ReverseMode,Nothing},
     x,
 ) where {M,B}
-    jac = jacobian(mode_withprimal(backend), f, x; n_outs=Val(M), chunk=Val(B))[1]
-    return jac.val, jac.derivs[1]
+    #TODO: right now this is giving different outputs if you pass args Enzyme #1863
+    jac = jacobian(mode_withprimal(backend), f, x)#; n_outs=Val(M), chunk=Val(B))
+    return jac.val, flatjac(x, jac.derivs[1])
 end
 
 function DI.jacobian!(

@@ -163,7 +163,8 @@ function DI.jacobian(
     x,
 ) where {B}
     f_and_df = get_f_and_df(f, backend)
-    jacobian(mode_noprimal(backend), f_and_df, x; chunk=Val(B), shadows=extras.shadows)[1]
+    J = jacobian(mode_noprimal(backend), f_and_df, x; chunk=Val(B), shadows=extras.shadows)[1]
+    flatjac(x, J)
 end
 
 function DI.value_and_jacobian(
@@ -174,7 +175,7 @@ function DI.value_and_jacobian(
 ) where {B}
     f_and_df = get_f_and_df(f, backend)
     jac = jacobian(mode_withprimal(backend), f_and_df, x; chunk=Val(B), shadows=extras.shadows)
-    return jac.val, jac.derivs[1]
+    return jac.val, flatjac(x, jac.derivs[1])
 end
 
 function DI.jacobian!(

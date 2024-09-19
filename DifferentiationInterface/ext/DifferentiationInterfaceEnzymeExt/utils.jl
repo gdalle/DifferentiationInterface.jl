@@ -18,7 +18,7 @@ mode_noprimal(::Type{ReverseMode{wp,C,FFIABI,A,B}}) where {wp,C,FFIABI,A,B} = Re
 mode_noprimal(mode::Mode) = mode_noprimal(typeof(mode))
 
 mode_withprimal(::Type{ForwardMode{wp,FFIABI,A,B}}) where {wp,FFIABI,A,B} = ForwardMode{true,FFIABI,A,B}()
-mode_withprimal(::Type{ReverseMode{wp,C,FFIABI,A,B}}) where {wp,C,FFIABI,A,B} = ReverseMode{true,FFIABI,A,B}()
+mode_withprimal(::Type{ReverseMode{wp,C,FFIABI,A,B}}) where {wp,C,FFIABI,A,B} = ReverseMode{true,C,FFIABI,A,B}()
 
 mode_withprimal(mode::Mode) = mode_withprimal(typeof(mode))
 
@@ -47,6 +47,11 @@ end
 
 force_annotation(f::Annotation) = f
 force_annotation(f) = Const(f)
+
+# if it's not an array we don't know what to do and just give up
+flatjac(x, J) = J
+
+flatjac(x, J::AbstractArray) = reshape(J, :, length(x))
 
 # TODO: move this to EnzymeCore
 
