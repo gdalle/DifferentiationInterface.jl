@@ -1,160 +1,153 @@
-## Pullback
-
-function DI.prepare_pullback(
-    f, ::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, ty::Tangents
-)
-    return NoPullbackExtras()
+function seeded_autodiff_thunk(
+    rmode::ReverseModeSplit{ReturnPrimal},
+    dresult,
+    f::FA,
+    ::Type{RA},
+    args::Vararg{Annotation,N},
+) where {ReturnPrimal,FA<:Annotation,RA<:Annotation,N}
+    forward, reverse = autodiff_thunk(rmode, FA, RA, typeof.(args)...)
+    tape, result, shadow_result = forward(f, args...)
+    if RA <: Active
+        dresult_righttype = convert(typeof(result), dresult)
+        dinputs = only(reverse(f, args..., dresult_righttype, tape))
+    else
+        shadow_result .+= dresult  # TODO: generalize beyond arrays
+        dinputs = only(reverse(f, args..., tape))
+    end
+    if ReturnPrimal
+        return (dinputs, result)
+    else
+        return (dinputs,)
+    end
 end
 
-function DI.value_and_pullback(
-    f,
-    extras::NoPullbackExtras,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
-    x,
-    ty::Tangents,
-)
-    tx = map(ty) do dy
-        only(DI.pullback(f, extras, backend, x, Tangents(dy)))
-    end
-    y = f(x)
-    return y, tx
+## Pullback
+
+function DI.prepare_pullback(f, ::AutoEnzyme{<:Union{ReverseMode,Nothing}}, x, ty::Tangents)
+    return NoPullbackExtras()
 end
 
 ### Out-of-place
 
 function DI.value_and_pullback(
     f,
-    ::NoPullbackExtras,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},function_annotation},
-    x::Number,
-    ty::Tangents{1},
-) where {function_annotation}
-    if eltype(ty) <: Number
-        dy = only(ty)
-        f_and_df = get_f_and_df(f, backend)
-        der, y = if backend isa AutoDeferredEnzyme
-            autodiff_deferred(ReverseWithPrimal, f_and_df, Active, Active(x))
-        else
-            autodiff(ReverseWithPrimal, f_and_df, Active, Active(x))
-        end
-        new_dx = dy * only(der)
-        return y, Tangents(new_dx)
-    else
-        dy = only(ty)
-        f_and_df = force_annotation(get_f_and_df(f, backend))
-        mode = if function_annotation <: Annotation
-            ReverseSplitWithPrimal
-        else
-            my_set_err_if_func_written(ReverseSplitWithPrimal)
-        end
-        forw, rev = autodiff_thunk(mode, typeof(f_and_df), Duplicated, typeof(Active(x)))
-        tape, y, new_dy = forw(f_and_df, Active(x))
-        copyto!(new_dy, dy)
-        new_dx = only(only(rev(f_and_df, Active(x), tape)))
-        return y, Tangents(new_dx)
+    extras::NoPullbackExtras,
+    backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
+    x,
+    ty::Tangents,
+)
+    tx = map(ty) do dy
+        only(DI.pullback(f, extras, backend, x, Tangents(dy)))
     end
+    y = f(x)  # TODO: optimize
+    return y, tx
 end
 
 function DI.value_and_pullback(
     f,
-    extras::NoPullbackExtras,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},function_annotation},
+    ::NoPullbackExtras,
+    backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
+    x::Number,
+    ty::Tangents{1},
+)
+    f_and_df = force_annotation(get_f_and_df(f, backend))
+    mode = reverse_mode_split_withprimal(backend)
+    RA = eltype(ty) <: Number ? Active : Duplicated
+    dinputs, result = seeded_autodiff_thunk(mode, only(ty), f_and_df, RA, Active(x))
+    return result, Tangents(only(dinputs))
+end
+
+function DI.value_and_pullback(
+    f,
+    ::NoPullbackExtras,
+    backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
     ty::Tangents{1},
-) where {function_annotation}
-    if eltype(ty) <: Number
-        dy = only(ty)
-        f_and_df = get_f_and_df(f, backend)
-        dx_sametype = make_zero(x)
-        x_and_dx = Duplicated(x, dx_sametype)
-        _, y = if backend isa AutoDeferredEnzyme
-            autodiff_deferred(ReverseWithPrimal, f_and_df, Active, x_and_dx)
-        else
-            autodiff(ReverseWithPrimal, f_and_df, Active, x_and_dx)
-        end
-        if !isone(dy)
-            # TODO: generalize beyond Arrays?
-            dx_sametype .*= dy
-        end
-        return y, Tangents(dx_sametype)
-    else
-        dx = make_zero(x)
-        return DI.value_and_pullback!(f, Tangents(dx), extras, backend, x, ty)
-    end
+)
+    f_and_df = force_annotation(get_f_and_df(f, backend))
+    mode = reverse_mode_split_withprimal(backend)
+    RA = eltype(ty) <: Number ? Active : Duplicated
+    dx = make_zero(x)
+    _, result = seeded_autodiff_thunk(mode, only(ty), f_and_df, RA, Duplicated(x, dx))
+    return result, Tangents(dx)
 end
 
 function DI.pullback(
     f,
     extras::NoPullbackExtras,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
-    x,
-    ty::Tangents,
+    backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
+    x::Number,
+    ty::Tangents{1},
 )
-    return DI.value_and_pullback(f, extras, backend, x, ty)[2]
+    return last(DI.value_and_pullback(f, extras, backend, x, ty))
 end
 
 ### In-place
 
 function DI.value_and_pullback!(
     f,
-    tx::Tangents{1},
-    ::NoPullbackExtras,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},function_annotation},
+    tx::Tangents,
+    extras::NoPullbackExtras,
+    backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
-    ty::Tangents{1},
-) where {function_annotation}
-    if eltype(ty) <: Number
-        dx, dy = only(tx), only(ty)
-        f_and_df = get_f_and_df(f, backend)
-        dx_sametype = convert(typeof(x), dx)
-        make_zero!(dx_sametype)
-        x_and_dx = Duplicated(x, dx_sametype)
-        _, y = if backend isa AutoDeferredEnzyme
-            autodiff_deferred(ReverseWithPrimal, f_and_df, Active, x_and_dx)
-        else
-            autodiff(ReverseWithPrimal, f_and_df, Active, x_and_dx)
-        end
-        if !isone(dy)
-            # TODO: generalize beyond Arrays?
-            dx_sametype .*= dy
-        end
-        copyto!(dx, dx_sametype)
-        return y, tx
-    else
-        dx, dy = only(tx), only(ty)
-        f_and_df = force_annotation(get_f_and_df(f, backend))
-        mode = if function_annotation <: Annotation
-            ReverseSplitWithPrimal
-        else
-            my_set_err_if_func_written(ReverseSplitWithPrimal)
-        end
-        dx_sametype = convert(typeof(x), dx)
-        make_zero!(dx_sametype)
-        x_and_dx = Duplicated(x, dx_sametype)
-        forw, rev = autodiff_thunk(mode, typeof(f_and_df), Duplicated, typeof(x_and_dx))
-        tape, y, new_dy = forw(f_and_df, x_and_dx)
-        copyto!(new_dy, dy)
-        rev(f_and_df, x_and_dx, tape)
-        copyto!(dx, dx_sametype)
-        return y, tx
+    ty::Tangents,
+)
+    for b in eachindex(tx.d, ty.d)
+        DI.pullback!(f, Tangents(tx.d[b]), extras, backend, x, Tangents(ty.d[b]))
     end
+    y = f(x)  # TODO: optimize
+    return y, tx
 end
 
 function DI.pullback!(
     f,
     tx::Tangents,
     extras::NoPullbackExtras,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
+    backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
     ty::Tangents,
 )
-    return DI.value_and_pullback!(f, tx, extras, backend, x, ty)[2]
+    for b in eachindex(tx.d, ty.d)
+        DI.pullback!(f, Tangents(tx.d[b]), extras, backend, x, Tangents(ty.d[b]))
+    end
+    return tx
+end
+
+function DI.value_and_pullback!(
+    f,
+    tx::Tangents{1},
+    ::NoPullbackExtras,
+    backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
+    x,
+    ty::Tangents{1},
+)
+    f_and_df = force_annotation(get_f_and_df(f, backend))
+    mode = reverse_mode_split_withprimal(backend)
+    RA = eltype(ty) <: Number ? Active : Duplicated
+    dx_righttype = convert(typeof(x), only(tx))
+    make_zero!(dx_righttype)
+    _, result = seeded_autodiff_thunk(
+        mode, only(ty), f_and_df, RA, Duplicated(x, dx_righttype)
+    )
+    only(tx) === dx_righttype || copyto!(only(tx), dx_righttype)
+    return result, tx
+end
+
+function DI.pullback!(
+    f,
+    tx::Tangents{1},
+    extras::NoPullbackExtras,
+    backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
+    x,
+    ty::Tangents{1},
+)
+    return last(DI.value_and_pullback!(f, tx, extras, backend, x, ty))
 end
 
 ## Gradient
 
 function DI.prepare_gradient(
-    f, ::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}}, x
+    f, ::AutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}}, x
 )
     return NoGradientExtras()
 end
@@ -162,18 +155,19 @@ end
 function DI.gradient(
     f,
     ::NoGradientExtras,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}},
+    backend::AutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}},
     x,
 )
     f_and_df = get_f_and_df(f, backend)
-    gradient(mode_noprimal(backend), f_and_df, x)[1]
+    derivs = gradient(reverse_mode_noprimal(backend), f_and_df, x)
+    return only(derivs)
 end
 
 function DI.gradient!(
     f,
     grad,
     extras::NoGradientExtras,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}},
+    backend::AutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}},
     x,
 )
     return copyto!(grad, DI.gradient(f, extras, backend, x))
@@ -182,24 +176,27 @@ end
 function DI.value_and_gradient(
     f,
     ::NoGradientExtras,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}},
+    backend::AutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}},
     x,
 )
     f_and_df = get_f_and_df(f, backend)
-    gr = gradient(mode_withprimal(backend), f_and_df, x)
-    return gr.val, gr.derivs[1]    
+    (; derivs, val) = gradient(reverse_mode_withprimal(backend), f_and_df, x)
+    return val, only(derivs)
 end
 
 function DI.value_and_gradient!(
     f,
     grad,
     ::NoGradientExtras,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}},
+    backend::AutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}},
     x,
 )
-    y, _ = DI.value_and_pullback!(
-        f, Tangents(grad), NoPullbackExtras(), backend, x, Tangents(true)
+    dx_righttype = convert(typeof(x), grad)
+    make_zero!(dx_righttype)
+    _, y = autodiff(
+        reverse_mode_withprimal(backend), f, Active, Duplicated(x, dx_righttype)
     )
+    dx_righttype === grad || copyto!(grad, dx_righttype)
     return y, grad
 end
 
@@ -220,8 +217,9 @@ function DI.jacobian(
     backend::AutoEnzyme{<:ReverseMode,Nothing},
     x,
 ) where {M,B}
-    J = jacobian(mode_noprimal(backend), f, x; n_outs=Val((M,)), chunk=Val(B))[1]
-    flatjac(x, J)
+    derivs = jacobian(reverse_mode_noprimal(backend), f, x; n_outs=Val((M,)), chunk=Val(B))
+    jac_tensor = only(derivs)
+    return maybe_reshape(jac_tensor, M, length(x))
 end
 
 function DI.value_and_jacobian(
@@ -230,8 +228,11 @@ function DI.value_and_jacobian(
     backend::AutoEnzyme{<:ReverseMode,Nothing},
     x,
 ) where {M,B}
-    jac = jacobian(mode_withprimal(backend), f, x; n_outs=Val((M,)), chunk=Val(B))
-    return jac.val, flatjac(x, jac.derivs[1])
+    (; derivs, val) = jacobian(
+        reverse_mode_withprimal(backend), f, x; n_outs=Val((M,)), chunk=Val(B)
+    )
+    jac_tensor = derivs
+    return val, maybe_reshape(jac_tensor, M, length(x))
 end
 
 function DI.jacobian!(

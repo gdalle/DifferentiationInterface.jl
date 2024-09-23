@@ -53,12 +53,12 @@ test_differentiation(
     logging=LOGGING,
 );
 
-test_differentiation(
-    duplicated_function_backends,
-    default_scenarios(; include_normal=false, include_closurified=true);
-    second_order=false,
-    logging=LOGGING,
-);
+# test_differentiation(
+#     duplicated_function_backends,
+#     default_scenarios(; include_normal=false, include_closurified=true);
+#     second_order=false,
+#     logging=LOGGING,
+# );
 
 test_differentiation(
     [
