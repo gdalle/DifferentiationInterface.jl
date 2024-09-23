@@ -203,14 +203,14 @@ end
 function DI.gradient!(
     f::F,
     grad,
-    extras::NoGradientExtras,
+    ::NoGradientExtras,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}},
     x,
     contexts::Vararg{Context,C},
 ) where {F,C}
     dx_righttype = convert(typeof(x), grad)
     make_zero!(dx_righttype)
-    _, y = autodiff(
+    autodiff(
         reverse_mode_noprimal(backend),
         f,
         Active,
@@ -218,7 +218,7 @@ function DI.gradient!(
         map(translate, contexts)...,
     )
     dx_righttype === grad || copyto!(grad, dx_righttype)
-    return y, grad
+    return grad
 end
 
 function DI.value_and_gradient(
