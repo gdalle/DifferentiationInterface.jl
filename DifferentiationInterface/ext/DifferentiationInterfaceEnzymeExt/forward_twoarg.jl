@@ -1,7 +1,7 @@
 ## Pushforward
 
 function DI.prepare_pushforward(
-    f!, y, ::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}}, x, tx::Tangents
+    f!, y, ::AutoEnzyme{<:Union{ForwardMode,Nothing}}, x, tx::Tangents
 )
     return NoPushforwardExtras()
 end
@@ -9,36 +9,33 @@ end
 function DI.value_and_pushforward(
     f!,
     y,
-    extras::NoPushforwardExtras,
-    backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}},
+    ::NoPushforwardExtras,
+    backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
-    tx::Tangents,
+    tx::Tangents{1},
 )
-    ty = map(tx) do dx
-        only(DI.pushforward(f!, y, extras, backend, x, Tangents(dx)))
-    end
-    f!(y, x)
-    return y, ty
+    f!_and_df! = get_f_and_df(f!, backend)
+    dx_sametype = convert(typeof(x), only(tx))
+    dy_sametype = make_zero(y)
+    x_and_dx = Duplicated(x, dx_sametype)
+    y_and_dy = Duplicated(y, dy_sametype)
+    autodiff(forward_mode_noprimal(backend), f!_and_df!, Const, y_and_dy, x_and_dx)
+    return y, Tangents(dy_sametype)
 end
 
 function DI.value_and_pushforward(
     f!,
     y,
     ::NoPushforwardExtras,
-    backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}},
+    backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
-    tx::Tangents{1},
-)
-    dx = only(tx)
-    f!_and_df! = get_f_and_df(f!, backend)
-    dx_sametype = convert(typeof(x), dx)
-    dy_sametype = make_zero(y)
-    y_and_dy = Duplicated(y, dy_sametype)
-    x_and_dx = Duplicated(x, dx_sametype)
-    if backend isa AutoDeferredEnzyme
-        autodiff_deferred(forward_mode(backend), f!_and_df!, Const, y_and_dy, x_and_dx)
-    else
-        autodiff(forward_mode(backend), f!_and_df!, Const, y_and_dy, x_and_dx)
-    end
-    return y, Tangents(dy_sametype)
+    tx::Tangents{B},
+) where {B}
+    f!_and_df! = get_f_and_df(f!, backend, Val(B))
+    dxs_sametype = map(Fix1(convert, typeof(x)), tx.d)
+    dys_sametype = ntuple(_ -> make_zero(y), Val(B))
+    x_and_dxs = BatchDuplicated(x, dxs_sametype)
+    y_and_dys = BatchDuplicated(y, dys_sametype)
+    autodiff(forward_mode_noprimal(backend), f!_and_df!, Const, y_and_dys, x_and_dxs)
+    return y, Tangents(dys_sametype...)
 end

@@ -1,6 +1,7 @@
 module DifferentiationInterfaceEnzymeExt
 
 using ADTypes: ADTypes, AutoEnzyme
+using Base: Fix1
 import DifferentiationInterface as DI
 using DifferentiationInterface:
     DerivativeExtras,
@@ -20,23 +21,24 @@ using DifferentiationInterface:
 using Enzyme:
     Active,
     Annotation,
+    BatchDuplicated,
     Const,
     Duplicated,
     DuplicatedNoNeed,
     EnzymeCore,
     Forward,
     ForwardMode,
+    ForwardWithPrimal,
     MixedDuplicated,
     Mode,
     Reverse,
-    ReverseWithPrimal,
-    ReverseSplitWithPrimal,
     ReverseMode,
+    ReverseModeSplit,
+    ReverseSplitWithPrimal,
+    ReverseWithPrimal,
     autodiff,
-    autodiff_deferred,
-    autodiff_deferred_thunk,
     autodiff_thunk,
-    chunkedonehot,
+    create_shadows,
     gradient,
     gradient!,
     guess_activity,
@@ -47,6 +49,8 @@ using Enzyme:
     make_zero!,
     onehot
 
+DI.check_available(::AutoEnzyme) = true
+
 include("utils.jl")
 
 include("forward_onearg.jl")
@@ -54,7 +58,5 @@ include("forward_twoarg.jl")
 
 include("reverse_onearg.jl")
 include("reverse_twoarg.jl")
-
-include("second_order.jl")
 
 end # module
