@@ -24,6 +24,7 @@ abstract type Context end
 Concrete type of [`Context`](@ref) argument which is kept constant during differentiation.
 
 Note that an operator can be prepared with an arbitrary value of the constant.
+However, same-point preparation must occur with the exact value that will be reused later.
 
 # Example
 
