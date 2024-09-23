@@ -2,6 +2,7 @@ module DifferentiationInterfaceTestLuxExt
 
 using Compat: @compat
 using ComponentArrays: ComponentArray
+using DifferentiationInterface
 import DifferentiationInterface as DI
 using DifferentiationInterfaceTest
 import DifferentiationInterfaceTest as DIT
@@ -21,14 +22,7 @@ function DIT.lux_isapprox(a, b; atol, rtol)
     return check_approx(a, b; atol, rtol)
 end
 
-struct SquareLoss{M,X,S}
-    model::M
-    x::X
-    st::S
-end
-
-function (sql::SquareLoss)(ps)
-    @compat (; model, x, st) = sql
+function square_loss(ps, model, x, st)
     return sum(abs2, first(model(x, ps, st)))
 end
 
@@ -120,11 +114,13 @@ function DIT.lux_scenarios(rng::AbstractRNG=default_rng())
 
     for (model, x) in models_and_xs
         ps, st = Lux.setup(rng, model)
-        ps = ComponentArray(ps)
-        loss = SquareLoss(model, x, st)
-        l = loss(ps)
-        g = DI.gradient(loss, DI.AutoFiniteDiff(), ps)
-        scen = Scenario{:gradient,:out}(loss, ps; res1=g)
+        l = square_loss(ps, model, x, st)
+        g = DI.gradient(
+            ps -> square_loss(ps, model, x, st), DI.AutoFiniteDiff(), ComponentArray(ps)
+        )
+        scen = Scenario{:gradient,:out}(
+            square_loss, ps; contexts=(Constant(model), Constant(x), Constant(st)), res1=g
+        )
         push!(scens, scen)
     end
 

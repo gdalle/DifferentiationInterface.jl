@@ -11,8 +11,6 @@ using Random
 
 LOGGING = get(ENV, "CI", "false") == "false"
 
-Random.seed!(0)
-
 test_differentiation(
     AutoZygote(),
     DIT.lux_scenarios(Random.Xoshiro(63));

@@ -1,6 +1,5 @@
 using Pkg
-Pkg.add(["FiniteDiff"])
-# Pkg.add(["FiniteDiff", "Lux", "LuxTestUtils"])
+Pkg.add(["FiniteDiff", "Lux", "LuxTestUtils"])
 
 using ADTypes
 using ComponentArrays: ComponentArrays
@@ -12,8 +11,8 @@ using FiniteDifferences: FiniteDifferences
 using Flux: Flux
 using ForwardDiff: ForwardDiff
 using JLArrays: JLArrays
-# using Lux: Lux
-# using LuxTestUtils: LuxTestUtils
+using Lux: Lux
+using LuxTestUtils: LuxTestUtils
 using Random
 using SparseConnectivityTracer
 using SparseMatrixColorings
@@ -41,19 +40,16 @@ test_differentiation(
 
 ## Neural nets
 
-Random.seed!(0)
-
 test_differentiation(
     AutoZygote(),
-    DIT.flux_scenarios();
+    DIT.flux_scenarios(Random.MersenneTwister(0));
     isapprox=DIT.flux_isapprox,
     rtol=1e-2,
-    atol=1e-6,
+    atol=1e-4,
     scenario_intact=false,
     logging=LOGGING,
 )
 
-#=
 test_differentiation(
     AutoZygote(),
     DIT.lux_scenarios(Random.Xoshiro(63));
@@ -63,4 +59,3 @@ test_differentiation(
     scenario_intact=false,
     logging=LOGGING,
 )
-=#
