@@ -25,9 +25,9 @@ function DI.value_and_pushforward(
     ::NoPushforwardExtras,
     backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
-    tx::Tangents,
-)
-    f_and_df = get_f_and_df(f, backend)
+    tx::Tangents{B},
+) where {B}
+    f_and_df = get_f_and_df(f, backend, Val(B))
     dxs_sametype = map(Fix1(convert, typeof(x)), tx.d)
     x_and_dxs = BatchDuplicated(x, dxs_sametype)
     dys, y = autodiff(forward_mode_withprimal(backend), f_and_df, x_and_dxs)
@@ -53,9 +53,9 @@ function DI.pushforward(
     ::NoPushforwardExtras,
     backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
-    tx::Tangents,
-)
-    f_and_df = get_f_and_df(f, backend)
+    tx::Tangents{B},
+) where {B}
+    f_and_df = get_f_and_df(f, backend, Val(B))
     dxs_sametype = map(Fix1(convert, typeof(x)), tx.d)
     x_and_dxs = BatchDuplicated(x, dxs_sametype)
     dys = only(autodiff(forward_mode_noprimal(backend), f_and_df, x_and_dxs))

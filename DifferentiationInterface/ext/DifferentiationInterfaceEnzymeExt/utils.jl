@@ -1,17 +1,35 @@
 # until https://github.com/EnzymeAD/Enzyme.jl/pull/1545 is merged
 DI.pick_batchsize(::AutoEnzyme, dimension::Integer) = min(dimension, 16)
 
-function get_f_and_df(f, ::AutoEnzyme{M,Nothing}) where {M}
+function get_f_and_df(f, ::AutoEnzyme{M,Nothing}, ::Val{B}=Val(1)) where {M,B}
     return f
 end
 
-function get_f_and_df(f, ::AutoEnzyme{M,<:Const}) where {M}
+function get_f_and_df(f, ::AutoEnzyme{M,<:Const}, ::Val{B}=Val(1)) where {M,B}
     return Const(f)
 end
 
-# function get_f_and_df(f, ::AutoEnzyme{M,<:Duplicated}) where {M}
-#     return Duplicated(f, make_zero(f))
-# end
+function get_f_and_df(
+    f,
+    ::AutoEnzyme{
+        M,
+        <:Union{
+            Duplicated,
+            EnzymeCore.DuplicatedNoNeed,
+            BatchDuplicated,
+            EnzymeCore.BatchDuplicatedFunc,
+            EnzymeCore.BatchDuplicatedNoNeed,
+        },
+    },
+    ::Val{B}=Val(1),
+) where {M,B}
+    # TODO: needs more sophistication for mixed activities
+    if B == 1
+        return Duplicated(f, make_zero(f))
+    else
+        return BatchDuplicated(f, ntuple(_ -> make_zero(f), Val(B)))
+    end
+end
 
 force_annotation(f::Annotation) = f
 force_annotation(f) = Const(f)

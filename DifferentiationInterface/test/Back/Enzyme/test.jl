@@ -37,7 +37,7 @@ sparse_backends =
         @test check_available(backend)
         @test check_inplace(backend)
     end
-end
+end;
 
 ## Dense backends
 
@@ -45,12 +45,12 @@ test_differentiation(
     dense_backends, default_scenarios(); second_order=false, logging=LOGGING
 );
 
-# test_differentiation(
-#     duplicated_function_backends,
-#     default_scenarios(; include_normal=false, include_closurified=true);
-#     second_order=false,
-#     logging=LOGGING,
-# );
+test_differentiation(
+    duplicated_function_backends,
+    default_scenarios(; include_normal=false, include_closurified=true);
+    second_order=false,
+    logging=LOGGING,
+);
 
 test_differentiation(
     [

@@ -31,7 +31,7 @@ function DI.value_and_pushforward(
     x,
     tx::Tangents{B},
 ) where {B}
-    f!_and_df! = get_f_and_df(f!, backend)
+    f!_and_df! = get_f_and_df(f!, backend, Val(B))
     dxs_sametype = map(Fix1(convert, typeof(x)), tx.d)
     dys_sametype = ntuple(_ -> make_zero(y), Val(B))
     x_and_dxs = BatchDuplicated(x, dxs_sametype)

@@ -12,7 +12,7 @@ using FiniteDifferences: FiniteDifferences
 using Flux: Flux
 using ForwardDiff: ForwardDiff
 using JLArrays: JLArrays
-using Lux: Lux
+# using Lux: Lux
 using LuxTestUtils: LuxTestUtils
 using Random
 using SparseConnectivityTracer
