@@ -208,11 +208,12 @@ function DI.gradient!(
     x,
     contexts::Vararg{Context,C},
 ) where {F,C}
+    f_and_df = get_f_and_df(f, backend)
     dx_righttype = convert(typeof(x), grad)
     make_zero!(dx_righttype)
     autodiff(
         reverse_mode_noprimal(backend),
-        f,
+        f_and_df,
         Active,
         Duplicated(x, dx_righttype),
         map(translate, contexts)...,
@@ -243,11 +244,12 @@ function DI.value_and_gradient!(
     x,
     contexts::Vararg{Context,C},
 ) where {F,C}
+    f_and_df = get_f_and_df(f, backend)
     dx_righttype = convert(typeof(x), grad)
     make_zero!(dx_righttype)
     _, y = autodiff(
         reverse_mode_withprimal(backend),
-        f,
+        f_and_df,
         Active,
         Duplicated(x, dx_righttype),
         map(translate, contexts)...,
