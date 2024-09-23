@@ -84,7 +84,15 @@ function Base.:(==)(
     eq_contexts = scen1.contexts == scen2.contexts
     eq_res1 = scen1.res1 == scen2.res1
     eq_res2 = scen1.res2 == scen2.res2
-    return (eq_f && eq_x && eq_y && eq_tang && eq_contexts && eq_res1 && eq_res2)
+    return (  #
+        # eq_f &&  #
+        eq_x &&  #
+        eq_y &&
+        eq_tang &&
+        eq_contexts &&
+        eq_res1 &&
+        eq_res2
+    )
 end
 
 operator(::Scenario{op}) where {op} = op

@@ -18,9 +18,5 @@ test_differentiation(
     [
         AutoZygote(),
         # AutoEnzyme()  # TODO: fix
-    ],
-    DIT.flux_scenarios();
-    isapprox=DIT.flux_isapprox,
-    rtol=1e-2,
-    atol=1e-6,
+    ], DIT.flux_scenarios(); isapprox=DIT.flux_isapprox, rtol=1e-2, atol=1e-6
 )
