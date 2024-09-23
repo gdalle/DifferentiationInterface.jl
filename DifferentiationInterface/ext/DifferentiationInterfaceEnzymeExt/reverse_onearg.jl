@@ -229,7 +229,9 @@ function DI.value_and_gradient(
     contexts::Vararg{Context,C},
 ) where {F,C}
     f_and_df = get_f_and_df(f, backend)
-    (; derivs, val) = gradient(reverse_mode_withprimal(backend), f_and_df, x)
+    (; derivs, val) = gradient(
+        reverse_mode_withprimal(backend), f_and_df, x, map(translate, contexts)...
+    )
     return val, first(derivs)
 end
 

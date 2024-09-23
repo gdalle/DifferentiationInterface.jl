@@ -36,7 +36,7 @@ end
 force_annotation(f::F) where {F<:Annotation} = f
 force_annotation(f::F) where {F} = Const(f)
 
-translate(c::DI.Constant) = Const(unwrap(c))
+translate(c::DI.Constant) = Const(DI.unwrap(c))
 
 ## Modes
 

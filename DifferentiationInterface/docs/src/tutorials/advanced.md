@@ -49,10 +49,6 @@ extras_other_constant = prepare_gradient(f_multiarg, backend, x, Constant(-1))
 gradient(f_multiarg, extras_other_constant, backend, x, Constant(10))
 ```
 
-!!! warning
-    At the moment, contexts only work with ForwardDiff, but we will add compatibility with other backends soon.
-    This trick will be especially important to leverage Enzyme's annotations for increased performance. 
-
 ## Sparsity
 
 Sparse AD is very useful when Jacobian or Hessian matrices have a lot of zeros.
