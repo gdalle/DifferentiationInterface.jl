@@ -12,7 +12,7 @@ Another option would be creating a closure, but that is sometimes undesirable.
 
 !!! warning
     This feature is still experimental, and will likely not be supported by all backends.
-    At the moment, it only works with ForwardDiff.
+    At the moment, it only works with ForwardDiff, Zygote and Enzyme.
 
 ### Types of contexts
 

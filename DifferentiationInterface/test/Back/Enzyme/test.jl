@@ -12,10 +12,10 @@ LOGGING = get(ENV, "CI", "false") == "false"
 
 dense_backends = [
     AutoEnzyme(; mode=nothing),
-    AutoEnzyme(; mode=nothing, function_annotation=Enzyme.Const),
     AutoEnzyme(; mode=Enzyme.Forward),
-    AutoEnzyme(; mode=Enzyme.Forward, function_annotation=Enzyme.Const),
     AutoEnzyme(; mode=Enzyme.Reverse),
+    AutoEnzyme(; mode=nothing, function_annotation=Enzyme.Const),
+    AutoEnzyme(; mode=Enzyme.Forward, function_annotation=Enzyme.Const),
     AutoEnzyme(; mode=Enzyme.Reverse, function_annotation=Enzyme.Const),
 ]
 
@@ -43,6 +43,13 @@ end;
 
 test_differentiation(
     dense_backends, default_scenarios(); second_order=false, logging=LOGGING
+);
+
+test_differentiation(
+    dense_backends[1:3],
+    default_scenarios(; include_normal=false, include_constantified=true);
+    second_order=false,
+    logging=LOGGING,
 );
 
 test_differentiation(

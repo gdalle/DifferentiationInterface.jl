@@ -1,16 +1,18 @@
 # until https://github.com/EnzymeAD/Enzyme.jl/pull/1545 is merged
 DI.pick_batchsize(::AutoEnzyme, dimension::Integer) = min(dimension, 16)
 
-function get_f_and_df(f, ::AutoEnzyme{M,Nothing}, ::Val{B}=Val(1)) where {M,B}
+## Annotations
+
+function get_f_and_df(f::F, ::AutoEnzyme{M,Nothing}, ::Val{B}=Val(1)) where {F,M,B}
     return f
 end
 
-function get_f_and_df(f, ::AutoEnzyme{M,<:Const}, ::Val{B}=Val(1)) where {M,B}
+function get_f_and_df(f::F, ::AutoEnzyme{M,<:Const}, ::Val{B}=Val(1)) where {F,M,B}
     return Const(f)
 end
 
 function get_f_and_df(
-    f,
+    f::F,
     ::AutoEnzyme{
         M,
         <:Union{
@@ -22,7 +24,7 @@ function get_f_and_df(
         },
     },
     ::Val{B}=Val(1),
-) where {M,B}
+) where {F,M,B}
     # TODO: needs more sophistication for mixed activities
     if B == 1
         return Duplicated(f, make_zero(f))
@@ -31,8 +33,12 @@ function get_f_and_df(
     end
 end
 
-force_annotation(f::Annotation) = f
-force_annotation(f) = Const(f)
+force_annotation(f::F) where {F<:Annotation} = f
+force_annotation(f::F) where {F} = Const(f)
+
+translate(c::DI.Constant) = Const(DI.unwrap(c))
+
+## Modes
 
 function mode_noprimal(
     ::Type{ForwardMode{ReturnPrimal,ABI,ErrIfFuncWritten,RuntimeActivity}}

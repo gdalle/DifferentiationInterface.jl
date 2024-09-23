@@ -4,6 +4,7 @@ using ADTypes: ADTypes, AutoEnzyme
 using Base: Fix1
 import DifferentiationInterface as DI
 using DifferentiationInterface:
+    Context,
     DerivativeExtras,
     GradientExtras,
     JacobianExtras,
