@@ -20,7 +20,6 @@ test_differentiation(
         # AutoEnzyme()  # TODO: fix
     ],
     DIT.flux_scenarios();
-    isequal=DIT.flux_isequal,
     isapprox=DIT.flux_isapprox,
     rtol=1e-2,
     atol=1e-6,

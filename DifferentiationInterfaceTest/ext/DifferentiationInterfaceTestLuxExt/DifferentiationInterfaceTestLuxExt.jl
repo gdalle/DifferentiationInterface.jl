@@ -17,10 +17,6 @@ Relevant discussions:
 - https://github.com/LuxDL/Lux.jl/issues/769
 =#
 
-function DIT.lux_isequal(a, b)
-    return check_approx(a, b; atol=0, rtol=0)
-end
-
 function DIT.lux_isapprox(a, b; atol, rtol)
     return check_approx(a, b; atol, rtol)
 end
