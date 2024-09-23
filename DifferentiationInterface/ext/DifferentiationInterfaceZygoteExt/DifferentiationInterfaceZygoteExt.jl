@@ -27,20 +27,22 @@ struct ZygotePullbackExtrasSamePoint{Y,PB} <: PullbackExtras
     pb::PB
 end
 
-function DI.prepare_pullback(f, ::AutoZygote, x, ty::Tangents, contexts::Vararg{Constant})
+function DI.prepare_pullback(
+    f, ::AutoZygote, x, ty::Tangents, contexts::Vararg{Constant,C}
+) where {C}
     return NoPullbackExtras()
 end
 
 function DI.prepare_pullback_same_point(
-    f, ::NoPullbackExtras, ::AutoZygote, x, ty::Tangents, contexts::Vararg{Constant}
-)
+    f, ::NoPullbackExtras, ::AutoZygote, x, ty::Tangents, contexts::Vararg{Constant,C}
+) where {C}
     y, pb = pullback(f, x, map(unwrap, contexts)...)
     return ZygotePullbackExtrasSamePoint(y, pb)
 end
 
 function DI.value_and_pullback(
-    f, ::NoPullbackExtras, ::AutoZygote, x, ty::Tangents, contexts::Vararg{Constant}
-)
+    f, ::NoPullbackExtras, ::AutoZygote, x, ty::Tangents, contexts::Vararg{Constant,C}
+) where {C}
     y, pb = pullback(f, x, map(unwrap, contexts)...)
     tx = map(ty) do dy
         first(pb(dy))
@@ -54,8 +56,8 @@ function DI.value_and_pullback(
     ::AutoZygote,
     x,
     ty::Tangents,
-    contexts::Vararg{Constant},
-)
+    contexts::Vararg{Constant,C},
+) where {C}
     @compat (; y, pb) = extras
     tx = map(ty) do dy
         first(pb(dy))
@@ -69,8 +71,8 @@ function DI.pullback(
     ::AutoZygote,
     x,
     ty::Tangents,
-    contexts::Vararg{Constant},
-)
+    contexts::Vararg{Constant,C},
+) where {C}
     @compat (; pb) = extras
     tx = map(ty) do dy
         first(pb(dy))
@@ -80,29 +82,33 @@ end
 
 ## Gradient
 
-DI.prepare_gradient(f, ::AutoZygote, x, contexts::Vararg{Constant}) = NoGradientExtras()
+function DI.prepare_gradient(f, ::AutoZygote, x, contexts::Vararg{Constant,C}) where {C}
+    return NoGradientExtras()
+end
 
 function DI.value_and_gradient(
-    f, ::NoGradientExtras, ::AutoZygote, x, contexts::Vararg{Constant}
-)
+    f, ::NoGradientExtras, ::AutoZygote, x, contexts::Vararg{Constant,C}
+) where {C}
     @compat (; val, grad) = withgradient(f, x, map(unwrap, contexts)...)
     return val, first(grad)
 end
 
-function DI.gradient(f, ::NoGradientExtras, ::AutoZygote, x, contexts::Vararg{Constant})
+function DI.gradient(
+    f, ::NoGradientExtras, ::AutoZygote, x, contexts::Vararg{Constant,C}
+) where {C}
     return first(gradient(f, x, map(unwrap, contexts)...))
 end
 
 function DI.value_and_gradient!(
-    f, grad, extras::NoGradientExtras, backend::AutoZygote, x, contexts::Vararg{Constant}
-)
+    f, grad, extras::NoGradientExtras, backend::AutoZygote, x, contexts::Vararg{Constant,C}
+) where {C}
     y, new_grad = DI.value_and_gradient(f, extras, backend, x, contexts...)
     return y, copyto!(grad, new_grad)
 end
 
 function DI.gradient!(
-    f, grad, extras::NoGradientExtras, backend::AutoZygote, x, contexts::Vararg{Constant}
-)
+    f, grad, extras::NoGradientExtras, backend::AutoZygote, x, contexts::Vararg{Constant,C}
+) where {C}
     return copyto!(grad, DI.gradient(f, extras, backend, x, contexts...))
 end
 
