@@ -7,6 +7,7 @@ import DifferentiationInterface as DI
 using DifferentiationInterface:
     Context,
     DerivativeExtras,
+    DifferentiateWith,
     GradientExtras,
     HessianExtras,
     HVPExtras,
@@ -59,5 +60,6 @@ include("utils.jl")
 include("onearg.jl")
 include("twoarg.jl")
 include("secondorder.jl")
+include("differentiate_with.jl")
 
 end # module

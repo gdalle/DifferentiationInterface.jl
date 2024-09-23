@@ -1,31 +1,29 @@
 using Pkg
-Pkg.add(["ForwardDiff", "Zygote"])
+Pkg.add(["FiniteDiff", "ForwardDiff", "Zygote"])
 
 using DifferentiationInterface, DifferentiationInterfaceTest
 import DifferentiationInterfaceTest as DIT
+using FiniteDiff: FiniteDiff
 using ForwardDiff: ForwardDiff
 using Zygote: Zygote
 using Test
 
 LOGGING = get(ENV, "CI", "false") == "false"
 
-function zygote_breaking_scenarios()
-    outofplace_scens = filter(default_scenarios()) do scen
-        DIT.operator_place(scen) == :out
-    end
-    bad_outofplace_scens = map(outofplace_scens) do scen
-        function bad_f(x)
-            a = Vector{eltype(x)}(undef, 1)
-            a[1] = sum(x)
-            return scen.f(x)
+function differentiatewith_scenarios()
+    bad_scens =  # these closurified scenarios have mutation and type constraints
+        filter(default_scenarios(; include_normal=false, include_closurified=true)) do scen
+            DIT.function_place(scen) == :out
         end
-        wrapped_bad_f = DifferentiateWith(bad_f, AutoForwardDiff())
-        bad_scen = DIT.change_function(scen, wrapped_bad_f)
-        return bad_scen
+    good_scens = map(bad_scens) do scen
+        DIT.change_function(scen, DifferentiateWith(scen.f, AutoFiniteDiff()))
     end
-    return bad_outofplace_scens
+    return good_scens
 end
 
 test_differentiation(
-    AutoZygote(), zygote_breaking_scenarios(); second_order=false, logging=LOGGING
+    [AutoForwardDiff(), AutoZygote()],
+    differentiatewith_scenarios();
+    second_order=false,
+    logging=LOGGING,
 )
