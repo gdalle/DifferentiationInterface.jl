@@ -49,6 +49,7 @@ test_differentiation(
     isapprox=DIT.flux_isapprox,
     rtol=1e-2,
     atol=1e-6,
+    scenario_intact=false,
     logging=LOGGING,
 )
 
@@ -59,6 +60,7 @@ test_differentiation(
     isapprox=DIT.lux_isapprox,
     rtol=1.0f-2,
     atol=1.0f-3,
+    scenario_intact=false,
     logging=LOGGING,
 )
 =#

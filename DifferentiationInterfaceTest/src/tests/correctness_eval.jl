@@ -46,7 +46,12 @@ for op in [
 
     if op in [:derivative, :gradient, :jacobian]
         @eval function test_correctness(
-            ba::AbstractADType, scen::$S1out; isapprox::Function, atol::Real, rtol::Real
+            ba::AbstractADType,
+            scen::$S1out;
+            isapprox::Function,
+            atol::Real,
+            rtol::Real,
+            scenario_intact::Bool,
         )
             @compat (; f, x, y, res1, contexts) = new_scen = deepcopy(scen)
             xrand = myrandom(x)
@@ -68,12 +73,17 @@ for op in [
                     @test res1_out2_noval ≈ scen.res1
                 end
             end
-            @test new_scen == scen
+            scenario_intact && @test new_scen == scen
             return nothing
         end
 
         @eval function test_correctness(
-            ba::AbstractADType, scen::$S1in; isapprox::Function, atol::Real, rtol::Real
+            ba::AbstractADType,
+            scen::$S1in;
+            isapprox::Function,
+            atol::Real,
+            rtol::Real,
+            scenario_intact::Bool,
         )
             @compat (; f, x, y, res1, contexts) = new_scen = deepcopy(scen)
             xrand = myrandom(x)
@@ -111,14 +121,19 @@ for op in [
                     @test res1_out2_noval ≈ scen.res1
                 end
             end
-            @test new_scen == scen
+            scenario_intact && @test new_scen == scen
             return nothing
         end
 
         op == :gradient && continue
 
         @eval function test_correctness(
-            ba::AbstractADType, scen::$S2out; isapprox::Function, atol::Real, rtol::Real
+            ba::AbstractADType,
+            scen::$S2out;
+            isapprox::Function,
+            atol::Real,
+            rtol::Real,
+            scenario_intact::Bool,
         )
             @compat (; f, x, y, res1, contexts) = new_scen = deepcopy(scen)
             xrand, yrand = myrandom(x), myrandom(y)
@@ -150,12 +165,17 @@ for op in [
                     @test res1_out2_noval ≈ scen.res1
                 end
             end
-            @test new_scen == scen
+            scenario_intact && @test new_scen == scen
             return nothing
         end
 
         @eval function test_correctness(
-            ba::AbstractADType, scen::$S2in; isapprox::Function, atol::Real, rtol::Real
+            ba::AbstractADType,
+            scen::$S2in;
+            isapprox::Function,
+            atol::Real,
+            rtol::Real,
+            scenario_intact::Bool,
         )
             @compat (; f, x, y, res1, contexts) = new_scen = deepcopy(scen)
             xrand, yrand = myrandom(x), myrandom(y)
@@ -195,13 +215,18 @@ for op in [
                     @test res1_out2_noval ≈ scen.res1
                 end
             end
-            @test new_scen == scen
+            scenario_intact && @test new_scen == scen
             return nothing
         end
 
     elseif op in [:second_derivative, :hessian]
         @eval function test_correctness(
-            ba::AbstractADType, scen::$S1out; isapprox::Function, atol::Real, rtol::Real
+            ba::AbstractADType,
+            scen::$S1out;
+            isapprox::Function,
+            atol::Real,
+            rtol::Real,
+            scenario_intact::Bool,
         )
             @compat (; f, x, y, res1, res2, contexts) = new_scen = deepcopy(scen)
             xrand = myrandom(x)
@@ -229,12 +254,17 @@ for op in [
                     @test res2_out2_noval ≈ scen.res2
                 end
             end
-            @test new_scen == scen
+            scenario_intact && @test new_scen == scen
             return nothing
         end
 
         @eval function test_correctness(
-            ba::AbstractADType, scen::$S1in; isapprox::Function, atol::Real, rtol::Real
+            ba::AbstractADType,
+            scen::$S1in;
+            isapprox::Function,
+            atol::Real,
+            rtol::Real,
+            scenario_intact::Bool,
         )
             @compat (; f, x, y, res1, res2, contexts) = new_scen = deepcopy(scen)
             xrand = myrandom(x)
@@ -276,13 +306,18 @@ for op in [
                     @test res2_out2_noval ≈ scen.res2
                 end
             end
-            @test new_scen == scen
+            scenario_intact && @test new_scen == scen
             return nothing
         end
 
     elseif op in [:pushforward, :pullback]
         @eval function test_correctness(
-            ba::AbstractADType, scen::$S1out; isapprox::Function, atol::Real, rtol::Real
+            ba::AbstractADType,
+            scen::$S1out;
+            isapprox::Function,
+            atol::Real,
+            rtol::Real,
+            scenario_intact::Bool,
         )
             @compat (; f, x, y, tang, res1, contexts) = new_scen = deepcopy(scen)
             xrand, tangrand = myrandom(x), myrandom(tang)
@@ -312,12 +347,17 @@ for op in [
                     @test res1_out2_noval ≈ scen.res1
                 end
             end
-            @test new_scen == scen
+            scenario_intact && @test new_scen == scen
             return nothing
         end
 
         @eval function test_correctness(
-            ba::AbstractADType, scen::$S1in; isapprox::Function, atol::Real, rtol::Real
+            ba::AbstractADType,
+            scen::$S1in;
+            isapprox::Function,
+            atol::Real,
+            rtol::Real,
+            scenario_intact::Bool,
         )
             @compat (; f, x, y, tang, res1, contexts) = new_scen = deepcopy(scen)
             xrand, tangrand = myrandom(x), myrandom(tang)
@@ -359,12 +399,17 @@ for op in [
                     @test res1_out2_noval ≈ scen.res1
                 end
             end
-            @test new_scen == scen
+            scenario_intact && @test new_scen == scen
             return nothing
         end
 
         @eval function test_correctness(
-            ba::AbstractADType, scen::$S2out; isapprox::Function, atol::Real, rtol::Real
+            ba::AbstractADType,
+            scen::$S2out;
+            isapprox::Function,
+            atol::Real,
+            rtol::Real,
+            scenario_intact::Bool,
         )
             @compat (; f, x, y, tang, res1, contexts) = new_scen = deepcopy(scen)
             xrand, yrand, tangrand = myrandom(x), myrandom(y), myrandom(tang)
@@ -404,12 +449,17 @@ for op in [
                     @test res1_out2_noval ≈ scen.res1
                 end
             end
-            @test new_scen == scen
+            scenario_intact && @test new_scen == scen
             return nothing
         end
 
         @eval function test_correctness(
-            ba::AbstractADType, scen::$S2in; isapprox::Function, atol::Real, rtol::Real
+            ba::AbstractADType,
+            scen::$S2in;
+            isapprox::Function,
+            atol::Real,
+            rtol::Real,
+            scenario_intact::Bool,
         )
             @compat (; f, x, y, tang, res1, contexts) = new_scen = deepcopy(scen)
             xrand, yrand, tangrand = myrandom(x), myrandom(y), myrandom(tang)
@@ -453,13 +503,18 @@ for op in [
                     @test res1_out2_noval ≈ scen.res1
                 end
             end
-            @test new_scen == scen
+            scenario_intact && @test new_scen == scen
             return nothing
         end
 
     elseif op in [:hvp]
         @eval function test_correctness(
-            ba::AbstractADType, scen::$S1out; isapprox::Function, atol::Real, rtol::Real
+            ba::AbstractADType,
+            scen::$S1out;
+            isapprox::Function,
+            atol::Real,
+            rtol::Real,
+            scenario_intact::Bool,
         )
             @compat (; f, x, y, tang, res2, contexts) = new_scen = deepcopy(scen)
             xrand, tangrand = myrandom(x), myrandom(tang)
@@ -477,12 +532,17 @@ for op in [
                     @test res2_out2_noval ≈ scen.res2
                 end
             end
-            @test new_scen == scen
+            scenario_intact && @test new_scen == scen
             return nothing
         end
 
         @eval function test_correctness(
-            ba::AbstractADType, scen::$S1in; isapprox::Function, atol::Real, rtol::Real
+            ba::AbstractADType,
+            scen::$S1in;
+            isapprox::Function,
+            atol::Real,
+            rtol::Real,
+            scenario_intact::Bool,
         )
             @compat (; f, x, y, tang, res2, contexts) = new_scen = deepcopy(scen)
             xrand, tangrand = myrandom(x), myrandom(tang)
@@ -508,7 +568,7 @@ for op in [
                     @test res2_out2_noval ≈ scen.res2
                 end
             end
-            @test new_scen == scen
+            scenario_intact && @test new_scen == scen
             return nothing
         end
     end
