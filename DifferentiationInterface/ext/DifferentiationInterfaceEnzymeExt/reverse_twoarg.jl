@@ -9,21 +9,6 @@ end
 function DI.value_and_pullback(
     f!,
     y,
-    extras::NoPullbackExtras,
-    backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
-    x,
-    ty::Tangents,
-)
-    tx = map(ty) do dy
-        only(DI.pullback(f!, y, extras, backend, x, Tangents(dy)))
-    end
-    f!(y, x)
-    return y, tx
-end
-
-function DI.value_and_pullback(
-    f!,
-    y,
     ::NoPullbackExtras,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x::Number,
@@ -43,6 +28,23 @@ function DI.value_and_pullback(
     y,
     ::NoPullbackExtras,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
+    x::Number,
+    ty::Tangents,
+)
+    f!_and_df! = get_f_and_df(f!, backend)
+    dys_sametype = map(Fix1(convert, typeof(y)), copy.(ty.d))
+    y_and_dys = BatchDuplicated(y, dys_sametype)
+    _, dxs = only(
+        autodiff(reverse_mode_noprimal(backend), f!_and_df!, Const, y_and_dys, Active(x))
+    )
+    return y, Tangents(dxs...)
+end
+
+function DI.value_and_pullback(
+    f!,
+    y,
+    ::NoPullbackExtras,
+    backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
     ty::Tangents{1},
 )
@@ -53,4 +55,21 @@ function DI.value_and_pullback(
     y_and_dy = Duplicated(y, dy_sametype)
     autodiff(reverse_mode_noprimal(backend), f!_and_df!, Const, y_and_dy, x_and_dx)
     return y, Tangents(dx_sametype)
+end
+
+function DI.value_and_pullback(
+    f!,
+    y,
+    ::NoPullbackExtras,
+    backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
+    x,
+    ty::Tangents{B},
+) where {B}
+    f!_and_df! = get_f_and_df(f!, backend)
+    dxs_sametype = ntuple(_ -> make_zero(x), Val(B))
+    dys_sametype = map(Fix1(convert, typeof(y)), copy.(ty.d))
+    x_and_dxs = BatchDuplicated(x, dxs_sametype)
+    y_and_dys = BatchDuplicated(y, dys_sametype)
+    autodiff(reverse_mode_noprimal(backend), f!_and_df!, Const, y_and_dys, x_and_dxs)
+    return y, Tangents(dxs_sametype...)
 end

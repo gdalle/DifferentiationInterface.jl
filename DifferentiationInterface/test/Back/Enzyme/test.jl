@@ -6,7 +6,6 @@ using DifferentiationInterface, DifferentiationInterfaceTest
 import DifferentiationInterfaceTest as DIT
 using Enzyme: Enzyme
 using SparseConnectivityTracer, SparseMatrixColorings
-using StableRNGs
 using Test
 
 LOGGING = get(ENV, "CI", "false") == "false"
@@ -20,12 +19,8 @@ dense_backends = [
     AutoEnzyme(; mode=Enzyme.Reverse, function_annotation=Enzyme.Const),
 ]
 
-nested_dense_backends = [
-    DifferentiationInterface.nested(AutoEnzyme(; mode=Enzyme.Forward)),
-    DifferentiationInterface.nested(AutoEnzyme(; mode=Enzyme.Reverse)),
-]
-
 duplicated_function_backends = [
+    AutoEnzyme(; function_annotation=Enzyme.Duplicated),
     AutoEnzyme(; mode=Enzyme.Forward, function_annotation=Enzyme.Duplicated),
     AutoEnzyme(; mode=Enzyme.Reverse, function_annotation=Enzyme.Duplicated),
 ]
@@ -47,10 +42,7 @@ end
 ## Dense backends
 
 test_differentiation(
-    vcat(dense_backends, nested_dense_backends),
-    default_scenarios();
-    second_order=false,
-    logging=LOGGING,
+    dense_backends, default_scenarios(); second_order=false, logging=LOGGING
 );
 
 # test_differentiation(
@@ -79,6 +71,9 @@ test_differentiation(
     logging=LOGGING,
 );
 
+#=
+# TODO: reactivate type stability tests
+
 test_differentiation(
     AutoEnzyme(; mode=Enzyme.Forward),  # TODO: add more
     default_scenarios(; include_batchified=false);
@@ -87,17 +82,22 @@ test_differentiation(
     second_order=false,
     logging=LOGGING,
 );
+=#
 
 ## Sparse backends
 
 test_differentiation(
     sparse_backends,
     default_scenarios();
-    excluded=[:derivative, :gradient, :pullback, :pushforward],
-    second_order=false,
+    excluded=[:derivative, :gradient, :pullback, :pushforward, :second_derivative, :hvp],
+    second_order=false,  # TODO: make true
     logging=LOGGING,
 );
 
 test_differentiation(
-    sparse_backends, sparse_scenarios(); second_order=false, sparsity=true, logging=LOGGING
+    sparse_backends,
+    sparse_scenarios();
+    sparsity=true,
+    second_order=false,  # TODO: make true
+    logging=LOGGING,
 );

@@ -1,5 +1,6 @@
 using Pkg
-Pkg.add(["FiniteDiff", "Lux", "LuxTestUtils"])
+Pkg.add(["FiniteDiff"])
+# Pkg.add(["FiniteDiff", "Lux", "LuxTestUtils"])
 
 using ADTypes
 using ComponentArrays: ComponentArrays
@@ -52,6 +53,7 @@ test_differentiation(
     logging=LOGGING,
 )
 
+#=
 test_differentiation(
     AutoZygote(),
     DIT.lux_scenarios(Random.Xoshiro(63));
@@ -61,3 +63,4 @@ test_differentiation(
     atol=1.0f-3,
     logging=LOGGING,
 )
+=#

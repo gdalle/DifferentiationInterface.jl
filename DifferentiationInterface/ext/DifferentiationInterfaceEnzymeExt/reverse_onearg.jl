@@ -36,10 +36,13 @@ function DI.value_and_pullback(
     x,
     ty::Tangents,
 )
-    tx = map(ty) do dy
-        only(DI.pullback(f, extras, backend, x, Tangents(dy)))
+    ys_and_dxs = map(ty.d) do dy
+        y, tx = DI.value_and_pullback(f, extras, backend, x, Tangents(dy))
+        y, only(tx)
     end
-    y = f(x)  # TODO: optimize
+    y = first(ys_and_dxs[1])
+    dxs = last.(ys_and_dxs)
+    tx = Tangents(dxs...)
     return y, tx
 end
 
@@ -92,10 +95,11 @@ function DI.value_and_pullback!(
     x,
     ty::Tangents,
 )
-    for b in eachindex(tx.d, ty.d)
-        DI.pullback!(f, Tangents(tx.d[b]), extras, backend, x, Tangents(ty.d[b]))
+    ys = map(tx.d, ty.d) do dx, dy
+        y, _ = DI.value_and_pullback!(f, Tangents(dx), extras, backend, x, Tangents(dy))
+        y
     end
-    y = f(x)  # TODO: optimize
+    y = first(ys)
     return y, tx
 end
 
