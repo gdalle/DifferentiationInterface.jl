@@ -41,10 +41,10 @@ Filtering:
 Options:
 
 - `logging=false`: whether to log progress
-- `isequal=isequal`: function used to compare objects exactly, with the standard signature `isequal(x, y)`
 - `isapprox=isapprox`: function used to compare objects approximately, with the standard signature `isapprox(x, y; atol, rtol)`
 - `atol=0`: absolute precision for correctness testing (when comparing to the reference outputs)
 - `rtol=1e-3`: relative precision for correctness testing (when comparing to the reference outputs)
+- `scenario_intact=true`: whether to check that the scenario remains unchanged after the operators are applied
 """
 function test_differentiation(
     backends::Vector{<:AbstractADType},
@@ -63,10 +63,10 @@ function test_differentiation(
     excluded::Vector{Symbol}=Symbol[],
     # options
     logging::Bool=false,
-    isequal=isequal,
     isapprox=isapprox,
     atol::Real=0,
     rtol::Real=1e-3,
+    scenario_intact::Bool=true,
 )
     scenarios = filter_scenarios(
         scenarios; first_order, second_order, input_type, output_type, excluded
@@ -109,7 +109,7 @@ function test_differentiation(
                         ],
                     )
                     correctness && @testset "Correctness" begin
-                        test_correctness(backend, scen; isequal, isapprox, atol, rtol)
+                        test_correctness(backend, scen; isapprox, atol, rtol, scenario_intact)
                     end
                     type_stability && @testset "Type stability" begin
                         @static if VERSION >= v"1.7"

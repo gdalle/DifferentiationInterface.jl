@@ -23,10 +23,6 @@ function gradient_finite_differences(loss, model)
     return re(only(gs))
 end
 
-function DIT.flux_isequal(a, b)
-    return all(isequal.(fleaves(a), fleaves(b)))
-end
-
 function DIT.flux_isapprox(a, b; atol, rtol)
     isapprox_results = fmapstructure_with_path(a, b) do kp, x, y
         if :state in kp  # ignore RNN and LSTM state

@@ -46,10 +46,10 @@ Random.seed!(0)
 test_differentiation(
     AutoZygote(),
     DIT.flux_scenarios();
-    isequal=DIT.flux_isequal,
     isapprox=DIT.flux_isapprox,
     rtol=1e-2,
     atol=1e-6,
+    scenario_intact=false,
     logging=LOGGING,
 )
 
@@ -57,10 +57,10 @@ test_differentiation(
 test_differentiation(
     AutoZygote(),
     DIT.lux_scenarios(Random.Xoshiro(63));
-    isequal=DIT.lux_isequal,
     isapprox=DIT.lux_isapprox,
     rtol=1.0f-2,
     atol=1.0f-3,
+    scenario_intact=false,
     logging=LOGGING,
 )
 =#

@@ -72,6 +72,21 @@ function Scenario{op,pl_op}(
     return Scenario{op,pl_op,:in}(f!; x, y, tang, contexts, res1, res2)
 end
 
+Base.:(==)(scen1::Scenario, scen2::Scenario) = false
+
+function Base.:(==)(
+    scen1::Scenario{op,pl_op,pl_fun}, scen2::Scenario{op,pl_op,pl_fun}
+) where {op,pl_op,pl_fun}
+    eq_f = scen1.f == scen2.f
+    eq_x = scen1.x == scen2.x
+    eq_y = scen1.y == scen2.y
+    eq_tang = scen1.tang == scen2.tang
+    eq_contexts = scen1.contexts == scen2.contexts
+    eq_res1 = scen1.res1 == scen2.res1
+    eq_res2 = scen1.res2 == scen2.res2
+    return (eq_x && eq_y && eq_tang && eq_contexts && eq_res1 && eq_res2)
+end
+
 operator(::Scenario{op}) where {op} = op
 operator_place(::Scenario{op,pl_op}) where {op,pl_op} = pl_op
 function_place(::Scenario{op,pl_op,pl_fun}) where {op,pl_op,pl_fun} = pl_fun
