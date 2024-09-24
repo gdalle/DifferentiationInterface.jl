@@ -173,7 +173,7 @@ function _pullback_via_pushforward(
     dy,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    dx = map(x, CartesianIndices(x)) do _, j
+    dx = map(CartesianIndices(x)) do j
         t1 = pushforward(
             f, pushforward_prep, backend, x, Tangents(basis(backend, x, j)), contexts...
         )
@@ -269,7 +269,7 @@ function _pullback_via_pushforward(
     dy,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    dx = map(x, CartesianIndices(x)) do _, j  # preserve shape
+    dx = map(CartesianIndices(x)) do j  # preserve shape
         t1 = pushforward(
             f!,
             y,
