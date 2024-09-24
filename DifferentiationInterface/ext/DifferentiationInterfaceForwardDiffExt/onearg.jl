@@ -1,6 +1,6 @@
 ## Pushforward
 
-struct ForwardDiffOneArgPushforwardExtras{T,X} <: PushforwardExtras
+struct ForwardDiffOneArgPushforwardPrep{T,X} <: PushforwardPrep
     xdual_tmp::X
 end
 
@@ -9,12 +9,12 @@ function DI.prepare_pushforward(
 ) where {F,C}
     T = tag_type(f, backend, x)
     xdual_tmp = make_dual_similar(T, x, tx)
-    return ForwardDiffOneArgPushforwardExtras{T,typeof(xdual_tmp)}(xdual_tmp)
+    return ForwardDiffOneArgPushforwardPrep{T,typeof(xdual_tmp)}(xdual_tmp)
 end
 
 function compute_ydual_onearg(
     f::F,
-    extras::ForwardDiffOneArgPushforwardExtras{T},
+    prep::ForwardDiffOneArgPushforwardPrep{T},
     x::Number,
     tx::Tangents,
     contexts::Vararg{Context,C},
@@ -26,12 +26,12 @@ end
 
 function compute_ydual_onearg(
     f::F,
-    extras::ForwardDiffOneArgPushforwardExtras{T},
+    prep::ForwardDiffOneArgPushforwardPrep{T},
     x,
     tx::Tangents,
     contexts::Vararg{Context,C},
 ) where {F,T,C}
-    @compat (; xdual_tmp) = extras
+    @compat (; xdual_tmp) = prep
     make_dual!(T, xdual_tmp, x, tx)
     ydual = f(xdual_tmp, map(unwrap, contexts)...)
     return ydual
@@ -39,13 +39,13 @@ end
 
 function DI.value_and_pushforward(
     f::F,
-    extras::ForwardDiffOneArgPushforwardExtras{T},
+    prep::ForwardDiffOneArgPushforwardPrep{T},
     ::AutoForwardDiff,
     x,
     tx::Tangents{B},
     contexts::Vararg{Context,C},
 ) where {F,T,B,C}
-    ydual = compute_ydual_onearg(f, extras, x, tx, contexts...)
+    ydual = compute_ydual_onearg(f, prep, x, tx, contexts...)
     y = myvalue(T, ydual)
     ty = mypartials(T, Val(B), ydual)
     return y, ty
@@ -54,13 +54,13 @@ end
 function DI.value_and_pushforward!(
     f::F,
     ty::Tangents,
-    extras::ForwardDiffOneArgPushforwardExtras{T},
+    prep::ForwardDiffOneArgPushforwardPrep{T},
     ::AutoForwardDiff,
     x,
     tx::Tangents,
     contexts::Vararg{Context,C},
 ) where {F,T,C}
-    ydual = compute_ydual_onearg(f, extras, x, tx, contexts...)
+    ydual = compute_ydual_onearg(f, prep, x, tx, contexts...)
     y = myvalue(T, ydual)
     mypartials!(T, ty, ydual)
     return y, ty
@@ -68,13 +68,13 @@ end
 
 function DI.pushforward(
     f::F,
-    extras::ForwardDiffOneArgPushforwardExtras{T},
+    prep::ForwardDiffOneArgPushforwardPrep{T},
     ::AutoForwardDiff,
     x,
     tx::Tangents{B},
     contexts::Vararg{Context,C},
 ) where {F,T,B,C}
-    ydual = compute_ydual_onearg(f, extras, x, tx, contexts...)
+    ydual = compute_ydual_onearg(f, prep, x, tx, contexts...)
     ty = mypartials(T, Val(B), ydual)
     return ty
 end
@@ -82,58 +82,54 @@ end
 function DI.pushforward!(
     f::F,
     ty::Tangents,
-    extras::ForwardDiffOneArgPushforwardExtras{T},
+    prep::ForwardDiffOneArgPushforwardPrep{T},
     ::AutoForwardDiff,
     x,
     tx::Tangents,
     contexts::Vararg{Context,C},
 ) where {F,T,C}
-    ydual = compute_ydual_onearg(f, extras, x, tx, contexts...)
+    ydual = compute_ydual_onearg(f, prep, x, tx, contexts...)
     mypartials!(T, ty, ydual)
     return ty
 end
 
 ## Derivative
 
-struct ForwardDiffOneArgDerivativeExtras{E} <: DerivativeExtras
-    pushforward_extras::E
+struct ForwardDiffOneArgDerivativePrep{E} <: DerivativePrep
+    pushforward_prep::E
 end
 
 function DI.prepare_derivative(f::F, backend::AutoForwardDiff, x) where {F}
-    pushforward_extras = DI.prepare_pushforward(f, backend, x, Tangents(one(x)))
-    return ForwardDiffOneArgDerivativeExtras(pushforward_extras)
+    pushforward_prep = DI.prepare_pushforward(f, backend, x, Tangents(one(x)))
+    return ForwardDiffOneArgDerivativePrep(pushforward_prep)
 end
 
 function DI.value_and_derivative(
-    f::F, extras::ForwardDiffOneArgDerivativeExtras, backend::AutoForwardDiff, x
+    f::F, prep::ForwardDiffOneArgDerivativePrep, backend::AutoForwardDiff, x
 ) where {F}
-    y, ty = DI.value_and_pushforward(
-        f, extras.pushforward_extras, backend, x, Tangents(one(x))
-    )
+    y, ty = DI.value_and_pushforward(f, prep.pushforward_prep, backend, x, Tangents(one(x)))
     return y, only(ty)
 end
 
 function DI.value_and_derivative!(
-    f::F, der, extras::ForwardDiffOneArgDerivativeExtras, backend::AutoForwardDiff, x
+    f::F, der, prep::ForwardDiffOneArgDerivativePrep, backend::AutoForwardDiff, x
 ) where {F}
     y, _ = DI.value_and_pushforward!(
-        f, Tangents(der), extras.pushforward_extras, backend, x, Tangents(one(x))
+        f, Tangents(der), prep.pushforward_prep, backend, x, Tangents(one(x))
     )
     return y, der
 end
 
 function DI.derivative(
-    f::F, extras::ForwardDiffOneArgDerivativeExtras, backend::AutoForwardDiff, x
+    f::F, prep::ForwardDiffOneArgDerivativePrep, backend::AutoForwardDiff, x
 ) where {F}
-    return only(DI.pushforward(f, extras.pushforward_extras, backend, x, Tangents(one(x))))
+    return only(DI.pushforward(f, prep.pushforward_prep, backend, x, Tangents(one(x))))
 end
 
 function DI.derivative!(
-    f::F, der, extras::ForwardDiffOneArgDerivativeExtras, backend::AutoForwardDiff, x
+    f::F, der, prep::ForwardDiffOneArgDerivativePrep, backend::AutoForwardDiff, x
 ) where {F}
-    DI.pushforward!(
-        f, Tangents(der), extras.pushforward_extras, backend, x, Tangents(one(x))
-    )
+    DI.pushforward!(f, Tangents(der), prep.pushforward_prep, backend, x, Tangents(one(x)))
     return der
 end
 
@@ -163,40 +159,38 @@ end
 
 ### Prepared
 
-struct ForwardDiffGradientExtras{C} <: GradientExtras
+struct ForwardDiffGradientPrep{C} <: GradientPrep
     config::C
 end
 
 function DI.prepare_gradient(f::F, backend::AutoForwardDiff, x::AbstractArray) where {F}
-    return ForwardDiffGradientExtras(GradientConfig(f, x, choose_chunk(backend, x)))
+    return ForwardDiffGradientPrep(GradientConfig(f, x, choose_chunk(backend, x)))
 end
 
 function DI.value_and_gradient!(
-    f::F, grad, extras::ForwardDiffGradientExtras, ::AutoForwardDiff, x
+    f::F, grad, prep::ForwardDiffGradientPrep, ::AutoForwardDiff, x
 ) where {F}
     result = MutableDiffResult(zero(eltype(x)), (grad,))
-    result = gradient!(result, f, x, extras.config)
+    result = gradient!(result, f, x, prep.config)
     return DiffResults.value(result), DiffResults.gradient(result)
 end
 
 function DI.value_and_gradient(
-    f::F, extras::ForwardDiffGradientExtras, ::AutoForwardDiff, x
+    f::F, prep::ForwardDiffGradientPrep, ::AutoForwardDiff, x
 ) where {F}
     result = GradientResult(x)
-    result = gradient!(result, f, x, extras.config)
+    result = gradient!(result, f, x, prep.config)
     return DiffResults.value(result), DiffResults.gradient(result)
 end
 
 function DI.gradient!(
-    f::F, grad, extras::ForwardDiffGradientExtras, ::AutoForwardDiff, x
+    f::F, grad, prep::ForwardDiffGradientPrep, ::AutoForwardDiff, x
 ) where {F}
-    return gradient!(grad, f, x, extras.config)
+    return gradient!(grad, f, x, prep.config)
 end
 
-function DI.gradient(
-    f::F, extras::ForwardDiffGradientExtras, ::AutoForwardDiff, x
-) where {F}
-    return gradient(f, x, extras.config)
+function DI.gradient(f::F, prep::ForwardDiffGradientPrep, ::AutoForwardDiff, x) where {F}
+    return gradient(f, x, prep.config)
 end
 
 ## Jacobian
@@ -224,49 +218,49 @@ end
 
 ### Prepared
 
-struct ForwardDiffOneArgJacobianExtras{C} <: JacobianExtras
+struct ForwardDiffOneArgJacobianPrep{C} <: JacobianPrep
     config::C
 end
 
 function DI.prepare_jacobian(f, backend::AutoForwardDiff, x)
-    return ForwardDiffOneArgJacobianExtras(JacobianConfig(f, x, choose_chunk(backend, x)))
+    return ForwardDiffOneArgJacobianPrep(JacobianConfig(f, x, choose_chunk(backend, x)))
 end
 
 function DI.value_and_jacobian!(
-    f::F, jac, extras::ForwardDiffOneArgJacobianExtras, ::AutoForwardDiff, x
+    f::F, jac, prep::ForwardDiffOneArgJacobianPrep, ::AutoForwardDiff, x
 ) where {F}
     y = f(x)
     result = MutableDiffResult(y, (jac,))
-    result = jacobian!(result, f, x, extras.config)
+    result = jacobian!(result, f, x, prep.config)
     return DiffResults.value(result), DiffResults.jacobian(result)
 end
 
 function DI.value_and_jacobian(
-    f::F, extras::ForwardDiffOneArgJacobianExtras, ::AutoForwardDiff, x
+    f::F, prep::ForwardDiffOneArgJacobianPrep, ::AutoForwardDiff, x
 ) where {F}
-    return f(x), jacobian(f, x, extras.config)
+    return f(x), jacobian(f, x, prep.config)
 end
 
 function DI.jacobian!(
-    f::F, jac, extras::ForwardDiffOneArgJacobianExtras, ::AutoForwardDiff, x
+    f::F, jac, prep::ForwardDiffOneArgJacobianPrep, ::AutoForwardDiff, x
 ) where {F}
-    return jacobian!(jac, f, x, extras.config)
+    return jacobian!(jac, f, x, prep.config)
 end
 
 function DI.jacobian(
-    f::F, extras::ForwardDiffOneArgJacobianExtras, ::AutoForwardDiff, x
+    f::F, prep::ForwardDiffOneArgJacobianPrep, ::AutoForwardDiff, x
 ) where {F}
-    return jacobian(f, x, extras.config)
+    return jacobian(f, x, prep.config)
 end
 
 ## Second derivative
 
 function DI.prepare_second_derivative(f::F, backend::AutoForwardDiff, x) where {F}
-    return NoSecondDerivativeExtras()
+    return NoSecondDerivativePrep()
 end
 
 function DI.second_derivative(
-    f::F, ::NoSecondDerivativeExtras, backend::AutoForwardDiff, x
+    f::F, ::NoSecondDerivativePrep, backend::AutoForwardDiff, x
 ) where {F}
     T = tag_type(f, backend, x)
     xdual = make_dual(T, x, one(x))
@@ -276,7 +270,7 @@ function DI.second_derivative(
 end
 
 function DI.second_derivative!(
-    f::F, der2, ::NoSecondDerivativeExtras, backend::AutoForwardDiff, x
+    f::F, der2, ::NoSecondDerivativePrep, backend::AutoForwardDiff, x
 ) where {F}
     T = tag_type(f, backend, x)
     xdual = make_dual(T, x, one(x))
@@ -286,7 +280,7 @@ function DI.second_derivative!(
 end
 
 function DI.value_derivative_and_second_derivative(
-    f::F, ::NoSecondDerivativeExtras, backend::AutoForwardDiff, x
+    f::F, ::NoSecondDerivativePrep, backend::AutoForwardDiff, x
 ) where {F}
     T = tag_type(f, backend, x)
     xdual = make_dual(T, x, one(x))
@@ -299,7 +293,7 @@ function DI.value_derivative_and_second_derivative(
 end
 
 function DI.value_derivative_and_second_derivative!(
-    f::F, der, der2, ::NoSecondDerivativeExtras, backend::AutoForwardDiff, x
+    f::F, der, der2, ::NoSecondDerivativePrep, backend::AutoForwardDiff, x
 ) where {F}
     T = tag_type(f, backend, x)
     xdual = make_dual(T, x, one(x))
@@ -317,16 +311,14 @@ function DI.prepare_hvp(f::F, backend::AutoForwardDiff, x, tx::Tangents) where {
     return DI.prepare_hvp(f, SecondOrder(backend, backend), x, tx)
 end
 
-function DI.hvp(
-    f::F, extras::HVPExtras, backend::AutoForwardDiff, x, tx::Tangents
-) where {F}
-    return DI.hvp(f, extras, SecondOrder(backend, backend), x, tx)
+function DI.hvp(f::F, prep::HVPPrep, backend::AutoForwardDiff, x, tx::Tangents) where {F}
+    return DI.hvp(f, prep, SecondOrder(backend, backend), x, tx)
 end
 
 function DI.hvp!(
-    f::F, tg::Tangents, extras::HVPExtras, backend::AutoForwardDiff, x, tx::Tangents
+    f::F, tg::Tangents, prep::HVPPrep, backend::AutoForwardDiff, x, tx::Tangents
 ) where {F}
-    return DI.hvp!(f, tg, extras, SecondOrder(backend, backend), x, tx)
+    return DI.hvp!(f, tg, prep, SecondOrder(backend, backend), x, tx)
 end
 
 ## Hessian
@@ -359,7 +351,7 @@ end
 
 ### Prepared
 
-struct ForwardDiffHessianExtras{C1,C2,C3} <: HessianExtras
+struct ForwardDiffHessianPrep{C1,C2,C3} <: HessianPrep
     array_config::C1
     manual_result_config::C2
     auto_result_config::C3
@@ -374,34 +366,34 @@ function DI.prepare_hessian(f, backend::AutoForwardDiff, x)
     array_config = HessianConfig(f, x, chunk)
     manual_result_config = HessianConfig(f, manual_result, x, chunk)
     auto_result_config = HessianConfig(f, auto_result, x, chunk)
-    return ForwardDiffHessianExtras(array_config, manual_result_config, auto_result_config)
+    return ForwardDiffHessianPrep(array_config, manual_result_config, auto_result_config)
 end
 
 function DI.hessian!(
-    f::F, hess, extras::ForwardDiffHessianExtras, ::AutoForwardDiff, x
+    f::F, hess, prep::ForwardDiffHessianPrep, ::AutoForwardDiff, x
 ) where {F}
-    return hessian!(hess, f, x, extras.array_config)
+    return hessian!(hess, f, x, prep.array_config)
 end
 
-function DI.hessian(f::F, extras::ForwardDiffHessianExtras, ::AutoForwardDiff, x) where {F}
-    return hessian(f, x, extras.array_config)
+function DI.hessian(f::F, prep::ForwardDiffHessianPrep, ::AutoForwardDiff, x) where {F}
+    return hessian(f, x, prep.array_config)
 end
 
 function DI.value_gradient_and_hessian!(
-    f::F, grad, hess, extras::ForwardDiffHessianExtras, ::AutoForwardDiff, x
+    f::F, grad, hess, prep::ForwardDiffHessianPrep, ::AutoForwardDiff, x
 ) where {F}
     result = MutableDiffResult(one(eltype(x)), (grad, hess))
-    result = hessian!(result, f, x, extras.manual_result_config)
+    result = hessian!(result, f, x, prep.manual_result_config)
     return (
         DiffResults.value(result), DiffResults.gradient(result), DiffResults.hessian(result)
     )
 end
 
 function DI.value_gradient_and_hessian(
-    f::F, extras::ForwardDiffHessianExtras, ::AutoForwardDiff, x
+    f::F, prep::ForwardDiffHessianPrep, ::AutoForwardDiff, x
 ) where {F}
     result = HessianResult(x)
-    result = hessian!(result, f, x, extras.auto_result_config)
+    result = hessian!(result, f, x, prep.auto_result_config)
     return (
         DiffResults.value(result), DiffResults.gradient(result), DiffResults.hessian(result)
     )

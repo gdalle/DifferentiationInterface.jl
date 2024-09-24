@@ -23,18 +23,18 @@ inplace_support(::AutoZeroForward) = InPlaceSupported()
 function prepare_pushforward(
     f::F, ::AutoZeroForward, x, tx::Tangents, contexts::Vararg{Context,C}
 ) where {F,C}
-    return NoPushforwardExtras()
+    return NoPushforwardPrep()
 end
 
 function prepare_pushforward(
     f!::F, y, ::AutoZeroForward, x, tx::Tangents, contexts::Vararg{Context,C}
 ) where {F,C}
-    return NoPushforwardExtras()
+    return NoPushforwardPrep()
 end
 
 function value_and_pushforward(
     f::F,
-    ::NoPushforwardExtras,
+    ::NoPushforwardPrep,
     ::AutoZeroForward,
     x,
     tx::Tangents{B},
@@ -48,7 +48,7 @@ end
 function value_and_pushforward(
     f!::F,
     y,
-    ::NoPushforwardExtras,
+    ::NoPushforwardPrep,
     ::AutoZeroForward,
     x,
     tx::Tangents{B},
@@ -62,7 +62,7 @@ end
 function value_and_pushforward!(
     f::F,
     ty::Tangents,
-    ::NoPushforwardExtras,
+    ::NoPushforwardPrep,
     ::AutoZeroForward,
     x,
     tx::Tangents,
@@ -79,7 +79,7 @@ function value_and_pushforward!(
     f!::F,
     y,
     ty::Tangents,
-    ::NoPushforwardExtras,
+    ::NoPushforwardPrep,
     ::AutoZeroForward,
     x,
     tx::Tangents,
@@ -109,18 +109,18 @@ inplace_support(::AutoZeroReverse) = InPlaceSupported()
 function prepare_pullback(
     f::F, ::AutoZeroReverse, x, ty::Tangents, contexts::Vararg{Context,C}
 ) where {F,C}
-    return NoPullbackExtras()
+    return NoPullbackPrep()
 end
 
 function prepare_pullback(
     f!::F, y, ::AutoZeroReverse, x, ty::Tangents, contexts::Vararg{Context,C}
 ) where {F,C}
-    return NoPullbackExtras()
+    return NoPullbackPrep()
 end
 
 function value_and_pullback(
     f::F,
-    ::NoPullbackExtras,
+    ::NoPullbackPrep,
     ::AutoZeroReverse,
     x,
     ty::Tangents{B},
@@ -134,7 +134,7 @@ end
 function value_and_pullback(
     f!::F,
     y,
-    ::NoPullbackExtras,
+    ::NoPullbackPrep,
     ::AutoZeroReverse,
     x,
     ty::Tangents{B},
@@ -148,7 +148,7 @@ end
 function value_and_pullback!(
     f::F,
     tx::Tangents,
-    ::NoPullbackExtras,
+    ::NoPullbackPrep,
     ::AutoZeroReverse,
     x,
     ty::Tangents,
@@ -165,7 +165,7 @@ function value_and_pullback!(
     f!::F,
     y,
     tx::Tangents,
-    ::NoPullbackExtras,
+    ::NoPullbackPrep,
     ::AutoZeroReverse,
     x,
     ty::Tangents,

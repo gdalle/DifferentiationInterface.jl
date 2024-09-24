@@ -23,24 +23,24 @@ using DataFrames: DataFrame
 using DifferentiationInterface
 using DifferentiationInterface:
     inner,
-    maybe_inner,
-    maybe_dense_ad,
+    inner,
+    dense_ad,
     mode,
     outer,
     inplace_support,
     pushforward_performance,
     pullback_performance
 using DifferentiationInterface:
-    DerivativeExtras,
-    GradientExtras,
-    HessianExtras,
-    HVPExtras,
-    JacobianExtras,
-    PullbackExtras,
-    PushforwardExtras,
-    NoPullbackExtras,
-    NoPushforwardExtras,
-    SecondDerivativeExtras
+    DerivativePrep,
+    GradientPrep,
+    HessianPrep,
+    HVPPrep,
+    JacobianPrep,
+    PullbackPrep,
+    PushforwardPrep,
+    NoPullbackPrep,
+    NoPushforwardPrep,
+    SecondDerivativePrep
 using DocStringExtensions
 import DifferentiationInterface as DI
 using Functors: fmap

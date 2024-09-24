@@ -1,9 +1,9 @@
 ## Docstrings
 
 """
-    prepare_second_derivative(f, backend, x) -> extras
+    prepare_second_derivative(f, backend, x, [contexts...]) -> prep
 
-Create an `extras` object that can be given to [`second_derivative`](@ref) and its variants.
+Create an `prep` object that can be given to [`second_derivative`](@ref) and its variants.
 
 !!! warning
     If the function changes in any way, the result of preparation will be invalidated, and you will need to run it again.
@@ -11,7 +11,7 @@ Create an `extras` object that can be given to [`second_derivative`](@ref) and i
 function prepare_second_derivative end
 
 """
-    second_derivative(f, [extras,] backend, x) -> der2
+    second_derivative(f, [prep,] backend, x, [contexts...]) -> der2
 
 Compute the second derivative of the function `f` at point `x`.
 
@@ -20,7 +20,7 @@ $(document_preparation("second_derivative"))
 function second_derivative end
 
 """
-    second_derivative!(f, der2, [extras,] backend, x) -> der2
+    second_derivative!(f, der2, [prep,] backend, x, [contexts...]) -> der2
 
 Compute the second derivative of the function `f` at point `x`, overwriting `der2`.
 
@@ -29,7 +29,7 @@ $(document_preparation("second_derivative"))
 function second_derivative! end
 
 """
-    value_derivative_and_second_derivative(f, [extras,] backend, x) -> (y, der, der2)
+    value_derivative_and_second_derivative(f, [prep,] backend, x, [contexts...]) -> (y, der, der2)
 
 Compute the value, first derivative and second derivative of the function `f` at point `x`.
 
@@ -38,7 +38,7 @@ $(document_preparation("second_derivative"))
 function value_derivative_and_second_derivative end
 
 """
-    value_derivative_and_second_derivative!(f, der, der2, [extras,] backend, x) -> (y, der, der2)
+    value_derivative_and_second_derivative!(f, der, der2, [prep,] backend, x, [contexts...]) -> (y, der, der2)
 
 Compute the value, first derivative and second derivative of the function `f` at point `x`, overwriting `der` and `der2`.
 
@@ -48,9 +48,9 @@ function value_derivative_and_second_derivative! end
 
 ## Preparation
 
-struct ClosureSecondDerivativeExtras{ID,E<:DerivativeExtras} <: SecondDerivativeExtras
+struct ClosureSecondDerivativePrep{ID,E<:DerivativePrep} <: SecondDerivativePrep
     inner_derivative::ID
-    outer_derivative_extras::E
+    outer_derivative_prep::E
 end
 
 function prepare_second_derivative(
@@ -59,40 +59,40 @@ function prepare_second_derivative(
     rewrap = Rewrap(contexts...)
     function inner_derivative(_x, unannotated_contexts...)
         annotated_contexts = rewrap(unannotated_contexts...)
-        return derivative(f, nested(maybe_inner(backend)), _x, annotated_contexts...)
+        return derivative(f, nested(inner(backend)), _x, annotated_contexts...)
     end
-    outer_derivative_extras = prepare_derivative(
-        inner_derivative, maybe_outer(backend), x, contexts...
+    outer_derivative_prep = prepare_derivative(
+        inner_derivative, outer(backend), x, contexts...
     )
-    return ClosureSecondDerivativeExtras(inner_derivative, outer_derivative_extras)
+    return ClosureSecondDerivativePrep(inner_derivative, outer_derivative_prep)
 end
 
 ## One argument
 
 function second_derivative(
     f::F,
-    extras::ClosureSecondDerivativeExtras,
+    prep::ClosureSecondDerivativePrep,
     backend::AbstractADType,
     x,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    @compat (; inner_derivative, outer_derivative_extras) = extras
+    @compat (; inner_derivative, outer_derivative_prep) = prep
     return derivative(
-        inner_derivative, outer_derivative_extras, maybe_outer(backend), x, contexts...
+        inner_derivative, outer_derivative_prep, outer(backend), x, contexts...
     )
 end
 
 function value_derivative_and_second_derivative(
     f::F,
-    extras::ClosureSecondDerivativeExtras,
+    prep::ClosureSecondDerivativePrep,
     backend::AbstractADType,
     x,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    @compat (; inner_derivative, outer_derivative_extras) = extras
+    @compat (; inner_derivative, outer_derivative_prep) = prep
     y = f(x, map(unwrap, contexts)...)
     der, der2 = value_and_derivative(
-        inner_derivative, outer_derivative_extras, maybe_outer(backend), x, contexts...
+        inner_derivative, outer_derivative_prep, outer(backend), x, contexts...
     )
     return y, der, der2
 end
@@ -100,19 +100,14 @@ end
 function second_derivative!(
     f::F,
     der2,
-    extras::SecondDerivativeExtras,
+    prep::SecondDerivativePrep,
     backend::AbstractADType,
     x,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    @compat (; inner_derivative, outer_derivative_extras) = extras
+    @compat (; inner_derivative, outer_derivative_prep) = prep
     return derivative!(
-        inner_derivative,
-        der2,
-        outer_derivative_extras,
-        maybe_outer(backend),
-        x,
-        contexts...,
+        inner_derivative, der2, outer_derivative_prep, outer(backend), x, contexts...
     )
 end
 
@@ -120,20 +115,15 @@ function value_derivative_and_second_derivative!(
     f::F,
     der,
     der2,
-    extras::SecondDerivativeExtras,
+    prep::SecondDerivativePrep,
     backend::AbstractADType,
     x,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    @compat (; inner_derivative, outer_derivative_extras) = extras
+    @compat (; inner_derivative, outer_derivative_prep) = prep
     y = f(x, map(unwrap, contexts)...)
     new_der, _ = value_and_derivative!(
-        inner_derivative,
-        der2,
-        outer_derivative_extras,
-        maybe_outer(backend),
-        x,
-        contexts...,
+        inner_derivative, der2, outer_derivative_prep, outer(backend), x, contexts...
     )
     return y, copyto!(der, new_der), der2
 end

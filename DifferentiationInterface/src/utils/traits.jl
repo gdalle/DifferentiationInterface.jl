@@ -1,3 +1,6 @@
+dense_ad(backend::AbstractADType) = backend
+dense_ad(backend::AutoSparse) = ADTypes.dense_ad(backend)
+
 ## Mutation
 
 abstract type InPlaceBehavior end

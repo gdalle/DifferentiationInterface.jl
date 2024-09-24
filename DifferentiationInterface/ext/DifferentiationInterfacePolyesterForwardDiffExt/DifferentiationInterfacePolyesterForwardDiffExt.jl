@@ -3,16 +3,16 @@ module DifferentiationInterfacePolyesterForwardDiffExt
 using ADTypes: AutoForwardDiff, AutoPolyesterForwardDiff
 import DifferentiationInterface as DI
 using DifferentiationInterface:
-    DerivativeExtras,
-    GradientExtras,
-    HessianExtras,
-    JacobianExtras,
-    NoDerivativeExtras,
-    NoGradientExtras,
-    NoHessianExtras,
-    NoJacobianExtras,
-    PushforwardExtras,
-    SecondDerivativeExtras,
+    DerivativePrep,
+    GradientPrep,
+    HessianPrep,
+    JacobianPrep,
+    NoDerivativePrep,
+    NoGradientPrep,
+    NoHessianPrep,
+    NoJacobianPrep,
+    PushforwardPrep,
+    SecondDerivativePrep,
     Tangents
 using LinearAlgebra: mul!
 using PolyesterForwardDiff: threaded_gradient!, threaded_jacobian!

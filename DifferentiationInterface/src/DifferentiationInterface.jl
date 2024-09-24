@@ -13,7 +13,6 @@ using ADTypes:
     ForwardOrReverseMode,
     ReverseMode,
     SymbolicMode,
-    dense_ad,
     mode
 using ADTypes:
     AutoChainRules,
@@ -35,13 +34,12 @@ using PackageExtensionCompat: @require_extensions
 
 include("second_order/second_order.jl")
 
-include("utils/extras.jl")
+include("utils/prep.jl")
 include("utils/traits.jl")
 include("utils/basis.jl")
 include("utils/tangents.jl")
 include("utils/check.jl")
 include("utils/exceptions.jl")
-include("utils/maybe.jl")
 include("utils/printing.jl")
 include("utils/context.jl")
 
@@ -55,7 +53,7 @@ include("second_order/second_derivative.jl")
 include("second_order/hvp.jl")
 include("second_order/hessian.jl")
 
-include("fallbacks/no_extras.jl")
+include("fallbacks/no_prep.jl")
 
 include("misc/differentiate_with.jl")
 include("misc/from_primitive.jl")

@@ -8,13 +8,13 @@ function DI.prepare_pushforward(
     tx::Tangents,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    return NoPushforwardExtras()
+    return NoPushforwardPrep()
 end
 
 function DI.value_and_pushforward(
     f!::F,
     y,
-    ::NoPushforwardExtras,
+    ::NoPushforwardPrep,
     backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
     tx::Tangents{1},
@@ -39,7 +39,7 @@ end
 function DI.value_and_pushforward(
     f!::F,
     y,
-    ::NoPushforwardExtras,
+    ::NoPushforwardPrep,
     backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
     tx::Tangents{B},

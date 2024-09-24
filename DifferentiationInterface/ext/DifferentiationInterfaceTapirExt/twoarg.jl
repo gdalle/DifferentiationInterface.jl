@@ -1,4 +1,4 @@
-struct TapirTwoArgPullbackExtras{R} <: PullbackExtras
+struct TapirTwoArgPullbackPrep{R} <: PullbackPrep
     rrule::R
 end
 
@@ -9,25 +9,25 @@ function DI.prepare_pullback(f!, y, backend::AutoTapir, x, ty::Tangents)
         safety_on=backend.safe_mode,
         silence_safety_messages=false,
     )
-    extras = TapirTwoArgPullbackExtras(rrule)
-    DI.value_and_pullback(f!, y, extras, backend, x, ty)  # warm up
-    return extras
+    prep = TapirTwoArgPullbackPrep(rrule)
+    DI.value_and_pullback(f!, y, prep, backend, x, ty)  # warm up
+    return prep
 end
 
 # see https://github.com/withbayes/Tapir.jl/issues/113#issuecomment-2036718992
 
 function DI.value_and_pullback(
-    f!, y, extras::TapirTwoArgPullbackExtras, backend::AutoTapir, x, ty::Tangents
+    f!, y, prep::TapirTwoArgPullbackPrep, backend::AutoTapir, x, ty::Tangents
 )
     tx = map(ty) do dy
-        only(DI.pullback(f!, y, extras, backend, x, Tangents(dy)))
+        only(DI.pullback(f!, y, prep, backend, x, Tangents(dy)))
     end
     f!(y, x)
     return y, tx
 end
 
 function DI.value_and_pullback(
-    f!, y, extras::TapirTwoArgPullbackExtras, ::AutoTapir, x, ty::Tangents{1}
+    f!, y, prep::TapirTwoArgPullbackPrep, ::AutoTapir, x, ty::Tangents{1}
 )
     dy = only(ty)
     dy_righttype = convert(tangent_type(typeof(y)), copy(dy))
@@ -49,7 +49,7 @@ function DI.value_and_pullback(
     df! = zero_tangent(f!)
 
     # Run the forwards-pass.
-    out, pb!! = extras.rrule(
+    out, pb!! = prep.rrule(
         CoDual(f!, fdata(df!)),
         CoDual(y_copy, fdata(dy_righttype)),
         CoDual(x, fdata(dx_righttype)),

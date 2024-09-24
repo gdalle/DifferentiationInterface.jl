@@ -45,8 +45,8 @@ gradient(f_multiarg, backend, x, Constant(10))
 Preparation also works in this case, even if the constant changes before execution:
 
 ```@example tuto_advanced
-extras_other_constant = prepare_gradient(f_multiarg, backend, x, Constant(-1))
-gradient(f_multiarg, extras_other_constant, backend, x, Constant(10))
+prep_other_constant = prepare_gradient(f_multiarg, backend, x, Constant(-1))
+gradient(f_multiarg, prep_other_constant, backend, x, Constant(10))
 ```
 
 ## Sparsity
@@ -120,15 +120,15 @@ The speedup becomes very visible in large dimensions.
 
 ```@example tuto_advanced
 n = 1000
-jac_extras_dense = prepare_jacobian(f_sparse_vector, dense_first_order_backend, zeros(n))
-jac_extras_sparse = prepare_jacobian(f_sparse_vector, sparse_first_order_backend, zeros(n))
+jac_prep_dense = prepare_jacobian(f_sparse_vector, dense_first_order_backend, zeros(n))
+jac_prep_sparse = prepare_jacobian(f_sparse_vector, sparse_first_order_backend, zeros(n))
 nothing  # hide
 ```
 
 ```@example tuto_advanced
-@benchmark jacobian($f_sparse_vector, $jac_extras_dense, $dense_first_order_backend, $(randn(n)))
+@benchmark jacobian($f_sparse_vector, $jac_prep_dense, $dense_first_order_backend, $(randn(n)))
 ```
 
 ```@example tuto_advanced
-@benchmark jacobian($f_sparse_vector, $jac_extras_sparse, $sparse_first_order_backend, $(randn(n)))
+@benchmark jacobian($f_sparse_vector, $jac_prep_sparse, $sparse_first_order_backend, $(randn(n)))
 ```

@@ -8,13 +8,13 @@ function DI.prepare_pullback(
     ty::Tangents,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    return NoPullbackExtras()
+    return NoPullbackPrep()
 end
 
 function DI.value_and_pullback(
     f!::F,
     y,
-    ::NoPullbackExtras,
+    ::NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x::Number,
     ty::Tangents{1},
@@ -40,7 +40,7 @@ end
 function DI.value_and_pullback(
     f!::F,
     y,
-    ::NoPullbackExtras,
+    ::NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x::Number,
     ty::Tangents{B},
@@ -66,7 +66,7 @@ end
 function DI.value_and_pullback(
     f!::F,
     y,
-    ::NoPullbackExtras,
+    ::NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
     ty::Tangents{1},
@@ -91,7 +91,7 @@ end
 function DI.value_and_pullback(
     f!::F,
     y,
-    ::NoPullbackExtras,
+    ::NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
     ty::Tangents{B},
