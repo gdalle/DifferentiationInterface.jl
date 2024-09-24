@@ -15,6 +15,7 @@ using DifferentiationInterface:
     NoDerivativePrep,
     NoSecondDerivativePrep,
     PushforwardPrep,
+    Rewrap,
     SecondOrder,
     Tangents,
     inner,
