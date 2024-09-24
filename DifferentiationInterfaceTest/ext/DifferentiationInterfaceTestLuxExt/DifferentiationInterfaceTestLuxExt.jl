@@ -6,7 +6,7 @@ using DifferentiationInterface
 import DifferentiationInterface as DI
 using DifferentiationInterfaceTest
 import DifferentiationInterfaceTest as DIT
-using FiniteDiff: FiniteDiff
+using ForwardDiff: ForwardDiff
 using Lux
 using LuxTestUtils
 using LuxTestUtils: check_approx
@@ -177,7 +177,7 @@ function DIT.lux_scenarios(rng::AbstractRNG=default_rng())
     for (model, x) in models_and_xs
         ps, st = Lux.setup(rng, model)
         g = DI.gradient(
-            ps -> square_loss(ps, model, x, st), DI.AutoFiniteDiff(), ComponentArray(ps)
+            ps -> square_loss(ps, model, x, st), DI.AutoForwardDiff(), ComponentArray(ps)
         )
         scen = Scenario{:gradient,:out}(
             square_loss,

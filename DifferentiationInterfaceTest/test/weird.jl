@@ -6,8 +6,8 @@ using ComponentArrays: ComponentArrays
 using DifferentiationInterface
 using DifferentiationInterfaceTest
 import DifferentiationInterfaceTest as DIT
-using FiniteDiff: FiniteDiff
 using FiniteDifferences: FiniteDifferences
+using ForwardDiff: ForwardDiff
 using Flux: Flux
 using ForwardDiff: ForwardDiff
 using JLArrays: JLArrays
