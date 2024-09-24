@@ -38,7 +38,7 @@ function DI.prepare_hvp(
     gradient_prep = DI.prepare_gradient(f, inner(backend), xdual, contexts...)
     function inner_gradient(x, unannotated_contexts...)
         annotated_contexts = rewrap(unannotated_contexts...)
-        return DI.gradient(f, gradient_prep, inner(backend), x, unannotated_contexts...)
+        return DI.gradient(f, gradient_prep, inner(backend), x, annotated_contexts...)
     end
     outer_pushforward_prep = DI.prepare_pushforward(
         inner_gradient, tagged_outer_backend, x, tx, contexts...

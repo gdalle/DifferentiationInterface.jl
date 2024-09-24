@@ -255,8 +255,8 @@ end
 function DI.value_and_jacobian!(
     f::F, jac, ::AutoForwardDiff, x, contexts::Vararg{Context,C}
 ) where {F,C}
-    y = f(x)
     fc = with_contexts(f, contexts...)
+    y = fc(x)
     result = MutableDiffResult(y, (jac,))
     result = jacobian!(result, fc, x)
     return DiffResults.value(result), DiffResults.jacobian(result)
@@ -401,7 +401,7 @@ function DI.value_derivative_and_second_derivative!(
     T = tag_type(f, backend, x)
     xdual = make_dual(T, x, one(x))
     T2 = tag_type(f, backend, xdual)
-    ydual = f(make_dual(T2, xdual, one(xdual)), map(unwrap, contexts...))
+    ydual = f(make_dual(T2, xdual, one(xdual)), map(unwrap, contexts)...)
     y = myvalue(T, myvalue(T2, ydual))
     myderivative!(T, der, myvalue(T2, ydual))
     myderivative!(T, der2, myderivative(T2, ydual))

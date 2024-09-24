@@ -11,7 +11,8 @@ using DifferentiationInterface:
     NoPullbackPrep,
     PullbackPrep,
     Tangents,
-    unwrap
+    unwrap,
+    with_contexts
 using ForwardDiff: ForwardDiff
 using Zygote:
     ZygoteRuleConfig, gradient, hessian, jacobian, pullback, withgradient, withjacobian
