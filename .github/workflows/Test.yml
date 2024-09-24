@@ -52,7 +52,7 @@ jobs:
           - Misc/SparsityDetector
           - Misc/ZeroBackends
           - Down/Flux
-          # - Down/Lux
+          - Down/Lux
         exclude:
           # lts
           - version: "lts"
