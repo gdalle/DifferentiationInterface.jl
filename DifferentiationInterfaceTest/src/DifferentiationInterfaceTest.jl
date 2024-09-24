@@ -29,7 +29,8 @@ using DifferentiationInterface:
     outer,
     inplace_support,
     pushforward_performance,
-    pullback_performance
+    pullback_performance,
+    unwrap
 using DifferentiationInterface:
     DerivativePrep,
     GradientPrep,

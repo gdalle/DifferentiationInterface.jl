@@ -59,7 +59,7 @@ function Scenario{op,pl_op}(
 ) where {op,pl_op}
     @assert op in ALL_OPS
     @assert pl_op in (:in, :out)
-    y = f(x)
+    y = f(x, map(unwrap, contexts)...)
     return Scenario{op,pl_op,:out}(f; x, y, tang, contexts, res1, res2)
 end
 
@@ -68,7 +68,7 @@ function Scenario{op,pl_op}(
 ) where {op,pl_op}
     @assert op in ALL_OPS
     @assert pl_op in (:in, :out)
-    f!(y, x)
+    f!(y, x, map(unwrap, contexts)...)
     return Scenario{op,pl_op,:in}(f!; x, y, tang, contexts, res1, res2)
 end
 
