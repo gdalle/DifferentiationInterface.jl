@@ -17,12 +17,8 @@ num_to_num_second_derivative(x) = -sin(x)
 num_to_num_pushforward(x, dx) = num_to_num_derivative(x) * dx
 num_to_num_pullback(x, dy) = num_to_num_derivative(x) * dy
 
-num_to_num_vec(x) = [num_to_num(only(x))]
-
-function num_to_num_vec!(y, x)
-    y[only(eachindex(y))] = num_to_num(only(x))
-    return nothing
-end
+num_to_num_vec(x) = sin.(x)
+num_to_num_vec!(y, x) = map!(sin, y, x)
 
 function num_to_num_scenarios(x::Number; dx::Number, dy::Number)
     f = num_to_num

@@ -10,6 +10,7 @@ using DifferentiationInterface:
     NoJacobianPrep,
     NoPullbackPrep,
     PullbackPrep,
+    SecondOrder,
     Tangents,
     unwrap,
     with_contexts
@@ -151,16 +152,11 @@ end
 function DI.prepare_hvp(
     f, backend::AutoZygote, x, tx::Tangents, contexts::Vararg{Constant,C}
 ) where {C}
-    return DI.prepare_hvp(SecondOrder(AutoForwardDiff(), backend), x, tx, contexts...)
+    return DI.prepare_hvp(f, SecondOrder(AutoForwardDiff(), backend), x, tx, contexts...)
 end
 
 function DI.hvp(
-    f,
-    prep::ZygoteHVPPrep,
-    backend::AutoZygote,
-    x,
-    tx::Tangents,
-    contexts::Vararg{Constant,C},
+    f, prep::HVPPrep, backend::AutoZygote, x, tx::Tangents, contexts::Vararg{Constant,C}
 ) where {C}
     return DI.hvp(f, prep, SecondOrder(AutoForwardDiff(), backend), x, tx, contexts...)
 end
@@ -168,7 +164,7 @@ end
 function DI.hvp!(
     f,
     tg::Tangents,
-    prep::ZygoteHVPPrep,
+    prep::HVPPrep,
     backend::AutoZygote,
     x,
     tx::Tangents,
