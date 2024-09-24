@@ -148,37 +148,33 @@ end
 
 # Beware, this uses ForwardDiff for the inner differentiation
 
-struct ZygoteHVPPrep{G,PE} <: HVPPrep
-    ∇f::G
-    pushforward_prep::PE
-end
-
 function DI.prepare_hvp(
-    f, ::AutoZygote, x, tx::Tangents, contexts::Vararg{Constant,C}
+    f, backend::AutoZygote, x, tx::Tangents, contexts::Vararg{Constant,C}
 ) where {C}
-    ∇f(x) = only(gradient(f, x))
-    pushforward_prep = DI.prepare_pushforward(∇f, AutoForwardDiff(), x, tx, contexts...)
-    return ZygoteHVPPrep(∇f, pushforward_prep)
+    return DI.prepare_hvp(SecondOrder(AutoForwardDiff(), backend), x, tx, contexts...)
 end
 
 function DI.hvp(
-    f, prep::ZygoteHVPPrep, ::AutoZygote, x, tx::Tangents, contexts::Vararg{Constant,C}
+    f,
+    prep::ZygoteHVPPrep,
+    backend::AutoZygote,
+    x,
+    tx::Tangents,
+    contexts::Vararg{Constant,C},
 ) where {C}
-    @compat (; ∇f, pushforward_prep) = prep
-    return DI.pushforward(∇f, pushforward_prep, AutoForwardDiff(), x, tx, contexts...)
+    return DI.hvp(f, prep, SecondOrder(AutoForwardDiff(), backend), x, tx, contexts...)
 end
 
 function DI.hvp!(
     f,
     tg::Tangents,
     prep::ZygoteHVPPrep,
-    ::AutoZygote,
+    backend::AutoZygote,
     x,
     tx::Tangents,
     contexts::Vararg{Constant,C},
 ) where {C}
-    @compat (; ∇f, pushforward_prep) = prep
-    return DI.pushforward!(∇f, tg, pushforward_prep, AutoForwardDiff(), x, tx, contexts...)
+    return DI.hvp!(f, tg, prep, SecondOrder(AutoForwardDiff(), backend), x, tx, contexts...)
 end
 
 ## Hessian
