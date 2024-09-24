@@ -135,7 +135,7 @@ function DI.pullback(
     f::F,
     prep::NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
-    x::Number,
+    x,
     ty::Tangents,
     contexts::Vararg{Context,C},
 ) where {F,C}
