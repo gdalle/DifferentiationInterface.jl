@@ -50,7 +50,10 @@ struct ForwardOverReverseHVPPrep{G,E<:PushforwardPrep} <: HVPPrep
     outer_pushforward_prep::E
 end
 
-struct ReverseOverForwardHVPPrep <: HVPPrep end
+struct ReverseOverForwardHVPPrep{P,E} <: HVPPrep
+    inner_pushforward::P
+    outer_gradient_prep::E
+end
 
 struct ReverseOverReverseHVPPrep{G,E<:PullbackPrep} <: HVPPrep
     inner_gradient::G
@@ -111,9 +114,19 @@ function _prepare_hvp_aux(
     tx::Tangents,
     contexts::Vararg{Context,C},
 ) where {F,C}
+    rewrap = Rewrap(contexts...)
     # gradient of pushforward
-    # uses dx in the closure so it can't be prepared
-    return ReverseOverForwardHVPPrep()
+    function inner_pushforward(_x, _dx, unannotated_contexts...)
+        annotated_contexts = rewrap(unannotated_contexts...)
+        ty = pushforward(
+            f, nested(inner(backend)), _x, Tangents(_dx), annotated_contexts...
+        )
+        return only(ty)
+    end
+    outer_gradient_prep = prepare_gradient(
+        inner_pushforward, outer(backend), x, contexts...
+    )
+    return ReverseOverForwardHVPPrep(inner_pushforward, outer_gradient_prep)
 end
 
 function _prepare_hvp_aux(
@@ -168,23 +181,15 @@ end
 
 function hvp(
     f::F,
-    ::ReverseOverForwardHVPPrep,
+    prep::ReverseOverForwardHVPPrep,
     backend::AbstractADType,
     x,
     tx::Tangents,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    rewrap = Rewrap(contexts...)
+    @compat (; inner_pushforward, outer_gradient_prep) = prep
     tg = map(tx) do dx
-        function inner_pushforward(_x, unannotated_contexts...)
-            annotated_contexts = rewrap(unannotated_contexts...)
-            return only(
-                pushforward(
-                    f, nested(inner(backend)), _x, Tangents(dx), annotated_contexts...
-                ),
-            )
-        end
-        gradient(only ∘ inner_pushforward, outer(backend), x, contexts...)
+        gradient(inner_pushforward, outer(backend), x, Constant(dx), contexts...)
     end
     return tg
 end
@@ -234,23 +239,23 @@ end
 function hvp!(
     f::F,
     tg::Tangents,
-    ::ReverseOverForwardHVPPrep,
+    prep::ReverseOverForwardHVPPrep,
     backend::AbstractADType,
     x,
     tx::Tangents,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    rewrap = Rewrap(contexts...)
+    @compat (; inner_pushforward, outer_gradient_prep) = prep
     for b in eachindex(tx.d, tg.d)
-        function inner_pushforward(_x, unannotated_contexts...)
-            annotated_contexts = rewrap(unannotated_contexts...)
-            return only(
-                pushforward(
-                    f, nested(inner(backend)), _x, Tangents(tx.d[b]), annotated_contexts...
-                ),
-            )
-        end
-        gradient!(only ∘ inner_pushforward, tg.d[b], outer(backend), x, contexts...)
+        gradient!(
+            inner_pushforward,
+            tg.d[b],
+            outer_gradient_prep,
+            outer(backend),
+            x,
+            Constant(tx.d[b]),
+            contexts...,
+        )
     end
     return tg
 end
