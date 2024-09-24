@@ -40,7 +40,7 @@ function DI.prepare_hessian(
 ) where {F,C}
     dense_backend = dense_ad(backend)
     sparsity = hessian_sparsity(
-        with_context(f, contexts...)..., x, sparsity_detector(backend)
+        with_contexts(f, contexts...), x, sparsity_detector(backend)
     )
     problem = ColoringProblem{:symmetric,:column}()
     coloring_result = coloring(

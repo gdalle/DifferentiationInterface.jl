@@ -5,7 +5,9 @@ struct ChainRulesPullbackPrepSamePoint{Y,PB} <: PullbackPrep
     pb::PB
 end
 
-DI.prepare_pullback(f, ::AutoReverseChainRules, x, ty::Tangents) = NoPullbackPrep()
+function DI.prepare_pullback(f, ::AutoReverseChainRules, x, ty::Tangents)
+    return NoPullbackPrep()
+end
 
 function DI.prepare_pullback_same_point(
     f, ::NoPullbackPrep, backend::AutoReverseChainRules, x, ty::Tangents
@@ -21,7 +23,7 @@ function DI.value_and_pullback(
     rc = ruleconfig(backend)
     y, pb = rrule_via_ad(rc, f, x)
     tx = map(ty) do dy
-        last(pb(dy))
+        pb(dy)[2]
     end
     return y, tx
 end
@@ -31,7 +33,7 @@ function DI.value_and_pullback(
 )
     @compat (; y, pb) = prep
     tx = map(ty) do dy
-        last(pb(dy))
+        pb(dy)[2]
     end
     return copy(y), tx
 end
@@ -41,7 +43,7 @@ function DI.pullback(
 )
     @compat (; pb) = prep
     tx = map(ty) do dy
-        last(pb(dy))
+        pb(dy)[2]
     end
     return tx
 end

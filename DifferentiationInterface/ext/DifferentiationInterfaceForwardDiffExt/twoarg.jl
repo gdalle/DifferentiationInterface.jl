@@ -108,24 +108,36 @@ end
 
 ### Unprepared
 
-function DI.value_and_derivative(f!::F, y, ::AutoForwardDiff, x) where {F}
+function DI.value_and_derivative(
+    f!::F, y, ::AutoForwardDiff, x, contexts::Vararg{Context,C}
+) where {F,C}
+    fc! = with_contexts(f!, contexts...)
     result = MutableDiffResult(y, (similar(y),))
-    result = derivative!(result, f!, y, x)
+    result = derivative!(result, fc!, y, x)
     return DiffResults.value(result), DiffResults.derivative(result)
 end
 
-function DI.value_and_derivative!(f!::F, y, der, ::AutoForwardDiff, x) where {F}
+function DI.value_and_derivative!(
+    f!::F, y, der, ::AutoForwardDiff, x, contexts::Vararg{Context,C}
+) where {F,C}
+    fc! = with_contexts(f!, contexts...)
     result = MutableDiffResult(y, (der,))
-    result = derivative!(result, f!, y, x)
+    result = derivative!(result, fc!, y, x)
     return DiffResults.value(result), DiffResults.derivative(result)
 end
 
-function DI.derivative(f!::F, y, ::AutoForwardDiff, x) where {F}
-    return derivative(f!, y, x)
+function DI.derivative(
+    f!::F, y, ::AutoForwardDiff, x, contexts::Vararg{Context,C}
+) where {F,C}
+    fc! = with_contexts(f!, contexts...)
+    return derivative(fc!, y, x)
 end
 
-function DI.derivative!(f!::F, y, der, ::AutoForwardDiff, x) where {F}
-    return derivative!(der, f!, y, x)
+function DI.derivative!(
+    f!::F, y, der, ::AutoForwardDiff, x, contexts::Vararg{Context,C}
+) where {F,C}
+    fc! = with_contexts(f!, contexts...)
+    return derivative!(der, fc!, y, x)
 end
 
 ### Prepared
@@ -134,61 +146,102 @@ struct ForwardDiffTwoArgDerivativePrep{C} <: DerivativePrep
     config::C
 end
 
-function DI.prepare_derivative(f!::F, y, ::AutoForwardDiff, x) where {F}
-    return ForwardDiffTwoArgDerivativePrep(DerivativeConfig(f!, y, x))
+function DI.prepare_derivative(
+    f!::F, y, ::AutoForwardDiff, x, contexts::Vararg{Context,C}
+) where {F,C}
+    fc! = with_contexts(f!, contexts...)
+    return ForwardDiffTwoArgDerivativePrep(DerivativeConfig(fc!, y, x))
 end
 
 function DI.value_and_derivative(
-    f!::F, y, prep::ForwardDiffTwoArgDerivativePrep, ::AutoForwardDiff, x
-) where {F}
+    f!::F,
+    y,
+    prep::ForwardDiffTwoArgDerivativePrep,
+    ::AutoForwardDiff,
+    x,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    fc! = with_contexts(f!, contexts...)
     result = MutableDiffResult(y, (similar(y),))
-    result = derivative!(result, f!, y, x, prep.config)
+    result = derivative!(result, fc!, y, x, prep.config)
     return DiffResults.value(result), DiffResults.derivative(result)
 end
 
 function DI.value_and_derivative!(
-    f!::F, y, der, prep::ForwardDiffTwoArgDerivativePrep, ::AutoForwardDiff, x
-) where {F}
+    f!::F,
+    y,
+    der,
+    prep::ForwardDiffTwoArgDerivativePrep,
+    ::AutoForwardDiff,
+    x,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    fc! = with_contexts(f!, contexts...)
     result = MutableDiffResult(y, (der,))
-    result = derivative!(result, f!, y, x, prep.config)
+    result = derivative!(result, fc!, y, x, prep.config)
     return DiffResults.value(result), DiffResults.derivative(result)
 end
 
 function DI.derivative(
-    f!::F, y, prep::ForwardDiffTwoArgDerivativePrep, ::AutoForwardDiff, x
-) where {F}
-    return derivative(f!, y, x, prep.config)
+    f!::F,
+    y,
+    prep::ForwardDiffTwoArgDerivativePrep,
+    ::AutoForwardDiff,
+    x,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    fc! = with_contexts(f!, contexts...)
+    return derivative(fc!, y, x, prep.config)
 end
 
 function DI.derivative!(
-    f!::F, y, der, prep::ForwardDiffTwoArgDerivativePrep, ::AutoForwardDiff, x
-) where {F}
-    return derivative!(der, f!, y, x, prep.config)
+    f!::F,
+    y,
+    der,
+    prep::ForwardDiffTwoArgDerivativePrep,
+    ::AutoForwardDiff,
+    x,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    fc! = with_contexts(f!, contexts...)
+    return derivative!(der, fc!, y, x, prep.config)
 end
 
 ## Jacobian
 
 ### Unprepared
 
-function DI.value_and_jacobian(f!::F, y, ::AutoForwardDiff, x) where {F}
+function DI.value_and_jacobian(
+    f!::F, y, ::AutoForwardDiff, x, contexts::Vararg{Context,C}
+) where {F,C}
+    fc! = with_contexts(f!, contexts...)
     jac = similar(y, length(y), length(x))
     result = MutableDiffResult(y, (jac,))
-    result = jacobian!(result, f!, y, x)
+    result = jacobian!(result, fc!, y, x)
     return DiffResults.value(result), DiffResults.jacobian(result)
 end
 
-function DI.value_and_jacobian!(f!::F, y, jac, ::AutoForwardDiff, x) where {F}
+function DI.value_and_jacobian!(
+    f!::F, y, jac, ::AutoForwardDiff, x, contexts::Vararg{Context,C}
+) where {F,C}
+    fc! = with_contexts(f!, contexts...)
     result = MutableDiffResult(y, (jac,))
-    result = jacobian!(result, f!, y, x)
+    result = jacobian!(result, fc!, y, x)
     return DiffResults.value(result), DiffResults.jacobian(result)
 end
 
-function DI.jacobian(f!::F, y, ::AutoForwardDiff, x) where {F}
-    return jacobian(f!, y, x)
+function DI.jacobian(
+    f!::F, y, ::AutoForwardDiff, x, contexts::Vararg{Context,C}
+) where {F,C}
+    fc! = with_contexts(f!, contexts...)
+    return jacobian(fc!, y, x)
 end
 
-function DI.jacobian!(f!::F, y, jac, ::AutoForwardDiff, x) where {F}
-    return jacobian!(jac, f!, y, x)
+function DI.jacobian!(
+    f!::F, y, jac, ::AutoForwardDiff, x, contexts::Vararg{Context,C}
+) where {F,C}
+    fc! = with_contexts(f!, contexts...)
+    return jacobian!(jac, fc!, y, x)
 end
 
 ### Prepared
@@ -197,35 +250,66 @@ struct ForwardDiffTwoArgJacobianPrep{C} <: JacobianPrep
     config::C
 end
 
-function DI.prepare_jacobian(f!::F, y, backend::AutoForwardDiff, x) where {F}
-    return ForwardDiffTwoArgJacobianPrep(JacobianConfig(f!, y, x, choose_chunk(backend, x)))
+function DI.prepare_jacobian(
+    f!::F, y, backend::AutoForwardDiff, x, contexts::Vararg{Context,C}
+) where {F,C}
+    fc! = with_contexts(f!, contexts...)
+    return ForwardDiffTwoArgJacobianPrep(
+        JacobianConfig(fc!, y, x, choose_chunk(backend, x))
+    )
 end
 
 function DI.value_and_jacobian(
-    f!::F, y, prep::ForwardDiffTwoArgJacobianPrep, ::AutoForwardDiff, x
-) where {F}
+    f!::F,
+    y,
+    prep::ForwardDiffTwoArgJacobianPrep,
+    ::AutoForwardDiff,
+    x,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    fc! = with_contexts(f!, contexts...)
     jac = similar(y, length(y), length(x))
     result = MutableDiffResult(y, (jac,))
-    result = jacobian!(result, f!, y, x, prep.config)
+    result = jacobian!(result, fc!, y, x, prep.config)
     return DiffResults.value(result), DiffResults.jacobian(result)
 end
 
 function DI.value_and_jacobian!(
-    f!::F, y, jac, prep::ForwardDiffTwoArgJacobianPrep, ::AutoForwardDiff, x
-) where {F}
+    f!::F,
+    y,
+    jac,
+    prep::ForwardDiffTwoArgJacobianPrep,
+    ::AutoForwardDiff,
+    x,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    fc! = with_contexts(f!, contexts...)
     result = MutableDiffResult(y, (jac,))
-    result = jacobian!(result, f!, y, x, prep.config)
+    result = jacobian!(result, fc!, y, x, prep.config)
     return DiffResults.value(result), DiffResults.jacobian(result)
 end
 
 function DI.jacobian(
-    f!::F, y, prep::ForwardDiffTwoArgJacobianPrep, ::AutoForwardDiff, x
-) where {F}
-    return jacobian(f!, y, x, prep.config)
+    f!::F,
+    y,
+    prep::ForwardDiffTwoArgJacobianPrep,
+    ::AutoForwardDiff,
+    x,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    fc! = with_contexts(f!, contexts...)
+    return jacobian(fc!, y, x, prep.config)
 end
 
 function DI.jacobian!(
-    f!::F, y, jac, prep::ForwardDiffTwoArgJacobianPrep, ::AutoForwardDiff, x
-) where {F}
-    return jacobian!(jac, f!, y, x, prep.config)
+    f!::F,
+    y,
+    jac,
+    prep::ForwardDiffTwoArgJacobianPrep,
+    ::AutoForwardDiff,
+    x,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    fc! = with_contexts(f!, contexts...)
+    return jacobian!(jac, fc!, y, x, prep.config)
 end

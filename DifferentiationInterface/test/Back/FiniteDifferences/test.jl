@@ -13,7 +13,8 @@ for backend in [AutoFiniteDifferences(; fdm=FiniteDifferences.central_fdm(3, 1))
 end
 
 test_differentiation(
-    AutoFiniteDifferences(; fdm=FiniteDifferences.central_fdm(3, 1));
+    AutoFiniteDifferences(; fdm=FiniteDifferences.central_fdm(3, 1)),
+    default_scenarios(; include_constantified=true);
     second_order=false,
     logging=LOGGING,
 );

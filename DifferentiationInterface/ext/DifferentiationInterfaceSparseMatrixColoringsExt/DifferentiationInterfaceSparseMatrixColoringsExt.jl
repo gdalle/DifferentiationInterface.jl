@@ -25,7 +25,8 @@ using DifferentiationInterface:
     multibasis,
     pick_batchsize,
     pushforward_performance,
-    unwrap
+    unwrap,
+    with_contexts
 import DifferentiationInterface as DI
 using SparseMatrixColorings:
     AbstractColoringResult,
@@ -38,12 +39,6 @@ using SparseMatrixColorings:
     row_groups,
     decompress,
     decompress!
-
-with_context(f, contexts::Vararg{Context,C}) where {C} = (DI.with_context(f, contexts...),)
-
-function with_context(f!, y, contexts::Vararg{Context,C}) where {C}
-    return (DI.with_context(f!, contexts...), y)
-end
 
 include("jacobian.jl")
 include("hessian.jl")

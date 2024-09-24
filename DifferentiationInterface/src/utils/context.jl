@@ -70,9 +70,9 @@ function (r::Rewrap{C,T})(unannotated_contexts::Vararg{Any,C}) where {C,T}
     return T(unannotated_contexts)
 end
 
-with_context(f) = f
+with_contexts(f) = f
 
-function with_context(f::F, contexts::Vararg{Context,N}) where {F,N}
+function with_contexts(f::F, contexts::Vararg{Context,N}) where {F,N}
     tail_args = map(unwrap, contexts)
     return FixTail(f, tail_args)
 end

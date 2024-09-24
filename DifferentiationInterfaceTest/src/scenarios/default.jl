@@ -17,10 +17,10 @@ num_to_num_second_derivative(x) = -sin(x)
 num_to_num_pushforward(x, dx) = num_to_num_derivative(x) * dx
 num_to_num_pullback(x, dy) = num_to_num_derivative(x) * dy
 
-num_to_num_vec(x) = [num_to_num(only(x))]
+num_to_num_vec(x) = sin.(x)
 
 function num_to_num_vec!(y, x)
-    y[only(eachindex(y))] = num_to_num(only(x))
+    map!(sin, y, x)
     return nothing
 end
 
