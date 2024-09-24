@@ -10,9 +10,12 @@ pick_batchsize(::AbstractADType, dimension::Integer) = 1
 """
     Tangents{B}
 
-Storage for a batch of `B` tangents (behaves like an `NTuple`).
+Storage for a batch of `B` tangents (wrapper around an `NTuple`).
 
-Must be passed as an argument to [`pushforward`](@ref), [`pullback`](@ref) and [`hvp`](@ref), in addition to the input `x`.
+The operators [`pushforward`](@ref), [`pullback`](@ref) and [`hvp`](@ref) require a `Tangents` argument in addition to the input `x`.
+
+The underlying `NTuple` of `t::Tangents` can be retrieved with `NTuple(t)`.
+We also define a few utility functions, as shown below.
 
 # Constructors
 
@@ -27,6 +30,9 @@ julia> using DifferentiationInterface
 julia> t = Tangents(2.0)
 Tangents{1, Float64}((2.0,))
 
+julia> NTuple(t)
+(2.0,)
+
 julia> length(t)
 1
 
@@ -35,6 +41,9 @@ julia> only(t)
 
 julia> t = Tangents([2.0], [4.0], [6.0])
 Tangents{3, Vector{Float64}}(([2.0], [4.0], [6.0]))
+
+julia> NTuple(t)
+([2.0], [4.0], [6.0])
 
 julia> length(t)
 3
@@ -59,25 +68,25 @@ end
 Base.length(::Tangents{B,T}) where {B,T} = B
 Base.eltype(::Tangents{B,T}) where {B,T} = T
 
-Base.only(t::Tangents) = only(t.d)
-Base.getindex(t::Tangents, ind) = t.d[ind]
-Base.firstindex(t::Tangents) = firstindex(t.d)
-Base.lastindex(t::Tangents) = lastindex(t.d)
+Base.NTuple(t::Tangents) = t.d
 
-Base.iterate(t::Tangents) = iterate(t.d)
-Base.iterate(t::Tangents, state) = iterate(t.d, state)
+Base.only(t::Tangents) = only(NTuple(t))
+Base.getindex(t::Tangents, ind) = NTuple(t)[ind]
+Base.firstindex(t::Tangents) = firstindex(NTuple(t))
+Base.lastindex(t::Tangents) = lastindex(NTuple(t))
 
-Base.map(f, t::Tangents) = Tangents(map(f, t.d)...)
+Base.iterate(t::Tangents) = iterate(NTuple(t))
+Base.iterate(t::Tangents, state) = iterate(NTuple(t), state)
 
-Base.:(==)(t1::Tangents{B}, t2::Tangents{B}) where {B} = t1.d == t2.d
+Base.map(f, t::Tangents) = Tangents(map(f, NTuple(t))...)
+
+Base.:(==)(t1::Tangents{B}, t2::Tangents{B}) where {B} = NTuple(t1) == NTuple(t2)
 
 function Base.isapprox(t1::Tangents{B}, t2::Tangents{B}; kwargs...) where {B}
-    return all(isapprox.(t1.d, t2.d; kwargs...))
+    return all(isapprox.(NTuple(t1), NTuple(t2); kwargs...))
 end
 
 function Base.copyto!(t1::Tangents{B}, t2::Tangents{B}) where {B}
-    for b in eachindex(t1.d, t2.d)
-        copyto!(t1.d[b], t2.d[b])
-    end
+    foreach(copyto!, NTuple(t1), NTuple(t2))
     return t1
 end
