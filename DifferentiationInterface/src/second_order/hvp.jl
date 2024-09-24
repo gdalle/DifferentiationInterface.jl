@@ -3,7 +3,7 @@
 """
     prepare_hvp(f, backend, x, tx, [contexts...]) -> prep
 
-Create an `prep` object that can be given to [`hvp`](@ref) and its variants.
+Create a `prep` object that can be given to [`hvp`](@ref) and its variants.
 
 !!! warning
     If the function changes in any way, the result of preparation will be invalidated, and you will need to run it again.

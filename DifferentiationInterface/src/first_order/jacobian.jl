@@ -4,7 +4,7 @@
     prepare_jacobian(f,     backend, x, [contexts...]) -> prep
     prepare_jacobian(f!, y, backend, x, [contexts...]) -> prep
 
-Create an `prep` object that can be given to [`jacobian`](@ref) and its variants.
+Create a `prep` object that can be given to [`jacobian`](@ref) and its variants.
 
 !!! warning
     If the function changes in any way, the result of preparation will be invalidated, and you will need to run it again.
