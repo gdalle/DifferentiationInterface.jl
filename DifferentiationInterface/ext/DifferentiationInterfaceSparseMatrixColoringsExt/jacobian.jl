@@ -1,3 +1,11 @@
+function fy_with_contexts(f, contexts::Vararg{Context,C}) where {C}
+    return (with_contexts(f, contexts...),)
+end
+
+function fy_with_contexts(f!, y, contexts::Vararg{Context,C}) where {C}
+    return (with_contexts(f!, contexts...), y)
+end
+
 ## Preparation
 
 abstract type SparseJacobianPrep <: JacobianPrep end
@@ -79,7 +87,7 @@ function _prepare_sparse_jacobian_aux(
     dense_backend = dense_ad(backend)
 
     sparsity = jacobian_sparsity(
-        with_contexts(f_or_f!y..., contexts...)..., x, sparsity_detector(backend)
+        fy_with_contexts(f_or_f!y..., contexts...)..., x, sparsity_detector(backend)
     )
     problem = ColoringProblem{:nonsymmetric,:column}()
     coloring_result = coloring(
@@ -111,7 +119,7 @@ function _prepare_sparse_jacobian_aux(
 ) where {FY,C}
     dense_backend = dense_ad(backend)
     sparsity = jacobian_sparsity(
-        with_contexts(f_or_f!y..., contexts...)..., x, sparsity_detector(backend)
+        fy_with_contexts(f_or_f!y..., contexts...)..., x, sparsity_detector(backend)
     )
     problem = ColoringProblem{:nonsymmetric,:row}()
     coloring_result = coloring(
