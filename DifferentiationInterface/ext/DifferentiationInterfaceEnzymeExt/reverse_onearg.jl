@@ -79,19 +79,20 @@ end
 
 function DI.value_and_pullback(
     f::F,
-    ::NoPullbackPrep,
+    prep::NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x::Number,
     ty::Tangents{B},
     contexts::Vararg{Context,C},
 ) where {F,B,C}
-    f_and_df = force_annotation(get_f_and_df(f, backend, Val(B)))
-    mode = reverse_mode_split_withprimal(backend)
-    RA = eltype(ty) <: Number ? Active : Duplicated
-    dinputs, result = batch_seeded_autodiff_thunk(
-        mode, NTuple(ty), f_and_df, RA, Active(x), map(translate, contexts)...
-    )
-    return result, Tangents(first(dinputs)...)
+    # TODO: improve
+    ys_and_dxs = map(ty.d) do dy
+        y, tx = DI.value_and_pullback(f, prep, backend, x, Tangents(dy), contexts...)
+        y, only(tx)
+    end
+    y = first(ys_and_dxs[1])
+    dxs = last.(ys_and_dxs)
+    return y, Tangents(dxs...)
 end
 
 function DI.value_and_pullback(
@@ -135,7 +136,7 @@ function DI.pullback(
     prep::NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x::Number,
-    ty::Tangents{1},
+    ty::Tangents,
     contexts::Vararg{Context,C},
 ) where {F,C}
     return last(DI.value_and_pullback(f, prep, backend, x, ty, contexts...))
