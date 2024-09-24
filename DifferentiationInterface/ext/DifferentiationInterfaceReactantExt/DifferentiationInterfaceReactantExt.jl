@@ -5,19 +5,19 @@ using Compat
 import DifferentiationInterface as DI
 using DifferentiationInterface:
     ReactantBackend,
-    DerivativeExtras,
-    GradientExtras,
-    HessianExtras,
-    HVPExtras,
-    JacobianExtras,
-    PullbackExtras,
-    PushforwardExtras,
-    SecondDerivativeExtras
+    DerivativePrep,
+    GradientPrep,
+    HessianPrep,
+    HVPPrep,
+    JacobianPrep,
+    PullbackPrep,
+    PushforwardPrep,
+    SecondDerivativePrep
 using Reactant: ConcreteRArray, compile
 
 DI.check_available(rebackend::ReactantBackend) = DI.check_available(rebackend.backend)
 DI.mode(rebackend::ReactantBackend) = DI.mode(rebackend.backend)
-DI.twoarg_support(rebackend::ReactantBackend) = DI.twoarg_support(rebackend.backend)
+DI.inplace_support(rebackend::ReactantBackend) = DI.inplace_support(rebackend.backend)
 
 include("onearg.jl")
 

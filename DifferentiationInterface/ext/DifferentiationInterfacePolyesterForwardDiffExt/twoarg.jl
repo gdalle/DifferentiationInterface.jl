@@ -1,31 +1,43 @@
 ## Pushforward
 
-function DI.prepare_pushforward(f!, y, backend::AutoPolyesterForwardDiff, x, dx)
-    return DI.prepare_pushforward(f!, y, single_threaded(backend), x, dx)
+function DI.prepare_pushforward(f!, y, backend::AutoPolyesterForwardDiff, x, tx::Tangents)
+    return DI.prepare_pushforward(f!, y, single_threaded(backend), x, tx)
 end
 
 function DI.value_and_pushforward(
-    f!, y, backend::AutoPolyesterForwardDiff, x, dx, extras::PushforwardExtras
+    f!, y, prep::PushforwardPrep, backend::AutoPolyesterForwardDiff, x, tx::Tangents
 )
-    return DI.value_and_pushforward(f!, y, single_threaded(backend), x, dx, extras)
+    return DI.value_and_pushforward(f!, y, prep, single_threaded(backend), x, tx)
 end
 
 function DI.value_and_pushforward!(
-    f!, y, dy, backend::AutoPolyesterForwardDiff, x, dx, extras::PushforwardExtras
+    f!,
+    y,
+    ty::Tangents,
+    prep::PushforwardPrep,
+    backend::AutoPolyesterForwardDiff,
+    x,
+    tx::Tangents,
 )
-    return DI.value_and_pushforward!(f!, y, dy, single_threaded(backend), x, dx, extras)
+    return DI.value_and_pushforward!(f!, y, ty, prep, single_threaded(backend), x, tx)
 end
 
 function DI.pushforward(
-    f!, y, backend::AutoPolyesterForwardDiff, x, dx, extras::PushforwardExtras
+    f!, y, prep::PushforwardPrep, backend::AutoPolyesterForwardDiff, x, tx::Tangents
 )
-    return DI.pushforward(f!, y, single_threaded(backend), x, dx, extras)
+    return DI.pushforward(f!, y, prep, single_threaded(backend), x, tx)
 end
 
 function DI.pushforward!(
-    f!, y, dy, backend::AutoPolyesterForwardDiff, x, dx, extras::PushforwardExtras
+    f!,
+    y,
+    ty::Tangents,
+    prep::PushforwardPrep,
+    backend::AutoPolyesterForwardDiff,
+    x,
+    tx::Tangents,
 )
-    return DI.pushforward!(f!, y, dy, single_threaded(backend), x, dx, extras)
+    return DI.pushforward!(f!, y, ty, prep, single_threaded(backend), x, tx)
 end
 
 ## Derivative
@@ -35,35 +47,33 @@ function DI.prepare_derivative(f!, y, backend::AutoPolyesterForwardDiff, x)
 end
 
 function DI.value_and_derivative(
-    f!, y, backend::AutoPolyesterForwardDiff, x, extras::DerivativeExtras
+    f!, y, prep::DerivativePrep, backend::AutoPolyesterForwardDiff, x
 )
-    return DI.value_and_derivative(f!, y, single_threaded(backend), x, extras)
+    return DI.value_and_derivative(f!, y, prep, single_threaded(backend), x)
 end
 
 function DI.value_and_derivative!(
-    f!, y, der, backend::AutoPolyesterForwardDiff, x, extras::DerivativeExtras
+    f!, y, der, prep::DerivativePrep, backend::AutoPolyesterForwardDiff, x
 )
-    return DI.value_and_derivative!(f!, y, der, single_threaded(backend), x, extras)
+    return DI.value_and_derivative!(f!, y, der, prep, single_threaded(backend), x)
 end
 
-function DI.derivative(
-    f!, y, backend::AutoPolyesterForwardDiff, x, extras::DerivativeExtras
-)
-    return DI.derivative(f!, y, single_threaded(backend), x, extras)
+function DI.derivative(f!, y, prep::DerivativePrep, backend::AutoPolyesterForwardDiff, x)
+    return DI.derivative(f!, y, prep, single_threaded(backend), x)
 end
 
 function DI.derivative!(
-    f!, y, der, backend::AutoPolyesterForwardDiff, x, extras::DerivativeExtras
+    f!, y, der, prep::DerivativePrep, backend::AutoPolyesterForwardDiff, x
 )
-    return DI.derivative!(f!, y, der, single_threaded(backend), x, extras)
+    return DI.derivative!(f!, y, der, prep, single_threaded(backend), x)
 end
 
 ## Jacobian
 
-DI.prepare_jacobian(f!, y, ::AutoPolyesterForwardDiff, x) = NoJacobianExtras()
+DI.prepare_jacobian(f!, y, ::AutoPolyesterForwardDiff, x) = NoJacobianPrep()
 
 function DI.value_and_jacobian(
-    f!, y, ::AutoPolyesterForwardDiff{C}, x, ::NoJacobianExtras
+    f!, y, ::NoJacobianPrep, ::AutoPolyesterForwardDiff{C}, x
 ) where {C}
     jac = similar(y, length(y), length(x))
     threaded_jacobian!(f!, y, jac, x, Chunk{C}())
@@ -72,21 +82,21 @@ function DI.value_and_jacobian(
 end
 
 function DI.value_and_jacobian!(
-    f!, y, jac, ::AutoPolyesterForwardDiff{C}, x, ::NoJacobianExtras
+    f!, y, jac, ::NoJacobianPrep, ::AutoPolyesterForwardDiff{C}, x
 ) where {C}
     threaded_jacobian!(f!, y, jac, x, Chunk{C}())
     f!(y, x)
     return y, jac
 end
 
-function DI.jacobian(f!, y, ::AutoPolyesterForwardDiff{C}, x, ::NoJacobianExtras) where {C}
+function DI.jacobian(f!, y, ::NoJacobianPrep, ::AutoPolyesterForwardDiff{C}, x) where {C}
     jac = similar(y, length(y), length(x))
     threaded_jacobian!(f!, y, jac, x, Chunk{C}())
     return jac
 end
 
 function DI.jacobian!(
-    f!, y, jac, ::AutoPolyesterForwardDiff{C}, x, ::NoJacobianExtras
+    f!, y, jac, ::NoJacobianPrep, ::AutoPolyesterForwardDiff{C}, x
 ) where {C}
     threaded_jacobian!(f!, y, jac, x, Chunk{C}())
     return jac

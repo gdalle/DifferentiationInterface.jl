@@ -1,7 +1,15 @@
 abstract type FromPrimitive <: AbstractADType end
 
+function basis(fromprim::FromPrimitive, x::AbstractArray, i)
+    return basis(fromprim.backend, x, i)
+end
+
+function multibasis(fromprim::FromPrimitive, x::AbstractArray, inds)
+    return multibasis(fromprim.backend, x, inds)
+end
+
 check_available(fromprim::FromPrimitive) = check_available(fromprim.backend)
-twoarg_support(fromprim::FromPrimitive) = twoarg_support(fromprim.backend)
+inplace_support(fromprim::FromPrimitive) = inplace_support(fromprim.backend)
 
 function pick_batchsize(fromprim::FromPrimitive, dimension::Integer)
     return pick_batchsize(fromprim.backend, dimension)
@@ -15,113 +23,82 @@ end
 
 ADTypes.mode(::AutoForwardFromPrimitive) = ADTypes.ForwardMode()
 
-struct FromPrimitivePushforwardExtras{E<:PushforwardExtras} <: PushforwardExtras
-    pushforward_extras::E
+struct FromPrimitivePushforwardPrep{E<:PushforwardPrep} <: PushforwardPrep
+    pushforward_prep::E
 end
 
-### Standard
-
-function prepare_pushforward(f, fromprim::AutoForwardFromPrimitive, x, dx)
-    return FromPrimitivePushforwardExtras(prepare_pushforward(f, fromprim.backend, x, dx))
+function prepare_pushforward(
+    f::F, fromprim::AutoForwardFromPrimitive, x, tx::Tangents, contexts::Vararg{Context,C}
+) where {F,C}
+    primitive_prep = prepare_pushforward(f, fromprim.backend, x, tx, contexts...)
+    return FromPrimitivePushforwardPrep(primitive_prep)
 end
 
-function prepare_pushforward(f!, y, fromprim::AutoForwardFromPrimitive, x, dx)
-    return FromPrimitivePushforwardExtras(
-        prepare_pushforward(f!, y, fromprim.backend, x, dx)
+function prepare_pushforward(
+    f!::F,
+    y,
+    fromprim::AutoForwardFromPrimitive,
+    x,
+    tx::Tangents,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    primitive_prep = prepare_pushforward(f!, y, fromprim.backend, x, tx, contexts...)
+    return FromPrimitivePushforwardPrep(primitive_prep)
+end
+
+function value_and_pushforward(
+    f::F,
+    prep::FromPrimitivePushforwardPrep,
+    fromprim::AutoForwardFromPrimitive,
+    x,
+    tx::Tangents,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    return value_and_pushforward(
+        f, prep.pushforward_prep, fromprim.backend, x, tx, contexts...
     )
 end
 
 function value_and_pushforward(
-    f, fromprim::AutoForwardFromPrimitive, x, dx, extras::FromPrimitivePushforwardExtras
-)
-    return value_and_pushforward(f, fromprim.backend, x, dx, extras.pushforward_extras)
-end
-
-function value_and_pushforward(
-    f!, y, fromprim::AutoForwardFromPrimitive, x, dx, extras::FromPrimitivePushforwardExtras
-)
-    return value_and_pushforward(f!, y, fromprim.backend, x, dx, extras.pushforward_extras)
-end
-
-function value_and_pushforward!(
-    f, dy, fromprim::AutoForwardFromPrimitive, x, dx, extras::FromPrimitivePushforwardExtras
-)
-    return value_and_pushforward!(f, dy, fromprim.backend, x, dx, extras.pushforward_extras)
-end
-
-function value_and_pushforward!(
-    f!,
+    f!::F,
     y,
-    dy,
+    prep::FromPrimitivePushforwardPrep,
     fromprim::AutoForwardFromPrimitive,
     x,
-    dx,
-    extras::FromPrimitivePushforwardExtras,
-)
+    tx::Tangents,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    return value_and_pushforward(
+        f!, y, prep.pushforward_prep, fromprim.backend, x, tx, contexts...
+    )
+end
+
+function value_and_pushforward!(
+    f::F,
+    ty::Tangents,
+    prep::FromPrimitivePushforwardPrep,
+    fromprim::AutoForwardFromPrimitive,
+    x,
+    tx::Tangents,
+    contexts::Vararg{Context,C},
+) where {F,C}
     return value_and_pushforward!(
-        f!, y, dy, fromprim.backend, x, dx, extras.pushforward_extras
+        f, ty, prep.pushforward_prep, fromprim.backend, x, tx, contexts...
     )
 end
 
-### Batched
-
-function prepare_pushforward_batched(f, fromprim::AutoForwardFromPrimitive, x, dx::Batch)
-    return FromPrimitivePushforwardExtras(
-        prepare_pushforward_batched(f, fromprim.backend, x, dx)
-    )
-end
-
-function prepare_pushforward_batched(
-    f!, y, fromprim::AutoForwardFromPrimitive, x, dx::Batch
-)
-    return FromPrimitivePushforwardExtras(
-        prepare_pushforward_batched(f!, y, fromprim.backend, x, dx)
-    )
-end
-
-function pushforward_batched(
-    f,
-    fromprim::AutoForwardFromPrimitive,
-    x,
-    dx::Batch,
-    extras::FromPrimitivePushforwardExtras,
-)
-    return pushforward_batched(f, fromprim.backend, x, dx, extras.pushforward_extras)
-end
-
-function pushforward_batched(
-    f!,
+function value_and_pushforward!(
+    f!::F,
     y,
+    ty::Tangents,
+    prep::FromPrimitivePushforwardPrep,
     fromprim::AutoForwardFromPrimitive,
     x,
-    dx::Batch,
-    extras::FromPrimitivePushforwardExtras,
-)
-    return pushforward_batched(f!, y, fromprim.backend, x, dx, extras.pushforward_extras)
-end
-
-function pushforward_batched!(
-    f,
-    dy::Batch,
-    fromprim::AutoForwardFromPrimitive,
-    x,
-    dx::Batch,
-    extras::FromPrimitivePushforwardExtras,
-)
-    return pushforward_batched!(f, dy, fromprim.backend, x, dx, extras.pushforward_extras)
-end
-
-function pushforward_batched!(
-    f!,
-    y,
-    dy::Batch,
-    fromprim::AutoForwardFromPrimitive,
-    x,
-    dx::Batch,
-    extras::FromPrimitivePushforwardExtras,
-)
-    return pushforward_batched!(
-        f!, y, dy, fromprim.backend, x, dx, extras.pushforward_extras
+    tx::Tangents,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    return value_and_pushforward!(
+        f!, y, ty, prep.pushforward_prep, fromprim.backend, x, tx, contexts...
     )
 end
 
@@ -133,98 +110,79 @@ end
 
 ADTypes.mode(::AutoReverseFromPrimitive) = ADTypes.ReverseMode()
 
-struct FromPrimitivePullbackExtras{E<:PullbackExtras} <: PullbackExtras
-    pullback_extras::E
+struct FromPrimitivePullbackPrep{E<:PullbackPrep} <: PullbackPrep
+    pullback_prep::E
 end
 
-### Standard
-
-function prepare_pullback(f, fromprim::AutoReverseFromPrimitive, x, dy)
-    return FromPrimitivePullbackExtras(prepare_pullback(f, fromprim.backend, x, dy))
+function prepare_pullback(
+    f::F, fromprim::AutoReverseFromPrimitive, x, ty::Tangents, contexts::Vararg{Context,C}
+) where {F,C}
+    primitive_prep = prepare_pullback(f, fromprim.backend, x, ty, contexts...)
+    return FromPrimitivePullbackPrep(primitive_prep)
 end
 
-function prepare_pullback(f!, y, fromprim::AutoReverseFromPrimitive, x, dy)
-    return FromPrimitivePullbackExtras(prepare_pullback(f!, y, fromprim.backend, x, dy))
-end
-
-function value_and_pullback(
-    f, fromprim::AutoReverseFromPrimitive, x, dy, extras::FromPrimitivePullbackExtras
-)
-    return value_and_pullback(f, fromprim.backend, x, dy, extras.pullback_extras)
-end
-
-function value_and_pullback(
-    f!, y, fromprim::AutoReverseFromPrimitive, x, dy, extras::FromPrimitivePullbackExtras
-)
-    return value_and_pullback(f!, y, fromprim.backend, x, dy, extras.pullback_extras)
-end
-
-function value_and_pullback!(
-    f, dx, fromprim::AutoReverseFromPrimitive, x, dy, extras::FromPrimitivePullbackExtras
-)
-    return value_and_pullback!(f, dx, fromprim.backend, x, dy, extras.pullback_extras)
-end
-
-function value_and_pullback!(
-    f!,
+function prepare_pullback(
+    f!::F,
     y,
-    dx,
     fromprim::AutoReverseFromPrimitive,
     x,
-    dy,
-    extras::FromPrimitivePullbackExtras,
-)
-    return value_and_pullback!(f!, y, dx, fromprim.backend, x, dy, extras.pullback_extras)
+    ty::Tangents,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    primitive_prep = prepare_pullback(f!, y, fromprim.backend, x, ty, contexts...)
+    return FromPrimitivePullbackPrep(primitive_prep)
 end
 
-### Batched
-
-function prepare_pullback_batched(f, fromprim::AutoReverseFromPrimitive, x, dy::Batch)
-    return FromPrimitivePullbackExtras(prepare_pullback_batched(f, fromprim.backend, x, dy))
+function value_and_pullback(
+    f::F,
+    prep::FromPrimitivePullbackPrep,
+    fromprim::AutoReverseFromPrimitive,
+    x,
+    ty::Tangents,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    return value_and_pullback(f, prep.pullback_prep, fromprim.backend, x, ty, contexts...)
 end
 
-function prepare_pullback_batched(f!, y, fromprim::AutoReverseFromPrimitive, x, dy::Batch)
-    return FromPrimitivePullbackExtras(
-        prepare_pullback_batched(f!, y, fromprim.backend, x, dy)
+function value_and_pullback(
+    f!::F,
+    y,
+    prep::FromPrimitivePullbackPrep,
+    fromprim::AutoReverseFromPrimitive,
+    x,
+    ty::Tangents,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    return value_and_pullback(
+        f!, y, prep.pullback_prep, fromprim.backend, x, ty, contexts...
     )
 end
 
-function pullback_batched(
-    f, fromprim::AutoReverseFromPrimitive, x, dy::Batch, extras::FromPrimitivePullbackExtras
-)
-    return pullback_batched(f, fromprim.backend, x, dy, extras.pullback_extras)
+function value_and_pullback!(
+    f::F,
+    tx::Tangents,
+    prep::FromPrimitivePullbackPrep,
+    fromprim::AutoReverseFromPrimitive,
+    x,
+    ty::Tangents,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    return value_and_pullback!(
+        f, tx, prep.pullback_prep, fromprim.backend, x, ty, contexts...
+    )
 end
 
-function pullback_batched(
-    f!,
+function value_and_pullback!(
+    f!::F,
     y,
+    tx::Tangents,
+    prep::FromPrimitivePullbackPrep,
     fromprim::AutoReverseFromPrimitive,
     x,
-    dy::Batch,
-    extras::FromPrimitivePullbackExtras,
-)
-    return pullback_batched(f!, y, fromprim.backend, x, dy, extras.pullback_extras)
-end
-
-function pullback_batched!(
-    f,
-    dx::Batch,
-    fromprim::AutoReverseFromPrimitive,
-    x,
-    dy::Batch,
-    extras::FromPrimitivePullbackExtras,
-)
-    return pullback_batched!(f, dx, fromprim.backend, x, dy, extras.pullback_extras)
-end
-
-function pullback_batched!(
-    f!,
-    y,
-    dx::Batch,
-    fromprim::AutoReverseFromPrimitive,
-    x,
-    dy::Batch,
-    extras::FromPrimitivePullbackExtras,
-)
-    return pullback_batched!(f!, y, dx, fromprim.backend, x, dy, extras.pullback_extras)
+    ty::Tangents,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    return value_and_pullback!(
+        f!, y, tx, prep.pullback_prep, fromprim.backend, x, ty, contexts...
+    )
 end

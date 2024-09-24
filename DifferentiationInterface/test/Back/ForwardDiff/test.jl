@@ -1,10 +1,14 @@
+using Pkg
+Pkg.add("ForwardDiff")
+
 using ComponentArrays: ComponentArrays
 using DifferentiationInterface, DifferentiationInterfaceTest
-using DifferentiationInterfaceTest: add_batchified!
 using ForwardDiff: ForwardDiff
 using SparseConnectivityTracer, SparseMatrixColorings
 using StaticArrays: StaticArrays
 using Test
+
+LOGGING = get(ENV, "CI", "false") == "false"
 
 dense_backends = [AutoForwardDiff(), AutoForwardDiff(; chunksize=5, tag=:hello)]
 
@@ -18,21 +22,17 @@ sparse_backends = [
 
 for backend in vcat(dense_backends, sparse_backends)
     @test check_available(backend)
-    @test check_twoarg(backend)
-    @test check_hessian(backend)
+    @test check_inplace(backend)
 end
 
 ## Dense backends
 
-test_differentiation(dense_backends, add_batchified!(default_scenarios()); logging=LOGGING);
+test_differentiation(
+    dense_backends, default_scenarios(; include_constantified=true); logging=LOGGING
+);
 
 test_differentiation(
-    dense_backends,
-    add_batchified!(default_scenarios());
-    correctness=false,
-    type_stability=true,
-    second_order=false,
-    logging=LOGGING,
+    dense_backends; correctness=false, type_stability=true, logging=LOGGING
 );
 
 test_differentiation(
@@ -54,4 +54,9 @@ test_differentiation(
     logging=LOGGING,
 );
 
-test_differentiation(sparse_backends, sparse_scenarios(); sparsity=true, logging=LOGGING);
+test_differentiation(
+    sparse_backends,
+    sparse_scenarios(; include_constantified=true);
+    sparsity=true,
+    logging=LOGGING,
+);

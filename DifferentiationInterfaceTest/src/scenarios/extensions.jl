@@ -34,7 +34,7 @@ function gpu_scenarios end
 Create a vector of [`Scenario`](@ref)s with neural networks from [Flux.jl](https://github.com/FluxML/Flux.jl).
 
 !!! warning
-    This function requires Flux.jl and FiniteDifferences.jl to be loaded (it is implemented in a package extension).
+    This function requires FiniteDifferences.jl and Flux.jl to be loaded (it is implemented in a package extension).
 
 !!! danger
     These scenarios are still experimental and not part of the public API.
@@ -50,8 +50,21 @@ Approximate comparison function to use in correctness tests with gradients of Fl
 function flux_isapprox end
 
 """
-    flux_isequal(x, y)
+    lux_scenarios(rng=Random.default_rng())
 
-Exact comparison function to use in correctness tests with gradients of Flux.jl networks.
+Create a vector of [`Scenario`](@ref)s with neural networks from [Lux.jl](https://github.com/LuxDL/Lux.jl).
+
+!!! warning
+    This function requires ComponentArrays.jl, ForwardDiff.jl, Lux.jl and LuxTestUtils.jl to be loaded (it is implemented in a package extension).
+
+!!! danger
+    These scenarios are still experimental and not part of the public API.
 """
-function flux_isequal end
+function lux_scenarios end
+
+"""
+    lux_isapprox(x, y; atol, rtol)
+
+Approximate comparison function to use in correctness tests with gradients of Lux.jl networks.
+"""
+function lux_isapprox end

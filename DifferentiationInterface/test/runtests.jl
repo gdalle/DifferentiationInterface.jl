@@ -9,25 +9,15 @@ else
     Pkg.add("DifferentiationInterfaceTest")
 end
 
-TEST_ENV = Base.active_project()
-push!(LOAD_PATH, TEST_ENV)
-
-LOGGING = get(ENV, "CI", "false") == "false"
-
 GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "All")
 
 ## Main tests
 
 function subtest(category, folder)
-    Pkg.activate(joinpath(@__DIR__, category, folder))
-    Pkg.instantiate()
-    @testset "$file" for file in filter(
-        endswith(".jl"), readdir(joinpath(@__DIR__, category, folder))
-    )
+    @testset "$file" for file in readdir(joinpath(@__DIR__, category, folder))
         @info "Testing $category/$folder/$file"
         include(joinpath(@__DIR__, category, folder, file))
     end
-    Pkg.activate(TEST_ENV)
     return nothing
 end
 
@@ -53,7 +43,9 @@ end
                 subtest(category, folder)
             end
         end
-    elseif startswith(GROUP, "Back") || startswith(GROUP, "Down")
+    elseif startswith(GROUP, "Back") ||
+        startswith(GROUP, "Down") ||
+        startswith(GROUP, "Misc")
         category, folder = split(GROUP, '/')
         @testset verbose = true "$category" begin
             @testset verbose = true "$folder" begin

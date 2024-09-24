@@ -1,35 +1,40 @@
+dense_ad(backend::AbstractADType) = backend
+dense_ad(backend::AutoSparse) = ADTypes.dense_ad(backend)
+
 ## Mutation
 
-abstract type MutationBehavior end
+abstract type InPlaceBehavior end
 
 """
-    TwoArgSupported
+    InPlaceSupported
 
-Trait identifying backends that support two-argument functions `f!(y, x)`.
+Trait identifying backends that support in-place functions `f!(y, x)`.
 """
-struct TwoArgSupported <: MutationBehavior end
-
-"""
-    TwoArgNotSupported
-
-Trait identifying backends that do not support two-argument functions `f!(y, x)`.
-"""
-struct TwoArgNotSupported <: MutationBehavior end
+struct InPlaceSupported <: InPlaceBehavior end
 
 """
-    twoarg_support(backend)
+    InPlaceNotSupported
 
-Return [`TwoArgSupported`](@ref) or [`TwoArgNotSupported`](@ref) in a statically predictable way.
+Trait identifying backends that do not support in-place functions `f!(y, x)`.
 """
-twoarg_support(::AbstractADType) = TwoArgSupported()
+struct InPlaceNotSupported <: InPlaceBehavior end
 
-function twoarg_support(backend::SecondOrder)
-    if Bool(twoarg_support(inner(backend))) && Bool(twoarg_support(outer(backend)))
-        return TwoArgSupported()
+"""
+    inplace_support(backend)
+
+Return [`InPlaceSupported`](@ref) or [`InPlaceNotSupported`](@ref) in a statically predictable way.
+"""
+inplace_support(::AbstractADType) = InPlaceSupported()
+
+function inplace_support(backend::SecondOrder)
+    if Bool(inplace_support(inner(backend))) && Bool(inplace_support(outer(backend)))
+        return InPlaceSupported()
     else
-        return TwoArgNotSupported()
+        return InPlaceNotSupported()
     end
 end
+
+inplace_support(backend::AutoSparse) = inplace_support(dense_ad(backend))
 
 ## Pushforward
 
@@ -59,6 +64,7 @@ pushforward_performance(::ForwardMode) = PushforwardFast()
 pushforward_performance(::ForwardOrReverseMode) = PushforwardFast()
 pushforward_performance(::ReverseMode) = PushforwardSlow()
 pushforward_performance(::SymbolicMode) = PushforwardFast()
+pushforward_performance(backend::AutoSparse) = pushforward_performance(dense_ad(backend))
 
 ## Pullback
 
@@ -88,6 +94,7 @@ pullback_performance(::ForwardMode) = PullbackSlow()
 pullback_performance(::ForwardOrReverseMode) = PullbackFast()
 pullback_performance(::ReverseMode) = PullbackFast()
 pullback_performance(::SymbolicMode) = PullbackFast()
+pullback_performance(backend::AutoSparse) = pullback_performance(dense_ad(backend))
 
 ## HVP
 
@@ -121,7 +128,7 @@ Traits identifying second-order backends that compute HVPs in forward over forwa
 """
 struct ForwardOverForward <: HVPMode end
 
-hvp_mode(::AbstractADType) = error("HVP mode undefined for first order backend")
+hvp_mode(backend::AbstractADType) = hvp_mode(SecondOrder(backend, backend))
 
 function hvp_mode(ba::SecondOrder)
     if Bool(pushforward_performance(outer(ba))) && Bool(pullback_performance(inner(ba)))
@@ -133,15 +140,15 @@ function hvp_mode(ba::SecondOrder)
     elseif Bool(pushforward_performance(outer(ba))) &&
         Bool(pushforward_performance(inner(ba)))
         return ForwardOverForward()
-    else
-        error("HVP mode unknown")
     end
 end
 
+hvp_mode(backend::AutoSparse{<:SecondOrder}) = hvp_mode(dense_ad(backend))
+
 ## Conversions
 
-Base.Bool(::TwoArgSupported) = true
-Base.Bool(::TwoArgNotSupported) = false
+Base.Bool(::InPlaceSupported) = true
+Base.Bool(::InPlaceNotSupported) = false
 
 Base.Bool(::PushforwardFast) = true
 Base.Bool(::PushforwardSlow) = false

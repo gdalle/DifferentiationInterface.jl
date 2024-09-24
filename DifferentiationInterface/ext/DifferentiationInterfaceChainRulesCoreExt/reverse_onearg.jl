@@ -1,36 +1,49 @@
 ## Pullback
 
-struct ChainRulesPullbackExtrasSamePoint{Y,PB} <: PullbackExtras
+struct ChainRulesPullbackPrepSamePoint{Y,PB} <: PullbackPrep
     y::Y
     pb::PB
 end
 
-DI.prepare_pullback(f, ::AutoReverseChainRules, x, dy) = NoPullbackExtras()
+function DI.prepare_pullback(f, ::AutoReverseChainRules, x, ty::Tangents)
+    return NoPullbackPrep()
+end
 
 function DI.prepare_pullback_same_point(
-    f, backend::AutoReverseChainRules, x, dy, ::PullbackExtras=NoPullbackExtras()
+    f, ::NoPullbackPrep, backend::AutoReverseChainRules, x, ty::Tangents
 )
     rc = ruleconfig(backend)
     y, pb = rrule_via_ad(rc, f, x)
-    return ChainRulesPullbackExtrasSamePoint(y, pb)
-end
-
-function DI.value_and_pullback(f, backend::AutoReverseChainRules, x, dy, ::NoPullbackExtras)
-    rc = ruleconfig(backend)
-    y, pb = rrule_via_ad(rc, f, x)
-    return y, last(pb(dy))
+    return ChainRulesPullbackPrepSamePoint(y, pb)
 end
 
 function DI.value_and_pullback(
-    f, ::AutoReverseChainRules, x, dy, extras::ChainRulesPullbackExtrasSamePoint
+    f, ::NoPullbackPrep, backend::AutoReverseChainRules, x, ty::Tangents
 )
-    @compat (; y, pb) = extras
-    return copy(y), last(pb(dy))
+    rc = ruleconfig(backend)
+    y, pb = rrule_via_ad(rc, f, x)
+    tx = map(ty) do dy
+        pb(dy)[2]
+    end
+    return y, tx
+end
+
+function DI.value_and_pullback(
+    f, prep::ChainRulesPullbackPrepSamePoint, ::AutoReverseChainRules, x, ty::Tangents
+)
+    @compat (; y, pb) = prep
+    tx = map(ty) do dy
+        pb(dy)[2]
+    end
+    return copy(y), tx
 end
 
 function DI.pullback(
-    f, ::AutoReverseChainRules, x, dy, extras::ChainRulesPullbackExtrasSamePoint
+    f, prep::ChainRulesPullbackPrepSamePoint, ::AutoReverseChainRules, x, ty::Tangents
 )
-    @compat (; pb) = extras
-    return last(pb(dy))
+    @compat (; pb) = prep
+    tx = map(ty) do dy
+        pb(dy)[2]
+    end
+    return tx
 end

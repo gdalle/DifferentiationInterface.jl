@@ -22,43 +22,26 @@ using Compat
 using DataFrames: DataFrame
 using DifferentiationInterface
 using DifferentiationInterface:
-    Batch,
     inner,
-    maybe_inner,
-    maybe_dense_ad,
+    inner,
+    dense_ad,
     mode,
     outer,
-    twoarg_support,
+    inplace_support,
     pushforward_performance,
-    pullback_performance
+    pullback_performance,
+    unwrap
 using DifferentiationInterface:
-    prepare_hvp_batched,
-    prepare_hvp_batched_same_point,
-    prepare_pullback_batched,
-    prepare_pullback_batched_same_point,
-    prepare_pushforward_batched,
-    prepare_pushforward_batched_same_point,
-    hvp_batched,
-    hvp_batched!,
-    pullback_batched,
-    pullback_batched!,
-    pushforward_batched,
-    pushforward_batched!,
-    value_and_pullback_batched,
-    value_and_pullback_batched!,
-    value_and_pushforward_batched,
-    value_and_pushforward_batched!
-using DifferentiationInterface:
-    DerivativeExtras,
-    GradientExtras,
-    HessianExtras,
-    HVPExtras,
-    JacobianExtras,
-    PullbackExtras,
-    PushforwardExtras,
-    NoPullbackExtras,
-    NoPushforwardExtras,
-    SecondDerivativeExtras
+    DerivativePrep,
+    GradientPrep,
+    HessianPrep,
+    HVPPrep,
+    JacobianPrep,
+    PullbackPrep,
+    PushforwardPrep,
+    NoPullbackPrep,
+    NoPushforwardPrep,
+    SecondDerivativePrep
 using DocStringExtensions
 import DifferentiationInterface as DI
 using Functors: fmap
@@ -70,24 +53,22 @@ using Random: AbstractRNG, default_rng, rand!
 using SparseArrays: SparseArrays, SparseMatrixCSC, nnz, spdiagm
 using Test: @testset, @test
 
+include("utils.jl")
+
 include("scenarios/scenario.jl")
-include("scenarios/batchify.jl")
+include("scenarios/modify.jl")
 include("scenarios/default.jl")
 include("scenarios/sparse.jl")
 include("scenarios/allocfree.jl")
 include("scenarios/extensions.jl")
-include("scenarios/modify.jl")
 
-include("utils/zero_backends.jl")
-include("utils/misc.jl")
-include("utils/filter.jl")
-
-include("tests/correctness.jl")
+include("tests/correctness_eval.jl")
 @static if VERSION >= v"1.7"
-    include("tests/type_stability.jl")
+    include("tests/type_stability_eval.jl")
 end
 include("tests/sparsity.jl")
 include("tests/benchmark.jl")
+include("tests/benchmark_eval.jl")
 include("test_differentiation.jl")
 
 function __init__()
@@ -95,14 +76,6 @@ function __init__()
 end
 
 export Scenario
-export PushforwardScenario,
-    PullbackScenario,
-    DerivativeScenario,
-    GradientScenario,
-    JacobianScenario,
-    SecondDerivativeScenario,
-    HVPScenario,
-    HessianScenario
 export default_scenarios, sparse_scenarios
 export test_differentiation, benchmark_differentiation
 export DifferentiationBenchmarkDataRow

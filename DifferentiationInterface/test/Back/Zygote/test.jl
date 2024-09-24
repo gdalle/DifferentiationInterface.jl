@@ -1,3 +1,6 @@
+using Pkg
+Pkg.add("Zygote")
+
 using ComponentArrays: ComponentArrays
 using DifferentiationInterface, DifferentiationInterfaceTest
 using JLArrays: JLArrays
@@ -5,6 +8,8 @@ using SparseConnectivityTracer, SparseMatrixColorings
 using StaticArrays: StaticArrays
 using Test
 using Zygote: Zygote
+
+LOGGING = get(ENV, "CI", "false") == "false"
 
 dense_backends = [AutoZygote()]
 
@@ -18,13 +23,19 @@ sparse_backends = [
 
 for backend in vcat(dense_backends, sparse_backends)
     @test check_available(backend)
-    @test !check_twoarg(backend)
-    @test check_hessian(backend)
+    @test !check_inplace(backend)
 end
 
 ## Dense backends
 
 test_differentiation(AutoZygote(); excluded=[:second_derivative], logging=LOGGING);
+
+test_differentiation(
+    AutoZygote(),
+    default_scenarios(; include_normal=false, include_constantified=true);
+    second_order=false,
+    logging=LOGGING,
+);
 
 if VERSION >= v"1.10"
     test_differentiation(

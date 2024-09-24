@@ -1,3 +1,6 @@
+using Pkg
+Pkg.add(["Enzyme", "Reactant"])
+
 using DifferentiationInterface
 using DifferentiationInterface: ReactantBackend
 using DifferentiationInterfaceTest

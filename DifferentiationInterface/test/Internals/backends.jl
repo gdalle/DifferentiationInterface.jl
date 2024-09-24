@@ -1,6 +1,7 @@
 using ADTypes
 using DifferentiationInterface
 import DifferentiationInterface as DI
+using ForwardDiff: ForwardDiff
 using Test
 
 @testset "SecondOrder" begin
@@ -15,7 +16,7 @@ end
         sparse_backend = AutoSparse(backend)
         @test ADTypes.mode(sparse_backend) == ADTypes.mode(backend)
         @test check_available(sparse_backend) == check_available(backend)
-        @test DI.twoarg_support(sparse_backend) == DI.twoarg_support(backend)
+        @test DI.inplace_support(sparse_backend) == DI.inplace_support(backend)
         @test DI.pushforward_performance(sparse_backend) ==
             DI.pushforward_performance(backend)
         @test DI.pullback_performance(sparse_backend) == DI.pullback_performance(backend)
@@ -33,4 +34,6 @@ end
 
 @testset "Batch size" begin
     @test DI.pick_batchsize(AutoZygote(), 2) == 1
+    @test DI.pick_batchsize(AutoForwardDiff(; chunksize=4), 2) == 2
+    @test DI.pick_batchsize(AutoForwardDiff(; chunksize=4), 6) == 4
 end

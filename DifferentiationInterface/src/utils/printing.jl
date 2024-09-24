@@ -1,11 +1,14 @@
 function package_name(b::AbstractADType)
     s = string(b)
     k = findfirst('(', s)
-    if isnothing(k)
-        throw(ArgumentError("Cannot parse backend into package"))
-    else
-        return s[5:(k - 1)]
-    end
+    isnothing(k) && throw(ArgumentError("Cannot parse backend into package"))
+    return s[5:(k - 1)]
+end
+
+function package_name(b::SecondOrder)
+    p1 = package_name(outer(b))
+    p2 = package_name(inner(b))
+    return p1 == p2 ? p1 : "$p1, $p2"
 end
 
 package_name(b::AutoSparse) = package_name(dense_ad(b))

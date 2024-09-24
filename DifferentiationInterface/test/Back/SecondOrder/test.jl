@@ -1,3 +1,6 @@
+using Pkg
+Pkg.add(["Enzyme", "ForwardDiff", "ReverseDiff", "Zygote"])
+
 using DifferentiationInterface, DifferentiationInterfaceTest
 import DifferentiationInterface as DI
 using Enzyme: Enzyme
@@ -8,6 +11,8 @@ using SparseMatrixColorings
 using Zygote: Zygote
 using Test
 
+LOGGING = get(ENV, "CI", "false") == "false"
+
 ## Dense
 
 onearg_backends = [
@@ -16,22 +21,22 @@ onearg_backends = [
 ]
 
 twoarg_backends = [
+    SecondOrder(AutoForwardDiff(), AutoReverseDiff(; compile=true)),
+    SecondOrder(AutoForwardDiff(; tag=:mytag), AutoReverseDiff(; compile=false)),
+    SecondOrder(AutoForwardDiff(), AutoEnzyme(; mode=Enzyme.Forward)),
     SecondOrder(
-        AutoForwardDiff(), AutoEnzyme(; mode=Enzyme.Forward, constant_function=true)
-    ),
-    SecondOrder(
-        AutoEnzyme(; mode=Enzyme.Reverse, constant_function=true), AutoForwardDiff()
+        AutoEnzyme(; mode=Enzyme.Reverse, function_annotation=Enzyme.Const),
+        AutoForwardDiff(),
     ),
 ]
 
 for backend in vcat(onearg_backends, twoarg_backends)
     @test check_available(backend)
     if backend in onearg_backends
-        @test !check_twoarg(backend)
+        @test !check_inplace(backend)
     else
-        @test check_twoarg(backend)
+        @test check_inplace(backend)
     end
-    @test check_hessian(backend)
 end
 
 test_differentiation(

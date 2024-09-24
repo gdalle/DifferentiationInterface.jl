@@ -2,67 +2,105 @@ module DifferentiationInterfaceTrackerExt
 
 using ADTypes: AutoTracker
 import DifferentiationInterface as DI
-using DifferentiationInterface: NoGradientExtras, NoPullbackExtras, PullbackExtras
+using DifferentiationInterface:
+    Constant, NoGradientPrep, NoPullbackPrep, PullbackPrep, Tangents, unwrap, with_contexts
 using Tracker: Tracker, back, data, forward, gradient, jacobian, param, withgradient
 using Compat
 
 DI.check_available(::AutoTracker) = true
-DI.twoarg_support(::AutoTracker) = DI.TwoArgNotSupported()
+DI.inplace_support(::AutoTracker) = DI.InPlaceNotSupported()
 
 ## Pullback
 
-struct TrackerPullbackExtrasSamePoint{Y,PB} <: PullbackExtras
+struct TrackerPullbackPrepSamePoint{Y,PB} <: PullbackPrep
     y::Y
     pb::PB
 end
 
-DI.prepare_pullback(f, ::AutoTracker, x, dy) = NoPullbackExtras()
-
-function DI.prepare_pullback_same_point(
-    f, ::AutoTracker, x, dy, ::PullbackExtras=NoPullbackExtras()
-)
-    y, pb = forward(f, x)
-    return TrackerPullbackExtrasSamePoint(y, pb)
+function DI.prepare_pullback(
+    f, ::AutoTracker, x, ty::Tangents, contexts::Vararg{Constant,C}
+) where {C}
+    return NoPullbackPrep()
 end
 
-function DI.value_and_pullback(f, ::AutoTracker, x, dy, ::NoPullbackExtras)
-    y, pb = forward(f, x)
-    return y, data(only(pb(dy)))
+function DI.prepare_pullback_same_point(
+    f, ::NoPullbackPrep, ::AutoTracker, x, ty::Tangents, contexts::Vararg{Constant,C}
+) where {C}
+    y, pb = forward(f, x, map(unwrap, contexts)...)
+    return TrackerPullbackPrepSamePoint(y, pb)
 end
 
 function DI.value_and_pullback(
-    f, ::AutoTracker, x, dy, extras::TrackerPullbackExtrasSamePoint
-)
-    @compat (; y, pb) = extras
-    return copy(y), data(only(pb(dy)))
+    f, ::NoPullbackPrep, ::AutoTracker, x, ty::Tangents, contexts::Vararg{Constant,C}
+) where {C}
+    y, pb = forward(f, x, map(unwrap, contexts)...)
+    tx = map(ty) do dy
+        data(first(pb(dy)))
+    end
+    return y, tx
 end
 
-function DI.pullback(f, ::AutoTracker, x, dy, extras::TrackerPullbackExtrasSamePoint)
-    @compat (; pb) = extras
-    return data(only(pb(dy)))
+function DI.value_and_pullback(
+    f,
+    prep::TrackerPullbackPrepSamePoint,
+    ::AutoTracker,
+    x,
+    ty::Tangents,
+    contexts::Vararg{Constant,C},
+) where {C}
+    @compat (; y, pb) = prep
+    tx = map(ty) do dy
+        data(first(pb(dy)))
+    end
+    return copy(y), tx
+end
+
+function DI.pullback(
+    f,
+    prep::TrackerPullbackPrepSamePoint,
+    ::AutoTracker,
+    x,
+    ty::Tangents,
+    contexts::Vararg{Constant,C},
+) where {C}
+    @compat (; pb) = prep
+    tx = map(ty) do dy
+        data(first(pb(dy)))
+    end
+    return tx
 end
 
 ## Gradient
 
-DI.prepare_gradient(f, ::AutoTracker, x) = NoGradientExtras()
-
-function DI.value_and_gradient(f, ::AutoTracker, x, ::NoGradientExtras)
-    @compat (; val, grad) = withgradient(f, x)
-    return val, data(only(grad))
+function DI.prepare_gradient(f, ::AutoTracker, x, contexts::Vararg{Constant,C}) where {C}
+    return NoGradientPrep()
 end
 
-function DI.gradient(f, ::AutoTracker, x, ::NoGradientExtras)
-    @compat (; grad) = withgradient(f, x)
-    return data(only(grad))
+function DI.value_and_gradient(
+    f, ::NoGradientPrep, ::AutoTracker, x, contexts::Vararg{Constant,C}
+) where {C}
+    @compat (; val, grad) = withgradient(f, x, map(unwrap, contexts)...)
+    return val, data(first(grad))
 end
 
-function DI.value_and_gradient!(f, grad, backend::AutoTracker, x, extras::NoGradientExtras)
-    y, new_grad = DI.value_and_gradient(f, backend, x, extras)
+function DI.gradient(
+    f, ::NoGradientPrep, ::AutoTracker, x, contexts::Vararg{Constant,C}
+) where {C}
+    @compat (; grad) = withgradient(f, x, map(unwrap, contexts)...)
+    return data(first(grad))
+end
+
+function DI.value_and_gradient!(
+    f, grad, prep::NoGradientPrep, backend::AutoTracker, x, contexts::Vararg{Constant,C}
+) where {C}
+    y, new_grad = DI.value_and_gradient(f, prep, backend, x, contexts...)
     return y, copyto!(grad, new_grad)
 end
 
-function DI.gradient!(f, grad, backend::AutoTracker, x, extras::NoGradientExtras)
-    return copyto!(grad, DI.gradient(f, backend, x, extras))
+function DI.gradient!(
+    f, grad, prep::NoGradientPrep, backend::AutoTracker, x, contexts::Vararg{Constant,C}
+) where {C}
+    return copyto!(grad, DI.gradient(f, prep, backend, x, contexts...))
 end
 
 end

@@ -1,9 +1,9 @@
 ## Docstrings
 
 """
-    prepare_hvp(f, backend, x, dx) -> extras
+    prepare_hvp(f, backend, x, tx, [contexts...]) -> prep
 
-Create an `extras` object that can be given to [`hvp`](@ref) and its variants.
+Create a `prep` object that can be given to [`hvp`](@ref) and its variants.
 
 !!! warning
     If the function changes in any way, the result of preparation will be invalidated, and you will need to run it again.
@@ -11,9 +11,9 @@ Create an `extras` object that can be given to [`hvp`](@ref) and its variants.
 function prepare_hvp end
 
 """
-    prepare_hvp_same_point(f, backend, x, dx) -> extras_same
+    prepare_hvp_same_point(f, backend, x, tx, [contexts...]) -> prep_same
 
-Create an `extras_same` object that can be given to [`hvp`](@ref) and its variants _if they are applied at the same point `x`_.
+Create an `prep_same` object that can be given to [`hvp`](@ref) and its variants _if they are applied at the same point `x`_.
 
 !!! warning
     If the function or the point changes in any way, the result of preparation will be invalidated, and you will need to run it again.
@@ -21,18 +21,18 @@ Create an `extras_same` object that can be given to [`hvp`](@ref) and its varian
 function prepare_hvp_same_point end
 
 """
-    hvp(f, backend, x, dx, [extras]) -> dg
+    hvp(f, [prep,] backend, x, tx, [contexts...]) -> tg
 
-Compute the Hessian-vector product of `f` at point `x` with seed `dx`.
+Compute the Hessian-vector product of `f` at point `x` with [`Tangents`](@ref) `tx`.
 
 $(document_preparation("hvp"; same_point=true))
 """
 function hvp end
 
 """
-    hvp!(f, dg, backend, x, dx, [extras]) -> dg
+    hvp!(f, tg, [prep,] backend, x, tx, [contexts...]) -> tg
 
-Compute the Hessian-vector product of `f` at point `x` with seed `dx`, overwriting `dg`.
+Compute the Hessian-vector product of `f` at point `x` with [`Tangents`](@ref) `tx`, overwriting `tg`.
 
 $(document_preparation("hvp"; same_point=true))
 """
@@ -40,185 +40,237 @@ function hvp! end
 
 ## Preparation
 
-### Extras types
-
-"""
-    HVPExtras
-
-Abstract type for additional information needed by [`hvp`](@ref) and its variants.
-"""
-abstract type HVPExtras <: Extras end
-
-struct NoHVPExtras <: HVPExtras end
-
-struct InnerGradient{F,B}
-    f::F
-    backend::B
+struct ForwardOverForwardHVPPrep{G,E<:PushforwardPrep} <: HVPPrep
+    inner_gradient::G
+    outer_pushforward_prep::E
 end
 
-function (ig::InnerGradient)(x)
-    @compat (; f, backend) = ig
-    return gradient(f, backend, x)
+struct ForwardOverReverseHVPPrep{G,E<:PushforwardPrep} <: HVPPrep
+    inner_gradient::G
+    outer_pushforward_prep::E
 end
 
-struct InnerPushforwardFixedSeed{F,B,DX}
-    f::F
-    backend::B
-    dx::DX
+struct ReverseOverForwardHVPPrep{P,E} <: HVPPrep
+    inner_pushforward::P
+    outer_gradient_prep::E
 end
 
-function (ipfs::InnerPushforwardFixedSeed)(x)
-    @compat (; f, backend, dx) = ipfs
-    return pushforward(f, backend, x, dx)
+struct ReverseOverReverseHVPPrep{G,E<:PullbackPrep} <: HVPPrep
+    inner_gradient::G
+    outer_pullback_prep::E
 end
 
-struct ForwardOverForwardHVPExtras{IG<:InnerGradient,E<:PushforwardExtras} <: HVPExtras
-    inner_gradient::IG
-    outer_pushforward_extras::E
+function prepare_hvp(
+    f::F, backend::AbstractADType, x, tx::Tangents, contexts::Vararg{Context,C}
+) where {F,C}
+    return _prepare_hvp_aux(hvp_mode(backend), f, backend, x, tx, contexts...)
 end
 
-struct ForwardOverReverseHVPExtras{IG<:InnerGradient,E<:PushforwardExtras} <: HVPExtras
-    inner_gradient::IG
-    outer_pushforward_extras::E
-end
-
-struct ReverseOverForwardHVPExtras{E<:GradientExtras} <: HVPExtras
-    outer_gradient_extras::E
-end
-
-struct ReverseOverReverseHVPExtras{IG<:InnerGradient,E<:PullbackExtras} <: HVPExtras
-    inner_gradient::IG
-    outer_pullback_extras::E
-end
-
-### Different point
-
-function prepare_hvp(f::F, backend::AbstractADType, x, dx) where {F}
-    return prepare_hvp(f, SecondOrder(backend, backend), x, dx)
-end
-
-function prepare_hvp(f::F, backend::SecondOrder, x, dx) where {F}
-    return prepare_hvp_aux(f, backend, x, dx, hvp_mode(backend))
-end
-
-function prepare_hvp_aux(f::F, backend::SecondOrder, x, dx, ::ForwardOverForward) where {F}
+function _prepare_hvp_aux(
+    ::ForwardOverForward,
+    f::F,
+    backend::AbstractADType,
+    x,
+    tx::Tangents,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    rewrap = Rewrap(contexts...)
     # pushforward of many pushforwards in theory, but pushforward of gradient in practice
-    inner_gradient = InnerGradient(f, nested(inner(backend)))
-    outer_pushforward_extras = prepare_pushforward(inner_gradient, outer(backend), x, dx)
-    return ForwardOverForwardHVPExtras(inner_gradient, outer_pushforward_extras)
+    function inner_gradient(_x, unannotated_contexts...)
+        annotated_contexts = rewrap(unannotated_contexts...)
+        return gradient(f, nested(inner(backend)), _x, annotated_contexts...)
+    end
+    outer_pushforward_prep = prepare_pushforward(
+        inner_gradient, outer(backend), x, tx, contexts...
+    )
+    return ForwardOverForwardHVPPrep(inner_gradient, outer_pushforward_prep)
 end
 
-function prepare_hvp_aux(f::F, backend::SecondOrder, x, dx, ::ForwardOverReverse) where {F}
+function _prepare_hvp_aux(
+    ::ForwardOverReverse,
+    f::F,
+    backend::AbstractADType,
+    x,
+    tx::Tangents,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    rewrap = Rewrap(contexts...)
     # pushforward of gradient
-    inner_gradient = InnerGradient(f, nested(inner(backend)))
-    outer_pushforward_extras = prepare_pushforward(inner_gradient, outer(backend), x, dx)
-    return ForwardOverReverseHVPExtras(inner_gradient, outer_pushforward_extras)
+    function inner_gradient(_x, unannotated_contexts...)
+        annotated_contexts = rewrap(unannotated_contexts...)
+        return gradient(f, nested(inner(backend)), _x, annotated_contexts...)
+    end
+    outer_pushforward_prep = prepare_pushforward(
+        inner_gradient, outer(backend), x, tx, contexts...
+    )
+    return ForwardOverReverseHVPPrep(inner_gradient, outer_pushforward_prep)
 end
 
-function prepare_hvp_aux(f::F, backend::SecondOrder, x, dx, ::ReverseOverForward) where {F}
+function _prepare_hvp_aux(
+    ::ReverseOverForward,
+    f::F,
+    backend::AbstractADType,
+    x,
+    tx::Tangents,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    rewrap = Rewrap(contexts...)
     # gradient of pushforward
-    # uses dx in the closure so it can't be stored
-    inner_pushforward = InnerPushforwardFixedSeed(f, nested(inner(backend)), dx)
-    outer_gradient_extras = prepare_gradient(inner_pushforward, outer(backend), x)
-    return ReverseOverForwardHVPExtras(outer_gradient_extras)
+    function inner_pushforward(_x, _dx, unannotated_contexts...)
+        annotated_contexts = rewrap(unannotated_contexts...)
+        ty = pushforward(
+            f, nested(inner(backend)), _x, Tangents(_dx), annotated_contexts...
+        )
+        return only(ty)
+    end
+    outer_gradient_prep = prepare_gradient(
+        inner_pushforward, outer(backend), x, contexts...
+    )
+    return ReverseOverForwardHVPPrep(inner_pushforward, outer_gradient_prep)
 end
 
-function prepare_hvp_aux(f::F, backend::SecondOrder, x, dx, ::ReverseOverReverse) where {F}
+function _prepare_hvp_aux(
+    ::ReverseOverReverse,
+    f::F,
+    backend::AbstractADType,
+    x,
+    tx::Tangents,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    rewrap = Rewrap(contexts...)
     # pullback of gradient
-    inner_gradient = InnerGradient(f, nested(inner(backend)))
-    outer_pullback_extras = prepare_pullback(inner_gradient, outer(backend), x, dx)
-    return ReverseOverReverseHVPExtras(inner_gradient, outer_pullback_extras)
-end
-
-### Same point
-
-function prepare_hvp_same_point(
-    f::F, backend::AbstractADType, x, dx, extras::HVPExtras
-) where {F}
-    return extras
-end
-
-function prepare_hvp_same_point(f::F, backend::AbstractADType, x, dx) where {F}
-    extras = prepare_hvp(f, backend, x, dx)
-    return prepare_hvp_same_point(f, backend, x, dx, extras)
+    function inner_gradient(_x, unannotated_contexts...)
+        annotated_contexts = rewrap(unannotated_contexts...)
+        return gradient(f, nested(inner(backend)), _x, annotated_contexts...)
+    end
+    outer_pullback_prep = prepare_pullback(
+        inner_gradient, outer(backend), x, tx, contexts...
+    )
+    return ReverseOverReverseHVPPrep(inner_gradient, outer_pullback_prep)
 end
 
 ## One argument
 
-### Without extras
-
-function hvp(f::F, backend::AbstractADType, x, dx) where {F}
-    return hvp(f, backend, x, dx, prepare_hvp(f, backend, x, dx))
-end
-
-function hvp!(f::F, dg, backend::AbstractADType, x, dx) where {F}
-    return hvp!(f, dg, backend, x, dx, prepare_hvp(f, backend, x, dx))
-end
-
-### With extras
-
-function hvp(f::F, backend::AbstractADType, x, dx, extras::HVPExtras) where {F}
-    return hvp(f, SecondOrder(backend, backend), x, dx, extras)
+function hvp(
+    f::F,
+    prep::ForwardOverForwardHVPPrep,
+    backend::AbstractADType,
+    x,
+    tx::Tangents,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    @compat (; inner_gradient, outer_pushforward_prep) = prep
+    return pushforward(
+        inner_gradient, outer_pushforward_prep, outer(backend), x, tx, contexts...
+    )
 end
 
 function hvp(
-    f::F, backend::SecondOrder, x, dx, extras::ForwardOverForwardHVPExtras
-) where {F}
-    @compat (; inner_gradient, outer_pushforward_extras) = extras
-    return pushforward(inner_gradient, outer(backend), x, dx, outer_pushforward_extras)
+    f::F,
+    prep::ForwardOverReverseHVPPrep,
+    backend::AbstractADType,
+    x,
+    tx::Tangents,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    @compat (; inner_gradient, outer_pushforward_prep) = prep
+    return pushforward(
+        inner_gradient, outer_pushforward_prep, outer(backend), x, tx, contexts...
+    )
 end
 
 function hvp(
-    f::F, backend::SecondOrder, x, dx, extras::ForwardOverReverseHVPExtras
-) where {F}
-    @compat (; inner_gradient, outer_pushforward_extras) = extras
-    return pushforward(inner_gradient, outer(backend), x, dx, outer_pushforward_extras)
+    f::F,
+    prep::ReverseOverForwardHVPPrep,
+    backend::AbstractADType,
+    x,
+    tx::Tangents,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    @compat (; inner_pushforward, outer_gradient_prep) = prep
+    tg = map(tx) do dx
+        gradient(inner_pushforward, outer(backend), x, Constant(dx), contexts...)
+    end
+    return tg
 end
 
 function hvp(
-    f::F, backend::SecondOrder, x, dx, extras::ReverseOverForwardHVPExtras
-) where {F}
-    @compat (; outer_gradient_extras) = extras
-    inner_pushforward = InnerPushforwardFixedSeed(f, nested(inner(backend)), dx)
-    return gradient(inner_pushforward, outer(backend), x, outer_gradient_extras)
-end
-
-function hvp(
-    f::F, backend::SecondOrder, x, dx, extras::ReverseOverReverseHVPExtras
-) where {F}
-    @compat (; inner_gradient, outer_pullback_extras) = extras
-    return pullback(inner_gradient, outer(backend), x, dx, outer_pullback_extras)
-end
-
-function hvp!(f::F, dg, backend::AbstractADType, x, dx, extras::HVPExtras) where {F}
-    return hvp!(f, dg, SecondOrder(backend, backend), x, dx, extras)
+    f::F,
+    prep::ReverseOverReverseHVPPrep,
+    backend::AbstractADType,
+    x,
+    tx::Tangents,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    @compat (; inner_gradient, outer_pullback_prep) = prep
+    return pullback(inner_gradient, outer_pullback_prep, outer(backend), x, tx, contexts...)
 end
 
 function hvp!(
-    f::F, dg, backend::SecondOrder, x, dx, extras::ForwardOverForwardHVPExtras
-) where {F}
-    @compat (; inner_gradient, outer_pushforward_extras) = extras
-    return pushforward!(inner_gradient, dg, outer(backend), x, dx, outer_pushforward_extras)
+    f::F,
+    tg::Tangents,
+    prep::ForwardOverForwardHVPPrep,
+    backend::AbstractADType,
+    x,
+    tx::Tangents,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    @compat (; inner_gradient, outer_pushforward_prep) = prep
+    return pushforward!(
+        inner_gradient, tg, outer_pushforward_prep, outer(backend), x, tx, contexts...
+    )
 end
 
 function hvp!(
-    f::F, dg, backend::SecondOrder, x, dx, extras::ForwardOverReverseHVPExtras
-) where {F}
-    @compat (; inner_gradient, outer_pushforward_extras) = extras
-    return pushforward!(inner_gradient, dg, outer(backend), x, dx, outer_pushforward_extras)
+    f::F,
+    tg::Tangents,
+    prep::ForwardOverReverseHVPPrep,
+    backend::AbstractADType,
+    x,
+    tx::Tangents,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    @compat (; inner_gradient, outer_pushforward_prep) = prep
+    return pushforward!(
+        inner_gradient, tg, outer_pushforward_prep, outer(backend), x, tx, contexts...
+    )
 end
 
 function hvp!(
-    f::F, dg, backend::SecondOrder, x, dx, extras::ReverseOverForwardHVPExtras
-) where {F}
-    @compat (; outer_gradient_extras) = extras
-    inner_pushforward = InnerPushforwardFixedSeed(f, nested(inner(backend)), dx)
-    return gradient!(inner_pushforward, dg, outer(backend), x, outer_gradient_extras)
+    f::F,
+    tg::Tangents,
+    prep::ReverseOverForwardHVPPrep,
+    backend::AbstractADType,
+    x,
+    tx::Tangents,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    @compat (; inner_pushforward, outer_gradient_prep) = prep
+    for b in eachindex(tx.d, tg.d)
+        gradient!(
+            inner_pushforward,
+            tg.d[b],
+            outer_gradient_prep,
+            outer(backend),
+            x,
+            Constant(tx.d[b]),
+            contexts...,
+        )
+    end
+    return tg
 end
 
 function hvp!(
-    f::F, dg, backend::SecondOrder, x, dx, extras::ReverseOverReverseHVPExtras
-) where {F}
-    @compat (; inner_gradient, outer_pullback_extras) = extras
-    return pullback!(inner_gradient, dg, outer(backend), x, dx, outer_pullback_extras)
+    f::F,
+    tg::Tangents,
+    prep::ReverseOverReverseHVPPrep,
+    backend::AbstractADType,
+    x,
+    tx::Tangents,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    @compat (; inner_gradient, outer_pullback_prep) = prep
+    return pullback!(
+        inner_gradient, tg, outer_pullback_prep, outer(backend), x, tx, contexts...
+    )
 end

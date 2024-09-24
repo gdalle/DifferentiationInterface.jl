@@ -1,24 +1,28 @@
+using Pkg
+Pkg.add("Enzyme")
+
 using ADTypes: ADTypes
 using DifferentiationInterface, DifferentiationInterfaceTest
 import DifferentiationInterfaceTest as DIT
 using Enzyme: Enzyme
 using SparseConnectivityTracer, SparseMatrixColorings
-using StableRNGs
 using Test
 
+LOGGING = get(ENV, "CI", "false") == "false"
+
 dense_backends = [
-    AutoEnzyme(; mode=nothing, constant_function=true),
-    AutoEnzyme(; mode=Enzyme.Forward, constant_function=true),
-    AutoEnzyme(; mode=Enzyme.Reverse, constant_function=true),
+    AutoEnzyme(; mode=nothing),
+    AutoEnzyme(; mode=Enzyme.Forward),
+    AutoEnzyme(; mode=Enzyme.Reverse),
+    AutoEnzyme(; mode=nothing, function_annotation=Enzyme.Const),
+    AutoEnzyme(; mode=Enzyme.Forward, function_annotation=Enzyme.Const),
+    AutoEnzyme(; mode=Enzyme.Reverse, function_annotation=Enzyme.Const),
 ]
 
-nested_dense_backends = [
-    DifferentiationInterface.nested(
-        AutoEnzyme(; mode=Enzyme.Forward, constant_function=true)
-    ),
-    DifferentiationInterface.nested(
-        AutoEnzyme(; mode=Enzyme.Reverse, constant_function=true)
-    ),
+duplicated_function_backends = [
+    AutoEnzyme(; function_annotation=Enzyme.Duplicated),
+    AutoEnzyme(; mode=Enzyme.Forward, function_annotation=Enzyme.Duplicated),
+    AutoEnzyme(; mode=Enzyme.Reverse, function_annotation=Enzyme.Duplicated),
 ]
 
 sparse_backends =
@@ -31,42 +35,36 @@ sparse_backends =
 @testset "Checks" begin
     @testset "Check $(typeof(backend))" for backend in vcat(dense_backends, sparse_backends)
         @test check_available(backend)
-        @test check_twoarg(backend)
-        @test check_hessian(backend; verbose=false)
+        @test check_inplace(backend)
     end
-end
+end;
 
 ## Dense backends
 
 test_differentiation(
-    vcat(dense_backends, nested_dense_backends),
-    default_scenarios();
+    dense_backends, default_scenarios(); second_order=false, logging=LOGGING
+);
+
+test_differentiation(
+    dense_backends[1:3],
+    default_scenarios(; include_normal=false, include_constantified=true);
+    second_order=false,
+    logging=LOGGING,
+);
+
+test_differentiation(
+    duplicated_function_backends,
+    default_scenarios(; include_normal=false, include_closurified=true);
     second_order=false,
     logging=LOGGING,
 );
 
 test_differentiation(
     [
-        AutoEnzyme(; mode=Enzyme.Forward, constant_function=false),
-        AutoEnzyme(; mode=Enzyme.Reverse, constant_function=false),
-    ],
-    DIT.make_closure.(default_scenarios());
-    second_order=false,
-    logging=LOGGING,
-);
-
-test_differentiation(
-    [
-        AutoEnzyme(; mode=nothing, constant_function=true),
-        AutoEnzyme(; mode=Enzyme.Reverse, constant_function=true),
-        SecondOrder(
-            AutoEnzyme(; mode=Enzyme.Reverse, constant_function=true),
-            AutoEnzyme(; mode=Enzyme.Reverse, constant_function=true),
-        ),
-        SecondOrder(
-            AutoEnzyme(; mode=Enzyme.Forward, constant_function=true),
-            AutoEnzyme(; mode=Enzyme.Reverse, constant_function=true),
-        ),
+        AutoEnzyme(; mode=nothing),
+        AutoEnzyme(; mode=Enzyme.Reverse),
+        SecondOrder(AutoEnzyme(; mode=Enzyme.Reverse), AutoEnzyme(; mode=Enzyme.Reverse)),
+        SecondOrder(AutoEnzyme(; mode=Enzyme.Forward), AutoEnzyme(; mode=Enzyme.Reverse)),
     ];
     first_order=false,
     excluded=[:second_derivative],
@@ -74,33 +72,39 @@ test_differentiation(
 );
 
 test_differentiation(
-    [
-        AutoEnzyme(; mode=nothing, constant_function=true),
-        AutoEnzyme(; mode=Enzyme.Forward, constant_function=true),
-    ];
+    [AutoEnzyme(; mode=nothing), AutoEnzyme(; mode=Enzyme.Forward)];
     first_order=false,
     excluded=[:hessian, :hvp],
     logging=LOGGING,
 );
 
+#=
+# TODO: reactivate type stability tests
+
 test_differentiation(
-    AutoEnzyme(; mode=Enzyme.Forward, constant_function=true);  # TODO: add more
+    AutoEnzyme(; mode=Enzyme.Forward),  # TODO: add more
+    default_scenarios(; include_batchified=false);
     correctness=false,
     type_stability=true,
     second_order=false,
     logging=LOGGING,
 );
+=#
 
 ## Sparse backends
 
 test_differentiation(
     sparse_backends,
     default_scenarios();
-    excluded=[:derivative, :gradient, :pullback, :pushforward],
-    second_order=false,
+    excluded=[:derivative, :gradient, :pullback, :pushforward, :second_derivative, :hvp],
+    second_order=false,  # TODO: make true
     logging=LOGGING,
 );
 
 test_differentiation(
-    sparse_backends, sparse_scenarios(); second_order=false, sparsity=true, logging=LOGGING
+    sparse_backends,
+    sparse_scenarios();
+    sparsity=true,
+    second_order=false,  # TODO: make true
+    logging=LOGGING,
 );

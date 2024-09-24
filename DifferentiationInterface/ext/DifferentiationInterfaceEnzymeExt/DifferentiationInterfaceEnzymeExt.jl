@@ -1,86 +1,58 @@
 module DifferentiationInterfaceEnzymeExt
 
 using ADTypes: ADTypes, AutoEnzyme
+using Base: Fix1
 import DifferentiationInterface as DI
 using DifferentiationInterface:
-    DerivativeExtras,
-    GradientExtras,
-    JacobianExtras,
-    PullbackExtras,
-    PushforwardExtras,
-    NoDerivativeExtras,
-    NoGradientExtras,
-    NoJacobianExtras,
-    NoPullbackExtras,
-    NoPushforwardExtras,
+    Context,
+    DerivativePrep,
+    GradientPrep,
+    JacobianPrep,
+    HVPPrep,
+    PullbackPrep,
+    PushforwardPrep,
+    NoDerivativePrep,
+    NoGradientPrep,
+    NoHVPPrep,
+    NoJacobianPrep,
+    NoPullbackPrep,
+    NoPushforwardPrep,
+    Tangents,
     pick_batchsize
-using DocStringExtensions
 using Enzyme:
     Active,
+    Annotation,
+    BatchDuplicated,
     Const,
     Duplicated,
     DuplicatedNoNeed,
+    EnzymeCore,
     Forward,
     ForwardMode,
+    ForwardWithPrimal,
+    MixedDuplicated,
     Mode,
     Reverse,
-    ReverseWithPrimal,
-    ReverseSplitWithPrimal,
     ReverseMode,
+    ReverseModeSplit,
+    ReverseSplitWithPrimal,
+    ReverseWithPrimal,
     autodiff,
-    autodiff_deferred,
-    autodiff_deferred_thunk,
     autodiff_thunk,
-    chunkedonehot,
+    create_shadows,
     gradient,
     gradient!,
+    guess_activity,
+    hvp,
+    hvp!,
     jacobian,
     make_zero,
     make_zero!,
     onehot
 
-struct AutoDeferredEnzyme{M,constant_function} <: ADTypes.AbstractADType
-    mode::M
-end
-
-ADTypes.mode(backend::AutoDeferredEnzyme) = ADTypes.mode(AutoEnzyme(backend.mode))
-
-function DI.nested(backend::AutoEnzyme{M,constant_function}) where {M,constant_function}
-    return AutoDeferredEnzyme{M,constant_function}(backend.mode)
-end
-
-const AnyAutoEnzyme{M,constant_function} = Union{
-    AutoEnzyme{M,constant_function},AutoDeferredEnzyme{M,constant_function}
-}
-
-# forward mode if possible
-forward_mode(backend::AnyAutoEnzyme{<:Mode}) = backend.mode
-forward_mode(::AnyAutoEnzyme{Nothing}) = Forward
-
-# reverse mode if possible
-reverse_mode(backend::AnyAutoEnzyme{<:Mode}) = backend.mode
-reverse_mode(::AnyAutoEnzyme{Nothing}) = Reverse
-
 DI.check_available(::AutoEnzyme) = true
 
-# until https://github.com/EnzymeAD/Enzyme.jl/pull/1545 is merged
-DI.pick_batchsize(::AnyAutoEnzyme, dimension::Integer) = min(dimension, 16)
-
-# Enzyme's `Duplicated(x, dx)` expects both arguments to be of the same type
-function DI.basis(::AutoEnzyme, a::AbstractArray{T}, i::CartesianIndex) where {T}
-    b = zero(a)
-    b[i] = one(T)
-    return b
-end
-
-function get_f_and_df(f, ::AnyAutoEnzyme{M,true}) where {M}
-    return Const(f)
-end
-
-function get_f_and_df(f, ::AnyAutoEnzyme{M,false}) where {M}
-    df = make_zero(f)
-    return Duplicated(f, df)
-end
+include("utils.jl")
 
 include("forward_onearg.jl")
 include("forward_twoarg.jl")

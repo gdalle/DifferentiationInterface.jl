@@ -36,12 +36,12 @@ function sparse_vec_to_vec_scenarios(x::AbstractVector)
     jac = diffsquare_jacobian(x)
 
     scens = Scenario[]
-    for place in (:outofplace, :inplace)
+    for pl_op in (:out, :in)
         append!(
             scens,
             [
-                JacobianScenario(f; x, y, jac, nb_args=1, place),
-                JacobianScenario(f!; x, y, jac, nb_args=2, place),
+                Scenario{:jacobian,pl_op}(f, x; res1=jac),
+                Scenario{:jacobian,pl_op}(f!, y, x; res1=jac),
             ],
         )
     end
@@ -72,12 +72,12 @@ function sparse_mat_to_vec_scenarios(x::AbstractMatrix)
     jac = diffsquarecube_matvec_jacobian(x)
 
     scens = Scenario[]
-    for place in (:outofplace, :inplace)
+    for pl_op in (:out, :in)
         append!(
             scens,
             [
-                JacobianScenario(f; x, y, jac, nb_args=1, place),
-                JacobianScenario(f!; x, y, jac, nb_args=2, place),
+                Scenario{:jacobian,pl_op}(f, x; res1=jac),
+                Scenario{:jacobian,pl_op}(f!, y, x; res1=jac),
             ],
         )
     end
@@ -105,12 +105,12 @@ function sparse_vec_to_mat_scenarios(x::AbstractVector)
     jac = diffsquarecube_vecmat_jacobian(vec(x))
 
     scens = Scenario[]
-    for place in (:outofplace, :inplace)
+    for pl_op in (:out, :in)
         append!(
             scens,
             [
-                JacobianScenario(f; x, y, jac, nb_args=1, place),
-                JacobianScenario(f!; x, y, jac, nb_args=2, place),
+                Scenario{:jacobian,pl_op}(f, x; res1=jac),
+                Scenario{:jacobian,pl_op}(f!, y, x; res1=jac),
             ],
         )
     end
@@ -140,12 +140,12 @@ function sparse_mat_to_mat_scenarios(x::AbstractMatrix)
     jac = diffsquarecube_matmat_jacobian(x)
 
     scens = Scenario[]
-    for place in (:outofplace, :inplace)
+    for pl_op in (:out, :in)
         append!(
             scens,
             [
-                JacobianScenario(f; x, y, jac, nb_args=1, place),
-                JacobianScenario(f!; x, y, jac, nb_args=2, place),
+                Scenario{:jacobian,pl_op}(f, x; res1=jac),
+                Scenario{:jacobian,pl_op}(f!, y, x; res1=jac),
             ],
         )
     end
@@ -177,15 +177,14 @@ function sumdiffcube_hessian(x::AbstractVector)
 end
 
 function sparse_vec_to_num_scenarios(x::AbstractVector)
-    nb_args = 1
     f = sumdiffcube
     y = f(x)
     grad = sumdiffcube_gradient(x)
     hess = sumdiffcube_hessian(x)
 
     scens = Scenario[]
-    for place in (:outofplace, :inplace)
-        append!(scens, [HessianScenario(f; x, y, grad, hess, nb_args, place)])
+    for pl_op in (:out, :in)
+        append!(scens, [Scenario{:hessian,pl_op}(f, x; res1=grad, res2=hess)])
     end
     return scens
 end
@@ -203,15 +202,14 @@ function sumdiffcube_mat_hessian(x::AbstractMatrix)
 end
 
 function sparse_mat_to_num_scenarios(x::AbstractMatrix)
-    nb_args = 1
     f = sumdiffcube_mat
     y = f(x)
     grad = sumdiffcube_mat_gradient(x)
     hess = sumdiffcube_mat_hessian(x)
 
     scens = Scenario[]
-    for place in (:outofplace, :inplace)
-        append!(scens, [HessianScenario(f; x, y, grad, hess, nb_args, place)])
+    for pl_op in (:out, :in)
+        append!(scens, [Scenario{:hessian,pl_op}(f, x; res1=grad, res2=hess)])
     end
     return scens
 end
@@ -223,8 +221,8 @@ end
 
 Create a vector of [`Scenario`](@ref)s with sparse array types, focused on sparse Jacobians and Hessians.
 """
-function sparse_scenarios(rng::AbstractRNG=default_rng())
-    return vcat(
+function sparse_scenarios(rng::AbstractRNG=default_rng(); include_constantified=false)
+    scens = vcat(
         sparse_vec_to_vec_scenarios(rand(rng, 6)),
         sparse_vec_to_mat_scenarios(rand(rng, 6)),
         sparse_mat_to_vec_scenarios(rand(rng, 2, 3)),
@@ -232,4 +230,6 @@ function sparse_scenarios(rng::AbstractRNG=default_rng())
         sparse_vec_to_num_scenarios(rand(rng, 6)),
         sparse_mat_to_num_scenarios(rand(rng, 2, 3)),
     )
+    include_constantified && append!(scens, constantify(scens))
+    return scens
 end

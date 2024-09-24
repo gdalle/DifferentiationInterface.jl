@@ -5,14 +5,7 @@ using Pkg
 using SparseConnectivityTracer
 using Test
 
-DI_PATH = joinpath(@__DIR__, "..", "..", "DifferentiationInterface")
-if isdir(DI_PATH)
-    Pkg.develop(; path=DI_PATH)
-end
-
-LOGGING = get(ENV, "CI", "false") == "false"
-
-GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "All")
+GROUP = get(ENV, "JULIA_DIT_TEST_GROUP", "All")
 
 ## Main tests
 
@@ -25,13 +18,13 @@ GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "All")
 
     if GROUP == "Zero" || GROUP == "All"
         @testset verbose = false "Zero" begin
-            include("zero.jl")
+            include("zero_backends.jl")
         end
     end
 
-    if GROUP == "ForwardDiff" || GROUP == "All"
-        @testset verbose = false "ForwardDiff" begin
-            include("forwarddiff.jl")
+    if GROUP == "Standard" || GROUP == "All"
+        @testset verbose = false "Standard" begin
+            include("standard.jl")
         end
     end
 

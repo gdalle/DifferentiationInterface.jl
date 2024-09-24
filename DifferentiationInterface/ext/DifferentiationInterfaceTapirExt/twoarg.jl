@@ -1,22 +1,35 @@
-struct TapirTwoArgPullbackExtras{R} <: PullbackExtras
+struct TapirTwoArgPullbackPrep{R} <: PullbackPrep
     rrule::R
 end
 
-function DI.prepare_pullback(f!, y, backend::AutoTapir, x, dy)
+function DI.prepare_pullback(f!, y, backend::AutoTapir, x, ty::Tangents)
     rrule = build_rrule(
-        TapirInterpreter(),
+        get_tapir_interpreter(),
         Tuple{typeof(f!),typeof(y),typeof(x)};
         safety_on=backend.safe_mode,
         silence_safety_messages=false,
     )
-    extras = TapirTwoArgPullbackExtras(rrule)
-    DI.value_and_pullback(f!, y, backend, x, dy, extras)  # warm up
-    return extras
+    prep = TapirTwoArgPullbackPrep(rrule)
+    DI.value_and_pullback(f!, y, prep, backend, x, ty)  # warm up
+    return prep
 end
 
 # see https://github.com/withbayes/Tapir.jl/issues/113#issuecomment-2036718992
 
-function DI.value_and_pullback(f!, y, ::AutoTapir, x, dy, extras::TapirTwoArgPullbackExtras)
+function DI.value_and_pullback(
+    f!, y, prep::TapirTwoArgPullbackPrep, backend::AutoTapir, x, ty::Tangents
+)
+    tx = map(ty) do dy
+        only(DI.pullback(f!, y, prep, backend, x, Tangents(dy)))
+    end
+    f!(y, x)
+    return y, tx
+end
+
+function DI.value_and_pullback(
+    f!, y, prep::TapirTwoArgPullbackPrep, ::AutoTapir, x, ty::Tangents{1}
+)
+    dy = only(ty)
     dy_righttype = convert(tangent_type(typeof(y)), copy(dy))
     dx_righttype = zero_tangent(x)
 
@@ -36,7 +49,7 @@ function DI.value_and_pullback(f!, y, ::AutoTapir, x, dy, extras::TapirTwoArgPul
     df! = zero_tangent(f!)
 
     # Run the forwards-pass.
-    out, pb!! = extras.rrule(
+    out, pb!! = prep.rrule(
         CoDual(f!, fdata(df!)),
         CoDual(y_copy, fdata(dy_righttype)),
         CoDual(x, fdata(dx_righttype)),
@@ -54,5 +67,5 @@ function DI.value_and_pullback(f!, y, ::AutoTapir, x, dy, extras::TapirTwoArgPul
     # Run the reverse-pass.
     _, _, new_dx = pb!!(NoRData())
 
-    return y, tangent(fdata(dx_righttype), new_dx)
+    return y, Tangents(tangent(fdata(dx_righttype), new_dx))
 end

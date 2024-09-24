@@ -3,16 +3,16 @@ module DifferentiationInterfaceSymbolicsExt
 using ADTypes: ADTypes, AutoSymbolics, AutoSparse
 import DifferentiationInterface as DI
 using DifferentiationInterface:
-    DerivativeExtras,
-    GradientExtras,
-    HessianExtras,
-    HVPExtras,
-    JacobianExtras,
-    PullbackExtras,
-    PushforwardExtras,
-    SecondDerivativeExtras,
-    maybe_dense_ad
-using FillArrays: Fill
+    DerivativePrep,
+    GradientPrep,
+    HessianPrep,
+    HVPPrep,
+    JacobianPrep,
+    PullbackPrep,
+    PushforwardPrep,
+    SecondDerivativePrep,
+    Tangents,
+    dense_ad
 using LinearAlgebra: dot
 using Symbolics:
     build_function,
@@ -32,7 +32,7 @@ using Symbolics.RuntimeGeneratedFunctions: RuntimeGeneratedFunction
 DI.check_available(::AutoSymbolics) = true
 DI.pullback_performance(::AutoSymbolics) = DI.PullbackSlow()
 
-monovec(x::Number) = Fill(x, 1)
+monovec(x::Number) = [x]
 
 myvec(x::Number) = monovec(x)
 myvec(x::AbstractArray) = vec(x)

@@ -1,12 +1,12 @@
 ## Pushforward
 
-struct FastDifferentiationOneArgPushforwardExtras{Y,E1,E1!} <: PushforwardExtras
+struct FastDifferentiationOneArgPushforwardPrep{Y,E1,E1!} <: PushforwardPrep
     y_prototype::Y
     jvp_exe::E1
     jvp_exe!::E1!
 end
 
-function DI.prepare_pushforward(f, ::AutoFastDifferentiation, x, dx)
+function DI.prepare_pushforward(f, ::AutoFastDifferentiation, x, tx::Tangents)
     y_prototype = f(x)
     x_var = if x isa Number
         only(make_variables(:x))
@@ -20,62 +20,72 @@ function DI.prepare_pushforward(f, ::AutoFastDifferentiation, x, dx)
     jv_vec_var, v_vec_var = jacobian_times_v(y_vec_var, x_vec_var)
     jvp_exe = make_function(jv_vec_var, vcat(x_vec_var, v_vec_var); in_place=false)
     jvp_exe! = make_function(jv_vec_var, vcat(x_vec_var, v_vec_var); in_place=true)
-    return FastDifferentiationOneArgPushforwardExtras(y_prototype, jvp_exe, jvp_exe!)
+    return FastDifferentiationOneArgPushforwardPrep(y_prototype, jvp_exe, jvp_exe!)
 end
 
 function DI.pushforward(
-    f, ::AutoFastDifferentiation, x, dx, extras::FastDifferentiationOneArgPushforwardExtras
+    f,
+    prep::FastDifferentiationOneArgPushforwardPrep,
+    ::AutoFastDifferentiation,
+    x,
+    tx::Tangents,
 )
-    v_vec = vcat(myvec(x), myvec(dx))
-    if extras.y_prototype isa Number
-        return only(extras.jvp_exe(v_vec))
-    else
-        return reshape(extras.jvp_exe(v_vec), size(extras.y_prototype))
+    ty = map(tx) do dx
+        v_vec = vcat(myvec(x), myvec(dx))
+        if prep.y_prototype isa Number
+            return only(prep.jvp_exe(v_vec))
+        else
+            return reshape(prep.jvp_exe(v_vec), size(prep.y_prototype))
+        end
     end
+    return ty
 end
 
 function DI.pushforward!(
     f,
-    dy,
+    ty::Tangents,
+    prep::FastDifferentiationOneArgPushforwardPrep,
     ::AutoFastDifferentiation,
     x,
-    dx,
-    extras::FastDifferentiationOneArgPushforwardExtras,
+    tx::Tangents,
 )
-    v_vec = vcat(myvec(x), myvec(dx))
-    extras.jvp_exe!(vec(dy), v_vec)
-    return dy
+    for b in eachindex(tx.d, ty.d)
+        dx, dy = tx.d[b], ty.d[b]
+        v_vec = vcat(myvec(x), myvec(dx))
+        prep.jvp_exe!(vec(dy), v_vec)
+    end
+    return ty
 end
 
 function DI.value_and_pushforward(
     f,
+    prep::FastDifferentiationOneArgPushforwardPrep,
     backend::AutoFastDifferentiation,
     x,
-    dx,
-    extras::FastDifferentiationOneArgPushforwardExtras,
+    tx::Tangents,
 )
-    return f(x), DI.pushforward(f, backend, x, dx, extras)
+    return f(x), DI.pushforward(f, prep, backend, x, tx)
 end
 
 function DI.value_and_pushforward!(
     f,
-    dy,
+    ty::Tangents,
+    prep::FastDifferentiationOneArgPushforwardPrep,
     backend::AutoFastDifferentiation,
     x,
-    dx,
-    extras::FastDifferentiationOneArgPushforwardExtras,
+    tx::Tangents,
 )
-    return f(x), DI.pushforward!(f, dy, backend, x, dx, extras)
+    return f(x), DI.pushforward!(f, ty, prep, backend, x, tx)
 end
 
 ## Pullback
 
-struct FastDifferentiationOneArgPullbackExtras{E1,E1!} <: PullbackExtras
+struct FastDifferentiationOneArgPullbackPrep{E1,E1!} <: PullbackPrep
     vjp_exe::E1
     vjp_exe!::E1!
 end
 
-function DI.prepare_pullback(f, ::AutoFastDifferentiation, x, dy)
+function DI.prepare_pullback(f, ::AutoFastDifferentiation, x, ty::Tangents)
     x_var = if x isa Number
         only(make_variables(:x))
     else
@@ -88,52 +98,67 @@ function DI.prepare_pullback(f, ::AutoFastDifferentiation, x, dy)
     vj_vec_var, v_vec_var = jacobian_transpose_v(y_vec_var, x_vec_var)
     vjp_exe = make_function(vj_vec_var, vcat(x_vec_var, v_vec_var); in_place=false)
     vjp_exe! = make_function(vj_vec_var, vcat(x_vec_var, v_vec_var); in_place=true)
-    return FastDifferentiationOneArgPullbackExtras(vjp_exe, vjp_exe!)
+    return FastDifferentiationOneArgPullbackPrep(vjp_exe, vjp_exe!)
 end
 
 function DI.pullback(
-    f, ::AutoFastDifferentiation, x, dy, extras::FastDifferentiationOneArgPullbackExtras
+    f,
+    prep::FastDifferentiationOneArgPullbackPrep,
+    ::AutoFastDifferentiation,
+    x,
+    ty::Tangents,
 )
-    v_vec = vcat(myvec(x), myvec(dy))
-    if x isa Number
-        return only(extras.vjp_exe(v_vec))
-    else
-        return reshape(extras.vjp_exe(v_vec), size(x))
+    tx = map(ty) do dy
+        v_vec = vcat(myvec(x), myvec(dy))
+        if x isa Number
+            return only(prep.vjp_exe(v_vec))
+        else
+            return reshape(prep.vjp_exe(v_vec), size(x))
+        end
     end
+    return tx
 end
 
 function DI.pullback!(
-    f, dx, ::AutoFastDifferentiation, x, dy, extras::FastDifferentiationOneArgPullbackExtras
+    f,
+    tx::Tangents,
+    prep::FastDifferentiationOneArgPullbackPrep,
+    ::AutoFastDifferentiation,
+    x,
+    ty::Tangents,
 )
-    v_vec = vcat(myvec(x), myvec(dy))
-    extras.vjp_exe!(vec(dx), v_vec)
-    return dx
+    for b in eachindex(tx.d, ty.d)
+        dx, dy = tx.d[b], ty.d[b]
+        v_vec = vcat(myvec(x), myvec(dy))
+        prep.vjp_exe!(vec(dx), v_vec)
+    end
+    return tx
 end
 
 function DI.value_and_pullback(
     f,
+    prep::FastDifferentiationOneArgPullbackPrep,
     backend::AutoFastDifferentiation,
     x,
-    dy,
-    extras::FastDifferentiationOneArgPullbackExtras,
+    ty::Tangents,
 )
-    return f(x), DI.pullback(f, backend, x, dy, extras)
+    return f(x), DI.pullback(f, prep, backend, x, ty)
 end
 
 function DI.value_and_pullback!(
     f,
-    dx,
+    tx::Tangents,
+    prep::FastDifferentiationOneArgPullbackPrep,
     backend::AutoFastDifferentiation,
     x,
-    dy,
-    extras::FastDifferentiationOneArgPullbackExtras,
+    ty::Tangents,
 )
-    return f(x), DI.pullback!(f, dx, backend, x, dy, extras)
+    return f(x), DI.pullback!(f, tx, prep, backend, x, ty)
 end
 
 ## Derivative
 
-struct FastDifferentiationOneArgDerivativeExtras{Y,E1,E1!} <: DerivativeExtras
+struct FastDifferentiationOneArgDerivativePrep{Y,E1,E1!} <: DerivativePrep
     y_prototype::Y
     der_exe::E1
     der_exe!::E1!
@@ -149,48 +174,45 @@ function DI.prepare_derivative(f, ::AutoFastDifferentiation, x)
     der_vec_var = derivative(y_vec_var, x_var)
     der_exe = make_function(der_vec_var, x_vec_var; in_place=false)
     der_exe! = make_function(der_vec_var, x_vec_var; in_place=true)
-    return FastDifferentiationOneArgDerivativeExtras(y_prototype, der_exe, der_exe!)
+    return FastDifferentiationOneArgDerivativePrep(y_prototype, der_exe, der_exe!)
 end
 
 function DI.derivative(
-    f, ::AutoFastDifferentiation, x, extras::FastDifferentiationOneArgDerivativeExtras
+    f, prep::FastDifferentiationOneArgDerivativePrep, ::AutoFastDifferentiation, x
 )
-    if extras.y_prototype isa Number
-        return only(extras.der_exe(monovec(x)))
+    if prep.y_prototype isa Number
+        return only(prep.der_exe(monovec(x)))
     else
-        return reshape(extras.der_exe(monovec(x)), size(extras.y_prototype))
+        return reshape(prep.der_exe(monovec(x)), size(prep.y_prototype))
     end
 end
 
 function DI.derivative!(
-    f, der, ::AutoFastDifferentiation, x, extras::FastDifferentiationOneArgDerivativeExtras
+    f, der, prep::FastDifferentiationOneArgDerivativePrep, ::AutoFastDifferentiation, x
 )
-    extras.der_exe!(vec(der), monovec(x))
+    prep.der_exe!(vec(der), monovec(x))
     return der
 end
 
 function DI.value_and_derivative(
-    f,
-    backend::AutoFastDifferentiation,
-    x,
-    extras::FastDifferentiationOneArgDerivativeExtras,
+    f, prep::FastDifferentiationOneArgDerivativePrep, backend::AutoFastDifferentiation, x
 )
-    return f(x), DI.derivative(f, backend, x, extras)
+    return f(x), DI.derivative(f, prep, backend, x)
 end
 
 function DI.value_and_derivative!(
     f,
     der,
+    prep::FastDifferentiationOneArgDerivativePrep,
     backend::AutoFastDifferentiation,
     x,
-    extras::FastDifferentiationOneArgDerivativeExtras,
 )
-    return f(x), DI.derivative!(f, der, backend, x, extras)
+    return f(x), DI.derivative!(f, der, prep, backend, x)
 end
 
 ## Gradient
 
-struct FastDifferentiationOneArgGradientExtras{E1,E1!} <: GradientExtras
+struct FastDifferentiationOneArgGradientPrep{E1,E1!} <: GradientPrep
     jac_exe::E1
     jac_exe!::E1!
 end
@@ -204,43 +226,43 @@ function DI.prepare_gradient(f, backend::AutoFastDifferentiation, x)
     jac_var = jacobian(y_vec_var, x_vec_var)
     jac_exe = make_function(jac_var, x_vec_var; in_place=false)
     jac_exe! = make_function(jac_var, x_vec_var; in_place=true)
-    return FastDifferentiationOneArgGradientExtras(jac_exe, jac_exe!)
+    return FastDifferentiationOneArgGradientPrep(jac_exe, jac_exe!)
 end
 
 function DI.gradient(
-    f, ::AutoFastDifferentiation, x, extras::FastDifferentiationOneArgGradientExtras
+    f, prep::FastDifferentiationOneArgGradientPrep, ::AutoFastDifferentiation, x
 )
-    jac = extras.jac_exe(vec(x))
+    jac = prep.jac_exe(vec(x))
     grad_vec = @view jac[1, :]
     return reshape(grad_vec, size(x))
 end
 
 function DI.gradient!(
-    f, grad, ::AutoFastDifferentiation, x, extras::FastDifferentiationOneArgGradientExtras
+    f, grad, prep::FastDifferentiationOneArgGradientPrep, ::AutoFastDifferentiation, x
 )
-    extras.jac_exe!(reshape(grad, 1, length(grad)), vec(x))
+    prep.jac_exe!(reshape(grad, 1, length(grad)), vec(x))
     return grad
 end
 
 function DI.value_and_gradient(
-    f, backend::AutoFastDifferentiation, x, extras::FastDifferentiationOneArgGradientExtras
+    f, prep::FastDifferentiationOneArgGradientPrep, backend::AutoFastDifferentiation, x
 )
-    return f(x), DI.gradient(f, backend, x, extras)
+    return f(x), DI.gradient(f, prep, backend, x)
 end
 
 function DI.value_and_gradient!(
     f,
     grad,
+    prep::FastDifferentiationOneArgGradientPrep,
     backend::AutoFastDifferentiation,
     x,
-    extras::FastDifferentiationOneArgGradientExtras,
 )
-    return f(x), DI.gradient!(f, grad, backend, x, extras)
+    return f(x), DI.gradient!(f, grad, prep, backend, x)
 end
 
 ## Jacobian
 
-struct FastDifferentiationOneArgJacobianExtras{Y,E1,E1!} <: JacobianExtras
+struct FastDifferentiationOneArgJacobianPrep{Y,E1,E1!} <: JacobianPrep
     y_prototype::Y
     jac_exe::E1
     jac_exe!::E1!
@@ -262,54 +284,53 @@ function DI.prepare_jacobian(
     end
     jac_exe = make_function(jac_var, x_vec_var; in_place=false)
     jac_exe! = make_function(jac_var, x_vec_var; in_place=true)
-    return FastDifferentiationOneArgJacobianExtras(y_prototype, jac_exe, jac_exe!)
+    return FastDifferentiationOneArgJacobianPrep(y_prototype, jac_exe, jac_exe!)
 end
 
 function DI.jacobian(
     f,
+    prep::FastDifferentiationOneArgJacobianPrep,
     ::Union{AutoFastDifferentiation,AutoSparse{<:AutoFastDifferentiation}},
     x,
-    extras::FastDifferentiationOneArgJacobianExtras,
 )
-    return extras.jac_exe(vec(x))
+    return prep.jac_exe(vec(x))
 end
 
 function DI.jacobian!(
     f,
     jac,
+    prep::FastDifferentiationOneArgJacobianPrep,
     ::Union{AutoFastDifferentiation,AutoSparse{<:AutoFastDifferentiation}},
     x,
-    extras::FastDifferentiationOneArgJacobianExtras,
 )
-    extras.jac_exe!(jac, vec(x))
+    prep.jac_exe!(jac, vec(x))
     return jac
 end
 
 function DI.value_and_jacobian(
     f,
+    prep::FastDifferentiationOneArgJacobianPrep,
     backend::Union{AutoFastDifferentiation,AutoSparse{<:AutoFastDifferentiation}},
     x,
-    extras::FastDifferentiationOneArgJacobianExtras,
 )
-    return f(x), DI.jacobian(f, backend, x, extras)
+    return f(x), DI.jacobian(f, prep, backend, x)
 end
 
 function DI.value_and_jacobian!(
     f,
     jac,
+    prep::FastDifferentiationOneArgJacobianPrep,
     backend::Union{AutoFastDifferentiation,AutoSparse{<:AutoFastDifferentiation}},
     x,
-    extras::FastDifferentiationOneArgJacobianExtras,
 )
-    return f(x), DI.jacobian!(f, jac, backend, x, extras)
+    return f(x), DI.jacobian!(f, jac, prep, backend, x)
 end
 
 ## Second derivative
 
-struct FastDifferentiationAllocatingSecondDerivativeExtras{Y,D,E2,E2!} <:
-       SecondDerivativeExtras
+struct FastDifferentiationAllocatingSecondDerivativePrep{Y,D,E2,E2!} <: SecondDerivativePrep
     y_prototype::Y
-    derivative_extras::D
+    derivative_prep::D
     der2_exe::E2
     der2_exe!::E2!
 end
@@ -326,44 +347,41 @@ function DI.prepare_second_derivative(f, backend::AutoFastDifferentiation, x)
     der2_exe = make_function(der2_vec_var, x_vec_var; in_place=false)
     der2_exe! = make_function(der2_vec_var, x_vec_var; in_place=true)
 
-    derivative_extras = DI.prepare_derivative(f, backend, x)
-    return FastDifferentiationAllocatingSecondDerivativeExtras(
-        y_prototype, derivative_extras, der2_exe, der2_exe!
+    derivative_prep = DI.prepare_derivative(f, backend, x)
+    return FastDifferentiationAllocatingSecondDerivativePrep(
+        y_prototype, derivative_prep, der2_exe, der2_exe!
     )
 end
 
 function DI.second_derivative(
-    f,
-    ::AutoFastDifferentiation,
-    x,
-    extras::FastDifferentiationAllocatingSecondDerivativeExtras,
+    f, prep::FastDifferentiationAllocatingSecondDerivativePrep, ::AutoFastDifferentiation, x
 )
-    if extras.y_prototype isa Number
-        return only(extras.der2_exe(monovec(x)))
+    if prep.y_prototype isa Number
+        return only(prep.der2_exe(monovec(x)))
     else
-        return reshape(extras.der2_exe(monovec(x)), size(extras.y_prototype))
+        return reshape(prep.der2_exe(monovec(x)), size(prep.y_prototype))
     end
 end
 
 function DI.second_derivative!(
     f,
     der2,
+    prep::FastDifferentiationAllocatingSecondDerivativePrep,
     backend::AutoFastDifferentiation,
     x,
-    extras::FastDifferentiationAllocatingSecondDerivativeExtras,
 )
-    extras.der2_exe!(vec(der2), monovec(x))
+    prep.der2_exe!(vec(der2), monovec(x))
     return der2
 end
 
 function DI.value_derivative_and_second_derivative(
     f,
+    prep::FastDifferentiationAllocatingSecondDerivativePrep,
     backend::AutoFastDifferentiation,
     x,
-    extras::FastDifferentiationAllocatingSecondDerivativeExtras,
 )
-    y, der = DI.value_and_derivative(f, backend, x, extras.derivative_extras)
-    der2 = DI.second_derivative(f, backend, x, extras)
+    y, der = DI.value_and_derivative(f, prep.derivative_prep, backend, x)
+    der2 = DI.second_derivative(f, prep, backend, x)
     return y, der, der2
 end
 
@@ -371,23 +389,23 @@ function DI.value_derivative_and_second_derivative!(
     f,
     der,
     der2,
+    prep::FastDifferentiationAllocatingSecondDerivativePrep,
     backend::AutoFastDifferentiation,
     x,
-    extras::FastDifferentiationAllocatingSecondDerivativeExtras,
 )
-    y, _ = DI.value_and_derivative!(f, der, backend, x, extras.derivative_extras)
-    DI.second_derivative!(f, der2, backend, x, extras)
+    y, _ = DI.value_and_derivative!(f, der, prep.derivative_prep, backend, x)
+    DI.second_derivative!(f, der2, prep, backend, x)
     return y, der, der2
 end
 
 ## HVP
 
-struct FastDifferentiationHVPExtras{E2,E2!} <: HVPExtras
+struct FastDifferentiationHVPPrep{E2,E2!} <: HVPPrep
     hvp_exe::E2
     hvp_exe!::E2!
 end
 
-function DI.prepare_hvp(f, ::AutoFastDifferentiation, x, v)
+function DI.prepare_hvp(f, ::AutoFastDifferentiation, x, tx::Tangents)
     x_var = make_variables(:x, size(x)...)
     y_var = f(x_var)
 
@@ -395,27 +413,40 @@ function DI.prepare_hvp(f, ::AutoFastDifferentiation, x, v)
     hv_vec_var, v_vec_var = hessian_times_v(y_var, x_vec_var)
     hvp_exe = make_function(hv_vec_var, vcat(x_vec_var, v_vec_var); in_place=false)
     hvp_exe! = make_function(hv_vec_var, vcat(x_vec_var, v_vec_var); in_place=true)
-    return FastDifferentiationHVPExtras(hvp_exe, hvp_exe!)
+    return FastDifferentiationHVPPrep(hvp_exe, hvp_exe!)
 end
 
-function DI.hvp(f, ::AutoFastDifferentiation, x, v, extras::FastDifferentiationHVPExtras)
-    v_vec = vcat(vec(x), vec(v))
-    hv_vec = extras.hvp_exe(v_vec)
-    return reshape(hv_vec, size(x))
+function DI.hvp(
+    f, prep::FastDifferentiationHVPPrep, ::AutoFastDifferentiation, x, tx::Tangents
+)
+    tg = map(tx) do dx
+        v_vec = vcat(vec(x), vec(dx))
+        dg_vec = prep.hvp_exe(v_vec)
+        return reshape(dg_vec, size(x))
+    end
+    return tg
 end
 
 function DI.hvp!(
-    f, p, ::AutoFastDifferentiation, x, v, extras::FastDifferentiationHVPExtras
+    f,
+    tg::Tangents,
+    prep::FastDifferentiationHVPPrep,
+    ::AutoFastDifferentiation,
+    x,
+    tx::Tangents,
 )
-    v_vec = vcat(vec(x), vec(v))
-    extras.hvp_exe!(p, v_vec)
-    return p
+    for b in eachindex(tx.d, tg.d)
+        dx, dg = tx.d[b], tg.d[b]
+        v_vec = vcat(vec(x), vec(dx))
+        prep.hvp_exe!(dg, v_vec)
+    end
+    return tg
 end
 
 ## Hessian
 
-struct FastDifferentiationHessianExtras{G,E2,E2!} <: HessianExtras
-    gradient_extras::G
+struct FastDifferentiationHessianPrep{G,E2,E2!} <: HessianPrep
+    gradient_prep::G
     hess_exe::E2
     hess_exe!::E2!
 end
@@ -436,38 +467,38 @@ function DI.prepare_hessian(
     hess_exe = make_function(hess_var, x_vec_var; in_place=false)
     hess_exe! = make_function(hess_var, x_vec_var; in_place=true)
 
-    gradient_extras = DI.prepare_gradient(f, maybe_dense_ad(backend), x)
-    return FastDifferentiationHessianExtras(gradient_extras, hess_exe, hess_exe!)
+    gradient_prep = DI.prepare_gradient(f, dense_ad(backend), x)
+    return FastDifferentiationHessianPrep(gradient_prep, hess_exe, hess_exe!)
 end
 
 function DI.hessian(
     f,
+    prep::FastDifferentiationHessianPrep,
     backend::Union{AutoFastDifferentiation,AutoSparse{<:AutoFastDifferentiation}},
     x,
-    extras::FastDifferentiationHessianExtras,
 )
-    return extras.hess_exe(vec(x))
+    return prep.hess_exe(vec(x))
 end
 
 function DI.hessian!(
     f,
     hess,
+    prep::FastDifferentiationHessianPrep,
     backend::Union{AutoFastDifferentiation,AutoSparse{<:AutoFastDifferentiation}},
     x,
-    extras::FastDifferentiationHessianExtras,
 )
-    extras.hess_exe!(hess, vec(x))
+    prep.hess_exe!(hess, vec(x))
     return hess
 end
 
 function DI.value_gradient_and_hessian(
     f,
+    prep::FastDifferentiationHessianPrep,
     backend::Union{AutoFastDifferentiation,AutoSparse{<:AutoFastDifferentiation}},
     x,
-    extras::FastDifferentiationHessianExtras,
 )
-    y, grad = DI.value_and_gradient(f, maybe_dense_ad(backend), x, extras.gradient_extras)
-    hess = DI.hessian(f, backend, x, extras)
+    y, grad = DI.value_and_gradient(f, prep.gradient_prep, dense_ad(backend), x)
+    hess = DI.hessian(f, prep, backend, x)
     return y, grad, hess
 end
 
@@ -475,13 +506,11 @@ function DI.value_gradient_and_hessian!(
     f,
     grad,
     hess,
+    prep::FastDifferentiationHessianPrep,
     backend::Union{AutoFastDifferentiation,AutoSparse{<:AutoFastDifferentiation}},
     x,
-    extras::FastDifferentiationHessianExtras,
 )
-    y, _ = DI.value_and_gradient!(
-        f, grad, maybe_dense_ad(backend), x, extras.gradient_extras
-    )
-    DI.hessian!(f, hess, backend, x, extras)
+    y, _ = DI.value_and_gradient!(f, grad, prep.gradient_prep, dense_ad(backend), x)
+    DI.hessian!(f, hess, prep, backend, x)
     return y, grad, hess
 end
