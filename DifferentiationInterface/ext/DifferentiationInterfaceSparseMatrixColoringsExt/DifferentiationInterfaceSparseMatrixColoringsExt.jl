@@ -39,10 +39,10 @@ using SparseMatrixColorings:
     decompress,
     decompress!
 
-with_context(f, contexts::Vararg{Context,C}) where {C} = (DI.with_context(f, contexts...),)
+with_contexts(f, contexts::Vararg{Context,C}) where {C} = (DI.with_contexts(f, contexts...),)
 
-function with_context(f!, y, contexts::Vararg{Context,C}) where {C}
-    return (DI.with_context(f!, contexts...), y)
+function with_contexts(f!, y, contexts::Vararg{Context,C}) where {C}
+    return (DI.with_contexts(f!, contexts...), y)
 end
 
 include("jacobian.jl")

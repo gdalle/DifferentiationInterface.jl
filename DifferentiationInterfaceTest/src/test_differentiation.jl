@@ -105,7 +105,7 @@ function test_differentiation(
                                 :nb_tangents,
                                 scen.tang isa Tangents ? length(scen.tang) : nothing,
                             ),
-                            (:with_contexts, length(scen.contexts) > 0),
+                            (:with_contextss, length(scen.contexts) > 0),
                         ],
                     )
                     correctness && @testset "Correctness" begin
@@ -185,7 +185,7 @@ function benchmark_differentiation(
                             :nb_tangents,
                             scen.tang isa Tangents ? length(scen.tang) : nothing,
                         ),
-                        (:with_contexts, length(scen.contexts) > 0),
+                        (:with_contextss, length(scen.contexts) > 0),
                     ],
                 )
                 run_benchmark!(benchmark_data, backend, scen; logging)

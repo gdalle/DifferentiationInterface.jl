@@ -19,7 +19,8 @@ using DifferentiationInterface:
     Tangents,
     inner,
     outer,
-    unwrap
+    unwrap,
+    with_contexts
 using ForwardDiff.DiffResults:
     DiffResults, DiffResult, GradientResult, HessianResult, MutableDiffResult
 using ForwardDiff:

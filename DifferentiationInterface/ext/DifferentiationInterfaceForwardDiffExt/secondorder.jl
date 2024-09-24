@@ -31,12 +31,13 @@ function DI.prepare_hvp(
     tx::Tangents,
     contexts::Vararg{Context,C},
 ) where {F,C}
+    rewrap = Rewrap(contexts...)
     tagged_outer_backend = tag_backend_hvp(f, outer(backend), x)
     T = tag_type(f, tagged_outer_backend, x)
     xdual = make_dual(T, x, tx)
     gradient_prep = DI.prepare_gradient(f, inner(backend), xdual, contexts...)
     function inner_gradient(x, unannotated_contexts...)
-        annotated_contexts = map.(typeof.(contexts), unannotated_contexts)
+        annotated_contexts = rewrap(unannotated_contexts...)
         return DI.gradient(f, gradient_prep, inner(backend), x, unannotated_contexts...)
     end
     outer_pushforward_prep = DI.prepare_pushforward(

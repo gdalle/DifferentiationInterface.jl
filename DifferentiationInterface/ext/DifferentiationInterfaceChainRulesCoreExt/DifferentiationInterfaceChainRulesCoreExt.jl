@@ -12,7 +12,13 @@ using ChainRulesCore:
 using Compat
 import DifferentiationInterface as DI
 using DifferentiationInterface:
-    DifferentiateWith, NoPullbackPrep, NoPushforwardPrep, PullbackPrep, Tangents
+    Constant,
+    DifferentiateWith,
+    NoPullbackPrep,
+    NoPushforwardPrep,
+    PullbackPrep,
+    Tangents,
+    unwrap
 
 ruleconfig(backend::AutoChainRules) = backend.ruleconfig
 
