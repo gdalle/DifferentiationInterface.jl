@@ -42,14 +42,6 @@ end;
 ## Dense backends
 
 test_differentiation(
-    AutoEnzyme(),
-    default_scenarios();
-    second_order=false,
-    excluded=[:pushforward, :derivative, :gradient, :jacobian],
-    logging=LOGGING,
-);
-
-test_differentiation(
     dense_backends, default_scenarios(); second_order=false, logging=LOGGING
 );
 
