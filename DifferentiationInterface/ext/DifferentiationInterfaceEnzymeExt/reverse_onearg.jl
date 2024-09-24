@@ -30,21 +30,21 @@ function DI.prepare_pullback(
     ty::Tangents,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    return NoPullbackExtras()
+    return NoPullbackPrep()
 end
 
 ### Out-of-place
 
 function DI.value_and_pullback(
     f::F,
-    extras::NoPullbackExtras,
+    prep::NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
     ty::Tangents,
     contexts::Vararg{Context,C},
 ) where {F,C}
     ys_and_dxs = map(ty.d) do dy
-        y, tx = DI.value_and_pullback(f, extras, backend, x, Tangents(dy), contexts...)
+        y, tx = DI.value_and_pullback(f, prep, backend, x, Tangents(dy), contexts...)
         y, only(tx)
     end
     y = first(ys_and_dxs[1])
@@ -55,7 +55,7 @@ end
 
 function DI.value_and_pullback(
     f::F,
-    ::NoPullbackExtras,
+    ::NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x::Number,
     ty::Tangents{1},
@@ -72,7 +72,7 @@ end
 
 function DI.value_and_pullback(
     f::F,
-    ::NoPullbackExtras,
+    ::NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
     ty::Tangents{1},
@@ -90,13 +90,13 @@ end
 
 function DI.pullback(
     f::F,
-    extras::NoPullbackExtras,
+    prep::NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x::Number,
     ty::Tangents{1},
     contexts::Vararg{Context,C},
 ) where {F,C}
-    return last(DI.value_and_pullback(f, extras, backend, x, ty, contexts...))
+    return last(DI.value_and_pullback(f, prep, backend, x, ty, contexts...))
 end
 
 ### In-place
@@ -104,7 +104,7 @@ end
 function DI.value_and_pullback!(
     f::F,
     tx::Tangents,
-    extras::NoPullbackExtras,
+    prep::NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
     ty::Tangents,
@@ -112,7 +112,7 @@ function DI.value_and_pullback!(
 ) where {F,C}
     ys = map(tx.d, ty.d) do dx, dy
         y, _ = DI.value_and_pullback!(
-            f, Tangents(dx), extras, backend, x, Tangents(dy), contexts...
+            f, Tangents(dx), prep, backend, x, Tangents(dy), contexts...
         )
         y
     end
@@ -123,16 +123,14 @@ end
 function DI.pullback!(
     f::F,
     tx::Tangents,
-    extras::NoPullbackExtras,
+    prep::NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
     ty::Tangents,
     contexts::Vararg{Context,C},
 ) where {F,C}
     for b in eachindex(tx.d, ty.d)
-        DI.pullback!(
-            f, Tangents(tx.d[b]), extras, backend, x, Tangents(ty.d[b]), contexts...
-        )
+        DI.pullback!(f, Tangents(tx.d[b]), prep, backend, x, Tangents(ty.d[b]), contexts...)
     end
     return tx
 end
@@ -140,7 +138,7 @@ end
 function DI.value_and_pullback!(
     f::F,
     tx::Tangents{1},
-    ::NoPullbackExtras,
+    ::NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
     ty::Tangents{1},
@@ -166,13 +164,13 @@ end
 function DI.pullback!(
     f::F,
     tx::Tangents{1},
-    extras::NoPullbackExtras,
+    prep::NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
     ty::Tangents{1},
     contexts::Vararg{Context,C},
 ) where {F,C}
-    return last(DI.value_and_pullback!(f, tx, extras, backend, x, ty, contexts...))
+    return last(DI.value_and_pullback!(f, tx, prep, backend, x, ty, contexts...))
 end
 
 ## Gradient
@@ -183,12 +181,12 @@ function DI.prepare_gradient(
     x,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    return NoGradientExtras()
+    return NoGradientPrep()
 end
 
 function DI.gradient(
     f::F,
-    ::NoGradientExtras,
+    ::NoGradientPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}},
     x,
     contexts::Vararg{Context,C},
@@ -203,7 +201,7 @@ end
 function DI.gradient!(
     f::F,
     grad,
-    ::NoGradientExtras,
+    ::NoGradientPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}},
     x,
     contexts::Vararg{Context,C},
@@ -224,7 +222,7 @@ end
 
 function DI.value_and_gradient(
     f::F,
-    ::NoGradientExtras,
+    ::NoGradientPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}},
     x,
     contexts::Vararg{Context,C},
@@ -239,7 +237,7 @@ end
 function DI.value_and_gradient!(
     f::F,
     grad,
-    ::NoGradientExtras,
+    ::NoGradientPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}},
     x,
     contexts::Vararg{Context,C},
@@ -260,18 +258,18 @@ end
 
 ## Jacobian
 
-struct EnzymeReverseOneArgJacobianExtras{M,B} <: JacobianExtras end
+struct EnzymeReverseOneArgJacobianPrep{M,B} <: JacobianPrep end
 
 function DI.prepare_jacobian(f::F, backend::AutoEnzyme{<:ReverseMode,Nothing}, x) where {F}
     y = f(x)
     M = length(y)
     B = pick_batchsize(backend, M)
-    return EnzymeReverseOneArgJacobianExtras{M,B}()
+    return EnzymeReverseOneArgJacobianPrep{M,B}()
 end
 
 function DI.jacobian(
     f::F,
-    ::EnzymeReverseOneArgJacobianExtras{M,B},
+    ::EnzymeReverseOneArgJacobianPrep{M,B},
     backend::AutoEnzyme{<:ReverseMode,Nothing},
     x,
 ) where {F,M,B}
@@ -282,7 +280,7 @@ end
 
 function DI.value_and_jacobian(
     f::F,
-    extras::EnzymeReverseOneArgJacobianExtras{M,B},
+    prep::EnzymeReverseOneArgJacobianPrep{M,B},
     backend::AutoEnzyme{<:ReverseMode,Nothing},
     x,
 ) where {F,M,B}
@@ -296,20 +294,20 @@ end
 function DI.jacobian!(
     f::F,
     jac,
-    extras::EnzymeReverseOneArgJacobianExtras,
+    prep::EnzymeReverseOneArgJacobianPrep,
     backend::AutoEnzyme{<:ReverseMode,Nothing},
     x,
 ) where {F}
-    return copyto!(jac, DI.jacobian(f, extras, backend, x))
+    return copyto!(jac, DI.jacobian(f, prep, backend, x))
 end
 
 function DI.value_and_jacobian!(
     f::F,
     jac,
-    extras::EnzymeReverseOneArgJacobianExtras,
+    prep::EnzymeReverseOneArgJacobianPrep,
     backend::AutoEnzyme{<:ReverseMode,Nothing},
     x,
 ) where {F}
-    y, new_jac = DI.value_and_jacobian(f, extras, backend, x)
+    y, new_jac = DI.value_and_jacobian(f, prep, backend, x)
     return y, copyto!(jac, new_jac)
 end

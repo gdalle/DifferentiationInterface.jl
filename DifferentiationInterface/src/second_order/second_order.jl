@@ -34,17 +34,25 @@ end
 
 """
     inner(backend::SecondOrder)
+    inner(backend::AbstractADType)
 
 Return the inner backend of a [`SecondOrder`](@ref) object, tasked with differentiation at the first order.
+
+For any other backend type, this function acts like the identity.
 """
 inner(backend::SecondOrder) = backend.inner
+inner(backend::AbstractADType) = backend
 
 """
     outer(backend::SecondOrder)
+    outer(backend::AbstractADType)
 
 Return the outer backend of a [`SecondOrder`](@ref) object, tasked with differentiation at the second order.
+
+For any other backend type, this function acts like the identity.
 """
 outer(backend::SecondOrder) = backend.outer
+outer(backend::AbstractADType) = backend
 
 """
     mode(backend::SecondOrder)
@@ -57,5 +65,7 @@ ADTypes.mode(backend::SecondOrder) = mode(outer(backend))
     nested(backend)
 
 Return a possibly modified `backend` that can work while nested inside another differentiation procedure.
+
+At the moment this function is pretty much useless.
 """
 nested(backend::AbstractADType) = backend

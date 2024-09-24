@@ -27,11 +27,11 @@ function ADTypes.jacobian_sparsity(f, x, detector::DenseSparsityDetector{:iterat
     I, J = Int[], Int[]
     if pushforward_performance(backend) isa PushforwardFast
         p = similar(y)
-        extras = prepare_pushforward_same_point(
+        prep = prepare_pushforward_same_point(
             f, backend, x, Tangents(basis(backend, x, first(eachindex(x))))
         )
         for (kj, j) in enumerate(eachindex(x))
-            pushforward!(f, Tangents(p), extras, backend, x, Tangents(basis(backend, x, j)))
+            pushforward!(f, Tangents(p), prep, backend, x, Tangents(basis(backend, x, j)))
             for ki in LinearIndices(p)
                 if abs(p[ki]) > atol
                     push!(I, ki)
@@ -41,11 +41,11 @@ function ADTypes.jacobian_sparsity(f, x, detector::DenseSparsityDetector{:iterat
         end
     else
         p = similar(x)
-        extras = prepare_pullback_same_point(
+        prep = prepare_pullback_same_point(
             f, backend, x, Tangents(basis(backend, y, first(eachindex(y))))
         )
         for (ki, i) in enumerate(eachindex(y))
-            pullback!(f, Tangents(p), extras, backend, x, Tangents(basis(backend, y, i)))
+            pullback!(f, Tangents(p), prep, backend, x, Tangents(basis(backend, y, i)))
             for kj in LinearIndices(p)
                 if abs(p[kj]) > atol
                     push!(I, ki)
@@ -63,12 +63,12 @@ function ADTypes.jacobian_sparsity(f!, y, x, detector::DenseSparsityDetector{:it
     I, J = Int[], Int[]
     if pushforward_performance(backend) isa PushforwardFast
         p = similar(y)
-        extras = prepare_pushforward_same_point(
+        prep = prepare_pushforward_same_point(
             f!, y, backend, x, Tangents(basis(backend, x, first(eachindex(x))))
         )
         for (kj, j) in enumerate(eachindex(x))
             pushforward!(
-                f!, y, Tangents(p), extras, backend, x, Tangents(basis(backend, x, j))
+                f!, y, Tangents(p), prep, backend, x, Tangents(basis(backend, x, j))
             )
             for ki in LinearIndices(p)
                 if abs(p[ki]) > atol
@@ -79,13 +79,11 @@ function ADTypes.jacobian_sparsity(f!, y, x, detector::DenseSparsityDetector{:it
         end
     else
         p = similar(x)
-        extras = prepare_pullback_same_point(
+        prep = prepare_pullback_same_point(
             f!, y, backend, x, Tangents(basis(backend, y, first(eachindex(y))))
         )
         for (ki, i) in enumerate(eachindex(y))
-            pullback!(
-                f!, y, Tangents(p), extras, backend, x, Tangents(basis(backend, y, i))
-            )
+            pullback!(f!, y, Tangents(p), prep, backend, x, Tangents(basis(backend, y, i)))
             for kj in LinearIndices(p)
                 if abs(p[kj]) > atol
                     push!(I, ki)
@@ -102,11 +100,11 @@ function ADTypes.hessian_sparsity(f, x, detector::DenseSparsityDetector{:iterati
     n = length(x)
     I, J = Int[], Int[]
     p = similar(x)
-    extras = prepare_hvp_same_point(
+    prep = prepare_hvp_same_point(
         f, backend, x, Tangents(basis(backend, x, first(eachindex(x))))
     )
     for (kj, j) in enumerate(eachindex(x))
-        hvp!(f, Tangents(p), extras, backend, x, Tangents(basis(backend, x, j)))
+        hvp!(f, Tangents(p), prep, backend, x, Tangents(basis(backend, x, j)))
         for ki in LinearIndices(p)
             if abs(p[ki]) > atol
                 push!(I, ki)
