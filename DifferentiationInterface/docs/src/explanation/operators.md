@@ -130,7 +130,7 @@ For different-point preparation, the output `prep` of `prepare_op(f, b, x, [t])`
 
 For same-point preparation, the output `prep` of `prepare_op_same_point(f, b, x, [t])` can be reused in `op(f, prep, b, x, other_t)`, provided that:
 
-- the input `x` remains the same
+- the input `x` remains the same (as well as the [`Context`](@ref) constants)
 - the tangents in `t` and `other_t` have similar types and equal shapes
 
 !!! warning
