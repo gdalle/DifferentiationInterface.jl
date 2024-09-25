@@ -62,6 +62,25 @@ In practice, many AD backends have custom implementations for high-level operato
     | `AutoTracker`              | ❌    | ✅    | ❌     | ✅      | ❌     | ❌      | ❌     | ❌      |
     | `AutoZygote`               | ❌    | ✅    | ❌     | ✅      | ✅     | ✅      | 🔀     | ❌      |
 
+Moreover, each context type is supported by a specific subset of backends:
+
+|                            | [`Constant`](@ref) |
+| -------------------------- | ------------------ |
+| `AutoChainRules`           | ✅                  |
+| `AutoDiffractor`           | ❌                  |
+| `AutoEnzyme` (forward)     | ✅                  |
+| `AutoEnzyme` (reverse)     | ✅                  |
+| `AutoFastDifferentiation`  | ❌                  |
+| `AutoFiniteDiff`           | ✅                  |
+| `AutoFiniteDifferences`    | ✅                  |
+| `AutoForwardDiff`          | ✅                  |
+| `AutoMooncake`             | ✅                  |
+| `AutoPolyesterForwardDiff` | ✅                  |
+| `AutoReverseDiff`          | ✅                  |
+| `AutoSymbolics`            | ❌                  |
+| `AutoTracker`              | ✅                  |
+| `AutoZygote`               | ✅                  |
+
 ## Second order
 
 For second-order operators like [`second_derivative`](@ref), [`hessian`](@ref) and [`hvp`](@ref), there are two main options.
@@ -81,9 +100,9 @@ In general, using a forward outer backend over a reverse inner backend will yiel
 ## Backend switch
 
 The wrapper [`DifferentiateWith`](@ref) allows you to switch between backends.
-It takes a function `f` and specifies that `f` should be differentiated with the backend of your choice, instead of whatever other backend the code is trying to use.
-In other words, when someone tries to differentiate `dw = DifferentiateWith(f, backend1)` with `backend2`, then `backend1` steps in and `backend2` does nothing.
-At the moment, `DifferentiateWith` only works when `backend2` supports [ChainRules.jl](https://github.com/JuliaDiff/ChainRules.jl).
+It takes a function `f` and specifies that `f` should be differentiated with the substitute backend of your choice, instead of whatever true backend the surrounding code is trying to use.
+In other words, when someone tries to differentiate `dw = DifferentiateWith(f, substitute_backend)` with `true_backend`, then `substitute_backend` steps in and `true_backend` does not dive into the function `f` itself.
+At the moment, `DifferentiateWith` only works when `true_backend` is either [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl) or a [ChainRules.jl](https://github.com/JuliaDiff/ChainRules.jl)-compatible backend.
 
 ## Implementations
 
