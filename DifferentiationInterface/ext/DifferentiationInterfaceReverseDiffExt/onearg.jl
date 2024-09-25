@@ -58,7 +58,8 @@ end
 function DI.value_and_gradient!(
     f, grad::AbstractArray, prep::ReverseDiffGradientPrep, ::AutoReverseDiff, x
 )
-    result = MutableDiffResult(zero(eltype(grad)), (grad,))
+    y = f(x)  # TODO: remove once ReverseDiff#251 is fixed
+    result = MutableDiffResult(y, (grad,))
     result = gradient!(result, prep.tape, x)
     return DiffResults.value(result), DiffResults.derivative(result)
 end
@@ -140,7 +141,8 @@ end
 function DI.value_gradient_and_hessian!(
     f, grad, hess, prep::ReverseDiffHessianPrep, ::AutoReverseDiff, x
 )
-    result = MutableDiffResult(one(eltype(grad)), (grad, hess))
+    y = f(x)  # TODO: remove once ReverseDiff#251 is fixed
+    result = MutableDiffResult(y, (grad, hess))
     result = hessian!(result, prep.tape, x)
     return (
         DiffResults.value(result), DiffResults.gradient(result), DiffResults.hessian(result)
