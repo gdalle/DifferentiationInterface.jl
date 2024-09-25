@@ -59,7 +59,7 @@ function DI.value_and_pullback(
             map(translate, contexts)...,
         ),
     )
-    tx = dinputs[2]
+    tx = values(dinputs[2])
     return y, tx
 end
 

@@ -41,7 +41,7 @@ function DI.value_and_pushforward(
     ty, y = autodiff(
         forward_mode_withprimal(backend), f_and_df, x_and_tx, map(translate, contexts)...
     )
-    return y, ty
+    return y, values(ty)
 end
 
 function DI.pushforward(
@@ -79,7 +79,7 @@ function DI.pushforward(
             forward_mode_noprimal(backend), f_and_df, x_and_tx, map(translate, contexts)...
         ),
     )
-    return ty
+    return values(ty)
 end
 
 function DI.value_and_pushforward!(

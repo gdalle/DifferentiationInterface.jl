@@ -92,7 +92,7 @@ function DI.value_and_pullback(
     dinputs, result = batch_seeded_autodiff_thunk(
         mode, ty, f_and_df, RA, Active(x), map(translate, contexts)...
     )
-    return result, first(dinputs)
+    return result, values(first(dinputs))
 end
 
 function DI.value_and_pullback(
