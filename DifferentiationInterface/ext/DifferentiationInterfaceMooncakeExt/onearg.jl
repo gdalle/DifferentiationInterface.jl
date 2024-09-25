@@ -47,7 +47,7 @@ function DI.value_and_pullback!(
     dx, dy = only(tx), only(ty)
     dy_righttype = convert(tangent_type(Y), dy)
     dx_righttype = set_to_zero!!(convert(tangent_type(typeof(x)), dx))
-    contexts_coduals = map(zero_fcodual ∘ unwrap, contexts)
+    contexts_coduals = map(zero_codual ∘ unwrap, contexts)
     y, (_, new_dx) = __value_and_pullback!!(
         prep.rrule,
         dy_righttype,
