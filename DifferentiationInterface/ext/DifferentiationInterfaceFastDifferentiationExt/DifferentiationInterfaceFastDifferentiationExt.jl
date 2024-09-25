@@ -11,7 +11,6 @@ using DifferentiationInterface:
     PullbackPrep,
     PushforwardPrep,
     SecondDerivativePrep,
-    Tangents,
     dense_ad
 using FastDifferentiation:
     derivative,

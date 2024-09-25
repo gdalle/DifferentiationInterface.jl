@@ -15,7 +15,6 @@ using DifferentiationInterface:
     NoJacobianPrep,
     PushforwardPrep,
     SecondDerivativePrep,
-    Tangents,
     unwrap,
     with_contexts
 using LinearAlgebra: mul!

@@ -22,7 +22,6 @@ test_differentiation(
     zero.(default_scenarios(; include_constantified=true));
     correctness=true,
     type_stability=true,
-    excluded=[:second_derivative],
     logging=LOGGING,
 )
 

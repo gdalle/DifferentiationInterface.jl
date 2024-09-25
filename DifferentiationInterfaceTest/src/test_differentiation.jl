@@ -103,7 +103,7 @@ function test_differentiation(
                             (:output_size, mysize(scen.y)),
                             (
                                 :nb_tangents,
-                                scen.tang isa Tangents ? length(scen.tang) : nothing,
+                                scen.tang isa NTuple ? length(scen.tang) : nothing,
                             ),
                             (:nb_contexts, length(scen.contexts)),
                         ],
@@ -181,10 +181,7 @@ function benchmark_differentiation(
                         (:input_size, mysize(scen.x)),
                         (:output_type, typeof(scen.y)),
                         (:output_size, mysize(scen.y)),
-                        (
-                            :nb_tangents,
-                            scen.tang isa Tangents ? length(scen.tang) : nothing,
-                        ),
+                        (:nb_tangents, scen.tang isa NTuple ? length(scen.tang) : nothing),
                         (:nb_contexts, length(scen.contexts)),
                     ],
                 )

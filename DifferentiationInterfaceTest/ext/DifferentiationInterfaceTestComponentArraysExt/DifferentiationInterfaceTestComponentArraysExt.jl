@@ -38,22 +38,13 @@ function comp_to_num_scenarios_onearg(x::ComponentVector; dx::AbstractVector, dy
         append!(
             scens,
             [
-                Scenario{:pullback,pl_op}(
-                    f, x; tang=Tangents(dy), res1=Tangents(dx_from_dy)
-                ),
+                Scenario{:pullback,pl_op}(f, x; tang=(dy,), res1=(dx_from_dy,)),
                 Scenario{:gradient,pl_op}(f, x; res1=grad),
             ],
         )
     end
     for pl_op in (:out,)
-        append!(
-            scens,
-            [
-                Scenario{:pushforward,pl_op}(
-                    f, x; tang=Tangents(dx), res1=Tangents(dy_from_dx)
-                ),
-            ],
-        )
+        append!(scens, [Scenario{:pushforward,pl_op}(f, x; tang=(dx,), res1=(dy_from_dx,))])
     end
     return scens
 end

@@ -21,13 +21,13 @@ check_available(::AutoZeroForward) = true
 inplace_support(::AutoZeroForward) = InPlaceSupported()
 
 function prepare_pushforward(
-    f::F, ::AutoZeroForward, x, tx::Tangents, contexts::Vararg{Context,C}
+    f::F, ::AutoZeroForward, x, tx::NTuple, contexts::Vararg{Context,C}
 ) where {F,C}
     return NoPushforwardPrep()
 end
 
 function prepare_pushforward(
-    f!::F, y, ::AutoZeroForward, x, tx::Tangents, contexts::Vararg{Context,C}
+    f!::F, y, ::AutoZeroForward, x, tx::NTuple, contexts::Vararg{Context,C}
 ) where {F,C}
     return NoPushforwardPrep()
 end
@@ -37,7 +37,7 @@ function value_and_pushforward(
     ::NoPushforwardPrep,
     ::AutoZeroForward,
     x,
-    tx::Tangents{B},
+    tx::NTuple{B},
     contexts::Vararg{Context,C},
 ) where {F,B,C}
     y = f(x, map(unwrap, contexts)...)
@@ -51,7 +51,7 @@ function value_and_pushforward(
     ::NoPushforwardPrep,
     ::AutoZeroForward,
     x,
-    tx::Tangents{B},
+    tx::NTuple{B},
     contexts::Vararg{Context,C},
 ) where {F,B,C}
     f!(y, x, map(unwrap, contexts)...)
@@ -61,16 +61,16 @@ end
 
 function value_and_pushforward!(
     f::F,
-    ty::Tangents,
+    ty::NTuple,
     ::NoPushforwardPrep,
     ::AutoZeroForward,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     y = f(x, map(unwrap, contexts)...)
-    for b in eachindex(ty.d)
-        _zero!(ty.d[b])
+    for b in eachindex(ty)
+        _zero!(ty[b])
     end
     return y, ty
 end
@@ -78,16 +78,16 @@ end
 function value_and_pushforward!(
     f!::F,
     y,
-    ty::Tangents,
+    ty::NTuple,
     ::NoPushforwardPrep,
     ::AutoZeroForward,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     f!(y, x, map(unwrap, contexts)...)
-    for b in eachindex(ty.d)
-        _zero!(ty.d[b])
+    for b in eachindex(ty)
+        _zero!(ty[b])
     end
     return y, ty
 end
@@ -107,28 +107,23 @@ check_available(::AutoZeroReverse) = true
 inplace_support(::AutoZeroReverse) = InPlaceSupported()
 
 function prepare_pullback(
-    f::F, ::AutoZeroReverse, x, ty::Tangents, contexts::Vararg{Context,C}
+    f::F, ::AutoZeroReverse, x, ty::NTuple, contexts::Vararg{Context,C}
 ) where {F,C}
     return NoPullbackPrep()
 end
 
 function prepare_pullback(
-    f!::F, y, ::AutoZeroReverse, x, ty::Tangents, contexts::Vararg{Context,C}
+    f!::F, y, ::AutoZeroReverse, x, ty::NTuple, contexts::Vararg{Context,C}
 ) where {F,C}
     return NoPullbackPrep()
 end
 
 function value_and_pullback(
-    f::F,
-    ::NoPullbackPrep,
-    ::AutoZeroReverse,
-    x,
-    ty::Tangents{B},
-    contexts::Vararg{Context,C},
+    f::F, ::NoPullbackPrep, ::AutoZeroReverse, x, ty::NTuple{B}, contexts::Vararg{Context,C}
 ) where {F,B,C}
     y = f(x, map(unwrap, contexts)...)
-    dxs = ntuple(ReturnZero(x), Val(B))
-    return y, Tangents(dxs...)
+    tx = ntuple(ReturnZero(x), Val(B))
+    return y, tx
 end
 
 function value_and_pullback(
@@ -137,26 +132,26 @@ function value_and_pullback(
     ::NoPullbackPrep,
     ::AutoZeroReverse,
     x,
-    ty::Tangents{B},
+    ty::NTuple{B},
     contexts::Vararg{Context,C},
 ) where {F,B,C}
     f!(y, x, map(unwrap, contexts)...)
-    dxs = ntuple(ReturnZero(x), Val(B))
-    return y, Tangents(dxs...)
+    tx = ntuple(ReturnZero(x), Val(B))
+    return y, tx
 end
 
 function value_and_pullback!(
     f::F,
-    tx::Tangents,
+    tx::NTuple,
     ::NoPullbackPrep,
     ::AutoZeroReverse,
     x,
-    ty::Tangents,
+    ty::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     y = f(x, map(unwrap, contexts)...)
-    for b in eachindex(tx.d)
-        _zero!(tx.d[b])
+    for b in eachindex(tx)
+        _zero!(tx[b])
     end
     return y, tx
 end
@@ -164,16 +159,16 @@ end
 function value_and_pullback!(
     f!::F,
     y,
-    tx::Tangents,
+    tx::NTuple,
     ::NoPullbackPrep,
     ::AutoZeroReverse,
     x,
-    ty::Tangents,
+    ty::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     f!(y, x, map(unwrap, contexts)...)
-    for b in eachindex(tx.d)
-        _zero!(tx.d[b])
+    for b in eachindex(tx)
+        _zero!(tx[b])
     end
     return y, tx
 end

@@ -5,7 +5,7 @@ struct ForwardDiffOneArgPushforwardPrep{T,X} <: PushforwardPrep
 end
 
 function DI.prepare_pushforward(
-    f::F, backend::AutoForwardDiff, x, tx::Tangents, contexts::Vararg{Context,C}
+    f::F, backend::AutoForwardDiff, x, tx::NTuple, contexts::Vararg{Context,C}
 ) where {F,C}
     T = tag_type(f, backend, x)
     xdual_tmp = make_dual_similar(T, x, tx)
@@ -16,7 +16,7 @@ function compute_ydual_onearg(
     f::F,
     prep::ForwardDiffOneArgPushforwardPrep{T},
     x::Number,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,T,C}
     xdual_tmp = make_dual(T, x, tx)
@@ -28,7 +28,7 @@ function compute_ydual_onearg(
     f::F,
     prep::ForwardDiffOneArgPushforwardPrep{T},
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,T,C}
     @compat (; xdual_tmp) = prep
@@ -42,7 +42,7 @@ function DI.value_and_pushforward(
     prep::ForwardDiffOneArgPushforwardPrep{T},
     ::AutoForwardDiff,
     x,
-    tx::Tangents{B},
+    tx::NTuple{B},
     contexts::Vararg{Context,C},
 ) where {F,T,B,C}
     ydual = compute_ydual_onearg(f, prep, x, tx, contexts...)
@@ -53,11 +53,11 @@ end
 
 function DI.value_and_pushforward!(
     f::F,
-    ty::Tangents,
+    ty::NTuple,
     prep::ForwardDiffOneArgPushforwardPrep{T},
     ::AutoForwardDiff,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,T,C}
     ydual = compute_ydual_onearg(f, prep, x, tx, contexts...)
@@ -71,7 +71,7 @@ function DI.pushforward(
     prep::ForwardDiffOneArgPushforwardPrep{T},
     ::AutoForwardDiff,
     x,
-    tx::Tangents{B},
+    tx::NTuple{B},
     contexts::Vararg{Context,C},
 ) where {F,T,B,C}
     ydual = compute_ydual_onearg(f, prep, x, tx, contexts...)
@@ -81,11 +81,11 @@ end
 
 function DI.pushforward!(
     f::F,
-    ty::Tangents,
+    ty::NTuple,
     prep::ForwardDiffOneArgPushforwardPrep{T},
     ::AutoForwardDiff,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,T,C}
     ydual = compute_ydual_onearg(f, prep, x, tx, contexts...)
@@ -102,7 +102,7 @@ end
 function DI.prepare_derivative(
     f::F, backend::AutoForwardDiff, x, contexts::Vararg{Context,C}
 ) where {F,C}
-    pushforward_prep = DI.prepare_pushforward(f, backend, x, Tangents(one(x)), contexts...)
+    pushforward_prep = DI.prepare_pushforward(f, backend, x, (one(x),), contexts...)
     return ForwardDiffOneArgDerivativePrep(pushforward_prep)
 end
 
@@ -114,7 +114,7 @@ function DI.value_and_derivative(
     contexts::Vararg{Context,C},
 ) where {F,C}
     y, ty = DI.value_and_pushforward(
-        f, prep.pushforward_prep, backend, x, Tangents(one(x)), contexts...
+        f, prep.pushforward_prep, backend, x, (one(x),), contexts...
     )
     return y, only(ty)
 end
@@ -128,7 +128,7 @@ function DI.value_and_derivative!(
     contexts::Vararg{Context,C},
 ) where {F,C}
     y, _ = DI.value_and_pushforward!(
-        f, Tangents(der), prep.pushforward_prep, backend, x, Tangents(one(x)), contexts...
+        f, (der,), prep.pushforward_prep, backend, x, (one(x),), contexts...
     )
     return y, der
 end
@@ -141,7 +141,7 @@ function DI.derivative(
     contexts::Vararg{Context,C},
 ) where {F,C}
     return only(
-        DI.pushforward(f, prep.pushforward_prep, backend, x, Tangents(one(x)), contexts...)
+        DI.pushforward(f, prep.pushforward_prep, backend, x, (one(x),), contexts...)
     )
 end
 
@@ -153,9 +153,7 @@ function DI.derivative!(
     x,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    DI.pushforward!(
-        f, Tangents(der), prep.pushforward_prep, backend, x, Tangents(one(x)), contexts...
-    )
+    DI.pushforward!(f, (der,), prep.pushforward_prep, backend, x, (one(x),), contexts...)
     return der
 end
 
@@ -411,7 +409,7 @@ end
 ## HVP
 
 function DI.prepare_hvp(
-    f::F, backend::AutoForwardDiff, x, tx::Tangents, contexts::Vararg{Context,C}
+    f::F, backend::AutoForwardDiff, x, tx::NTuple, contexts::Vararg{Context,C}
 ) where {F,C}
     return DI.prepare_hvp(f, SecondOrder(backend, backend), x, tx, contexts...)
 end
@@ -421,7 +419,7 @@ function DI.hvp(
     prep::HVPPrep,
     backend::AutoForwardDiff,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     return DI.hvp(f, prep, SecondOrder(backend, backend), x, tx, contexts...)
@@ -429,11 +427,11 @@ end
 
 function DI.hvp!(
     f::F,
-    tg::Tangents,
+    tg::NTuple,
     prep::HVPPrep,
     backend::AutoForwardDiff,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     return DI.hvp!(f, tg, prep, SecondOrder(backend, backend), x, tx, contexts...)

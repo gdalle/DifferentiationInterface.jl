@@ -359,10 +359,10 @@ for op in [
                     @test isempty(preptup_noval) || only(preptup_noval) isa $E
                     @test y_out1_val ≈ scen.y
                     @test y_out2_val ≈ scen.y
-                    @test res1_out1_val ≈ scen.res1
-                    @test res1_out2_val ≈ scen.res1
-                    @test res1_out1_noval ≈ scen.res1
-                    @test res1_out2_noval ≈ scen.res1
+                    @test all(res1_out1_val .≈ scen.res1)
+                    @test all(res1_out2_val .≈ scen.res1)
+                    @test all(res1_out1_noval .≈ scen.res1)
+                    @test all(res1_out2_noval .≈ scen.res1)
                 end
             end
             scenario_intact && @test new_scen == scen
@@ -409,14 +409,14 @@ for op in [
                     @test isempty(preptup_noval) || only(preptup_noval) isa $E
                     @test y_out1_val ≈ scen.y
                     @test y_out2_val ≈ scen.y
-                    @test res1_in1_val ≈ scen.res1
-                    @test res1_in2_val ≈ scen.res1
-                    @test res1_out1_val ≈ scen.res1
-                    @test res1_out2_val ≈ scen.res1
-                    @test res1_in1_noval ≈ scen.res1
-                    @test res1_in2_noval ≈ scen.res1
-                    @test res1_out1_noval ≈ scen.res1
-                    @test res1_out2_noval ≈ scen.res1
+                    @test all(res1_in1_val .≈ scen.res1)
+                    @test all(res1_in2_val .≈ scen.res1)
+                    @test all(res1_out1_val .≈ scen.res1)
+                    @test all(res1_out2_val .≈ scen.res1)
+                    @test all(res1_in1_noval .≈ scen.res1)
+                    @test all(res1_in2_noval .≈ scen.res1)
+                    @test all(res1_out1_noval .≈ scen.res1)
+                    @test all(res1_out2_noval .≈ scen.res1)
                 end
             end
             scenario_intact && @test new_scen == scen
@@ -465,10 +465,10 @@ for op in [
                     @test y_in2_val ≈ scen.y
                     @test y_out1_val ≈ scen.y
                     @test y_out2_val ≈ scen.y
-                    @test res1_out1_val ≈ scen.res1
-                    @test res1_out2_val ≈ scen.res1
-                    @test res1_out1_noval ≈ scen.res1
-                    @test res1_out2_noval ≈ scen.res1
+                    @test all(res1_out1_val .≈ scen.res1)
+                    @test all(res1_out2_val .≈ scen.res1)
+                    @test all(res1_out1_noval .≈ scen.res1)
+                    @test all(res1_out2_noval .≈ scen.res1)
                 end
             end
             scenario_intact && @test new_scen == scen
@@ -531,14 +531,14 @@ for op in [
                     @test y_in2_val ≈ scen.y
                     @test y_out1_val ≈ scen.y
                     @test y_out2_val ≈ scen.y
-                    @test res1_in1_val ≈ scen.res1
-                    @test res1_in2_val ≈ scen.res1
-                    @test res1_out1_val ≈ scen.res1
-                    @test res1_out2_val ≈ scen.res1
-                    @test res1_in1_noval ≈ scen.res1
-                    @test res1_in2_noval ≈ scen.res1
-                    @test res1_out1_noval ≈ scen.res1
-                    @test res1_out2_noval ≈ scen.res1
+                    @test all(res1_in1_val .≈ scen.res1)
+                    @test all(res1_in2_val .≈ scen.res1)
+                    @test all(res1_out1_val .≈ scen.res1)
+                    @test all(res1_out2_val .≈ scen.res1)
+                    @test all(res1_in1_noval .≈ scen.res1)
+                    @test all(res1_in2_noval .≈ scen.res1)
+                    @test all(res1_out1_noval .≈ scen.res1)
+                    @test all(res1_out2_noval .≈ scen.res1)
                 end
             end
             scenario_intact && @test new_scen == scen
@@ -568,8 +568,8 @@ for op in [
                 res2_out2_noval = $op(f, preptup_noval..., ba, x, tang, contexts...)
                 let (≈)(x, y) = isapprox(x, y; atol, rtol)
                     @test isempty(preptup_noval) || only(preptup_noval) isa $E
-                    @test res2_out1_noval ≈ scen.res2
-                    @test res2_out2_noval ≈ scen.res2
+                    @test all(res2_out1_noval .≈ scen.res2)
+                    @test all(res2_out2_noval .≈ scen.res2)
                 end
             end
             scenario_intact && @test new_scen == scen
@@ -604,10 +604,10 @@ for op in [
                 )
                 let (≈)(x, y) = isapprox(x, y; atol, rtol)
                     @test isempty(preptup_noval) || only(preptup_noval) isa $E
-                    @test res2_in1_noval ≈ scen.res2
-                    @test res2_in2_noval ≈ scen.res2
-                    @test res2_out1_noval ≈ scen.res2
-                    @test res2_out2_noval ≈ scen.res2
+                    @test all(res2_in1_noval .≈ scen.res2)
+                    @test all(res2_in2_noval .≈ scen.res2)
+                    @test all(res2_out1_noval .≈ scen.res2)
+                    @test all(res2_out2_noval .≈ scen.res2)
                 end
             end
             scenario_intact && @test new_scen == scen

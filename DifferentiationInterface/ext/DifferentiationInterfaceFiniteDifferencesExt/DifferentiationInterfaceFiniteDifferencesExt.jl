@@ -8,7 +8,6 @@ using DifferentiationInterface:
     NoJacobianPrep,
     NoPullbackPrep,
     NoPushforwardPrep,
-    Tangents,
     unwrap,
     with_contexts
 using FiniteDifferences: FiniteDifferences, grad, jacobian, jvp, j′vp
@@ -20,7 +19,7 @@ DI.inplace_support(::AutoFiniteDifferences) = DI.InPlaceNotSupported()
 ## Pushforward
 
 function DI.prepare_pushforward(
-    f, ::AutoFiniteDifferences, x, tx::Tangents, contexts::Vararg{Context,C}
+    f, ::AutoFiniteDifferences, x, tx::NTuple, contexts::Vararg{Context,C}
 ) where {C}
     return NoPushforwardPrep()
 end
@@ -30,7 +29,7 @@ function DI.pushforward(
     ::NoPushforwardPrep,
     backend::AutoFiniteDifferences,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {C}
     fc = with_contexts(f, contexts...)
@@ -45,7 +44,7 @@ function DI.value_and_pushforward(
     prep::NoPushforwardPrep,
     backend::AutoFiniteDifferences,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {C}
     return f(x, map(unwrap, contexts)...),
@@ -55,7 +54,7 @@ end
 ## Pullback
 
 function DI.prepare_pullback(
-    f, ::AutoFiniteDifferences, x, ty::Tangents, contexts::Vararg{Context,C}
+    f, ::AutoFiniteDifferences, x, ty::NTuple, contexts::Vararg{Context,C}
 ) where {C}
     return NoPullbackPrep()
 end
@@ -65,7 +64,7 @@ function DI.pullback(
     ::NoPullbackPrep,
     backend::AutoFiniteDifferences,
     x,
-    ty::Tangents,
+    ty::NTuple,
     contexts::Vararg{Context,C},
 ) where {C}
     fc = with_contexts(f, contexts...)
@@ -80,7 +79,7 @@ function DI.value_and_pullback(
     prep::NoPullbackPrep,
     backend::AutoFiniteDifferences,
     x,
-    ty::Tangents,
+    ty::NTuple,
     contexts::Vararg{Context,C},
 ) where {C}
     return f(x, map(unwrap, contexts)...), DI.pullback(f, prep, backend, x, ty, contexts...)

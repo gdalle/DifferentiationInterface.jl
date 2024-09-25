@@ -33,7 +33,7 @@ These operators are computed using only the input `x`.
 
 ### Low-level operators
 
-These operators are computed using the input `x` and another argument `t` of type [`Tangents`](@ref), which contains one or more tangents.
+These operators are computed using the input `x` and another argument `t` of type `NTuple`, which contains one or more tangents.
 You can think of tangents as perturbations propagated through the function; they live either in the same space as `x` or in the same space as `y`.
 
 | operator                    | order | input `x` | output `y` | element type of `t` | operator result type | operator result shape |

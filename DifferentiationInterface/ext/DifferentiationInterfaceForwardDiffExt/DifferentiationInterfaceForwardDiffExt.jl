@@ -17,7 +17,6 @@ using DifferentiationInterface:
     PushforwardPrep,
     Rewrap,
     SecondOrder,
-    Tangents,
     inner,
     outer,
     unwrap,

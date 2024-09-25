@@ -16,7 +16,7 @@ function prepare_pullback end
     prepare_pullback_same_point(f,     backend, x, ty, [contexts...]) -> prep_same
     prepare_pullback_same_point(f!, y, backend, x, ty, [contexts...]) -> prep_same
 
-Create an `prep_same` object that can be given to [`pullback`](@ref) and its variants _if they are applied at the same point `x`_.
+Create an `prep_same` object that can be given to [`pullback`](@ref) and its variants _if they are applied at the same point `x` and with the same `contexts`_.
 
 !!! warning
     If the function or the point changes in any way, the result of preparation will be invalidated, and you will need to run it again.
@@ -28,7 +28,7 @@ function prepare_pullback_same_point end
     value_and_pullback(f,     [prep,] backend, x, ty, [contexts...]) -> (y, tx)
     value_and_pullback(f!, y, [prep,] backend, x, ty, [contexts...]) -> (y, tx)
 
-Compute the value and the pullback of the function `f` at point `x` with [`Tangents`](@ref) `ty`.
+Compute the value and the pullback of the function `f` at point `x` with a tuple of tangents `ty`.
 
 $(document_preparation("pullback"; same_point=true))
 
@@ -45,7 +45,7 @@ function value_and_pullback end
     value_and_pullback!(f,     dx, [prep,] backend, x, ty, [contexts...]) -> (y, tx)
     value_and_pullback!(f!, y, dx, [prep,] backend, x, ty, [contexts...]) -> (y, tx)
 
-Compute the value and the pullback of the function `f` at point `x` with [`Tangents`](@ref) `ty`, overwriting `dx`.
+Compute the value and the pullback of the function `f` at point `x` with a tuple of tangents `ty`, overwriting `dx`.
 
 $(document_preparation("pullback"; same_point=true))
 
@@ -59,7 +59,7 @@ function value_and_pullback! end
     pullback(f,     [prep,] backend, x, ty, [contexts...]) -> tx
     pullback(f!, y, [prep,] backend, x, ty, [contexts...]) -> tx
 
-Compute the pullback of the function `f` at point `x` with [`Tangents`](@ref) `ty`.
+Compute the pullback of the function `f` at point `x` with a tuple of tangents `ty`.
 
 $(document_preparation("pullback"; same_point=true))
 
@@ -73,7 +73,7 @@ function pullback end
     pullback!(f,     dx, [prep,] backend, x, ty, [contexts...]) -> tx
     pullback!(f!, y, dx, [prep,] backend, x, ty, [contexts...]) -> tx
 
-Compute the pullback of the function `f` at point `x` with [`Tangents`](@ref) `ty`, overwriting `dx`.
+Compute the pullback of the function `f` at point `x` with a tuple of tangents `ty`, overwriting `dx`.
 
 $(document_preparation("pullback"; same_point=true))
 
@@ -90,7 +90,7 @@ struct PushforwardPullbackPrep{E} <: PullbackPrep
 end
 
 function prepare_pullback(
-    f::F, backend::AbstractADType, x, ty::Tangents, contexts::Vararg{Context,C}
+    f::F, backend::AbstractADType, x, ty::NTuple, contexts::Vararg{Context,C}
 ) where {F,C}
     return _prepare_pullback_aux(
         pullback_performance(backend), f, backend, x, ty, contexts...
@@ -98,7 +98,7 @@ function prepare_pullback(
 end
 
 function prepare_pullback(
-    f!::F, y, backend::AbstractADType, x, ty::Tangents, contexts::Vararg{Context,C}
+    f!::F, y, backend::AbstractADType, x, ty::NTuple, contexts::Vararg{Context,C}
 ) where {F,C}
     return _prepare_pullback_aux(
         pullback_performance(backend), f!, y, backend, x, ty, contexts...
@@ -110,11 +110,11 @@ function _prepare_pullback_aux(
     f::F,
     backend::AbstractADType,
     x,
-    ty::Tangents,
+    ty::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     dx = x isa Number ? one(x) : basis(backend, x, first(CartesianIndices(x)))
-    pushforward_prep = prepare_pushforward(f, backend, x, Tangents(dx), contexts...)
+    pushforward_prep = prepare_pushforward(f, backend, x, (dx,), contexts...)
     return PushforwardPullbackPrep(pushforward_prep)
 end
 
@@ -124,28 +124,22 @@ function _prepare_pullback_aux(
     y,
     backend::AbstractADType,
     x,
-    ty::Tangents,
+    ty::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     dx = x isa Number ? one(x) : basis(backend, x, first(CartesianIndices(x)))
-    pushforward_prep = prepare_pushforward(f!, y, backend, x, Tangents(dx), contexts...)
+    pushforward_prep = prepare_pushforward(f!, y, backend, x, (dx,), contexts...)
     return PushforwardPullbackPrep(pushforward_prep)
 end
 
 function _prepare_pullback_aux(
-    ::PullbackFast, f, backend::AbstractADType, x, ty::Tangents, contexts::Vararg{Context}
+    ::PullbackFast, f, backend::AbstractADType, x, ty::NTuple, contexts::Vararg{Context}
 )
     throw(MissingBackendError(backend))
 end
 
 function _prepare_pullback_aux(
-    ::PullbackFast,
-    f!,
-    y,
-    backend::AbstractADType,
-    x,
-    ty::Tangents,
-    contexts::Vararg{Context},
+    ::PullbackFast, f!, y, backend::AbstractADType, x, ty::NTuple, contexts::Vararg{Context}
 )
     throw(MissingBackendError(backend))
 end
@@ -160,7 +154,7 @@ function _pullback_via_pushforward(
     dy,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    t1 = pushforward(f, pushforward_prep, backend, x, Tangents(one(x)), contexts...)
+    t1 = pushforward(f, pushforward_prep, backend, x, (one(x),), contexts...)
     dx = dot(dy, only(t1))
     return dx
 end
@@ -174,9 +168,7 @@ function _pullback_via_pushforward(
     contexts::Vararg{Context,C},
 ) where {F,C}
     dx = map(CartesianIndices(x)) do j
-        t1 = pushforward(
-            f, pushforward_prep, backend, x, Tangents(basis(backend, x, j)), contexts...
-        )
+        t1 = pushforward(f, pushforward_prep, backend, x, (basis(backend, x, j),), contexts...)
         dot(dy, only(t1))
     end
     return dx
@@ -187,38 +179,30 @@ function value_and_pullback(
     prep::PushforwardPullbackPrep,
     backend::AbstractADType,
     x,
-    ty::Tangents{B},
+    ty::NTuple{B},
     contexts::Vararg{Context,C},
 ) where {F,B,C}
     @compat (; pushforward_prep) = prep
     y = f(x, map(unwrap, contexts)...)
-    if B == 1
-        dx = _pullback_via_pushforward(
-            f, pushforward_prep, backend, x, only(ty), contexts...
-        )
-        return y, Tangents(dx)
-    else
-        dxs = ntuple(
-            b -> _pullback_via_pushforward(
-                f, pushforward_prep, backend, x, ty.d[b], contexts...
-            ),
-            Val(B),
-        )
-        return y, Tangents(dxs...)
-    end
+    tx = ntuple(
+        b -> _pullback_via_pushforward(f, pushforward_prep, backend, x, ty[b], contexts...),
+        Val(B),
+    )
+    return y, tx
 end
 
 function value_and_pullback!(
     f::F,
-    tx::Tangents,
+    tx::NTuple,
     prep::PullbackPrep,
     backend::AbstractADType,
     x,
-    ty::Tangents,
+    ty::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     y, new_tx = value_and_pullback(f, prep, backend, x, ty, contexts...)
-    return y, copyto!(tx, new_tx)
+    foreach(copyto!, tx, new_tx)
+    return y, tx
 end
 
 function pullback(
@@ -226,7 +210,7 @@ function pullback(
     prep::PullbackPrep,
     backend::AbstractADType,
     x,
-    ty::Tangents,
+    ty::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     return value_and_pullback(f, prep, backend, x, ty, contexts...)[2]
@@ -234,11 +218,11 @@ end
 
 function pullback!(
     f::F,
-    tx::Tangents,
+    tx::NTuple,
     prep::PullbackPrep,
     backend::AbstractADType,
     x,
-    ty::Tangents,
+    ty::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     return value_and_pullback!(f, tx, prep, backend, x, ty, contexts...)[2]
@@ -255,7 +239,7 @@ function _pullback_via_pushforward(
     dy,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    t1 = pushforward(f!, y, pushforward_prep, backend, x, Tangents(one(x)), contexts...)
+    t1 = pushforward(f!, y, pushforward_prep, backend, x, (one(x),), contexts...)
     dx = dot(dy, only(t1))
     return dx
 end
@@ -271,13 +255,7 @@ function _pullback_via_pushforward(
 ) where {F,C}
     dx = map(CartesianIndices(x)) do j  # preserve shape
         t1 = pushforward(
-            f!,
-            y,
-            pushforward_prep,
-            backend,
-            x,
-            Tangents(basis(backend, x, j)),
-            contexts...,
+            f!, y, pushforward_prep, backend, x, (basis(backend, x, j),), contexts...
         )
         dot(dy, only(t1))
     end
@@ -290,40 +268,33 @@ function value_and_pullback(
     prep::PushforwardPullbackPrep,
     backend::AbstractADType,
     x,
-    ty::Tangents{B},
+    ty::NTuple{B},
     contexts::Vararg{Context,C},
 ) where {F,B,C}
     @compat (; pushforward_prep) = prep
-    if B == 1
-        dx = _pullback_via_pushforward(
-            f!, y, pushforward_prep, backend, x, only(ty), contexts...
-        )
-        f!(y, x, map(unwrap, contexts)...)
-        return y, Tangents(dx)
-    else
-        dxs = ntuple(
-            b -> _pullback_via_pushforward(
-                f!, y, pushforward_prep, backend, x, ty.d[b], contexts...
-            ),
-            Val(B),
-        )
-        f!(y, x, map(unwrap, contexts)...)
-        return y, Tangents(dxs...)
-    end
+    tx = ntuple(
+        b -> _pullback_via_pushforward(
+            f!, y, pushforward_prep, backend, x, ty[b], contexts...
+        ),
+        Val(B),
+    )
+    f!(y, x, map(unwrap, contexts)...)
+    return y, tx
 end
 
 function value_and_pullback!(
     f!::F,
     y,
-    tx::Tangents,
+    tx::NTuple,
     prep::PullbackPrep,
     backend::AbstractADType,
     x,
-    ty::Tangents,
+    ty::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     y, new_tx = value_and_pullback(f!, y, prep, backend, x, ty, contexts...)
-    return y, copyto!(tx, new_tx)
+    foreach(copyto!, tx, new_tx)
+    return y, tx
 end
 
 function pullback(
@@ -332,7 +303,7 @@ function pullback(
     prep::PullbackPrep,
     backend::AbstractADType,
     x,
-    ty::Tangents,
+    ty::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     return value_and_pullback(f!, y, prep, backend, x, ty, contexts...)[2]
@@ -341,11 +312,11 @@ end
 function pullback!(
     f!::F,
     y,
-    tx::Tangents,
+    tx::NTuple,
     prep::PullbackPrep,
     backend::AbstractADType,
     x,
-    ty::Tangents,
+    ty::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     return value_and_pullback!(f!, y, tx, prep, backend, x, ty, contexts...)[2]
