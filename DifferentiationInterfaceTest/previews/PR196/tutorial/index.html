@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Tutorial · DifferentiationInterfaceTest.jl</title><meta name="title" content="Tutorial · DifferentiationInterfaceTest.jl"/><meta property="og:title" content="Tutorial · DifferentiationInterfaceTest.jl"/><meta property="twitter:title" content="Tutorial · DifferentiationInterfaceTest.jl"/><meta name="description" content="Documentation for DifferentiationInterfaceTest.jl."/><meta property="og:description" content="Documentation for DifferentiationInterfaceTest.jl."/><meta property="twitter:description" content="Documentation for DifferentiationInterfaceTest.jl."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">DifferentiationInterfaceTest.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li class="is-active"><a class="tocitem" href>Tutorial</a><ul class="internal"><li><a class="tocitem" href="#Introduction"><span>Introduction</span></a></li><li><a class="tocitem" href="#Testing"><span>Testing</span></a></li><li><a class="tocitem" href="#Benchmarking"><span>Benchmarking</span></a></li></ul></li><li><a class="tocitem" href="../api/">API reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Tutorial</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Tutorial</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/gdalle/DifferentiationInterface.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/gdalle/DifferentiationInterface.jl/blob/main/DifferentiationInterfaceTest/docs/src/tutorial.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Tutorial"><a class="docs-heading-anchor" href="#Tutorial">Tutorial</a><a id="Tutorial-1"></a><a class="docs-heading-anchor-permalink" href="#Tutorial" title="Permalink"></a></h1><p>We present a typical workflow with DifferentiationInterfaceTest.jl, building on the <a href="https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterface/dev/tutorial/">DifferentiationInterface.jl tutorial</a> (which we encourage you to read first).</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; using DifferentiationInterface, DifferentiationInterfaceTest</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; import ForwardDiff, Enzyme</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; import DataFrames, Markdown, PrettyTables, Printf</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><h2 id="Introduction"><a class="docs-heading-anchor" href="#Introduction">Introduction</a><a id="Introduction-1"></a><a class="docs-heading-anchor-permalink" href="#Introduction" title="Permalink"></a></h2><p>The AD backends we want to compare are <a href="https://github.com/JuliaDiff/ForwardDiff.jl">ForwardDiff.jl</a> and <a href="https://github.com/EnzymeAD/Enzyme.jl">Enzyme.jl</a>.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; backends = [AutoForwardDiff(), AutoEnzyme(Enzyme.Reverse)]</code><code class="nohighlight hljs ansi" style="display:block;">2-element Vector{ADTypes.AbstractADType}:
+ AutoForwardDiff{nothing, Nothing}(nothing)
+ AutoEnzyme{EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}}(EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}())</code></pre><p>To do that, we are going to take gradients of a simple function:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; f(x::AbstractArray) = sum(sin, x)</code><code class="nohighlight hljs ansi" style="display:block;">f (generic function with 1 method)</code></pre><p>Of course we know the true gradient mapping:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; ∇f(x::AbstractArray) = cos.(x)</code><code class="nohighlight hljs ansi" style="display:block;">∇f (generic function with 1 method)</code></pre><p>DifferentiationInterfaceTest.jl relies with so-called &quot;scenarios&quot;, in which you encapsulate the information needed for your test:</p><ul><li>the function <code>f</code></li><li>the input <code>x</code> (and output <code>y</code> for mutating functions)</li><li>optionally a reference <code>ref</code> to check against</li></ul><p>There is one scenario per operator, and so here we will use <a href="../api/#DifferentiationInterfaceTest.GradientScenario"><code>GradientScenario</code></a>. Let us experiment with various input types and sizes:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; scenarios = [
+           GradientScenario(f; x=rand(Float64, 3), ref=∇f),
+           GradientScenario(f; x=rand(Float32, 3, 4), ref=∇f),
+       ];</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><h2 id="Testing"><a class="docs-heading-anchor" href="#Testing">Testing</a><a id="Testing-1"></a><a class="docs-heading-anchor-permalink" href="#Testing" title="Permalink"></a></h2><p>The main entry point for testing is the function <a href="../api/#DifferentiationInterfaceTest.test_differentiation"><code>test_differentiation</code></a>. It has many options, but the main ingredients are the following:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; test_differentiation(
+           backends,  # the backends you want to compare
+           scenarios,  # the scenarios you defined,
+           correctness=true,  # compares values against the reference
+           type_stability=true,  # checks type stability with JET.jl
+           detailed=true,  # prints a detailed test set
+       )</code><code class="nohighlight hljs ansi" style="display:block;">Type stability: JET-test failed at /home/runner/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterfaceTest/src/tests/type_stability.jl:174
+  Expression: #= /home/runner/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterfaceTest/src/tests/type_stability.jl:174 =# JET.@test_opt value_and_gradient!(f, grad_in, ba, x, extras)
+  ═════ 50 possible errors found ═════
+  ┌ value_and_gradient!(f::typeof(Main.f), grad::Vector{Float64}, backend::AutoEnzyme{EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}}, x::Vector{Float64}, ::DifferentiationInterface.NoGradientExtras) @ DifferentiationInterfaceEnzymeExt /home/runner/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterface/ext/DifferentiationInterfaceEnzymeExt/reverse_onearg.jl:85
+  │┌ value_and_pullback!(f::typeof(Main.f), dx::Vector{Float64}, ::AutoEnzyme{EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}}, x::Vector{Float64}, dy::Float64, ::DifferentiationInterface.NoPullbackExtras) @ DifferentiationInterfaceEnzymeExt /home/runner/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterface/ext/DifferentiationInterfaceEnzymeExt/reverse_onearg.jl:44
+  ││┌ autodiff(mode::EnzymeCore.ReverseMode{true, EnzymeCore.FFIABI, false}, f::typeof(Main.f), ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Vector{Float64}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:287
+  │││┌ autodiff(::EnzymeCore.ReverseMode{true, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Vector{Float64}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:166
+  ││││┌ same_or_one(args::Vararg{Any}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:97
+  │││││ runtime dispatch detected: (%1::Any Enzyme.:(==) -1)::Any
+  ││││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{true, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Vector{Float64}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:273
+  ││││┌ default_adjoint(::Type{T}) where T&lt;:AbstractFloat @ Enzyme.Compiler /home/runner/.julia/packages/Enzyme/MIIMf/src/compiler.jl:5257
+  │││││ runtime dispatch detected: Enzyme.Compiler.one(%1::Type{T} where T&lt;:AbstractFloat)::AbstractFloat
+  ││││└────────────────────
+  ││││┌ default_adjoint(::Type) @ Enzyme.Compiler /home/runner/.julia/packages/Enzyme/MIIMf/src/compiler.jl:5256
+  │││││┌ string(::String, ::Type, ::String) @ Base ./strings/io.jl:189
+  ││││││┌ print_to_string(::String, ::Type, ::String) @ Base ./strings/io.jl:148
+  │││││││┌ print(io::IOBuffer, x::Type) @ Base ./strings/io.jl:35
+  ││││││││┌ show(io::IOBuffer, x::Type) @ Base ./show.jl:953
+  │││││││││┌ _show_type(io::IOBuffer, x::Type) @ Base ./show.jl:956
+  ││││││││││┌ show_type_name(io::IOBuffer, tn::Core.TypeName) @ Base ./show.jl:1043
+  │││││││││││┌ show(io::IOBuffer, m::Module) @ Base ./show.jl:1237
+  ││││││││││││┌ is_root_module(m::Module) @ Base ./lock.jl:269
+  │││││││││││││┌ sprint(f::typeof(show), args::String; context::Any, sizehint::Integer) @ Base ./strings/io.jl:108
+  ││││││││││││││┌ kwcall(::NamedTuple{(:sizehint,), &lt;:Tuple{Integer}}, ::Type{IOBuffer}) @ Base ./iobuffer.jl:106
+  │││││││││││││││┌ pairs(nt::NamedTuple) @ Base.Iterators ./iterators.jl:279
+  ││││││││││││││││┌ (Base.Pairs{Symbol})(data::NamedTuple, itr::Tuple{Vararg{Symbol}}) @ Base ./essentials.jl:343
+  │││││││││││││││││┌ eltype(::Type{A} where A&lt;:NamedTuple) @ Base ./namedtuple.jl:237
+  ││││││││││││││││││┌ nteltype(::Type{NamedTuple{names, T}} where names) where T&lt;:Tuple @ Base ./namedtuple.jl:239
+  │││││││││││││││││││┌ eltype(t::Type{&lt;:Tuple{Vararg{E}}}) where E @ Base ./tuple.jl:208
+  ││││││││││││││││││││┌ _compute_eltype(t::Type{&lt;:Tuple{Vararg{E}}} where E) @ Base ./tuple.jl:231
+  │││││││││││││││││││││┌ afoldl(op::Base.var&quot;#54#55&quot;, a::Any, bs::Vararg{Any}) @ Base ./operators.jl:544
+  ││││││││││││││││││││││┌ (::Base.var&quot;#54#55&quot;)(a::Any, b::Any) @ Base ./tuple.jl:235
+  │││││││││││││││││││││││┌ promote_typejoin(a::Any, b::Any) @ Base ./promotion.jl:172
+  ││││││││││││││││││││││││┌ typejoin(a::Any, b::Any) @ Base ./promotion.jl:127
+  │││││││││││││││││││││││││ runtime dispatch detected: Base.UnionAll(%403::Any, %405::Any)::Any
+  ││││││││││││││││││││││││└────────────────────
+  │││││││││││││││││││││┌ afoldl(op::Base.var&quot;#54#55&quot;, a::Any, bs::Vararg{Any}) @ Base ./operators.jl:545
+  ││││││││││││││││││││││┌ (::Base.var&quot;#54#55&quot;)(a::Type, b::Any) @ Base ./tuple.jl:235
+  │││││││││││││││││││││││┌ promote_typejoin(a::Type, b::Any) @ Base ./promotion.jl:172
+  ││││││││││││││││││││││││┌ typejoin(a::Type, b::Any) @ Base ./promotion.jl:127
+  │││││││││││││││││││││││││ runtime dispatch detected: Base.UnionAll(%398::Any, %400::Any)::Any
+  ││││││││││││││││││││││││└────────────────────
+  │││││││││┌ _show_type(io::IOBuffer, x::Type) @ Base ./show.jl:958
+  ││││││││││┌ show_typealias(io::IOBuffer, x::Type) @ Base ./show.jl:793
+  │││││││││││┌ make_typealias(x::Type) @ Base ./show.jl:603
+  ││││││││││││┌ modulesof!(s::Set{Module}, x::Type) @ Base ./show.jl:578
+  │││││││││││││ runtime dispatch detected: Base.modulesof!(s::Set{Module}, %20::Any)::Any
+  ││││││││││││└────────────────────
+  ││││││││││││┌ modulesof!(s::Set{Module}, x::Type) @ Base ./show.jl:579
+  │││││││││││││ runtime dispatch detected: Base.modulesof!(s::Set{Module}, %35::Any)::Any
+  ││││││││││││└────────────────────
+  ││││││││││││┌ modulesof!(s::Set{Module}, x::TypeVar) @ Base ./show.jl:572
+  │││││││││││││ runtime dispatch detected: Base.modulesof!(s::Set{Module}, %1::Any)::Set{Module}
+  ││││││││││││└────────────────────
+  ││││││││││┌ show_typealias(io::IOBuffer, x::Type) @ Base ./show.jl:796
+  │││││││││││┌ show_typealias(io::IOBuffer, name::GlobalRef, x::Type, env::Core.SimpleVector, wheres::Vector{TypeVar}) @ Base ./show.jl:743
+  ││││││││││││┌ show_typeparams(io::IOContext{IOBuffer}, env::Core.SimpleVector, orig::Core.SimpleVector, wheres::Vector{TypeVar}) @ Base ./show.jl:707
+  │││││││││││││┌ show(io::IOContext{IOBuffer}, tv::TypeVar) @ Base ./show.jl:2737
+  ││││││││││││││┌ (::Base.var&quot;#show_bound#566&quot;)(io::IOContext{IOBuffer}, b::Any) @ Base ./show.jl:2729
+  │││││││││││││││ runtime dispatch detected: show(io::IOContext{IOBuffer}, b::Any)::Any
+  ││││││││││││││└────────────────────
+  ││││││││││││┌ show_typeparams(io::IOContext{IOBuffer}, env::Core.SimpleVector, orig::Core.SimpleVector, wheres::Vector{TypeVar}) @ Base ./show.jl:702
+  │││││││││││││ runtime dispatch detected: show(io::IOContext{IOBuffer}, %243::Any)::Any
+  ││││││││││││└────────────────────
+  ││││││││││││┌ show_typeparams(io::IOContext{IOBuffer}, env::Core.SimpleVector, orig::Core.SimpleVector, wheres::Vector{TypeVar}) @ Base ./show.jl:705
+  │││││││││││││ runtime dispatch detected: show(io::IOContext{IOBuffer}, %294::Any)::Any
+  ││││││││││││└────────────────────
+  ││││││││││││┌ show_typeparams(io::IOContext{IOBuffer}, env::Core.SimpleVector, orig::Core.SimpleVector, wheres::Vector{TypeVar}) @ Base ./show.jl:710
+  │││││││││││││ runtime dispatch detected: show(io::IOContext{IOBuffer}, %192::Any)::Any
+  ││││││││││││└────────────────────
+  │││││││││┌ _show_type(io::IOBuffer, x::Type) @ Base ./show.jl:961
+  ││││││││││┌ show_datatype(io::IOBuffer, x::DataType) @ Base ./show.jl:1077
+  │││││││││││┌ show_datatype(io::IOBuffer, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1080
+  ││││││││││││┌ maybe_kws_nt(x::DataType) @ Base ./show.jl:1068
+  │││││││││││││ runtime dispatch detected: eltype(%79::DataType)::Any
+  ││││││││││││└────────────────────
+  │││││││││││┌ show_datatype(io::IOBuffer, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1130
+  ││││││││││││┌ show_typeparams(io::IOBuffer, env::Core.SimpleVector, orig::Core.SimpleVector, wheres::Vector{TypeVar}) @ Base ./show.jl:707
+  │││││││││││││┌ show(io::IOBuffer, tv::TypeVar) @ Base ./show.jl:2737
+  ││││││││││││││┌ (::Base.var&quot;#show_bound#566&quot;)(io::IOBuffer, b::Any) @ Base ./show.jl:2729
+  │││││││││││││││ runtime dispatch detected: show(io::IOBuffer, b::Any)::Any
+  ││││││││││││││└────────────────────
+  ││││││││││││┌ show_typeparams(io::IOBuffer, env::Core.SimpleVector, orig::Core.SimpleVector, wheres::Vector{TypeVar}) @ Base ./show.jl:702
+  │││││││││││││ runtime dispatch detected: show(io::IOBuffer, %241::Any)::Any
+  ││││││││││││└────────────────────
+  ││││││││││││┌ show_typeparams(io::IOBuffer, env::Core.SimpleVector, orig::Core.SimpleVector, wheres::Vector{TypeVar}) @ Base ./show.jl:705
+  │││││││││││││ runtime dispatch detected: show(io::IOBuffer, %291::Any)::Any
+  ││││││││││││└────────────────────
+  ││││││││││││┌ show_typeparams(io::IOBuffer, env::Core.SimpleVector, orig::Core.SimpleVector, wheres::Vector{TypeVar}) @ Base ./show.jl:710
+  │││││││││││││ runtime dispatch detected: show(io::IOBuffer, %191::Any)::Any
+  ││││││││││││└────────────────────
+  │││││││││││┌ show_datatype(io::IOBuffer, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1096
+  ││││││││││││ runtime dispatch detected: show(io::IOBuffer, %94::Any)::Any
+  │││││││││││└────────────────────
+  │││││││││││┌ show_datatype(io::IOBuffer, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1102
+  ││││││││││││ runtime dispatch detected: show(io::IOBuffer, %141::Any)::Any
+  │││││││││││└────────────────────
+  │││││││││││┌ show_datatype(io::IOBuffer, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1106
+  ││││││││││││ runtime dispatch detected: show(io::IOBuffer, %162::Any)::Any
+  │││││││││││└────────────────────
+  │││││││││││┌ show_datatype(io::IOBuffer, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1116
+  ││││││││││││ runtime dispatch detected: Base.show_at_namedtuple(io::IOBuffer, %219::Tuple, %220::DataType)::Any
+  │││││││││││└────────────────────
+  │││││││││┌ _show_type(io::IOBuffer, x::Type) @ Base ./show.jl:964
+  ││││││││││┌ show_unionaliases(io::IOBuffer, x::Union) @ Base ./show.jl:884
+  │││││││││││┌ make_typealiases(x::Union) @ Base ./show.jl:805
+  ││││││││││││┌ modulesof!(s::Set{Module}, x::Union) @ Base ./show.jl:578
+  │││││││││││││ runtime dispatch detected: Base.modulesof!(s::Set{Module}, %3::Any)::Any
+  ││││││││││││└────────────────────
+  ││││││││││││┌ modulesof!(s::Set{Module}, x::Union) @ Base ./show.jl:579
+  │││││││││││││ runtime dispatch detected: Base.modulesof!(s::Set{Module}, %17::Any)::Any
+  ││││││││││││└────────────────────
+  ││││││││││┌ show_unionaliases(io::IOBuffer, x::Union) @ Base ./show.jl:897
+  │││││││││││ runtime dispatch detected: show(io::IOBuffer, %50::Any)::Any
+  ││││││││││└────────────────────
+  ││││││││││┌ show_unionaliases(io::IOBuffer, x::Union) @ Base ./show.jl:903
+  │││││││││││ runtime dispatch detected: Base.show_typealias(io::IOBuffer, %133::Any, x::Union, %131::Core.SimpleVector, %132::Vector{TypeVar})::Any
+  ││││││││││└────────────────────
+  ││││││││││┌ show_unionaliases(io::IOBuffer, x::Union) @ Base ./show.jl:911
+  │││││││││││ runtime dispatch detected: Base.show_typealias(io::IOBuffer, %179::Any, x::Union, %177::Core.SimpleVector, %178::Vector{TypeVar})::Any
+  ││││││││││└────────────────────
+  │││││││││┌ _show_type(io::IOBuffer, x::Type) @ Base ./show.jl:968
+  ││││││││││┌ show_delim_array(io::IOBuffer, itr::Vector{Any}, op::Char, delim::Char, cl::Char, delim_one::Bool) @ Base ./show.jl:1335
+  │││││││││││┌ show_delim_array(io::IOBuffer, itr::Vector{Any}, op::Char, delim::Char, cl::Char, delim_one::Bool, i1::Int64, l::Int64) @ Base ./show.jl:1346
+  ││││││││││││ runtime dispatch detected: show(%4::IOContext{IOBuffer}, %41::Any)::Any
+  │││││││││││└────────────────────
+  │││││││││┌ _show_type(io::IOBuffer, x::Type) @ Base ./show.jl:995
+  ││││││││││┌ show_datatype(io::IOContext{IOBuffer}, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1129
+  │││││││││││┌ show_type_name(io::IOContext{IOBuffer}, tn::Core.TypeName) @ Base ./show.jl:1042
+  ││││││││││││ runtime dispatch detected: Base.isvisible(%32::Symbol, %89::Module, %83::Any)::Bool
+  │││││││││││└────────────────────
+  ││││││││││┌ show_datatype(io::IOContext{IOBuffer}, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1096
+  │││││││││││ runtime dispatch detected: show(io::IOContext{IOBuffer}, %94::Any)::Any
+  ││││││││││└────────────────────
+  ││││││││││┌ show_datatype(io::IOContext{IOBuffer}, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1102
+  │││││││││││ runtime dispatch detected: show(io::IOContext{IOBuffer}, %144::Any)::Any
+  ││││││││││└────────────────────
+  ││││││││││┌ show_datatype(io::IOContext{IOBuffer}, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1106
+  │││││││││││ runtime dispatch detected: show(io::IOContext{IOBuffer}, %166::Any)::Any
+  ││││││││││└────────────────────
+  ││││││││││┌ show_datatype(io::IOContext{IOBuffer}, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1116
+  │││││││││││ runtime dispatch detected: Base.show_at_namedtuple(io::IOContext{IOBuffer}, %225::Tuple, %226::DataType)::Any
+  ││││││││││└────────────────────
+  ││││││││││┌ show_datatype(io::IOContext{IOBuffer}, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1124
+  │││││││││││ runtime dispatch detected: Base.show_at_namedtuple(io::IOContext{IOBuffer}, %268::Tuple, %273::DataType)::Any
+  ││││││││││└────────────────────
+  │││││││││┌ _show_type(io::IOBuffer, x::Type) @ Base ./show.jl:997
+  ││││││││││ runtime dispatch detected: show(%74::IOContext{IOBuffer}, %75::Any)::Any
+  │││││││││└────────────────────
+  ││││││││┌ show(io::IOBuffer, x::Type) @ Base ./show.jl:953
+  │││││││││ runtime dispatch detected: Base._show_type(io::IOBuffer, x::Type)::Nothing
+  ││││││││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{true, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Vector{Float64}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:165
+  ││││ captured variable `args` detected
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{true, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Vector{Float64}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:165
+  ││││ runtime dispatch detected: Enzyme.map(Core.Typeof, args::Tuple{EnzymeCore.Duplicated{Vector{Float64}}})::Any
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{true, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Vector{Float64}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:167
+  ││││ runtime dispatch detected: (%9::Any Enzyme.:(==) 0)::Any
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{true, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Vector{Float64}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:173
+  ││││ runtime dispatch detected: Enzyme.map(#44, args::Tuple{EnzymeCore.Duplicated{Vector{Float64}}})::Any
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{true, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Vector{Float64}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:174
+  ││││ runtime dispatch detected: codegen_world_age(::typeof(Main.f), %19::Type)::Any
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{true, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Vector{Float64}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:177
+  ││││ runtime dispatch detected: return_type(f, %19::Type)::Type
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{true, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Vector{Float64}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:270
+  ││││ runtime dispatch detected: thunk(%40::Val, ::EnzymeCore.Const{typeof(Main.f)}, ::EnzymeCore.Active, %5::Type, [quote]::Val{Enzyme.API.DEM_ReverseModeCombined}, %42::Val, [quote]::Val{(false, false)}, [quote]::Val{true}, [quote]::Val{false}, ::EnzymeCore.FFIABI)::Any
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{true, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Vector{Float64}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:273
+  ││││ runtime dispatch detected: Enzyme.Compiler.default_adjoint(%21::Type)::AbstractFloat
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{true, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Vector{Float64}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:184
+  ││││ runtime dispatch detected: thunk(%58::Val, ::EnzymeCore.Const{typeof(Main.f)}, %59::Type{EnzymeCore.Duplicated{T}} where T, %5::Type, [quote]::Val{Enzyme.API.DEM_ReverseModeGradient}, %61::Val, [quote]::Val{(false, false)}, [quote]::Val{true}, [quote]::Val{true}, ::EnzymeCore.FFIABI)::Any
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{true, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Vector{Float64}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:184
+  ││││ runtime dispatch detected: Base.indexed_iterate(%62::Any, 1)::Any
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{true, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Vector{Float64}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:184
+  ││││ runtime dispatch detected: Base.indexed_iterate(%62::Any, 2, %65::Any)::Any
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{true, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Vector{Float64}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:186
+  ││││ runtime dispatch detected: (%71::Any)[1]::Any
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{true, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Vector{Float64}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:188
+  ││││ runtime dispatch detected: (%77::Any)[1]::Any
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{true, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Vector{Float64}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:188
+  ││││ runtime dispatch detected: (%71::Any)[2]::Any
+  │││└────────────────────
+  │┌ value_and_pullback!(f::typeof(Main.f), dx::Vector{Float64}, ::AutoEnzyme{EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}}, x::Vector{Float64}, dy::Float64, ::DifferentiationInterface.NoPullbackExtras) @ DifferentiationInterfaceEnzymeExt /home/runner/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterface/ext/DifferentiationInterfaceEnzymeExt/reverse_onearg.jl:44
+  ││ runtime dispatch detected: Base.indexed_iterate(%113::Any, 1)::Any
+  │└────────────────────
+  │┌ value_and_pullback!(f::typeof(Main.f), dx::Vector{Float64}, ::AutoEnzyme{EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}}, x::Vector{Float64}, dy::Float64, ::DifferentiationInterface.NoPullbackExtras) @ DifferentiationInterfaceEnzymeExt /home/runner/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterface/ext/DifferentiationInterfaceEnzymeExt/reverse_onearg.jl:44
+  ││ runtime dispatch detected: Base.indexed_iterate(%113::Any, 2, %117::Any)::Any
+  │└────────────────────
+  
+Type stability: JET-test failed at /home/runner/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterfaceTest/src/tests/type_stability.jl:175
+  Expression: #= /home/runner/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterfaceTest/src/tests/type_stability.jl:175 =# JET.@test_opt gradient!(f, grad_in, ba, x, extras)
+  ═════ 46 possible errors found ═════
+  ┌ gradient!(f::typeof(Main.f), grad::Vector{Float64}, ::AutoEnzyme{EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}}, x::Vector{Float64}, ::DifferentiationInterface.NoGradientExtras) @ DifferentiationInterfaceEnzymeExt /home/runner/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterface/ext/DifferentiationInterfaceEnzymeExt/reverse_onearg.jl:76
+  │┌ gradient!(::EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}, dx::Vector{Float64}, f::typeof(Main.f), x::Vector{Float64}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:968
+  ││┌ autodiff(mode::EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}, f::typeof(Main.f), ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Vector{Float64}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:287
+  │││┌ autodiff(::EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Vector{Float64}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:166
+  ││││┌ same_or_one(args::Vararg{Any}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:97
+  │││││ runtime dispatch detected: (%1::Any Enzyme.:(==) -1)::Any
+  ││││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Vector{Float64}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:273
+  ││││┌ default_adjoint(::Type{T}) where T&lt;:AbstractFloat @ Enzyme.Compiler /home/runner/.julia/packages/Enzyme/MIIMf/src/compiler.jl:5257
+  │││││ runtime dispatch detected: Enzyme.Compiler.one(%1::Type{T} where T&lt;:AbstractFloat)::AbstractFloat
+  ││││└────────────────────
+  ││││┌ default_adjoint(::Type) @ Enzyme.Compiler /home/runner/.julia/packages/Enzyme/MIIMf/src/compiler.jl:5256
+  │││││┌ string(::String, ::Type, ::String) @ Base ./strings/io.jl:189
+  ││││││┌ print_to_string(::String, ::Type, ::String) @ Base ./strings/io.jl:148
+  │││││││┌ print(io::IOBuffer, x::Type) @ Base ./strings/io.jl:35
+  ││││││││┌ show(io::IOBuffer, x::Type) @ Base ./show.jl:953
+  │││││││││┌ _show_type(io::IOBuffer, x::Type) @ Base ./show.jl:956
+  ││││││││││┌ show_type_name(io::IOBuffer, tn::Core.TypeName) @ Base ./show.jl:1043
+  │││││││││││┌ show(io::IOBuffer, m::Module) @ Base ./show.jl:1237
+  ││││││││││││┌ is_root_module(m::Module) @ Base ./lock.jl:269
+  │││││││││││││┌ sprint(f::typeof(show), args::String; context::Any, sizehint::Integer) @ Base ./strings/io.jl:108
+  ││││││││││││││┌ kwcall(::NamedTuple{(:sizehint,), &lt;:Tuple{Integer}}, ::Type{IOBuffer}) @ Base ./iobuffer.jl:106
+  │││││││││││││││┌ pairs(nt::NamedTuple) @ Base.Iterators ./iterators.jl:279
+  ││││││││││││││││┌ (Base.Pairs{Symbol})(data::NamedTuple, itr::Tuple{Vararg{Symbol}}) @ Base ./essentials.jl:343
+  │││││││││││││││││┌ eltype(::Type{A} where A&lt;:NamedTuple) @ Base ./namedtuple.jl:237
+  ││││││││││││││││││┌ nteltype(::Type{NamedTuple{names, T}} where names) where T&lt;:Tuple @ Base ./namedtuple.jl:239
+  │││││││││││││││││││┌ eltype(t::Type{&lt;:Tuple{Vararg{E}}}) where E @ Base ./tuple.jl:208
+  ││││││││││││││││││││┌ _compute_eltype(t::Type{&lt;:Tuple{Vararg{E}}} where E) @ Base ./tuple.jl:231
+  │││││││││││││││││││││┌ afoldl(op::Base.var&quot;#54#55&quot;, a::Any, bs::Vararg{Any}) @ Base ./operators.jl:544
+  ││││││││││││││││││││││┌ (::Base.var&quot;#54#55&quot;)(a::Any, b::Any) @ Base ./tuple.jl:235
+  │││││││││││││││││││││││┌ promote_typejoin(a::Any, b::Any) @ Base ./promotion.jl:172
+  ││││││││││││││││││││││││┌ typejoin(a::Any, b::Any) @ Base ./promotion.jl:127
+  │││││││││││││││││││││││││ runtime dispatch detected: Base.UnionAll(%403::Any, %405::Any)::Any
+  ││││││││││││││││││││││││└────────────────────
+  │││││││││││││││││││││┌ afoldl(op::Base.var&quot;#54#55&quot;, a::Any, bs::Vararg{Any}) @ Base ./operators.jl:545
+  ││││││││││││││││││││││┌ (::Base.var&quot;#54#55&quot;)(a::Type, b::Any) @ Base ./tuple.jl:235
+  │││││││││││││││││││││││┌ promote_typejoin(a::Type, b::Any) @ Base ./promotion.jl:172
+  ││││││││││││││││││││││││┌ typejoin(a::Type, b::Any) @ Base ./promotion.jl:127
+  │││││││││││││││││││││││││ runtime dispatch detected: Base.UnionAll(%398::Any, %400::Any)::Any
+  ││││││││││││││││││││││││└────────────────────
+  │││││││││┌ _show_type(io::IOBuffer, x::Type) @ Base ./show.jl:958
+  ││││││││││┌ show_typealias(io::IOBuffer, x::Type) @ Base ./show.jl:793
+  │││││││││││┌ make_typealias(x::Type) @ Base ./show.jl:603
+  ││││││││││││┌ modulesof!(s::Set{Module}, x::Type) @ Base ./show.jl:578
+  │││││││││││││ runtime dispatch detected: Base.modulesof!(s::Set{Module}, %20::Any)::Any
+  ││││││││││││└────────────────────
+  ││││││││││││┌ modulesof!(s::Set{Module}, x::Type) @ Base ./show.jl:579
+  │││││││││││││ runtime dispatch detected: Base.modulesof!(s::Set{Module}, %35::Any)::Any
+  ││││││││││││└────────────────────
+  ││││││││││││┌ modulesof!(s::Set{Module}, x::TypeVar) @ Base ./show.jl:572
+  │││││││││││││ runtime dispatch detected: Base.modulesof!(s::Set{Module}, %1::Any)::Set{Module}
+  ││││││││││││└────────────────────
+  ││││││││││┌ show_typealias(io::IOBuffer, x::Type) @ Base ./show.jl:796
+  │││││││││││┌ show_typealias(io::IOBuffer, name::GlobalRef, x::Type, env::Core.SimpleVector, wheres::Vector{TypeVar}) @ Base ./show.jl:743
+  ││││││││││││┌ show_typeparams(io::IOContext{IOBuffer}, env::Core.SimpleVector, orig::Core.SimpleVector, wheres::Vector{TypeVar}) @ Base ./show.jl:707
+  │││││││││││││┌ show(io::IOContext{IOBuffer}, tv::TypeVar) @ Base ./show.jl:2737
+  ││││││││││││││┌ (::Base.var&quot;#show_bound#566&quot;)(io::IOContext{IOBuffer}, b::Any) @ Base ./show.jl:2729
+  │││││││││││││││ runtime dispatch detected: show(io::IOContext{IOBuffer}, b::Any)::Any
+  ││││││││││││││└────────────────────
+  ││││││││││││┌ show_typeparams(io::IOContext{IOBuffer}, env::Core.SimpleVector, orig::Core.SimpleVector, wheres::Vector{TypeVar}) @ Base ./show.jl:702
+  │││││││││││││ runtime dispatch detected: show(io::IOContext{IOBuffer}, %243::Any)::Any
+  ││││││││││││└────────────────────
+  ││││││││││││┌ show_typeparams(io::IOContext{IOBuffer}, env::Core.SimpleVector, orig::Core.SimpleVector, wheres::Vector{TypeVar}) @ Base ./show.jl:705
+  │││││││││││││ runtime dispatch detected: show(io::IOContext{IOBuffer}, %294::Any)::Any
+  ││││││││││││└────────────────────
+  ││││││││││││┌ show_typeparams(io::IOContext{IOBuffer}, env::Core.SimpleVector, orig::Core.SimpleVector, wheres::Vector{TypeVar}) @ Base ./show.jl:710
+  │││││││││││││ runtime dispatch detected: show(io::IOContext{IOBuffer}, %192::Any)::Any
+  ││││││││││││└────────────────────
+  │││││││││┌ _show_type(io::IOBuffer, x::Type) @ Base ./show.jl:961
+  ││││││││││┌ show_datatype(io::IOBuffer, x::DataType) @ Base ./show.jl:1077
+  │││││││││││┌ show_datatype(io::IOBuffer, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1080
+  ││││││││││││┌ maybe_kws_nt(x::DataType) @ Base ./show.jl:1068
+  │││││││││││││ runtime dispatch detected: eltype(%79::DataType)::Any
+  ││││││││││││└────────────────────
+  │││││││││││┌ show_datatype(io::IOBuffer, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1130
+  ││││││││││││┌ show_typeparams(io::IOBuffer, env::Core.SimpleVector, orig::Core.SimpleVector, wheres::Vector{TypeVar}) @ Base ./show.jl:707
+  │││││││││││││┌ show(io::IOBuffer, tv::TypeVar) @ Base ./show.jl:2737
+  ││││││││││││││┌ (::Base.var&quot;#show_bound#566&quot;)(io::IOBuffer, b::Any) @ Base ./show.jl:2729
+  │││││││││││││││ runtime dispatch detected: show(io::IOBuffer, b::Any)::Any
+  ││││││││││││││└────────────────────
+  ││││││││││││┌ show_typeparams(io::IOBuffer, env::Core.SimpleVector, orig::Core.SimpleVector, wheres::Vector{TypeVar}) @ Base ./show.jl:702
+  │││││││││││││ runtime dispatch detected: show(io::IOBuffer, %241::Any)::Any
+  ││││││││││││└────────────────────
+  ││││││││││││┌ show_typeparams(io::IOBuffer, env::Core.SimpleVector, orig::Core.SimpleVector, wheres::Vector{TypeVar}) @ Base ./show.jl:705
+  │││││││││││││ runtime dispatch detected: show(io::IOBuffer, %291::Any)::Any
+  ││││││││││││└────────────────────
+  ││││││││││││┌ show_typeparams(io::IOBuffer, env::Core.SimpleVector, orig::Core.SimpleVector, wheres::Vector{TypeVar}) @ Base ./show.jl:710
+  │││││││││││││ runtime dispatch detected: show(io::IOBuffer, %191::Any)::Any
+  ││││││││││││└────────────────────
+  │││││││││││┌ show_datatype(io::IOBuffer, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1096
+  ││││││││││││ runtime dispatch detected: show(io::IOBuffer, %94::Any)::Any
+  │││││││││││└────────────────────
+  │││││││││││┌ show_datatype(io::IOBuffer, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1102
+  ││││││││││││ runtime dispatch detected: show(io::IOBuffer, %141::Any)::Any
+  │││││││││││└────────────────────
+  │││││││││││┌ show_datatype(io::IOBuffer, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1106
+  ││││││││││││ runtime dispatch detected: show(io::IOBuffer, %162::Any)::Any
+  │││││││││││└────────────────────
+  │││││││││││┌ show_datatype(io::IOBuffer, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1116
+  ││││││││││││ runtime dispatch detected: Base.show_at_namedtuple(io::IOBuffer, %219::Tuple, %220::DataType)::Any
+  │││││││││││└────────────────────
+  │││││││││┌ _show_type(io::IOBuffer, x::Type) @ Base ./show.jl:964
+  ││││││││││┌ show_unionaliases(io::IOBuffer, x::Union) @ Base ./show.jl:884
+  │││││││││││┌ make_typealiases(x::Union) @ Base ./show.jl:805
+  ││││││││││││┌ modulesof!(s::Set{Module}, x::Union) @ Base ./show.jl:578
+  │││││││││││││ runtime dispatch detected: Base.modulesof!(s::Set{Module}, %3::Any)::Any
+  ││││││││││││└────────────────────
+  ││││││││││││┌ modulesof!(s::Set{Module}, x::Union) @ Base ./show.jl:579
+  │││││││││││││ runtime dispatch detected: Base.modulesof!(s::Set{Module}, %17::Any)::Any
+  ││││││││││││└────────────────────
+  ││││││││││┌ show_unionaliases(io::IOBuffer, x::Union) @ Base ./show.jl:897
+  │││││││││││ runtime dispatch detected: show(io::IOBuffer, %50::Any)::Any
+  ││││││││││└────────────────────
+  ││││││││││┌ show_unionaliases(io::IOBuffer, x::Union) @ Base ./show.jl:903
+  │││││││││││ runtime dispatch detected: Base.show_typealias(io::IOBuffer, %133::Any, x::Union, %131::Core.SimpleVector, %132::Vector{TypeVar})::Any
+  ││││││││││└────────────────────
+  ││││││││││┌ show_unionaliases(io::IOBuffer, x::Union) @ Base ./show.jl:911
+  │││││││││││ runtime dispatch detected: Base.show_typealias(io::IOBuffer, %179::Any, x::Union, %177::Core.SimpleVector, %178::Vector{TypeVar})::Any
+  ││││││││││└────────────────────
+  │││││││││┌ _show_type(io::IOBuffer, x::Type) @ Base ./show.jl:968
+  ││││││││││┌ show_delim_array(io::IOBuffer, itr::Vector{Any}, op::Char, delim::Char, cl::Char, delim_one::Bool) @ Base ./show.jl:1335
+  │││││││││││┌ show_delim_array(io::IOBuffer, itr::Vector{Any}, op::Char, delim::Char, cl::Char, delim_one::Bool, i1::Int64, l::Int64) @ Base ./show.jl:1346
+  ││││││││││││ runtime dispatch detected: show(%4::IOContext{IOBuffer}, %41::Any)::Any
+  │││││││││││└────────────────────
+  │││││││││┌ _show_type(io::IOBuffer, x::Type) @ Base ./show.jl:995
+  ││││││││││┌ show_datatype(io::IOContext{IOBuffer}, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1129
+  │││││││││││┌ show_type_name(io::IOContext{IOBuffer}, tn::Core.TypeName) @ Base ./show.jl:1042
+  ││││││││││││ runtime dispatch detected: Base.isvisible(%32::Symbol, %89::Module, %83::Any)::Bool
+  │││││││││││└────────────────────
+  ││││││││││┌ show_datatype(io::IOContext{IOBuffer}, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1096
+  │││││││││││ runtime dispatch detected: show(io::IOContext{IOBuffer}, %94::Any)::Any
+  ││││││││││└────────────────────
+  ││││││││││┌ show_datatype(io::IOContext{IOBuffer}, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1102
+  │││││││││││ runtime dispatch detected: show(io::IOContext{IOBuffer}, %144::Any)::Any
+  ││││││││││└────────────────────
+  ││││││││││┌ show_datatype(io::IOContext{IOBuffer}, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1106
+  │││││││││││ runtime dispatch detected: show(io::IOContext{IOBuffer}, %166::Any)::Any
+  ││││││││││└────────────────────
+  ││││││││││┌ show_datatype(io::IOContext{IOBuffer}, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1116
+  │││││││││││ runtime dispatch detected: Base.show_at_namedtuple(io::IOContext{IOBuffer}, %225::Tuple, %226::DataType)::Any
+  ││││││││││└────────────────────
+  ││││││││││┌ show_datatype(io::IOContext{IOBuffer}, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1124
+  │││││││││││ runtime dispatch detected: Base.show_at_namedtuple(io::IOContext{IOBuffer}, %268::Tuple, %273::DataType)::Any
+  ││││││││││└────────────────────
+  │││││││││┌ _show_type(io::IOBuffer, x::Type) @ Base ./show.jl:997
+  ││││││││││ runtime dispatch detected: show(%74::IOContext{IOBuffer}, %75::Any)::Any
+  │││││││││└────────────────────
+  ││││││││┌ show(io::IOBuffer, x::Type) @ Base ./show.jl:953
+  │││││││││ runtime dispatch detected: Base._show_type(io::IOBuffer, x::Type)::Nothing
+  ││││││││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Vector{Float64}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:165
+  ││││ captured variable `args` detected
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Vector{Float64}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:165
+  ││││ runtime dispatch detected: Enzyme.map(Core.Typeof, args::Tuple{EnzymeCore.Duplicated{Vector{Float64}}})::Any
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Vector{Float64}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:167
+  ││││ runtime dispatch detected: (%9::Any Enzyme.:(==) 0)::Any
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Vector{Float64}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:173
+  ││││ runtime dispatch detected: Enzyme.map(#44, args::Tuple{EnzymeCore.Duplicated{Vector{Float64}}})::Any
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Vector{Float64}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:174
+  ││││ runtime dispatch detected: codegen_world_age(::typeof(Main.f), %19::Type)::Any
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Vector{Float64}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:177
+  ││││ runtime dispatch detected: return_type(f, %19::Type)::Type
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Vector{Float64}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:270
+  ││││ runtime dispatch detected: thunk(%40::Val, ::EnzymeCore.Const{typeof(Main.f)}, ::EnzymeCore.Active, %5::Type, [quote]::Val{Enzyme.API.DEM_ReverseModeCombined}, %42::Val, [quote]::Val{(false, false)}, [quote]::Val{false}, [quote]::Val{false}, ::EnzymeCore.FFIABI)::Any
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Vector{Float64}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:273
+  ││││ runtime dispatch detected: Enzyme.Compiler.default_adjoint(%21::Type)::AbstractFloat
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Vector{Float64}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:184
+  ││││ runtime dispatch detected: thunk(%58::Val, ::EnzymeCore.Const{typeof(Main.f)}, %59::Type{EnzymeCore.Duplicated{T}} where T, %5::Type, [quote]::Val{Enzyme.API.DEM_ReverseModeGradient}, %61::Val, [quote]::Val{(false, false)}, [quote]::Val{false}, [quote]::Val{true}, ::EnzymeCore.FFIABI)::Any
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Vector{Float64}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:184
+  ││││ runtime dispatch detected: Base.indexed_iterate(%62::Any, 1)::Any
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Vector{Float64}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:184
+  ││││ runtime dispatch detected: Base.indexed_iterate(%62::Any, 2, %65::Any)::Any
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Vector{Float64}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:186
+  ││││ runtime dispatch detected: (%71::Any)[1]::Any
+  │││└────────────────────
+  
+Type stability: JET-test failed at /home/runner/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterfaceTest/src/tests/type_stability.jl:174
+  Expression: #= /home/runner/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterfaceTest/src/tests/type_stability.jl:174 =# JET.@test_opt value_and_gradient!(f, grad_in, ba, x, extras)
+  ═════ 50 possible errors found ═════
+  ┌ value_and_gradient!(f::typeof(Main.f), grad::Matrix{Float32}, backend::AutoEnzyme{EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}}, x::Matrix{Float32}, ::DifferentiationInterface.NoGradientExtras) @ DifferentiationInterfaceEnzymeExt /home/runner/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterface/ext/DifferentiationInterfaceEnzymeExt/reverse_onearg.jl:85
+  │┌ value_and_pullback!(f::typeof(Main.f), dx::Matrix{Float32}, ::AutoEnzyme{EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}}, x::Matrix{Float32}, dy::Float32, ::DifferentiationInterface.NoPullbackExtras) @ DifferentiationInterfaceEnzymeExt /home/runner/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterface/ext/DifferentiationInterfaceEnzymeExt/reverse_onearg.jl:44
+  ││┌ autodiff(mode::EnzymeCore.ReverseMode{true, EnzymeCore.FFIABI, false}, f::typeof(Main.f), ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Matrix{Float32}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:287
+  │││┌ autodiff(::EnzymeCore.ReverseMode{true, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Matrix{Float32}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:166
+  ││││┌ same_or_one(args::Vararg{Any}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:97
+  │││││ runtime dispatch detected: (%1::Any Enzyme.:(==) -1)::Any
+  ││││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{true, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Matrix{Float32}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:273
+  ││││┌ default_adjoint(::Type{T}) where T&lt;:AbstractFloat @ Enzyme.Compiler /home/runner/.julia/packages/Enzyme/MIIMf/src/compiler.jl:5257
+  │││││ runtime dispatch detected: Enzyme.Compiler.one(%1::Type{T} where T&lt;:AbstractFloat)::AbstractFloat
+  ││││└────────────────────
+  ││││┌ default_adjoint(::Type) @ Enzyme.Compiler /home/runner/.julia/packages/Enzyme/MIIMf/src/compiler.jl:5256
+  │││││┌ string(::String, ::Type, ::String) @ Base ./strings/io.jl:189
+  ││││││┌ print_to_string(::String, ::Type, ::String) @ Base ./strings/io.jl:148
+  │││││││┌ print(io::IOBuffer, x::Type) @ Base ./strings/io.jl:35
+  ││││││││┌ show(io::IOBuffer, x::Type) @ Base ./show.jl:953
+  │││││││││┌ _show_type(io::IOBuffer, x::Type) @ Base ./show.jl:956
+  ││││││││││┌ show_type_name(io::IOBuffer, tn::Core.TypeName) @ Base ./show.jl:1043
+  │││││││││││┌ show(io::IOBuffer, m::Module) @ Base ./show.jl:1237
+  ││││││││││││┌ is_root_module(m::Module) @ Base ./lock.jl:269
+  │││││││││││││┌ sprint(f::typeof(show), args::String; context::Any, sizehint::Integer) @ Base ./strings/io.jl:108
+  ││││││││││││││┌ kwcall(::NamedTuple{(:sizehint,), &lt;:Tuple{Integer}}, ::Type{IOBuffer}) @ Base ./iobuffer.jl:106
+  │││││││││││││││┌ pairs(nt::NamedTuple) @ Base.Iterators ./iterators.jl:279
+  ││││││││││││││││┌ (Base.Pairs{Symbol})(data::NamedTuple, itr::Tuple{Vararg{Symbol}}) @ Base ./essentials.jl:343
+  │││││││││││││││││┌ eltype(::Type{A} where A&lt;:NamedTuple) @ Base ./namedtuple.jl:237
+  ││││││││││││││││││┌ nteltype(::Type{NamedTuple{names, T}} where names) where T&lt;:Tuple @ Base ./namedtuple.jl:239
+  │││││││││││││││││││┌ eltype(t::Type{&lt;:Tuple{Vararg{E}}}) where E @ Base ./tuple.jl:208
+  ││││││││││││││││││││┌ _compute_eltype(t::Type{&lt;:Tuple{Vararg{E}}} where E) @ Base ./tuple.jl:231
+  │││││││││││││││││││││┌ afoldl(op::Base.var&quot;#54#55&quot;, a::Any, bs::Vararg{Any}) @ Base ./operators.jl:544
+  ││││││││││││││││││││││┌ (::Base.var&quot;#54#55&quot;)(a::Any, b::Any) @ Base ./tuple.jl:235
+  │││││││││││││││││││││││┌ promote_typejoin(a::Any, b::Any) @ Base ./promotion.jl:172
+  ││││││││││││││││││││││││┌ typejoin(a::Any, b::Any) @ Base ./promotion.jl:127
+  │││││││││││││││││││││││││ runtime dispatch detected: Base.UnionAll(%403::Any, %405::Any)::Any
+  ││││││││││││││││││││││││└────────────────────
+  │││││││││││││││││││││┌ afoldl(op::Base.var&quot;#54#55&quot;, a::Any, bs::Vararg{Any}) @ Base ./operators.jl:545
+  ││││││││││││││││││││││┌ (::Base.var&quot;#54#55&quot;)(a::Type, b::Any) @ Base ./tuple.jl:235
+  │││││││││││││││││││││││┌ promote_typejoin(a::Type, b::Any) @ Base ./promotion.jl:172
+  ││││││││││││││││││││││││┌ typejoin(a::Type, b::Any) @ Base ./promotion.jl:127
+  │││││││││││││││││││││││││ runtime dispatch detected: Base.UnionAll(%398::Any, %400::Any)::Any
+  ││││││││││││││││││││││││└────────────────────
+  │││││││││┌ _show_type(io::IOBuffer, x::Type) @ Base ./show.jl:958
+  ││││││││││┌ show_typealias(io::IOBuffer, x::Type) @ Base ./show.jl:793
+  │││││││││││┌ make_typealias(x::Type) @ Base ./show.jl:603
+  ││││││││││││┌ modulesof!(s::Set{Module}, x::Type) @ Base ./show.jl:578
+  │││││││││││││ runtime dispatch detected: Base.modulesof!(s::Set{Module}, %20::Any)::Any
+  ││││││││││││└────────────────────
+  ││││││││││││┌ modulesof!(s::Set{Module}, x::Type) @ Base ./show.jl:579
+  │││││││││││││ runtime dispatch detected: Base.modulesof!(s::Set{Module}, %35::Any)::Any
+  ││││││││││││└────────────────────
+  ││││││││││││┌ modulesof!(s::Set{Module}, x::TypeVar) @ Base ./show.jl:572
+  │││││││││││││ runtime dispatch detected: Base.modulesof!(s::Set{Module}, %1::Any)::Set{Module}
+  ││││││││││││└────────────────────
+  ││││││││││┌ show_typealias(io::IOBuffer, x::Type) @ Base ./show.jl:796
+  │││││││││││┌ show_typealias(io::IOBuffer, name::GlobalRef, x::Type, env::Core.SimpleVector, wheres::Vector{TypeVar}) @ Base ./show.jl:743
+  ││││││││││││┌ show_typeparams(io::IOContext{IOBuffer}, env::Core.SimpleVector, orig::Core.SimpleVector, wheres::Vector{TypeVar}) @ Base ./show.jl:707
+  │││││││││││││┌ show(io::IOContext{IOBuffer}, tv::TypeVar) @ Base ./show.jl:2737
+  ││││││││││││││┌ (::Base.var&quot;#show_bound#566&quot;)(io::IOContext{IOBuffer}, b::Any) @ Base ./show.jl:2729
+  │││││││││││││││ runtime dispatch detected: show(io::IOContext{IOBuffer}, b::Any)::Any
+  ││││││││││││││└────────────────────
+  ││││││││││││┌ show_typeparams(io::IOContext{IOBuffer}, env::Core.SimpleVector, orig::Core.SimpleVector, wheres::Vector{TypeVar}) @ Base ./show.jl:702
+  │││││││││││││ runtime dispatch detected: show(io::IOContext{IOBuffer}, %243::Any)::Any
+  ││││││││││││└────────────────────
+  ││││││││││││┌ show_typeparams(io::IOContext{IOBuffer}, env::Core.SimpleVector, orig::Core.SimpleVector, wheres::Vector{TypeVar}) @ Base ./show.jl:705
+  │││││││││││││ runtime dispatch detected: show(io::IOContext{IOBuffer}, %294::Any)::Any
+  ││││││││││││└────────────────────
+  ││││││││││││┌ show_typeparams(io::IOContext{IOBuffer}, env::Core.SimpleVector, orig::Core.SimpleVector, wheres::Vector{TypeVar}) @ Base ./show.jl:710
+  │││││││││││││ runtime dispatch detected: show(io::IOContext{IOBuffer}, %192::Any)::Any
+  ││││││││││││└────────────────────
+  │││││││││┌ _show_type(io::IOBuffer, x::Type) @ Base ./show.jl:961
+  ││││││││││┌ show_datatype(io::IOBuffer, x::DataType) @ Base ./show.jl:1077
+  │││││││││││┌ show_datatype(io::IOBuffer, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1080
+  ││││││││││││┌ maybe_kws_nt(x::DataType) @ Base ./show.jl:1068
+  │││││││││││││ runtime dispatch detected: eltype(%79::DataType)::Any
+  ││││││││││││└────────────────────
+  │││││││││││┌ show_datatype(io::IOBuffer, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1130
+  ││││││││││││┌ show_typeparams(io::IOBuffer, env::Core.SimpleVector, orig::Core.SimpleVector, wheres::Vector{TypeVar}) @ Base ./show.jl:707
+  │││││││││││││┌ show(io::IOBuffer, tv::TypeVar) @ Base ./show.jl:2737
+  ││││││││││││││┌ (::Base.var&quot;#show_bound#566&quot;)(io::IOBuffer, b::Any) @ Base ./show.jl:2729
+  │││││││││││││││ runtime dispatch detected: show(io::IOBuffer, b::Any)::Any
+  ││││││││││││││└────────────────────
+  ││││││││││││┌ show_typeparams(io::IOBuffer, env::Core.SimpleVector, orig::Core.SimpleVector, wheres::Vector{TypeVar}) @ Base ./show.jl:702
+  │││││││││││││ runtime dispatch detected: show(io::IOBuffer, %241::Any)::Any
+  ││││││││││││└────────────────────
+  ││││││││││││┌ show_typeparams(io::IOBuffer, env::Core.SimpleVector, orig::Core.SimpleVector, wheres::Vector{TypeVar}) @ Base ./show.jl:705
+  │││││││││││││ runtime dispatch detected: show(io::IOBuffer, %291::Any)::Any
+  ││││││││││││└────────────────────
+  ││││││││││││┌ show_typeparams(io::IOBuffer, env::Core.SimpleVector, orig::Core.SimpleVector, wheres::Vector{TypeVar}) @ Base ./show.jl:710
+  │││││││││││││ runtime dispatch detected: show(io::IOBuffer, %191::Any)::Any
+  ││││││││││││└────────────────────
+  │││││││││││┌ show_datatype(io::IOBuffer, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1096
+  ││││││││││││ runtime dispatch detected: show(io::IOBuffer, %94::Any)::Any
+  │││││││││││└────────────────────
+  │││││││││││┌ show_datatype(io::IOBuffer, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1102
+  ││││││││││││ runtime dispatch detected: show(io::IOBuffer, %141::Any)::Any
+  │││││││││││└────────────────────
+  │││││││││││┌ show_datatype(io::IOBuffer, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1106
+  ││││││││││││ runtime dispatch detected: show(io::IOBuffer, %162::Any)::Any
+  │││││││││││└────────────────────
+  │││││││││││┌ show_datatype(io::IOBuffer, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1116
+  ││││││││││││ runtime dispatch detected: Base.show_at_namedtuple(io::IOBuffer, %219::Tuple, %220::DataType)::Any
+  │││││││││││└────────────────────
+  │││││││││┌ _show_type(io::IOBuffer, x::Type) @ Base ./show.jl:964
+  ││││││││││┌ show_unionaliases(io::IOBuffer, x::Union) @ Base ./show.jl:884
+  │││││││││││┌ make_typealiases(x::Union) @ Base ./show.jl:805
+  ││││││││││││┌ modulesof!(s::Set{Module}, x::Union) @ Base ./show.jl:578
+  │││││││││││││ runtime dispatch detected: Base.modulesof!(s::Set{Module}, %3::Any)::Any
+  ││││││││││││└────────────────────
+  ││││││││││││┌ modulesof!(s::Set{Module}, x::Union) @ Base ./show.jl:579
+  │││││││││││││ runtime dispatch detected: Base.modulesof!(s::Set{Module}, %17::Any)::Any
+  ││││││││││││└────────────────────
+  ││││││││││┌ show_unionaliases(io::IOBuffer, x::Union) @ Base ./show.jl:897
+  │││││││││││ runtime dispatch detected: show(io::IOBuffer, %50::Any)::Any
+  ││││││││││└────────────────────
+  ││││││││││┌ show_unionaliases(io::IOBuffer, x::Union) @ Base ./show.jl:903
+  │││││││││││ runtime dispatch detected: Base.show_typealias(io::IOBuffer, %133::Any, x::Union, %131::Core.SimpleVector, %132::Vector{TypeVar})::Any
+  ││││││││││└────────────────────
+  ││││││││││┌ show_unionaliases(io::IOBuffer, x::Union) @ Base ./show.jl:911
+  │││││││││││ runtime dispatch detected: Base.show_typealias(io::IOBuffer, %179::Any, x::Union, %177::Core.SimpleVector, %178::Vector{TypeVar})::Any
+  ││││││││││└────────────────────
+  │││││││││┌ _show_type(io::IOBuffer, x::Type) @ Base ./show.jl:968
+  ││││││││││┌ show_delim_array(io::IOBuffer, itr::Vector{Any}, op::Char, delim::Char, cl::Char, delim_one::Bool) @ Base ./show.jl:1335
+  │││││││││││┌ show_delim_array(io::IOBuffer, itr::Vector{Any}, op::Char, delim::Char, cl::Char, delim_one::Bool, i1::Int64, l::Int64) @ Base ./show.jl:1346
+  ││││││││││││ runtime dispatch detected: show(%4::IOContext{IOBuffer}, %41::Any)::Any
+  │││││││││││└────────────────────
+  │││││││││┌ _show_type(io::IOBuffer, x::Type) @ Base ./show.jl:995
+  ││││││││││┌ show_datatype(io::IOContext{IOBuffer}, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1129
+  │││││││││││┌ show_type_name(io::IOContext{IOBuffer}, tn::Core.TypeName) @ Base ./show.jl:1042
+  ││││││││││││ runtime dispatch detected: Base.isvisible(%32::Symbol, %89::Module, %83::Any)::Bool
+  │││││││││││└────────────────────
+  ││││││││││┌ show_datatype(io::IOContext{IOBuffer}, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1096
+  │││││││││││ runtime dispatch detected: show(io::IOContext{IOBuffer}, %94::Any)::Any
+  ││││││││││└────────────────────
+  ││││││││││┌ show_datatype(io::IOContext{IOBuffer}, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1102
+  │││││││││││ runtime dispatch detected: show(io::IOContext{IOBuffer}, %144::Any)::Any
+  ││││││││││└────────────────────
+  ││││││││││┌ show_datatype(io::IOContext{IOBuffer}, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1106
+  │││││││││││ runtime dispatch detected: show(io::IOContext{IOBuffer}, %166::Any)::Any
+  ││││││││││└────────────────────
+  ││││││││││┌ show_datatype(io::IOContext{IOBuffer}, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1116
+  │││││││││││ runtime dispatch detected: Base.show_at_namedtuple(io::IOContext{IOBuffer}, %225::Tuple, %226::DataType)::Any
+  ││││││││││└────────────────────
+  ││││││││││┌ show_datatype(io::IOContext{IOBuffer}, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1124
+  │││││││││││ runtime dispatch detected: Base.show_at_namedtuple(io::IOContext{IOBuffer}, %268::Tuple, %273::DataType)::Any
+  ││││││││││└────────────────────
+  │││││││││┌ _show_type(io::IOBuffer, x::Type) @ Base ./show.jl:997
+  ││││││││││ runtime dispatch detected: show(%74::IOContext{IOBuffer}, %75::Any)::Any
+  │││││││││└────────────────────
+  ││││││││┌ show(io::IOBuffer, x::Type) @ Base ./show.jl:953
+  │││││││││ runtime dispatch detected: Base._show_type(io::IOBuffer, x::Type)::Nothing
+  ││││││││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{true, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Matrix{Float32}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:165
+  ││││ captured variable `args` detected
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{true, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Matrix{Float32}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:165
+  ││││ runtime dispatch detected: Enzyme.map(Core.Typeof, args::Tuple{EnzymeCore.Duplicated{Matrix{Float32}}})::Any
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{true, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Matrix{Float32}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:167
+  ││││ runtime dispatch detected: (%9::Any Enzyme.:(==) 0)::Any
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{true, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Matrix{Float32}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:173
+  ││││ runtime dispatch detected: Enzyme.map(#44, args::Tuple{EnzymeCore.Duplicated{Matrix{Float32}}})::Any
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{true, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Matrix{Float32}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:174
+  ││││ runtime dispatch detected: codegen_world_age(::typeof(Main.f), %19::Type)::Any
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{true, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Matrix{Float32}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:177
+  ││││ runtime dispatch detected: return_type(f, %19::Type)::Type
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{true, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Matrix{Float32}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:270
+  ││││ runtime dispatch detected: thunk(%40::Val, ::EnzymeCore.Const{typeof(Main.f)}, ::EnzymeCore.Active, %5::Type, [quote]::Val{Enzyme.API.DEM_ReverseModeCombined}, %42::Val, [quote]::Val{(false, false)}, [quote]::Val{true}, [quote]::Val{false}, ::EnzymeCore.FFIABI)::Any
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{true, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Matrix{Float32}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:273
+  ││││ runtime dispatch detected: Enzyme.Compiler.default_adjoint(%21::Type)::AbstractFloat
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{true, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Matrix{Float32}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:184
+  ││││ runtime dispatch detected: thunk(%58::Val, ::EnzymeCore.Const{typeof(Main.f)}, %59::Type{EnzymeCore.Duplicated{T}} where T, %5::Type, [quote]::Val{Enzyme.API.DEM_ReverseModeGradient}, %61::Val, [quote]::Val{(false, false)}, [quote]::Val{true}, [quote]::Val{true}, ::EnzymeCore.FFIABI)::Any
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{true, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Matrix{Float32}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:184
+  ││││ runtime dispatch detected: Base.indexed_iterate(%62::Any, 1)::Any
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{true, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Matrix{Float32}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:184
+  ││││ runtime dispatch detected: Base.indexed_iterate(%62::Any, 2, %65::Any)::Any
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{true, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Matrix{Float32}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:186
+  ││││ runtime dispatch detected: (%71::Any)[1]::Any
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{true, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Matrix{Float32}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:188
+  ││││ runtime dispatch detected: (%77::Any)[1]::Any
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{true, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Matrix{Float32}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:188
+  ││││ runtime dispatch detected: (%71::Any)[2]::Any
+  │││└────────────────────
+  │┌ value_and_pullback!(f::typeof(Main.f), dx::Matrix{Float32}, ::AutoEnzyme{EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}}, x::Matrix{Float32}, dy::Float32, ::DifferentiationInterface.NoPullbackExtras) @ DifferentiationInterfaceEnzymeExt /home/runner/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterface/ext/DifferentiationInterfaceEnzymeExt/reverse_onearg.jl:44
+  ││ runtime dispatch detected: Base.indexed_iterate(%113::Any, 1)::Any
+  │└────────────────────
+  │┌ value_and_pullback!(f::typeof(Main.f), dx::Matrix{Float32}, ::AutoEnzyme{EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}}, x::Matrix{Float32}, dy::Float32, ::DifferentiationInterface.NoPullbackExtras) @ DifferentiationInterfaceEnzymeExt /home/runner/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterface/ext/DifferentiationInterfaceEnzymeExt/reverse_onearg.jl:44
+  ││ runtime dispatch detected: Base.indexed_iterate(%113::Any, 2, %117::Any)::Any
+  │└────────────────────
+  
+Type stability: JET-test failed at /home/runner/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterfaceTest/src/tests/type_stability.jl:175
+  Expression: #= /home/runner/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterfaceTest/src/tests/type_stability.jl:175 =# JET.@test_opt gradient!(f, grad_in, ba, x, extras)
+  ═════ 46 possible errors found ═════
+  ┌ gradient!(f::typeof(Main.f), grad::Matrix{Float32}, ::AutoEnzyme{EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}}, x::Matrix{Float32}, ::DifferentiationInterface.NoGradientExtras) @ DifferentiationInterfaceEnzymeExt /home/runner/work/DifferentiationInterface.jl/DifferentiationInterface.jl/DifferentiationInterface/ext/DifferentiationInterfaceEnzymeExt/reverse_onearg.jl:76
+  │┌ gradient!(::EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}, dx::Matrix{Float32}, f::typeof(Main.f), x::Matrix{Float32}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:968
+  ││┌ autodiff(mode::EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}, f::typeof(Main.f), ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Matrix{Float32}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:287
+  │││┌ autodiff(::EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Matrix{Float32}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:166
+  ││││┌ same_or_one(args::Vararg{Any}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:97
+  │││││ runtime dispatch detected: (%1::Any Enzyme.:(==) -1)::Any
+  ││││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Matrix{Float32}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:273
+  ││││┌ default_adjoint(::Type{T}) where T&lt;:AbstractFloat @ Enzyme.Compiler /home/runner/.julia/packages/Enzyme/MIIMf/src/compiler.jl:5257
+  │││││ runtime dispatch detected: Enzyme.Compiler.one(%1::Type{T} where T&lt;:AbstractFloat)::AbstractFloat
+  ││││└────────────────────
+  ││││┌ default_adjoint(::Type) @ Enzyme.Compiler /home/runner/.julia/packages/Enzyme/MIIMf/src/compiler.jl:5256
+  │││││┌ string(::String, ::Type, ::String) @ Base ./strings/io.jl:189
+  ││││││┌ print_to_string(::String, ::Type, ::String) @ Base ./strings/io.jl:148
+  │││││││┌ print(io::IOBuffer, x::Type) @ Base ./strings/io.jl:35
+  ││││││││┌ show(io::IOBuffer, x::Type) @ Base ./show.jl:953
+  │││││││││┌ _show_type(io::IOBuffer, x::Type) @ Base ./show.jl:956
+  ││││││││││┌ show_type_name(io::IOBuffer, tn::Core.TypeName) @ Base ./show.jl:1043
+  │││││││││││┌ show(io::IOBuffer, m::Module) @ Base ./show.jl:1237
+  ││││││││││││┌ is_root_module(m::Module) @ Base ./lock.jl:269
+  │││││││││││││┌ sprint(f::typeof(show), args::String; context::Any, sizehint::Integer) @ Base ./strings/io.jl:108
+  ││││││││││││││┌ kwcall(::NamedTuple{(:sizehint,), &lt;:Tuple{Integer}}, ::Type{IOBuffer}) @ Base ./iobuffer.jl:106
+  │││││││││││││││┌ pairs(nt::NamedTuple) @ Base.Iterators ./iterators.jl:279
+  ││││││││││││││││┌ (Base.Pairs{Symbol})(data::NamedTuple, itr::Tuple{Vararg{Symbol}}) @ Base ./essentials.jl:343
+  │││││││││││││││││┌ eltype(::Type{A} where A&lt;:NamedTuple) @ Base ./namedtuple.jl:237
+  ││││││││││││││││││┌ nteltype(::Type{NamedTuple{names, T}} where names) where T&lt;:Tuple @ Base ./namedtuple.jl:239
+  │││││││││││││││││││┌ eltype(t::Type{&lt;:Tuple{Vararg{E}}}) where E @ Base ./tuple.jl:208
+  ││││││││││││││││││││┌ _compute_eltype(t::Type{&lt;:Tuple{Vararg{E}}} where E) @ Base ./tuple.jl:231
+  │││││││││││││││││││││┌ afoldl(op::Base.var&quot;#54#55&quot;, a::Any, bs::Vararg{Any}) @ Base ./operators.jl:544
+  ││││││││││││││││││││││┌ (::Base.var&quot;#54#55&quot;)(a::Any, b::Any) @ Base ./tuple.jl:235
+  │││││││││││││││││││││││┌ promote_typejoin(a::Any, b::Any) @ Base ./promotion.jl:172
+  ││││││││││││││││││││││││┌ typejoin(a::Any, b::Any) @ Base ./promotion.jl:127
+  │││││││││││││││││││││││││ runtime dispatch detected: Base.UnionAll(%403::Any, %405::Any)::Any
+  ││││││││││││││││││││││││└────────────────────
+  │││││││││││││││││││││┌ afoldl(op::Base.var&quot;#54#55&quot;, a::Any, bs::Vararg{Any}) @ Base ./operators.jl:545
+  ││││││││││││││││││││││┌ (::Base.var&quot;#54#55&quot;)(a::Type, b::Any) @ Base ./tuple.jl:235
+  │││││││││││││││││││││││┌ promote_typejoin(a::Type, b::Any) @ Base ./promotion.jl:172
+  ││││││││││││││││││││││││┌ typejoin(a::Type, b::Any) @ Base ./promotion.jl:127
+  │││││││││││││││││││││││││ runtime dispatch detected: Base.UnionAll(%398::Any, %400::Any)::Any
+  ││││││││││││││││││││││││└────────────────────
+  │││││││││┌ _show_type(io::IOBuffer, x::Type) @ Base ./show.jl:958
+  ││││││││││┌ show_typealias(io::IOBuffer, x::Type) @ Base ./show.jl:793
+  │││││││││││┌ make_typealias(x::Type) @ Base ./show.jl:603
+  ││││││││││││┌ modulesof!(s::Set{Module}, x::Type) @ Base ./show.jl:578
+  │││││││││││││ runtime dispatch detected: Base.modulesof!(s::Set{Module}, %20::Any)::Any
+  ││││││││││││└────────────────────
+  ││││││││││││┌ modulesof!(s::Set{Module}, x::Type) @ Base ./show.jl:579
+  │││││││││││││ runtime dispatch detected: Base.modulesof!(s::Set{Module}, %35::Any)::Any
+  ││││││││││││└────────────────────
+  ││││││││││││┌ modulesof!(s::Set{Module}, x::TypeVar) @ Base ./show.jl:572
+  │││││││││││││ runtime dispatch detected: Base.modulesof!(s::Set{Module}, %1::Any)::Set{Module}
+  ││││││││││││└────────────────────
+  ││││││││││┌ show_typealias(io::IOBuffer, x::Type) @ Base ./show.jl:796
+  │││││││││││┌ show_typealias(io::IOBuffer, name::GlobalRef, x::Type, env::Core.SimpleVector, wheres::Vector{TypeVar}) @ Base ./show.jl:743
+  ││││││││││││┌ show_typeparams(io::IOContext{IOBuffer}, env::Core.SimpleVector, orig::Core.SimpleVector, wheres::Vector{TypeVar}) @ Base ./show.jl:707
+  │││││││││││││┌ show(io::IOContext{IOBuffer}, tv::TypeVar) @ Base ./show.jl:2737
+  ││││││││││││││┌ (::Base.var&quot;#show_bound#566&quot;)(io::IOContext{IOBuffer}, b::Any) @ Base ./show.jl:2729
+  │││││││││││││││ runtime dispatch detected: show(io::IOContext{IOBuffer}, b::Any)::Any
+  ││││││││││││││└────────────────────
+  ││││││││││││┌ show_typeparams(io::IOContext{IOBuffer}, env::Core.SimpleVector, orig::Core.SimpleVector, wheres::Vector{TypeVar}) @ Base ./show.jl:702
+  │││││││││││││ runtime dispatch detected: show(io::IOContext{IOBuffer}, %243::Any)::Any
+  ││││││││││││└────────────────────
+  ││││││││││││┌ show_typeparams(io::IOContext{IOBuffer}, env::Core.SimpleVector, orig::Core.SimpleVector, wheres::Vector{TypeVar}) @ Base ./show.jl:705
+  │││││││││││││ runtime dispatch detected: show(io::IOContext{IOBuffer}, %294::Any)::Any
+  ││││││││││││└────────────────────
+  ││││││││││││┌ show_typeparams(io::IOContext{IOBuffer}, env::Core.SimpleVector, orig::Core.SimpleVector, wheres::Vector{TypeVar}) @ Base ./show.jl:710
+  │││││││││││││ runtime dispatch detected: show(io::IOContext{IOBuffer}, %192::Any)::Any
+  ││││││││││││└────────────────────
+  │││││││││┌ _show_type(io::IOBuffer, x::Type) @ Base ./show.jl:961
+  ││││││││││┌ show_datatype(io::IOBuffer, x::DataType) @ Base ./show.jl:1077
+  │││││││││││┌ show_datatype(io::IOBuffer, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1080
+  ││││││││││││┌ maybe_kws_nt(x::DataType) @ Base ./show.jl:1068
+  │││││││││││││ runtime dispatch detected: eltype(%79::DataType)::Any
+  ││││││││││││└────────────────────
+  │││││││││││┌ show_datatype(io::IOBuffer, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1130
+  ││││││││││││┌ show_typeparams(io::IOBuffer, env::Core.SimpleVector, orig::Core.SimpleVector, wheres::Vector{TypeVar}) @ Base ./show.jl:707
+  │││││││││││││┌ show(io::IOBuffer, tv::TypeVar) @ Base ./show.jl:2737
+  ││││││││││││││┌ (::Base.var&quot;#show_bound#566&quot;)(io::IOBuffer, b::Any) @ Base ./show.jl:2729
+  │││││││││││││││ runtime dispatch detected: show(io::IOBuffer, b::Any)::Any
+  ││││││││││││││└────────────────────
+  ││││││││││││┌ show_typeparams(io::IOBuffer, env::Core.SimpleVector, orig::Core.SimpleVector, wheres::Vector{TypeVar}) @ Base ./show.jl:702
+  │││││││││││││ runtime dispatch detected: show(io::IOBuffer, %241::Any)::Any
+  ││││││││││││└────────────────────
+  ││││││││││││┌ show_typeparams(io::IOBuffer, env::Core.SimpleVector, orig::Core.SimpleVector, wheres::Vector{TypeVar}) @ Base ./show.jl:705
+  │││││││││││││ runtime dispatch detected: show(io::IOBuffer, %291::Any)::Any
+  ││││││││││││└────────────────────
+  ││││││││││││┌ show_typeparams(io::IOBuffer, env::Core.SimpleVector, orig::Core.SimpleVector, wheres::Vector{TypeVar}) @ Base ./show.jl:710
+  │││││││││││││ runtime dispatch detected: show(io::IOBuffer, %191::Any)::Any
+  ││││││││││││└────────────────────
+  │││││││││││┌ show_datatype(io::IOBuffer, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1096
+  ││││││││││││ runtime dispatch detected: show(io::IOBuffer, %94::Any)::Any
+  │││││││││││└────────────────────
+  │││││││││││┌ show_datatype(io::IOBuffer, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1102
+  ││││││││││││ runtime dispatch detected: show(io::IOBuffer, %141::Any)::Any
+  │││││││││││└────────────────────
+  │││││││││││┌ show_datatype(io::IOBuffer, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1106
+  ││││││││││││ runtime dispatch detected: show(io::IOBuffer, %162::Any)::Any
+  │││││││││││└────────────────────
+  │││││││││││┌ show_datatype(io::IOBuffer, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1116
+  ││││││││││││ runtime dispatch detected: Base.show_at_namedtuple(io::IOBuffer, %219::Tuple, %220::DataType)::Any
+  │││││││││││└────────────────────
+  │││││││││┌ _show_type(io::IOBuffer, x::Type) @ Base ./show.jl:964
+  ││││││││││┌ show_unionaliases(io::IOBuffer, x::Union) @ Base ./show.jl:884
+  │││││││││││┌ make_typealiases(x::Union) @ Base ./show.jl:805
+  ││││││││││││┌ modulesof!(s::Set{Module}, x::Union) @ Base ./show.jl:578
+  │││││││││││││ runtime dispatch detected: Base.modulesof!(s::Set{Module}, %3::Any)::Any
+  ││││││││││││└────────────────────
+  ││││││││││││┌ modulesof!(s::Set{Module}, x::Union) @ Base ./show.jl:579
+  │││││││││││││ runtime dispatch detected: Base.modulesof!(s::Set{Module}, %17::Any)::Any
+  ││││││││││││└────────────────────
+  ││││││││││┌ show_unionaliases(io::IOBuffer, x::Union) @ Base ./show.jl:897
+  │││││││││││ runtime dispatch detected: show(io::IOBuffer, %50::Any)::Any
+  ││││││││││└────────────────────
+  ││││││││││┌ show_unionaliases(io::IOBuffer, x::Union) @ Base ./show.jl:903
+  │││││││││││ runtime dispatch detected: Base.show_typealias(io::IOBuffer, %133::Any, x::Union, %131::Core.SimpleVector, %132::Vector{TypeVar})::Any
+  ││││││││││└────────────────────
+  ││││││││││┌ show_unionaliases(io::IOBuffer, x::Union) @ Base ./show.jl:911
+  │││││││││││ runtime dispatch detected: Base.show_typealias(io::IOBuffer, %179::Any, x::Union, %177::Core.SimpleVector, %178::Vector{TypeVar})::Any
+  ││││││││││└────────────────────
+  │││││││││┌ _show_type(io::IOBuffer, x::Type) @ Base ./show.jl:968
+  ││││││││││┌ show_delim_array(io::IOBuffer, itr::Vector{Any}, op::Char, delim::Char, cl::Char, delim_one::Bool) @ Base ./show.jl:1335
+  │││││││││││┌ show_delim_array(io::IOBuffer, itr::Vector{Any}, op::Char, delim::Char, cl::Char, delim_one::Bool, i1::Int64, l::Int64) @ Base ./show.jl:1346
+  ││││││││││││ runtime dispatch detected: show(%4::IOContext{IOBuffer}, %41::Any)::Any
+  │││││││││││└────────────────────
+  │││││││││┌ _show_type(io::IOBuffer, x::Type) @ Base ./show.jl:995
+  ││││││││││┌ show_datatype(io::IOContext{IOBuffer}, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1129
+  │││││││││││┌ show_type_name(io::IOContext{IOBuffer}, tn::Core.TypeName) @ Base ./show.jl:1042
+  ││││││││││││ runtime dispatch detected: Base.isvisible(%32::Symbol, %89::Module, %83::Any)::Bool
+  │││││││││││└────────────────────
+  ││││││││││┌ show_datatype(io::IOContext{IOBuffer}, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1096
+  │││││││││││ runtime dispatch detected: show(io::IOContext{IOBuffer}, %94::Any)::Any
+  ││││││││││└────────────────────
+  ││││││││││┌ show_datatype(io::IOContext{IOBuffer}, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1102
+  │││││││││││ runtime dispatch detected: show(io::IOContext{IOBuffer}, %144::Any)::Any
+  ││││││││││└────────────────────
+  ││││││││││┌ show_datatype(io::IOContext{IOBuffer}, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1106
+  │││││││││││ runtime dispatch detected: show(io::IOContext{IOBuffer}, %166::Any)::Any
+  ││││││││││└────────────────────
+  ││││││││││┌ show_datatype(io::IOContext{IOBuffer}, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1116
+  │││││││││││ runtime dispatch detected: Base.show_at_namedtuple(io::IOContext{IOBuffer}, %225::Tuple, %226::DataType)::Any
+  ││││││││││└────────────────────
+  ││││││││││┌ show_datatype(io::IOContext{IOBuffer}, x::DataType, wheres::Vector{TypeVar}) @ Base ./show.jl:1124
+  │││││││││││ runtime dispatch detected: Base.show_at_namedtuple(io::IOContext{IOBuffer}, %268::Tuple, %273::DataType)::Any
+  ││││││││││└────────────────────
+  │││││││││┌ _show_type(io::IOBuffer, x::Type) @ Base ./show.jl:997
+  ││││││││││ runtime dispatch detected: show(%74::IOContext{IOBuffer}, %75::Any)::Any
+  │││││││││└────────────────────
+  ││││││││┌ show(io::IOBuffer, x::Type) @ Base ./show.jl:953
+  │││││││││ runtime dispatch detected: Base._show_type(io::IOBuffer, x::Type)::Nothing
+  ││││││││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Matrix{Float32}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:165
+  ││││ captured variable `args` detected
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Matrix{Float32}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:165
+  ││││ runtime dispatch detected: Enzyme.map(Core.Typeof, args::Tuple{EnzymeCore.Duplicated{Matrix{Float32}}})::Any
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Matrix{Float32}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:167
+  ││││ runtime dispatch detected: (%9::Any Enzyme.:(==) 0)::Any
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Matrix{Float32}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:173
+  ││││ runtime dispatch detected: Enzyme.map(#44, args::Tuple{EnzymeCore.Duplicated{Matrix{Float32}}})::Any
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Matrix{Float32}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:174
+  ││││ runtime dispatch detected: codegen_world_age(::typeof(Main.f), %19::Type)::Any
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Matrix{Float32}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:177
+  ││││ runtime dispatch detected: return_type(f, %19::Type)::Type
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Matrix{Float32}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:270
+  ││││ runtime dispatch detected: thunk(%40::Val, ::EnzymeCore.Const{typeof(Main.f)}, ::EnzymeCore.Active, %5::Type, [quote]::Val{Enzyme.API.DEM_ReverseModeCombined}, %42::Val, [quote]::Val{(false, false)}, [quote]::Val{false}, [quote]::Val{false}, ::EnzymeCore.FFIABI)::Any
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Matrix{Float32}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:273
+  ││││ runtime dispatch detected: Enzyme.Compiler.default_adjoint(%21::Type)::AbstractFloat
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Matrix{Float32}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:184
+  ││││ runtime dispatch detected: thunk(%58::Val, ::EnzymeCore.Const{typeof(Main.f)}, %59::Type{EnzymeCore.Duplicated{T}} where T, %5::Type, [quote]::Val{Enzyme.API.DEM_ReverseModeGradient}, %61::Val, [quote]::Val{(false, false)}, [quote]::Val{false}, [quote]::Val{true}, ::EnzymeCore.FFIABI)::Any
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Matrix{Float32}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:184
+  ││││ runtime dispatch detected: Base.indexed_iterate(%62::Any, 1)::Any
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Matrix{Float32}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:184
+  ││││ runtime dispatch detected: Base.indexed_iterate(%62::Any, 2, %65::Any)::Any
+  │││└────────────────────
+  │││┌ autodiff(::EnzymeCore.ReverseMode{false, EnzymeCore.FFIABI, false}, f::EnzymeCore.Const{typeof(Main.f)}, ::Type{EnzymeCore.Active}, args::EnzymeCore.Duplicated{Matrix{Float32}}) @ Enzyme /home/runner/.julia/packages/Enzyme/MIIMf/src/Enzyme.jl:186
+  ││││ runtime dispatch detected: (%71::Any)[1]::Any
+  │││└────────────────────
+  
+Test Summary:                                                  | Pass  Fail  Total   Time
+Testing correctness + types                                    |   32     4     36  40.0s
+  ForwardDiff (forward)                                        |   18           18   4.5s
+    GradientScenario{1,inplace} f : Vector{Float64} -&gt; Float64 |    9            9   2.3s
+    GradientScenario{1,inplace} f : Matrix{Float32} -&gt; Float32 |    9            9   2.2s
+  Enzyme (reverse)                                             |   14     4     18  35.4s
+    GradientScenario{1,inplace} f : Vector{Float64} -&gt; Float64 |    7     2      9  33.5s
+      Correctness                                              |    7            7  30.7s
+      Type stability                                           |          2      2   2.8s
+    GradientScenario{1,inplace} f : Matrix{Float32} -&gt; Float32 |    7     2      9   1.9s
+      Correctness                                              |    7            7   1.7s
+      Type stability                                           |          2      2   0.2s
+ERROR: <span class="sgr91">Some tests did not pass: 32 passed, 4 failed, 0 errored, 0 broken.</span></code></pre><p>If you are too lazy to manually specify the reference, you can also provide an AD backend as the <code>ref_backend</code> keyword argument, which will serve as the ground truth for comparison.</p><h2 id="Benchmarking"><a class="docs-heading-anchor" href="#Benchmarking">Benchmarking</a><a id="Benchmarking-1"></a><a class="docs-heading-anchor-permalink" href="#Benchmarking" title="Permalink"></a></h2><p>Once you are confident that your backends give the correct answers, you probably want to compare their performance. This is made easy by the <a href="../api/#DifferentiationInterfaceTest.benchmark_differentiation"><code>benchmark_differentiation</code></a> function, whose syntax should feel familiar:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; benchmark_result = benchmark_differentiation(backends, scenarios);</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p>The resulting object is a <code>Vector</code> of structs, which can easily be converted into a <code>DataFrame</code> from <a href="https://github.com/JuliaData/DataFrames.jl">DataFrames.jl</a>:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; df = DataFrames.DataFrame(benchmark_result)</code><code class="nohighlight hljs ansi" style="display:block;"><span class="sgr1">12×18 DataFrame
+ Row │ backend                mode                 scenario          operator  ⋯
+     │<span class="sgr90"> String                 DataType             Symbol            Symbol    ⋯
+─────┼──────────────────────────────────────────────────────────────────────────
+   1 │ ForwardDiff (forward)  AbstractForwardMode  GradientScenario  prepare_g ⋯
+   2 │ ForwardDiff (forward)  AbstractForwardMode  GradientScenario  value_and
+   3 │ ForwardDiff (forward)  AbstractForwardMode  GradientScenario  gradient!
+   4 │ ForwardDiff (forward)  AbstractForwardMode  GradientScenario  prepare_g
+   5 │ ForwardDiff (forward)  AbstractForwardMode  GradientScenario  value_and ⋯
+   6 │ ForwardDiff (forward)  AbstractForwardMode  GradientScenario  gradient!
+   7 │ Enzyme (reverse)       AbstractReverseMode  GradientScenario  prepare_g
+   8 │ Enzyme (reverse)       AbstractReverseMode  GradientScenario  value_and
+   9 │ Enzyme (reverse)       AbstractReverseMode  GradientScenario  gradient! ⋯
+  10 │ Enzyme (reverse)       AbstractReverseMode  GradientScenario  prepare_g
+  11 │ Enzyme (reverse)       AbstractReverseMode  GradientScenario  value_and
+  12 │ Enzyme (reverse)       AbstractReverseMode  GradientScenario  gradient!
+</span><span class="sgr36">                                                              15 columns omitted</span></span></code></pre><p>Here&#39;s what the resulting <code>DataFrame</code> looks like with all its columns. Note that we only compare (possibly) in-place operators, because they are always more efficient.</p><pre><code class="language-julia hljs">function formatter(v, i, j)
+    if j in (14, 15)  # time, bytes
+        return Printf.@sprintf(&quot;%.1e&quot;, v)
+    elseif j == 16  # allocs
+        return Printf.@sprintf(&quot;%.1f&quot;, v)
+    else
+        return v
+    end
+end
+
+table = PrettyTables.pretty_table(
+    String,
+    df;
+    backend=Val(:markdown),
+    header=names(df),
+    formatters=formatter
+)
+
+Markdown.parse(table)</code></pre><div class="markdown"><table><tr><th align="right"><strong>backend</strong></th><th align="right"><strong>mode</strong></th><th align="right"><strong>scenario</strong></th><th align="right"><strong>operator</strong></th><th align="right"><strong>func</strong></th><th align="right"><strong>arguments</strong></th><th align="right"><strong>input_type</strong></th><th align="right"><strong>output_type</strong></th><th align="right"><strong>input_size</strong></th><th align="right"><strong>output_size</strong></th><th align="right"><strong>calls</strong></th><th align="right"><strong>samples</strong></th><th align="right"><strong>evals</strong></th><th align="right"><strong>time</strong></th><th align="right"><strong>bytes</strong></th><th align="right"><strong>allocs</strong></th><th align="right"><strong>compile_fraction</strong></th><th align="right"><strong>gc_fraction</strong></th></tr><tr><td align="right">ForwardDiff &#40;forward&#41;</td><td align="right">AbstractForwardMode</td><td align="right">GradientScenario</td><td align="right">prepare_gradient</td><td align="right">f</td><td align="right">1</td><td align="right">Vector&#123;Float64&#125;</td><td align="right">Float64</td><td align="right">&#40;3,&#41;</td><td align="right">&#40;&#41;</td><td align="right">0</td><td align="right">1</td><td align="right">1</td><td align="right">4.3e-06</td><td align="right">7.0e&#43;02</td><td align="right">11.0</td><td align="right">0.0</td><td align="right">0.0</td></tr><tr><td align="right">ForwardDiff &#40;forward&#41;</td><td align="right">AbstractForwardMode</td><td align="right">GradientScenario</td><td align="right">value_and_gradient&#33;</td><td align="right">f</td><td align="right">1</td><td align="right">Vector&#123;Float64&#125;</td><td align="right">Float64</td><td align="right">&#40;3,&#41;</td><td align="right">&#40;&#41;</td><td align="right">1</td><td align="right">2208</td><td align="right">155</td><td align="right">1.5e-07</td><td align="right">1.6e&#43;02</td><td align="right">3.1</td><td align="right">0.0</td><td align="right">0.0</td></tr><tr><td align="right">ForwardDiff &#40;forward&#41;</td><td align="right">AbstractForwardMode</td><td align="right">GradientScenario</td><td align="right">gradient&#33;</td><td align="right">f</td><td align="right">1</td><td align="right">Vector&#123;Float64&#125;</td><td align="right">Float64</td><td align="right">&#40;3,&#41;</td><td align="right">&#40;&#41;</td><td align="right">1</td><td align="right">2720</td><td align="right">201</td><td align="right">1.4e-07</td><td align="right">9.7e&#43;01</td><td align="right">1.0</td><td align="right">0.0</td><td align="right">0.0</td></tr><tr><td align="right">ForwardDiff &#40;forward&#41;</td><td align="right">AbstractForwardMode</td><td align="right">GradientScenario</td><td align="right">prepare_gradient</td><td align="right">f</td><td align="right">1</td><td align="right">Matrix&#123;Float32&#125;</td><td align="right">Float32</td><td align="right">&#40;3, 4&#41;</td><td align="right">&#40;&#41;</td><td align="right">0</td><td align="right">1</td><td align="right">1</td><td align="right">5.3e-06</td><td align="right">3.4e&#43;03</td><td align="right">11.0</td><td align="right">0.0</td><td align="right">0.0</td></tr><tr><td align="right">ForwardDiff &#40;forward&#41;</td><td align="right">AbstractForwardMode</td><td align="right">GradientScenario</td><td align="right">value_and_gradient&#33;</td><td align="right">f</td><td align="right">1</td><td align="right">Matrix&#123;Float32&#125;</td><td align="right">Float32</td><td align="right">&#40;3, 4&#41;</td><td align="right">&#40;&#41;</td><td align="right">1</td><td align="right">1840</td><td align="right">76</td><td align="right">3.8e-07</td><td align="right">8.5e&#43;02</td><td align="right">7.1</td><td align="right">0.0</td><td align="right">0.0</td></tr><tr><td align="right">ForwardDiff &#40;forward&#41;</td><td align="right">AbstractForwardMode</td><td align="right">GradientScenario</td><td align="right">gradient&#33;</td><td align="right">f</td><td align="right">1</td><td align="right">Matrix&#123;Float32&#125;</td><td align="right">Float32</td><td align="right">&#40;3, 4&#41;</td><td align="right">&#40;&#41;</td><td align="right">1</td><td align="right">1935</td><td align="right">83</td><td align="right">3.4e-07</td><td align="right">7.9e&#43;02</td><td align="right">5.1</td><td align="right">0.0</td><td align="right">0.0</td></tr><tr><td align="right">Enzyme &#40;reverse&#41;</td><td align="right">AbstractReverseMode</td><td align="right">GradientScenario</td><td align="right">prepare_gradient</td><td align="right">f</td><td align="right">1</td><td align="right">Vector&#123;Float64&#125;</td><td align="right">Float64</td><td align="right">&#40;3,&#41;</td><td align="right">&#40;&#41;</td><td align="right">0</td><td align="right">1</td><td align="right">1</td><td align="right">1.4e-07</td><td align="right">0.0e&#43;00</td><td align="right">0.0</td><td align="right">0.0</td><td align="right">0.0</td></tr><tr><td align="right">Enzyme &#40;reverse&#41;</td><td align="right">AbstractReverseMode</td><td align="right">GradientScenario</td><td align="right">value_and_gradient&#33;</td><td align="right">f</td><td align="right">1</td><td align="right">Vector&#123;Float64&#125;</td><td align="right">Float64</td><td align="right">&#40;3,&#41;</td><td align="right">&#40;&#41;</td><td align="right">1</td><td align="right">2850</td><td align="right">6</td><td align="right">4.1e-06</td><td align="right">1.8e&#43;03</td><td align="right">38.3</td><td align="right">0.00136859</td><td align="right">0.0</td></tr><tr><td align="right">Enzyme &#40;reverse&#41;</td><td align="right">AbstractReverseMode</td><td align="right">GradientScenario</td><td align="right">gradient&#33;</td><td align="right">f</td><td align="right">1</td><td align="right">Vector&#123;Float64&#125;</td><td align="right">Float64</td><td align="right">&#40;3,&#41;</td><td align="right">&#40;&#41;</td><td align="right">1</td><td align="right">3269</td><td align="right">8</td><td align="right">3.4e-06</td><td align="right">1.6e&#43;03</td><td align="right">28.9</td><td align="right">0.00549618</td><td align="right">0.0</td></tr><tr><td align="right">Enzyme &#40;reverse&#41;</td><td align="right">AbstractReverseMode</td><td align="right">GradientScenario</td><td align="right">prepare_gradient</td><td align="right">f</td><td align="right">1</td><td align="right">Matrix&#123;Float32&#125;</td><td align="right">Float32</td><td align="right">&#40;3, 4&#41;</td><td align="right">&#40;&#41;</td><td align="right">0</td><td align="right">1</td><td align="right">1</td><td align="right">2.3e-07</td><td align="right">0.0e&#43;00</td><td align="right">0.0</td><td align="right">0.0</td><td align="right">0.0</td></tr><tr><td align="right">Enzyme &#40;reverse&#41;</td><td align="right">AbstractReverseMode</td><td align="right">GradientScenario</td><td align="right">value_and_gradient&#33;</td><td align="right">f</td><td align="right">1</td><td align="right">Matrix&#123;Float32&#125;</td><td align="right">Float32</td><td align="right">&#40;3, 4&#41;</td><td align="right">&#40;&#41;</td><td align="right">1</td><td align="right">2669</td><td align="right">6</td><td align="right">4.3e-06</td><td align="right">1.8e&#43;03</td><td align="right">38.3</td><td align="right">3.21245e-5</td><td align="right">0.0</td></tr><tr><td align="right">Enzyme &#40;reverse&#41;</td><td align="right">AbstractReverseMode</td><td align="right">GradientScenario</td><td align="right">gradient&#33;</td><td align="right">f</td><td align="right">1</td><td align="right">Matrix&#123;Float32&#125;</td><td align="right">Float32</td><td align="right">&#40;3, 4&#41;</td><td align="right">&#40;&#41;</td><td align="right">1</td><td align="right">3013</td><td align="right">8</td><td align="right">3.4e-06</td><td align="right">1.6e&#43;03</td><td align="right">28.9</td><td align="right">0.00589051</td><td align="right">0.0</td></tr></table>
+</div></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Home</a><a class="docs-footer-nextpage" href="../api/">API reference »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.0 on <span class="colophon-date" title="Friday 19 April 2024 08:51">Friday 19 April 2024</span>. Using Julia version 1.10.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
