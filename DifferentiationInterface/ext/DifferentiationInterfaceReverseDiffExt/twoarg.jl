@@ -81,9 +81,7 @@ struct ReverseDiffTwoArgJacobianPrep{T} <: JacobianPrep
     tape::T
 end
 
-function DI.prepare_jacobian(
-    f!, y::AbstractArray, ::AutoReverseDiff{Compile}, x::AbstractArray
-) where {Compile}
+function DI.prepare_jacobian(f!, y, ::AutoReverseDiff{Compile}, x) where {Compile}
     tape = JacobianTape(f!, y, x)
     if Compile
         tape = compile(tape)
