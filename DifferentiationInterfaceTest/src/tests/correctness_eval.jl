@@ -56,7 +56,7 @@ for op in [
             @compat (; f, x, y, res1, contexts) = new_scen = deepcopy(scen)
             xrand = myrandom(x)
             rewrap = Rewrap(contexts...)
-            contextsrand = rewrap(map(zero ∘ unwrap, contexts)...)
+            contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
             preptup_cands_val, preptup_cands_noval = map(1:2) do _
                 [(), ($prep_op(f, ba, xrand, contextsrand...),)]
             end
@@ -94,7 +94,7 @@ for op in [
             @compat (; f, x, y, res1, contexts) = new_scen = deepcopy(scen)
             xrand = myrandom(x)
             rewrap = Rewrap(contexts...)
-            contextsrand = rewrap(map(zero ∘ unwrap, contexts)...)
+            contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
             preptup_cands_val, preptup_cands_noval = map(1:2) do _
                 [(), ($prep_op(f, ba, xrand, contextsrand...),)]
             end
@@ -146,7 +146,7 @@ for op in [
             @compat (; f, x, y, res1, contexts) = new_scen = deepcopy(scen)
             xrand, yrand = myrandom(x), myrandom(y)
             rewrap = Rewrap(contexts...)
-            contextsrand = rewrap(map(zero ∘ unwrap, contexts)...)
+            contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
             preptup_cands_val, preptup_cands_noval = map(1:2) do _
                 [(), ($prep_op(f, yrand, ba, xrand, contextsrand...),)]
             end
@@ -190,7 +190,7 @@ for op in [
             @compat (; f, x, y, res1, contexts) = new_scen = deepcopy(scen)
             xrand, yrand = myrandom(x), myrandom(y)
             rewrap = Rewrap(contexts...)
-            contextsrand = rewrap(map(zero ∘ unwrap, contexts)...)
+            contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
             preptup_cands_val, preptup_cands_noval = map(1:2) do _
                 [(), ($prep_op(f, yrand, ba, xrand, contextsrand...),)]
             end
@@ -243,7 +243,7 @@ for op in [
             @compat (; f, x, y, res1, res2, contexts) = new_scen = deepcopy(scen)
             xrand = myrandom(x)
             rewrap = Rewrap(contexts...)
-            contextsrand = rewrap(map(zero ∘ unwrap, contexts)...)
+            contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
             preptup_cands_val, preptup_cands_noval = map(1:2) do _
                 [(), ($prep_op(f, ba, xrand, contextsrand...),)]
             end
@@ -283,7 +283,7 @@ for op in [
             @compat (; f, x, y, res1, res2, contexts) = new_scen = deepcopy(scen)
             xrand = myrandom(x)
             rewrap = Rewrap(contexts...)
-            contextsrand = rewrap(map(zero ∘ unwrap, contexts)...)
+            contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
             preptup_cands_val, preptup_cands_noval = map(1:2) do _
                 [(), ($prep_op(f, ba, xrand, contextsrand...),)]
             end
@@ -338,7 +338,7 @@ for op in [
             @compat (; f, x, y, tang, res1, contexts) = new_scen = deepcopy(scen)
             xrand, tangrand = myrandom(x), myrandom(tang)
             rewrap = Rewrap(contexts...)
-            contextsrand = rewrap(map(zero ∘ unwrap, contexts)...)
+            contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
             preptup_cands_val, preptup_cands_noval = map(1:2) do _
                 [
                     (),
@@ -380,7 +380,7 @@ for op in [
             @compat (; f, x, y, tang, res1, contexts) = new_scen = deepcopy(scen)
             xrand, tangrand = myrandom(x), myrandom(tang)
             rewrap = Rewrap(contexts...)
-            contextsrand = rewrap(map(zero ∘ unwrap, contexts)...)
+            contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
             preptup_cands_val, preptup_cands_noval = map(1:2) do _
                 [
                     (),
@@ -434,7 +434,7 @@ for op in [
             @compat (; f, x, y, tang, res1, contexts) = new_scen = deepcopy(scen)
             xrand, yrand, tangrand = myrandom(x), myrandom(y), myrandom(tang)
             rewrap = Rewrap(contexts...)
-            contextsrand = rewrap(map(zero ∘ unwrap, contexts)...)
+            contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
             preptup_cands_val, preptup_cands_noval = map(1:2) do _
                 [
                     (),
@@ -486,7 +486,7 @@ for op in [
             @compat (; f, x, y, tang, res1, contexts) = new_scen = deepcopy(scen)
             xrand, yrand, tangrand = myrandom(x), myrandom(y), myrandom(tang)
             rewrap = Rewrap(contexts...)
-            contextsrand = rewrap(map(zero ∘ unwrap, contexts)...)
+            contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
             preptup_cands_val, preptup_cands_noval = map(1:2) do _
                 [
                     (),
@@ -557,7 +557,7 @@ for op in [
             @compat (; f, x, y, tang, res2, contexts) = new_scen = deepcopy(scen)
             xrand, tangrand = myrandom(x), myrandom(tang)
             rewrap = Rewrap(contexts...)
-            contextsrand = rewrap(map(zero ∘ unwrap, contexts)...)
+            contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
             preptup_cands_noval = [
                 (),
                 ($prep_op(f, ba, xrand, tangrand, contextsrand...),),
@@ -587,7 +587,7 @@ for op in [
             @compat (; f, x, y, tang, res2, contexts) = new_scen = deepcopy(scen)
             xrand, tangrand = myrandom(x), myrandom(tang)
             rewrap = Rewrap(contexts...)
-            contextsrand = rewrap(map(zero ∘ unwrap, contexts)...)
+            contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
             preptup_cands_noval = [
                 (),
                 ($prep_op(f, ba, xrand, tangrand, contextsrand...),),
