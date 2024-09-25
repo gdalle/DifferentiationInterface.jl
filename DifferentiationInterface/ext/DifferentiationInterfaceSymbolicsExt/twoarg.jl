@@ -5,7 +5,7 @@ struct SymbolicsTwoArgPushforwardPrep{E1,E1!} <: PushforwardPrep
     pushforward_exe!::E1!
 end
 
-function DI.prepare_pushforward(f!, y, ::AutoSymbolics, x, tx::Tangents)
+function DI.prepare_pushforward(f!, y, ::AutoSymbolics, x, tx::NTuple)
     dx = first(tx)
     x_var = if x isa Number
         variable(:x)
@@ -29,7 +29,7 @@ function DI.prepare_pushforward(f!, y, ::AutoSymbolics, x, tx::Tangents)
 end
 
 function DI.pushforward(
-    f!, y, prep::SymbolicsTwoArgPushforwardPrep, ::AutoSymbolics, x, tx::Tangents
+    f!, y, prep::SymbolicsTwoArgPushforwardPrep, ::AutoSymbolics, x, tx::NTuple
 )
     ty = map(tx) do dx
         v_vec = vcat(myvec(x), myvec(dx))
@@ -39,16 +39,10 @@ function DI.pushforward(
 end
 
 function DI.pushforward!(
-    f!,
-    y,
-    ty::Tangents,
-    prep::SymbolicsTwoArgPushforwardPrep,
-    ::AutoSymbolics,
-    x,
-    tx::Tangents,
+    f!, y, ty::NTuple, prep::SymbolicsTwoArgPushforwardPrep, ::AutoSymbolics, x, tx::NTuple
 )
-    for b in eachindex(tx.d, ty.d)
-        dx, dy = tx.d[b], ty.d[b]
+    for b in eachindex(tx, ty)
+        dx, dy = tx[b], ty[b]
         v_vec = vcat(myvec(x), myvec(dx))
         prep.pushforward_exe!(dy, v_vec)
     end
@@ -56,7 +50,7 @@ function DI.pushforward!(
 end
 
 function DI.value_and_pushforward(
-    f!, y, prep::SymbolicsTwoArgPushforwardPrep, backend::AutoSymbolics, x, tx::Tangents
+    f!, y, prep::SymbolicsTwoArgPushforwardPrep, backend::AutoSymbolics, x, tx::NTuple
 )
     ty = DI.pushforward(f!, y, prep, backend, x, tx)
     f!(y, x)
@@ -66,11 +60,11 @@ end
 function DI.value_and_pushforward!(
     f!,
     y,
-    ty::Tangents,
+    ty::NTuple,
     prep::SymbolicsTwoArgPushforwardPrep,
     backend::AutoSymbolics,
     x,
-    tx::Tangents,
+    tx::NTuple,
 )
     DI.pushforward!(f!, y, ty, prep, backend, x, tx)
     f!(y, x)

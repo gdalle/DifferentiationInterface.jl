@@ -1,20 +1,22 @@
 using Pkg
-Pkg.add("FiniteDiff")
+Pkg.add("Mooncake")
 
 using DifferentiationInterface, DifferentiationInterfaceTest
-using FiniteDiff: FiniteDiff
+using Mooncake: Mooncake
 using Test
 
 LOGGING = get(ENV, "CI", "false") == "false"
 
-for backend in [AutoFiniteDiff()]
+backends = [AutoMooncake(; config=nothing), AutoMooncake(; config=Mooncake.Config())]
+
+for backend in backends
     @test check_available(backend)
     @test check_inplace(backend)
 end
 
 test_differentiation(
-    AutoFiniteDiff(),
+    backends,
     default_scenarios(; include_constantified=true);
-    excluded=[:second_derivative, :hvp],
+    second_order=false,
     logging=LOGGING,
 );

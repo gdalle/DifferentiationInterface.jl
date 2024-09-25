@@ -4,7 +4,7 @@ function DI.prepare_pushforward(
     f::F,
     ::AutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     return NoPushforwardPrep()
@@ -15,7 +15,7 @@ function DI.value_and_pushforward(
     ::NoPushforwardPrep,
     backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
-    tx::Tangents{1},
+    tx::NTuple{1},
     contexts::Vararg{Context,C},
 ) where {F,C}
     f_and_df = get_f_and_df(f, backend)
@@ -24,7 +24,7 @@ function DI.value_and_pushforward(
     dy, y = autodiff(
         forward_mode_withprimal(backend), f_and_df, x_and_dx, map(translate, contexts)...
     )
-    return y, Tangents(dy)
+    return y, (dy,)
 end
 
 function DI.value_and_pushforward(
@@ -32,16 +32,16 @@ function DI.value_and_pushforward(
     ::NoPushforwardPrep,
     backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
-    tx::Tangents{B},
+    tx::NTuple{B},
     contexts::Vararg{Context,C},
 ) where {F,B,C}
     f_and_df = get_f_and_df(f, backend, Val(B))
-    dxs_sametype = map(Fix1(convert, typeof(x)), tx.d)
-    x_and_dxs = BatchDuplicated(x, dxs_sametype)
-    dys, y = autodiff(
-        forward_mode_withprimal(backend), f_and_df, x_and_dxs, map(translate, contexts)...
+    tx_sametype = map(Fix1(convert, typeof(x)), tx)
+    x_and_tx = BatchDuplicated(x, tx_sametype)
+    ty, y = autodiff(
+        forward_mode_withprimal(backend), f_and_df, x_and_tx, map(translate, contexts)...
     )
-    return y, Tangents(dys...)
+    return y, values(ty)
 end
 
 function DI.pushforward(
@@ -49,7 +49,7 @@ function DI.pushforward(
     ::NoPushforwardPrep,
     backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
-    tx::Tangents{1},
+    tx::NTuple{1},
     contexts::Vararg{Context,C},
 ) where {F,C}
     f_and_df = get_f_and_df(f, backend)
@@ -60,7 +60,7 @@ function DI.pushforward(
             forward_mode_noprimal(backend), f_and_df, x_and_dx, map(translate, contexts)...
         ),
     )
-    return Tangents(dy)
+    return (dy,)
 end
 
 function DI.pushforward(
@@ -68,45 +68,48 @@ function DI.pushforward(
     ::NoPushforwardPrep,
     backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
-    tx::Tangents{B},
+    tx::NTuple{B},
     contexts::Vararg{Context,C},
 ) where {F,B,C}
     f_and_df = get_f_and_df(f, backend, Val(B))
-    dxs_sametype = map(Fix1(convert, typeof(x)), tx.d)
-    x_and_dxs = BatchDuplicated(x, dxs_sametype)
-    dys = only(
+    tx_sametype = map(Fix1(convert, typeof(x)), tx)
+    x_and_tx = BatchDuplicated(x, tx_sametype)
+    ty = only(
         autodiff(
-            forward_mode_noprimal(backend), f_and_df, x_and_dxs, map(translate, contexts)...
+            forward_mode_noprimal(backend), f_and_df, x_and_tx, map(translate, contexts)...
         ),
     )
-    return Tangents(dys...)
+    return values(ty)
 end
 
 function DI.value_and_pushforward!(
     f::F,
-    ty::Tangents,
+    ty::NTuple,
     prep::NoPushforwardPrep,
     backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     # dy cannot be passed anyway
     y, new_ty = DI.value_and_pushforward(f, prep, backend, x, tx, contexts...)
-    return y, copyto!(ty, new_ty)
+    foreach(copyto!, ty, new_ty)
+    return y, ty
 end
 
 function DI.pushforward!(
     f::F,
-    ty::Tangents,
+    ty::NTuple,
     prep::NoPushforwardPrep,
     backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     # dy cannot be passed anyway
-    return copyto!(ty, DI.pushforward(f, prep, backend, x, tx, contexts...))
+    new_ty = DI.pushforward(f, prep, backend, x, tx, contexts...)
+    foreach(copyto!, ty, new_ty)
+    return ty
 end
 
 ## Gradient

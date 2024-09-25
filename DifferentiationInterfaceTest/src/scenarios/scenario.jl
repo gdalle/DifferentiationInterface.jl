@@ -31,7 +31,7 @@ This generic type should never be used directly: use the specific constructor co
 
 $(TYPEDFIELDS)
 """
-struct Scenario{op,pl_op,pl_fun,F,X,Y,T<:Union{Nothing,Tangents},C<:Tuple,R1,R2}
+struct Scenario{op,pl_op,pl_fun,F,X,Y,T<:Union{Nothing,NTuple},C<:Tuple,R1,R2}
     "function `f` (if `args==1`) or `f!` (if `args==2`) to apply"
     f::F
     "primal input"
@@ -116,6 +116,9 @@ function Base.show(
     print(io, "Scenario{$(repr(op)),$(repr(pl_op))} $(string(scen.f)) : $X -> $Y")
     if op in (:pushforward, :pullback, :hvp)
         print(io, " ($(length(scen.tang)) tangents)")
+    end
+    if length(scen.contexts) > 0
+        print(io, " ($(length(scen.contexts)) contexts)")
     end
     return nothing
 end

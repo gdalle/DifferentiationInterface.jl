@@ -6,7 +6,7 @@ struct FastDifferentiationOneArgPushforwardPrep{Y,E1,E1!} <: PushforwardPrep
     jvp_exe!::E1!
 end
 
-function DI.prepare_pushforward(f, ::AutoFastDifferentiation, x, tx::Tangents)
+function DI.prepare_pushforward(f, ::AutoFastDifferentiation, x, tx::NTuple)
     y_prototype = f(x)
     x_var = if x isa Number
         only(make_variables(:x))
@@ -28,7 +28,7 @@ function DI.pushforward(
     prep::FastDifferentiationOneArgPushforwardPrep,
     ::AutoFastDifferentiation,
     x,
-    tx::Tangents,
+    tx::NTuple,
 )
     ty = map(tx) do dx
         v_vec = vcat(myvec(x), myvec(dx))
@@ -43,14 +43,14 @@ end
 
 function DI.pushforward!(
     f,
-    ty::Tangents,
+    ty::NTuple,
     prep::FastDifferentiationOneArgPushforwardPrep,
     ::AutoFastDifferentiation,
     x,
-    tx::Tangents,
+    tx::NTuple,
 )
-    for b in eachindex(tx.d, ty.d)
-        dx, dy = tx.d[b], ty.d[b]
+    for b in eachindex(tx, ty)
+        dx, dy = tx[b], ty[b]
         v_vec = vcat(myvec(x), myvec(dx))
         prep.jvp_exe!(vec(dy), v_vec)
     end
@@ -62,18 +62,18 @@ function DI.value_and_pushforward(
     prep::FastDifferentiationOneArgPushforwardPrep,
     backend::AutoFastDifferentiation,
     x,
-    tx::Tangents,
+    tx::NTuple,
 )
     return f(x), DI.pushforward(f, prep, backend, x, tx)
 end
 
 function DI.value_and_pushforward!(
     f,
-    ty::Tangents,
+    ty::NTuple,
     prep::FastDifferentiationOneArgPushforwardPrep,
     backend::AutoFastDifferentiation,
     x,
-    tx::Tangents,
+    tx::NTuple,
 )
     return f(x), DI.pushforward!(f, ty, prep, backend, x, tx)
 end
@@ -85,7 +85,7 @@ struct FastDifferentiationOneArgPullbackPrep{E1,E1!} <: PullbackPrep
     vjp_exe!::E1!
 end
 
-function DI.prepare_pullback(f, ::AutoFastDifferentiation, x, ty::Tangents)
+function DI.prepare_pullback(f, ::AutoFastDifferentiation, x, ty::NTuple)
     x_var = if x isa Number
         only(make_variables(:x))
     else
@@ -102,11 +102,7 @@ function DI.prepare_pullback(f, ::AutoFastDifferentiation, x, ty::Tangents)
 end
 
 function DI.pullback(
-    f,
-    prep::FastDifferentiationOneArgPullbackPrep,
-    ::AutoFastDifferentiation,
-    x,
-    ty::Tangents,
+    f, prep::FastDifferentiationOneArgPullbackPrep, ::AutoFastDifferentiation, x, ty::NTuple
 )
     tx = map(ty) do dy
         v_vec = vcat(myvec(x), myvec(dy))
@@ -121,14 +117,14 @@ end
 
 function DI.pullback!(
     f,
-    tx::Tangents,
+    tx::NTuple,
     prep::FastDifferentiationOneArgPullbackPrep,
     ::AutoFastDifferentiation,
     x,
-    ty::Tangents,
+    ty::NTuple,
 )
-    for b in eachindex(tx.d, ty.d)
-        dx, dy = tx.d[b], ty.d[b]
+    for b in eachindex(tx, ty)
+        dx, dy = tx[b], ty[b]
         v_vec = vcat(myvec(x), myvec(dy))
         prep.vjp_exe!(vec(dx), v_vec)
     end
@@ -140,18 +136,18 @@ function DI.value_and_pullback(
     prep::FastDifferentiationOneArgPullbackPrep,
     backend::AutoFastDifferentiation,
     x,
-    ty::Tangents,
+    ty::NTuple,
 )
     return f(x), DI.pullback(f, prep, backend, x, ty)
 end
 
 function DI.value_and_pullback!(
     f,
-    tx::Tangents,
+    tx::NTuple,
     prep::FastDifferentiationOneArgPullbackPrep,
     backend::AutoFastDifferentiation,
     x,
-    ty::Tangents,
+    ty::NTuple,
 )
     return f(x), DI.pullback!(f, tx, prep, backend, x, ty)
 end
@@ -405,7 +401,7 @@ struct FastDifferentiationHVPPrep{E2,E2!} <: HVPPrep
     hvp_exe!::E2!
 end
 
-function DI.prepare_hvp(f, ::AutoFastDifferentiation, x, tx::Tangents)
+function DI.prepare_hvp(f, ::AutoFastDifferentiation, x, tx::NTuple)
     x_var = make_variables(:x, size(x)...)
     y_var = f(x_var)
 
@@ -417,7 +413,7 @@ function DI.prepare_hvp(f, ::AutoFastDifferentiation, x, tx::Tangents)
 end
 
 function DI.hvp(
-    f, prep::FastDifferentiationHVPPrep, ::AutoFastDifferentiation, x, tx::Tangents
+    f, prep::FastDifferentiationHVPPrep, ::AutoFastDifferentiation, x, tx::NTuple
 )
     tg = map(tx) do dx
         v_vec = vcat(vec(x), vec(dx))
@@ -429,14 +425,14 @@ end
 
 function DI.hvp!(
     f,
-    tg::Tangents,
+    tg::NTuple,
     prep::FastDifferentiationHVPPrep,
     ::AutoFastDifferentiation,
     x,
-    tx::Tangents,
+    tx::NTuple,
 )
-    for b in eachindex(tx.d, tg.d)
-        dx, dg = tx.d[b], tg.d[b]
+    for b in eachindex(tx, tg)
+        dx, dg = tx[b], tg[b]
         v_vec = vcat(vec(x), vec(dx))
         prep.hvp_exe!(dg, v_vec)
     end

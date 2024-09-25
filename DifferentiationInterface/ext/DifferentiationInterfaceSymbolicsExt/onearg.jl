@@ -5,7 +5,7 @@ struct SymbolicsOneArgPushforwardPrep{E1,E1!} <: PushforwardPrep
     pf_exe!::E1!
 end
 
-function DI.prepare_pushforward(f, ::AutoSymbolics, x, tx::Tangents)
+function DI.prepare_pushforward(f, ::AutoSymbolics, x, tx::NTuple)
     dx = first(tx)
     x_var = if x isa Number
         variable(:x)
@@ -31,7 +31,7 @@ function DI.prepare_pushforward(f, ::AutoSymbolics, x, tx::Tangents)
 end
 
 function DI.pushforward(
-    f, prep::SymbolicsOneArgPushforwardPrep, ::AutoSymbolics, x, tx::Tangents
+    f, prep::SymbolicsOneArgPushforwardPrep, ::AutoSymbolics, x, tx::NTuple
 )
     ty = map(tx) do dx
         v_vec = vcat(myvec(x), myvec(dx))
@@ -41,10 +41,10 @@ function DI.pushforward(
 end
 
 function DI.pushforward!(
-    f, ty::Tangents, prep::SymbolicsOneArgPushforwardPrep, ::AutoSymbolics, x, tx::Tangents
+    f, ty::NTuple, prep::SymbolicsOneArgPushforwardPrep, ::AutoSymbolics, x, tx::NTuple
 )
-    for b in eachindex(tx.d, ty.d)
-        dx, dy = tx.d[b], ty.d[b]
+    for b in eachindex(tx, ty)
+        dx, dy = tx[b], ty[b]
         v_vec = vcat(myvec(x), myvec(dx))
         prep.pf_exe!(dy, v_vec)
     end
@@ -52,18 +52,18 @@ function DI.pushforward!(
 end
 
 function DI.value_and_pushforward(
-    f, prep::SymbolicsOneArgPushforwardPrep, backend::AutoSymbolics, x, tx::Tangents
+    f, prep::SymbolicsOneArgPushforwardPrep, backend::AutoSymbolics, x, tx::NTuple
 )
     return f(x), DI.pushforward(f, prep, backend, x, tx)
 end
 
 function DI.value_and_pushforward!(
     f,
-    ty::Tangents,
+    ty::NTuple,
     prep::SymbolicsOneArgPushforwardPrep,
     backend::AutoSymbolics,
     x,
-    tx::Tangents,
+    tx::NTuple,
 )
     return f(x), DI.pushforward!(f, ty, prep, backend, x, tx)
 end

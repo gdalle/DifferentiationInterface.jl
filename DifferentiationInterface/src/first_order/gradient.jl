@@ -55,7 +55,7 @@ end
 function prepare_gradient(
     f::F, backend::AbstractADType, x, contexts::Vararg{Context,C}
 ) where {F,C}
-    pullback_prep = prepare_pullback(f, backend, x, Tangents(true), contexts...)
+    pullback_prep = prepare_pullback(f, backend, x, (true,), contexts...)
     return PullbackGradientPrep(pullback_prep)
 end
 
@@ -68,9 +68,7 @@ function value_and_gradient(
     x,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    y, tx = value_and_pullback(
-        f, prep.pullback_prep, backend, x, Tangents(true), contexts...
-    )
+    y, tx = value_and_pullback(f, prep.pullback_prep, backend, x, (true,), contexts...)
     return y, only(tx)
 end
 
@@ -83,7 +81,7 @@ function value_and_gradient!(
     contexts::Vararg{Context,C},
 ) where {F,C}
     y, _ = value_and_pullback!(
-        f, Tangents(grad), prep.pullback_prep, backend, x, Tangents(true), contexts...
+        f, (grad,), prep.pullback_prep, backend, x, (true,), contexts...
     )
     return y, grad
 end
@@ -95,7 +93,7 @@ function gradient(
     x,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    tx = pullback(f, prep.pullback_prep, backend, x, Tangents(true), contexts...)
+    tx = pullback(f, prep.pullback_prep, backend, x, (true,), contexts...)
     return only(tx)
 end
 
@@ -107,8 +105,6 @@ function gradient!(
     x,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    pullback!(
-        f, Tangents(grad), prep.pullback_prep, backend, x, Tangents(true), contexts...
-    )
+    pullback!(f, (grad,), prep.pullback_prep, backend, x, (true,), contexts...)
     return grad
 end

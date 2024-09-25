@@ -21,13 +21,39 @@ function seeded_autodiff_thunk(
     end
 end
 
+function batch_seeded_autodiff_thunk(
+    rmode::ReverseModeSplit{ReturnPrimal},
+    dresults::NTuple{B},
+    f::FA,
+    ::Type{RA},
+    args::Vararg{Annotation,N},
+) where {ReturnPrimal,B,FA<:Annotation,RA<:Annotation,N}
+    rmode_rightwidth = set_width(rmode, Val(B))
+    forward, reverse = autodiff_thunk(rmode_rightwidth, FA, RA, typeof.(args)...)
+    tape, result, shadow_results = forward(f, args...)
+    if RA <: Active
+        dresults_righttype = map(Fix1(convert, typeof(result)), dresults)
+        dinputs = only(reverse(f, args..., dresults_righttype, tape))
+    else
+        foreach(shadow_results, dresults) do d0, d
+            d0 .+= d  # use recursive_add here?
+        end
+        dinputs = only(reverse(f, args..., tape))
+    end
+    if ReturnPrimal
+        return (dinputs, result)
+    else
+        return (dinputs,)
+    end
+end
+
 ## Pullback
 
 function DI.prepare_pullback(
     f::F,
     ::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
-    ty::Tangents,
+    ty::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     return NoPullbackPrep()
@@ -37,28 +63,10 @@ end
 
 function DI.value_and_pullback(
     f::F,
-    prep::NoPullbackPrep,
-    backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
-    x,
-    ty::Tangents,
-    contexts::Vararg{Context,C},
-) where {F,C}
-    ys_and_dxs = map(ty.d) do dy
-        y, tx = DI.value_and_pullback(f, prep, backend, x, Tangents(dy), contexts...)
-        y, only(tx)
-    end
-    y = first(ys_and_dxs[1])
-    dxs = last.(ys_and_dxs)
-    tx = Tangents(dxs...)
-    return y, tx
-end
-
-function DI.value_and_pullback(
-    f::F,
     ::NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x::Number,
-    ty::Tangents{1},
+    ty::NTuple{1},
     contexts::Vararg{Context,C},
 ) where {F,C}
     f_and_df = force_annotation(get_f_and_df(f, backend))
@@ -67,7 +75,24 @@ function DI.value_and_pullback(
     dinputs, result = seeded_autodiff_thunk(
         mode, only(ty), f_and_df, RA, Active(x), map(translate, contexts)...
     )
-    return result, Tangents(first(dinputs))
+    return result, (first(dinputs),)
+end
+
+function DI.value_and_pullback(
+    f::F,
+    ::NoPullbackPrep,
+    backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
+    x::Number,
+    ty::NTuple{B},
+    contexts::Vararg{Context,C},
+) where {F,B,C}
+    f_and_df = force_annotation(get_f_and_df(f, backend, Val(B)))
+    mode = reverse_mode_split_withprimal(backend)
+    RA = eltype(ty) <: Number ? Active : BatchDuplicated
+    dinputs, result = batch_seeded_autodiff_thunk(
+        mode, ty, f_and_df, RA, Active(x), map(translate, contexts)...
+    )
+    return result, values(first(dinputs))
 end
 
 function DI.value_and_pullback(
@@ -75,7 +100,7 @@ function DI.value_and_pullback(
     ::NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
-    ty::Tangents{1},
+    ty::NTuple{1},
     contexts::Vararg{Context,C},
 ) where {F,C}
     f_and_df = force_annotation(get_f_and_df(f, backend))
@@ -85,15 +110,33 @@ function DI.value_and_pullback(
     _, result = seeded_autodiff_thunk(
         mode, only(ty), f_and_df, RA, Duplicated(x, dx), map(translate, contexts)...
     )
-    return result, Tangents(dx)
+    return result, (dx,)
+end
+
+function DI.value_and_pullback(
+    f::F,
+    ::NoPullbackPrep,
+    backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
+    x,
+    ty::NTuple{B},
+    contexts::Vararg{Context,C},
+) where {F,B,C}
+    f_and_df = force_annotation(get_f_and_df(f, backend, Val(B)))
+    mode = reverse_mode_split_withprimal(backend)
+    RA = eltype(ty) <: Number ? Active : BatchDuplicated
+    tx = ntuple(_ -> make_zero(x), Val(B))
+    _, result = batch_seeded_autodiff_thunk(
+        mode, ty, f_and_df, RA, BatchDuplicated(x, tx), map(translate, contexts)...
+    )
+    return result, tx
 end
 
 function DI.pullback(
     f::F,
     prep::NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
-    x::Number,
-    ty::Tangents{1},
+    x,
+    ty::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     return last(DI.value_and_pullback(f, prep, backend, x, ty, contexts...))
@@ -103,45 +146,11 @@ end
 
 function DI.value_and_pullback!(
     f::F,
-    tx::Tangents,
-    prep::NoPullbackPrep,
-    backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
-    x,
-    ty::Tangents,
-    contexts::Vararg{Context,C},
-) where {F,C}
-    ys = map(tx.d, ty.d) do dx, dy
-        y, _ = DI.value_and_pullback!(
-            f, Tangents(dx), prep, backend, x, Tangents(dy), contexts...
-        )
-        y
-    end
-    y = first(ys)
-    return y, tx
-end
-
-function DI.pullback!(
-    f::F,
-    tx::Tangents,
-    prep::NoPullbackPrep,
-    backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
-    x,
-    ty::Tangents,
-    contexts::Vararg{Context,C},
-) where {F,C}
-    for b in eachindex(tx.d, ty.d)
-        DI.pullback!(f, Tangents(tx.d[b]), prep, backend, x, Tangents(ty.d[b]), contexts...)
-    end
-    return tx
-end
-
-function DI.value_and_pullback!(
-    f::F,
-    tx::Tangents{1},
+    tx::NTuple{1},
     ::NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
-    ty::Tangents{1},
+    ty::NTuple{1},
     contexts::Vararg{Context,C},
 ) where {F,C}
     f_and_df = force_annotation(get_f_and_df(f, backend))
@@ -161,13 +170,39 @@ function DI.value_and_pullback!(
     return result, tx
 end
 
+function DI.value_and_pullback!(
+    f::F,
+    tx::NTuple{B},
+    ::NoPullbackPrep,
+    backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
+    x,
+    ty::NTuple{B},
+    contexts::Vararg{Context,C},
+) where {F,B,C}
+    f_and_df = force_annotation(get_f_and_df(f, backend, Val(B)))
+    mode = reverse_mode_split_withprimal(backend)
+    RA = eltype(ty) <: Number ? Active : BatchDuplicated
+    tx_righttype = map(Fix1(convert, typeof(x)), tx)
+    make_zero!(tx_righttype)
+    _, result = batch_seeded_autodiff_thunk(
+        mode,
+        ty,
+        f_and_df,
+        RA,
+        BatchDuplicated(x, tx_righttype),
+        map(translate, contexts)...,
+    )
+    foreach(copyto!, tx, tx_righttype)
+    return result, tx
+end
+
 function DI.pullback!(
     f::F,
-    tx::Tangents{1},
+    tx::NTuple,
     prep::NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
-    ty::Tangents{1},
+    ty::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     return last(DI.value_and_pullback!(f, tx, prep, backend, x, ty, contexts...))
@@ -258,37 +293,37 @@ end
 
 ## Jacobian
 
-struct EnzymeReverseOneArgJacobianPrep{M,B} <: JacobianPrep end
+struct EnzymeReverseOneArgJacobianPrep{Sy,B} <: JacobianPrep end
 
 function DI.prepare_jacobian(f::F, backend::AutoEnzyme{<:ReverseMode,Nothing}, x) where {F}
     y = f(x)
-    M = length(y)
-    B = pick_batchsize(backend, M)
-    return EnzymeReverseOneArgJacobianPrep{M,B}()
+    Sy = size(y)
+    B = pick_batchsize(backend, prod(Sy))
+    return EnzymeReverseOneArgJacobianPrep{Sy,B}()
 end
 
 function DI.jacobian(
     f::F,
-    ::EnzymeReverseOneArgJacobianPrep{M,B},
+    ::EnzymeReverseOneArgJacobianPrep{Sy,B},
     backend::AutoEnzyme{<:ReverseMode,Nothing},
     x,
-) where {F,M,B}
-    derivs = jacobian(reverse_mode_noprimal(backend), f, x; n_outs=Val((M,)), chunk=Val(B))
+) where {F,Sy,B}
+    derivs = jacobian(reverse_mode_noprimal(backend), f, x; n_outs=Val(Sy), chunk=Val(B))
     jac_tensor = only(derivs)
-    return maybe_reshape(jac_tensor, M, length(x))
+    return maybe_reshape(jac_tensor, prod(Sy), length(x))
 end
 
 function DI.value_and_jacobian(
     f::F,
-    prep::EnzymeReverseOneArgJacobianPrep{M,B},
+    ::EnzymeReverseOneArgJacobianPrep{Sy,B},
     backend::AutoEnzyme{<:ReverseMode,Nothing},
     x,
-) where {F,M,B}
+) where {F,Sy,B}
     (; derivs, val) = jacobian(
-        reverse_mode_withprimal(backend), f, x; n_outs=Val((M,)), chunk=Val(B)
+        reverse_mode_withprimal(backend), f, x; n_outs=Val(Sy), chunk=Val(B)
     )
-    jac_tensor = derivs
-    return val, maybe_reshape(jac_tensor, M, length(x))
+    jac_tensor = only(derivs)
+    return val, maybe_reshape(jac_tensor, prod(Sy), length(x))
 end
 
 function DI.jacobian!(

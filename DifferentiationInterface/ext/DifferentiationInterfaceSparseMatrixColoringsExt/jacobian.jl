@@ -14,14 +14,14 @@ struct PushforwardSparseJacobianPrep{
     B,
     C<:AbstractColoringResult{:nonsymmetric,:column},
     M<:AbstractMatrix{<:Real},
-    D,
-    R,
+    TD<:NTuple{B},
+    TR<:NTuple{B},
     E<:PushforwardPrep,
 } <: SparseJacobianPrep
     coloring_result::C
     compressed_matrix::M
-    batched_seeds::Vector{Tangents{B,D}}
-    batched_results::Vector{Tangents{B,R}}
+    batched_seeds::Vector{TD}
+    batched_results::Vector{TR}
     pushforward_prep::E
 end
 
@@ -29,25 +29,25 @@ struct PullbackSparseJacobianPrep{
     B,
     C<:AbstractColoringResult{:nonsymmetric,:row},
     M<:AbstractMatrix{<:Real},
-    D,
-    R,
+    TD<:NTuple{B},
+    TR<:NTuple{B},
     E<:PullbackPrep,
 } <: SparseJacobianPrep
     coloring_result::C
     compressed_matrix::M
-    batched_seeds::Vector{Tangents{B,D}}
-    batched_results::Vector{Tangents{B,R}}
+    batched_seeds::Vector{TD}
+    batched_results::Vector{TR}
     pullback_prep::E
 end
 
 function PushforwardSparseJacobianPrep{B}(;
     coloring_result::C,
     compressed_matrix::M,
-    batched_seeds::Vector{Tangents{B,D}},
-    batched_results::Vector{Tangents{B,R}},
+    batched_seeds::Vector{TD},
+    batched_results::Vector{TR},
     pushforward_prep::E,
-) where {B,C,M,D,R,E}
-    return PushforwardSparseJacobianPrep{B,C,M,D,R,E}(
+) where {B,C,M,TD,TR,E}
+    return PushforwardSparseJacobianPrep{B,C,M,TD,TR,E}(
         coloring_result, compressed_matrix, batched_seeds, batched_results, pushforward_prep
     )
 end
@@ -55,11 +55,11 @@ end
 function PullbackSparseJacobianPrep{B}(;
     coloring_result::C,
     compressed_matrix::M,
-    batched_seeds::Vector{Tangents{B,D}},
-    batched_results::Vector{Tangents{B,R}},
+    batched_seeds::Vector{TD},
+    batched_results::Vector{TR},
     pullback_prep::E,
-) where {B,C,M,D,R,E}
-    return PullbackSparseJacobianPrep{B,C,M,D,R,E}(
+) where {B,C,M,TD,TR,E}
+    return PullbackSparseJacobianPrep{B,C,M,TD,TR,E}(
         coloring_result, compressed_matrix, batched_seeds, batched_results, pullback_prep
     )
 end
@@ -102,10 +102,10 @@ function _prepare_sparse_jacobian_aux(
     seeds = [multibasis(backend, x, eachindex(x)[group]) for group in groups]
     compressed_matrix = stack(_ -> vec(similar(y)), groups; dims=2)
     batched_seeds = [
-        Tangents(ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % Ng], Val(B))...) for
+        ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % Ng], Val(B)) for
         a in 1:div(Ng, B, RoundUp)
     ]
-    batched_results = [Tangents(ntuple(b -> similar(y), Val(B))...) for _ in batched_seeds]
+    batched_results = [ntuple(b -> similar(y), Val(B)) for _ in batched_seeds]
     pushforward_prep = prepare_pushforward(
         f_or_f!y..., dense_backend, x, batched_seeds[1], contexts...
     )
@@ -134,10 +134,10 @@ function _prepare_sparse_jacobian_aux(
     seeds = [multibasis(backend, y, eachindex(y)[group]) for group in groups]
     compressed_matrix = stack(_ -> vec(similar(x)), groups; dims=1)
     batched_seeds = [
-        Tangents(ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % Ng], Val(B))...) for
+        ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % Ng], Val(B)) for
         a in 1:div(Ng, B, RoundUp)
     ]
-    batched_results = [Tangents(ntuple(b -> similar(x), Val(B))...) for _ in batched_seeds]
+    batched_results = [ntuple(b -> similar(x), Val(B)) for _ in batched_seeds]
     pullback_prep = prepare_pullback(
         f_or_f!y..., dense_backend, x, batched_seeds[1], contexts...
     )
@@ -240,7 +240,7 @@ function _sparse_jacobian_aux(
             batched_seeds[a],
             contexts...,
         )
-        stack(vec, dy_batch.d; dims=2)
+        stack(vec, dy_batch; dims=2)
     end
 
     compressed_matrix = reduce(hcat, compressed_blocks)
@@ -274,7 +274,7 @@ function _sparse_jacobian_aux(
             batched_seeds[a],
             contexts...,
         )
-        stack(vec, dx_batch.d; dims=1)
+        stack(vec, dx_batch; dims=1)
     end
 
     compressed_matrix = reduce(vcat, compressed_blocks)
@@ -313,10 +313,10 @@ function _sparse_jacobian_aux!(
             contexts...,
         )
 
-        for b in eachindex(batched_results[a].d)
+        for b in eachindex(batched_results[a])
             copyto!(
                 view(compressed_matrix, :, 1 + ((a - 1) * B + (b - 1)) % Ng),
-                vec(batched_results[a].d[b]),
+                vec(batched_results[a][b]),
             )
         end
     end
@@ -354,10 +354,10 @@ function _sparse_jacobian_aux!(
             contexts...,
         )
 
-        for b in eachindex(batched_results[a].d)
+        for b in eachindex(batched_results[a])
             copyto!(
                 view(compressed_matrix, 1 + ((a - 1) * B + (b - 1)) % Ng, :),
-                vec(batched_results[a].d[b]),
+                vec(batched_results[a][b]),
             )
         end
     end

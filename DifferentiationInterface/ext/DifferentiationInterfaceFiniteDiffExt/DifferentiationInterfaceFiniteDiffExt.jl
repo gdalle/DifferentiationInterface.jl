@@ -3,6 +3,7 @@ module DifferentiationInterfaceFiniteDiffExt
 using ADTypes: AutoFiniteDiff
 import DifferentiationInterface as DI
 using DifferentiationInterface:
+    Context,
     DerivativePrep,
     GradientPrep,
     HessianPrep,
@@ -15,7 +16,8 @@ using DifferentiationInterface:
     NoJacobianPrep,
     NoPullbackPrep,
     NoPushforwardPrep,
-    Tangents
+    unwrap,
+    with_contexts
 using FiniteDiff:
     DerivativeCache,
     GradientCache,

@@ -33,7 +33,7 @@ These operators are computed using only the input `x`.
 
 ### Low-level operators
 
-These operators are computed using the input `x` and another argument `t` of type [`Tangents`](@ref), which contains one or more tangents.
+These operators are computed using the input `x` and another argument `t` of type `NTuple`, which contains one or more tangents.
 You can think of tangents as perturbations propagated through the function; they live either in the same space as `x` or in the same space as `y`.
 
 | operator                    | order | input `x` | output `y` | element type of `t` | operator result type | operator result shape |
@@ -130,7 +130,7 @@ For different-point preparation, the output `prep` of `prepare_op(f, b, x, [t])`
 
 For same-point preparation, the output `prep` of `prepare_op_same_point(f, b, x, [t])` can be reused in `op(f, prep, b, x, other_t)`, provided that:
 
-- the input `x` remains the same
+- the input `x` remains the same (as well as the [`Context`](@ref) constants)
 - the tangents in `t` and `other_t` have similar types and equal shapes
 
 !!! warning

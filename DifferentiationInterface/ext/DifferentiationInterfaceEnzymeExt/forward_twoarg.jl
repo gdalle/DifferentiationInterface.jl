@@ -5,7 +5,7 @@ function DI.prepare_pushforward(
     y,
     ::AutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     return NoPushforwardPrep()
@@ -17,7 +17,7 @@ function DI.value_and_pushforward(
     ::NoPushforwardPrep,
     backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
-    tx::Tangents{1},
+    tx::NTuple{1},
     contexts::Vararg{Context,C},
 ) where {F,C}
     f!_and_df! = get_f_and_df(f!, backend)
@@ -33,7 +33,7 @@ function DI.value_and_pushforward(
         x_and_dx,
         map(translate, contexts)...,
     )
-    return y, Tangents(dy_sametype)
+    return y, (dy_sametype,)
 end
 
 function DI.value_and_pushforward(
@@ -42,21 +42,64 @@ function DI.value_and_pushforward(
     ::NoPushforwardPrep,
     backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
-    tx::Tangents{B},
+    tx::NTuple{B},
     contexts::Vararg{Context,C},
 ) where {F,B,C}
     f!_and_df! = get_f_and_df(f!, backend, Val(B))
-    dxs_sametype = map(Fix1(convert, typeof(x)), tx.d)
-    dys_sametype = ntuple(_ -> make_zero(y), Val(B))
-    x_and_dxs = BatchDuplicated(x, dxs_sametype)
-    y_and_dys = BatchDuplicated(y, dys_sametype)
+    tx_sametype = map(Fix1(convert, typeof(x)), tx)
+    ty_sametype = ntuple(_ -> make_zero(y), Val(B))
+    x_and_tx = BatchDuplicated(x, tx_sametype)
+    y_and_ty = BatchDuplicated(y, ty_sametype)
     autodiff(
         forward_mode_noprimal(backend),
         f!_and_df!,
         Const,
-        y_and_dys,
-        x_and_dxs,
+        y_and_ty,
+        x_and_tx,
         map(translate, contexts)...,
     )
-    return y, Tangents(dys_sametype...)
+    return y, ty_sametype
+end
+
+function DI.pushforward(
+    f!::F,
+    y,
+    prep::NoPushforwardPrep,
+    backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
+    x,
+    tx::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    _, ty = DI.value_and_pushforward(f!, y, prep, backend, x, tx, contexts...)
+    return ty
+end
+
+function DI.value_and_pushforward!(
+    f!::F,
+    y,
+    ty::NTuple,
+    prep::NoPushforwardPrep,
+    backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
+    x,
+    tx::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    y, new_ty = DI.value_and_pushforward(f!, y, prep, backend, x, tx, contexts...)
+    foreach(copyto!, ty, new_ty)
+    return y, ty
+end
+
+function DI.pushforward!(
+    f!::F,
+    y,
+    ty::NTuple,
+    prep::NoPushforwardPrep,
+    backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
+    x,
+    tx::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    new_ty = DI.pushforward(f!, y, prep, backend, x, tx, contexts...)
+    foreach(copyto!, ty, new_ty)
+    return ty
 end

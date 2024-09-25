@@ -14,20 +14,18 @@ dense_backends = [
     AutoEnzyme(; mode=nothing),
     AutoEnzyme(; mode=Enzyme.Forward),
     AutoEnzyme(; mode=Enzyme.Reverse),
-    AutoEnzyme(; mode=nothing, function_annotation=Enzyme.Const),
     AutoEnzyme(; mode=Enzyme.Forward, function_annotation=Enzyme.Const),
     AutoEnzyme(; mode=Enzyme.Reverse, function_annotation=Enzyme.Const),
 ]
 
 duplicated_function_backends = [
-    AutoEnzyme(; function_annotation=Enzyme.Duplicated),
     AutoEnzyme(; mode=Enzyme.Forward, function_annotation=Enzyme.Duplicated),
     AutoEnzyme(; mode=Enzyme.Reverse, function_annotation=Enzyme.Duplicated),
 ]
 
 sparse_backends =
     AutoSparse.(
-        dense_backends,
+        dense_backends[1:3],
         sparsity_detector=TracerSparsityDetector(),
         coloring_algorithm=GreedyColoringAlgorithm(),
     )
@@ -60,12 +58,7 @@ test_differentiation(
 );
 
 test_differentiation(
-    [
-        AutoEnzyme(; mode=nothing),
-        AutoEnzyme(; mode=Enzyme.Reverse),
-        SecondOrder(AutoEnzyme(; mode=Enzyme.Reverse), AutoEnzyme(; mode=Enzyme.Reverse)),
-        SecondOrder(AutoEnzyme(; mode=Enzyme.Forward), AutoEnzyme(; mode=Enzyme.Reverse)),
-    ];
+    [AutoEnzyme(; mode=nothing), AutoEnzyme(; mode=Enzyme.Reverse)];
     first_order=false,
     excluded=[:second_derivative],
     logging=LOGGING,

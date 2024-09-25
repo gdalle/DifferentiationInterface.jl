@@ -11,7 +11,6 @@ using DifferentiationInterface:
     NoPullbackPrep,
     PullbackPrep,
     SecondOrder,
-    Tangents,
     unwrap,
     with_contexts
 using ForwardDiff: ForwardDiff
@@ -30,20 +29,20 @@ struct ZygotePullbackPrepSamePoint{Y,PB} <: PullbackPrep
 end
 
 function DI.prepare_pullback(
-    f, ::AutoZygote, x, ty::Tangents, contexts::Vararg{Constant,C}
+    f, ::AutoZygote, x, ty::NTuple, contexts::Vararg{Constant,C}
 ) where {C}
     return NoPullbackPrep()
 end
 
 function DI.prepare_pullback_same_point(
-    f, ::NoPullbackPrep, ::AutoZygote, x, ty::Tangents, contexts::Vararg{Constant,C}
+    f, ::NoPullbackPrep, ::AutoZygote, x, ty::NTuple, contexts::Vararg{Constant,C}
 ) where {C}
     y, pb = pullback(f, x, map(unwrap, contexts)...)
     return ZygotePullbackPrepSamePoint(y, pb)
 end
 
 function DI.value_and_pullback(
-    f, ::NoPullbackPrep, ::AutoZygote, x, ty::Tangents, contexts::Vararg{Constant,C}
+    f, ::NoPullbackPrep, ::AutoZygote, x, ty::NTuple, contexts::Vararg{Constant,C}
 ) where {C}
     y, pb = pullback(f, x, map(unwrap, contexts)...)
     tx = map(ty) do dy
@@ -57,7 +56,7 @@ function DI.value_and_pullback(
     prep::ZygotePullbackPrepSamePoint,
     ::AutoZygote,
     x,
-    ty::Tangents,
+    ty::NTuple,
     contexts::Vararg{Constant,C},
 ) where {C}
     @compat (; y, pb) = prep
@@ -72,7 +71,7 @@ function DI.pullback(
     prep::ZygotePullbackPrepSamePoint,
     ::AutoZygote,
     x,
-    ty::Tangents,
+    ty::NTuple,
     contexts::Vararg{Constant,C},
 ) where {C}
     @compat (; pb) = prep
@@ -150,24 +149,24 @@ end
 # Beware, this uses ForwardDiff for the inner differentiation
 
 function DI.prepare_hvp(
-    f, backend::AutoZygote, x, tx::Tangents, contexts::Vararg{Constant,C}
+    f, backend::AutoZygote, x, tx::NTuple, contexts::Vararg{Constant,C}
 ) where {C}
     return DI.prepare_hvp(f, SecondOrder(AutoForwardDiff(), backend), x, tx, contexts...)
 end
 
 function DI.hvp(
-    f, prep::HVPPrep, backend::AutoZygote, x, tx::Tangents, contexts::Vararg{Constant,C}
+    f, prep::HVPPrep, backend::AutoZygote, x, tx::NTuple, contexts::Vararg{Constant,C}
 ) where {C}
     return DI.hvp(f, prep, SecondOrder(AutoForwardDiff(), backend), x, tx, contexts...)
 end
 
 function DI.hvp!(
     f,
-    tg::Tangents,
+    tg::NTuple,
     prep::HVPPrep,
     backend::AutoZygote,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Constant,C},
 ) where {C}
     return DI.hvp!(f, tg, prep, SecondOrder(AutoForwardDiff(), backend), x, tx, contexts...)

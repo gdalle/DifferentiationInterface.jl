@@ -28,19 +28,14 @@ struct FromPrimitivePushforwardPrep{E<:PushforwardPrep} <: PushforwardPrep
 end
 
 function prepare_pushforward(
-    f::F, fromprim::AutoForwardFromPrimitive, x, tx::Tangents, contexts::Vararg{Context,C}
+    f::F, fromprim::AutoForwardFromPrimitive, x, tx::NTuple, contexts::Vararg{Context,C}
 ) where {F,C}
     primitive_prep = prepare_pushforward(f, fromprim.backend, x, tx, contexts...)
     return FromPrimitivePushforwardPrep(primitive_prep)
 end
 
 function prepare_pushforward(
-    f!::F,
-    y,
-    fromprim::AutoForwardFromPrimitive,
-    x,
-    tx::Tangents,
-    contexts::Vararg{Context,C},
+    f!::F, y, fromprim::AutoForwardFromPrimitive, x, tx::NTuple, contexts::Vararg{Context,C}
 ) where {F,C}
     primitive_prep = prepare_pushforward(f!, y, fromprim.backend, x, tx, contexts...)
     return FromPrimitivePushforwardPrep(primitive_prep)
@@ -51,7 +46,7 @@ function value_and_pushforward(
     prep::FromPrimitivePushforwardPrep,
     fromprim::AutoForwardFromPrimitive,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     return value_and_pushforward(
@@ -65,7 +60,7 @@ function value_and_pushforward(
     prep::FromPrimitivePushforwardPrep,
     fromprim::AutoForwardFromPrimitive,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     return value_and_pushforward(
@@ -75,11 +70,11 @@ end
 
 function value_and_pushforward!(
     f::F,
-    ty::Tangents,
+    ty::NTuple,
     prep::FromPrimitivePushforwardPrep,
     fromprim::AutoForwardFromPrimitive,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     return value_and_pushforward!(
@@ -90,11 +85,11 @@ end
 function value_and_pushforward!(
     f!::F,
     y,
-    ty::Tangents,
+    ty::NTuple,
     prep::FromPrimitivePushforwardPrep,
     fromprim::AutoForwardFromPrimitive,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     return value_and_pushforward!(
@@ -115,19 +110,14 @@ struct FromPrimitivePullbackPrep{E<:PullbackPrep} <: PullbackPrep
 end
 
 function prepare_pullback(
-    f::F, fromprim::AutoReverseFromPrimitive, x, ty::Tangents, contexts::Vararg{Context,C}
+    f::F, fromprim::AutoReverseFromPrimitive, x, ty::NTuple, contexts::Vararg{Context,C}
 ) where {F,C}
     primitive_prep = prepare_pullback(f, fromprim.backend, x, ty, contexts...)
     return FromPrimitivePullbackPrep(primitive_prep)
 end
 
 function prepare_pullback(
-    f!::F,
-    y,
-    fromprim::AutoReverseFromPrimitive,
-    x,
-    ty::Tangents,
-    contexts::Vararg{Context,C},
+    f!::F, y, fromprim::AutoReverseFromPrimitive, x, ty::NTuple, contexts::Vararg{Context,C}
 ) where {F,C}
     primitive_prep = prepare_pullback(f!, y, fromprim.backend, x, ty, contexts...)
     return FromPrimitivePullbackPrep(primitive_prep)
@@ -138,7 +128,7 @@ function value_and_pullback(
     prep::FromPrimitivePullbackPrep,
     fromprim::AutoReverseFromPrimitive,
     x,
-    ty::Tangents,
+    ty::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     return value_and_pullback(f, prep.pullback_prep, fromprim.backend, x, ty, contexts...)
@@ -150,7 +140,7 @@ function value_and_pullback(
     prep::FromPrimitivePullbackPrep,
     fromprim::AutoReverseFromPrimitive,
     x,
-    ty::Tangents,
+    ty::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     return value_and_pullback(
@@ -160,11 +150,11 @@ end
 
 function value_and_pullback!(
     f::F,
-    tx::Tangents,
+    tx::NTuple,
     prep::FromPrimitivePullbackPrep,
     fromprim::AutoReverseFromPrimitive,
     x,
-    ty::Tangents,
+    ty::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     return value_and_pullback!(
@@ -175,11 +165,11 @@ end
 function value_and_pullback!(
     f!::F,
     y,
-    tx::Tangents,
+    tx::NTuple,
     prep::FromPrimitivePullbackPrep,
     fromprim::AutoReverseFromPrimitive,
     x,
-    ty::Tangents,
+    ty::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     return value_and_pullback!(

@@ -28,7 +28,7 @@ function DI.prepare_hvp(
     f::F,
     backend::SecondOrder{<:AutoForwardDiff},
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     rewrap = Rewrap(contexts...)
@@ -53,7 +53,7 @@ function DI.hvp(
     prep::ForwardDiffOverSomethingHVPPrep,
     ::SecondOrder{<:AutoForwardDiff},
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     @compat (; tagged_outer_backend, inner_gradient, outer_pushforward_prep) = prep
@@ -64,11 +64,11 @@ end
 
 function DI.hvp!(
     f::F,
-    tg::Tangents,
+    tg::NTuple,
     prep::ForwardDiffOverSomethingHVPPrep,
     ::SecondOrder{<:AutoForwardDiff},
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     @compat (; tagged_outer_backend, inner_gradient, outer_pushforward_prep) = prep

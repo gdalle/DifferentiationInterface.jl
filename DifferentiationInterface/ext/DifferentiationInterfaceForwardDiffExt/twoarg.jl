@@ -6,7 +6,7 @@ struct ForwardDiffTwoArgPushforwardPrep{T,X,Y} <: PushforwardPrep
 end
 
 function DI.prepare_pushforward(
-    f!::F, y, backend::AutoForwardDiff, x, tx::Tangents, contexts::Vararg{Context,C}
+    f!::F, y, backend::AutoForwardDiff, x, tx::NTuple, contexts::Vararg{Context,C}
 ) where {F,C}
     T = tag_type(f!, backend, x)
     xdual_tmp = make_dual_similar(T, x, tx)
@@ -21,7 +21,7 @@ function compute_ydual_twoarg(
     y,
     prep::ForwardDiffTwoArgPushforwardPrep{T},
     x::Number,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,T,C}
     @compat (; ydual_tmp) = prep
@@ -35,7 +35,7 @@ function compute_ydual_twoarg(
     y,
     prep::ForwardDiffTwoArgPushforwardPrep{T},
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,T,C}
     @compat (; xdual_tmp, ydual_tmp) = prep
@@ -50,7 +50,7 @@ function DI.value_and_pushforward(
     prep::ForwardDiffTwoArgPushforwardPrep{T},
     ::AutoForwardDiff,
     x,
-    tx::Tangents{B},
+    tx::NTuple{B},
     contexts::Vararg{Context,C},
 ) where {F,T,B,C}
     ydual_tmp = compute_ydual_twoarg(f!, y, prep, x, tx, contexts...)
@@ -62,11 +62,11 @@ end
 function DI.value_and_pushforward!(
     f!::F,
     y,
-    ty::Tangents,
+    ty::NTuple,
     prep::ForwardDiffTwoArgPushforwardPrep{T},
     ::AutoForwardDiff,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,T,C}
     ydual_tmp = compute_ydual_twoarg(f!, y, prep, x, tx, contexts...)
@@ -81,7 +81,7 @@ function DI.pushforward(
     prep::ForwardDiffTwoArgPushforwardPrep{T},
     ::AutoForwardDiff,
     x,
-    tx::Tangents{B},
+    tx::NTuple{B},
     contexts::Vararg{Context,C},
 ) where {F,T,B,C}
     ydual_tmp = compute_ydual_twoarg(f!, y, prep, x, tx, contexts...)
@@ -92,11 +92,11 @@ end
 function DI.pushforward!(
     f!::F,
     y,
-    ty::Tangents,
+    ty::NTuple,
     prep::ForwardDiffTwoArgPushforwardPrep{T},
     ::AutoForwardDiff,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,T,C}
     ydual_tmp = compute_ydual_twoarg(f!, y, prep, x, tx, contexts...)

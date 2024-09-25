@@ -42,14 +42,14 @@ Only works if `scen` is a `pushforward`, `pullback` or `hvp` scenario.
 function batchify(scen::Scenario{op,pl_op,pl_fun}) where {op,pl_op,pl_fun}
     @compat (; f, x, y, tang, contexts, res1, res2) = scen
     if op == :pushforward || op == :pullback
-        new_tang = Tangents(only(tang), -only(tang))
-        new_res1 = Tangents(only(res1), -only(res1))
+        new_tang = (only(tang), -only(tang))
+        new_res1 = (only(res1), -only(res1))
         return Scenario{op,pl_op,pl_fun}(
             f; x, y, tang=new_tang, contexts, res1=new_res1, res2
         )
     elseif op == :hvp
-        new_tang = Tangents(only(tang), -only(tang))
-        new_res2 = Tangents(only(res2), -only(res2))
+        new_tang = (only(tang), -only(tang))
+        new_res2 = (only(res2), -only(res2))
         return Scenario{op,pl_op,pl_fun}(
             f; x, y, tang=new_tang, contexts, res1, res2=new_res2
         )
@@ -124,7 +124,7 @@ The output and result fields are updated accordingly.
 function constantify(scen::Scenario{op,pl_op,pl_fun}) where {op,pl_op,pl_fun}
     @compat (; f,) = scen
     multiply_f = MultiplyByConstant{pl_fun}(f)
-    a = 3
+    a = 3.0
     return Scenario{op,pl_op,pl_fun}(
         multiply_f;
         x=scen.x,
