@@ -21,7 +21,7 @@ test_differentiation(
     zero_backends,
     zero.(default_scenarios(; include_constantified=true));
     correctness=true,
-    type_stability=false,
+    type_stability=true,
     logging=LOGGING,
 )
 
