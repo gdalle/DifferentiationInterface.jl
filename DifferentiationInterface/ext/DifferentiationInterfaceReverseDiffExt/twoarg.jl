@@ -1,11 +1,11 @@
 ## Pullback
 
-DI.prepare_pullback(f!, y, ::AutoReverseDiff, x, ty::Tangents) = NoPullbackPrep()
+DI.prepare_pullback(f!, y, ::AutoReverseDiff, x, ty::NTuple) = NoPullbackPrep()
 
 ### Array in
 
 function DI.value_and_pullback(
-    f!, y, ::NoPullbackPrep, ::AutoReverseDiff, x::AbstractArray, ty::Tangents
+    f!, y, ::NoPullbackPrep, ::AutoReverseDiff, x::AbstractArray, ty::NTuple
 )
     tx = map(ty) do dy
         function dotproduct_closure(x)
@@ -20,10 +20,10 @@ function DI.value_and_pullback(
 end
 
 function DI.value_and_pullback!(
-    f!, y, tx::Tangents, ::NoPullbackPrep, ::AutoReverseDiff, x::AbstractArray, ty::Tangents
+    f!, y, tx::NTuple, ::NoPullbackPrep, ::AutoReverseDiff, x::AbstractArray, ty::NTuple
 )
-    for b in eachindex(tx.d, ty.d)
-        dx, dy = tx.d[b], ty.d[b]
+    for b in eachindex(tx, ty)
+        dx, dy = tx[b], ty[b]
         function dotproduct_closure(x)
             y_copy = similar(y, eltype(x))
             f!(y_copy, x)
@@ -36,7 +36,7 @@ function DI.value_and_pullback!(
 end
 
 function DI.pullback(
-    f!, y, ::NoPullbackPrep, ::AutoReverseDiff, x::AbstractArray, ty::Tangents
+    f!, y, ::NoPullbackPrep, ::AutoReverseDiff, x::AbstractArray, ty::NTuple
 )
     tx = map(ty) do dy
         function dotproduct_closure(x)
@@ -50,10 +50,10 @@ function DI.pullback(
 end
 
 function DI.pullback!(
-    f!, y, tx::Tangents, ::NoPullbackPrep, ::AutoReverseDiff, x::AbstractArray, ty::Tangents
+    f!, y, tx::NTuple, ::NoPullbackPrep, ::AutoReverseDiff, x::AbstractArray, ty::NTuple
 )
-    for b in eachindex(tx.d, ty.d)
-        dx, dy = tx.d[b], ty.d[b]
+    for b in eachindex(tx, ty)
+        dx, dy = tx[b], ty[b]
         function dotproduct_closure(x)
             y_copy = similar(y, eltype(x))
             f!(y_copy, x)
@@ -67,12 +67,12 @@ end
 ### Number in, not supported
 
 function DI.value_and_pullback(
-    f!, y, ::NoPullbackPrep, backend::AutoReverseDiff, x::Number, ty::Tangents{B}
+    f!, y, ::NoPullbackPrep, backend::AutoReverseDiff, x::Number, ty::NTuple{B}
 ) where {B}
     x_array = [x]
     f!_array(_y::AbstractArray, _x_array) = f!(_y, only(_x_array))
     y, tx_array = DI.value_and_pullback(f!_array, y, backend, x_array, ty)
-    return y, Tangents(only.(tx_array.d)...)
+    return y, only.(tx_array)
 end
 
 ## Jacobian

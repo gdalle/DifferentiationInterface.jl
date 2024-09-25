@@ -37,7 +37,6 @@ include("second_order/second_order.jl")
 include("utils/prep.jl")
 include("utils/traits.jl")
 include("utils/basis.jl")
-include("utils/tangents.jl")
 include("utils/check.jl")
 include("utils/exceptions.jl")
 include("utils/printing.jl")
@@ -66,7 +65,6 @@ end
 
 ## Exported
 
-export Tangents
 export Context, Constant
 export SecondOrder
 

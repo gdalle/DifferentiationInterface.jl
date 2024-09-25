@@ -16,7 +16,6 @@ using DifferentiationInterface:
     NoJacobianPrep,
     NoPullbackPrep,
     NoPushforwardPrep,
-    Tangents,
     unwrap,
     with_contexts
 using FiniteDiff:

@@ -1,7 +1,7 @@
 ## Pushforward
 
 function DI.prepare_pushforward(
-    f, ::AutoFiniteDiff, x, tx::Tangents, contexts::Vararg{Context,C}
+    f, ::AutoFiniteDiff, x, tx::NTuple, contexts::Vararg{Context,C}
 ) where {C}
     return NoPushforwardPrep()
 end
@@ -11,7 +11,7 @@ function DI.pushforward(
     ::NoPushforwardPrep,
     backend::AutoFiniteDiff,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {C}
     step(t::Number, dx) = f(x .+ t .* dx, map(unwrap, contexts)...)
@@ -26,7 +26,7 @@ function DI.value_and_pushforward(
     ::NoPushforwardPrep,
     backend::AutoFiniteDiff,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {C}
     step(t::Number, dx) = f(x .+ t .* dx, map(unwrap, contexts)...)

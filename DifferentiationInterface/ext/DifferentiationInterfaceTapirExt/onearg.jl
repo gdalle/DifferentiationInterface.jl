@@ -21,7 +21,7 @@ function DI.value_and_pullback(
 )
     y = f(x)
     tx = map(ty) do dy
-        only(DI.pullback(f, prep, backend, x, Tangents(dy)))
+        only(DI.pullback(f, prep, backend, x, (dy,)))
     end
     return y, tx
 end

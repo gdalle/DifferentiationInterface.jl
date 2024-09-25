@@ -5,7 +5,7 @@ struct FastDifferentiationTwoArgPushforwardPrep{E1,E1!} <: PushforwardPrep
     jvp_exe!::E1!
 end
 
-function DI.prepare_pushforward(f!, y, ::AutoFastDifferentiation, x, tx::Tangents)
+function DI.prepare_pushforward(f!, y, ::AutoFastDifferentiation, x, tx::NTuple)
     x_var = if x isa Number
         only(make_variables(:x))
     else
@@ -28,7 +28,7 @@ function DI.pushforward(
     prep::FastDifferentiationTwoArgPushforwardPrep,
     ::AutoFastDifferentiation,
     x,
-    tx::Tangents,
+    tx::NTuple,
 )
     ty = map(tx) do dx
         v_vec = vcat(myvec(x), myvec(dx))
@@ -40,14 +40,14 @@ end
 function DI.pushforward!(
     f!,
     y,
-    ty::Tangents,
+    ty::NTuple,
     prep::FastDifferentiationTwoArgPushforwardPrep,
     ::AutoFastDifferentiation,
     x,
-    tx::Tangents,
+    tx::NTuple,
 )
-    for b in eachindex(tx.d, ty.d)
-        dx, dy = tx.d[b], ty.d[b]
+    for b in eachindex(tx, ty)
+        dx, dy = tx[b], ty[b]
         v_vec = vcat(myvec(x), myvec(dx))
         prep.jvp_exe!(vec(dy), v_vec)
     end
@@ -60,7 +60,7 @@ function DI.value_and_pushforward(
     prep::FastDifferentiationTwoArgPushforwardPrep,
     backend::AutoFastDifferentiation,
     x,
-    tx::Tangents,
+    tx::NTuple,
 )
     ty = DI.pushforward(f!, y, prep, backend, x, tx)
     f!(y, x)
@@ -70,11 +70,11 @@ end
 function DI.value_and_pushforward!(
     f!,
     y,
-    ty::Tangents,
+    ty::NTuple,
     prep::FastDifferentiationTwoArgPushforwardPrep,
     backend::AutoFastDifferentiation,
     x,
-    tx::Tangents,
+    tx::NTuple,
 )
     DI.pushforward!(f!, y, ty, prep, backend, x, tx)
     f!(y, x)
@@ -88,7 +88,7 @@ struct FastDifferentiationTwoArgPullbackPrep{E1,E1!} <: PullbackPrep
     vjp_exe!::E1!
 end
 
-function DI.prepare_pullback(f!, y, ::AutoFastDifferentiation, x, ty::Tangents)
+function DI.prepare_pullback(f!, y, ::AutoFastDifferentiation, x, ty::NTuple)
     x_var = if x isa Number
         only(make_variables(:x))
     else
@@ -111,7 +111,7 @@ function DI.pullback(
     prep::FastDifferentiationTwoArgPullbackPrep,
     ::AutoFastDifferentiation,
     x,
-    ty::Tangents,
+    ty::NTuple,
 )
     tx = map(ty) do dy
         v_vec = vcat(myvec(x), myvec(dy))
@@ -127,14 +127,14 @@ end
 function DI.pullback!(
     f!,
     y,
-    tx::Tangents,
+    tx::NTuple,
     prep::FastDifferentiationTwoArgPullbackPrep,
     ::AutoFastDifferentiation,
     x,
-    ty::Tangents,
+    ty::NTuple,
 )
-    for b in eachindex(tx.d, ty.d)
-        dx, dy = tx.d[b], ty.d[b]
+    for b in eachindex(tx, ty)
+        dx, dy = tx[b], ty[b]
         v_vec = vcat(myvec(x), myvec(dy))
         prep.vjp_exe!(vec(dx), v_vec)
     end
@@ -147,7 +147,7 @@ function DI.value_and_pullback(
     prep::FastDifferentiationTwoArgPullbackPrep,
     backend::AutoFastDifferentiation,
     x,
-    ty::Tangents,
+    ty::NTuple,
 )
     tx = DI.pullback(f!, y, prep, backend, x, ty)
     f!(y, x)
@@ -157,11 +157,11 @@ end
 function DI.value_and_pullback!(
     f!,
     y,
-    tx::Tangents,
+    tx::NTuple,
     prep::FastDifferentiationTwoArgPullbackPrep,
     backend::AutoFastDifferentiation,
     x,
-    ty::Tangents,
+    ty::NTuple,
 )
     DI.pullback!(f!, y, tx, prep, backend, x, ty)
     f!(y, x)

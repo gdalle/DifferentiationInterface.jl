@@ -13,7 +13,7 @@ function prepare_hvp end
 """
     prepare_hvp_same_point(f, backend, x, tx, [contexts...]) -> prep_same
 
-Create an `prep_same` object that can be given to [`hvp`](@ref) and its variants _if they are applied at the same point `x`_.
+Create an `prep_same` object that can be given to [`hvp`](@ref) and its variants _if they are applied at the same point `x` and with the same `contexts`_.
 
 !!! warning
     If the function or the point changes in any way, the result of preparation will be invalidated, and you will need to run it again.
@@ -23,7 +23,7 @@ function prepare_hvp_same_point end
 """
     hvp(f, [prep,] backend, x, tx, [contexts...]) -> tg
 
-Compute the Hessian-vector product of `f` at point `x` with [`Tangents`](@ref) `tx`.
+Compute the Hessian-vector product of `f` at point `x` with a tuple of tangents `tx`.
 
 $(document_preparation("hvp"; same_point=true))
 """
@@ -32,7 +32,7 @@ function hvp end
 """
     hvp!(f, tg, [prep,] backend, x, tx, [contexts...]) -> tg
 
-Compute the Hessian-vector product of `f` at point `x` with [`Tangents`](@ref) `tx`, overwriting `tg`.
+Compute the Hessian-vector product of `f` at point `x` with a tuple of tangents `tx`, overwriting `tg`.
 
 $(document_preparation("hvp"; same_point=true))
 """
@@ -61,7 +61,7 @@ struct ReverseOverReverseHVPPrep{G,E<:PullbackPrep} <: HVPPrep
 end
 
 function prepare_hvp(
-    f::F, backend::AbstractADType, x, tx::Tangents, contexts::Vararg{Context,C}
+    f::F, backend::AbstractADType, x, tx::NTuple, contexts::Vararg{Context,C}
 ) where {F,C}
     return _prepare_hvp_aux(hvp_mode(backend), f, backend, x, tx, contexts...)
 end
@@ -71,7 +71,7 @@ function _prepare_hvp_aux(
     f::F,
     backend::AbstractADType,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     rewrap = Rewrap(contexts...)
@@ -91,7 +91,7 @@ function _prepare_hvp_aux(
     f::F,
     backend::AbstractADType,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     rewrap = Rewrap(contexts...)
@@ -111,16 +111,14 @@ function _prepare_hvp_aux(
     f::F,
     backend::AbstractADType,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     rewrap = Rewrap(contexts...)
     # gradient of pushforward
     function inner_pushforward(_x, _dx, unannotated_contexts...)
         annotated_contexts = rewrap(unannotated_contexts...)
-        ty = pushforward(
-            f, nested(inner(backend)), _x, Tangents(_dx), annotated_contexts...
-        )
+        ty = pushforward(f, nested(inner(backend)), _x, (_dx,), annotated_contexts...)
         return only(ty)
     end
     outer_gradient_prep = prepare_gradient(
@@ -134,7 +132,7 @@ function _prepare_hvp_aux(
     f::F,
     backend::AbstractADType,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     rewrap = Rewrap(contexts...)
@@ -156,7 +154,7 @@ function hvp(
     prep::ForwardOverForwardHVPPrep,
     backend::AbstractADType,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     @compat (; inner_gradient, outer_pushforward_prep) = prep
@@ -170,7 +168,7 @@ function hvp(
     prep::ForwardOverReverseHVPPrep,
     backend::AbstractADType,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     @compat (; inner_gradient, outer_pushforward_prep) = prep
@@ -184,7 +182,7 @@ function hvp(
     prep::ReverseOverForwardHVPPrep,
     backend::AbstractADType,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     @compat (; inner_pushforward, outer_gradient_prep) = prep
@@ -199,7 +197,7 @@ function hvp(
     prep::ReverseOverReverseHVPPrep,
     backend::AbstractADType,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     @compat (; inner_gradient, outer_pullback_prep) = prep
@@ -208,11 +206,11 @@ end
 
 function hvp!(
     f::F,
-    tg::Tangents,
+    tg::NTuple,
     prep::ForwardOverForwardHVPPrep,
     backend::AbstractADType,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     @compat (; inner_gradient, outer_pushforward_prep) = prep
@@ -223,11 +221,11 @@ end
 
 function hvp!(
     f::F,
-    tg::Tangents,
+    tg::NTuple,
     prep::ForwardOverReverseHVPPrep,
     backend::AbstractADType,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     @compat (; inner_gradient, outer_pushforward_prep) = prep
@@ -238,22 +236,22 @@ end
 
 function hvp!(
     f::F,
-    tg::Tangents,
+    tg::NTuple,
     prep::ReverseOverForwardHVPPrep,
     backend::AbstractADType,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     @compat (; inner_pushforward, outer_gradient_prep) = prep
-    for b in eachindex(tx.d, tg.d)
+    for b in eachindex(tx, tg)
         gradient!(
             inner_pushforward,
-            tg.d[b],
+            tg[b],
             outer_gradient_prep,
             outer(backend),
             x,
-            Constant(tx.d[b]),
+            Constant(tx[b]),
             contexts...,
         )
     end
@@ -262,11 +260,11 @@ end
 
 function hvp!(
     f::F,
-    tg::Tangents,
+    tg::NTuple,
     prep::ReverseOverReverseHVPPrep,
     backend::AbstractADType,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     @compat (; inner_gradient, outer_pullback_prep) = prep

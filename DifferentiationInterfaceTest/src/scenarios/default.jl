@@ -34,8 +34,8 @@ function num_to_num_scenarios(x::Number; dx::Number, dy::Number)
 
     # everyone out of place
     scens = Scenario[
-        Scenario{:pushforward,:out}(f, x; tang=Tangents(dx), res1=Tangents(dy_from_dx)),
-        Scenario{:pullback,:out}(f, x; tang=Tangents(dy), res1=Tangents(dx_from_dy)),
+        Scenario{:pushforward,:out}(f, x; tang=(dx,), res1=(dy_from_dx,)),
+        Scenario{:pullback,:out}(f, x; tang=(dy,), res1=(dx_from_dy,)),
         Scenario{:derivative,:out}(f, x; res1=der),
         Scenario{:second_derivative,:out}(f, x; res1=der, res2=der2),
     ]
@@ -49,24 +49,16 @@ function num_to_num_scenarios(x::Number; dx::Number, dy::Number)
             scens,
             [
                 Scenario{:pushforward,pl_op}(
-                    num_to_num_vec, [x]; tang=Tangents([dx]), res1=Tangents([dy_from_dx])
+                    num_to_num_vec, [x]; tang=([dx],), res1=([dy_from_dx],)
                 ),
                 Scenario{:pushforward,pl_op}(
-                    num_to_num_vec!,
-                    [y],
-                    [x];
-                    tang=Tangents([dx]),
-                    res1=Tangents([dy_from_dx]),
+                    num_to_num_vec!, [y], [x]; tang=([dx],), res1=([dy_from_dx],)
                 ),
                 Scenario{:pullback,pl_op}(
-                    num_to_num_vec, [x]; tang=Tangents([dy]), res1=Tangents([dx_from_dy])
+                    num_to_num_vec, [x]; tang=([dy],), res1=([dx_from_dy],)
                 ),
                 Scenario{:pullback,pl_op}(
-                    num_to_num_vec!,
-                    [y],
-                    [x];
-                    tang=Tangents([dy]),
-                    res1=Tangents([dx_from_dy]),
+                    num_to_num_vec!, [y], [x]; tang=([dy],), res1=([dx_from_dy],)
                 ),
                 Scenario{:jacobian,pl_op}(num_to_num_vec, [x]; res1=jac),
                 Scenario{:jacobian,pl_op}(num_to_num_vec!, [y], [x]; res1=jac),
@@ -135,19 +127,14 @@ function num_to_arr_scenarios_onearg(
         append!(
             scens,
             [
-                Scenario{:pushforward,pl_op}(
-                    f, x; tang=Tangents(dx), res1=Tangents(dy_from_dx)
-                ),
+                Scenario{:pushforward,pl_op}(f, x; tang=(dx,), res1=(dy_from_dx,)),
                 Scenario{:derivative,pl_op}(f, x; res1=der),
                 Scenario{:second_derivative,pl_op}(f, x; res1=der, res2=der2),
             ],
         )
     end
     for pl_op in (:out,)
-        append!(
-            scens,
-            [Scenario{:pullback,pl_op}(f, x; tang=Tangents(dy), res1=Tangents(dx_from_dy))],
-        )
+        append!(scens, [Scenario{:pullback,pl_op}(f, x; tang=(dy,), res1=(dx_from_dy,))])
     end
     return scens
 end
@@ -168,21 +155,14 @@ function num_to_arr_scenarios_twoarg(
         append!(
             scens,
             [
-                Scenario{:pushforward,pl_op}(
-                    f!, y, x; tang=Tangents(dx), res1=Tangents(dy_from_dx)
-                ),
+                Scenario{:pushforward,pl_op}(f!, y, x; tang=(dx,), res1=(dy_from_dx,)),
                 Scenario{:derivative,pl_op}(f!, y, x; res1=der),
             ],
         )
     end
     for pl_op in (:out,)
         append!(
-            scens,
-            [
-                Scenario{:pullback,pl_op}(
-                    f!, y, x; tang=Tangents(dy), res1=Tangents(dx_from_dy)
-                ),
-            ],
+            scens, [Scenario{:pullback,pl_op}(f!, y, x; tang=(dy,), res1=(dx_from_dy,))]
         )
     end
     return scens
@@ -262,24 +242,15 @@ function arr_to_num_scenarios_onearg(
         append!(
             scens,
             [
-                Scenario{:pullback,pl_op}(
-                    f, x; tang=Tangents(dy), res1=Tangents(dx_from_dy)
-                ),
+                Scenario{:pullback,pl_op}(f, x; tang=(dy,), res1=(dx_from_dy,)),
                 Scenario{:gradient,pl_op}(f, x; res1=grad),
-                Scenario{:hvp,pl_op}(f, x; tang=Tangents(dx), res1=grad, res2=Tangents(dg)),
+                Scenario{:hvp,pl_op}(f, x; tang=(dx,), res1=grad, res2=(dg,)),
                 Scenario{:hessian,pl_op}(f, x; res1=grad, res2=hess),
             ],
         )
     end
     for pl_op in (:out,)
-        append!(
-            scens,
-            [
-                Scenario{:pushforward,pl_op}(
-                    f, x; tang=Tangents(dx), res1=Tangents(dy_from_dx)
-                ),
-            ],
-        )
+        append!(scens, [Scenario{:pushforward,pl_op}(f, x; tang=(dx,), res1=(dy_from_dx,))])
     end
     return scens
 end
@@ -292,12 +263,8 @@ function all_array_to_array_scenarios(f, x; dx, dy, dy_from_dx, dx_from_dy, jac)
         append!(
             scens,
             [
-                Scenario{:pushforward,pl_op}(
-                    f, x; tang=Tangents(dx), res1=Tangents(dy_from_dx)
-                ),
-                Scenario{:pullback,pl_op}(
-                    f, x; tang=Tangents(dy), res1=Tangents(dx_from_dy)
-                ),
+                Scenario{:pushforward,pl_op}(f, x; tang=(dx,), res1=(dy_from_dx,)),
+                Scenario{:pullback,pl_op}(f, x; tang=(dy,), res1=(dx_from_dy,)),
                 Scenario{:jacobian,pl_op}(f, x; res1=jac),
             ],
         )
@@ -311,12 +278,8 @@ function all_array_to_array_scenarios(f!, y, x; dx, dy, dy_from_dx, dx_from_dy, 
         append!(
             scens,
             [
-                Scenario{:pushforward,pl_op}(
-                    f!, y, x; tang=Tangents(dx), res1=Tangents(dy_from_dx)
-                ),
-                Scenario{:pullback,pl_op}(
-                    f!, y, x; tang=Tangents(dy), res1=Tangents(dx_from_dy)
-                ),
+                Scenario{:pushforward,pl_op}(f!, y, x; tang=(dx,), res1=(dy_from_dx,)),
+                Scenario{:pullback,pl_op}(f!, y, x; tang=(dy,), res1=(dx_from_dy,)),
                 Scenario{:jacobian,pl_op}(f!, y, x; res1=jac),
             ],
         )

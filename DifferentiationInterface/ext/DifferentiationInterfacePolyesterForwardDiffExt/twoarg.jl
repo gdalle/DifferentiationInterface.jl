@@ -1,7 +1,7 @@
 ## Pushforward
 
 function DI.prepare_pushforward(
-    f!, y, backend::AutoPolyesterForwardDiff, x, tx::Tangents, contexts::Vararg{Context,C}
+    f!, y, backend::AutoPolyesterForwardDiff, x, tx::NTuple, contexts::Vararg{Context,C}
 ) where {C}
     return DI.prepare_pushforward(f!, y, single_threaded(backend), x, tx, contexts...)
 end
@@ -12,7 +12,7 @@ function DI.value_and_pushforward(
     prep::PushforwardPrep,
     backend::AutoPolyesterForwardDiff,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {C}
     return DI.value_and_pushforward(
@@ -23,11 +23,11 @@ end
 function DI.value_and_pushforward!(
     f!,
     y,
-    ty::Tangents,
+    ty::NTuple,
     prep::PushforwardPrep,
     backend::AutoPolyesterForwardDiff,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {C}
     return DI.value_and_pushforward!(
@@ -41,7 +41,7 @@ function DI.pushforward(
     prep::PushforwardPrep,
     backend::AutoPolyesterForwardDiff,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {C}
     return DI.pushforward(f!, y, prep, single_threaded(backend), x, tx, contexts...)
@@ -50,11 +50,11 @@ end
 function DI.pushforward!(
     f!,
     y,
-    ty::Tangents,
+    ty::NTuple,
     prep::PushforwardPrep,
     backend::AutoPolyesterForwardDiff,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {C}
     return DI.pushforward!(f!, y, ty, prep, single_threaded(backend), x, tx, contexts...)

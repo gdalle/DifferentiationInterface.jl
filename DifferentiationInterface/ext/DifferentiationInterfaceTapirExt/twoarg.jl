@@ -20,7 +20,7 @@ function DI.value_and_pullback(
     f!, y, prep::TapirTwoArgPullbackPrep, backend::AutoTapir, x, ty::Tangents
 )
     tx = map(ty) do dy
-        only(DI.pullback(f!, y, prep, backend, x, Tangents(dy)))
+        only(DI.pullback(f!, y, prep, backend, x, (dy,)))
     end
     f!(y, x)
     return y, tx

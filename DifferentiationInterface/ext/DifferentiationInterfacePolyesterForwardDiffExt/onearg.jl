@@ -2,7 +2,7 @@
 ## Pushforward
 
 function DI.prepare_pushforward(
-    f, backend::AutoPolyesterForwardDiff, x, tx::Tangents, contexts::Vararg{Context,C}
+    f, backend::AutoPolyesterForwardDiff, x, tx::NTuple, contexts::Vararg{Context,C}
 ) where {C}
     return DI.prepare_pushforward(f, single_threaded(backend), x, tx, contexts...)
 end
@@ -12,7 +12,7 @@ function DI.value_and_pushforward(
     prep::PushforwardPrep,
     backend::AutoPolyesterForwardDiff,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {C}
     return DI.value_and_pushforward(f, prep, single_threaded(backend), x, tx, contexts...)
@@ -20,11 +20,11 @@ end
 
 function DI.value_and_pushforward!(
     f,
-    ty::Tangents,
+    ty::NTuple,
     prep::PushforwardPrep,
     backend::AutoPolyesterForwardDiff,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {C}
     return DI.value_and_pushforward!(
@@ -37,7 +37,7 @@ function DI.pushforward(
     prep::PushforwardPrep,
     backend::AutoPolyesterForwardDiff,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {C}
     return DI.pushforward(f, prep, single_threaded(backend), x, tx, contexts...)
@@ -45,11 +45,11 @@ end
 
 function DI.pushforward!(
     f,
-    ty::Tangents,
+    ty::NTuple,
     prep::PushforwardPrep,
     backend::AutoPolyesterForwardDiff,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {C}
     return DI.pushforward!(f, ty, prep, single_threaded(backend), x, tx, contexts...)
@@ -277,7 +277,7 @@ end
 ## HVP
 
 function DI.prepare_hvp(
-    f, backend::AutoPolyesterForwardDiff, x, tx::Tangents, contexts::Vararg{Context,C}
+    f, backend::AutoPolyesterForwardDiff, x, tx::NTuple, contexts::Vararg{Context,C}
 ) where {C}
     return DI.prepare_hvp(f, single_threaded(backend), x, tx, contexts...)
 end
@@ -287,7 +287,7 @@ function DI.hvp(
     prep::HVPPrep,
     backend::AutoPolyesterForwardDiff,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {C}
     return DI.hvp(f, prep, single_threaded(backend), x, tx, contexts...)
@@ -295,11 +295,11 @@ end
 
 function DI.hvp!(
     f,
-    tg::Tangents,
+    tg::NTuple,
     prep::HVPPrep,
     backend::AutoPolyesterForwardDiff,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {C}
     return DI.hvp!(f, tg, prep, single_threaded(backend), x, tx, contexts...)

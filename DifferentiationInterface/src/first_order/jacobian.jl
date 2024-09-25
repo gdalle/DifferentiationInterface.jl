@@ -55,15 +55,15 @@ function jacobian! end
 ## Preparation
 
 struct PushforwardJacobianPrep{B,D,R,E<:PushforwardPrep} <: JacobianPrep
-    batched_seeds::Vector{Tangents{B,D}}
-    batched_results::Vector{Tangents{B,R}}
+    batched_seeds::Vector{NTuple{B,D}}
+    batched_results::Vector{NTuple{B,R}}
     pushforward_prep::E
     N::Int
 end
 
 struct PullbackJacobianPrep{B,D,R,E<:PullbackPrep} <: JacobianPrep
-    batched_seeds::Vector{Tangents{B,D}}
-    batched_results::Vector{Tangents{B,R}}
+    batched_seeds::Vector{NTuple{B,D}}
+    batched_results::Vector{NTuple{B,R}}
     pullback_prep::E
     M::Int
 end
@@ -97,10 +97,10 @@ function _prepare_jacobian_aux(
     B = pick_batchsize(backend, N)
     seeds = [basis(backend, x, ind) for ind in eachindex(x)]
     batched_seeds = [
-        Tangents(ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % N], Val(B))...) for
+        ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % N], Val(B)) for
         a in 1:div(N, B, RoundUp)
     ]
-    batched_results = [Tangents(ntuple(b -> similar(y), Val(B))...) for _ in batched_seeds]
+    batched_results = [ntuple(b -> similar(y), Val(B)) for _ in batched_seeds]
     pushforward_prep = prepare_pushforward(
         f_or_f!y..., backend, x, batched_seeds[1], contexts...
     )
@@ -124,10 +124,10 @@ function _prepare_jacobian_aux(
     B = pick_batchsize(backend, M)
     seeds = [basis(backend, y, ind) for ind in eachindex(y)]
     batched_seeds = [
-        Tangents(ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % M], Val(B))...) for
+        ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % M], Val(B)) for
         a in 1:div(M, B, RoundUp)
     ]
-    batched_results = [Tangents(ntuple(b -> similar(x), Val(B))...) for _ in batched_seeds]
+    batched_results = [ntuple(b -> similar(x), Val(B)) for _ in batched_seeds]
     pullback_prep = prepare_pullback(f_or_f!y..., backend, x, batched_seeds[1], contexts...)
     D = eltype(batched_seeds[1])
     R = eltype(batched_results[1])
@@ -227,7 +227,7 @@ function _jacobian_aux(
             batched_seeds[a],
             contexts...,
         )
-        stack(vec, dy_batch.d; dims=2)
+        stack(vec, dy_batch; dims=2)
     end
 
     jac = reduce(hcat, jac_blocks)
@@ -254,7 +254,7 @@ function _jacobian_aux(
         dx_batch = pullback(
             f_or_f!y..., pullback_prep_same, backend, x, batched_seeds[a], contexts...
         )
-        stack(vec, dx_batch.d; dims=1)
+        stack(vec, dx_batch; dims=1)
     end
 
     jac = reduce(vcat, jac_blocks)
@@ -289,9 +289,9 @@ function _jacobian_aux!(
             contexts...,
         )
 
-        for b in eachindex(batched_results[a].d)
+        for b in eachindex(batched_results[a])
             copyto!(
-                view(jac, :, 1 + ((a - 1) * B + (b - 1)) % N), vec(batched_results[a].d[b])
+                view(jac, :, 1 + ((a - 1) * B + (b - 1)) % N), vec(batched_results[a][b])
             )
         end
     end
@@ -324,9 +324,9 @@ function _jacobian_aux!(
             contexts...,
         )
 
-        for b in eachindex(batched_results[a].d)
+        for b in eachindex(batched_results[a])
             copyto!(
-                view(jac, 1 + ((a - 1) * B + (b - 1)) % M, :), vec(batched_results[a].d[b])
+                view(jac, 1 + ((a - 1) * B + (b - 1)) % M, :), vec(batched_results[a][b])
             )
         end
     end

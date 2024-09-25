@@ -13,7 +13,6 @@ DifferentiationInterface
 ```@docs
 Context
 Constant
-Tangents
 ```
 
 ## First order

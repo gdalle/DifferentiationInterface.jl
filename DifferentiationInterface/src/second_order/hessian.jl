@@ -49,8 +49,8 @@ function value_gradient_and_hessian! end
 ## Preparation
 
 struct HVPGradientHessianPrep{B,D,R,E2<:HVPPrep,E1<:GradientPrep} <: HessianPrep
-    batched_seeds::Vector{Tangents{B,D}}
-    batched_results::Vector{Tangents{B,R}}
+    batched_seeds::Vector{NTuple{B,D}}
+    batched_results::Vector{NTuple{B,R}}
     hvp_prep::E2
     gradient_prep::E1
     N::Int
@@ -63,10 +63,10 @@ function prepare_hessian(
     B = pick_batchsize(outer(backend), N)
     seeds = [basis(backend, x, ind) for ind in eachindex(x)]
     batched_seeds = [
-        Tangents(ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % N], Val(B))...) for
+        ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % N], Val(B)) for
         a in 1:div(N, B, RoundUp)
     ]
-    batched_results = [Tangents(ntuple(b -> similar(x), Val(B))...) for _ in batched_seeds]
+    batched_results = [ntuple(b -> similar(x), Val(B)) for _ in batched_seeds]
     hvp_prep = prepare_hvp(f, backend, x, batched_seeds[1], contexts...)
     gradient_prep = prepare_gradient(f, inner(backend), x, contexts...)
     D = eltype(batched_seeds[1])
@@ -94,7 +94,7 @@ function hessian(
 
     hess_blocks = map(eachindex(batched_seeds)) do a
         dg_batch = hvp(f, hvp_prep_same, backend, x, batched_seeds[a], contexts...)
-        stack(vec, dg_batch.d; dims=2)
+        stack(vec, dg_batch; dims=2)
     end
 
     hess = reduce(hcat, hess_blocks)
@@ -123,9 +123,9 @@ function hessian!(
             f, batched_results[a], hvp_prep_same, backend, x, batched_seeds[a], contexts...
         )
 
-        for b in eachindex(batched_results[a].d)
+        for b in eachindex(batched_results[a])
             copyto!(
-                view(hess, :, 1 + ((a - 1) * B + (b - 1)) % N), vec(batched_results[a].d[b])
+                view(hess, :, 1 + ((a - 1) * B + (b - 1)) % N), vec(batched_results[a][b])
             )
         end
     end

@@ -5,7 +5,7 @@ function DI.prepare_pullback(
     y,
     ::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
-    ty::Tangents,
+    ty::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
     return NoPullbackPrep()
@@ -17,7 +17,7 @@ function DI.value_and_pullback(
     ::NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x::Number,
-    ty::Tangents{1},
+    ty::NTuple{1},
     contexts::Vararg{Context,C},
 ) where {F,C}
     f!_and_df! = get_f_and_df(f!, backend)
@@ -34,7 +34,7 @@ function DI.value_and_pullback(
         ),
     )
     dx = dinputs[2]
-    return y, Tangents(dx)
+    return y, (dx,)
 end
 
 function DI.value_and_pullback(
@@ -43,24 +43,24 @@ function DI.value_and_pullback(
     ::NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x::Number,
-    ty::Tangents{B},
+    ty::NTuple{B},
     contexts::Vararg{Context,C},
 ) where {F,B,C}
     f!_and_df! = get_f_and_df(f!, backend, Val(B))
-    dys_sametype = map(Fix1(convert, typeof(y)), copy.(ty.d))
-    y_and_dys = BatchDuplicated(y, dys_sametype)
+    ty_sametype = map(Fix1(convert, typeof(y)), copy.(ty))
+    y_and_ty = BatchDuplicated(y, ty_sametype)
     dinputs = only(
         autodiff(
             reverse_mode_noprimal(backend),
             f!_and_df!,
             Const,
-            y_and_dys,
+            y_and_ty,
             Active(x),
             map(translate, contexts)...,
         ),
     )
-    dxs = dinputs[2]
-    return y, Tangents(dxs...)
+    tx = dinputs[2]
+    return y, tx
 end
 
 function DI.value_and_pullback(
@@ -69,7 +69,7 @@ function DI.value_and_pullback(
     ::NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
-    ty::Tangents{1},
+    ty::NTuple{1},
     contexts::Vararg{Context,C},
 ) where {F,C}
     f!_and_df! = get_f_and_df(f!, backend)
@@ -85,7 +85,7 @@ function DI.value_and_pullback(
         x_and_dx,
         map(translate, contexts)...,
     )
-    return y, Tangents(dx_sametype)
+    return y, (dx_sametype,)
 end
 
 function DI.value_and_pullback(
@@ -94,21 +94,21 @@ function DI.value_and_pullback(
     ::NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
-    ty::Tangents{B},
+    ty::NTuple{B},
     contexts::Vararg{Context,C},
 ) where {F,B,C}
     f!_and_df! = get_f_and_df(f!, backend, Val(B))
-    dxs_sametype = ntuple(_ -> make_zero(x), Val(B))
-    dys_sametype = map(Fix1(convert, typeof(y)), copy.(ty.d))
-    x_and_dxs = BatchDuplicated(x, dxs_sametype)
-    y_and_dys = BatchDuplicated(y, dys_sametype)
+    tx_sametype = ntuple(_ -> make_zero(x), Val(B))
+    ty_sametype = map(Fix1(convert, typeof(y)), copy.(ty))
+    x_and_tx = BatchDuplicated(x, tx_sametype)
+    y_and_ty = BatchDuplicated(y, ty_sametype)
     autodiff(
         reverse_mode_noprimal(backend),
         f!_and_df!,
         Const,
-        y_and_dys,
-        x_and_dxs,
+        y_and_ty,
+        x_and_tx,
         map(translate, contexts)...,
     )
-    return y, Tangents(dxs_sametype...)
+    return y, tx_sametype
 end

@@ -3,7 +3,7 @@ module DifferentiationInterfaceTrackerExt
 using ADTypes: AutoTracker
 import DifferentiationInterface as DI
 using DifferentiationInterface:
-    Constant, NoGradientPrep, NoPullbackPrep, PullbackPrep, Tangents, unwrap, with_contexts
+    Constant, NoGradientPrep, NoPullbackPrep, PullbackPrep, unwrap, with_contexts
 using Tracker: Tracker, back, data, forward, gradient, jacobian, param, withgradient
 using Compat
 
@@ -18,20 +18,20 @@ struct TrackerPullbackPrepSamePoint{Y,PB} <: PullbackPrep
 end
 
 function DI.prepare_pullback(
-    f, ::AutoTracker, x, ty::Tangents, contexts::Vararg{Constant,C}
+    f, ::AutoTracker, x, ty::NTuple, contexts::Vararg{Constant,C}
 ) where {C}
     return NoPullbackPrep()
 end
 
 function DI.prepare_pullback_same_point(
-    f, ::NoPullbackPrep, ::AutoTracker, x, ty::Tangents, contexts::Vararg{Constant,C}
+    f, ::NoPullbackPrep, ::AutoTracker, x, ty::NTuple, contexts::Vararg{Constant,C}
 ) where {C}
     y, pb = forward(f, x, map(unwrap, contexts)...)
     return TrackerPullbackPrepSamePoint(y, pb)
 end
 
 function DI.value_and_pullback(
-    f, ::NoPullbackPrep, ::AutoTracker, x, ty::Tangents, contexts::Vararg{Constant,C}
+    f, ::NoPullbackPrep, ::AutoTracker, x, ty::NTuple, contexts::Vararg{Constant,C}
 ) where {C}
     y, pb = forward(f, x, map(unwrap, contexts)...)
     tx = map(ty) do dy
@@ -45,7 +45,7 @@ function DI.value_and_pullback(
     prep::TrackerPullbackPrepSamePoint,
     ::AutoTracker,
     x,
-    ty::Tangents,
+    ty::NTuple,
     contexts::Vararg{Constant,C},
 ) where {C}
     @compat (; y, pb) = prep
@@ -60,7 +60,7 @@ function DI.pullback(
     prep::TrackerPullbackPrepSamePoint,
     ::AutoTracker,
     x,
-    ty::Tangents,
+    ty::NTuple,
     contexts::Vararg{Constant,C},
 ) where {C}
     @compat (; pb) = prep

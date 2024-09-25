@@ -1,7 +1,7 @@
 ## Pushforward
 
 function DI.prepare_pushforward(
-    f!, y, ::AutoFiniteDiff, x, tx::Tangents, contexts::Vararg{Context,C}
+    f!, y, ::AutoFiniteDiff, x, tx::NTuple, contexts::Vararg{Context,C}
 ) where {C}
     return NoPushforwardPrep()
 end
@@ -12,7 +12,7 @@ function DI.value_and_pushforward(
     ::NoPushforwardPrep,
     backend::AutoFiniteDiff,
     x,
-    tx::Tangents,
+    tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {C}
     function step(t::Number, dx)
