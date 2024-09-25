@@ -343,7 +343,7 @@ for op in [
                 [
                     (),
                     ($prep_op(f, ba, xrand, tangrand, contextsrand...),),
-                    ($prep_op_same(f, ba, x, tangrand, contextsrand...),),
+                    ($prep_op_same(f, ba, x, tangrand, contexts...),),
                 ]
             end
             for (preptup_val, preptup_noval) in zip(preptup_cands_val, preptup_cands_noval)
@@ -385,7 +385,7 @@ for op in [
                 [
                     (),
                     ($prep_op(f, ba, xrand, tangrand, contextsrand...),),
-                    ($prep_op_same(f, ba, x, tangrand, contextsrand...),),
+                    ($prep_op_same(f, ba, x, tangrand, contexts...),),
                 ]
             end
             for (preptup_val, preptup_noval) in zip(preptup_cands_val, preptup_cands_noval)
@@ -439,7 +439,7 @@ for op in [
                 [
                     (),
                     ($prep_op(f, yrand, ba, xrand, tangrand, contextsrand...),),
-                    ($prep_op_same(f, yrand, ba, x, tangrand, contextsrand...),),
+                    ($prep_op_same(f, yrand, ba, x, tangrand, contexts...),),
                 ]
             end
             for (preptup_val, preptup_noval) in zip(preptup_cands_val, preptup_cands_noval)
@@ -491,7 +491,7 @@ for op in [
                 [
                     (),
                     ($prep_op(f, yrand, ba, xrand, tangrand, contextsrand...),),
-                    ($prep_op_same(f, yrand, ba, x, tangrand, contextsrand...),),
+                    ($prep_op_same(f, yrand, ba, x, tangrand, contexts...),),
                 ]
             end
             for (preptup_val, preptup_noval) in zip(preptup_cands_val, preptup_cands_noval)
@@ -561,7 +561,7 @@ for op in [
             preptup_cands_noval = [
                 (),
                 ($prep_op(f, ba, xrand, tangrand, contextsrand...),),
-                ($prep_op_same(f, ba, x, tangrand, contextsrand...),),
+                ($prep_op_same(f, ba, x, tangrand, contexts...),),
             ]
             for preptup_noval in preptup_cands_noval
                 res2_out1_noval = $op(f, preptup_noval..., ba, x, tang, contexts...)
@@ -591,7 +591,7 @@ for op in [
             preptup_cands_noval = [
                 (),
                 ($prep_op(f, ba, xrand, tangrand, contextsrand...),),
-                ($prep_op_same(f, ba, x, tangrand, contextsrand...),),
+                ($prep_op_same(f, ba, x, tangrand, contexts...),),
             ]
             for preptup_noval in preptup_cands_noval
                 res2_in1_noval = mysimilar(res2)
