@@ -23,9 +23,7 @@ using Mooncake:
     zero_tangent,
     __value_and_pullback!!
 
-function DI.check_available(::AutoMooncake)
-    return true
-end
+DI.check_available(::AutoMooncake) = true
 
 get_config(::AutoMooncake{Nothing}) = Config()
 get_config(backend::AutoMooncake{<:Config}) = backend.config

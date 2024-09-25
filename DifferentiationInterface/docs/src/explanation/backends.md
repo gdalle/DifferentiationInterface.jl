@@ -146,7 +146,7 @@ For all operators, preparation generates an [executable function](https://docs.s
 
 ### Mooncake
 
-For `pullback`, preparation [builds the reverse rule](https://github.com/withbayes/Mooncake.jl?tab=readme-ov-file#how-it-works) of the function.
+For `pullback`, preparation [builds the reverse rule](https://github.com/compintell/Mooncake.jl?tab=readme-ov-file#how-it-works) of the function.
 
 ### Tracker
 

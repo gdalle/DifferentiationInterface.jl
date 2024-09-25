@@ -37,7 +37,7 @@ We support the following backends defined by [ADTypes.jl](https://github.com/Sci
 - [FiniteDiff.jl](https://github.com/JuliaDiff/FiniteDiff.jl)
 - [FiniteDifferences.jl](https://github.com/JuliaDiff/FiniteDifferences.jl)
 - [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl)
-- [Mooncake.jl](https://github.com/withbayes/Mooncake.jl)
+- [Mooncake.jl](https://github.com/compintell/Mooncake.jl)
 - [PolyesterForwardDiff.jl](https://github.com/JuliaDiff/PolyesterForwardDiff.jl)
 - [ReverseDiff.jl](https://github.com/JuliaDiff/ReverseDiff.jl)
 - [Symbolics.jl](https://github.com/JuliaSymbolics/Symbolics.jl)
