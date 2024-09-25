@@ -38,7 +38,7 @@ function DI.value_and_pullback(
     # running the forwards-pass, so I'm going to take a copy, and zero-out the original.
     dy_righttype_backup = copy(dy_righttype)
     dy_righttype = set_to_zero!!(dy_righttype)
-    contexts_coduals = map(zero_fcodual ∘ unwrap, contexts)
+    contexts_coduals = map(zero_codual ∘ unwrap, contexts)
 
     # Mutate a copy of `y`, so that we can run the reverse-pass later on.
     y_copy = copy(y)
