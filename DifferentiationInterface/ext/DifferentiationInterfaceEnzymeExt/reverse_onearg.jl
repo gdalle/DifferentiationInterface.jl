@@ -23,12 +23,13 @@ end
 
 function batch_seeded_autodiff_thunk(
     rmode::ReverseModeSplit{ReturnPrimal},
-    dresults::NTuple,
+    dresults::NTuple{B},
     f::FA,
     ::Type{RA},
     args::Vararg{Annotation,N},
-) where {ReturnPrimal,FA<:Annotation,RA<:Annotation,N}
-    forward, reverse = autodiff_thunk(rmode, FA, RA, typeof.(args)...)
+) where {ReturnPrimal,B,FA<:Annotation,RA<:Annotation,N}
+    rmode_rightwidth = set_width(rmode, Val(B))
+    forward, reverse = autodiff_thunk(rmode_rightwidth, FA, RA, typeof.(args)...)
     tape, result, shadow_results = forward(f, args...)
     if RA <: Active
         dresults_righttype = map(Fix1(convert, typeof(result)), dresults)
@@ -79,20 +80,19 @@ end
 
 function DI.value_and_pullback(
     f::F,
-    prep::NoPullbackPrep,
+    ::NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x::Number,
     ty::Tangents{B},
     contexts::Vararg{Context,C},
 ) where {F,B,C}
-    # TODO: improve
-    ys_and_dxs = map(ty.d) do dy
-        y, tx = DI.value_and_pullback(f, prep, backend, x, Tangents(dy), contexts...)
-        y, only(tx)
-    end
-    y = first(ys_and_dxs[1])
-    dxs = last.(ys_and_dxs)
-    return y, Tangents(dxs...)
+    f_and_df = force_annotation(get_f_and_df(f, backend, Val(B)))
+    mode = reverse_mode_split_withprimal(backend)
+    RA = eltype(ty) <: Number ? Active : BatchDuplicated
+    dinputs, result = batch_seeded_autodiff_thunk(
+        mode, NTuple(ty), f_and_df, RA, Active(x), map(translate, contexts)...
+    )
+    return result, Tangents(first(dinputs)...)
 end
 
 function DI.value_and_pullback(
@@ -293,37 +293,37 @@ end
 
 ## Jacobian
 
-struct EnzymeReverseOneArgJacobianPrep{M,B} <: JacobianPrep end
+struct EnzymeReverseOneArgJacobianPrep{Sy,B} <: JacobianPrep end
 
 function DI.prepare_jacobian(f::F, backend::AutoEnzyme{<:ReverseMode,Nothing}, x) where {F}
     y = f(x)
-    M = length(y)
-    B = pick_batchsize(backend, M)
-    return EnzymeReverseOneArgJacobianPrep{M,B}()
+    Sy = size(y)
+    B = pick_batchsize(backend, prod(Sy))
+    return EnzymeReverseOneArgJacobianPrep{Sy,B}()
 end
 
 function DI.jacobian(
     f::F,
-    ::EnzymeReverseOneArgJacobianPrep{M,B},
+    ::EnzymeReverseOneArgJacobianPrep{Sy,B},
     backend::AutoEnzyme{<:ReverseMode,Nothing},
     x,
-) where {F,M,B}
-    derivs = jacobian(reverse_mode_noprimal(backend), f, x; n_outs=Val((M,)), chunk=Val(B))
+) where {F,Sy,B}
+    derivs = jacobian(reverse_mode_noprimal(backend), f, x; n_outs=Val(Sy), chunk=Val(B))
     jac_tensor = only(derivs)
-    return maybe_reshape(jac_tensor, M, length(x))
+    return maybe_reshape(jac_tensor, prod(Sy), length(x))
 end
 
 function DI.value_and_jacobian(
     f::F,
-    prep::EnzymeReverseOneArgJacobianPrep{M,B},
+    ::EnzymeReverseOneArgJacobianPrep{Sy,B},
     backend::AutoEnzyme{<:ReverseMode,Nothing},
     x,
-) where {F,M,B}
+) where {F,Sy,B}
     (; derivs, val) = jacobian(
-        reverse_mode_withprimal(backend), f, x; n_outs=Val((M,)), chunk=Val(B)
+        reverse_mode_withprimal(backend), f, x; n_outs=Val(Sy), chunk=Val(B)
     )
-    jac_tensor = derivs
-    return val, maybe_reshape(jac_tensor, M, length(x))
+    jac_tensor = only(derivs)
+    return val, maybe_reshape(jac_tensor, prod(Sy), length(x))
 end
 
 function DI.jacobian!(
