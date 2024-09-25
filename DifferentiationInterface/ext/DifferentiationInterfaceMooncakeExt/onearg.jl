@@ -38,7 +38,7 @@ end
 function DI.value_and_pullback!(
     f,
     prep::MooncakeOneArgPullbackPrep{Y},
-    tx::NTuple,
+    tx::NTuple{1},
     ::AutoMooncake,
     x,
     ty::NTuple{1},

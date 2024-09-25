@@ -37,7 +37,7 @@ myderivative(::Type{T}, ydual) where {T} = myderivative.(T, ydual)
 myderivative!(::Type{T}, dy, ydual) where {T} = dy .= myderivative.(T, ydual)
 
 function mypartials(::Type{T}, ::Val{B}, ydual::Dual) where {T,B}
-    return partials(T, ydual)
+    return partials(T, ydual).values
 end
 
 function mypartials(::Type{T}, ::Val{B}, ydual) where {T,B}
