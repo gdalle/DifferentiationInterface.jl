@@ -54,16 +54,17 @@ function jacobian! end
 
 ## Preparation
 
-struct PushforwardJacobianPrep{B,D,R,E<:PushforwardPrep} <: JacobianPrep
-    batched_seeds::Vector{NTuple{B,D}}
-    batched_results::Vector{NTuple{B,R}}
+struct PushforwardJacobianPrep{B,TD<:NTuple{B},TR<:NTuple{B},E<:PushforwardPrep} <:
+       JacobianPrep
+    batched_seeds::Vector{TD}
+    batched_results::Vector{TR}
     pushforward_prep::E
     N::Int
 end
 
-struct PullbackJacobianPrep{B,D,R,E<:PullbackPrep} <: JacobianPrep
-    batched_seeds::Vector{NTuple{B,D}}
-    batched_results::Vector{NTuple{B,R}}
+struct PullbackJacobianPrep{B,TD<:NTuple{B},TR<:NTuple{B},E<:PullbackPrep} <: JacobianPrep
+    batched_seeds::Vector{TD}
+    batched_results::Vector{TR}
     pullback_prep::E
     M::Int
 end
@@ -104,10 +105,10 @@ function _prepare_jacobian_aux(
     pushforward_prep = prepare_pushforward(
         f_or_f!y..., backend, x, batched_seeds[1], contexts...
     )
-    D = eltype(batched_seeds[1])
-    R = eltype(batched_results[1])
+    TD = eltype(batched_seeds)
+    TR = eltype(batched_results)
     E = typeof(pushforward_prep)
-    return PushforwardJacobianPrep{B,D,R,E}(
+    return PushforwardJacobianPrep{B,TD,TR,E}(
         batched_seeds, batched_results, pushforward_prep, N
     )
 end
@@ -129,10 +130,10 @@ function _prepare_jacobian_aux(
     ]
     batched_results = [ntuple(b -> similar(x), Val(B)) for _ in batched_seeds]
     pullback_prep = prepare_pullback(f_or_f!y..., backend, x, batched_seeds[1], contexts...)
-    D = eltype(batched_seeds[1])
-    R = eltype(batched_results[1])
+    TD = eltype(batched_seeds)
+    TR = eltype(batched_results)
     E = typeof(pullback_prep)
-    return PullbackJacobianPrep{B,D,R,E}(batched_seeds, batched_results, pullback_prep, M)
+    return PullbackJacobianPrep{B,TD,TR,E}(batched_seeds, batched_results, pullback_prep, M)
 end
 
 ## One argument

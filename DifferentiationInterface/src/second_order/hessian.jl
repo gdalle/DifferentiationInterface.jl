@@ -48,9 +48,10 @@ function value_gradient_and_hessian! end
 
 ## Preparation
 
-struct HVPGradientHessianPrep{B,D,R,E2<:HVPPrep,E1<:GradientPrep} <: HessianPrep
-    batched_seeds::Vector{NTuple{B,D}}
-    batched_results::Vector{NTuple{B,R}}
+struct HVPGradientHessianPrep{B,TD<:NTuple{B},TR<:NTuple{B},E2<:HVPPrep,E1<:GradientPrep} <:
+       HessianPrep
+    batched_seeds::Vector{TD}
+    batched_results::Vector{TR}
     hvp_prep::E2
     gradient_prep::E1
     N::Int
@@ -69,10 +70,10 @@ function prepare_hessian(
     batched_results = [ntuple(b -> similar(x), Val(B)) for _ in batched_seeds]
     hvp_prep = prepare_hvp(f, backend, x, batched_seeds[1], contexts...)
     gradient_prep = prepare_gradient(f, inner(backend), x, contexts...)
-    D = eltype(batched_seeds[1])
-    R = eltype(batched_results[1])
+    TD = eltype(batched_seeds)
+    TR = eltype(batched_results)
     E2, E1 = typeof(hvp_prep), typeof(gradient_prep)
-    return HVPGradientHessianPrep{B,D,R,E2,E1}(
+    return HVPGradientHessianPrep{B,TD,TR,E2,E1}(
         batched_seeds, batched_results, hvp_prep, gradient_prep, N
     )
 end

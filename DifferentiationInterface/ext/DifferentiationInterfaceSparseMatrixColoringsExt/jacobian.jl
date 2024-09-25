@@ -14,14 +14,14 @@ struct PushforwardSparseJacobianPrep{
     B,
     C<:AbstractColoringResult{:nonsymmetric,:column},
     M<:AbstractMatrix{<:Real},
-    D,
-    R,
+    TD<:NTuple{B},
+    TR<:NTuple{B},
     E<:PushforwardPrep,
 } <: SparseJacobianPrep
     coloring_result::C
     compressed_matrix::M
-    batched_seeds::Vector{NTuple{B,D}}
-    batched_results::Vector{NTuple{B,R}}
+    batched_seeds::Vector{TD}
+    batched_results::Vector{TR}
     pushforward_prep::E
 end
 
@@ -29,25 +29,25 @@ struct PullbackSparseJacobianPrep{
     B,
     C<:AbstractColoringResult{:nonsymmetric,:row},
     M<:AbstractMatrix{<:Real},
-    D,
-    R,
+    TD<:NTuple{B},
+    TR<:NTuple{B},
     E<:PullbackPrep,
 } <: SparseJacobianPrep
     coloring_result::C
     compressed_matrix::M
-    batched_seeds::Vector{NTuple{B,D}}
-    batched_results::Vector{NTuple{B,R}}
+    batched_seeds::Vector{TD}
+    batched_results::Vector{TR}
     pullback_prep::E
 end
 
 function PushforwardSparseJacobianPrep{B}(;
     coloring_result::C,
     compressed_matrix::M,
-    batched_seeds::Vector{NTuple{B,D}},
-    batched_results::Vector{NTuple{B,R}},
+    batched_seeds::Vector{TD},
+    batched_results::Vector{TR},
     pushforward_prep::E,
-) where {B,C,M,D,R,E}
-    return PushforwardSparseJacobianPrep{B,C,M,D,R,E}(
+) where {B,C,M,TD,TR,E}
+    return PushforwardSparseJacobianPrep{B,C,M,TD,TR,E}(
         coloring_result, compressed_matrix, batched_seeds, batched_results, pushforward_prep
     )
 end
@@ -55,11 +55,11 @@ end
 function PullbackSparseJacobianPrep{B}(;
     coloring_result::C,
     compressed_matrix::M,
-    batched_seeds::Vector{NTuple{B,D}},
-    batched_results::Vector{NTuple{B,R}},
+    batched_seeds::Vector{TD},
+    batched_results::Vector{TR},
     pullback_prep::E,
-) where {B,C,M,D,R,E}
-    return PullbackSparseJacobianPrep{B,C,M,D,R,E}(
+) where {B,C,M,TD,TR,E}
+    return PullbackSparseJacobianPrep{B,C,M,TD,TR,E}(
         coloring_result, compressed_matrix, batched_seeds, batched_results, pullback_prep
     )
 end

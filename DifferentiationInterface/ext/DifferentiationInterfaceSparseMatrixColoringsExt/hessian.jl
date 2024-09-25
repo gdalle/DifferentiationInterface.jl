@@ -2,15 +2,15 @@ struct SparseHessianPrep{
     B,
     C<:AbstractColoringResult{:symmetric,:column},
     M<:AbstractMatrix{<:Real},
-    D,
-    R,
+    TD<:NTuple{B},
+    TR<:NTuple{B},
     E2<:HVPPrep,
     E1<:GradientPrep,
 } <: HessianPrep
     coloring_result::C
     compressed_matrix::M
-    batched_seeds::Vector{NTuple{B,D}}
-    batched_results::Vector{NTuple{B,R}}
+    batched_seeds::Vector{TD}
+    batched_results::Vector{TR}
     hvp_prep::E2
     gradient_prep::E1
 end
@@ -18,12 +18,12 @@ end
 function SparseHessianPrep{B}(;
     coloring_result::C,
     compressed_matrix::M,
-    batched_seeds::Vector{NTuple{B,D}},
-    batched_results::Vector{NTuple{B,R}},
+    batched_seeds::Vector{TD},
+    batched_results::Vector{TR},
     hvp_prep::E2,
     gradient_prep::E1,
-) where {B,C,M,D,R,E2,E1}
-    return SparseHessianPrep{B,C,M,D,R,E2,E1}(
+) where {B,C,M,TD,TR,E2,E1}
+    return SparseHessianPrep{B,C,M,TD,TR,E2,E1}(
         coloring_result,
         compressed_matrix,
         batched_seeds,
