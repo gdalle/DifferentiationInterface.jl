@@ -115,6 +115,32 @@ function mode_split(
     }()
 end
 
+function set_width(
+    ::ReverseModeSplit{
+        ReturnPrimal,ReturnShadow,RuntimeActivity,Width,ModifiedBetween,ABI,ErrIfFuncWritten
+    },
+    ::Val{NewWidth},
+) where {
+    ReturnPrimal,
+    ReturnShadow,
+    RuntimeActivity,
+    Width,
+    ModifiedBetween,
+    ABI,
+    ErrIfFuncWritten,
+    NewWidth,
+}
+    return ReverseModeSplit{
+        ReturnPrimal,
+        ReturnShadow,
+        RuntimeActivity,
+        NewWidth,
+        ModifiedBetween,
+        ABI,
+        ErrIfFuncWritten,
+    }()
+end
+
 mode_noprimal(mode::Mode) = mode_noprimal(typeof(mode))
 mode_withprimal(mode::Mode) = mode_withprimal(typeof(mode))
 mode_split(mode::Mode) = mode_split(typeof(mode))
