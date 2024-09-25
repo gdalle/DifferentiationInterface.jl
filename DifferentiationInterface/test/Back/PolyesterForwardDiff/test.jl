@@ -12,4 +12,8 @@ for backend in [AutoPolyesterForwardDiff(; chunksize=1)]
     @test check_inplace(backend)
 end
 
-test_differentiation(AutoPolyesterForwardDiff(; chunksize=1); logging=LOGGING);
+test_differentiation(
+    AutoPolyesterForwardDiff(; chunksize=1),
+    default_scenarios(; include_constantified=true);
+    logging=LOGGING,
+);

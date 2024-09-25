@@ -3,9 +3,11 @@ module DifferentiationInterfacePolyesterForwardDiffExt
 using ADTypes: AutoForwardDiff, AutoPolyesterForwardDiff
 import DifferentiationInterface as DI
 using DifferentiationInterface:
+    Context,
     DerivativePrep,
     GradientPrep,
     HessianPrep,
+    HVPPrep,
     JacobianPrep,
     NoDerivativePrep,
     NoGradientPrep,
@@ -13,7 +15,9 @@ using DifferentiationInterface:
     NoJacobianPrep,
     PushforwardPrep,
     SecondDerivativePrep,
-    Tangents
+    Tangents,
+    unwrap,
+    with_contexts
 using LinearAlgebra: mul!
 using PolyesterForwardDiff: threaded_gradient!, threaded_jacobian!
 using PolyesterForwardDiff.ForwardDiff: Chunk
