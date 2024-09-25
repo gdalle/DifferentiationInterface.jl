@@ -11,10 +11,10 @@ We support the following dense backend choices from [ADTypes.jl](https://github.
 - [`AutoFiniteDiff`](@extref ADTypes.AutoFiniteDiff)
 - [`AutoFiniteDifferences`](@extref ADTypes.AutoFiniteDifferences)
 - [`AutoForwardDiff`](@extref ADTypes.AutoForwardDiff)
+- [`AutoMooncake`](@extref ADTypes.AutoMooncake)
 - [`AutoPolyesterForwardDiff`](@extref ADTypes.AutoPolyesterForwardDiff)
 - [`AutoReverseDiff`](@extref ADTypes.AutoReverseDiff)
 - [`AutoSymbolics`](@extref ADTypes.AutoSymbolics)
-- [`AutoTapir`](@extref ADTypes.AutoTapir)
 - [`AutoTracker`](@extref ADTypes.AutoTracker)
 - [`AutoZygote`](@extref ADTypes.AutoZygote)
 
@@ -55,10 +55,10 @@ In practice, many AD backends have custom implementations for high-level operato
     | `AutoFiniteDiff`           | 🔀    | ❌    | ✅     | ✅      | ✅     | ✅      | ❌     | ❌      |
     | `AutoFiniteDifferences`    | 🔀    | ❌    | ❌     | ✅      | ✅     | ❌      | ❌     | ❌      |
     | `AutoForwardDiff`          | ✅    | ❌    | ✅     | ✅      | ✅     | ✅      | ✅     | ✅      |
+    | `AutoMooncake`             | ❌    | ✅    | ❌     | ❌      | ❌     | ❌      | ❌     | ❌      |
     | `AutoPolyesterForwardDiff` | 🔀    | ❌    | 🔀     | ✅      | ✅     | 🔀      | 🔀     | 🔀      |
     | `AutoReverseDiff`          | ❌    | 🔀    | ❌     | ✅      | ✅     | ✅      | ❌     | ❌      |
     | `AutoSymbolics`            | ✅    | ❌    | ✅     | ✅      | ✅     | ✅      | ❌     | ❌      |
-    | `AutoTapir`                | ❌    | ✅    | ❌     | ❌      | ❌     | ❌      | ❌     | ❌      |
     | `AutoTracker`              | ❌    | ✅    | ❌     | ✅      | ❌     | ❌      | ❌     | ❌      |
     | `AutoZygote`               | ❌    | ✅    | ❌     | ✅      | ✅     | ✅      | 🔀     | ❌      |
 
@@ -144,9 +144,9 @@ For all operators, preparation generates an [executable function](https://docs.s
 !!! warning
     Preparation can be very slow for symbolic AD.
 
-### Tapir
+### Mooncake
 
-For `pullback`, preparation [builds the reverse rule](https://github.com/withbayes/Tapir.jl?tab=readme-ov-file#how-it-works) of the function.
+For `pullback`, preparation [builds the reverse rule](https://github.com/withbayes/Mooncake.jl?tab=readme-ov-file#how-it-works) of the function.
 
 ### Tracker
 

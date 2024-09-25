@@ -1,33 +1,33 @@
-struct TapirTwoArgPullbackPrep{R} <: PullbackPrep
+struct MooncakeTwoArgPullbackPrep{R} <: DI.PullbackPrep
     rrule::R
 end
 
-function DI.prepare_pullback(f!, y, backend::AutoTapir, x, ty::Tangents)
+function DI.prepare_pullback(f!, y, backend::AutoMooncake, x, ty::DI.Tangents)
     rrule = build_rrule(
-        get_tapir_interpreter(),
+        get_interpreter(),
         Tuple{typeof(f!),typeof(y),typeof(x)};
-        safety_on=backend.safe_mode,
-        silence_safety_messages=false,
+        debug_mode=false,  # TODO: modify
+        silence_debug_messages=false,
     )
-    prep = TapirTwoArgPullbackPrep(rrule)
+    prep = MooncakeTwoArgPullbackPrep(rrule)
     DI.value_and_pullback(f!, y, prep, backend, x, ty)  # warm up
     return prep
 end
 
-# see https://github.com/withbayes/Tapir.jl/issues/113#issuecomment-2036718992
+# see https://github.com/withbayes/Mooncake.jl/issues/113#issuecomment-2036718992
 
 function DI.value_and_pullback(
-    f!, y, prep::TapirTwoArgPullbackPrep, backend::AutoTapir, x, ty::Tangents
+    f!, y, prep::MooncakeTwoArgPullbackPrep, backend::AutoMooncake, x, ty::DI.Tangents
 )
     tx = map(ty) do dy
-        only(DI.pullback(f!, y, prep, backend, x, Tangents(dy)))
+        only(DI.pullback(f!, y, prep, backend, x, DI.Tangents(dy)))
     end
     f!(y, x)
     return y, tx
 end
 
 function DI.value_and_pullback(
-    f!, y, prep::TapirTwoArgPullbackPrep, ::AutoTapir, x, ty::Tangents{1}
+    f!, y, prep::MooncakeTwoArgPullbackPrep, ::AutoMooncake, x, ty::DI.Tangents{1}
 )
     dy = only(ty)
     dy_righttype = convert(tangent_type(typeof(y)), copy(dy))
@@ -67,5 +67,5 @@ function DI.value_and_pullback(
     # Run the reverse-pass.
     _, _, new_dx = pb!!(NoRData())
 
-    return y, Tangents(tangent(fdata(dx_righttype), new_dx))
+    return y, DI.Tangents(tangent(fdata(dx_righttype), new_dx))
 end

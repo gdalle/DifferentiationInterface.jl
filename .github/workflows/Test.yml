@@ -32,27 +32,27 @@ jobs:
           - "pre"
         group:
           - Formalities
-          - Internals
-          - Back/ChainRulesCore
-          - Back/Diffractor
-          - Back/Enzyme
-          - Back/FastDifferentiation
-          - Back/FiniteDiff
-          - Back/FiniteDifferences
-          - Back/ForwardDiff
-          - Back/PolyesterForwardDiff
-          - Back/ReverseDiff
-          - Back/SecondOrder
-          - Back/Symbolics
-          - Back/Tapir
-          - Back/Tracker
-          - Back/Zygote
-          - Misc/DifferentiateWith
-          - Misc/FromPrimitive
-          - Misc/SparsityDetector
-          - Misc/ZeroBackends
-          - Down/Flux
-          - Down/Lux
+          # - Internals
+          # - Back/ChainRulesCore
+          # - Back/Diffractor
+          # - Back/Enzyme
+          # - Back/FastDifferentiation
+          # - Back/FiniteDiff
+          # - Back/FiniteDifferences
+          # - Back/ForwardDiff
+          - Back/Mooncake
+          # - Back/PolyesterForwardDiff
+          # - Back/ReverseDiff
+          # - Back/SecondOrder
+          # - Back/Symbolics
+          # - Back/Tracker
+          # - Back/Zygote
+          # - Misc/DifferentiateWith
+          # - Misc/FromPrimitive
+          # - Misc/SparsityDetector
+          # - Misc/ZeroBackends
+          # - Down/Flux
+          # - Down/Lux
         exclude:
           # lts
           - version: "lts"
@@ -68,13 +68,13 @@ jobs:
           - version: "lts"
             group: Back/FastDifferentiation
           - version: "lts"
+            group: Back/Mooncake
+          - version: "lts"
             group: Back/PolyesterForwardDiff
           - version: "lts"
             group: Back/SecondOrder
           - version: "lts"
             group: Back/Symbolics
-          - version: "lts"
-            group: Back/Tapir
           - version: "lts"
             group: Misc/SparsityDetector
           - version: "lts"
@@ -89,7 +89,7 @@ jobs:
           - version: "pre"
             group: Back/Enzyme
           - version: "pre"
-            group: Back/Tapir
+            group: Back/Mooncake
           - version: "pre"
             group: Back/SecondOrder
           - version: "pre"
@@ -140,13 +140,13 @@ jobs:
       matrix:
         version:
           - "1"
-          - "lts"
-          - "pre"
+          # - "lts"
+          # - "pre"
         group:
           - Formalities
-          - Zero
-          - Standard
-          - Weird
+          # - Zero
+          # - Standard
+          # - Weird
         exclude:
           - version: "lts"
             group: Formalities

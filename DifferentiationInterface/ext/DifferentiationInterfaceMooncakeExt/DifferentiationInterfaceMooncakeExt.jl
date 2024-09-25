@@ -1,9 +1,8 @@
-module DifferentiationInterfaceTapirExt
+module DifferentiationInterfaceMooncakeExt
 
-using ADTypes: ADTypes, AutoTapir
+using ADTypes: ADTypes, AutoMooncake
 import DifferentiationInterface as DI
-using DifferentiationInterface: PullbackPrep, Tangents
-using Tapir:
+using Mooncake:
     CoDual,
     NoTangent,
     build_rrule,
@@ -19,9 +18,9 @@ using Tapir:
     fdata,
     rdata,
     __value_and_pullback!!,
-    get_tapir_interpreter
+    get_interpreter
 
-DI.check_available(::AutoTapir) = true
+DI.check_available(::AutoMooncake) = true
 
 include("onearg.jl")
 include("twoarg.jl")
