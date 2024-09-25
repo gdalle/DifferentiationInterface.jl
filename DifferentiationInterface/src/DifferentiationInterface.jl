@@ -22,10 +22,10 @@ using ADTypes:
     AutoFiniteDiff,
     AutoFiniteDifferences,
     AutoForwardDiff,
+    AutoMooncake,
     AutoPolyesterForwardDiff,
     AutoReverseDiff,
     AutoSymbolics,
-    AutoTapir,
     AutoTracker,
     AutoZygote
 using Compat
@@ -108,10 +108,10 @@ export AutoFastDifferentiation
 export AutoFiniteDiff
 export AutoFiniteDifferences
 export AutoForwardDiff
+export AutoMooncake
 export AutoPolyesterForwardDiff
 export AutoReverseDiff
 export AutoSymbolics
-export AutoTapir
 export AutoTracker
 export AutoZygote
 

@@ -40,11 +40,11 @@ jobs:
           - Back/FiniteDiff
           - Back/FiniteDifferences
           - Back/ForwardDiff
+          - Back/Mooncake
           - Back/PolyesterForwardDiff
           - Back/ReverseDiff
           - Back/SecondOrder
           - Back/Symbolics
-          - Back/Tapir
           - Back/Tracker
           - Back/Zygote
           - Misc/DifferentiateWith
@@ -68,13 +68,13 @@ jobs:
           - version: "lts"
             group: Back/FastDifferentiation
           - version: "lts"
+            group: Back/Mooncake
+          - version: "lts"
             group: Back/PolyesterForwardDiff
           - version: "lts"
             group: Back/SecondOrder
           - version: "lts"
             group: Back/Symbolics
-          - version: "lts"
-            group: Back/Tapir
           - version: "lts"
             group: Misc/SparsityDetector
           - version: "lts"
@@ -89,7 +89,7 @@ jobs:
           - version: "pre"
             group: Back/Enzyme
           - version: "pre"
-            group: Back/Tapir
+            group: Back/Mooncake
           - version: "pre"
             group: Back/SecondOrder
           - version: "pre"
