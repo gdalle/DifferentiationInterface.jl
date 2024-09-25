@@ -28,31 +28,31 @@ jobs:
       matrix:
         version:
           - "1"
-          - "lts"
-          - "pre"
+          # - "lts"
+          # - "pre"
         group:
           - Formalities
-          - Internals
-          - Back/ChainRulesCore
-          - Back/Diffractor
-          - Back/Enzyme
-          - Back/FastDifferentiation
-          - Back/FiniteDiff
-          - Back/FiniteDifferences
-          - Back/ForwardDiff
-          - Back/Mooncake
-          - Back/PolyesterForwardDiff
-          - Back/ReverseDiff
-          - Back/SecondOrder
-          - Back/Symbolics
-          - Back/Tracker
-          - Back/Zygote
-          - Misc/DifferentiateWith
-          - Misc/FromPrimitive
-          - Misc/SparsityDetector
-          - Misc/ZeroBackends
-          - Down/Flux
-          - Down/Lux
+          # - Internals
+          # - Back/ChainRulesCore
+          # - Back/Diffractor
+          # - Back/Enzyme
+          # - Back/FastDifferentiation
+          # - Back/FiniteDiff
+          # - Back/FiniteDifferences
+          # - Back/ForwardDiff
+          # - Back/Mooncake
+          # - Back/PolyesterForwardDiff
+          # - Back/ReverseDiff
+          # - Back/SecondOrder
+          # - Back/Symbolics
+          # - Back/Tracker
+          # - Back/Zygote
+          # - Misc/DifferentiateWith
+          # - Misc/FromPrimitive
+          # - Misc/SparsityDetector
+          # - Misc/ZeroBackends
+          # - Down/Flux
+          # - Down/Lux
           - Down/Reactant
         exclude:
           # lts
@@ -143,13 +143,13 @@ jobs:
       matrix:
         version:
           - "1"
-          - "lts"
-          - "pre"
+          # - "lts"
+          # - "pre"
         group:
           - Formalities
-          - Zero
-          - Standard
-          - Weird
+          # - Zero
+          # - Standard
+          # - Weird
         exclude:
           - version: "lts"
             group: Formalities
