@@ -153,8 +153,6 @@ jobs:
         exclude:
           - version: "lts"
             group: Formalities
-          - version: "1"
-            group: Formalities
           - version: "lts"
             group: Weird
     env:
