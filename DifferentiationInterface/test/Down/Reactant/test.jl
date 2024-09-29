@@ -8,6 +8,8 @@ using Enzyme: Enzyme
 using Reactant: Reactant
 using Test
 
+LOGGING = get(ENV, "CI", "false") == "false"
+
 rebackend = ReactantBackend(AutoEnzyme())
 
 test_differentiation(
