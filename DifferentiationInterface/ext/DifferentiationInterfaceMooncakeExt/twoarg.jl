@@ -42,8 +42,7 @@ function DI.value_and_pullback(
 
     # Set all tangent storage to zero.
     df! = set_to_zero!!(prep.df!)
-    # dx_righttype = set_to_zero!!(prep.dx_righttype)  # TODO: why doesn't this work?
-    dx_righttype = zero_tangent(x)
+    dx_righttype = set_to_zero!!(prep.dx_righttype)
     dy_righttype = set_to_zero!!(prep.dy_righttype)
 
     # Prepare cotangent to add after the forward pass.
@@ -71,7 +70,7 @@ function DI.value_and_pullback(
     # Run the reverse pass.
     _, _, new_dx = pb!!(NoRData())
 
-    return y, (tangent(fdata(dx_righttype), new_dx),)
+    return y, (tangent(copy(fdata(dx_righttype)), new_dx),)  # TODO: remove this allocation in `value_and_pullback!`
 end
 
 function DI.value_and_pullback(
