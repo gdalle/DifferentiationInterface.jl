@@ -9,8 +9,11 @@ LOGGING = get(ENV, "CI", "false") == "false"
 
 for backend in [AutoPolyesterForwardDiff(; chunksize=1)]
     @test check_available(backend)
-    @test check_twoarg(backend)
-    @test check_hessian(backend)
+    @test check_inplace(backend)
 end
 
-test_differentiation(AutoPolyesterForwardDiff(; chunksize=1); logging=LOGGING);
+test_differentiation(
+    AutoPolyesterForwardDiff(; chunksize=1),
+    default_scenarios(; include_constantified=true);
+    logging=LOGGING,
+);

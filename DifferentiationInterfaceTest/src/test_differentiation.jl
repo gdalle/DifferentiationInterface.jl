@@ -1,3 +1,20 @@
+function filter_scenarios(
+    scenarios::Vector{<:Scenario};
+    input_type::Type,
+    output_type::Type,
+    first_order::Bool,
+    second_order::Bool,
+    excluded::Vector{Symbol},
+)
+    scenarios = filter(s -> (s.x isa input_type && s.y isa output_type), scenarios)
+    !first_order && (scenarios = filter(s -> order(s) != 1, scenarios))
+    !second_order && (scenarios = filter(s -> order(s) != 2, scenarios))
+    scenarios = filter(s -> !(operator(s) in excluded), scenarios)
+    # sort for nice printing
+    scenarios = sort(scenarios; by=s -> (operator(s), string(s.f)))
+    return scenarios
+end
+
 """
 $(TYPEDSIGNATURES)
 
@@ -20,16 +37,14 @@ Filtering:
 
 - `input_type=Any`, `output_type=Any`: restrict scenario inputs / outputs to subtypes of this
 - `first_order=true`, `second_order=true`: include first order / second order operators
-- `onearg=true`, `twoarg=true`: include one-argument / two-argument functions
-- `inplace=true`, `outofplace=true`: include in-place / out-of-place operators
 
 Options:
 
 - `logging=false`: whether to log progress
-- `isequal=isequal`: function used to compare objects exactly, with the standard signature `isequal(x, y)`
 - `isapprox=isapprox`: function used to compare objects approximately, with the standard signature `isapprox(x, y; atol, rtol)`
 - `atol=0`: absolute precision for correctness testing (when comparing to the reference outputs)
 - `rtol=1e-3`: relative precision for correctness testing (when comparing to the reference outputs)
+- `scenario_intact=true`: whether to check that the scenario remains unchanged after the operators are applied
 """
 function test_differentiation(
     backends::Vector{<:AbstractADType},
@@ -45,29 +60,16 @@ function test_differentiation(
     output_type::Type=Any,
     first_order::Bool=true,
     second_order::Bool=true,
-    onearg::Bool=true,
-    twoarg::Bool=true,
-    inplace::Bool=true,
-    outofplace::Bool=true,
     excluded::Vector{Symbol}=Symbol[],
     # options
     logging::Bool=false,
-    isequal=isequal,
     isapprox=isapprox,
     atol::Real=0,
     rtol::Real=1e-3,
+    scenario_intact::Bool=true,
 )
     scenarios = filter_scenarios(
-        scenarios;
-        first_order,
-        second_order,
-        input_type,
-        output_type,
-        onearg,
-        twoarg,
-        inplace,
-        outofplace,
-        excluded,
+        scenarios; first_order, second_order, input_type, output_type, excluded
     )
 
     title_additions =
@@ -92,18 +94,22 @@ function test_differentiation(
                             (:backend, "$backend - $i/$(length(backends))"),
                             (:scenario_type, "$op - $j/$(length(grouped_scenarios))"),
                             (:scenario, "$k/$(length(op_group))"),
-                            (:arguments, nb_args(scen)),
-                            (:place, place(scen)),
+                            (:operator_place, operator_place(scen)),
+                            (:function_place, function_place(scen)),
                             (:function, scen.f),
                             (:input_type, typeof(scen.x)),
                             (:input_size, mysize(scen.x)),
                             (:output_type, typeof(scen.y)),
                             (:output_size, mysize(scen.y)),
-                            (:batched_seed, scen.seed isa Tangents),
+                            (
+                                :nb_tangents,
+                                scen.tang isa NTuple ? length(scen.tang) : nothing,
+                            ),
+                            (:nb_contexts, length(scen.contexts)),
                         ],
                     )
                     correctness && @testset "Correctness" begin
-                        test_correctness(backend, scen; isequal, isapprox, atol, rtol)
+                        test_correctness(backend, scen; isapprox, atol, rtol, scenario_intact)
                     end
                     type_stability && @testset "Type stability" begin
                         @static if VERSION >= v"1.7"
@@ -147,25 +153,12 @@ function benchmark_differentiation(
     output_type::Type=Any,
     first_order::Bool=true,
     second_order::Bool=true,
-    onearg::Bool=true,
-    twoarg::Bool=true,
-    inplace::Bool=true,
-    outofplace::Bool=true,
     excluded::Vector{Symbol}=Symbol[],
     # options
     logging::Bool=false,
 )
     scenarios = filter_scenarios(
-        scenarios;
-        first_order,
-        second_order,
-        input_type,
-        output_type,
-        onearg,
-        twoarg,
-        inplace,
-        outofplace,
-        excluded,
+        scenarios; first_order, second_order, input_type, output_type, excluded
     )
 
     benchmark_data = DifferentiationBenchmarkDataRow[]
@@ -181,14 +174,15 @@ function benchmark_differentiation(
                         (:backend, "$backend - $i/$(length(backends))"),
                         (:scenario_type, "$op - $j/$(length(grouped_scenarios))"),
                         (:scenario, "$k/$(length(op_group))"),
-                        (:arguments, nb_args(scen)),
-                        (:place, place(scen)),
+                        (:operator_place, operator_place(scen)),
+                        (:function_place, function_place(scen)),
                         (:function, scen.f),
                         (:input_type, typeof(scen.x)),
                         (:input_size, mysize(scen.x)),
                         (:output_type, typeof(scen.y)),
                         (:output_size, mysize(scen.y)),
-                        (:batched_seed, scen.seed isa Tangents),
+                        (:nb_tangents, scen.tang isa NTuple ? length(scen.tang) : nothing),
+                        (:nb_contexts, length(scen.contexts)),
                     ],
                 )
                 run_benchmark!(benchmark_data, backend, scen; logging)

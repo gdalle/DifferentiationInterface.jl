@@ -1,11 +1,11 @@
 ## Pushforward
 
-struct SymbolicsOneArgPushforwardExtras{E1,E1!} <: PushforwardExtras
+struct SymbolicsOneArgPushforwardPrep{E1,E1!} <: PushforwardPrep
     pf_exe::E1
     pf_exe!::E1!
 end
 
-function DI.prepare_pushforward(f, ::AutoSymbolics, x, tx::Tangents)
+function DI.prepare_pushforward(f, ::AutoSymbolics, x, tx::NTuple)
     dx = first(tx)
     x_var = if x isa Number
         variable(:x)
@@ -27,55 +27,50 @@ function DI.prepare_pushforward(f, ::AutoSymbolics, x, tx::Tangents)
     elseif res isa RuntimeGeneratedFunction
         res, nothing
     end
-    return SymbolicsOneArgPushforwardExtras(pf_exe, pf_exe!)
+    return SymbolicsOneArgPushforwardPrep(pf_exe, pf_exe!)
 end
 
 function DI.pushforward(
-    f, ::AutoSymbolics, x, tx::Tangents, extras::SymbolicsOneArgPushforwardExtras
+    f, prep::SymbolicsOneArgPushforwardPrep, ::AutoSymbolics, x, tx::NTuple
 )
-    dys = map(tx.d) do dx
+    ty = map(tx) do dx
         v_vec = vcat(myvec(x), myvec(dx))
-        dy = extras.pf_exe(v_vec)
+        dy = prep.pf_exe(v_vec)
     end
-    return Tangents(dys)
+    return ty
 end
 
 function DI.pushforward!(
-    f,
-    ty::Tangents,
-    ::AutoSymbolics,
-    x,
-    tx::Tangents,
-    extras::SymbolicsOneArgPushforwardExtras,
+    f, ty::NTuple, prep::SymbolicsOneArgPushforwardPrep, ::AutoSymbolics, x, tx::NTuple
 )
-    for b in eachindex(tx.d, ty.d)
-        dx, dy = tx.d[b], ty.d[b]
+    for b in eachindex(tx, ty)
+        dx, dy = tx[b], ty[b]
         v_vec = vcat(myvec(x), myvec(dx))
-        extras.pf_exe!(dy, v_vec)
+        prep.pf_exe!(dy, v_vec)
     end
     return ty
 end
 
 function DI.value_and_pushforward(
-    f, backend::AutoSymbolics, x, tx::Tangents, extras::SymbolicsOneArgPushforwardExtras
+    f, prep::SymbolicsOneArgPushforwardPrep, backend::AutoSymbolics, x, tx::NTuple
 )
-    return f(x), DI.pushforward(f, backend, x, tx, extras)
+    return f(x), DI.pushforward(f, prep, backend, x, tx)
 end
 
 function DI.value_and_pushforward!(
     f,
-    ty::Tangents,
+    ty::NTuple,
+    prep::SymbolicsOneArgPushforwardPrep,
     backend::AutoSymbolics,
     x,
-    tx::Tangents,
-    extras::SymbolicsOneArgPushforwardExtras,
+    tx::NTuple,
 )
-    return f(x), DI.pushforward!(f, ty, backend, x, tx, extras)
+    return f(x), DI.pushforward!(f, ty, prep, backend, x, tx)
 end
 
 ## Derivative
 
-struct SymbolicsOneArgDerivativeExtras{E1,E1!} <: DerivativeExtras
+struct SymbolicsOneArgDerivativePrep{E1,E1!} <: DerivativePrep
     der_exe::E1
     der_exe!::E1!
 end
@@ -90,33 +85,33 @@ function DI.prepare_derivative(f, ::AutoSymbolics, x)
     elseif res isa RuntimeGeneratedFunction
         res, nothing
     end
-    return SymbolicsOneArgDerivativeExtras(der_exe, der_exe!)
+    return SymbolicsOneArgDerivativePrep(der_exe, der_exe!)
 end
 
-function DI.derivative(f, ::AutoSymbolics, x, extras::SymbolicsOneArgDerivativeExtras)
-    return extras.der_exe(x)
+function DI.derivative(f, prep::SymbolicsOneArgDerivativePrep, ::AutoSymbolics, x)
+    return prep.der_exe(x)
 end
 
-function DI.derivative!(f, der, ::AutoSymbolics, x, extras::SymbolicsOneArgDerivativeExtras)
-    extras.der_exe!(der, x)
+function DI.derivative!(f, der, prep::SymbolicsOneArgDerivativePrep, ::AutoSymbolics, x)
+    prep.der_exe!(der, x)
     return der
 end
 
 function DI.value_and_derivative(
-    f, backend::AutoSymbolics, x, extras::SymbolicsOneArgDerivativeExtras
+    f, prep::SymbolicsOneArgDerivativePrep, backend::AutoSymbolics, x
 )
-    return f(x), DI.derivative(f, backend, x, extras)
+    return f(x), DI.derivative(f, prep, backend, x)
 end
 
 function DI.value_and_derivative!(
-    f, der, backend::AutoSymbolics, x, extras::SymbolicsOneArgDerivativeExtras
+    f, der, prep::SymbolicsOneArgDerivativePrep, backend::AutoSymbolics, x
 )
-    return f(x), DI.derivative!(f, der, backend, x, extras)
+    return f(x), DI.derivative!(f, der, prep, backend, x)
 end
 
 ## Gradient
 
-struct SymbolicsOneArgGradientExtras{E1,E1!} <: GradientExtras
+struct SymbolicsOneArgGradientPrep{E1,E1!} <: GradientPrep
     grad_exe::E1
     grad_exe!::E1!
 end
@@ -128,33 +123,33 @@ function DI.prepare_gradient(f, ::AutoSymbolics, x)
 
     res = build_function(grad_var, vec(x_var); expression=Val(false))
     (grad_exe, grad_exe!) = res
-    return SymbolicsOneArgGradientExtras(grad_exe, grad_exe!)
+    return SymbolicsOneArgGradientPrep(grad_exe, grad_exe!)
 end
 
-function DI.gradient(f, ::AutoSymbolics, x, extras::SymbolicsOneArgGradientExtras)
-    return reshape(extras.grad_exe(vec(x)), size(x))
+function DI.gradient(f, prep::SymbolicsOneArgGradientPrep, ::AutoSymbolics, x)
+    return reshape(prep.grad_exe(vec(x)), size(x))
 end
 
-function DI.gradient!(f, grad, ::AutoSymbolics, x, extras::SymbolicsOneArgGradientExtras)
-    extras.grad_exe!(vec(grad), vec(x))
+function DI.gradient!(f, grad, prep::SymbolicsOneArgGradientPrep, ::AutoSymbolics, x)
+    prep.grad_exe!(vec(grad), vec(x))
     return grad
 end
 
 function DI.value_and_gradient(
-    f, backend::AutoSymbolics, x, extras::SymbolicsOneArgGradientExtras
+    f, prep::SymbolicsOneArgGradientPrep, backend::AutoSymbolics, x
 )
-    return f(x), DI.gradient(f, backend, x, extras)
+    return f(x), DI.gradient(f, prep, backend, x)
 end
 
 function DI.value_and_gradient!(
-    f, grad, backend::AutoSymbolics, x, extras::SymbolicsOneArgGradientExtras
+    f, grad, prep::SymbolicsOneArgGradientPrep, backend::AutoSymbolics, x
 )
-    return f(x), DI.gradient!(f, grad, backend, x, extras)
+    return f(x), DI.gradient!(f, grad, prep, backend, x)
 end
 
 ## Jacobian
 
-struct SymbolicsOneArgJacobianExtras{E1,E1!} <: JacobianExtras
+struct SymbolicsOneArgJacobianPrep{E1,E1!} <: JacobianPrep
     jac_exe::E1
     jac_exe!::E1!
 end
@@ -171,52 +166,52 @@ function DI.prepare_jacobian(
 
     res = build_function(jac_var, x_var; expression=Val(false))
     (jac_exe, jac_exe!) = res
-    return SymbolicsOneArgJacobianExtras(jac_exe, jac_exe!)
+    return SymbolicsOneArgJacobianPrep(jac_exe, jac_exe!)
 end
 
 function DI.jacobian(
     f,
+    prep::SymbolicsOneArgJacobianPrep,
     ::Union{AutoSymbolics,AutoSparse{<:AutoSymbolics}},
     x,
-    extras::SymbolicsOneArgJacobianExtras,
 )
-    return extras.jac_exe(x)
+    return prep.jac_exe(x)
 end
 
 function DI.jacobian!(
     f,
     jac,
+    prep::SymbolicsOneArgJacobianPrep,
     ::Union{AutoSymbolics,AutoSparse{<:AutoSymbolics}},
     x,
-    extras::SymbolicsOneArgJacobianExtras,
 )
-    extras.jac_exe!(jac, x)
+    prep.jac_exe!(jac, x)
     return jac
 end
 
 function DI.value_and_jacobian(
     f,
+    prep::SymbolicsOneArgJacobianPrep,
     backend::Union{AutoSymbolics,AutoSparse{<:AutoSymbolics}},
     x,
-    extras::SymbolicsOneArgJacobianExtras,
 )
-    return f(x), DI.jacobian(f, backend, x, extras)
+    return f(x), DI.jacobian(f, prep, backend, x)
 end
 
 function DI.value_and_jacobian!(
     f,
     jac,
+    prep::SymbolicsOneArgJacobianPrep,
     backend::Union{AutoSymbolics,AutoSparse{<:AutoSymbolics}},
     x,
-    extras::SymbolicsOneArgJacobianExtras,
 )
-    return f(x), DI.jacobian!(f, jac, backend, x, extras)
+    return f(x), DI.jacobian!(f, jac, prep, backend, x)
 end
 
 ## Hessian
 
-struct SymbolicsOneArgHessianExtras{G,E2,E2!} <: HessianExtras
-    gradient_extras::G
+struct SymbolicsOneArgHessianPrep{G,E2,E2!} <: HessianPrep
+    gradient_prep::G
     hess_exe::E2
     hess_exe!::E2!
 end
@@ -233,38 +228,38 @@ function DI.prepare_hessian(f, backend::Union{AutoSymbolics,AutoSparse{<:AutoSym
     res = build_function(hess_var, vec(x_var); expression=Val(false))
     (hess_exe, hess_exe!) = res
 
-    gradient_extras = DI.prepare_gradient(f, maybe_dense_ad(backend), x)
-    return SymbolicsOneArgHessianExtras(gradient_extras, hess_exe, hess_exe!)
+    gradient_prep = DI.prepare_gradient(f, dense_ad(backend), x)
+    return SymbolicsOneArgHessianPrep(gradient_prep, hess_exe, hess_exe!)
 end
 
 function DI.hessian(
     f,
+    prep::SymbolicsOneArgHessianPrep,
     ::Union{AutoSymbolics,AutoSparse{<:AutoSymbolics}},
     x,
-    extras::SymbolicsOneArgHessianExtras,
 )
-    return extras.hess_exe(vec(x))
+    return prep.hess_exe(vec(x))
 end
 
 function DI.hessian!(
     f,
     hess,
+    prep::SymbolicsOneArgHessianPrep,
     ::Union{AutoSymbolics,AutoSparse{<:AutoSymbolics}},
     x,
-    extras::SymbolicsOneArgHessianExtras,
 )
-    extras.hess_exe!(hess, vec(x))
+    prep.hess_exe!(hess, vec(x))
     return hess
 end
 
 function DI.value_gradient_and_hessian(
     f,
+    prep::SymbolicsOneArgHessianPrep,
     backend::Union{AutoSymbolics,AutoSparse{<:AutoSymbolics}},
     x,
-    extras::SymbolicsOneArgHessianExtras,
 )
-    y, grad = DI.value_and_gradient(f, maybe_dense_ad(backend), x, extras.gradient_extras)
-    hess = DI.hessian(f, backend, x, extras)
+    y, grad = DI.value_and_gradient(f, prep.gradient_prep, dense_ad(backend), x)
+    hess = DI.hessian(f, prep, backend, x)
     return y, grad, hess
 end
 
@@ -272,13 +267,11 @@ function DI.value_gradient_and_hessian!(
     f,
     grad,
     hess,
+    prep::SymbolicsOneArgHessianPrep,
     backend::Union{AutoSymbolics,AutoSparse{<:AutoSymbolics}},
     x,
-    extras::SymbolicsOneArgHessianExtras,
 )
-    y, _ = DI.value_and_gradient!(
-        f, grad, maybe_dense_ad(backend), x, extras.gradient_extras
-    )
-    DI.hessian!(f, hess, backend, x, extras)
+    y, _ = DI.value_and_gradient!(f, grad, prep.gradient_prep, dense_ad(backend), x)
+    DI.hessian!(f, hess, prep, backend, x)
     return y, grad, hess
 end

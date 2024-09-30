@@ -18,13 +18,13 @@ GROUP = get(ENV, "JULIA_DIT_TEST_GROUP", "All")
 
     if GROUP == "Zero" || GROUP == "All"
         @testset verbose = false "Zero" begin
-            include("zero.jl")
+            include("zero_backends.jl")
         end
     end
 
-    if GROUP == "ForwardDiff" || GROUP == "All"
-        @testset verbose = false "ForwardDiff" begin
-            include("forwarddiff.jl")
+    if GROUP == "Standard" || GROUP == "All"
+        @testset verbose = false "Standard" begin
+            include("standard.jl")
         end
     end
 

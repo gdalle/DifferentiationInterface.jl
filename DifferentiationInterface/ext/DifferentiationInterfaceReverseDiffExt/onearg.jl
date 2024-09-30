@@ -1,201 +1,306 @@
 ## Pullback
 
-DI.prepare_pullback(f, ::AutoReverseDiff, x, ty::Tangents) = NoPullbackExtras()
+function DI.prepare_pullback(
+    f, ::AutoReverseDiff, x, ty::NTuple, contexts::Vararg{Context,C}
+) where {C}
+    return NoPullbackPrep()
+end
 
 function DI.value_and_pullback(
-    f, ::AutoReverseDiff, x::AbstractArray, ty::Tangents, ::NoPullbackExtras
-)
-    y = f(x)
-    dxs = map(ty.d) do dy
+    f,
+    ::NoPullbackPrep,
+    ::AutoReverseDiff,
+    x::AbstractArray,
+    ty::NTuple,
+    contexts::Vararg{Context,C},
+) where {C}
+    fc = with_contexts(f, contexts...)
+    y = fc(x)
+    dotclosure(z, dy) = dot(fc(z), dy)
+    tx = map(ty) do dy
         if y isa Number
-            dy .* gradient(f, x)
+            dy .* gradient(fc, x)
         elseif y isa AbstractArray
-            gradient(z -> dot(f(z), dy), x)
+            gradient(Fix2(dotclosure, dy), x)
         end
     end
-    return y, Tangents(dxs)
+    return y, tx
 end
 
 function DI.value_and_pullback!(
-    f, tx::Tangents, ::AutoReverseDiff, x::AbstractArray, ty::Tangents, ::NoPullbackExtras
-)
-    y = f(x)
-    for b in eachindex(tx.d, ty.d)
-        dx, dy = tx.d[b], ty.d[b]
+    f,
+    ::NoPullbackPrep,
+    tx::NTuple,
+    ::AutoReverseDiff,
+    x::AbstractArray,
+    ty::NTuple,
+    contexts::Vararg{Context,C},
+) where {C}
+    fc = with_contexts(f, contexts...)
+    y = fc(x)
+    dotclosure(z, dy) = dot(fc(z), dy)
+    for b in eachindex(tx, ty)
+        dx, dy = tx[b], ty[b]
         if y isa Number
-            dx = gradient!(dx, f, x)
+            dx = gradient!(dx, fc, x)
             dx .*= dy
         elseif y isa AbstractArray
-            gradient!(dx, z -> dot(f(z), dy), x)
+            gradient!(dx, Fix2(dotclosure, dy), x)
         end
     end
     return y, tx
 end
 
 function DI.value_and_pullback(
-    f, backend::AutoReverseDiff, x::Number, ty::Tangents, ::NoPullbackExtras
-)
+    f,
+    ::NoPullbackPrep,
+    backend::AutoReverseDiff,
+    x::Number,
+    ty::NTuple,
+    contexts::Vararg{Context,C},
+) where {C}
     x_array = [x]
-    f_array = f ∘ only
-    y, tx_array = DI.value_and_pullback(f_array, backend, x_array, ty)
-    return y, Tangents(only.(tx_array.d))
+    f_array(x_array, args...) = f(only(x_array), args...)
+    y, tx_array = DI.value_and_pullback(f_array, backend, x_array, ty, contexts...)
+    return y, only.(tx_array)
 end
 
 ## Gradient
 
-struct ReverseDiffGradientExtras{T} <: GradientExtras
+### Without contexts
+
+struct ReverseDiffGradientPrep{T} <: GradientPrep
     tape::T
 end
 
-function DI.prepare_gradient(
-    f, ::AutoReverseDiff{Compile}, x::AbstractArray
-) where {Compile}
+function DI.prepare_gradient(f, ::AutoReverseDiff{Compile}, x) where {Compile}
     tape = GradientTape(f, x)
     if Compile
         tape = compile(tape)
     end
-    return ReverseDiffGradientExtras(tape)
+    return ReverseDiffGradientPrep(tape)
 end
 
 function DI.value_and_gradient!(
-    f,
-    grad::AbstractArray,
-    ::AutoReverseDiff,
-    x::AbstractArray,
-    extras::ReverseDiffGradientExtras,
+    f, grad, prep::ReverseDiffGradientPrep, ::AutoReverseDiff, x
 )
     y = f(x)  # TODO: remove once ReverseDiff#251 is fixed
     result = MutableDiffResult(y, (grad,))
-    result = gradient!(result, extras.tape, x)
+    result = gradient!(result, prep.tape, x)
     return DiffResults.value(result), DiffResults.derivative(result)
 end
 
 function DI.value_and_gradient(
-    f, backend::AutoReverseDiff, x::AbstractArray, extras::ReverseDiffGradientExtras
+    f, prep::ReverseDiffGradientPrep, backend::AutoReverseDiff, x
 )
     grad = similar(x)
-    return DI.value_and_gradient!(f, grad, backend, x, extras)
+    return DI.value_and_gradient!(f, grad, prep, backend, x)
+end
+
+function DI.gradient!(_f, grad, prep::ReverseDiffGradientPrep, ::AutoReverseDiff, x)
+    return gradient!(grad, prep.tape, x)
+end
+
+function DI.gradient(_f, prep::ReverseDiffGradientPrep, ::AutoReverseDiff, x)
+    return gradient!(prep.tape, x)
+end
+
+### With contexts
+
+function DI.prepare_gradient(f, ::AutoReverseDiff, x, contexts::Vararg{Context,C}) where {C}
+    return NoGradientPrep()
+end
+
+function DI.value_and_gradient!(
+    f, grad, ::NoGradientPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
+) where {C}
+    fc = with_contexts(f, contexts...)
+    y = fc(x)  # TODO: remove once ReverseDiff#251 is fixed
+    result = MutableDiffResult(y, (grad,))
+    result = gradient!(result, fc, x)
+    return DiffResults.value(result), DiffResults.derivative(result)
+end
+
+function DI.value_and_gradient(
+    f, prep::NoGradientPrep, backend::AutoReverseDiff, x, contexts::Vararg{Context,C}
+) where {C}
+    grad = similar(x)
+    return DI.value_and_gradient!(f, grad, prep, backend, x, contexts...)
 end
 
 function DI.gradient!(
-    _f,
-    grad::AbstractArray,
-    ::AutoReverseDiff,
-    x::AbstractArray,
-    extras::ReverseDiffGradientExtras,
-)
-    return gradient!(grad, extras.tape, x)
+    f, grad, ::NoGradientPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
+) where {C}
+    fc = with_contexts(f, contexts...)
+    return gradient!(grad, fc, x)
 end
 
 function DI.gradient(
-    _f, ::AutoReverseDiff, x::AbstractArray, extras::ReverseDiffGradientExtras
-)
-    return gradient!(extras.tape, x)
+    f, ::NoGradientPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
+) where {C}
+    fc = with_contexts(f, contexts...)
+    return gradient(fc, x)
 end
 
 ## Jacobian
 
-struct ReverseDiffOneArgJacobianExtras{T} <: JacobianExtras
+### Without contexts
+
+struct ReverseDiffOneArgJacobianPrep{T} <: JacobianPrep
     tape::T
 end
 
-function DI.prepare_jacobian(
-    f, ::AutoReverseDiff{Compile}, x::AbstractArray
-) where {Compile}
+function DI.prepare_jacobian(f, ::AutoReverseDiff{Compile}, x) where {Compile}
     tape = JacobianTape(f, x)
     if Compile
         tape = compile(tape)
     end
-    return ReverseDiffOneArgJacobianExtras(tape)
+    return ReverseDiffOneArgJacobianPrep(tape)
 end
 
 function DI.value_and_jacobian!(
-    f,
-    jac::AbstractMatrix,
-    ::AutoReverseDiff,
-    x::AbstractArray,
-    extras::ReverseDiffOneArgJacobianExtras,
+    f, jac, prep::ReverseDiffOneArgJacobianPrep, ::AutoReverseDiff, x
 )
     y = f(x)
     result = MutableDiffResult(y, (jac,))
-    result = jacobian!(result, extras.tape, x)
+    result = jacobian!(result, prep.tape, x)
+    return DiffResults.value(result), DiffResults.derivative(result)
+end
+
+function DI.value_and_jacobian(f, prep::ReverseDiffOneArgJacobianPrep, ::AutoReverseDiff, x)
+    return f(x), jacobian!(prep.tape, x)
+end
+
+function DI.jacobian!(_f, jac, prep::ReverseDiffOneArgJacobianPrep, ::AutoReverseDiff, x)
+    return jacobian!(jac, prep.tape, x)
+end
+
+function DI.jacobian(f, prep::ReverseDiffOneArgJacobianPrep, ::AutoReverseDiff, x)
+    return jacobian!(prep.tape, x)
+end
+
+### With contexts
+
+function DI.prepare_jacobian(f, ::AutoReverseDiff, x, contexts::Vararg{Context,C}) where {C}
+    return NoJacobianPrep()
+end
+
+function DI.value_and_jacobian!(
+    f, jac, ::NoJacobianPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
+) where {C}
+    fc = with_contexts(f, contexts...)
+    y = fc(x)
+    result = MutableDiffResult(y, (jac,))
+    result = jacobian!(result, fc, x)
     return DiffResults.value(result), DiffResults.derivative(result)
 end
 
 function DI.value_and_jacobian(
-    f, ::AutoReverseDiff, x::AbstractArray, extras::ReverseDiffOneArgJacobianExtras
-)
-    return f(x), jacobian!(extras.tape, x)
+    f, ::NoJacobianPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
+) where {C}
+    fc = with_contexts(f, contexts...)
+    return fc(x), jacobian(fc, x)
 end
 
 function DI.jacobian!(
-    _f,
-    jac::AbstractMatrix,
-    ::AutoReverseDiff,
-    x::AbstractArray,
-    extras::ReverseDiffOneArgJacobianExtras,
-)
-    return jacobian!(jac, extras.tape, x)
+    f, jac, ::NoJacobianPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
+) where {C}
+    fc = with_contexts(f, contexts...)
+    return jacobian!(jac, fc, x)
 end
 
 function DI.jacobian(
-    f, ::AutoReverseDiff, x::AbstractArray, extras::ReverseDiffOneArgJacobianExtras
-)
-    return jacobian!(extras.tape, x)
+    f, ::NoJacobianPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
+) where {C}
+    fc = with_contexts(f, contexts...)
+    return jacobian(fc, x)
 end
 
 ## Hessian
 
-struct ReverseDiffHessianExtras{T} <: HessianExtras
+### Without contexts
+
+struct ReverseDiffHessianPrep{T} <: HessianPrep
     tape::T
 end
 
-function DI.prepare_hessian(f, ::AutoReverseDiff{Compile}, x::AbstractArray) where {Compile}
+function DI.prepare_hessian(f, ::AutoReverseDiff{Compile}, x) where {Compile}
     tape = HessianTape(f, x)
     if Compile
         tape = compile(tape)
     end
-    return ReverseDiffHessianExtras(tape)
+    return ReverseDiffHessianPrep(tape)
 end
 
-function DI.hessian!(
-    _f,
-    hess::AbstractMatrix,
-    ::AutoReverseDiff,
-    x::AbstractArray,
-    extras::ReverseDiffHessianExtras,
-)
-    return hessian!(hess, extras.tape, x)
+function DI.hessian!(_f, hess, prep::ReverseDiffHessianPrep, ::AutoReverseDiff, x)
+    return hessian!(hess, prep.tape, x)
 end
 
-function DI.hessian(
-    _f, ::AutoReverseDiff, x::AbstractArray, extras::ReverseDiffHessianExtras
-)
-    return hessian!(extras.tape, x)
+function DI.hessian(_f, prep::ReverseDiffHessianPrep, ::AutoReverseDiff, x)
+    return hessian!(prep.tape, x)
 end
 
 function DI.value_gradient_and_hessian!(
-    f,
-    grad,
-    hess::AbstractMatrix,
-    ::AutoReverseDiff,
-    x::AbstractArray,
-    extras::ReverseDiffHessianExtras,
+    f, grad, hess, prep::ReverseDiffHessianPrep, ::AutoReverseDiff, x
 )
     y = f(x)  # TODO: remove once ReverseDiff#251 is fixed
     result = MutableDiffResult(y, (grad, hess))
-    result = hessian!(result, extras.tape, x)
+    result = hessian!(result, prep.tape, x)
     return (
         DiffResults.value(result), DiffResults.gradient(result), DiffResults.hessian(result)
     )
 end
 
 function DI.value_gradient_and_hessian(
-    f, ::AutoReverseDiff, x::AbstractArray, extras::ReverseDiffHessianExtras
+    f, prep::ReverseDiffHessianPrep, ::AutoReverseDiff, x
 )
     y = f(x)  # TODO: remove once ReverseDiff#251 is fixed
     result = MutableDiffResult(y, (similar(x), similar(x, length(x), length(x))))
-    result = hessian!(result, extras.tape, x)
+    result = hessian!(result, prep.tape, x)
+    return (
+        DiffResults.value(result), DiffResults.gradient(result), DiffResults.hessian(result)
+    )
+end
+
+### With contexts
+
+function DI.prepare_hessian(f, ::AutoReverseDiff, x, contexts::Vararg{Context,C}) where {C}
+    return NoHessianPrep()
+end
+
+function DI.hessian!(
+    f, hess, ::NoHessianPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
+) where {C}
+    fc = with_contexts(f, contexts...)
+    return hessian!(hess, fc, x)
+end
+
+function DI.hessian(
+    f, ::NoHessianPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
+) where {C}
+    fc = with_contexts(f, contexts...)
+    return hessian(fc, x)
+end
+
+function DI.value_gradient_and_hessian!(
+    f, grad, hess, ::NoHessianPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
+) where {C}
+    fc = with_contexts(f, contexts...)
+    y = fc(x)  # TODO: remove once ReverseDiff#251 is fixed
+    result = MutableDiffResult(y, (grad, hess))
+    result = hessian!(result, fc, x)
+    return (
+        DiffResults.value(result), DiffResults.gradient(result), DiffResults.hessian(result)
+    )
+end
+
+function DI.value_gradient_and_hessian(
+    f, ::NoHessianPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
+) where {C}
+    fc = with_contexts(f, contexts...)
+    y = fc(x)  # TODO: remove once ReverseDiff#251 is fixed
+    result = MutableDiffResult(y, (similar(x), similar(x, length(x), length(x))))
+    result = hessian!(result, fc, x)
     return (
         DiffResults.value(result), DiffResults.gradient(result), DiffResults.hessian(result)
     )

@@ -2,30 +2,31 @@ module DifferentiationInterfaceDiffractorExt
 
 using ADTypes: ADTypes, AutoDiffractor
 import DifferentiationInterface as DI
-using DifferentiationInterface: NoPushforwardExtras, Tangents
+using DifferentiationInterface: NoPushforwardPrep
 using Diffractor: DiffractorRuleConfig, TaylorTangentIndex, ZeroBundle, bundle, ∂☆
 
 DI.check_available(::AutoDiffractor) = true
-DI.twoarg_support(::AutoDiffractor) = DI.TwoArgNotSupported()
+DI.inplace_support(::AutoDiffractor) = DI.InPlaceNotSupported()
 DI.pullback_performance(::AutoDiffractor) = DI.PullbackSlow()
 
 ## Pushforward
 
-DI.prepare_pushforward(f, ::AutoDiffractor, x, tx::Tangents) = NoPushforwardExtras()
+DI.prepare_pushforward(f, ::AutoDiffractor, x, tx::NTuple) = NoPushforwardPrep()
 
-function DI.pushforward(f, ::AutoDiffractor, x, tx::Tangents, ::NoPushforwardExtras)
-    dys = map(tx.d) do dx
+function DI.pushforward(f, ::NoPushforwardPrep, ::AutoDiffractor, x, tx::NTuple)
+    ty = map(tx) do dx
         # code copied from Diffractor.jl
         z = ∂☆{1}()(ZeroBundle{1}(f), bundle(x, dx))
         dy = z[TaylorTangentIndex(1)]
+        dy
     end
-    return Tangents(dys)
+    return ty
 end
 
 function DI.value_and_pushforward(
-    f, backend::AutoDiffractor, x, tx::Tangents, extras::NoPushforwardExtras
+    f, prep::NoPushforwardPrep, backend::AutoDiffractor, x, tx::NTuple
 )
-    return f(x), DI.pushforward(f, backend, x, tx, extras)
+    return f(x), DI.pushforward(f, prep, backend, x, tx)
 end
 
 end

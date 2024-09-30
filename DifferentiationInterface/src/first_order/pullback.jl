@@ -1,34 +1,34 @@
 ## Docstrings
 
 """
-    prepare_pullback(f,     backend, x, dy) -> extras
-    prepare_pullback(f!, y, backend, x, dy) -> extras
+    prepare_pullback(f,     backend, x, ty, [contexts...]) -> prep
+    prepare_pullback(f!, y, backend, x, ty, [contexts...]) -> prep
 
-Create an `extras` object that can be given to [`pullback`](@ref) and its variants.
+Create a `prep` object that can be given to [`pullback`](@ref) and its variants.
 
 !!! warning
     If the function changes in any way, the result of preparation will be invalidated, and you will need to run it again.
-    In the two-argument case, `y` is mutated by `f!` during preparation.
+    For in-place functions, `y` is mutated by `f!` during preparation.
 """
 function prepare_pullback end
 
 """
-    prepare_pullback_same_point(f,     backend, x, dy) -> extras_same
-    prepare_pullback_same_point(f!, y, backend, x, dy) -> extras_same
+    prepare_pullback_same_point(f,     backend, x, ty, [contexts...]) -> prep_same
+    prepare_pullback_same_point(f!, y, backend, x, ty, [contexts...]) -> prep_same
 
-Create an `extras_same` object that can be given to [`pullback`](@ref) and its variants _if they are applied at the same point `x`_.
+Create an `prep_same` object that can be given to [`pullback`](@ref) and its variants _if they are applied at the same point `x` and with the same `contexts`_.
 
 !!! warning
     If the function or the point changes in any way, the result of preparation will be invalidated, and you will need to run it again.
-    In the two-argument case, `y` is mutated by `f!` during preparation.
+    For in-place functions, `y` is mutated by `f!` during preparation.
 """
 function prepare_pullback_same_point end
 
 """
-    value_and_pullback(f,     backend, x, dy, [extras]) -> (y, dx)
-    value_and_pullback(f!, y, backend, x, dy, [extras]) -> (y, dx)
+    value_and_pullback(f,     [prep,] backend, x, ty, [contexts...]) -> (y, tx)
+    value_and_pullback(f!, y, [prep,] backend, x, ty, [contexts...]) -> (y, tx)
 
-Compute the value and the pullback of the function `f` at point `x` with seed `dy`.
+Compute the value and the pullback of the function `f` at point `x` with a tuple of tangents `ty`.
 
 $(document_preparation("pullback"; same_point=true))
 
@@ -42,10 +42,10 @@ $(document_preparation("pullback"; same_point=true))
 function value_and_pullback end
 
 """
-    value_and_pullback!(f,     dx, backend, x, dy, [extras]) -> (y, dx)
-    value_and_pullback!(f!, y, dx, backend, x, dy, [extras]) -> (y, dx)
+    value_and_pullback!(f,     dx, [prep,] backend, x, ty, [contexts...]) -> (y, tx)
+    value_and_pullback!(f!, y, dx, [prep,] backend, x, ty, [contexts...]) -> (y, tx)
 
-Compute the value and the pullback of the function `f` at point `x` with seed `dy`, overwriting `dx`.
+Compute the value and the pullback of the function `f` at point `x` with a tuple of tangents `ty`, overwriting `dx`.
 
 $(document_preparation("pullback"; same_point=true))
 
@@ -56,10 +56,10 @@ $(document_preparation("pullback"; same_point=true))
 function value_and_pullback! end
 
 """
-    pullback(f,     backend, x, dy, [extras]) -> dx
-    pullback(f!, y, backend, x, dy, [extras]) -> dx
+    pullback(f,     [prep,] backend, x, ty, [contexts...]) -> tx
+    pullback(f!, y, [prep,] backend, x, ty, [contexts...]) -> tx
 
-Compute the pullback of the function `f` at point `x` with seed `dy`.
+Compute the pullback of the function `f` at point `x` with a tuple of tangents `ty`.
 
 $(document_preparation("pullback"; same_point=true))
 
@@ -70,10 +70,10 @@ $(document_preparation("pullback"; same_point=true))
 function pullback end
 
 """
-    pullback!(f,     dx, backend, x, dy, [extras]) -> dx
-    pullback!(f!, y, dx, backend, x, dy, [extras]) -> dx
+    pullback!(f,     dx, [prep,] backend, x, ty, [contexts...]) -> tx
+    pullback!(f!, y, dx, [prep,] backend, x, ty, [contexts...]) -> tx
 
-Compute the pullback of the function `f` at point `x` with seed `dy`, overwriting `dx`.
+Compute the pullback of the function `f` at point `x` with a tuple of tangents `ty`, overwriting `dx`.
 
 $(document_preparation("pullback"; same_point=true))
 
@@ -85,40 +85,61 @@ function pullback! end
 
 ## Preparation
 
-struct PushforwardPullbackExtras{E} <: PullbackExtras
-    pushforward_extras::E
+struct PushforwardPullbackPrep{E} <: PullbackPrep
+    pushforward_prep::E
 end
 
-function prepare_pullback(f::F, backend::AbstractADType, x, ty::Tangents) where {F}
-    return _prepare_pullback_aux(f, backend, x, ty, pullback_performance(backend))
+function prepare_pullback(
+    f::F, backend::AbstractADType, x, ty::NTuple, contexts::Vararg{Context,C}
+) where {F,C}
+    return _prepare_pullback_aux(
+        pullback_performance(backend), f, backend, x, ty, contexts...
+    )
 end
 
-function prepare_pullback(f!::F, y, backend::AbstractADType, x, ty::Tangents) where {F}
-    return _prepare_pullback_aux(f!, y, backend, x, ty, pullback_performance(backend))
+function prepare_pullback(
+    f!::F, y, backend::AbstractADType, x, ty::NTuple, contexts::Vararg{Context,C}
+) where {F,C}
+    return _prepare_pullback_aux(
+        pullback_performance(backend), f!, y, backend, x, ty, contexts...
+    )
 end
 
 function _prepare_pullback_aux(
-    f::F, backend::AbstractADType, x, ty::Tangents, ::PullbackSlow
-) where {F}
+    ::PullbackSlow,
+    f::F,
+    backend::AbstractADType,
+    x,
+    ty::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
     dx = x isa Number ? one(x) : basis(backend, x, first(CartesianIndices(x)))
-    pushforward_extras = prepare_pushforward(f, backend, x, SingleTangent(dx))
-    return PushforwardPullbackExtras(pushforward_extras)
+    pushforward_prep = prepare_pushforward(f, backend, x, (dx,), contexts...)
+    return PushforwardPullbackPrep(pushforward_prep)
 end
 
 function _prepare_pullback_aux(
-    f!::F, y, backend::AbstractADType, x, ty::Tangents, ::PullbackSlow
-) where {F}
+    ::PullbackSlow,
+    f!::F,
+    y,
+    backend::AbstractADType,
+    x,
+    ty::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
     dx = x isa Number ? one(x) : basis(backend, x, first(CartesianIndices(x)))
-    pushforward_extras = prepare_pushforward(f!, y, backend, x, SingleTangent(dx))
-    return PushforwardPullbackExtras(pushforward_extras)
+    pushforward_prep = prepare_pushforward(f!, y, backend, x, (dx,), contexts...)
+    return PushforwardPullbackPrep(pushforward_prep)
 end
 
-function _prepare_pullback_aux(f, backend::AbstractADType, x, ty::Tangents, ::PullbackFast)
+function _prepare_pullback_aux(
+    ::PullbackFast, f, backend::AbstractADType, x, ty::NTuple, contexts::Vararg{Context}
+)
     throw(MissingBackendError(backend))
 end
 
 function _prepare_pullback_aux(
-    f!, y, backend::AbstractADType, x, ty::Tangents, ::PullbackFast
+    ::PullbackFast, f!, y, backend::AbstractADType, x, ty::NTuple, contexts::Vararg{Context}
 )
     throw(MissingBackendError(backend))
 end
@@ -126,69 +147,99 @@ end
 ## One argument
 
 function _pullback_via_pushforward(
-    f::F, backend::AbstractADType, x::Number, dy, pushforward_extras::PushforwardExtras
-) where {F}
-    t1 = pushforward(f, backend, x, SingleTangent(one(x)), pushforward_extras)
+    f::F,
+    pushforward_prep::PushforwardPrep,
+    backend::AbstractADType,
+    x::Number,
+    dy,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    t1 = pushforward(f, pushforward_prep, backend, x, (one(x),), contexts...)
     dx = dot(dy, only(t1))
     return dx
 end
 
 function _pullback_via_pushforward(
     f::F,
+    pushforward_prep::PushforwardPrep,
     backend::AbstractADType,
     x::AbstractArray,
     dy,
-    pushforward_extras::PushforwardExtras,
-) where {F}
+    contexts::Vararg{Context,C},
+) where {F,C}
     dx = map(CartesianIndices(x)) do j
-        t1 = pushforward(f, backend, x, SingleTangent(basis(backend, x, j)), pushforward_extras)
+        t1 = pushforward(f, pushforward_prep, backend, x, (basis(backend, x, j),), contexts...)
         dot(dy, only(t1))
     end
     return dx
 end
 
 function value_and_pullback(
-    f::F, backend::AbstractADType, x, ty::Tangents{B}, extras::PushforwardPullbackExtras
-) where {F,B}
-    @compat (; pushforward_extras) = extras
-    y = f(x)
-    if B == 1
-        dx = _pullback_via_pushforward(f, backend, x, only(ty), pushforward_extras)
-        return y, SingleTangent(dx)
-    else
-        dxs = ntuple(
-            b -> _pullback_via_pushforward(f, backend, x, ty.d[b], pushforward_extras),
-            Val(B),
-        )
-        return y, Tangents(dxs)
-    end
+    f::F,
+    prep::PushforwardPullbackPrep,
+    backend::AbstractADType,
+    x,
+    ty::NTuple{B},
+    contexts::Vararg{Context,C},
+) where {F,B,C}
+    @compat (; pushforward_prep) = prep
+    y = f(x, map(unwrap, contexts)...)
+    tx = ntuple(
+        b -> _pullback_via_pushforward(f, pushforward_prep, backend, x, ty[b], contexts...),
+        Val(B),
+    )
+    return y, tx
 end
 
 function value_and_pullback!(
-    f::F, tx::Tangents, backend::AbstractADType, x, ty::Tangents, extras::PullbackExtras
-) where {F}
-    y, new_tx = value_and_pullback(f, backend, x, ty, extras)
-    return y, copyto!(tx, new_tx)
+    f::F,
+    tx::NTuple,
+    prep::PullbackPrep,
+    backend::AbstractADType,
+    x,
+    ty::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    y, new_tx = value_and_pullback(f, prep, backend, x, ty, contexts...)
+    foreach(copyto!, tx, new_tx)
+    return y, tx
 end
 
 function pullback(
-    f::F, backend::AbstractADType, x, ty::Tangents, extras::PullbackExtras
-) where {F}
-    return value_and_pullback(f, backend, x, ty, extras)[2]
+    f::F,
+    prep::PullbackPrep,
+    backend::AbstractADType,
+    x,
+    ty::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    return value_and_pullback(f, prep, backend, x, ty, contexts...)[2]
 end
 
 function pullback!(
-    f::F, tx::Tangents, backend::AbstractADType, x, ty::Tangents, extras::PullbackExtras
-) where {F}
-    return value_and_pullback!(f, tx, backend, x, ty, extras)[2]
+    f::F,
+    tx::NTuple,
+    prep::PullbackPrep,
+    backend::AbstractADType,
+    x,
+    ty::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    return value_and_pullback!(f, tx, prep, backend, x, ty, contexts...)[2]
 end
 
 ## Two arguments
 
 function _pullback_via_pushforward(
-    f!::F, y, backend::AbstractADType, x::Number, dy, pushforward_extras::PushforwardExtras
-) where {F}
-    t1 = pushforward(f!, y, backend, x, SingleTangent(one(x)), pushforward_extras)
+    f!::F,
+    y,
+    pushforward_prep::PushforwardPrep,
+    backend::AbstractADType,
+    x::Number,
+    dy,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    t1 = pushforward(f!, y, pushforward_prep, backend, x, (one(x),), contexts...)
     dx = dot(dy, only(t1))
     return dx
 end
@@ -196,14 +247,15 @@ end
 function _pullback_via_pushforward(
     f!::F,
     y,
+    pushforward_prep::PushforwardPrep,
     backend::AbstractADType,
     x::AbstractArray,
     dy,
-    pushforward_extras::PushforwardExtras,
-) where {F}
-    dx = map(CartesianIndices(x)) do j
+    contexts::Vararg{Context,C},
+) where {F,C}
+    dx = map(CartesianIndices(x)) do j  # preserve shape
         t1 = pushforward(
-            f!, y, backend, x, SingleTangent(basis(backend, x, j)), pushforward_extras
+            f!, y, pushforward_prep, backend, x, (basis(backend, x, j),), contexts...
         )
         dot(dy, only(t1))
     end
@@ -211,38 +263,61 @@ function _pullback_via_pushforward(
 end
 
 function value_and_pullback(
-    f!::F, y, backend::AbstractADType, x, ty::Tangents{B}, extras::PushforwardPullbackExtras
-) where {F,B}
-    @compat (; pushforward_extras) = extras
-    if B == 1
-        dx = _pullback_via_pushforward(f!, y, backend, x, only(ty), pushforward_extras)
-        f!(y, x)
-        return y, SingleTangent(dx)
-    else
-        dxs = ntuple(
-            b -> _pullback_via_pushforward(f!, y, backend, x, ty.d[b], pushforward_extras),
-            Val(B),
-        )
-        f!(y, x)
-        return y, Tangents(dxs)
-    end
+    f!::F,
+    y,
+    prep::PushforwardPullbackPrep,
+    backend::AbstractADType,
+    x,
+    ty::NTuple{B},
+    contexts::Vararg{Context,C},
+) where {F,B,C}
+    @compat (; pushforward_prep) = prep
+    tx = ntuple(
+        b -> _pullback_via_pushforward(
+            f!, y, pushforward_prep, backend, x, ty[b], contexts...
+        ),
+        Val(B),
+    )
+    f!(y, x, map(unwrap, contexts)...)
+    return y, tx
 end
 
 function value_and_pullback!(
-    f!::F, y, tx::Tangents, backend::AbstractADType, x, ty::Tangents, extras::PullbackExtras
-) where {F}
-    y, new_tx = value_and_pullback(f!, y, backend, x, ty, extras)
-    return y, copyto!(tx, new_tx)
+    f!::F,
+    y,
+    tx::NTuple,
+    prep::PullbackPrep,
+    backend::AbstractADType,
+    x,
+    ty::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    y, new_tx = value_and_pullback(f!, y, prep, backend, x, ty, contexts...)
+    foreach(copyto!, tx, new_tx)
+    return y, tx
 end
 
 function pullback(
-    f!::F, y, backend::AbstractADType, x, ty::Tangents, extras::PullbackExtras
-) where {F}
-    return value_and_pullback(f!, y, backend, x, ty, extras)[2]
+    f!::F,
+    y,
+    prep::PullbackPrep,
+    backend::AbstractADType,
+    x,
+    ty::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    return value_and_pullback(f!, y, prep, backend, x, ty, contexts...)[2]
 end
 
 function pullback!(
-    f!::F, y, tx::Tangents, backend::AbstractADType, x, ty::Tangents, extras::PullbackExtras
-) where {F}
-    return value_and_pullback!(f!, y, tx, backend, x, ty, extras)[2]
+    f!::F,
+    y,
+    tx::NTuple,
+    prep::PullbackPrep,
+    backend::AbstractADType,
+    x,
+    ty::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    return value_and_pullback!(f!, y, tx, prep, backend, x, ty, contexts...)[2]
 end

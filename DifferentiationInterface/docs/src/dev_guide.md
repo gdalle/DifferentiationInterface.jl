@@ -1,10 +1,7 @@
 # Dev guide
 
 This page is important reading if you want to contribute to DifferentiationInterface.jl.
-It is not part of the public API.
-
-!!! warning
-    The content below may become outdated, in which case you should refer to the source code as the ground truth.
+It is not part of the public API and the content below may become outdated, in which case you should refer to the source code as the ground truth.
 
 ## General principles
 
@@ -24,13 +21,12 @@ Most operators have 4 variants, which look like this in the first order: `operat
 ## New operator
 
 To implement a new operator for an existing backend, you need to write 5 methods: 1 for [preparation](@ref Preparation) and 4 corresponding to the variants of the operator (see above).
-In some cases, a subset of those methods will be enough, but most of the time, forgetting one will trigger errors.
-For first-order operators, you may also want to support [two-argument functions](@ref "Mutation and signatures"), which requires another 5 methods (defined on `f!` instead of `f`).
+For first-order operators, you may also want to support [in-place functions](@ref "Mutation and signatures"), which requires another 5 methods (defined on `f!` instead of `f`).
 
-The method `prepare_operator` must output an `extras` object of the correct type.
-For instance, `prepare_gradient(f, backend, x)` must return a [`DifferentiationInterface.GradientExtras`](@ref).
-Assuming you don't need any preparation for said operator, you can use the trivial extras that are already defined, like `DifferentiationInterface.NoGradientExtras`.
-Otherwise, define a custom struct like `MyGradientExtras <: DifferentiationInterface.GradientExtras` and put the necessary storage in there.
+The method `prepare_operator` must output a `prep` object of the correct type.
+For instance, `prepare_gradient(f, backend, x)` must return a [`DifferentiationInterface.GradientPrep`](@ref).
+Assuming you don't need any preparation for said operator, you can use the trivial prep that are already defined, like `DifferentiationInterface.NoGradientPrep`.
+Otherwise, define a custom struct like `MyGradientPrep <: DifferentiationInterface.GradientPrep` and put the necessary storage in there.
 
 ## New backend
 
@@ -40,7 +36,7 @@ Your AD package needs to be registered first.
 ### Core code
 
 In the main package, you should define a new struct `SuperDiffBackend` which subtypes [`ADTypes.AbstractADType`](@extref ADTypes), and endow it with the fields you need to parametrize your differentiation routines.
-You also have to define [`ADTypes.mode`](@extref) and [`DifferentiationInterface.twoarg_support`](@ref) on `SuperDiffBackend`.
+You also have to define [`ADTypes.mode`](@extref) and [`DifferentiationInterface.inplace_support`](@ref) on `SuperDiffBackend`.
 
 !!! info
     In the end, this backend struct will need to be contributed to [ADTypes.jl](https://github.com/SciML/ADTypes.jl).
@@ -79,5 +75,4 @@ GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "Back/SuperDiff")
 
 but don't forget to switch it back before pushing.
 
-Finally, you need to add your backend to the documentation, modifying every page that involves a list of backends.
-That includes the README.
+Finally, you need to add your backend to the documentation, modifying every page that involves a list of backends (including the `README.md`).

@@ -1,105 +1,173 @@
 ## Pushforward
 
-function DI.prepare_pushforward(f!, y, backend::AutoPolyesterForwardDiff, x, tx::Tangents)
-    return DI.prepare_pushforward(f!, y, single_threaded(backend), x, tx)
+function DI.prepare_pushforward(
+    f!, y, backend::AutoPolyesterForwardDiff, x, tx::NTuple, contexts::Vararg{Context,C}
+) where {C}
+    return DI.prepare_pushforward(f!, y, single_threaded(backend), x, tx, contexts...)
 end
 
 function DI.value_and_pushforward(
-    f!, y, backend::AutoPolyesterForwardDiff, x, tx::Tangents, extras::PushforwardExtras
-)
-    return DI.value_and_pushforward(f!, y, single_threaded(backend), x, tx, extras)
+    f!,
+    y,
+    prep::PushforwardPrep,
+    backend::AutoPolyesterForwardDiff,
+    x,
+    tx::NTuple,
+    contexts::Vararg{Context,C},
+) where {C}
+    return DI.value_and_pushforward(
+        f!, y, prep, single_threaded(backend), x, tx, contexts...
+    )
 end
 
 function DI.value_and_pushforward!(
     f!,
     y,
-    ty::Tangents,
+    ty::NTuple,
+    prep::PushforwardPrep,
     backend::AutoPolyesterForwardDiff,
     x,
-    tx::Tangents,
-    extras::PushforwardExtras,
-)
-    return DI.value_and_pushforward!(f!, y, ty, single_threaded(backend), x, tx, extras)
+    tx::NTuple,
+    contexts::Vararg{Context,C},
+) where {C}
+    return DI.value_and_pushforward!(
+        f!, y, ty, prep, single_threaded(backend), x, tx, contexts...
+    )
 end
 
 function DI.pushforward(
-    f!, y, backend::AutoPolyesterForwardDiff, x, tx::Tangents, extras::PushforwardExtras
-)
-    return DI.pushforward(f!, y, single_threaded(backend), x, tx, extras)
+    f!,
+    y,
+    prep::PushforwardPrep,
+    backend::AutoPolyesterForwardDiff,
+    x,
+    tx::NTuple,
+    contexts::Vararg{Context,C},
+) where {C}
+    return DI.pushforward(f!, y, prep, single_threaded(backend), x, tx, contexts...)
 end
 
 function DI.pushforward!(
     f!,
     y,
-    ty::Tangents,
+    ty::NTuple,
+    prep::PushforwardPrep,
     backend::AutoPolyesterForwardDiff,
     x,
-    tx::Tangents,
-    extras::PushforwardExtras,
-)
-    return DI.pushforward!(f!, y, ty, single_threaded(backend), x, tx, extras)
+    tx::NTuple,
+    contexts::Vararg{Context,C},
+) where {C}
+    return DI.pushforward!(f!, y, ty, prep, single_threaded(backend), x, tx, contexts...)
 end
 
 ## Derivative
 
-function DI.prepare_derivative(f!, y, backend::AutoPolyesterForwardDiff, x)
-    return DI.prepare_derivative(f!, y, single_threaded(backend), x)
+function DI.prepare_derivative(
+    f!, y, backend::AutoPolyesterForwardDiff, x, contexts::Vararg{Context,C}
+) where {C}
+    return DI.prepare_derivative(f!, y, single_threaded(backend), x, contexts...)
 end
 
 function DI.value_and_derivative(
-    f!, y, backend::AutoPolyesterForwardDiff, x, extras::DerivativeExtras
-)
-    return DI.value_and_derivative(f!, y, single_threaded(backend), x, extras)
+    f!,
+    y,
+    prep::DerivativePrep,
+    backend::AutoPolyesterForwardDiff,
+    x,
+    contexts::Vararg{Context,C},
+) where {C}
+    return DI.value_and_derivative(f!, y, prep, single_threaded(backend), x, contexts...)
 end
 
 function DI.value_and_derivative!(
-    f!, y, der, backend::AutoPolyesterForwardDiff, x, extras::DerivativeExtras
-)
-    return DI.value_and_derivative!(f!, y, der, single_threaded(backend), x, extras)
+    f!,
+    y,
+    der,
+    prep::DerivativePrep,
+    backend::AutoPolyesterForwardDiff,
+    x,
+    contexts::Vararg{Context,C},
+) where {C}
+    return DI.value_and_derivative!(
+        f!, y, der, prep, single_threaded(backend), x, contexts...
+    )
 end
 
 function DI.derivative(
-    f!, y, backend::AutoPolyesterForwardDiff, x, extras::DerivativeExtras
-)
-    return DI.derivative(f!, y, single_threaded(backend), x, extras)
+    f!,
+    y,
+    prep::DerivativePrep,
+    backend::AutoPolyesterForwardDiff,
+    x,
+    contexts::Vararg{Context,C},
+) where {C}
+    return DI.derivative(f!, y, prep, single_threaded(backend), x, contexts...)
 end
 
 function DI.derivative!(
-    f!, y, der, backend::AutoPolyesterForwardDiff, x, extras::DerivativeExtras
-)
-    return DI.derivative!(f!, y, der, single_threaded(backend), x, extras)
+    f!,
+    y,
+    der,
+    prep::DerivativePrep,
+    backend::AutoPolyesterForwardDiff,
+    x,
+    contexts::Vararg{Context,C},
+) where {C}
+    return DI.derivative!(f!, y, der, prep, single_threaded(backend), x, contexts...)
 end
 
 ## Jacobian
 
-DI.prepare_jacobian(f!, y, ::AutoPolyesterForwardDiff, x) = NoJacobianExtras()
+function DI.prepare_jacobian(
+    f!, y, ::AutoPolyesterForwardDiff, x, contexts::Vararg{Context,C}
+) where {C}
+    return NoJacobianPrep()
+end
 
 function DI.value_and_jacobian(
-    f!, y, ::AutoPolyesterForwardDiff{C}, x, ::NoJacobianExtras
-) where {C}
+    f!, y, ::NoJacobianPrep, ::AutoPolyesterForwardDiff{K}, x, contexts::Vararg{Context,C}
+) where {K,C}
+    fc! = with_contexts(f!, contexts...)
     jac = similar(y, length(y), length(x))
-    threaded_jacobian!(f!, y, jac, x, Chunk{C}())
-    f!(y, x)
+    threaded_jacobian!(fc!, y, jac, x, Chunk{K}())
+    fc!(y, x)
     return y, jac
 end
 
 function DI.value_and_jacobian!(
-    f!, y, jac, ::AutoPolyesterForwardDiff{C}, x, ::NoJacobianExtras
-) where {C}
-    threaded_jacobian!(f!, y, jac, x, Chunk{C}())
-    f!(y, x)
+    f!,
+    y,
+    jac,
+    ::NoJacobianPrep,
+    ::AutoPolyesterForwardDiff{K},
+    x,
+    contexts::Vararg{Context,C},
+) where {K,C}
+    fc! = with_contexts(f!, contexts...)
+    threaded_jacobian!(fc!, y, jac, x, Chunk{K}())
+    fc!(y, x)
     return y, jac
 end
 
-function DI.jacobian(f!, y, ::AutoPolyesterForwardDiff{C}, x, ::NoJacobianExtras) where {C}
+function DI.jacobian(
+    f!, y, ::NoJacobianPrep, ::AutoPolyesterForwardDiff{K}, x, contexts::Vararg{Context,C}
+) where {K,C}
+    fc! = with_contexts(f!, contexts...)
     jac = similar(y, length(y), length(x))
-    threaded_jacobian!(f!, y, jac, x, Chunk{C}())
+    threaded_jacobian!(fc!, y, jac, x, Chunk{K}())
     return jac
 end
 
 function DI.jacobian!(
-    f!, y, jac, ::AutoPolyesterForwardDiff{C}, x, ::NoJacobianExtras
-) where {C}
-    threaded_jacobian!(f!, y, jac, x, Chunk{C}())
+    f!,
+    y,
+    jac,
+    ::NoJacobianPrep,
+    ::AutoPolyesterForwardDiff{K},
+    x,
+    contexts::Vararg{Context,C},
+) where {K,C}
+    fc! = with_contexts(f!, contexts...)
+    threaded_jacobian!(fc!, y, jac, x, Chunk{K}())
     return jac
 end

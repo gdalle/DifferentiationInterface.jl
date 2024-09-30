@@ -2,18 +2,18 @@
     DifferentiationInterface
 
 An interface to various automatic differentiation backends in Julia.
-
-# Exports
-
-$(EXPORTS)
 """
 module DifferentiationInterface
 
-using ADTypes: ADTypes, AbstractADType
-using ADTypes: mode, ForwardMode, ForwardOrReverseMode, ReverseMode, SymbolicMode
-using ADTypes: AutoSparse, dense_ad
-using ADTypes: coloring_algorithm
-using ADTypes: sparsity_detector, jacobian_sparsity, hessian_sparsity
+using ADTypes:
+    ADTypes,
+    AbstractADType,
+    AutoSparse,
+    ForwardMode,
+    ForwardOrReverseMode,
+    ReverseMode,
+    SymbolicMode,
+    mode
 using ADTypes:
     AutoChainRules,
     AutoDiffractor,
@@ -22,40 +22,25 @@ using ADTypes:
     AutoFiniteDiff,
     AutoFiniteDifferences,
     AutoForwardDiff,
+    AutoMooncake,
     AutoPolyesterForwardDiff,
     AutoReverseDiff,
     AutoSymbolics,
-    AutoTapir,
     AutoTracker,
     AutoZygote
 using Compat
-using DocStringExtensions
-using FillArrays: OneElement
 using LinearAlgebra: Symmetric, Transpose, dot, parent, transpose
 using PackageExtensionCompat: @require_extensions
-using SparseArrays: SparseMatrixCSC, nonzeros, nzrange, rowvals, sparse
-using SparseMatrixColorings:
-    AbstractColoringResult,
-    ColoringProblem,
-    GreedyColoringAlgorithm,
-    coloring,
-    column_colors,
-    row_colors,
-    column_groups,
-    row_groups,
-    decompress,
-    decompress!
 
 include("second_order/second_order.jl")
 
-include("utils/extras.jl")
+include("utils/prep.jl")
 include("utils/traits.jl")
 include("utils/basis.jl")
-include("utils/tangents.jl")
 include("utils/check.jl")
 include("utils/exceptions.jl")
-include("utils/maybe.jl")
 include("utils/printing.jl")
+include("utils/context.jl")
 
 include("first_order/pushforward.jl")
 include("first_order/pullback.jl")
@@ -67,16 +52,12 @@ include("second_order/second_derivative.jl")
 include("second_order/hvp.jl")
 include("second_order/hessian.jl")
 
-include("fallbacks/no_extras.jl")
-include("fallbacks/no_tangents.jl")
-
-include("sparse/fallbacks.jl")
-include("sparse/jacobian.jl")
-include("sparse/hessian.jl")
+include("fallbacks/no_prep.jl")
 
 include("misc/differentiate_with.jl")
-include("misc/sparsity_detector.jl")
 include("misc/from_primitive.jl")
+include("misc/sparsity_detector.jl")
+include("misc/zero_backends.jl")
 
 function __init__()
     @require_extensions
@@ -84,6 +65,7 @@ end
 
 ## Exported
 
+export Context, Constant
 export SecondOrder
 
 export value_and_pushforward!, value_and_pushforward
@@ -112,10 +94,10 @@ export prepare_hvp, prepare_hvp_same_point
 export prepare_derivative, prepare_gradient, prepare_jacobian
 export prepare_second_derivative, prepare_hessian
 
-export check_available, check_twoarg, check_hessian
-
 export DifferentiateWith
 export DenseSparsityDetector
+
+export check_available, check_inplace
 
 ## Re-exported from ADTypes
 
@@ -126,22 +108,17 @@ export AutoFastDifferentiation
 export AutoFiniteDiff
 export AutoFiniteDifferences
 export AutoForwardDiff
+export AutoMooncake
 export AutoPolyesterForwardDiff
 export AutoReverseDiff
 export AutoSymbolics
-export AutoTapir
 export AutoTracker
 export AutoZygote
 
 export AutoSparse
 
-## Re-exported from SparseMatrixColorings
-
-export GreedyColoringAlgorithm
-
 ## Public but not exported
 
-@compat public inner
-@compat public outer
+@compat public inner, outer
 
 end # module

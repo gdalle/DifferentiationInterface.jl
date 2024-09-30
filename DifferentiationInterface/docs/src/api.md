@@ -8,6 +8,13 @@ CollapsedDocStrings = true
 DifferentiationInterface
 ```
 
+## Argument wrappers
+
+```@docs
+Context
+Constant
+```
+
 ## First order
 
 ### Pushforward
@@ -103,8 +110,7 @@ value_gradient_and_hessian!
 
 ```@docs
 check_available
-check_twoarg
-check_hessian
+check_inplace
 DifferentiationInterface.outer
 DifferentiationInterface.inner
 ```

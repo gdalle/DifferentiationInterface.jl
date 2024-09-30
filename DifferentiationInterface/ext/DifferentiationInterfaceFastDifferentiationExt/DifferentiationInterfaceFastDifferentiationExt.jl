@@ -3,16 +3,15 @@ module DifferentiationInterfaceFastDifferentiationExt
 using ADTypes: ADTypes, AutoFastDifferentiation, AutoSparse
 import DifferentiationInterface as DI
 using DifferentiationInterface:
-    DerivativeExtras,
-    GradientExtras,
-    HessianExtras,
-    HVPExtras,
-    JacobianExtras,
-    PullbackExtras,
-    PushforwardExtras,
-    SecondDerivativeExtras,
-    Tangents,
-    maybe_dense_ad
+    DerivativePrep,
+    GradientPrep,
+    HessianPrep,
+    HVPPrep,
+    JacobianPrep,
+    PullbackPrep,
+    PushforwardPrep,
+    SecondDerivativePrep,
+    dense_ad
 using FastDifferentiation:
     derivative,
     hessian,
@@ -24,13 +23,12 @@ using FastDifferentiation:
     make_variables,
     sparse_hessian,
     sparse_jacobian
-using FillArrays: Fill
 using LinearAlgebra: dot
 using FastDifferentiation.RuntimeGeneratedFunctions: RuntimeGeneratedFunction
 
 DI.check_available(::AutoFastDifferentiation) = true
 
-monovec(x::Number) = Fill(x, 1)
+monovec(x::Number) = [x]
 
 myvec(x::Number) = monovec(x)
 myvec(x::AbstractArray) = vec(x)

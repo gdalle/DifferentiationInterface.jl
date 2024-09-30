@@ -1,17 +1,21 @@
 module DifferentiationInterfaceReverseDiffExt
 
 using ADTypes: AutoReverseDiff
+using Base: Fix2
 import DifferentiationInterface as DI
 using DifferentiationInterface:
-    DerivativeExtras,
-    GradientExtras,
-    HessianExtras,
-    JacobianExtras,
-    NoPullbackExtras,
-    Tangents
-using FillArrays: OneElement
+    Context,
+    DerivativePrep,
+    GradientPrep,
+    HessianPrep,
+    JacobianPrep,
+    NoGradientPrep,
+    NoHessianPrep,
+    NoJacobianPrep,
+    NoPullbackPrep,
+    unwrap,
+    with_contexts
 using ReverseDiff.DiffResults: DiffResults, DiffResult, GradientResult, MutableDiffResult
-using DocStringExtensions
 using LinearAlgebra: dot, mul!
 using ReverseDiff:
     CompiledGradient,
@@ -33,10 +37,8 @@ using ReverseDiff:
 
 DI.check_available(::AutoReverseDiff) = true
 
-function DI.basis(
-    ::AutoReverseDiff, a::AbstractArray{T,N}, i::CartesianIndex{N}
-) where {T,N}
-    return OneElement(one(T), Tuple(i), axes(a))
+function DI.basis(::AutoReverseDiff, a::AbstractArray{T}, i) where {T}
+    return DI.OneElement(i, one(T), a)
 end
 
 include("onearg.jl")

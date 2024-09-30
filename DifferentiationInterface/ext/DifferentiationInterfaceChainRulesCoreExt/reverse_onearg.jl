@@ -1,38 +1,71 @@
 ## Pullback
 
-struct ChainRulesPullbackExtrasSamePoint{Y,PB} <: PullbackExtras
+struct ChainRulesPullbackPrepSamePoint{Y,PB} <: PullbackPrep
     y::Y
     pb::PB
 end
 
-DI.prepare_pullback(f, ::AutoReverseChainRules, x, ty::Tangents) = NoPullbackExtras()
+function DI.prepare_pullback(
+    f, ::AutoReverseChainRules, x, ty::NTuple, contexts::Vararg{Constant,C}
+) where {C}
+    return NoPullbackPrep()
+end
 
 function DI.prepare_pullback_same_point(
-    f, backend::AutoReverseChainRules, x, ty::Tangents, ::PullbackExtras=NoPullbackExtras()
-)
+    f,
+    ::NoPullbackPrep,
+    backend::AutoReverseChainRules,
+    x,
+    ty::NTuple,
+    contexts::Vararg{Constant,C},
+) where {C}
     rc = ruleconfig(backend)
-    y, pb = rrule_via_ad(rc, f, x)
-    return ChainRulesPullbackExtrasSamePoint(y, pb)
+    y, pb = rrule_via_ad(rc, f, x, map(unwrap, contexts)...)
+    return ChainRulesPullbackPrepSamePoint(y, pb)
 end
 
 function DI.value_and_pullback(
-    f, backend::AutoReverseChainRules, x, ty::Tangents, ::NoPullbackExtras
-)
+    f,
+    ::NoPullbackPrep,
+    backend::AutoReverseChainRules,
+    x,
+    ty::NTuple,
+    contexts::Vararg{Constant,C},
+) where {C}
     rc = ruleconfig(backend)
-    y, pb = rrule_via_ad(rc, f, x)
-    return y, Tangents(last.(pb.(ty.d)))
+    y, pb = rrule_via_ad(rc, f, x, map(unwrap, contexts)...)
+    tx = map(ty) do dy
+        pb(dy)[2]
+    end
+    return y, tx
 end
 
 function DI.value_and_pullback(
-    f, ::AutoReverseChainRules, x, ty::Tangents, extras::ChainRulesPullbackExtrasSamePoint
-)
-    @compat (; y, pb) = extras
-    return copy(y), Tangents(last.(pb.(ty.d)))
+    f,
+    prep::ChainRulesPullbackPrepSamePoint,
+    ::AutoReverseChainRules,
+    x,
+    ty::NTuple,
+    contexts::Vararg{Constant,C},
+) where {C}
+    @compat (; y, pb) = prep
+    tx = map(ty) do dy
+        pb(dy)[2]
+    end
+    return copy(y), tx
 end
 
 function DI.pullback(
-    f, ::AutoReverseChainRules, x, ty::Tangents, extras::ChainRulesPullbackExtrasSamePoint
-)
-    @compat (; pb) = extras
-    return Tangents(last.(pb.(ty.d)))
+    f,
+    prep::ChainRulesPullbackPrepSamePoint,
+    ::AutoReverseChainRules,
+    x,
+    ty::NTuple,
+    contexts::Vararg{Constant,C},
+) where {C}
+    @compat (; pb) = prep
+    tx = map(ty) do dy
+        pb(dy)[2]
+    end
+    return tx
 end

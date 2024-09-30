@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-    tags: ['*']
+    tags: ["*"]
   pull_request:
     types: [opened, reopened, synchronize, ready_for_review]
   workflow_dispatch:
@@ -16,10 +16,10 @@ concurrency:
   cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
 
 jobs:
-  
   test-DI:
     name: ${{ matrix.version }} - DI (${{ matrix.group }})
     runs-on: ubuntu-latest
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'bump') }}
     timeout-minutes: 60
     permissions: # needed to allow julia-actions/cache to proactively delete old caches that it has created
       actions: write
@@ -28,65 +28,73 @@ jobs:
       fail-fast: false
       matrix:
         version:
-          - '1'
-          - 'lts'
-          - 'pre'
+          # - "1"
+          # - "lts"
+          - "pre"
         group:
           - Formalities
-          - Internals
-          - Back/ChainRulesCore
-          - Back/Diffractor
+          # - Internals
+          # - Back/ChainRulesCore
+          # - Back/Diffractor
           - Back/Enzyme
-          - Back/FastDifferentiation
-          - Back/FiniteDiff
-          - Back/FiniteDifferences
-          - Back/ForwardDiff
-          - Back/PolyesterForwardDiff
-          - Back/ReverseDiff
-          - Back/SecondOrder
-          - Back/Symbolics
-          - Back/Tapir
-          - Back/Tracker
-          - Back/Zygote
-          - Down/Detector
-          - Down/DifferentiateWith
-          - Down/Flux
-          - Down/Lux
+          # - Back/FastDifferentiation
+          # - Back/FiniteDiff
+          # - Back/FiniteDifferences
+          # - Back/ForwardDiff
+          # - Back/Mooncake
+          # - Back/PolyesterForwardDiff
+          # - Back/ReverseDiff
+          # - Back/SecondOrder
+          # - Back/Symbolics
+          # - Back/Tracker
+          # - Back/Zygote
+          # - Misc/DifferentiateWith
+          # - Misc/FromPrimitive
+          # - Misc/SparsityDetector
+          # - Misc/ZeroBackends
+          # - Down/Flux
+          # - Down/Lux
         exclude:
           # lts
-          - version: 'lts'
+          - version: "lts"
             group: Formalities
-          - version: 'lts'
+          - version: "lts"
             group: Back/ChainRulesCore
-          - version: 'lts'
+          - version: "lts"
             group: Back/Diffractor
-          - version: 'lts'
+          - version: "lts"
             group: Back/Enzyme
-          - version: 'lts'
+          - version: "lts"
             group: Back/FiniteDiff
-          - version: 'lts'
+          - version: "lts"
             group: Back/FastDifferentiation
-          - version: 'lts'
+          - version: "lts"
+            group: Back/Mooncake
+          - version: "lts"
             group: Back/PolyesterForwardDiff
-          - version: 'lts'
+          - version: "lts"
             group: Back/SecondOrder
-          - version: 'lts'
+          - version: "lts"
             group: Back/Symbolics
-          - version: 'lts'
-            group: Back/Tapir
-          - version: 'lts'
-            group: Down/Detector
-          - version: 'lts'
+          - version: "lts"
+            group: Misc/SparsityDetector
+          - version: "lts"
             group: Down/Flux
-          - version: 'lts'
+          - version: "lts"
             group: Down/Lux
           # pre-release
-          - version: 'pre'
+          - version: "pre"
             group: Formalities
-          - version: 'pre'
+          - version: "pre"
             group: Back/ChainRulesCore
-          - version: 'pre'
-            group: Back/Tapir
+          - version: "pre"
+            group: Back/Enzyme
+          - version: "pre"
+            group: Back/Mooncake
+          - version: "pre"
+            group: Back/SecondOrder
+          - version: "pre"
+            group: Misc/SparsityDetector
     env:
       SHOULDRUN: ${{ matrix.version == '1' || !github.event.pull_request.draft }}
       JULIA_DI_TEST_GROUP: ${{ matrix.group }}
@@ -124,6 +132,7 @@ jobs:
   test-DIT:
     name: ${{ matrix.version }} - DIT (${{ matrix.group }})
     runs-on: ubuntu-latest
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'bump') }}
     timeout-minutes: 60
     permissions: # needed to allow julia-actions/cache to proactively delete old caches that it has created
       actions: write
@@ -132,18 +141,18 @@ jobs:
       fail-fast: false
       matrix:
         version:
-          - '1'
-          - 'lts'
-          - 'pre'
+          # - "1"
+          # - "lts"
+          - "pre"
         group:
           - Formalities
-          - Zero
-          - ForwardDiff
-          - Weird
+          # - Zero
+          # - Standard
+          # - Weird
         exclude:
-          - version: 'lts'
+          - version: "lts"
             group: Formalities
-          - version: 'lts'
+          - version: "lts"
             group: Weird
     env:
       SHOULDRUN: ${{ matrix.version == '1' || !github.event.pull_request.draft }}

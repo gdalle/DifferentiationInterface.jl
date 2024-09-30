@@ -1,50 +1,59 @@
 module DifferentiationInterfaceEnzymeExt
 
 using ADTypes: ADTypes, AutoEnzyme
+using Base: Fix1
 import DifferentiationInterface as DI
 using DifferentiationInterface:
-    DerivativeExtras,
-    GradientExtras,
-    JacobianExtras,
-    HVPExtras,
-    PullbackExtras,
-    PushforwardExtras,
-    NoDerivativeExtras,
-    NoGradientExtras,
-    NoJacobianExtras,
-    NoPullbackExtras,
-    NoPushforwardExtras,
-    Tangents,
-    SingleTangent,
+    Context,
+    DerivativePrep,
+    GradientPrep,
+    JacobianPrep,
+    HVPPrep,
+    PullbackPrep,
+    PushforwardPrep,
+    NoDerivativePrep,
+    NoGradientPrep,
+    NoHVPPrep,
+    NoJacobianPrep,
+    NoPullbackPrep,
+    NoPushforwardPrep,
     pick_batchsize
-using DocStringExtensions
 using Enzyme:
     Active,
     Annotation,
+    BatchDuplicated,
     Const,
     Duplicated,
     DuplicatedNoNeed,
     EnzymeCore,
     Forward,
     ForwardMode,
+    ForwardWithPrimal,
     MixedDuplicated,
     Mode,
+    NoPrimal,
     Reverse,
-    ReverseWithPrimal,
-    ReverseSplitWithPrimal,
     ReverseMode,
+    ReverseModeSplit,
+    ReverseSplitNoPrimal,
+    ReverseSplitWidth,
+    ReverseSplitWithPrimal,
+    ReverseWithPrimal,
+    WithPrimal,
     autodiff,
-    autodiff_deferred,
-    autodiff_deferred_thunk,
     autodiff_thunk,
-    chunkedonehot,
+    create_shadows,
     gradient,
     gradient!,
     guess_activity,
+    hvp,
+    hvp!,
     jacobian,
     make_zero,
     make_zero!,
     onehot
+
+DI.check_available(::AutoEnzyme) = true
 
 include("utils.jl")
 

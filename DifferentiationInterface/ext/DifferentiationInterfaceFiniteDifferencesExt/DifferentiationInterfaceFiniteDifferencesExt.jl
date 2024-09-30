@@ -3,99 +3,173 @@ module DifferentiationInterfaceFiniteDifferencesExt
 using ADTypes: AutoFiniteDifferences
 import DifferentiationInterface as DI
 using DifferentiationInterface:
-    NoGradientExtras, NoJacobianExtras, NoPullbackExtras, NoPushforwardExtras, Tangents
-using FillArrays: OneElement
+    Context,
+    NoGradientPrep,
+    NoJacobianPrep,
+    NoPullbackPrep,
+    NoPushforwardPrep,
+    unwrap,
+    with_contexts
 using FiniteDifferences: FiniteDifferences, grad, jacobian, jvp, j′vp
 using LinearAlgebra: dot
 
 DI.check_available(::AutoFiniteDifferences) = true
-DI.twoarg_support(::AutoFiniteDifferences) = DI.TwoArgNotSupported()
+DI.inplace_support(::AutoFiniteDifferences) = DI.InPlaceNotSupported()
 
 ## Pushforward
 
-function DI.prepare_pushforward(f, ::AutoFiniteDifferences, x, tx::Tangents)
-    return NoPushforwardExtras()
+function DI.prepare_pushforward(
+    f, ::AutoFiniteDifferences, x, tx::NTuple, contexts::Vararg{Context,C}
+) where {C}
+    return NoPushforwardPrep()
 end
 
 function DI.pushforward(
-    f, backend::AutoFiniteDifferences, x, tx::Tangents, ::NoPushforwardExtras
-)
-    dys = map(tx.d) do dx
-        jvp(backend.fdm, f, (x, dx))
+    f,
+    ::NoPushforwardPrep,
+    backend::AutoFiniteDifferences,
+    x,
+    tx::NTuple,
+    contexts::Vararg{Context,C},
+) where {C}
+    fc = with_contexts(f, contexts...)
+    ty = map(tx) do dx
+        jvp(backend.fdm, fc, (x, dx))
     end
-    return Tangents(dys)
+    return ty
 end
 
 function DI.value_and_pushforward(
-    f, backend::AutoFiniteDifferences, x, tx::Tangents, extras::NoPushforwardExtras
-)
-    return f(x), DI.pushforward(f, backend, x, tx, extras)
+    f,
+    prep::NoPushforwardPrep,
+    backend::AutoFiniteDifferences,
+    x,
+    tx::NTuple,
+    contexts::Vararg{Context,C},
+) where {C}
+    return f(x, map(unwrap, contexts)...),
+    DI.pushforward(f, prep, backend, x, tx, contexts...)
 end
 
 ## Pullback
 
-DI.prepare_pullback(f, ::AutoFiniteDifferences, x, ty::Tangents) = NoPullbackExtras()
+function DI.prepare_pullback(
+    f, ::AutoFiniteDifferences, x, ty::NTuple, contexts::Vararg{Context,C}
+) where {C}
+    return NoPullbackPrep()
+end
 
-function DI.pullback(f, backend::AutoFiniteDifferences, x, ty::Tangents, ::NoPullbackExtras)
-    dxs = map(ty.d) do dy
-        only(j′vp(backend.fdm, f, dy, x))
+function DI.pullback(
+    f,
+    ::NoPullbackPrep,
+    backend::AutoFiniteDifferences,
+    x,
+    ty::NTuple,
+    contexts::Vararg{Context,C},
+) where {C}
+    fc = with_contexts(f, contexts...)
+    tx = map(ty) do dy
+        only(j′vp(backend.fdm, fc, dy, x))
     end
-    return Tangents(dxs)
+    return tx
 end
 
 function DI.value_and_pullback(
-    f, backend::AutoFiniteDifferences, x, ty::Tangents, extras::NoPullbackExtras
-)
-    return f(x), DI.pullback(f, backend, x, ty, extras)
+    f,
+    prep::NoPullbackPrep,
+    backend::AutoFiniteDifferences,
+    x,
+    ty::NTuple,
+    contexts::Vararg{Context,C},
+) where {C}
+    return f(x, map(unwrap, contexts)...), DI.pullback(f, prep, backend, x, ty, contexts...)
 end
 
 ## Gradient
 
-DI.prepare_gradient(f, ::AutoFiniteDifferences, x) = NoGradientExtras()
+function DI.prepare_gradient(
+    f, ::AutoFiniteDifferences, x, contexts::Vararg{Context,C}
+) where {C}
+    return NoGradientPrep()
+end
 
-function DI.gradient(f, backend::AutoFiniteDifferences, x, ::NoGradientExtras)
-    return only(grad(backend.fdm, f, x))
+function DI.gradient(
+    f, ::NoGradientPrep, backend::AutoFiniteDifferences, x, contexts::Vararg{Context,C}
+) where {C}
+    fc = with_contexts(f, contexts...)
+    return only(grad(backend.fdm, fc, x))
 end
 
 function DI.value_and_gradient(
-    f, backend::AutoFiniteDifferences, x, extras::NoGradientExtras
-)
-    return f(x), DI.gradient(f, backend, x, extras)
+    f, prep::NoGradientPrep, backend::AutoFiniteDifferences, x, contexts::Vararg{Context,C}
+) where {C}
+    return f(x, map(unwrap, contexts)...), DI.gradient(f, prep, backend, x, contexts...)
 end
 
-function DI.gradient!(f, grad, backend::AutoFiniteDifferences, x, extras::NoGradientExtras)
-    return copyto!(grad, DI.gradient(f, backend, x, extras))
+function DI.gradient!(
+    f,
+    grad,
+    prep::NoGradientPrep,
+    backend::AutoFiniteDifferences,
+    x,
+    contexts::Vararg{Context,C},
+) where {C}
+    return copyto!(grad, DI.gradient(f, prep, backend, x, contexts...))
 end
 
 function DI.value_and_gradient!(
-    f, grad, backend::AutoFiniteDifferences, x, extras::NoGradientExtras
-)
-    y, new_grad = DI.value_and_gradient(f, backend, x, extras)
+    f,
+    grad,
+    prep::NoGradientPrep,
+    backend::AutoFiniteDifferences,
+    x,
+    contexts::Vararg{Context,C},
+) where {C}
+    y, new_grad = DI.value_and_gradient(f, prep, backend, x, contexts...)
     return y, copyto!(grad, new_grad)
 end
 
 ## Jacobian
 
-DI.prepare_jacobian(f, ::AutoFiniteDifferences, x) = NoJacobianExtras()
+function DI.prepare_jacobian(
+    f, ::AutoFiniteDifferences, x, contexts::Vararg{Context,C}
+) where {C}
+    return NoJacobianPrep()
+end
 
-function DI.jacobian(f, backend::AutoFiniteDifferences, x, ::NoJacobianExtras)
-    return only(jacobian(backend.fdm, f, x))
+function DI.jacobian(
+    f, ::NoJacobianPrep, backend::AutoFiniteDifferences, x, contexts::Vararg{Context,C}
+) where {C}
+    fc = with_contexts(f, contexts...)
+    return only(jacobian(backend.fdm, fc, x))
 end
 
 function DI.value_and_jacobian(
-    f, backend::AutoFiniteDifferences, x, extras::NoJacobianExtras
-)
-    return f(x), DI.jacobian(f, backend, x, extras)
+    f, prep::NoJacobianPrep, backend::AutoFiniteDifferences, x, contexts::Vararg{Context,C}
+) where {C}
+    return f(x, map(unwrap, contexts)...), DI.jacobian(f, prep, backend, x, contexts...)
 end
 
-function DI.jacobian!(f, jac, backend::AutoFiniteDifferences, x, extras::NoJacobianExtras)
-    return copyto!(jac, DI.jacobian(f, backend, x, extras))
+function DI.jacobian!(
+    f,
+    jac,
+    prep::NoJacobianPrep,
+    backend::AutoFiniteDifferences,
+    x,
+    contexts::Vararg{Context,C},
+) where {C}
+    return copyto!(jac, DI.jacobian(f, prep, backend, x, contexts...))
 end
 
 function DI.value_and_jacobian!(
-    f, jac, backend::AutoFiniteDifferences, x, extras::NoJacobianExtras
-)
-    y, new_jac = DI.value_and_jacobian(f, backend, x)
+    f,
+    jac,
+    prep::NoJacobianPrep,
+    backend::AutoFiniteDifferences,
+    x,
+    contexts::Vararg{Context,C},
+) where {C}
+    y, new_jac = DI.value_and_jacobian(f, prep, backend, x, contexts...)
     return y, copyto!(jac, new_jac)
 end
 
