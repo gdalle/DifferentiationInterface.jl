@@ -61,7 +61,7 @@ function DIT.static_scenarios(rng::AbstractRNG=default_rng(); linalg=true)
         ),
     )
     scens = filter(scens) do s
-        DIT.place(s) == :outofplace || s.x isa Union{Number,MArray}
+        DIT.operator_place(s) == :out || s.x isa Union{Number,MArray}
     end
     return scens
 end

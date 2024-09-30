@@ -14,8 +14,16 @@ for backend in [AutoChainRules(ZygoteRuleConfig())]
 end
 
 test_differentiation(
-    AutoChainRules(ZygoteRuleConfig());
+    AutoChainRules(ZygoteRuleConfig()),
+    default_scenarios();
     excluded=[:second_derivative],
     second_order=VERSION >= v"1.10",
+    logging=LOGGING,
+);
+
+test_differentiation(
+    AutoChainRules(ZygoteRuleConfig()),
+    default_scenarios(; include_normal=false, include_constantified=true);
+    second_order=false,
     logging=LOGGING,
 );

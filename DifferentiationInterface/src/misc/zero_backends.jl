@@ -20,41 +20,74 @@ ADTypes.mode(::AutoZeroForward) = ForwardMode()
 check_available(::AutoZeroForward) = true
 inplace_support(::AutoZeroForward) = InPlaceSupported()
 
-prepare_pushforward(f, ::AutoZeroForward, x, tx::Tangents) = NoPushforwardExtras()
-prepare_pushforward(f!, y, ::AutoZeroForward, x, tx::Tangents) = NoPushforwardExtras()
+function prepare_pushforward(
+    f::F, ::AutoZeroForward, x, tx::NTuple, contexts::Vararg{Context,C}
+) where {F,C}
+    return NoPushforwardPrep()
+end
+
+function prepare_pushforward(
+    f!::F, y, ::AutoZeroForward, x, tx::NTuple, contexts::Vararg{Context,C}
+) where {F,C}
+    return NoPushforwardPrep()
+end
 
 function value_and_pushforward(
-    f, ::NoPushforwardExtras, ::AutoZeroForward, x, tx::Tangents{B}
-) where {B}
-    y = f(x)
+    f::F,
+    ::NoPushforwardPrep,
+    ::AutoZeroForward,
+    x,
+    tx::NTuple{B},
+    contexts::Vararg{Context,C},
+) where {F,B,C}
+    y = f(x, map(unwrap, contexts)...)
     ty = map(ReturnZero(y), tx)
     return y, ty
 end
 
 function value_and_pushforward(
-    f!, y, ::NoPushforwardExtras, ::AutoZeroForward, x, tx::Tangents{B}
-) where {B}
-    f!(y, x)
+    f!::F,
+    y,
+    ::NoPushforwardPrep,
+    ::AutoZeroForward,
+    x,
+    tx::NTuple{B},
+    contexts::Vararg{Context,C},
+) where {F,B,C}
+    f!(y, x, map(unwrap, contexts)...)
     ty = map(ReturnZero(y), tx)
     return y, ty
 end
 
 function value_and_pushforward!(
-    f, ty::Tangents, ::NoPushforwardExtras, ::AutoZeroForward, x, tx::Tangents
-)
-    y = f(x)
-    for b in eachindex(ty.d)
-        _zero!(ty.d[b])
+    f::F,
+    ty::NTuple,
+    ::NoPushforwardPrep,
+    ::AutoZeroForward,
+    x,
+    tx::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    y = f(x, map(unwrap, contexts)...)
+    for b in eachindex(ty)
+        _zero!(ty[b])
     end
     return y, ty
 end
 
 function value_and_pushforward!(
-    f!, y, ty::Tangents, ::NoPushforwardExtras, ::AutoZeroForward, x, tx::Tangents
-)
-    f!(y, x)
-    for b in eachindex(ty.d)
-        _zero!(ty.d[b])
+    f!::F,
+    y,
+    ty::NTuple,
+    ::NoPushforwardPrep,
+    ::AutoZeroForward,
+    x,
+    tx::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    f!(y, x, map(unwrap, contexts)...)
+    for b in eachindex(ty)
+        _zero!(ty[b])
     end
     return y, ty
 end
@@ -73,41 +106,69 @@ ADTypes.mode(::AutoZeroReverse) = ReverseMode()
 check_available(::AutoZeroReverse) = true
 inplace_support(::AutoZeroReverse) = InPlaceSupported()
 
-prepare_pullback(f, ::AutoZeroReverse, x, ty::Tangents) = NoPullbackExtras()
-prepare_pullback(f!, y, ::AutoZeroReverse, x, ty::Tangents) = NoPullbackExtras()
+function prepare_pullback(
+    f::F, ::AutoZeroReverse, x, ty::NTuple, contexts::Vararg{Context,C}
+) where {F,C}
+    return NoPullbackPrep()
+end
 
-function value_and_pullback(
-    f, ::NoPullbackExtras, ::AutoZeroReverse, x, ty::Tangents{B}
-) where {B}
-    y = f(x)
-    dxs = ntuple(ReturnZero(x), Val(B))
-    return y, Tangents(dxs...)
+function prepare_pullback(
+    f!::F, y, ::AutoZeroReverse, x, ty::NTuple, contexts::Vararg{Context,C}
+) where {F,C}
+    return NoPullbackPrep()
 end
 
 function value_and_pullback(
-    f!, y, ::NoPullbackExtras, ::AutoZeroReverse, x, ty::Tangents{B}
-) where {B}
-    f!(y, x)
-    dxs = ntuple(ReturnZero(x), Val(B))
-    return y, Tangents(dxs...)
+    f::F, ::NoPullbackPrep, ::AutoZeroReverse, x, ty::NTuple{B}, contexts::Vararg{Context,C}
+) where {F,B,C}
+    y = f(x, map(unwrap, contexts)...)
+    tx = ntuple(ReturnZero(x), Val(B))
+    return y, tx
+end
+
+function value_and_pullback(
+    f!::F,
+    y,
+    ::NoPullbackPrep,
+    ::AutoZeroReverse,
+    x,
+    ty::NTuple{B},
+    contexts::Vararg{Context,C},
+) where {F,B,C}
+    f!(y, x, map(unwrap, contexts)...)
+    tx = ntuple(ReturnZero(x), Val(B))
+    return y, tx
 end
 
 function value_and_pullback!(
-    f, tx::Tangents, ::NoPullbackExtras, ::AutoZeroReverse, x, ty::Tangents
-)
-    y = f(x)
-    for b in eachindex(tx.d)
-        _zero!(tx.d[b])
+    f::F,
+    tx::NTuple,
+    ::NoPullbackPrep,
+    ::AutoZeroReverse,
+    x,
+    ty::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    y = f(x, map(unwrap, contexts)...)
+    for b in eachindex(tx)
+        _zero!(tx[b])
     end
     return y, tx
 end
 
 function value_and_pullback!(
-    f!, y, tx::Tangents, ::NoPullbackExtras, ::AutoZeroReverse, x, ty::Tangents
-)
-    f!(y, x)
-    for b in eachindex(tx.d)
-        _zero!(tx.d[b])
+    f!::F,
+    y,
+    tx::NTuple,
+    ::NoPullbackPrep,
+    ::AutoZeroReverse,
+    x,
+    ty::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    f!(y, x, map(unwrap, contexts)...)
+    for b in eachindex(tx)
+        _zero!(tx[b])
     end
     return y, tx
 end

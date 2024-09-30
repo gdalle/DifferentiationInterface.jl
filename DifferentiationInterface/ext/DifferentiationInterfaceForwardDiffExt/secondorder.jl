@@ -18,54 +18,62 @@ function tag_backend_hvp(f, backend::AutoForwardDiff, x)
     return backend
 end
 
-struct ForwardDiffOverSomethingHVPExtras{
-    B<:AutoForwardDiff,G<:DI.Gradient,E<:PushforwardExtras
-} <: HVPExtras
+struct ForwardDiffOverSomethingHVPPrep{B<:AutoForwardDiff,G,E<:PushforwardPrep} <: HVPPrep
     tagged_outer_backend::B
     inner_gradient::G
-    outer_pushforward_extras::E
+    outer_pushforward_prep::E
 end
 
 function DI.prepare_hvp(
-    f::F, backend::SecondOrder{<:AutoForwardDiff}, x, tx::Tangents
-) where {F}
+    f::F,
+    backend::SecondOrder{<:AutoForwardDiff},
+    x,
+    tx::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    rewrap = Rewrap(contexts...)
     tagged_outer_backend = tag_backend_hvp(f, outer(backend), x)
     T = tag_type(f, tagged_outer_backend, x)
     xdual = make_dual(T, x, tx)
-    gradient_extras = DI.prepare_gradient(f, inner(backend), xdual)
-    inner_gradient = DI.Gradient(f, inner(backend), gradient_extras)
-    outer_pushforward_extras = DI.prepare_pushforward(
-        inner_gradient, tagged_outer_backend, x, tx
+    gradient_prep = DI.prepare_gradient(f, inner(backend), xdual, contexts...)
+    function inner_gradient(x, unannotated_contexts...)
+        annotated_contexts = rewrap(unannotated_contexts...)
+        return DI.gradient(f, gradient_prep, inner(backend), x, annotated_contexts...)
+    end
+    outer_pushforward_prep = DI.prepare_pushforward(
+        inner_gradient, tagged_outer_backend, x, tx, contexts...
     )
-    return ForwardDiffOverSomethingHVPExtras(
-        tagged_outer_backend, inner_gradient, outer_pushforward_extras
+    return ForwardDiffOverSomethingHVPPrep(
+        tagged_outer_backend, inner_gradient, outer_pushforward_prep
     )
 end
 
 function DI.hvp(
-    f,
-    extras::ForwardDiffOverSomethingHVPExtras,
+    f::F,
+    prep::ForwardDiffOverSomethingHVPPrep,
     ::SecondOrder{<:AutoForwardDiff},
     x,
-    tx::Tangents,
-)
-    @compat (; tagged_outer_backend, inner_gradient, outer_pushforward_extras) = extras
+    tx::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    @compat (; tagged_outer_backend, inner_gradient, outer_pushforward_prep) = prep
     return DI.pushforward(
-        inner_gradient, outer_pushforward_extras, tagged_outer_backend, x, tx
+        inner_gradient, outer_pushforward_prep, tagged_outer_backend, x, tx, contexts...
     )
 end
 
 function DI.hvp!(
-    f,
-    tg::Tangents,
-    extras::ForwardDiffOverSomethingHVPExtras,
+    f::F,
+    tg::NTuple,
+    prep::ForwardDiffOverSomethingHVPPrep,
     ::SecondOrder{<:AutoForwardDiff},
     x,
-    tx::Tangents,
-)
-    @compat (; tagged_outer_backend, inner_gradient, outer_pushforward_extras) = extras
+    tx::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    @compat (; tagged_outer_backend, inner_gradient, outer_pushforward_prep) = prep
     DI.pushforward!(
-        inner_gradient, tg, outer_pushforward_extras, tagged_outer_backend, x, tx
+        inner_gradient, tg, outer_pushforward_prep, tagged_outer_backend, x, tx, contexts...
     )
     return tg
 end

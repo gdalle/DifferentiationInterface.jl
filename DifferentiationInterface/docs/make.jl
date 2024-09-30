@@ -6,17 +6,8 @@ using DocumenterMermaid
 using DocumenterInterLinks
 
 using ADTypes: ADTypes
-using Diffractor: Diffractor
 using Enzyme: Enzyme
-using FastDifferentiation: FastDifferentiation
-using FiniteDiff: FiniteDiff
-using FiniteDifferences: FiniteDifferences
 using ForwardDiff: ForwardDiff
-using PolyesterForwardDiff: PolyesterForwardDiff
-using ReverseDiff: ReverseDiff
-using Symbolics: Symbolics
-using Tapir: Tapir
-using Tracker: Tracker
 using Zygote: Zygote
 
 links = InterLinks(
@@ -35,9 +26,14 @@ makedocs(;
     format=Documenter.HTML(; assets=["assets/favicon.ico"]),
     pages=[
         "Home" => "index.md",
-        "Tutorials" => ["tutorial1.md", "tutorial2.md"],
-        "Reference" => ["operators.md", "backends.md", "api.md"],
-        "Advanced" => ["dev_guide.md", "implementations.md"],
+        "Tutorials" => ["tutorials/basic.md", "tutorials/advanced.md"],
+        "Explanation" => [
+            "explanation/operators.md",
+            "explanation/backends.md",
+            "explanation/advanced.md",
+        ],
+        "api.md",
+        "dev_guide.md",
     ],
     plugins=[links],
 )
@@ -47,5 +43,5 @@ deploydocs(;
     devbranch="main",
     dirname="DifferentiationInterface",
     tag_prefix="DifferentiationInterface-",
-    push_preview=true,
+    push_preview=false,
 )

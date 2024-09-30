@@ -27,15 +27,12 @@ end
 
 ## Dense backends
 
-test_differentiation(dense_backends, default_scenarios(); logging=LOGGING);
+test_differentiation(
+    dense_backends, default_scenarios(; include_constantified=true); logging=LOGGING
+);
 
 test_differentiation(
-    dense_backends,
-    default_scenarios();
-    correctness=false,
-    type_stability=true,
-    second_order=false,
-    logging=LOGGING,
+    dense_backends; correctness=false, type_stability=true, logging=LOGGING
 );
 
 test_differentiation(
@@ -57,4 +54,9 @@ test_differentiation(
     logging=LOGGING,
 );
 
-test_differentiation(sparse_backends, sparse_scenarios(); sparsity=true, logging=LOGGING);
+test_differentiation(
+    sparse_backends,
+    sparse_scenarios(; include_constantified=true);
+    sparsity=true,
+    logging=LOGGING,
+);

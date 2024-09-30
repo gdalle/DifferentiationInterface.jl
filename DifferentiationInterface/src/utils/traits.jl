@@ -1,3 +1,6 @@
+dense_ad(backend::AbstractADType) = backend
+dense_ad(backend::AutoSparse) = ADTypes.dense_ad(backend)
+
 ## Mutation
 
 abstract type InPlaceBehavior end
@@ -124,6 +127,8 @@ struct ReverseOverReverse <: HVPMode end
 Traits identifying second-order backends that compute HVPs in forward over forward mode (inefficient).
 """
 struct ForwardOverForward <: HVPMode end
+
+hvp_mode(backend::AbstractADType) = hvp_mode(SecondOrder(backend, backend))
 
 function hvp_mode(ba::SecondOrder)
     if Bool(pushforward_performance(outer(ba))) && Bool(pullback_performance(inner(ba)))

@@ -23,63 +23,77 @@ end
 
 ADTypes.mode(::AutoForwardFromPrimitive) = ADTypes.ForwardMode()
 
-struct FromPrimitivePushforwardExtras{E<:PushforwardExtras} <: PushforwardExtras
-    pushforward_extras::E
+struct FromPrimitivePushforwardPrep{E<:PushforwardPrep} <: PushforwardPrep
+    pushforward_prep::E
 end
 
-function prepare_pushforward(f, fromprim::AutoForwardFromPrimitive, x, tx::Tangents)
-    return FromPrimitivePushforwardExtras(prepare_pushforward(f, fromprim.backend, x, tx))
+function prepare_pushforward(
+    f::F, fromprim::AutoForwardFromPrimitive, x, tx::NTuple, contexts::Vararg{Context,C}
+) where {F,C}
+    primitive_prep = prepare_pushforward(f, fromprim.backend, x, tx, contexts...)
+    return FromPrimitivePushforwardPrep(primitive_prep)
 end
 
-function prepare_pushforward(f!, y, fromprim::AutoForwardFromPrimitive, x, tx::Tangents)
-    return FromPrimitivePushforwardExtras(
-        prepare_pushforward(f!, y, fromprim.backend, x, tx)
+function prepare_pushforward(
+    f!::F, y, fromprim::AutoForwardFromPrimitive, x, tx::NTuple, contexts::Vararg{Context,C}
+) where {F,C}
+    primitive_prep = prepare_pushforward(f!, y, fromprim.backend, x, tx, contexts...)
+    return FromPrimitivePushforwardPrep(primitive_prep)
+end
+
+function value_and_pushforward(
+    f::F,
+    prep::FromPrimitivePushforwardPrep,
+    fromprim::AutoForwardFromPrimitive,
+    x,
+    tx::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    return value_and_pushforward(
+        f, prep.pushforward_prep, fromprim.backend, x, tx, contexts...
     )
 end
 
 function value_and_pushforward(
-    f,
-    extras::FromPrimitivePushforwardExtras,
-    fromprim::AutoForwardFromPrimitive,
-    x,
-    tx::Tangents,
-)
-    return value_and_pushforward(f, extras.pushforward_extras, fromprim.backend, x, tx)
-end
-
-function value_and_pushforward(
-    f!,
+    f!::F,
     y,
-    extras::FromPrimitivePushforwardExtras,
+    prep::FromPrimitivePushforwardPrep,
     fromprim::AutoForwardFromPrimitive,
     x,
-    tx::Tangents,
-)
-    return value_and_pushforward(f!, y, extras.pushforward_extras, fromprim.backend, x, tx)
+    tx::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    return value_and_pushforward(
+        f!, y, prep.pushforward_prep, fromprim.backend, x, tx, contexts...
+    )
 end
 
 function value_and_pushforward!(
-    f,
-    ty::Tangents,
-    extras::FromPrimitivePushforwardExtras,
+    f::F,
+    ty::NTuple,
+    prep::FromPrimitivePushforwardPrep,
     fromprim::AutoForwardFromPrimitive,
     x,
-    tx::Tangents,
-)
-    return value_and_pushforward!(f, ty, extras.pushforward_extras, fromprim.backend, x, tx)
-end
-
-function value_and_pushforward!(
-    f!,
-    y,
-    ty::Tangents,
-    extras::FromPrimitivePushforwardExtras,
-    fromprim::AutoForwardFromPrimitive,
-    x,
-    tx::Tangents,
-)
+    tx::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
     return value_and_pushforward!(
-        f!, y, ty, extras.pushforward_extras, fromprim.backend, x, tx
+        f, ty, prep.pushforward_prep, fromprim.backend, x, tx, contexts...
+    )
+end
+
+function value_and_pushforward!(
+    f!::F,
+    y,
+    ty::NTuple,
+    prep::FromPrimitivePushforwardPrep,
+    fromprim::AutoForwardFromPrimitive,
+    x,
+    tx::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    return value_and_pushforward!(
+        f!, y, ty, prep.pushforward_prep, fromprim.backend, x, tx, contexts...
     )
 end
 
@@ -91,58 +105,74 @@ end
 
 ADTypes.mode(::AutoReverseFromPrimitive) = ADTypes.ReverseMode()
 
-struct FromPrimitivePullbackExtras{E<:PullbackExtras} <: PullbackExtras
-    pullback_extras::E
+struct FromPrimitivePullbackPrep{E<:PullbackPrep} <: PullbackPrep
+    pullback_prep::E
 end
 
-function prepare_pullback(f, fromprim::AutoReverseFromPrimitive, x, ty::Tangents)
-    return FromPrimitivePullbackExtras(prepare_pullback(f, fromprim.backend, x, ty))
+function prepare_pullback(
+    f::F, fromprim::AutoReverseFromPrimitive, x, ty::NTuple, contexts::Vararg{Context,C}
+) where {F,C}
+    primitive_prep = prepare_pullback(f, fromprim.backend, x, ty, contexts...)
+    return FromPrimitivePullbackPrep(primitive_prep)
 end
 
-function prepare_pullback(f!, y, fromprim::AutoReverseFromPrimitive, x, ty::Tangents)
-    return FromPrimitivePullbackExtras(prepare_pullback(f!, y, fromprim.backend, x, ty))
-end
-
-function value_and_pullback(
-    f,
-    extras::FromPrimitivePullbackExtras,
-    fromprim::AutoReverseFromPrimitive,
-    x,
-    ty::Tangents,
-)
-    return value_and_pullback(f, extras.pullback_extras, fromprim.backend, x, ty)
+function prepare_pullback(
+    f!::F, y, fromprim::AutoReverseFromPrimitive, x, ty::NTuple, contexts::Vararg{Context,C}
+) where {F,C}
+    primitive_prep = prepare_pullback(f!, y, fromprim.backend, x, ty, contexts...)
+    return FromPrimitivePullbackPrep(primitive_prep)
 end
 
 function value_and_pullback(
-    f!,
-    y,
-    extras::FromPrimitivePullbackExtras,
+    f::F,
+    prep::FromPrimitivePullbackPrep,
     fromprim::AutoReverseFromPrimitive,
     x,
-    ty::Tangents,
-)
-    return value_and_pullback(f!, y, extras.pullback_extras, fromprim.backend, x, ty)
+    ty::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    return value_and_pullback(f, prep.pullback_prep, fromprim.backend, x, ty, contexts...)
+end
+
+function value_and_pullback(
+    f!::F,
+    y,
+    prep::FromPrimitivePullbackPrep,
+    fromprim::AutoReverseFromPrimitive,
+    x,
+    ty::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    return value_and_pullback(
+        f!, y, prep.pullback_prep, fromprim.backend, x, ty, contexts...
+    )
 end
 
 function value_and_pullback!(
-    f,
-    tx::Tangents,
-    extras::FromPrimitivePullbackExtras,
+    f::F,
+    tx::NTuple,
+    prep::FromPrimitivePullbackPrep,
     fromprim::AutoReverseFromPrimitive,
     x,
-    ty::Tangents,
-)
-    return value_and_pullback!(f, tx, extras.pullback_extras, fromprim.backend, x, ty)
+    ty::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    return value_and_pullback!(
+        f, tx, prep.pullback_prep, fromprim.backend, x, ty, contexts...
+    )
 end
 
 function value_and_pullback!(
-    f!,
+    f!::F,
     y,
-    tx::Tangents,
-    extras::FromPrimitivePullbackExtras,
+    tx::NTuple,
+    prep::FromPrimitivePullbackPrep,
     fromprim::AutoReverseFromPrimitive,
     x,
-    ty::Tangents,
-)
-    return value_and_pullback!(f!, y, tx, extras.pullback_extras, fromprim.backend, x, ty)
+    ty::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    return value_and_pullback!(
+        f!, y, tx, prep.pullback_prep, fromprim.backend, x, ty, contexts...
+    )
 end

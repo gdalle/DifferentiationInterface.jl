@@ -3,16 +3,15 @@ module DifferentiationInterfaceSymbolicsExt
 using ADTypes: ADTypes, AutoSymbolics, AutoSparse
 import DifferentiationInterface as DI
 using DifferentiationInterface:
-    DerivativeExtras,
-    GradientExtras,
-    HessianExtras,
-    HVPExtras,
-    JacobianExtras,
-    PullbackExtras,
-    PushforwardExtras,
-    SecondDerivativeExtras,
-    Tangents,
-    maybe_dense_ad
+    DerivativePrep,
+    GradientPrep,
+    HessianPrep,
+    HVPPrep,
+    JacobianPrep,
+    PullbackPrep,
+    PushforwardPrep,
+    SecondDerivativePrep,
+    dense_ad
 using LinearAlgebra: dot
 using Symbolics:
     build_function,

@@ -19,10 +19,9 @@ end
 
 test_differentiation(
     zero_backends,
-    zero.(default_scenarios());
+    zero.(default_scenarios(; include_constantified=true));
     correctness=true,
     type_stability=true,
-    excluded=[:second_derivative],
     logging=LOGGING,
 )
 

@@ -5,18 +5,22 @@ using Base: Fix1, Fix2
 using Compat
 import DifferentiationInterface as DI
 using DifferentiationInterface:
-    DerivativeExtras,
-    GradientExtras,
-    HessianExtras,
-    HVPExtras,
-    JacobianExtras,
-    NoDerivativeExtras,
-    NoSecondDerivativeExtras,
-    PushforwardExtras,
+    Context,
+    DerivativePrep,
+    DifferentiateWith,
+    GradientPrep,
+    HessianPrep,
+    HVPPrep,
+    JacobianPrep,
+    NoDerivativePrep,
+    NoSecondDerivativePrep,
+    PushforwardPrep,
+    Rewrap,
     SecondOrder,
-    Tangents,
     inner,
-    outer
+    outer,
+    unwrap,
+    with_contexts
 using ForwardDiff.DiffResults:
     DiffResults, DiffResult, GradientResult, HessianResult, MutableDiffResult
 using ForwardDiff:
@@ -57,5 +61,6 @@ include("utils.jl")
 include("onearg.jl")
 include("twoarg.jl")
 include("secondorder.jl")
+include("differentiate_with.jl")
 
 end # module

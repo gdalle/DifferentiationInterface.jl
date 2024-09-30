@@ -23,24 +23,24 @@ using DataFrames: DataFrame
 using DifferentiationInterface
 using DifferentiationInterface:
     inner,
-    maybe_inner,
-    maybe_dense_ad,
+    inner,
+    dense_ad,
     mode,
     outer,
     inplace_support,
     pushforward_performance,
-    pullback_performance
+    pullback_performance,
+    unwrap
 using DifferentiationInterface:
-    DerivativeExtras,
-    GradientExtras,
-    HessianExtras,
-    HVPExtras,
-    JacobianExtras,
-    PullbackExtras,
-    PushforwardExtras,
-    NoPullbackExtras,
-    NoPushforwardExtras,
-    SecondDerivativeExtras
+    DerivativePrep,
+    GradientPrep,
+    HessianPrep,
+    HVPPrep,
+    JacobianPrep,
+    PullbackPrep,
+    PushforwardPrep,
+    SecondDerivativePrep,
+    Rewrap
 using DocStringExtensions
 import DifferentiationInterface as DI
 using Functors: fmap
@@ -52,15 +52,14 @@ using Random: AbstractRNG, default_rng, rand!
 using SparseArrays: SparseArrays, SparseMatrixCSC, nnz, spdiagm
 using Test: @testset, @test
 
+include("utils.jl")
+
 include("scenarios/scenario.jl")
 include("scenarios/modify.jl")
 include("scenarios/default.jl")
 include("scenarios/sparse.jl")
 include("scenarios/allocfree.jl")
 include("scenarios/extensions.jl")
-
-include("utils/misc.jl")
-include("utils/filter.jl")
 
 include("tests/correctness_eval.jl")
 @static if VERSION >= v"1.7"
@@ -76,14 +75,6 @@ function __init__()
 end
 
 export Scenario
-export PushforwardScenario,
-    PullbackScenario,
-    DerivativeScenario,
-    GradientScenario,
-    JacobianScenario,
-    SecondDerivativeScenario,
-    HVPScenario,
-    HessianScenario
 export default_scenarios, sparse_scenarios
 export test_differentiation, benchmark_differentiation
 export DifferentiationBenchmarkDataRow

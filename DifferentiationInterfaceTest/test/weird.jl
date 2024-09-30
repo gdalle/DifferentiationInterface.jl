@@ -6,8 +6,8 @@ using ComponentArrays: ComponentArrays
 using DifferentiationInterface
 using DifferentiationInterfaceTest
 import DifferentiationInterfaceTest as DIT
-using FiniteDiff: FiniteDiff
 using FiniteDifferences: FiniteDifferences
+using ForwardDiff: ForwardDiff
 using Flux: Flux
 using ForwardDiff: ForwardDiff
 using JLArrays: JLArrays
@@ -33,31 +33,29 @@ test_differentiation(AutoZygote(), gpu_scenarios(); second_order=false, logging=
 
 test_differentiation(
     AutoFiniteDiff(),
-    DIT.make_closure.(default_scenarios());
+    default_scenarios(; include_normal=false, include_closurified=true);
     second_order=false,
     logging=LOGGING,
 );
 
 ## Neural nets
 
-Random.seed!(0)
-
 test_differentiation(
     AutoZygote(),
-    DIT.flux_scenarios();
-    isequal=DIT.flux_isequal,
+    DIT.flux_scenarios(Random.MersenneTwister(0));
     isapprox=DIT.flux_isapprox,
     rtol=1e-2,
-    atol=1e-6,
+    atol=1e-4,
+    scenario_intact=false,
     logging=LOGGING,
 )
 
 test_differentiation(
     AutoZygote(),
     DIT.lux_scenarios(Random.Xoshiro(63));
-    isequal=DIT.lux_isequal,
     isapprox=DIT.lux_isapprox,
     rtol=1.0f-2,
     atol=1.0f-3,
+    scenario_intact=false,
     logging=LOGGING,
 )

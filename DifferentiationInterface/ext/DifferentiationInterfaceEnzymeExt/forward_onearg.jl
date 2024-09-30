@@ -1,205 +1,235 @@
 ## Pushforward
 
 function DI.prepare_pushforward(
-    f, ::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}}, x, tx::Tangents
-)
-    return NoPushforwardExtras()
+    f::F,
+    ::AutoEnzyme{<:Union{ForwardMode,Nothing}},
+    x,
+    tx::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    return NoPushforwardPrep()
 end
 
 function DI.value_and_pushforward(
-    f,
-    extras::NoPushforwardExtras,
-    backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}},
+    f::F,
+    ::NoPushforwardPrep,
+    backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
-    tx::Tangents,
-)
-    ty = map(tx) do dx
-        only(DI.pushforward(f, extras, backend, x, Tangents(dx)))
-    end
-    y = f(x)
-    return y, ty
-end
-
-function DI.value_and_pushforward(
-    f,
-    ::NoPushforwardExtras,
-    backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}},
-    x,
-    tx::Tangents{1},
-)
-    dx = only(tx)
+    tx::NTuple{1},
+    contexts::Vararg{Context,C},
+) where {F,C}
     f_and_df = get_f_and_df(f, backend)
-    dx_sametype = convert(typeof(x), dx)
+    dx_sametype = convert(typeof(x), only(tx))
     x_and_dx = Duplicated(x, dx_sametype)
-    y, new_dy = if backend isa AutoDeferredEnzyme
-        autodiff_deferred(forward_mode(backend), f_and_df, Duplicated, x_and_dx)
-    else
-        autodiff(forward_mode(backend), f_and_df, Duplicated, x_and_dx)
-    end
-    return y, Tangents(new_dy)
+    dy, y = autodiff(
+        forward_withprimal(backend), f_and_df, x_and_dx, map(translate, contexts)...
+    )
+    return y, (dy,)
+end
+
+function DI.value_and_pushforward(
+    f::F,
+    ::NoPushforwardPrep,
+    backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
+    x,
+    tx::NTuple{B},
+    contexts::Vararg{Context,C},
+) where {F,B,C}
+    f_and_df = get_f_and_df(f, backend, Val(B))
+    tx_sametype = map(Fix1(convert, typeof(x)), tx)
+    x_and_tx = BatchDuplicated(x, tx_sametype)
+    ty, y = autodiff(
+        forward_withprimal(backend), f_and_df, x_and_tx, map(translate, contexts)...
+    )
+    return y, values(ty)
 end
 
 function DI.pushforward(
-    f,
-    ::NoPushforwardExtras,
-    backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}},
+    f::F,
+    ::NoPushforwardPrep,
+    backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
-    tx::Tangents{1},
-)
-    dx = only(tx)
+    tx::NTuple{1},
+    contexts::Vararg{Context,C},
+) where {F,C}
     f_and_df = get_f_and_df(f, backend)
-    dx_sametype = convert(typeof(x), dx)
+    dx_sametype = convert(typeof(x), only(tx))
     x_and_dx = Duplicated(x, dx_sametype)
-    new_dy = if backend isa AutoDeferredEnzyme
-        only(autodiff_deferred(forward_mode(backend), f_and_df, DuplicatedNoNeed, x_and_dx))
-    else
-        only(autodiff(forward_mode(backend), f_and_df, DuplicatedNoNeed, x_and_dx))
-    end
-    return Tangents(new_dy)
+    dy = only(
+        autodiff(forward_noprimal(backend), f_and_df, x_and_dx, map(translate, contexts)...)
+    )
+    return (dy,)
+end
+
+function DI.pushforward(
+    f::F,
+    ::NoPushforwardPrep,
+    backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
+    x,
+    tx::NTuple{B},
+    contexts::Vararg{Context,C},
+) where {F,B,C}
+    f_and_df = get_f_and_df(f, backend, Val(B))
+    tx_sametype = map(Fix1(convert, typeof(x)), tx)
+    x_and_tx = BatchDuplicated(x, tx_sametype)
+    ty = only(
+        autodiff(forward_noprimal(backend), f_and_df, x_and_tx, map(translate, contexts)...)
+    )
+    return values(ty)
 end
 
 function DI.value_and_pushforward!(
-    f,
-    ty::Tangents,
-    extras::NoPushforwardExtras,
-    backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}},
+    f::F,
+    ty::NTuple,
+    prep::NoPushforwardPrep,
+    backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
-    tx::Tangents,
-)
+    tx::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
     # dy cannot be passed anyway
-    y, new_ty = DI.value_and_pushforward(f, extras, backend, x, tx)
-    return y, copyto!(ty, new_ty)
+    y, new_ty = DI.value_and_pushforward(f, prep, backend, x, tx, contexts...)
+    foreach(copyto!, ty, new_ty)
+    return y, ty
 end
 
 function DI.pushforward!(
-    f,
-    ty::Tangents,
-    extras::NoPushforwardExtras,
-    backend::AnyAutoEnzyme{<:Union{ForwardMode,Nothing}},
+    f::F,
+    ty::NTuple,
+    prep::NoPushforwardPrep,
+    backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
-    tx::Tangents,
-)
+    tx::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
     # dy cannot be passed anyway
-    return copyto!(ty, DI.pushforward(f, extras, backend, x, tx))
+    new_ty = DI.pushforward(f, prep, backend, x, tx, contexts...)
+    foreach(copyto!, ty, new_ty)
+    return ty
 end
 
 ## Gradient
 
-struct EnzymeForwardGradientExtras{B,O} <: GradientExtras
-    shadow::O
+struct EnzymeForwardGradientPrep{B,O} <: GradientPrep
+    shadows::O
 end
 
 function DI.prepare_gradient(
-    f, backend::AutoEnzyme{<:ForwardMode,<:Union{Nothing,Const}}, x
-)
+    f::F, backend::AutoEnzyme{<:ForwardMode,<:Union{Nothing,Const}}, x
+) where {F}
     B = pick_batchsize(backend, length(x))
-    shadow = chunkedonehot(x, Val(B))
-    return EnzymeForwardGradientExtras{B,typeof(shadow)}(shadow)
+    shadows = create_shadows(Val(B), x)
+    return EnzymeForwardGradientPrep{B,typeof(shadows)}(shadows)
 end
 
 function DI.gradient(
-    f,
-    extras::EnzymeForwardGradientExtras{B},
+    f::F,
+    prep::EnzymeForwardGradientPrep{B},
     backend::AutoEnzyme{<:ForwardMode,<:Union{Nothing,Const}},
     x,
-) where {B}
+) where {F,B}
     f_and_df = get_f_and_df(f, backend)
-    grad_tup = gradient(forward_mode(backend), f_and_df, x, Val(B); shadow=extras.shadow)
-    return reshape(collect(grad_tup), size(x))
+    derivs = gradient(
+        forward_noprimal(backend), f_and_df, x; chunk=Val(B), shadows=prep.shadows
+    )
+    return only(derivs)
 end
 
 function DI.value_and_gradient(
-    f,
-    extras::EnzymeForwardGradientExtras,
+    f::F,
+    prep::EnzymeForwardGradientPrep{B},
     backend::AutoEnzyme{<:ForwardMode,<:Union{Nothing,Const}},
     x,
-)
-    return f(x), DI.gradient(f, extras, backend, x)
+) where {F,B}
+    f_and_df = get_f_and_df(f, backend)
+    (; derivs, val) = gradient(
+        forward_withprimal(backend), f_and_df, x; chunk=Val(B), shadows=prep.shadows
+    )
+    return val, only(derivs)
 end
 
 function DI.gradient!(
-    f,
+    f::F,
     grad,
-    extras::EnzymeForwardGradientExtras{B},
+    prep::EnzymeForwardGradientPrep{B},
     backend::AutoEnzyme{<:ForwardMode,<:Union{Nothing,Const}},
     x,
-) where {B}
-    f_and_df = get_f_and_df(f, backend)
-    grad_tup = gradient(forward_mode(backend), f_and_df, x, Val(B); shadow=extras.shadow)
-    return copyto!(grad, grad_tup)
+) where {F,B}
+    return copyto!(grad, DI.gradient(f, prep, backend, x))
 end
 
 function DI.value_and_gradient!(
-    f,
+    f::F,
     grad,
-    extras::EnzymeForwardGradientExtras{B},
+    prep::EnzymeForwardGradientPrep{B},
     backend::AutoEnzyme{<:ForwardMode,<:Union{Nothing,Const}},
     x,
-) where {B}
-    f_and_df = get_f_and_df(f, backend)
-    grad_tup = gradient(forward_mode(backend), f_and_df, x, Val(B); shadow=extras.shadow)
-    return f(x), copyto!(grad, grad_tup)
+) where {F,B}
+    y, new_grad = DI.value_and_gradient(f, prep, backend, x)
+    return y, copyto!(grad, new_grad)
 end
 
 ## Jacobian
 
-struct EnzymeForwardOneArgJacobianExtras{B,O} <: JacobianExtras
-    shadow::O
+struct EnzymeForwardOneArgJacobianPrep{B,O} <: JacobianPrep
+    shadows::O
+    output_length::Int
 end
 
 function DI.prepare_jacobian(
-    f, backend::AutoEnzyme{<:Union{ForwardMode,Nothing},<:Union{Nothing,Const}}, x
-)
+    f::F, backend::AutoEnzyme{<:Union{ForwardMode,Nothing},<:Union{Nothing,Const}}, x
+) where {F}
+    y = f(x)
     B = pick_batchsize(backend, length(x))
-    if B == 1
-        shadow = onehot(x)
-    else
-        shadow = chunkedonehot(x, Val(B))
-    end
-    return EnzymeForwardOneArgJacobianExtras{B,typeof(shadow)}(shadow)
+    shadows = create_shadows(Val(B), x)
+    return EnzymeForwardOneArgJacobianPrep{B,typeof(shadows)}(shadows, length(y))
 end
 
 function DI.jacobian(
-    f,
-    extras::EnzymeForwardOneArgJacobianExtras{B},
+    f::F,
+    prep::EnzymeForwardOneArgJacobianPrep{B},
     backend::AutoEnzyme{<:Union{ForwardMode,Nothing},<:Union{Nothing,Const}},
     x,
-) where {B}
+) where {F,B}
     f_and_df = get_f_and_df(f, backend)
-    jac_wrongshape = jacobian(
-        forward_mode(backend), f_and_df, x, Val(B); shadow=extras.shadow
+    derivs = jacobian(
+        forward_noprimal(backend), f_and_df, x; chunk=Val(B), shadows=prep.shadows
     )
-    nx = length(x)
-    ny = length(jac_wrongshape) ÷ length(x)
-    return reshape(jac_wrongshape, ny, nx)
+    jac_tensor = only(derivs)
+    return maybe_reshape(jac_tensor, prep.output_length, length(x))
 end
 
 function DI.value_and_jacobian(
-    f,
-    extras::EnzymeForwardOneArgJacobianExtras,
+    f::F,
+    prep::EnzymeForwardOneArgJacobianPrep{B},
     backend::AutoEnzyme{<:Union{ForwardMode,Nothing},<:Union{Nothing,Const}},
     x,
-)
-    return f(x), DI.jacobian(f, extras, backend, x)
+) where {F,B}
+    f_and_df = get_f_and_df(f, backend)
+    (; derivs, val) = jacobian(
+        forward_withprimal(backend), f_and_df, x; chunk=Val(B), shadows=prep.shadows
+    )
+    jac_tensor = only(derivs)
+    return val, maybe_reshape(jac_tensor, prep.output_length, length(x))
 end
 
 function DI.jacobian!(
-    f,
+    f::F,
     jac,
-    extras::EnzymeForwardOneArgJacobianExtras,
+    prep::EnzymeForwardOneArgJacobianPrep,
     backend::AutoEnzyme{<:Union{ForwardMode,Nothing},<:Union{Nothing,Const}},
     x,
-)
-    return copyto!(jac, DI.jacobian(f, extras, backend, x))
+) where {F}
+    return copyto!(jac, DI.jacobian(f, prep, backend, x))
 end
 
 function DI.value_and_jacobian!(
-    f,
+    f::F,
     jac,
-    extras::EnzymeForwardOneArgJacobianExtras,
+    prep::EnzymeForwardOneArgJacobianPrep,
     backend::AutoEnzyme{<:Union{ForwardMode,Nothing},<:Union{Nothing,Const}},
     x,
-)
-    y, new_jac = DI.value_and_jacobian(f, extras, backend, x)
+) where {F}
+    y, new_jac = DI.value_and_jacobian(f, prep, backend, x)
     return y, copyto!(jac, new_jac)
 end

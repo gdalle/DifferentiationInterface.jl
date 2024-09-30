@@ -21,10 +21,10 @@ for op in [
     val_and_op! = Symbol(val_prefix, op!)
     prep_op = Symbol("prepare_", op)
 
-    S1out = Scenario{op,1,:outofplace}
-    S1in = Scenario{op,1,:inplace}
-    S2out = Scenario{op,2,:outofplace}
-    S2in = Scenario{op,2,:inplace}
+    S1out = Scenario{op,:out,:out}
+    S1in = Scenario{op,:in,:out}
+    S2out = Scenario{op,:out,:in}
+    S2in = Scenario{op,:in,:in}
 
     @eval function run_benchmark!(
         data::Vector{DifferentiationBenchmarkDataRow},
@@ -53,37 +53,38 @@ for op in [
 
     if op in [:derivative, :gradient, :jacobian]
         @eval function run_benchmark_aux(ba::AbstractADType, scen::$S1out)
-            @compat (; f, x) = deepcopy(scen)
+            @compat (; f, x, contexts) = deepcopy(scen)
             # benchmark
-            ex = $prep_op(f, ba, x)
-            bench0 = @be $prep_op(f, ba, x) samples = 1 evals = 1
-            bench1 = @be ex $val_and_op(f, _, ba, x) evals = 1
-            bench2 = @be ex $op(f, _, ba, x) evals = 1
+            prep = $prep_op(f, ba, x, contexts...)
+            bench0 = @be $prep_op(f, ba, x, contexts...) samples = 1 evals = 1
+            bench1 = @be prep $val_and_op(f, _, ba, x, contexts...) evals = 1
+            bench2 = @be prep $op(f, _, ba, x, contexts...) evals = 1
             # count
             cc = CallCounter(f)
-            ex = $prep_op(cc, ba, x)
+            prep = $prep_op(cc, ba, x, contexts...)
             calls0 = reset_count!(cc)
-            $val_and_op(cc, ex, ba, x)
+            $val_and_op(cc, prep, ba, x, contexts...)
             calls1 = reset_count!(cc)
-            $op(cc, ex, ba, x)
+            $op(cc, prep, ba, x, contexts...)
             calls2 = reset_count!(cc)
             return (; bench0, bench1, bench2, calls0, calls1, calls2)
         end
 
         @eval function run_benchmark_aux(ba::AbstractADType, scen::$S1in)
-            @compat (; f, x, res1) = deepcopy(scen)
+            @compat (; f, x, res1, contexts) = deepcopy(scen)
             # benchmark
-            ex = $prep_op(f, ba, x)
-            bench0 = @be $prep_op(f, ba, x) samples = 1 evals = 1
-            bench1 = @be (res1, ex) $val_and_op!(f, _[1], _[2], ba, x) evals = 1
-            bench2 = @be (res1, ex) $op!(f, _[1], _[2], ba, x) evals = 1
+            prep = $prep_op(f, ba, x, contexts...)
+            bench0 = @be $prep_op(f, ba, x, contexts...) samples = 1 evals = 1
+            bench1 = @be (res1, prep) $val_and_op!(f, _[1], _[2], ba, x, contexts...) evals =
+                1
+            bench2 = @be (res1, prep) $op!(f, _[1], _[2], ba, x, contexts...) evals = 1
             # count
             cc = CallCounter(f)
-            ex = $prep_op(cc, ba, x)
+            prep = $prep_op(cc, ba, x, contexts...)
             calls0 = reset_count!(cc)
-            $val_and_op!(cc, res1, ex, ba, x)
+            $val_and_op!(cc, res1, prep, ba, x, contexts...)
             calls1 = reset_count!(cc)
-            $op!(cc, res1, ex, ba, x)
+            $op!(cc, res1, prep, ba, x, contexts...)
             calls2 = reset_count!(cc)
             return (; bench0, bench1, bench2, calls0, calls1, calls2)
         end
@@ -91,183 +92,194 @@ for op in [
         op == :gradient && continue
 
         @eval function run_benchmark_aux(ba::AbstractADType, scen::$S2out)
-            @compat (; f, x, y) = deepcopy(scen)
+            @compat (; f, x, y, contexts) = deepcopy(scen)
             # benchmark
-            ex = $prep_op(f, y, ba, x)
-            bench0 = @be $prep_op(f, y, ba, x) samples = 1 evals = 1
-            bench1 = @be (y, ex) $val_and_op(f, _[1], _[2], ba, x) evals = 1
-            bench2 = @be (y, ex) $op(f, _[1], _[2], ba, x) evals = 1
+            prep = $prep_op(f, y, ba, x, contexts...)
+            bench0 = @be $prep_op(f, y, ba, x, contexts...) samples = 1 evals = 1
+            bench1 = @be (y, prep) $val_and_op(f, _[1], _[2], ba, x, contexts...) evals = 1
+            bench2 = @be (y, prep) $op(f, _[1], _[2], ba, x, contexts...) evals = 1
             # count
             cc = CallCounter(f)
-            ex = $prep_op(cc, y, ba, x)
+            prep = $prep_op(cc, y, ba, x, contexts...)
             calls0 = reset_count!(cc)
-            $val_and_op(cc, y, ex, ba, x)
+            $val_and_op(cc, y, prep, ba, x, contexts...)
             calls1 = reset_count!(cc)
-            $op(cc, y, ex, ba, x)
+            $op(cc, y, prep, ba, x, contexts...)
             calls2 = reset_count!(cc)
             return (; bench0, bench1, bench2, calls0, calls1, calls2)
         end
 
         @eval function run_benchmark_aux(ba::AbstractADType, scen::$S2in)
-            @compat (; f, x, y, res1) = deepcopy(scen)
+            @compat (; f, x, y, res1, contexts) = deepcopy(scen)
             # benchmark
-            ex = $prep_op(f, y, ba, x)
-            bench0 = @be $prep_op(f, y, ba, x) samples = 1 evals = 1
-            bench1 = @be (y, res1, ex) $val_and_op!(f, _[1], _[2], _[3], ba, x) evals = 1
-            bench2 = @be (y, res1, ex) $op!(f, _[1], _[2], _[3], ba, x) evals = 1
+            prep = $prep_op(f, y, ba, x, contexts...)
+            bench0 = @be $prep_op(f, y, ba, x, contexts...) samples = 1 evals = 1
+            bench1 = @be (y, res1, prep) $val_and_op!(
+                f, _[1], _[2], _[3], ba, x, contexts...
+            ) evals = 1
+            bench2 = @be (y, res1, prep) $op!(f, _[1], _[2], _[3], ba, x, contexts...) evals =
+                1
             # count
             cc = CallCounter(f)
-            ex = $prep_op(cc, y, ba, x)
+            prep = $prep_op(cc, y, ba, x, contexts...)
             calls0 = reset_count!(cc)
-            $val_and_op!(cc, y, res1, ex, ba, x)
+            $val_and_op!(cc, y, res1, prep, ba, x, contexts...)
             calls1 = reset_count!(cc)
-            $op!(cc, y, res1, ex, ba, x)
+            $op!(cc, y, res1, prep, ba, x, contexts...)
             calls2 = reset_count!(cc)
             return (; bench0, bench1, bench2, calls0, calls1, calls2)
         end
 
     elseif op in [:hessian, :second_derivative]
         @eval function run_benchmark_aux(ba::AbstractADType, scen::$S1out)
-            @compat (; f, x) = deepcopy(scen)
+            @compat (; f, x, contexts) = deepcopy(scen)
             # benchmark
-            ex = $prep_op(f, ba, x)
-            bench0 = @be $prep_op(f, ba, x) samples = 1 evals = 1
-            bench1 = @be ex $val_and_op(f, _, ba, x) evals = 1
-            bench2 = @be ex $op(f, _, ba, x) evals = 1
+            prep = $prep_op(f, ba, x, contexts...)
+            bench0 = @be $prep_op(f, ba, x, contexts...) samples = 1 evals = 1
+            bench1 = @be prep $val_and_op(f, _, ba, x, contexts...) evals = 1
+            bench2 = @be prep $op(f, _, ba, x, contexts...) evals = 1
             # count
             cc = CallCounter(f)
-            ex = $prep_op(cc, ba, x)
+            prep = $prep_op(cc, ba, x, contexts...)
             calls0 = reset_count!(cc)
-            $val_and_op(cc, ex, ba, x)
+            $val_and_op(cc, prep, ba, x, contexts...)
             calls1 = reset_count!(cc)
-            $op(cc, ex, ba, x)
+            $op(cc, prep, ba, x, contexts...)
             calls2 = reset_count!(cc)
             return (; bench0, bench1, bench2, calls0, calls1, calls2)
         end
 
         @eval function run_benchmark_aux(ba::AbstractADType, scen::$S1in)
-            @compat (; f, x, res1, res2) = deepcopy(scen)
+            @compat (; f, x, res1, res2, contexts) = deepcopy(scen)
             # benchmark
-            ex = $prep_op(f, ba, x)
-            bench0 = @be $prep_op(f, ba, x) samples = 1 evals = 1
-            bench1 = @be (res1, res2, ex) $val_and_op!(f, _[1], _[2], _[3], ba, x) evals = 1
-            bench2 = @be (res2, ex) $op!(f, _[1], _[2], ba, x) evals = 1
+            prep = $prep_op(f, ba, x, contexts...)
+            bench0 = @be $prep_op(f, ba, x, contexts...) samples = 1 evals = 1
+            bench1 = @be (res1, res2, prep) $val_and_op!(
+                f, _[1], _[2], _[3], ba, x, contexts...
+            ) evals = 1
+            bench2 = @be (res2, prep) $op!(f, _[1], _[2], ba, x, contexts...) evals = 1
             # count
             cc = CallCounter(f)
-            ex = $prep_op(cc, ba, x)
+            prep = $prep_op(cc, ba, x, contexts...)
             calls0 = reset_count!(cc)
-            $val_and_op!(cc, res1, res2, ex, ba, x)
+            $val_and_op!(cc, res1, res2, prep, ba, x, contexts...)
             calls1 = reset_count!(cc)
-            $op!(cc, res2, ex, ba, x)
+            $op!(cc, res2, prep, ba, x, contexts...)
             calls2 = reset_count!(cc)
             return (; bench0, bench1, bench2, calls0, calls1, calls2)
         end
 
     elseif op in [:pushforward, :pullback]
         @eval function run_benchmark_aux(ba::AbstractADType, scen::$S1out)
-            @compat (; f, x, seed) = deepcopy(scen)
+            @compat (; f, x, tang, contexts) = deepcopy(scen)
             # benchmark
-            ex = $prep_op(f, ba, x, seed)
-            bench0 = @be $prep_op(f, ba, x, seed) samples = 1 evals = 1
-            bench1 = @be ex $val_and_op(f, _, ba, x, seed) evals = 1
-            bench2 = @be ex $op(f, _, ba, x, seed) evals = 1
+            prep = $prep_op(f, ba, x, tang, contexts...)
+            bench0 = @be $prep_op(f, ba, x, tang, contexts...) samples = 1 evals = 1
+            bench1 = @be prep $val_and_op(f, _, ba, x, tang, contexts...) evals = 1
+            bench2 = @be prep $op(f, _, ba, x, tang, contexts...) evals = 1
             # count
             cc = CallCounter(f)
-            ex = $prep_op(cc, ba, x, seed)
+            prep = $prep_op(cc, ba, x, tang, contexts...)
             calls0 = reset_count!(cc)
-            $val_and_op(cc, ex, ba, x, seed)
+            $val_and_op(cc, prep, ba, x, tang, contexts...)
             calls1 = reset_count!(cc)
-            $op(cc, ex, ba, x, seed)
+            $op(cc, prep, ba, x, tang, contexts...)
             calls2 = reset_count!(cc)
             return (; bench0, bench1, bench2, calls0, calls1, calls2)
         end
 
         @eval function run_benchmark_aux(ba::AbstractADType, scen::$S1in)
-            @compat (; f, x, seed, res1) = deepcopy(scen)
+            @compat (; f, x, tang, res1, contexts) = deepcopy(scen)
             # benchmark
-            ex = $prep_op(f, ba, x, seed)
-            bench0 = @be $prep_op(f, ba, x, seed) samples = 1 evals = 1
-            bench1 = @be (res1, ex) $val_and_op!(f, _[1], _[2], ba, x, seed) evals = 1
-            bench2 = @be (res1, ex) $op!(f, _[1], _[2], ba, x, seed) evals = 1
+            prep = $prep_op(f, ba, x, tang, contexts...)
+            bench0 = @be $prep_op(f, ba, x, tang, contexts...) samples = 1 evals = 1
+            bench1 = @be (res1, prep) $val_and_op!(f, _[1], _[2], ba, x, tang, contexts...) evals =
+                1
+            bench2 = @be (res1, prep) $op!(f, _[1], _[2], ba, x, tang, contexts...) evals =
+                1
             # count
             cc = CallCounter(f)
-            ex = $prep_op(cc, ba, x, seed)
+            prep = $prep_op(cc, ba, x, tang, contexts...)
             calls0 = reset_count!(cc)
-            $val_and_op!(cc, res1, ex, ba, x, seed)
+            $val_and_op!(cc, res1, prep, ba, x, tang, contexts...)
             calls1 = reset_count!(cc)
-            $op!(cc, res1, ex, ba, x, seed)
+            $op!(cc, res1, prep, ba, x, tang, contexts...)
             calls2 = reset_count!(cc)
             return (; bench0, bench1, bench2, calls0, calls1, calls2)
         end
 
         @eval function run_benchmark_aux(ba::AbstractADType, scen::$S2out)
-            @compat (; f, x, y, seed) = deepcopy(scen)
+            @compat (; f, x, y, tang, contexts) = deepcopy(scen)
             # benchmark
-            ex = $prep_op(f, y, ba, x, seed)
-            bench0 = @be $prep_op(f, y, ba, x, seed) samples = 1 evals = 1
-            bench1 = @be (y, ex) $val_and_op(f, _[1], _[2], ba, x, seed) evals = 1
-            bench2 = @be (y, ex) $op(f, _[1], _[2], ba, x, seed) evals = 1
+            prep = $prep_op(f, y, ba, x, tang, contexts...)
+            bench0 = @be $prep_op(f, y, ba, x, tang, contexts...) samples = 1 evals = 1
+            bench1 = @be (y, prep) $val_and_op(f, _[1], _[2], ba, x, tang, contexts...) evals =
+                1
+            bench2 = @be (y, prep) $op(f, _[1], _[2], ba, x, tang, contexts...) evals = 1
             # count
             cc = CallCounter(f)
-            ex = $prep_op(cc, y, ba, x, seed)
+            prep = $prep_op(cc, y, ba, x, tang, contexts...)
             calls0 = reset_count!(cc)
-            $val_and_op(cc, y, ex, ba, x, seed)
+            $val_and_op(cc, y, prep, ba, x, tang, contexts...)
             calls1 = reset_count!(cc)
-            $op(cc, y, ex, ba, x, seed)
+            $op(cc, y, prep, ba, x, tang, contexts...)
             calls2 = reset_count!(cc)
             return (; bench0, bench1, bench2, calls0, calls1, calls2)
         end
 
         @eval function run_benchmark_aux(ba::AbstractADType, scen::$S2in)
-            @compat (; f, x, y, seed, res1) = deepcopy(scen)
+            @compat (; f, x, y, tang, res1, contexts) = deepcopy(scen)
             # benchmark
-            ex = $prep_op(f, y, ba, x, seed)
-            bench0 = @be $prep_op(f, y, ba, x, seed) samples = 1 evals = 1
-            bench1 = @be (y, res1, ex) $val_and_op!(f, _[1], _[2], _[3], ba, x, seed) evals =
+            prep = $prep_op(f, y, ba, x, tang, contexts...)
+            bench0 = @be $prep_op(f, y, ba, x, tang, contexts...) samples = 1 evals = 1
+            bench1 = @be (y, res1, prep) $val_and_op!(
+                f, _[1], _[2], _[3], ba, x, tang, contexts...
+            ) evals = 1
+            bench2 = @be (y, res1, prep) $op!(f, _[1], _[2], _[3], ba, x, tang, contexts...) evals =
                 1
-            bench2 = @be (y, res1, ex) $op!(f, _[1], _[2], _[3], ba, x, seed) evals = 1
             # count
             cc = CallCounter(f)
-            ex = $prep_op(cc, y, ba, x, seed)
+            prep = $prep_op(cc, y, ba, x, tang, contexts...)
             calls0 = reset_count!(cc)
-            $val_and_op!(cc, y, res1, ex, ba, x, seed)
+            $val_and_op!(cc, y, res1, prep, ba, x, tang, contexts...)
             calls1 = reset_count!(cc)
-            $op!(cc, y, res1, ex, ba, x, seed)
+            $op!(cc, y, res1, prep, ba, x, tang, contexts...)
             calls2 = reset_count!(cc)
             return (; bench0, bench1, bench2, calls0, calls1, calls2)
         end
 
     elseif op in [:hvp]
         @eval function run_benchmark_aux(ba::AbstractADType, scen::$S1out)
-            @compat (; f, x, seed) = deepcopy(scen)
+            @compat (; f, x, tang, contexts) = deepcopy(scen)
             # benchmark
-            ex = $prep_op(f, ba, x, seed)
-            bench0 = @be $prep_op(f, ba, x, seed) samples = 1 evals = 1
+            prep = $prep_op(f, ba, x, tang, contexts...)
+            bench0 = @be $prep_op(f, ba, x, tang, contexts...) samples = 1 evals = 1
             bench1 = @be +(1, 1) evals = 1  # TODO: fix
-            bench2 = @be ex $op(f, _, ba, x, seed) evals = 1
+            bench2 = @be prep $op(f, _, ba, x, tang, contexts...) evals = 1
             # count
             cc = CallCounter(f)
-            ex = $prep_op(cc, ba, x, seed)
+            prep = $prep_op(cc, ba, x, tang, contexts...)
             calls0 = reset_count!(cc)
             calls1 = -1  # TODO: fix
-            $op(cc, ex, ba, x, seed)
+            $op(cc, prep, ba, x, tang, contexts...)
             calls2 = reset_count!(cc)
             return (; bench0, bench1, bench2, calls0, calls1, calls2)
         end
 
         @eval function run_benchmark_aux(ba::AbstractADType, scen::$S1in)
-            @compat (; f, x, seed, res2) = deepcopy(scen)
+            @compat (; f, x, tang, res2, contexts) = deepcopy(scen)
             # benchmark
-            ex = $prep_op(f, ba, x, seed)
-            bench0 = @be $prep_op(f, ba, x, seed) samples = 1 evals = 1
+            prep = $prep_op(f, ba, x, tang, contexts...)
+            bench0 = @be $prep_op(f, ba, x, tang, contexts...) samples = 1 evals = 1
             bench1 = @be +(1, 1) evals = 1  # TODO: fix
-            bench2 = @be (res2, ex) $op!(f, _[1], _[2], ba, x, seed) evals = 1
+            bench2 = @be (res2, prep) $op!(f, _[1], _[2], ba, x, tang, contexts...) evals =
+                1
             # count
             cc = CallCounter(f)
-            ex = $prep_op(cc, ba, x, seed)
+            prep = $prep_op(cc, ba, x, tang, contexts...)
             calls0 = reset_count!(cc)
             calls1 = -1  # TODO: fix
-            $op!(cc, res2, ex, ba, x, seed)
+            $op!(cc, res2, prep, ba, x, tang, contexts...)
             calls2 = reset_count!(cc)
             return (; bench0, bench1, bench2, calls0, calls1, calls2)
         end

@@ -1,64 +1,114 @@
 ## Pullback
 
 function DI.prepare_pullback(
-    f!, y, ::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}}, x, ty::Tangents
-)
-    return NoPullbackExtras()
+    f!::F,
+    y,
+    ::AutoEnzyme{<:Union{ReverseMode,Nothing}},
+    x,
+    ty::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    return NoPullbackPrep()
 end
 
 function DI.value_and_pullback(
-    f!,
+    f!::F,
     y,
-    extras::NoPullbackExtras,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
-    x,
-    ty::Tangents,
-)
-    tx = map(ty) do dy
-        only(DI.pullback(f!, y, extras, backend, x, Tangents(dy)))
-    end
-    f!(y, x)
+    ::NoPullbackPrep,
+    backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
+    x::Number,
+    ty::NTuple{1},
+    contexts::Vararg{Context,C},
+) where {F,C}
+    f!_and_df! = get_f_and_df(f!, backend)
+    dy_sametype = convert(typeof(y), copy(only(ty)))
+    y_and_dy = Duplicated(y, dy_sametype)
+    dinputs = only(
+        autodiff(
+            reverse_noprimal(backend),
+            f!_and_df!,
+            Const,
+            y_and_dy,
+            Active(x),
+            map(translate, contexts)...,
+        ),
+    )
+    dx = dinputs[2]
+    return y, (dx,)
+end
+
+function DI.value_and_pullback(
+    f!::F,
+    y,
+    ::NoPullbackPrep,
+    backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
+    x::Number,
+    ty::NTuple{B},
+    contexts::Vararg{Context,C},
+) where {F,B,C}
+    f!_and_df! = get_f_and_df(f!, backend, Val(B))
+    ty_sametype = map(Fix1(convert, typeof(y)), copy.(ty))
+    y_and_ty = BatchDuplicated(y, ty_sametype)
+    dinputs = only(
+        autodiff(
+            reverse_noprimal(backend),
+            f!_and_df!,
+            Const,
+            y_and_ty,
+            Active(x),
+            map(translate, contexts)...,
+        ),
+    )
+    tx = values(dinputs[2])
     return y, tx
 end
 
 function DI.value_and_pullback(
-    f!,
+    f!::F,
     y,
-    ::NoPullbackExtras,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
-    x::Number,
-    ty::Tangents{1},
-)
-    dy = only(ty)
+    ::NoPullbackPrep,
+    backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
+    x,
+    ty::NTuple{1},
+    contexts::Vararg{Context,C},
+) where {F,C}
     f!_and_df! = get_f_and_df(f!, backend)
-    dy_sametype = convert(typeof(y), copy(dy))
+    dx_sametype = make_zero(x)
+    dy_sametype = convert(typeof(y), copy(only(ty)))
+    x_and_dx = Duplicated(x, dx_sametype)
     y_and_dy = Duplicated(y, dy_sametype)
-    _, new_dx = if backend isa AutoDeferredEnzyme
-        only(autodiff_deferred(reverse_mode(backend), f!_and_df!, Const, y_and_dy, Active(x)))
-    else
-        only(autodiff(reverse_mode(backend), f!_and_df!, Const, y_and_dy, Active(x)))
-    end
-    return y, Tangents(new_dx)
+    autodiff(
+        reverse_noprimal(backend),
+        f!_and_df!,
+        Const,
+        y_and_dy,
+        x_and_dx,
+        map(translate, contexts)...,
+    )
+    return y, (dx_sametype,)
 end
 
 function DI.value_and_pullback(
-    f!,
+    f!::F,
     y,
-    ::NoPullbackExtras,
-    backend::AnyAutoEnzyme{<:Union{ReverseMode,Nothing}},
-    x::AbstractArray,
-    ty::Tangents{1},
-)
-    dy = only(ty)
-    f!_and_df! = get_f_and_df(f!, backend)
-    dx_sametype = make_zero(x)
-    dy_sametype = convert(typeof(y), copy(dy))
-    y_and_dy = Duplicated(y, dy_sametype)
-    x_and_dx = Duplicated(x, dx_sametype)
-    if backend isa AutoDeferredEnzyme
-        autodiff_deferred(reverse_mode(backend), f!_and_df!, Const, y_and_dy, x_and_dx)
-    else
-        autodiff(reverse_mode(backend), f!_and_df!, Const, y_and_dy, x_and_dx)
-    end
-    return y, Tangents(dx_sametype)
+    ::NoPullbackPrep,
+    backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
+    x,
+    ty::NTuple{B},
+    contexts::Vararg{Context,C},
+) where {F,B,C}
+    f!_and_df! = get_f_and_df(f!, backend, Val(B))
+    tx_sametype = ntuple(_ -> make_zero(x), Val(B))
+    ty_sametype = map(Fix1(convert, typeof(y)), copy.(ty))
+    x_and_tx = BatchDuplicated(x, tx_sametype)
+    y_and_ty = BatchDuplicated(y, ty_sametype)
+    autodiff(
+        reverse_noprimal(backend),
+        f!_and_df!,
+        Const,
+        y_and_ty,
+        x_and_tx,
+        map(translate, contexts)...,
+    )
+    return y, tx_sametype
 end
