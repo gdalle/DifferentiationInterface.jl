@@ -223,6 +223,7 @@ function DI.gradient(
     autodiff(
         reverse_noprimal(backend),
         f_and_df,
+        Active,
         Duplicated(x, grad),
         map(translate, contexts)...,
     )
