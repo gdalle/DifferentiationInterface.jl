@@ -52,11 +52,6 @@ reverse_noprimal(::AutoEnzyme{Nothing}) = Reverse
 reverse_withprimal(backend::AutoEnzyme{<:ReverseMode}) = WithPrimal(backend.mode)
 reverse_withprimal(::AutoEnzyme{Nothing}) = ReverseWithPrimal
 
-function reverse_split_noprimal(backend::AutoEnzyme)
-    mode = ReverseSplitNoPrimal
-    return set_err(mode, backend)
-end
-
 function reverse_split_withprimal(backend::AutoEnzyme)
     mode = ReverseSplitWithPrimal
     return set_err(mode, backend)
