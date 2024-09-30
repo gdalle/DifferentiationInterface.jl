@@ -88,8 +88,6 @@ jobs:
           - version: "pre"
             group: Back/ChainRulesCore
           - version: "pre"
-            group: Back/Enzyme
-          - version: "pre"
             group: Back/Mooncake
           - version: "pre"
             group: Back/SecondOrder
