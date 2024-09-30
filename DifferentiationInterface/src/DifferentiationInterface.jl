@@ -53,6 +53,7 @@ include("second_order/hvp.jl")
 include("second_order/hessian.jl")
 
 include("fallbacks/no_prep.jl")
+include("fallbacks/change_prep.jl")
 
 include("misc/differentiate_with.jl")
 include("misc/from_primitive.jl")

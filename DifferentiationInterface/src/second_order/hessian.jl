@@ -11,6 +11,18 @@ Create a `prep` object that can be given to [`hessian`](@ref) and its variants.
 function prepare_hessian end
 
 """
+    prepare!_hessian(f, backend, x, [contexts...]) -> new_prep
+
+Same behavior as [`prepare_hessian`](@ref) but can modify an existing `prep` object to avoid some allocations.
+
+There is no guarantee that `prep` will be mutated, or that performance will be improved compared to preparation from scratch.
+
+!!! danger
+    For efficiency, this function needs to rely on backend package internals, therefore it not protected by semantic versioning.
+"""
+function prepare!_hessian end
+
+"""
     hessian(f, [prep,] backend, x, [contexts...]) -> hess
 
 Compute the Hessian matrix of the function `f` at point `x`.
