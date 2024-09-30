@@ -28,7 +28,7 @@ function batch_seeded_autodiff_thunk(
     ::Type{RA},
     args::Vararg{Annotation,N},
 ) where {ReturnPrimal,B,FA<:Annotation,RA<:Annotation,N}
-    rmode_rightwidth = set_width(rmode, Val(B))
+    rmode_rightwidth = ReverseSplitWidth(rmode, Val(B))
     forward, reverse = autodiff_thunk(rmode_rightwidth, FA, RA, typeof.(args)...)
     tape, result, shadow_results = forward(f, args...)
     if RA <: Active
@@ -70,7 +70,7 @@ function DI.value_and_pullback(
     contexts::Vararg{Context,C},
 ) where {F,C}
     f_and_df = force_annotation(get_f_and_df(f, backend))
-    mode = reverse_mode_split_withprimal(backend)
+    mode = reverse_split_withprimal(backend)
     RA = eltype(ty) <: Number ? Active : Duplicated
     dinputs, result = seeded_autodiff_thunk(
         mode, only(ty), f_and_df, RA, Active(x), map(translate, contexts)...
@@ -87,7 +87,7 @@ function DI.value_and_pullback(
     contexts::Vararg{Context,C},
 ) where {F,B,C}
     f_and_df = force_annotation(get_f_and_df(f, backend, Val(B)))
-    mode = reverse_mode_split_withprimal(backend)
+    mode = reverse_split_withprimal(backend)
     RA = eltype(ty) <: Number ? Active : BatchDuplicated
     dinputs, result = batch_seeded_autodiff_thunk(
         mode, ty, f_and_df, RA, Active(x), map(translate, contexts)...
@@ -104,7 +104,7 @@ function DI.value_and_pullback(
     contexts::Vararg{Context,C},
 ) where {F,C}
     f_and_df = force_annotation(get_f_and_df(f, backend))
-    mode = reverse_mode_split_withprimal(backend)
+    mode = reverse_split_withprimal(backend)
     RA = eltype(ty) <: Number ? Active : Duplicated
     dx = make_zero(x)
     _, result = seeded_autodiff_thunk(
@@ -122,7 +122,7 @@ function DI.value_and_pullback(
     contexts::Vararg{Context,C},
 ) where {F,B,C}
     f_and_df = force_annotation(get_f_and_df(f, backend, Val(B)))
-    mode = reverse_mode_split_withprimal(backend)
+    mode = reverse_split_withprimal(backend)
     RA = eltype(ty) <: Number ? Active : BatchDuplicated
     tx = ntuple(_ -> make_zero(x), Val(B))
     _, result = batch_seeded_autodiff_thunk(
@@ -154,7 +154,7 @@ function DI.value_and_pullback!(
     contexts::Vararg{Context,C},
 ) where {F,C}
     f_and_df = force_annotation(get_f_and_df(f, backend))
-    mode = reverse_mode_split_withprimal(backend)
+    mode = reverse_split_withprimal(backend)
     RA = eltype(ty) <: Number ? Active : Duplicated
     dx_righttype = convert(typeof(x), only(tx))
     make_zero!(dx_righttype)
@@ -180,7 +180,7 @@ function DI.value_and_pullback!(
     contexts::Vararg{Context,C},
 ) where {F,B,C}
     f_and_df = force_annotation(get_f_and_df(f, backend, Val(B)))
-    mode = reverse_mode_split_withprimal(backend)
+    mode = reverse_split_withprimal(backend)
     RA = eltype(ty) <: Number ? Active : BatchDuplicated
     tx_righttype = map(Fix1(convert, typeof(x)), tx)
     make_zero!(tx_righttype)
@@ -227,9 +227,7 @@ function DI.gradient(
     contexts::Vararg{Context,C},
 ) where {F,C}
     f_and_df = get_f_and_df(f, backend)
-    derivs = gradient(
-        reverse_mode_noprimal(backend), f_and_df, x, map(translate, contexts)...
-    )
+    derivs = gradient(reverse_noprimal(backend), f_and_df, x, map(translate, contexts)...)
     return first(derivs)
 end
 
@@ -245,7 +243,7 @@ function DI.gradient!(
     dx_righttype = convert(typeof(x), grad)
     make_zero!(dx_righttype)
     autodiff(
-        reverse_mode_noprimal(backend),
+        reverse_noprimal(backend),
         f_and_df,
         Active,
         Duplicated(x, dx_righttype),
@@ -264,7 +262,7 @@ function DI.value_and_gradient(
 ) where {F,C}
     f_and_df = get_f_and_df(f, backend)
     (; derivs, val) = gradient(
-        reverse_mode_withprimal(backend), f_and_df, x, map(translate, contexts)...
+        reverse_withprimal(backend), f_and_df, x, map(translate, contexts)...
     )
     return val, first(derivs)
 end
@@ -281,7 +279,7 @@ function DI.value_and_gradient!(
     dx_righttype = convert(typeof(x), grad)
     make_zero!(dx_righttype)
     _, y = autodiff(
-        reverse_mode_withprimal(backend),
+        reverse_withprimal(backend),
         f_and_df,
         Active,
         Duplicated(x, dx_righttype),
@@ -308,7 +306,7 @@ function DI.jacobian(
     backend::AutoEnzyme{<:ReverseMode,Nothing},
     x,
 ) where {F,Sy,B}
-    derivs = jacobian(reverse_mode_noprimal(backend), f, x; n_outs=Val(Sy), chunk=Val(B))
+    derivs = jacobian(reverse_noprimal(backend), f, x; n_outs=Val(Sy), chunk=Val(B))
     jac_tensor = only(derivs)
     return maybe_reshape(jac_tensor, prod(Sy), length(x))
 end
@@ -320,7 +318,7 @@ function DI.value_and_jacobian(
     x,
 ) where {F,Sy,B}
     (; derivs, val) = jacobian(
-        reverse_mode_withprimal(backend), f, x; n_outs=Val(Sy), chunk=Val(B)
+        reverse_withprimal(backend), f, x; n_outs=Val(Sy), chunk=Val(B)
     )
     jac_tensor = only(derivs)
     return val, maybe_reshape(jac_tensor, prod(Sy), length(x))
