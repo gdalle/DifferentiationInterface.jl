@@ -15,8 +15,8 @@ using DifferentiationInterface:
     SecondDerivativePrep
 using Reactant: ConcreteRArray, compile
 
+ADTypes.mode(rebackend::ReactantBackend) = ADTypes.mode(rebackend.backend)
 DI.check_available(rebackend::ReactantBackend) = DI.check_available(rebackend.backend)
-DI.mode(rebackend::ReactantBackend) = DI.mode(rebackend.backend)
 DI.inplace_support(rebackend::ReactantBackend) = DI.inplace_support(rebackend.backend)
 
 include("onearg.jl")

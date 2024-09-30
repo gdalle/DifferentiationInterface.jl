@@ -5,8 +5,7 @@ end
 
 function DI.prepare_gradient(f, rebackend::ReactantBackend, x)
     xr = ConcreteRArray(x)
-    gradient_prep = DI.prepare_gradient(f, rebackend.backend, xr)
-    gradient_closure(xr) = DI.gradient(f, rebackend.backend, xr, gradient_prep)
+    gradient_closure(xr) = DI.gradient(f, rebackend.backend, xr)
     compiled_function = compile(f, (xr,))
     compiled_gradient = compile(gradient_closure, (xr,))
     return ReactantGradientPrep(compiled_function, compiled_gradient)
