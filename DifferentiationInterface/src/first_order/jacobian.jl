@@ -13,6 +13,19 @@ Create a `prep` object that can be given to [`jacobian`](@ref) and its variants.
 function prepare_jacobian end
 
 """
+    prepare!_jacobian(f,     prep, backend, x, [contexts...]) -> new_prep
+    prepare!_jacobian(f!, y, prep, backend, x, [contexts...]) -> new_prep
+
+Same behavior as [`prepare_jacobian`](@ref) but can modify an existing `prep` object to avoid some allocations.
+
+There is no guarantee that `prep` will be mutated, or that performance will be improved compared to preparation from scratch.
+
+!!! danger
+    For efficiency, this function needs to rely on backend package internals, therefore it not protected by semantic versioning.
+"""
+function prepare!_jacobian end
+
+"""
     value_and_jacobian(f,     [prep,] backend, x, [contexts...]) -> (y, jac)
     value_and_jacobian(f!, y, [prep,] backend, x, [contexts...]) -> (y, jac)
 

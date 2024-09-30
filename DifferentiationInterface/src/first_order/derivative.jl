@@ -13,6 +13,19 @@ Create a `prep` object that can be given to [`derivative`](@ref) and its variant
 function prepare_derivative end
 
 """
+    prepare!_derivative(f,     prep, backend, x, [contexts...]) -> new_prep
+    prepare!_derivative(f!, y, prep, backend, x, [contexts...]) -> new_prep
+
+Same behavior as [`prepare_derivative`](@ref) but can modify an existing `prep` object to avoid some allocations.
+
+There is no guarantee that `prep` will be mutated, or that performance will be improved compared to preparation from scratch.
+
+!!! danger
+    For efficiency, this function needs to rely on backend package internals, therefore it not protected by semantic versioning.
+"""
+function prepare!_derivative end
+
+"""
     value_and_derivative(f,     [prep,] backend, x, [contexts...]) -> (y, der)
     value_and_derivative(f!, y, [prep,] backend, x, [contexts...]) -> (y, der)
 
