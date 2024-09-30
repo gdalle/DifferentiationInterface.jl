@@ -22,7 +22,7 @@ function DI.value_and_pushforward(
     dx_sametype = convert(typeof(x), only(tx))
     x_and_dx = Duplicated(x, dx_sametype)
     dy, y = autodiff(
-        forward_mode_withprimal(backend), f_and_df, x_and_dx, map(translate, contexts)...
+        forward_withprimal(backend), f_and_df, x_and_dx, map(translate, contexts)...
     )
     return y, (dy,)
 end
@@ -39,7 +39,7 @@ function DI.value_and_pushforward(
     tx_sametype = map(Fix1(convert, typeof(x)), tx)
     x_and_tx = BatchDuplicated(x, tx_sametype)
     ty, y = autodiff(
-        forward_mode_withprimal(backend), f_and_df, x_and_tx, map(translate, contexts)...
+        forward_withprimal(backend), f_and_df, x_and_tx, map(translate, contexts)...
     )
     return y, values(ty)
 end
@@ -56,9 +56,7 @@ function DI.pushforward(
     dx_sametype = convert(typeof(x), only(tx))
     x_and_dx = Duplicated(x, dx_sametype)
     dy = only(
-        autodiff(
-            forward_mode_noprimal(backend), f_and_df, x_and_dx, map(translate, contexts)...
-        ),
+        autodiff(forward_noprimal(backend), f_and_df, x_and_dx, map(translate, contexts)...)
     )
     return (dy,)
 end
@@ -75,9 +73,7 @@ function DI.pushforward(
     tx_sametype = map(Fix1(convert, typeof(x)), tx)
     x_and_tx = BatchDuplicated(x, tx_sametype)
     ty = only(
-        autodiff(
-            forward_mode_noprimal(backend), f_and_df, x_and_tx, map(translate, contexts)...
-        ),
+        autodiff(forward_noprimal(backend), f_and_df, x_and_tx, map(translate, contexts)...)
     )
     return values(ty)
 end
@@ -134,7 +130,7 @@ function DI.gradient(
 ) where {F,B}
     f_and_df = get_f_and_df(f, backend)
     derivs = gradient(
-        forward_mode_noprimal(backend), f_and_df, x; chunk=Val(B), shadows=prep.shadows
+        forward_noprimal(backend), f_and_df, x; chunk=Val(B), shadows=prep.shadows
     )
     return only(derivs)
 end
@@ -147,7 +143,7 @@ function DI.value_and_gradient(
 ) where {F,B}
     f_and_df = get_f_and_df(f, backend)
     (; derivs, val) = gradient(
-        forward_mode_withprimal(backend), f_and_df, x; chunk=Val(B), shadows=prep.shadows
+        forward_withprimal(backend), f_and_df, x; chunk=Val(B), shadows=prep.shadows
     )
     return val, only(derivs)
 end
@@ -197,7 +193,7 @@ function DI.jacobian(
 ) where {F,B}
     f_and_df = get_f_and_df(f, backend)
     derivs = jacobian(
-        forward_mode_noprimal(backend), f_and_df, x; chunk=Val(B), shadows=prep.shadows
+        forward_noprimal(backend), f_and_df, x; chunk=Val(B), shadows=prep.shadows
     )
     jac_tensor = only(derivs)
     return maybe_reshape(jac_tensor, prep.output_length, length(x))
@@ -211,7 +207,7 @@ function DI.value_and_jacobian(
 ) where {F,B}
     f_and_df = get_f_and_df(f, backend)
     (; derivs, val) = jacobian(
-        forward_mode_withprimal(backend), f_and_df, x; chunk=Val(B), shadows=prep.shadows
+        forward_withprimal(backend), f_and_df, x; chunk=Val(B), shadows=prep.shadows
     )
     jac_tensor = only(derivs)
     return val, maybe_reshape(jac_tensor, prep.output_length, length(x))

@@ -25,7 +25,7 @@ function DI.value_and_pullback(
     y_and_dy = Duplicated(y, dy_sametype)
     dinputs = only(
         autodiff(
-            reverse_mode_noprimal(backend),
+            reverse_noprimal(backend),
             f!_and_df!,
             Const,
             y_and_dy,
@@ -51,7 +51,7 @@ function DI.value_and_pullback(
     y_and_ty = BatchDuplicated(y, ty_sametype)
     dinputs = only(
         autodiff(
-            reverse_mode_noprimal(backend),
+            reverse_noprimal(backend),
             f!_and_df!,
             Const,
             y_and_ty,
@@ -78,7 +78,7 @@ function DI.value_and_pullback(
     x_and_dx = Duplicated(x, dx_sametype)
     y_and_dy = Duplicated(y, dy_sametype)
     autodiff(
-        reverse_mode_noprimal(backend),
+        reverse_noprimal(backend),
         f!_and_df!,
         Const,
         y_and_dy,
@@ -103,7 +103,7 @@ function DI.value_and_pullback(
     x_and_tx = BatchDuplicated(x, tx_sametype)
     y_and_ty = BatchDuplicated(y, ty_sametype)
     autodiff(
-        reverse_mode_noprimal(backend),
+        reverse_noprimal(backend),
         f!_and_df!,
         Const,
         y_and_ty,
