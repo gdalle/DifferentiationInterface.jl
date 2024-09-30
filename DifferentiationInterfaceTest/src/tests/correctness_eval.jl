@@ -19,9 +19,10 @@ for op in [
     val_and_op = Symbol(val_prefix, op)
     val_and_op! = Symbol(val_prefix, op!)
     prep_op = Symbol("prepare_", op)
+    prep_op! = Symbol("prepare!_", op)
     prep_op_same = Symbol("prepare_", op, "_same_point")
 
-    E = if op == :derivative
+    P = if op == :derivative
         DerivativePrep
     elseif op == :gradient
         GradientPrep
@@ -58,7 +59,15 @@ for op in [
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
             preptup_cands_val, preptup_cands_noval = map(1:2) do _
-                [(), ($prep_op(f, ba, xrand, contextsrand...),)]
+                prep = $prep_op(f, ba, xrand, contextsrand...)
+                prepprep = $prep_op!(
+                    f,
+                    $prep_op(f, ba, xrand, contextsrand...),
+                    ba,
+                    xrand,
+                    contextsrand...,
+                )
+                [(), (prep,), (prepprep,)]
             end
             for (preptup_val, preptup_noval) in zip(preptup_cands_val, preptup_cands_noval)
                 y_out1_val, res1_out1_val = $val_and_op(
@@ -70,7 +79,7 @@ for op in [
                 res1_out1_noval = $op(f, preptup_noval..., ba, x, contexts...)
                 res1_out2_noval = $op(f, preptup_noval..., ba, x, contexts...)
                 let (≈)(x, y) = isapprox(x, y; atol, rtol)
-                    @test isempty(preptup_noval) || only(preptup_noval) isa $E
+                    @test isempty(preptup_noval) || only(preptup_noval) isa $P
                     @test y_out1_val ≈ scen.y
                     @test y_out2_val ≈ scen.y
                     @test res1_out1_val ≈ scen.res1
@@ -96,7 +105,15 @@ for op in [
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
             preptup_cands_val, preptup_cands_noval = map(1:2) do _
-                [(), ($prep_op(f, ba, xrand, contextsrand...),)]
+                prep = $prep_op(f, ba, xrand, contextsrand...)
+                prepprep = $prep_op!(
+                    f,
+                    $prep_op(f, ba, xrand, contextsrand...),
+                    ba,
+                    xrand,
+                    contextsrand...,
+                )
+                [(), (prep,), (prepprep,)]
             end
             for (preptup_val, preptup_noval) in zip(preptup_cands_val, preptup_cands_noval)
                 res1_in1_val = mysimilar(res1)
@@ -116,7 +133,7 @@ for op in [
                     f, res1_in2_noval, preptup_noval..., ba, x, contexts...
                 )
                 let (≈)(x, y) = isapprox(x, y; atol, rtol)
-                    @test isempty(preptup_noval) || only(preptup_noval) isa $E
+                    @test isempty(preptup_noval) || only(preptup_noval) isa $P
                     @test y_out1_val ≈ scen.y
                     @test y_out2_val ≈ scen.y
                     @test res1_in1_val ≈ scen.res1
@@ -148,7 +165,16 @@ for op in [
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
             preptup_cands_val, preptup_cands_noval = map(1:2) do _
-                [(), ($prep_op(f, yrand, ba, xrand, contextsrand...),)]
+                prep = $prep_op(f, copy(yrand), ba, xrand, contextsrand...)
+                prepprep = $prep_op!(
+                    f,
+                    copy(yrand),
+                    $prep_op(f, copy(yrand), ba, xrand, contextsrand...),
+                    ba,
+                    xrand,
+                    contextsrand...,
+                )
+                [(), (prep,), (prepprep,)]
             end
             for (preptup_val, preptup_noval) in zip(preptup_cands_val, preptup_cands_noval)
                 y_in1_val = mysimilar(y)
@@ -164,7 +190,7 @@ for op in [
                 res1_out1_noval = $op(f, y_in1_noval, preptup_noval..., ba, x, contexts...)
                 res1_out2_noval = $op(f, y_in2_noval, preptup_noval..., ba, x, contexts...)
                 let (≈)(x, y) = isapprox(x, y; atol, rtol)
-                    @test isempty(preptup_noval) || only(preptup_noval) isa $E
+                    @test isempty(preptup_noval) || only(preptup_noval) isa $P
                     @test y_in1_val ≈ scen.y
                     @test y_in2_val ≈ scen.y
                     @test y_out1_val ≈ scen.y
@@ -192,7 +218,16 @@ for op in [
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
             preptup_cands_val, preptup_cands_noval = map(1:2) do _
-                [(), ($prep_op(f, yrand, ba, xrand, contextsrand...),)]
+                prep = $prep_op(f, copy(yrand), ba, xrand, contextsrand...)
+                prepprep = $prep_op!(
+                    f,
+                    copy(yrand),
+                    $prep_op(f, copy(yrand), ba, xrand, contextsrand...),
+                    ba,
+                    xrand,
+                    contextsrand...,
+                )
+                [(), (prep,), (prepprep,)]
             end
             for (preptup_val, preptup_noval) in zip(preptup_cands_val, preptup_cands_noval)
                 y_in1_val, res1_in1_val = mysimilar(y), mysimilar(res1)
@@ -212,7 +247,7 @@ for op in [
                     f, y_in2_noval, res1_in2_noval, preptup_noval..., ba, x, contexts...
                 )
                 let (≈)(x, y) = isapprox(x, y; atol, rtol)
-                    @test isempty(preptup_noval) || only(preptup_noval) isa $E
+                    @test isempty(preptup_noval) || only(preptup_noval) isa $P
                     @test y_in1_val ≈ scen.y
                     @test y_in2_val ≈ scen.y
                     @test y_out1_val ≈ scen.y
@@ -245,7 +280,15 @@ for op in [
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
             preptup_cands_val, preptup_cands_noval = map(1:2) do _
-                [(), ($prep_op(f, ba, xrand, contextsrand...),)]
+                prep = $prep_op(f, ba, xrand, contextsrand...)
+                prepprep = $prep_op!(
+                    f,
+                    $prep_op(f, ba, xrand, contextsrand...),
+                    ba,
+                    xrand,
+                    contextsrand...,
+                )
+                [(), (prep,), (prepprep,)]
             end
             for (preptup_val, preptup_noval) in zip(preptup_cands_val, preptup_cands_noval)
                 y_out1_val, res1_out1_val, res2_out1_val = $val_and_op(
@@ -257,7 +300,7 @@ for op in [
                 res2_out1_noval = $op(f, preptup_noval..., ba, x, contexts...)
                 res2_out2_noval = $op(f, preptup_noval..., ba, x, contexts...)
                 let (≈)(x, y) = isapprox(x, y; atol, rtol)
-                    @test isempty(preptup_noval) || only(preptup_noval) isa $E
+                    @test isempty(preptup_noval) || only(preptup_noval) isa $P
                     @test y_out1_val ≈ scen.y
                     @test y_out2_val ≈ scen.y
                     @test res1_out1_val ≈ scen.res1
@@ -285,7 +328,15 @@ for op in [
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
             preptup_cands_val, preptup_cands_noval = map(1:2) do _
-                [(), ($prep_op(f, ba, xrand, contextsrand...),)]
+                prep = $prep_op(f, ba, xrand, contextsrand...)
+                prepprep = $prep_op!(
+                    f,
+                    $prep_op(f, ba, xrand, contextsrand...),
+                    ba,
+                    xrand,
+                    contextsrand...,
+                )
+                [(), (prep,), (prepprep,)]
             end
             for (preptup_val, preptup_noval) in zip(preptup_cands_val, preptup_cands_noval)
                 res1_in1_val, res2_in1_val = mysimilar(res1), mysimilar(res2)
@@ -305,7 +356,7 @@ for op in [
                     f, res2_in2_noval, preptup_noval..., ba, x, contexts...
                 )
                 let (≈)(x, y) = isapprox(x, y; atol, rtol)
-                    @test isempty(preptup_noval) || only(preptup_noval) isa $E
+                    @test isempty(preptup_noval) || only(preptup_noval) isa $P
                     @test y_out1_val ≈ scen.y
                     @test y_out2_val ≈ scen.y
                     @test res1_in1_val ≈ scen.res1
@@ -340,11 +391,17 @@ for op in [
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
             preptup_cands_val, preptup_cands_noval = map(1:2) do _
-                [
-                    (),
-                    ($prep_op(f, ba, xrand, tangrand, contextsrand...),),
-                    ($prep_op_same(f, ba, x, tangrand, contexts...),),
-                ]
+                prep = $prep_op(f, ba, xrand, tangrand, contextsrand...)
+                prepprep = $prep_op!(
+                    f,
+                    $prep_op(f, ba, xrand, tangrand, contextsrand...),
+                    ba,
+                    xrand,
+                    tangrand,
+                    contextsrand...,
+                )
+                prep_same = $prep_op_same(f, ba, x, tangrand, contexts...)
+                [(), (prep,), (prepprep,), (prep_same,)]
             end
             for (preptup_val, preptup_noval) in zip(preptup_cands_val, preptup_cands_noval)
                 y_out1_val, res1_out1_val = $val_and_op(
@@ -356,7 +413,7 @@ for op in [
                 res1_out1_noval = $op(f, preptup_noval..., ba, x, tang, contexts...)
                 res1_out2_noval = $op(f, preptup_noval..., ba, x, tang, contexts...)
                 let (≈)(x, y) = isapprox(x, y; atol, rtol)
-                    @test isempty(preptup_noval) || only(preptup_noval) isa $E
+                    @test isempty(preptup_noval) || only(preptup_noval) isa $P
                     @test y_out1_val ≈ scen.y
                     @test y_out2_val ≈ scen.y
                     @test all(res1_out1_val .≈ scen.res1)
@@ -382,11 +439,17 @@ for op in [
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
             preptup_cands_val, preptup_cands_noval = map(1:2) do _
-                [
-                    (),
-                    ($prep_op(f, ba, xrand, tangrand, contextsrand...),),
-                    ($prep_op_same(f, ba, x, tangrand, contexts...),),
-                ]
+                prep = $prep_op(f, ba, xrand, tangrand, contextsrand...)
+                prepprep = $prep_op!(
+                    f,
+                    $prep_op(f, ba, xrand, tangrand, contextsrand...),
+                    ba,
+                    xrand,
+                    tangrand,
+                    contextsrand...,
+                )
+                prep_same = $prep_op_same(f, ba, x, tangrand, contexts...)
+                [(), (prep,), (prepprep,), (prep_same,)]
             end
             for (preptup_val, preptup_noval) in zip(preptup_cands_val, preptup_cands_noval)
                 res1_in1_val = mysimilar(res1)
@@ -406,7 +469,7 @@ for op in [
                     f, res1_in2_noval, preptup_noval..., ba, x, tang, contexts...
                 )
                 let (≈)(x, y) = isapprox(x, y; atol, rtol)
-                    @test isempty(preptup_noval) || only(preptup_noval) isa $E
+                    @test isempty(preptup_noval) || only(preptup_noval) isa $P
                     @test y_out1_val ≈ scen.y
                     @test y_out2_val ≈ scen.y
                     @test all(res1_in1_val .≈ scen.res1)
@@ -436,11 +499,18 @@ for op in [
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
             preptup_cands_val, preptup_cands_noval = map(1:2) do _
-                [
-                    (),
-                    ($prep_op(f, yrand, ba, xrand, tangrand, contextsrand...),),
-                    ($prep_op_same(f, yrand, ba, x, tangrand, contexts...),),
-                ]
+                prep = $prep_op(f, copy(yrand), ba, xrand, tangrand, contextsrand...)
+                prepprep = $prep_op!(
+                    f,
+                    copy(yrand),
+                    $prep_op(f, copy(yrand), ba, xrand, tangrand, contextsrand...),
+                    ba,
+                    xrand,
+                    tangrand,
+                    contextsrand...,
+                )
+                prep_same = $prep_op_same(f, copy(yrand), ba, x, tangrand, contexts...)
+                [(), (prep,), (prepprep,), (prep_same,)]
             end
             for (preptup_val, preptup_noval) in zip(preptup_cands_val, preptup_cands_noval)
                 y_in1_val = mysimilar(y)
@@ -460,7 +530,7 @@ for op in [
                     f, y_in2_noval, preptup_noval..., ba, x, tang, contexts...
                 )
                 let (≈)(x, y) = isapprox(x, y; atol, rtol)
-                    @test isempty(preptup_noval) || only(preptup_noval) isa $E
+                    @test isempty(preptup_noval) || only(preptup_noval) isa $P
                     @test y_in1_val ≈ scen.y
                     @test y_in2_val ≈ scen.y
                     @test y_out1_val ≈ scen.y
@@ -488,11 +558,18 @@ for op in [
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
             preptup_cands_val, preptup_cands_noval = map(1:2) do _
-                [
-                    (),
-                    ($prep_op(f, yrand, ba, xrand, tangrand, contextsrand...),),
-                    ($prep_op_same(f, yrand, ba, x, tangrand, contexts...),),
-                ]
+                prep = $prep_op(f, copy(yrand), ba, xrand, tangrand, contextsrand...)
+                prepprep = $prep_op!(
+                    f,
+                    copy(yrand),
+                    $prep_op(f, copy(yrand), ba, xrand, tangrand, contextsrand...),
+                    ba,
+                    xrand,
+                    tangrand,
+                    contextsrand...,
+                )
+                prep_same = $prep_op_same(f, copy(yrand), ba, x, tangrand, contexts...)
+                [(), (prep,), (prepprep,), (prep_same,)]
             end
             for (preptup_val, preptup_noval) in zip(preptup_cands_val, preptup_cands_noval)
                 y_in1_val, res1_in1_val = mysimilar(y), mysimilar(res1)
@@ -526,7 +603,7 @@ for op in [
                     contexts...,
                 )
                 let (≈)(x, y) = isapprox(x, y; atol, rtol)
-                    @test isempty(preptup_noval) || only(preptup_noval) isa $E
+                    @test isempty(preptup_noval) || only(preptup_noval) isa $P
                     @test y_in1_val ≈ scen.y
                     @test y_in2_val ≈ scen.y
                     @test y_out1_val ≈ scen.y
@@ -558,16 +635,22 @@ for op in [
             xrand, tangrand = myrandom(x), myrandom(tang)
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
-            preptup_cands_noval = [
-                (),
-                ($prep_op(f, ba, xrand, tangrand, contextsrand...),),
-                ($prep_op_same(f, ba, x, tangrand, contexts...),),
-            ]
+            prep = $prep_op(f, ba, xrand, tangrand, contextsrand...)
+            prepprep = $prep_op!(
+                f,
+                $prep_op(f, ba, xrand, tangrand, contextsrand...),
+                ba,
+                xrand,
+                tangrand,
+                contextsrand...,
+            )
+            prep_same = $prep_op_same(f, ba, x, tangrand, contexts...)
+            preptup_cands_noval = [(), (prep,), (prepprep,), (prep_same,)]
             for preptup_noval in preptup_cands_noval
                 res2_out1_noval = $op(f, preptup_noval..., ba, x, tang, contexts...)
                 res2_out2_noval = $op(f, preptup_noval..., ba, x, tang, contexts...)
                 let (≈)(x, y) = isapprox(x, y; atol, rtol)
-                    @test isempty(preptup_noval) || only(preptup_noval) isa $E
+                    @test isempty(preptup_noval) || only(preptup_noval) isa $P
                     @test all(res2_out1_noval .≈ scen.res2)
                     @test all(res2_out2_noval .≈ scen.res2)
                 end
@@ -588,11 +671,17 @@ for op in [
             xrand, tangrand = myrandom(x), myrandom(tang)
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
-            preptup_cands_noval = [
-                (),
-                ($prep_op(f, ba, xrand, tangrand, contextsrand...),),
-                ($prep_op_same(f, ba, x, tangrand, contexts...),),
-            ]
+            prep = $prep_op(f, ba, xrand, tangrand, contextsrand...)
+            prepprep = $prep_op!(
+                f,
+                $prep_op(f, ba, xrand, tangrand, contextsrand...),
+                ba,
+                xrand,
+                tangrand,
+                contextsrand...,
+            )
+            prep_same = $prep_op_same(f, ba, x, tangrand, contexts...)
+            preptup_cands_noval = [(), (prep,), (prepprep,), (prep_same,)]
             for preptup_noval in preptup_cands_noval
                 res2_in1_noval = mysimilar(res2)
                 res2_in2_noval = mysimilar(res2)
@@ -603,7 +692,7 @@ for op in [
                     f, res2_in2_noval, preptup_noval..., ba, x, tang, contexts...
                 )
                 let (≈)(x, y) = isapprox(x, y; atol, rtol)
-                    @test isempty(preptup_noval) || only(preptup_noval) isa $E
+                    @test isempty(preptup_noval) || only(preptup_noval) isa $P
                     @test all(res2_in1_noval .≈ scen.res2)
                     @test all(res2_in2_noval .≈ scen.res2)
                     @test all(res2_out1_noval .≈ scen.res2)
