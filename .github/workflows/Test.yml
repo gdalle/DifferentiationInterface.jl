@@ -19,6 +19,7 @@ jobs:
   test-DI:
     name: ${{ matrix.version }} - DI (${{ matrix.group }})
     runs-on: ubuntu-latest
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'bump') }}
     timeout-minutes: 60
     permissions: # needed to allow julia-actions/cache to proactively delete old caches that it has created
       actions: write
@@ -134,6 +135,7 @@ jobs:
   test-DIT:
     name: ${{ matrix.version }} - DIT (${{ matrix.group }})
     runs-on: ubuntu-latest
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'bump') }}
     timeout-minutes: 60
     permissions: # needed to allow julia-actions/cache to proactively delete old caches that it has created
       actions: write
