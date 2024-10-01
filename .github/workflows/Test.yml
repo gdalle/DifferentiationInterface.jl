@@ -32,6 +32,11 @@ jobs:
           - "lts"
           - "pre"
         group:
+          - Misc/Internals
+          - Misc/DifferentiateWith
+          - Misc/FromPrimitive
+          - Misc/SparsityDetector
+          - Misc/ZeroBackends
           - Back/ChainRulesBackends
           - Back/Enzyme
           - Back/FiniteDiff
@@ -46,11 +51,6 @@ jobs:
           - Back/Zygote
           - Down/Flux
           - Down/Lux
-          - Misc/DifferentiateWith
-          - Misc/Internals
-          - Misc/FromPrimitive
-          - Misc/SparsityDetector
-          - Misc/ZeroBackends
         skip_lts:
           - ${{ github.event.pull_request.draft }}
         skip_pre:

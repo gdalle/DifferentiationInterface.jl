@@ -14,11 +14,14 @@ GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "All")
 ## Main tests
 
 function subtest(category, folder; fake=false)
-    @testset verbose = true "$category/$folder" begin
-        @testset "$file" for file in readdir(joinpath(@__DIR__, category, folder))
-            @info "Testing $category/$folder/$file"
-            if !fake
-                include(joinpath(@__DIR__, category, folder, file))
+    @testset verbose = true "$category" begin
+        @testset verbose = true "$folder" begin
+            @testset "$file" for file in readdir(joinpath(@__DIR__, category, folder))
+                endswith(file, ".jl") || continue
+                @info "Testing $category/$folder/$file"
+                if !fake
+                    include(joinpath(@__DIR__, category, folder, file))
+                end
             end
         end
     end
@@ -26,14 +29,27 @@ end
 
 @testset verbose = true "DifferentiationInterface.jl" begin
     if GROUP == "All"
-        for category in readdir(@__DIR__)
-            isdir(category) || continue
-            for folder in readdir(joinpath(@__DIR__, category))
-                subtest(category, folder; fake=true)
+        @testset verbose = true for category in readdir(@__DIR__)
+            isdir(joinpath(@__DIR__, category)) || continue
+            @testset verbose = true for folder in readdir(joinpath(@__DIR__, category))
+                isdir(joinpath(@__DIR__, category, folder)) || continue
+                @testset "$file" for file in readdir(joinpath(@__DIR__, category, folder))
+                    endswith(file, ".jl") || continue
+                    @info "Testing $category/$folder/$file"
+                    include(joinpath(@__DIR__, category, folder, file))
+                end
             end
         end
     else
         category, folder = split(GROUP, '/')
-        subtest(category, folder)
+        @testset verbose = true "$category" begin
+            @testset verbose = true "$folder" begin
+                @testset "$file" for file in readdir(joinpath(@__DIR__, category, folder))
+                    endswith(file, ".jl") || continue
+                    @info "Testing $category/$folder/$file"
+                    include(joinpath(@__DIR__, category, folder, file))
+                end
+            end
+        end
     end
 end;

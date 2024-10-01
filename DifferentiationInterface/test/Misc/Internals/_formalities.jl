@@ -1,3 +1,5 @@
+# tested first so that the suite fails quickly
+
 using Aqua: Aqua
 using DifferentiationInterface
 using JET: JET
