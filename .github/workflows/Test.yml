@@ -151,8 +151,12 @@ jobs:
           - Weird
         skip_lts:
           - ${{ github.event.pull_request.draft }}
+        skip_pre:
+          - ${{ github.event.pull_request.draft }}
         exclude:
           - skip_lts: true
+            version: "lts"
+          - skip_pre: true
             version: "lts"
           - version: "lts"
             group: Formalities
