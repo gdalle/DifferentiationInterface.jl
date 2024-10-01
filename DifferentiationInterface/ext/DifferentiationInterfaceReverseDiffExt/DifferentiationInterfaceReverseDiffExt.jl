@@ -15,7 +15,9 @@ using DifferentiationInterface:
     NoPullbackPrep,
     unwrap,
     with_contexts
-using ReverseDiff.DiffResults: DiffResults, DiffResult, GradientResult, MutableDiffResult
+import ReverseDiff.DiffResults as DR
+using ReverseDiff.DiffResults:
+    DiffResults, DiffResult, GradientResult, HessianResult, MutableDiffResult
 using LinearAlgebra: dot, mul!
 using ReverseDiff:
     CompiledGradient,

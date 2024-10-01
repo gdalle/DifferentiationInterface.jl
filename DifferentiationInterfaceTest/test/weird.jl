@@ -21,11 +21,20 @@ using Zygote: Zygote
 
 LOGGING = get(ENV, "CI", "false") == "false"
 
+## Generate all scenarios
+
+gpu_scenarios(;
+    include_constantified=true, include_closurified=true, include_batchified=true
+)
+static_scenarios(;
+    include_constantified=true, include_closurified=true, include_batchified=true
+)
+
 ## Weird arrays
 
-test_differentiation(
-    AutoForwardDiff(), vcat(component_scenarios(), static_scenarios()); logging=LOGGING
-)
+test_differentiation(AutoForwardDiff(), static_scenarios(); logging=LOGGING)
+
+test_differentiation(AutoForwardDiff(), component_scenarios(); logging=LOGGING)
 
 test_differentiation(AutoZygote(), gpu_scenarios(); second_order=false, logging=LOGGING)
 

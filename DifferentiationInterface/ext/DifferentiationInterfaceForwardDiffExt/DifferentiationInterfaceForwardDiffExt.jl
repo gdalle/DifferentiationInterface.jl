@@ -21,6 +21,7 @@ using DifferentiationInterface:
     outer,
     unwrap,
     with_contexts
+import ForwardDiff.DiffResults as DR
 using ForwardDiff.DiffResults:
     DiffResults, DiffResult, GradientResult, HessianResult, MutableDiffResult
 using ForwardDiff:

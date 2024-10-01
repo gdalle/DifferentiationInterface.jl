@@ -1,6 +1,5 @@
 function identity_scenarios(x::Number; dx::Number, dy::Number)
     f = identity
-    y = f(x)
     dy_from_dx = dx
     dx_from_dy = dy
     der = one(x)
@@ -14,7 +13,6 @@ end
 
 function sum_scenarios(x::AbstractArray; dx::AbstractArray, dy::Number)
     f = sum
-    y = f(x)
     dy_from_dx = sum(dx)
     dx_from_dy = (similar(x) .= dy)
     grad = similar(x)
@@ -48,7 +46,7 @@ end
 Create a vector of [`Scenario`](@ref)s with functions that do not allocate.
 
 !!! warning
-    At the moment, some second-order scenarios are excluded.
+    At the moment, second-order scenarios are excluded.
 """
 function allocfree_scenarios(rng::AbstractRNG=default_rng())
     x_ = rand(rng)
