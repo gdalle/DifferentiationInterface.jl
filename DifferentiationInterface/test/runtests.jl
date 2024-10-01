@@ -13,20 +13,6 @@ GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "All")
 
 ## Main tests
 
-function subtest(category, folder; fake=false)
-    @testset verbose = true "$category" begin
-        @testset verbose = true "$folder" begin
-            @testset "$file" for file in readdir(joinpath(@__DIR__, category, folder))
-                endswith(file, ".jl") || continue
-                @info "Testing $category/$folder/$file"
-                if !fake
-                    include(joinpath(@__DIR__, category, folder, file))
-                end
-            end
-        end
-    end
-end
-
 @testset verbose = true "DifferentiationInterface.jl" begin
     if GROUP == "All"
         @testset verbose = true for category in readdir(@__DIR__)
