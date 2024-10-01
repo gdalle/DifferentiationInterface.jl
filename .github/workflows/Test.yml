@@ -32,10 +32,8 @@ jobs:
           - "lts"
           - "pre"
         group:
-          - Back/ChainRulesCore
-          - Back/Diffractor
+          - Back/ChainRulesBackends
           - Back/Enzyme
-          - Back/FastDifferentiation
           - Back/FiniteDiff
           - Back/FiniteDifferences
           - Back/ForwardDiff
@@ -43,7 +41,7 @@ jobs:
           - Back/PolyesterForwardDiff
           - Back/ReverseDiff
           - Back/SecondOrder
-          - Back/Symbolics
+          - Back/SymbolicBackends
           - Back/Tracker
           - Back/Zygote
           - Down/Flux
@@ -64,15 +62,11 @@ jobs:
             version: "pre"
           # lts
           - version: "lts"
-            group: Back/ChainRulesCore
-          - version: "lts"
-            group: Back/Diffractor
+            group: Back/ChainRulesBackends
           - version: "lts"
             group: Back/Enzyme
           - version: "lts"
             group: Back/FiniteDiff
-          - version: "lts"
-            group: Back/FastDifferentiation
           - version: "lts"
             group: Back/Mooncake
           - version: "lts"
@@ -80,7 +74,7 @@ jobs:
           - version: "lts"
             group: Back/SecondOrder
           - version: "lts"
-            group: Back/Symbolics
+            group: Back/SymbolicBackends
           - version: "lts"
             group: Misc/Internals
           - version: "lts"
@@ -91,7 +85,7 @@ jobs:
             group: Down/Lux
           # pre-release
           - version: "pre"
-            group: Back/ChainRulesCore
+            group: Back/ChainRulesBackends
           - version: "pre"
             group: Back/Enzyme
           - version: "pre"
