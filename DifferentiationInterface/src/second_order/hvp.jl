@@ -11,6 +11,18 @@ Create a `prep` object that can be given to [`hvp`](@ref) and its variants.
 function prepare_hvp end
 
 """
+    prepare!_hvp(f, backend, x, tx, [contexts...]) -> new_prep
+
+Same behavior as [`prepare_hvp`](@ref) but can modify an existing `prep` object to avoid some allocations.
+
+There is no guarantee that `prep` will be mutated, or that performance will be improved compared to preparation from scratch.
+
+!!! danger
+    For efficiency, this function needs to rely on backend package internals, therefore it not protected by semantic versioning.
+"""
+function prepare!_hvp end
+
+"""
     prepare_hvp_same_point(f, backend, x, tx, [contexts...]) -> prep_same
 
 Create an `prep_same` object that can be given to [`hvp`](@ref) and its variants _if they are applied at the same point `x` and with the same `contexts`_.

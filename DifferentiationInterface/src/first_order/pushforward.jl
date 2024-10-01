@@ -13,6 +13,19 @@ Create a `prep` object that can be given to [`pushforward`](@ref) and its varian
 function prepare_pushforward end
 
 """
+    prepare!_pushforward(f,     prep, backend, x, tx, [contexts...]) -> new_prep
+    prepare!_pushforward(f!, y, prep, backend, x, tx, [contexts...]) -> new_prep
+
+Same behavior as [`prepare_pushforward`](@ref) but can modify an existing `prep` object to avoid some allocations.
+
+There is no guarantee that `prep` will be mutated, or that performance will be improved compared to preparation from scratch.
+
+!!! danger
+    For efficiency, this function needs to rely on backend package internals, therefore it not protected by semantic versioning.
+"""
+function prepare!_pushforward end
+
+"""
     prepare_pushforward_same_point(f,     backend, x, tx, [contexts...]) -> prep_same
     prepare_pushforward_same_point(f!, y, backend, x, tx, [contexts...]) -> prep_same
 

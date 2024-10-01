@@ -13,43 +13,28 @@ GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "All")
 
 ## Main tests
 
-function subtest(category, folder)
-    @testset "$file" for file in readdir(joinpath(@__DIR__, category, folder))
-        @info "Testing $category/$folder/$file"
-        include(joinpath(@__DIR__, category, folder, file))
-    end
-    return nothing
-end
-
 @testset verbose = true "DifferentiationInterface.jl" begin
-    if GROUP == "Formalities" || GROUP == "All"
-        @testset "Formalities/$file" for file in readdir(joinpath(@__DIR__, "Formalities"))
-            @info "Testing Formalities/$file"
-            include(joinpath(@__DIR__, "Formalities", file))
-        end
-    end
-
-    if GROUP == "Internals" || GROUP == "All"
-        @testset "Internals/$file" for file in readdir(joinpath(@__DIR__, "Internals"))
-            @info "Testing Internals/$file"
-            include(joinpath(@__DIR__, "Internals", file))
-        end
-    end
-
     if GROUP == "All"
-        @testset verbose = true "$category" for category in ["Back", "Down"]
-            @testset verbose = true "$folder" for folder in
-                                                  readdir(joinpath(@__DIR__, category))
-                subtest(category, folder)
+        @testset verbose = true for category in readdir(@__DIR__)
+            isdir(joinpath(@__DIR__, category)) || continue
+            @testset verbose = true for folder in readdir(joinpath(@__DIR__, category))
+                isdir(joinpath(@__DIR__, category, folder)) || continue
+                @testset "$file" for file in readdir(joinpath(@__DIR__, category, folder))
+                    endswith(file, ".jl") || continue
+                    @info "Testing $category/$folder/$file"
+                    include(joinpath(@__DIR__, category, folder, file))
+                end
             end
         end
-    elseif startswith(GROUP, "Back") ||
-        startswith(GROUP, "Down") ||
-        startswith(GROUP, "Misc")
+    else
         category, folder = split(GROUP, '/')
         @testset verbose = true "$category" begin
             @testset verbose = true "$folder" begin
-                subtest(category, folder)
+                @testset "$file" for file in readdir(joinpath(@__DIR__, category, folder))
+                    endswith(file, ".jl") || continue
+                    @info "Testing $category/$folder/$file"
+                    include(joinpath(@__DIR__, category, folder, file))
+                end
             end
         end
     end

@@ -1,6 +1,8 @@
-struct MooncakeOneArgPullbackPrep{Y,R} <: PullbackPrep
+struct MooncakeOneArgPullbackPrep{Y,R,DX,DY} <: PullbackPrep
     y_prototype::Y
     rrule::R
+    dx_righttype::DX
+    dy_righttype::DY
 end
 
 function DI.prepare_pullback(
@@ -14,7 +16,9 @@ function DI.prepare_pullback(
         debug_mode=config.debug_mode,
         silence_debug_messages=config.silence_debug_messages,
     )
-    prep = MooncakeOneArgPullbackPrep(y, rrule)
+    dx_righttype = zero_tangent(x)
+    dy_righttype = zero_tangent(y)
+    prep = MooncakeOneArgPullbackPrep(y, rrule, dx_righttype, dy_righttype)
     DI.value_and_pullback(f, prep, backend, x, ty, contexts...)  # warm up
     return prep
 end
@@ -28,7 +32,7 @@ function DI.value_and_pullback(
     contexts::Vararg{Context,C},
 ) where {Y,C}
     dy = only(ty)
-    dy_righttype = convert(tangent_type(Y), dy)
+    dy_righttype = dy isa tangent_type(Y) ? dy : copyto!!(prep.dy_righttype, dy)
     new_y, (_, new_dx) = value_and_pullback!!(
         prep.rrule, dy_righttype, f, x, map(unwrap, contexts)...
     )
@@ -45,8 +49,8 @@ function DI.value_and_pullback!(
     contexts::Vararg{Context,C},
 ) where {Y,C}
     dx, dy = only(tx), only(ty)
-    dy_righttype = convert(tangent_type(Y), dy)
-    dx_righttype = set_to_zero!!(convert(tangent_type(typeof(x)), dx))
+    dy_righttype = dy isa tangent_type(Y) ? dy : copyto!!(prep.dy_righttype, dy)
+    dx_righttype = set_to_zero!!(prep.dx_righttype)
     contexts_coduals = map(zero_codual ∘ unwrap, contexts)
     y, (_, new_dx) = __value_and_pullback!!(
         prep.rrule,

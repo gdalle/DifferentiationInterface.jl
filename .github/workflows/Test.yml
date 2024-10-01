@@ -19,25 +19,26 @@ jobs:
   test-DI:
     name: ${{ matrix.version }} - DI (${{ matrix.group }})
     runs-on: ubuntu-latest
-    if: ${{ !contains(github.event.pull_request.labels.*.name, 'bump') }}
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'skipci') }}
     timeout-minutes: 60
     permissions: # needed to allow julia-actions/cache to proactively delete old caches that it has created
       actions: write
       contents: read
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         version:
           - "1"
           # - "lts"
           # - "pre"
         group:
-          - Formalities
-          # - Internals
-          # - Back/ChainRulesCore
-          # - Back/Diffractor
+          - Misc/Internals
+          # - Misc/DifferentiateWith
+          # - Misc/FromPrimitive
+          # - Misc/SparsityDetector
+          # - Misc/ZeroBackends
+          # - Back/ChainRulesBackends
           # - Back/Enzyme
-          # - Back/FastDifferentiation
           # - Back/FiniteDiff
           # - Back/FiniteDifferences
           # - Back/ForwardDiff
@@ -45,30 +46,28 @@ jobs:
           # - Back/PolyesterForwardDiff
           # - Back/ReverseDiff
           # - Back/SecondOrder
-          # - Back/Symbolics
+          # - Back/SymbolicBackends
           # - Back/Tracker
           # - Back/Zygote
-          # - Misc/DifferentiateWith
-          # - Misc/FromPrimitive
-          # - Misc/SparsityDetector
-          # - Misc/ZeroBackends
           # - Down/Flux
           # - Down/Lux
           - Down/Reactant
+        skip_lts:
+          - ${{ github.event.pull_request.draft }}
+        skip_pre:
+          - ${{ github.event.pull_request.draft }}
         exclude:
+          - skip_lts: true
+            version: "lts"
+          - skip_pre: true
+            version: "pre"
           # lts
           - version: "lts"
-            group: Formalities
-          - version: "lts"
-            group: Back/ChainRulesCore
-          - version: "lts"
-            group: Back/Diffractor
+            group: Back/ChainRulesBackends
           - version: "lts"
             group: Back/Enzyme
           - version: "lts"
             group: Back/FiniteDiff
-          - version: "lts"
-            group: Back/FastDifferentiation
           - version: "lts"
             group: Back/Mooncake
           - version: "lts"
@@ -76,7 +75,9 @@ jobs:
           - version: "lts"
             group: Back/SecondOrder
           - version: "lts"
-            group: Back/Symbolics
+            group: Back/SymbolicBackends
+          - version: "lts"
+            group: Misc/Internals
           - version: "lts"
             group: Misc/SparsityDetector
           - version: "lts"
@@ -87,9 +88,7 @@ jobs:
             group: Down/Reactant
           # pre-release
           - version: "pre"
-            group: Formalities
-          - version: "pre"
-            group: Back/ChainRulesCore
+            group: Back/ChainRulesBackends
           - version: "pre"
             group: Back/Enzyme
           - version: "pre"
@@ -97,34 +96,28 @@ jobs:
           - version: "pre"
             group: Back/SecondOrder
           - version: "pre"
+            group: Misc/Internals
+          - version: "pre"
             group: Misc/SparsityDetector
     env:
-      SHOULDRUN: ${{ matrix.version == '1' || !github.event.pull_request.draft }}
       JULIA_DI_TEST_GROUP: ${{ matrix.group }}
     steps:
-      - run: echo "$SHOULDRUN"
       - uses: actions/checkout@v4
-        if: ${{ env.SHOULDRUN == 'true' }}
       - uses: julia-actions/setup-julia@v2
-        if: ${{ env.SHOULDRUN == 'true' }}
         with:
           version: ${{ matrix.version }}
           arch: x64
       - uses: julia-actions/cache@v2
-        if: ${{ env.SHOULDRUN == 'true' }}
       - name: Install dependencies & run tests
-        if: ${{ env.SHOULDRUN == 'true' }}
         # how to add the local DIT to the DI test env?
         run: julia --project=./DifferentiationInterface -e '
           using Pkg;
           Pkg.Registry.update();
           Pkg.test("DifferentiationInterface"; coverage=true);'
       - uses: julia-actions/julia-processcoverage@v1
-        if: ${{ env.SHOULDRUN == 'true' }}
         with:
           directories: ./DifferentiationInterface/src,./DifferentiationInterface/ext,./DifferentiationInterface/test
       - uses: codecov/codecov-action@v4
-        if: ${{ env.SHOULDRUN == 'true' }}
         with:
           files: lcov.info
           flags: DI
@@ -135,13 +128,13 @@ jobs:
   test-DIT:
     name: ${{ matrix.version }} - DIT (${{ matrix.group }})
     runs-on: ubuntu-latest
-    if: ${{ !contains(github.event.pull_request.labels.*.name, 'bump') }}
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'skipci') }}
     timeout-minutes: 60
     permissions: # needed to allow julia-actions/cache to proactively delete old caches that it has created
       actions: write
       contents: read
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         version:
           - "1"
@@ -152,38 +145,38 @@ jobs:
           # - Zero
           # - Standard
           # - Weird
+        skip_lts:
+          - ${{ github.event.pull_request.draft }}
+        skip_pre:
+          - ${{ github.event.pull_request.draft }}
         exclude:
+          - skip_lts: true
+            version: "lts"
+          - skip_pre: true
+            version: "pre"
           - version: "lts"
             group: Formalities
           - version: "lts"
             group: Weird
     env:
-      SHOULDRUN: ${{ matrix.version == '1' || !github.event.pull_request.draft }}
       JULIA_DIT_TEST_GROUP: ${{ matrix.group }}
     steps:
-      - run: echo "$SHOULDRUN"
       - uses: actions/checkout@v4
-        if: ${{ env.SHOULDRUN == 'true' }}
       - uses: julia-actions/setup-julia@v2
-        if: ${{ env.SHOULDRUN == 'true' }}
         with:
           version: ${{ matrix.version }}
           arch: x64
       - uses: julia-actions/cache@v2
-        if: ${{ env.SHOULDRUN == 'true' }}
       - name: Install dependencies & run tests
-        if: ${{ env.SHOULDRUN == 'true' }}
         run: julia --project=./DifferentiationInterfaceTest -e '
           using Pkg;
           Pkg.Registry.update();
           Pkg.develop(path="./DifferentiationInterface");
           Pkg.test("DifferentiationInterfaceTest"; coverage=true);'
       - uses: julia-actions/julia-processcoverage@v1
-        if: ${{ env.SHOULDRUN == 'true' }}
         with:
           directories: ./DifferentiationInterfaceTest/src,./DifferentiationInterfaceTest/ext,./DifferentiationInterfaceTest/test
       - uses: codecov/codecov-action@v4
-        if: ${{ env.SHOULDRUN == 'true' }}
         with:
           files: lcov.info
           flags: DIT

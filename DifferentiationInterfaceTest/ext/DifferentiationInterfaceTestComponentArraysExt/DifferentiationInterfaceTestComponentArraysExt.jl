@@ -25,9 +25,7 @@ function comp_to_num_pullback(x, dy)
 end
 
 function comp_to_num_scenarios_onearg(x::ComponentVector; dx::AbstractVector, dy::Number)
-    nb_args = 1
     f = comp_to_num
-    y = f(x)
     dy_from_dx = comp_to_num_pushforward(x, dx)
     dx_from_dy = comp_to_num_pullback(x, dy)
     grad = comp_to_num_gradient(x)

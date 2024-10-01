@@ -11,6 +11,18 @@ Create a `prep` object that can be given to [`gradient`](@ref) and its variants.
 function prepare_gradient end
 
 """
+    prepare!_gradient(f, prep, backend, x, [contexts...]) -> new_prep
+
+Same behavior as [`prepare_gradient`](@ref) but can modify an existing `prep` object to avoid some allocations.
+
+There is no guarantee that `prep` will be mutated, or that performance will be improved compared to preparation from scratch.
+
+!!! danger
+    For efficiency, this function needs to rely on backend package internals, therefore it not protected by semantic versioning.
+"""
+function prepare!_gradient end
+
+"""
     value_and_gradient(f, [prep,] backend, x, [contexts...]) -> (y, grad)
 
 Compute the value and the gradient of the function `f` at point `x`.

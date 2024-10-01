@@ -1,8 +1,10 @@
 function package_name(b::AbstractADType)
     s = string(b)
+    s = chopprefix(s, "ADTypes.")
+    s = chopprefix(s, "Auto")
     k = findfirst('(', s)
     isnothing(k) && throw(ArgumentError("Cannot parse backend into package"))
-    return s[5:(k - 1)]
+    return s[begin:(k - 1)]
 end
 
 function package_name(b::SecondOrder)
