@@ -55,9 +55,9 @@ jobs:
           - Down/Flux
           - Down/Lux
         skip_lts:
-          - ${{ github.event.pull_request.draft || contains(["Formalities", "Back/ChainRulesCore", "Back/Diffractor", "Back/Enzyme", "Back/FastDifferentiation", "Back/FiniteDiff", "Back/Mooncake", "Back/PolyesterForwardDiff", "Back/SecondOrder", "Back/Symbolics", "Misc/SparsityDetector", "Down/Flux", "Down/Lux"], matrix.group) }}
+          - ${{ github.event.pull_request.draft || contains(fromJSON('["Formalities", "Back/ChainRulesCore", "Back/Diffractor", "Back/Enzyme", "Back/FastDifferentiation", "Back/FiniteDiff", "Back/Mooncake", "Back/PolyesterForwardDiff", "Back/SecondOrder", "Back/Symbolics", "Misc/SparsityDetector", "Down/Flux", "Down/Lux"]'), matrix.group) }}
         skip_pre:
-          - ${{ github.event.pull_request.draft || contains(["Formalities", "Back/ChainRulesCore", "Back/Enzyme", "Back/Mooncake", "Back/PolyesterForwardDiff", "Back/SecondOrder", "Misc/SparsityDetector"], matrix.group) }}
+          - ${{ github.event.pull_request.draft || contains(fromJSON('["Formalities", "Back/ChainRulesCore", "Back/Enzyme", "Back/Mooncake", "Back/PolyesterForwardDiff", "Back/SecondOrder", "Misc/SparsityDetector"]'), matrix.group) }}
         exclude:
           - skip_lts: true
             version: "lts"
@@ -110,7 +110,7 @@ jobs:
           - Standard
           - Weird
         skip_lts:
-          - ${{ github.event.pull_request.draft || contains(["Formalities", "Weird"], matrix.group) }}
+          - ${{ github.event.pull_request.draft || contains(fromJSON('["Formalities", "Weird"]'), matrix.group) }}
         exclude:
           - skip_lts: true
             version: "lts"
