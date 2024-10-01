@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-    tags: ["*"]
+    tags: ['*']
   pull_request:
     types: [opened, reopened, synchronize, ready_for_review]
   workflow_dispatch:
@@ -28,36 +28,36 @@ jobs:
       fail-fast: true
       matrix:
         version:
-          - "1"
-          - "lts"
-          - "pre"
+          - '1'
+          - 'lts'
+          - 'pre'
         group:
-          - ["Back/ChainRulesCore", "Back/Diffractor"]
-          - ["Back/Enzyme"]
-          - ["Back/FastDifferentiation", "Back/Symbolics"]
-          - ["Back/FiniteDiff"]
-          - ["Back/FiniteDifferences"]
-          - ["Back/ForwardDiff"]
-          - ["Back/PolyesterForwardDiff"]
-          - ["Back/Mooncake"]
-          - ["Back/ReverseDiff"]
-          - ["Back/SecondOrder"]
-          - ["Back/Zygote", "Back/Tracker"]
-          - ["Down/Flux"]
-          - ["Down/Lux"]
-          - ["Internals/DifferentiateWith", "Internals/SparsityDetector"]
-          - ["Internals/Formalities", "Internals/Misc"]
-          - ["Internals/FromPrimitive"]
-          - ["Internals/ZeroBackends"]
+          - ['Back/ChainRulesCore', 'Back/Diffractor']
+          - ['Back/Enzyme']
+          - ['Back/FastDifferentiation', 'Back/Symbolics']
+          - ['Back/FiniteDiff']
+          - ['Back/FiniteDifferences']
+          - ['Back/ForwardDiff']
+          - ['Back/PolyesterForwardDiff']
+          - ['Back/Mooncake']
+          - ['Back/ReverseDiff']
+          - ['Back/SecondOrder']
+          - ['Back/Zygote', 'Back/Tracker']
+          - ['Down/Flux']
+          - ['Down/Lux']
+          - ['Internals/DifferentiateWith', 'Internals/SparsityDetector']
+          - ['Internals/Formalities', 'Internals/Misc']
+          - ['Internals/FromPrimitive']
+          - ['Internals/ZeroBackends']
         skip_lts:
           - ${{ github.event.pull_request.draft }}
         skip_pre:
           - ${{ github.event.pull_request.draft }}
         exclude:
           - skip_lts: true
-            version: "lts"
+            version: 'lts'
           - skip_pre: true
-            version: "pre"
+            version: 'pre'
     env:
       JULIA_DI_TEST_GROUP: ${{ matrix.group }}
     steps:
@@ -96,9 +96,9 @@ jobs:
       fail-fast: true
       matrix:
         version:
-          - "1"
-          - "lts"
-          - "pre"
+          - '1'
+          - 'lts'
+          - 'pre'
         group:
           - Formalities
           - Zero
@@ -110,12 +110,12 @@ jobs:
           - ${{ github.event.pull_request.draft }}
         exclude:
           - skip_lts: true
-            version: "lts"
+            version: 'lts'
           - skip_pre: true
-            version: "lts"
-          - version: "lts"
+            version: 'lts'
+          - version: 'lts'
             group: Formalities
-          - version: "lts"
+          - version: 'lts'
             group: Weird
     env:
       JULIA_DIT_TEST_GROUP: ${{ matrix.group }}
