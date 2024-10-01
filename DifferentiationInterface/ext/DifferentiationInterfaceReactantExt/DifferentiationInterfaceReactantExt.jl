@@ -13,7 +13,7 @@ using DifferentiationInterface:
     PullbackPrep,
     PushforwardPrep,
     SecondDerivativePrep
-using Reactant: ConcreteRArray, compile
+using Reactant: @compile, to_rarray
 
 ADTypes.mode(rebackend::ReactantBackend) = ADTypes.mode(rebackend.backend)
 DI.check_available(rebackend::ReactantBackend) = DI.check_available(rebackend.backend)

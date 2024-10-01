@@ -4,22 +4,22 @@ struct ReactantGradientPrep{F,G} <: GradientPrep
 end
 
 function DI.prepare_gradient(f, rebackend::ReactantBackend, x)
-    xr = ConcreteRArray(x)
+    xr = to_rarray(x)
     gradient_closure(xr) = DI.gradient(f, rebackend.backend, xr)
-    compiled_function = compile(f, (xr,))
-    compiled_gradient = compile(gradient_closure, (xr,))
+    compiled_function = @compile f(xr)
+    compiled_gradient = @compile gradient_closure(xr)
     return ReactantGradientPrep(compiled_function, compiled_gradient)
 end
 
 function DI.gradient(f, prep::ReactantGradientPrep, ::ReactantBackend, x)
     @compat (; compiled_gradient) = prep
-    xr = ConcreteRArray(x)
+    xr = to_rarray(x)
     return compiled_gradient(xr)
 end
 
 function DI.value_and_gradient(f, prep::ReactantGradientPrep, ::ReactantBackend, x)
     @compat (; compiled_function, compiled_gradient) = prep
-    xr = ConcreteRArray(x)
+    xr = to_rarray(x)
     return compiled_function(xr), compiled_gradient(xr)
 end
 
