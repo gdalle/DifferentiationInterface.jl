@@ -71,22 +71,20 @@ end
 
 ## Number to array
 
-multiplicator(::Type{V}) where {V<:AbstractVector} = convert(V, float.(1:6))
-multiplicator(::Type{M}) where {M<:AbstractMatrix} = convert(M, float.(reshape(1:6, 2, 3)))
+multiplicator(::Type{A}) where {A<:AbstractVector} = convert(A, float.(1:6))
+multiplicator(::Type{A}) where {A<:AbstractMatrix} = convert(A, reshape(float.(1:6), 2, 3))
 
-function num_to_arr(x::Number, ::Type{A}) where {A<:AbstractArray}
+struct NumToArr{A} end
+NumToArr(::Type{A}) where {A} = NumToArr{A}()
+Base.eltype(::NumToArr{A}) where {A} = eltype(A)
+
+function (f::NumToArr{A})(x::Number) where {A}
     a = multiplicator(A)
     return sin.(x .* a)
 end
 
-num_to_arr_vector(x) = num_to_arr(x, Vector{Float64})
-num_to_arr_matrix(x) = num_to_arr(x, Matrix{Float64})
-
-pick_num_to_arr(::Type{<:Vector}) = num_to_arr_vector
-pick_num_to_arr(::Type{<:Matrix}) = num_to_arr_matrix
-
-function num_to_arr!(y::AbstractArray, x::Number)::Nothing
-    a = multiplicator(typeof(y))
+function (f!::NumToArr{A})(y::AbstractArray, x::Number)::Nothing where {A}
+    a = multiplicator(A)
     y .= sin.(x .* a)
     return nothing
 end
@@ -114,8 +112,7 @@ end
 function num_to_arr_scenarios_onearg(
     x::Number, ::Type{A}; dx::Number, dy::AbstractArray
 ) where {A<:AbstractArray}
-    f = pick_num_to_arr(A)
-    y = f(x)
+    f = NumToArr(A)
     dy_from_dx = num_to_arr_pushforward(x, dx, A)
     dx_from_dy = num_to_arr_pullback(x, dy, A)
     der = num_to_arr_derivative(x, A)
@@ -142,8 +139,8 @@ end
 function num_to_arr_scenarios_twoarg(
     x::Number, ::Type{A}; dx::Number, dy::AbstractArray
 ) where {A<:AbstractArray}
-    f! = num_to_arr!
-    y = similar(num_to_arr(x, A))
+    f! = NumToArr(A)
+    y = similar(NumToArr(A)(x))
     f!(y, x)
     dy_from_dx = num_to_arr_pushforward(x, dx, A)
     dx_from_dy = num_to_arr_pullback(x, dy, A)
@@ -170,9 +167,12 @@ end
 
 ## Array to number
 
-arr_to_num_aux_linalg(x; α, β) = sum(vec(x .^ α) .* transpose(vec(x .^ β)))
+const α = 4
+const β = 6
 
-function arr_to_num_aux_no_linalg(x; α, β)
+arr_to_num_linalg(x::AbstractArray) = sum(vec(x .^ α) .* transpose(vec(x .^ β)))
+
+function arr_to_num_no_linalg(x::AbstractArray)
     n = length(x)
     s = zero(eltype(x))
     for i in 1:n, j in 1:n
@@ -181,7 +181,7 @@ function arr_to_num_aux_no_linalg(x; α, β)
     return s
 end
 
-function arr_to_num_aux_gradient(x0; α, β)
+function arr_to_num_gradient(x0)
     x = Array(x0)  # GPU arrays don't like indexing
     g = similar(x)
     for k in eachindex(g, x)
@@ -194,7 +194,7 @@ function arr_to_num_aux_gradient(x0; α, β)
     return convert(typeof(x0), g)
 end
 
-function arr_to_num_aux_hessian(x0; α, β)
+function arr_to_num_hessian(x0)
     x = Array(x0)  # GPU arrays don't like indexing
     H = similar(x, length(x), length(x))
     for k in axes(H, 1), l in axes(H, 2)
@@ -211,16 +211,6 @@ function arr_to_num_aux_hessian(x0; α, β)
     return convert(typeof(similar(x0, length(x0), length(x0))), H)
 end
 
-const DEFAULT_α = 4
-const DEFAULT_β = 6
-
-arr_to_num_linalg(x::AbstractArray)::Number =
-    arr_to_num_aux_linalg(x; α=DEFAULT_α, β=DEFAULT_β)
-arr_to_num_no_linalg(x::AbstractArray)::Number =
-    arr_to_num_aux_no_linalg(x; α=DEFAULT_α, β=DEFAULT_β)
-
-arr_to_num_gradient(x) = arr_to_num_aux_gradient(x; α=DEFAULT_α, β=DEFAULT_β)
-arr_to_num_hessian(x) = arr_to_num_aux_hessian(x; α=DEFAULT_α, β=DEFAULT_β)
 arr_to_num_pushforward(x, dx) = dot(arr_to_num_gradient(x), dx)
 arr_to_num_pullback(x, dy) = arr_to_num_gradient(x) .* dy
 arr_to_num_hvp(x, dx) = reshape(arr_to_num_hessian(x) * vec(dx), size(x))
@@ -229,7 +219,6 @@ function arr_to_num_scenarios_onearg(
     x::AbstractArray; dx::AbstractArray, dy::Number, linalg=true
 )
     f = linalg ? arr_to_num_linalg : arr_to_num_no_linalg
-    y = f(x)
     dy_from_dx = arr_to_num_pushforward(x, dx)
     dx_from_dy = arr_to_num_pullback(x, dy)
     grad = arr_to_num_gradient(x)
@@ -305,7 +294,6 @@ function vec_to_vec_scenarios_onearg(
     x::AbstractVector; dx::AbstractVector, dy::AbstractVector
 )
     f = vec_to_vec
-    y = f(x)
     dy_from_dx = vec_to_vec_pushforward(x, dx)
     dx_from_dy = vec_to_vec_pullback(x, dy)
     jac = vec_to_vec_jacobian(x)
@@ -344,7 +332,6 @@ function vec_to_mat_scenarios_onearg(
     x::AbstractVector; dx::AbstractVector, dy::AbstractMatrix
 )
     f = vec_to_mat
-    y = f(x)
     dy_from_dx = vec_to_mat_pushforward(x, dx)
     dx_from_dy = vec_to_mat_pullback(x, dy)
     jac = vec_to_mat_jacobian(x)
@@ -391,7 +378,6 @@ function mat_to_vec_scenarios_onearg(
     x::AbstractMatrix; dx::AbstractMatrix, dy::AbstractVector
 )
     f = mat_to_vec
-    y = f(x)
     dy_from_dx = mat_to_vec_pushforward(x, dx)
     dx_from_dy = mat_to_vec_pullback(x, dy)
     jac = mat_to_vec_jacobian(x)
@@ -437,7 +423,6 @@ function mat_to_mat_scenarios_onearg(
     x::AbstractMatrix; dx::AbstractMatrix, dy::AbstractMatrix
 )
     f = mat_to_mat
-    y = f(x)
     dy_from_dx = mat_to_mat_pushforward(x, dx)
     dx_from_dy = mat_to_mat_pullback(x, dy)
     jac = mat_to_mat_jacobian(x)

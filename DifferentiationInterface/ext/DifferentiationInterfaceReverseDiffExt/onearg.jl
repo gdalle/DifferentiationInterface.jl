@@ -84,10 +84,12 @@ end
 function DI.value_and_gradient!(
     f, grad, prep::ReverseDiffGradientPrep, ::AutoReverseDiff, x
 )
-    y = f(x)  # TODO: remove once ReverseDiff#251 is fixed
-    result = MutableDiffResult(y, (grad,))
+    y = f(x)  # TODO: ReverseDiff#251
+    result = DiffResult(y, (grad,))
     result = gradient!(result, prep.tape, x)
-    return DiffResults.value(result), DiffResults.derivative(result)
+    y = DR.value(result)
+    grad === DR.gradient(result) || copyto!(grad, DR.gradient(result))
+    return y, grad
 end
 
 function DI.value_and_gradient(
@@ -115,10 +117,12 @@ function DI.value_and_gradient!(
     f, grad, ::NoGradientPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
 ) where {C}
     fc = with_contexts(f, contexts...)
-    y = fc(x)  # TODO: remove once ReverseDiff#251 is fixed
-    result = MutableDiffResult(y, (grad,))
+    y = fc(x)  # TODO: ReverseDiff#251
+    result = DiffResult(y, (grad,))
     result = gradient!(result, fc, x)
-    return DiffResults.value(result), DiffResults.derivative(result)
+    y = DR.value(result)
+    grad === DR.gradient(result) || copyto!(grad, DR.gradient(result))
+    return y, grad
 end
 
 function DI.value_and_gradient(
@@ -162,9 +166,11 @@ function DI.value_and_jacobian!(
     f, jac, prep::ReverseDiffOneArgJacobianPrep, ::AutoReverseDiff, x
 )
     y = f(x)
-    result = MutableDiffResult(y, (jac,))
+    result = DiffResult(y, (jac,))
     result = jacobian!(result, prep.tape, x)
-    return DiffResults.value(result), DiffResults.derivative(result)
+    y = DR.value(result)
+    jac === DR.jacobian(result) || copyto!(jac, DR.jacobian(result))
+    return y, jac
 end
 
 function DI.value_and_jacobian(f, prep::ReverseDiffOneArgJacobianPrep, ::AutoReverseDiff, x)
@@ -190,9 +196,11 @@ function DI.value_and_jacobian!(
 ) where {C}
     fc = with_contexts(f, contexts...)
     y = fc(x)
-    result = MutableDiffResult(y, (jac,))
+    result = DiffResult(y, (jac,))
     result = jacobian!(result, fc, x)
-    return DiffResults.value(result), DiffResults.derivative(result)
+    y = DR.value(result)
+    jac === DR.jacobian(result) || copyto!(jac, DR.jacobian(result))
+    return y, jac
 end
 
 function DI.value_and_jacobian(
@@ -220,46 +228,49 @@ end
 
 ### Without contexts
 
-struct ReverseDiffHessianPrep{T} <: HessianPrep
-    tape::T
+struct ReverseDiffHessianGradientPrep{GT,HT} <: HessianPrep
+    gradient_tape::GT
+    hessian_tape::HT
 end
 
 function DI.prepare_hessian(f, ::AutoReverseDiff{Compile}, x) where {Compile}
-    tape = HessianTape(f, x)
+    gradient_tape = GradientTape(f, x)
+    hessian_tape = HessianTape(f, x)
     if Compile
-        tape = compile(tape)
+        gradient_tape = compile(gradient_tape)
+        hessian_tape = compile(hessian_tape)
     end
-    return ReverseDiffHessianPrep(tape)
+    return ReverseDiffHessianGradientPrep(gradient_tape, hessian_tape)
 end
 
-function DI.hessian!(_f, hess, prep::ReverseDiffHessianPrep, ::AutoReverseDiff, x)
-    return hessian!(hess, prep.tape, x)
+function DI.hessian!(_f, hess, prep::ReverseDiffHessianGradientPrep, ::AutoReverseDiff, x)
+    return hessian!(hess, prep.hessian_tape, x)
 end
 
-function DI.hessian(_f, prep::ReverseDiffHessianPrep, ::AutoReverseDiff, x)
-    return hessian!(prep.tape, x)
+function DI.hessian(_f, prep::ReverseDiffHessianGradientPrep, ::AutoReverseDiff, x)
+    return hessian!(prep.hessian_tape, x)
 end
 
 function DI.value_gradient_and_hessian!(
-    f, grad, hess, prep::ReverseDiffHessianPrep, ::AutoReverseDiff, x
+    f, grad, hess, prep::ReverseDiffHessianGradientPrep, ::AutoReverseDiff, x
 )
-    y = f(x)  # TODO: remove once ReverseDiff#251 is fixed
-    result = MutableDiffResult(y, (grad, hess))
-    result = hessian!(result, prep.tape, x)
-    return (
-        DiffResults.value(result), DiffResults.gradient(result), DiffResults.hessian(result)
-    )
+    y = f(x)  # TODO: ReverseDiff#251
+    result = DiffResult(y, (grad, hess))
+    result = hessian!(result, prep.hessian_tape, x)
+    y = DR.value(result)
+    # grad === DR.gradient(result) || copyto!(grad, DR.gradient(result))
+    grad = gradient!(grad, prep.gradient_tape, x)  # TODO: ReverseDiff#251
+    hess === DR.hessian(result) || copyto!(hess, DR.hessian(result))
+    return y, grad, hess
 end
 
 function DI.value_gradient_and_hessian(
-    f, prep::ReverseDiffHessianPrep, ::AutoReverseDiff, x
+    f, prep::ReverseDiffHessianGradientPrep, ::AutoReverseDiff, x
 )
     y = f(x)  # TODO: remove once ReverseDiff#251 is fixed
-    result = MutableDiffResult(y, (similar(x), similar(x, length(x), length(x))))
-    result = hessian!(result, prep.tape, x)
-    return (
-        DiffResults.value(result), DiffResults.gradient(result), DiffResults.hessian(result)
-    )
+    result = DiffResult(y, (similar(x), similar(x, length(x), length(x))))
+    result = hessian!(result, prep.hessian_tape, x)
+    return (DR.value(result), DR.gradient(result), DR.hessian(result))
 end
 
 ### With contexts
@@ -286,22 +297,22 @@ function DI.value_gradient_and_hessian!(
     f, grad, hess, ::NoHessianPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
 ) where {C}
     fc = with_contexts(f, contexts...)
-    y = fc(x)  # TODO: remove once ReverseDiff#251 is fixed
-    result = MutableDiffResult(y, (grad, hess))
+    y = fc(x)  # TODO: ReverseDiff#251
+    result = DiffResult(y, (grad, hess))
     result = hessian!(result, fc, x)
-    return (
-        DiffResults.value(result), DiffResults.gradient(result), DiffResults.hessian(result)
-    )
+    y = DR.value(result)
+    # grad === DR.gradient(result) || copyto!(grad, DR.gradient(result))
+    grad = gradient!(grad, fc, x)  # TODO: ReverseDiff#251
+    hess === DR.hessian(result) || copyto!(hess, DR.hessian(result))
+    return y, grad, hess
 end
 
 function DI.value_gradient_and_hessian(
     f, ::NoHessianPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
 ) where {C}
     fc = with_contexts(f, contexts...)
-    y = fc(x)  # TODO: remove once ReverseDiff#251 is fixed
-    result = MutableDiffResult(y, (similar(x), similar(x, length(x), length(x))))
+    y = fc(x)  # TODO: ReverseDiff#251
+    result = HessianResult(x)
     result = hessian!(result, fc, x)
-    return (
-        DiffResults.value(result), DiffResults.gradient(result), DiffResults.hessian(result)
-    )
+    return (DR.value(result), DR.gradient(result), DR.hessian(result))
 end

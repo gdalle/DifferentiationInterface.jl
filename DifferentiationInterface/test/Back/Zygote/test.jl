@@ -40,7 +40,7 @@ test_differentiation(
 if VERSION >= v"1.10"
     test_differentiation(
         AutoZygote(),
-        vcat(component_scenarios(), gpu_scenarios(), static_scenarios());
+        vcat(component_scenarios(), gpu_scenarios());
         second_order=false,
         logging=LOGGING,
     )

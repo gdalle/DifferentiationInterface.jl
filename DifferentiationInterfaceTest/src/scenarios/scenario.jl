@@ -68,7 +68,6 @@ function Scenario{op,pl_op}(
 ) where {op,pl_op}
     @assert op in ALL_OPS
     @assert pl_op in (:in, :out)
-    f!(y, x, map(unwrap, contexts)...)
     return Scenario{op,pl_op,:in}(f!; x, y, tang, contexts, res1, res2)
 end
 

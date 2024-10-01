@@ -165,9 +165,11 @@ function DI.value_and_gradient!(
     f::F, grad, ::AutoForwardDiff, x, contexts::Vararg{Context,C}
 ) where {F,C}
     fc = with_contexts(f, contexts...)
-    result = MutableDiffResult(zero(eltype(x)), (grad,))
+    result = DiffResult(zero(eltype(x)), (grad,))
     result = gradient!(result, fc, x)
-    return DiffResults.value(result), DiffResults.gradient(result)
+    y = DR.value(result)
+    grad === DR.gradient(result) || copyto!(grad, DR.gradient(result))
+    return y, grad
 end
 
 function DI.value_and_gradient(
@@ -176,7 +178,7 @@ function DI.value_and_gradient(
     fc = with_contexts(f, contexts...)
     result = GradientResult(x)
     result = gradient!(result, fc, x)
-    return DiffResults.value(result), DiffResults.gradient(result)
+    return DR.value(result), DR.gradient(result)
 end
 
 function DI.gradient!(
@@ -213,9 +215,11 @@ function DI.value_and_gradient!(
     contexts::Vararg{Context,C},
 ) where {F,C}
     fc = with_contexts(f, contexts...)
-    result = MutableDiffResult(zero(eltype(x)), (grad,))
+    result = DiffResult(zero(eltype(x)), (grad,))
     result = gradient!(result, fc, x, prep.config)
-    return DiffResults.value(result), DiffResults.gradient(result)
+    y = DR.value(result)
+    grad === DR.gradient(result) || copyto!(grad, DR.gradient(result))
+    return y, grad
 end
 
 function DI.value_and_gradient(
@@ -224,7 +228,7 @@ function DI.value_and_gradient(
     fc = with_contexts(f, contexts...)
     result = GradientResult(x)
     result = gradient!(result, fc, x, prep.config)
-    return DiffResults.value(result), DiffResults.gradient(result)
+    return DR.value(result), DR.gradient(result)
 end
 
 function DI.gradient!(
@@ -255,9 +259,11 @@ function DI.value_and_jacobian!(
 ) where {F,C}
     fc = with_contexts(f, contexts...)
     y = fc(x)
-    result = MutableDiffResult(y, (jac,))
+    result = DiffResult(y, (jac,))
     result = jacobian!(result, fc, x)
-    return DiffResults.value(result), DiffResults.jacobian(result)
+    y = DR.value(result)
+    jac === DR.jacobian(result) || copyto!(jac, DR.jacobian(result))
+    return y, jac
 end
 
 function DI.value_and_jacobian(
@@ -302,9 +308,11 @@ function DI.value_and_jacobian!(
 ) where {F,C}
     fc = with_contexts(f, contexts...)
     y = fc(x)
-    result = MutableDiffResult(y, (jac,))
+    result = DiffResult(y, (jac,))
     result = jacobian!(result, fc, x, prep.config)
-    return DiffResults.value(result), DiffResults.jacobian(result)
+    y = DR.value(result)
+    jac === DR.jacobian(result) || copyto!(jac, DR.jacobian(result))
+    return y, jac
 end
 
 function DI.value_and_jacobian(
@@ -457,11 +465,12 @@ function DI.value_gradient_and_hessian!(
     f::F, grad, hess, ::AutoForwardDiff, x, contexts::Vararg{Context,C}
 ) where {F,C}
     fc = with_contexts(f, contexts...)
-    result = MutableDiffResult(one(eltype(x)), (grad, hess))
+    result = DiffResult(one(eltype(x)), (grad, hess))
     result = hessian!(result, fc, x)
-    return (
-        DiffResults.value(result), DiffResults.gradient(result), DiffResults.hessian(result)
-    )
+    y = DR.value(result)
+    grad === DR.gradient(result) || copyto!(grad, DR.gradient(result))
+    hess === DR.hessian(result) || copyto!(hess, DR.hessian(result))
+    return (y, grad, hess)
 end
 
 function DI.value_gradient_and_hessian(
@@ -470,9 +479,7 @@ function DI.value_gradient_and_hessian(
     fc = with_contexts(f, contexts...)
     result = HessianResult(x)
     result = hessian!(result, fc, x)
-    return (
-        DiffResults.value(result), DiffResults.gradient(result), DiffResults.hessian(result)
-    )
+    return (DR.value(result), DR.gradient(result), DR.hessian(result))
 end
 
 ### Prepared
@@ -527,11 +534,12 @@ function DI.value_gradient_and_hessian!(
     contexts::Vararg{Context,C},
 ) where {F,C}
     fc = with_contexts(f, contexts...)
-    result = MutableDiffResult(one(eltype(x)), (grad, hess))
+    result = DiffResult(one(eltype(x)), (grad, hess))
     result = hessian!(result, fc, x, prep.manual_result_config)
-    return (
-        DiffResults.value(result), DiffResults.gradient(result), DiffResults.hessian(result)
-    )
+    y = DR.value(result)
+    grad === DR.gradient(result) || copyto!(grad, DR.gradient(result))
+    hess === DR.hessian(result) || copyto!(hess, DR.hessian(result))
+    return (y, grad, hess)
 end
 
 function DI.value_gradient_and_hessian(
@@ -540,7 +548,5 @@ function DI.value_gradient_and_hessian(
     fc = with_contexts(f, contexts...)
     result = HessianResult(x)
     result = hessian!(result, fc, x, prep.auto_result_config)
-    return (
-        DiffResults.value(result), DiffResults.gradient(result), DiffResults.hessian(result)
-    )
+    return (DR.value(result), DR.gradient(result), DR.hessian(result))
 end
