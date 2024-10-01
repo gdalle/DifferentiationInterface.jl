@@ -32,28 +32,23 @@ jobs:
           - "lts"
           - "pre"
         group:
-          - Back/ChainRulesCore
-          - Back/Diffractor
-          - Back/Enzyme
-          - Back/FastDifferentiation
-          - Back/FiniteDiff
-          - Back/FiniteDifferences
-          - Back/ForwardDiff
-          - Back/Mooncake
-          - Back/PolyesterForwardDiff
-          - Back/ReverseDiff
-          - Back/SecondOrder
-          - Back/Symbolics
-          - Back/Tracker
-          - Back/Zygote
-          - Down/Flux
-          - Down/Lux
-          - Internals/DifferentiateWith
-          - Internals/Formalities
-          - Internals/FromPrimitive
-          - Internals/Misc
-          - Internals/SparsityDetector
-          - Internals/ZeroBackends
+          - ["Back/ChainRulesCore", "Back/Diffractor"]
+          - ["Back/Enzyme"]
+          - ["Back/FastDifferentiation", "Back/Symbolics"]
+          - ["Back/FiniteDiff"]
+          - ["Back/FiniteDifferences"]
+          - ["Back/ForwardDiff"]
+          - ["Back/PolyesterForwardDiff"]
+          - ["Back/Mooncake"]
+          - ["Back/ReverseDiff"]
+          - ["Back/SecondOrder"]
+          - ["Back/Zygote", "Back/Tracker"]
+          - ["Down/Flux"]
+          - ["Down/Lux"]
+          - ["Internals/DifferentiateWith", "Internals/SparsityDetector"]
+          - ["Internals/Formalities", "Internals/Misc"]
+          - ["Internals/FromPrimitive"]
+          - ["Internals/ZeroBackends"]
         skip_lts:
           - ${{ github.event.pull_request.draft }}
         skip_pre:
@@ -63,46 +58,6 @@ jobs:
             version: "lts"
           - skip_pre: true
             version: "pre"
-          # lts
-          - version: "lts"
-            group: Back/ChainRulesCore
-          - version: "lts"
-            group: Back/Diffractor
-          - version: "lts"
-            group: Back/Enzyme
-          - version: "lts"
-            group: Back/FiniteDiff
-          - version: "lts"
-            group: Back/FastDifferentiation
-          - version: "lts"
-            group: Back/Mooncake
-          - version: "lts"
-            group: Back/PolyesterForwardDiff
-          - version: "lts"
-            group: Back/SecondOrder
-          - version: "lts"
-            group: Back/Symbolics
-          - version: "lts"
-            group: Internals/Formalities
-          - version: "lts"
-            group: Internals/SparsityDetector
-          - version: "lts"
-            group: Down/Flux
-          - version: "lts"
-            group: Down/Lux
-          # pre-release
-          - version: "pre"
-            group: Back/ChainRulesCore
-          - version: "pre"
-            group: Back/Enzyme
-          - version: "pre"
-            group: Back/Mooncake
-          - version: "pre"
-            group: Back/SecondOrder
-          - version: "pre"
-            group: Internals/Formalities
-          - version: "pre"
-            group: Internals/SparsityDetector
     env:
       JULIA_DI_TEST_GROUP: ${{ matrix.group }}
     steps:
@@ -117,7 +72,7 @@ jobs:
         run: julia --project=./DifferentiationInterface -e '
           using Pkg;
           Pkg.Registry.update();
-          Pkg.test("DifferentiationInterface"; coverage=true);'
+          Pkg.test('DifferentiationInterface'; coverage=true);'
       - uses: julia-actions/julia-processcoverage@v1
         with:
           directories: ./DifferentiationInterface/src,./DifferentiationInterface/ext,./DifferentiationInterface/test
@@ -175,8 +130,8 @@ jobs:
         run: julia --project=./DifferentiationInterfaceTest -e '
           using Pkg;
           Pkg.Registry.update();
-          Pkg.develop(path="./DifferentiationInterface");
-          Pkg.test("DifferentiationInterfaceTest"; coverage=true);'
+          Pkg.develop(path='./DifferentiationInterface');
+          Pkg.test('DifferentiationInterfaceTest'; coverage=true);'
       - uses: julia-actions/julia-processcoverage@v1
         with:
           directories: ./DifferentiationInterfaceTest/src,./DifferentiationInterfaceTest/ext,./DifferentiationInterfaceTest/test
