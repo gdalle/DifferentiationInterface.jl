@@ -156,7 +156,7 @@ jobs:
           - skip_lts: true
             version: "lts"
           - skip_pre: true
-            version: "lts"
+            version: "pre"
           - version: "lts"
             group: Formalities
           - version: "lts"
