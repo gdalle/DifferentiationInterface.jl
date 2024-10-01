@@ -32,8 +32,6 @@ jobs:
           - "lts"
           - "pre"
         group:
-          - Formalities
-          - Internals
           - Back/ChainRulesCore
           - Back/Diffractor
           - Back/Enzyme
@@ -48,21 +46,63 @@ jobs:
           - Back/Symbolics
           - Back/Tracker
           - Back/Zygote
-          - Misc/DifferentiateWith
-          - Misc/FromPrimitive
-          - Misc/SparsityDetector
-          - Misc/ZeroBackends
           - Down/Flux
           - Down/Lux
+          - Internals/DifferentiateWith
+          - Internals/Formalities
+          - Internals/FromPrimitive
+          - Internals/Misc
+          - Internals/SparsityDetector
+          - Internals/ZeroBackends
         skip_lts:
-          - ${{ github.event.pull_request.draft || contains(fromJSON('["Formalities", "Back/ChainRulesCore", "Back/Diffractor", "Back/Enzyme", "Back/FastDifferentiation", "Back/FiniteDiff", "Back/Mooncake", "Back/PolyesterForwardDiff", "Back/SecondOrder", "Back/Symbolics", "Misc/SparsityDetector", "Down/Flux", "Down/Lux"]'), matrix.group) }}
+          - ${{ github.event.pull_request.draft }}
         skip_pre:
-          - ${{ github.event.pull_request.draft || contains(fromJSON('["Formalities", "Back/ChainRulesCore", "Back/Enzyme", "Back/Mooncake", "Back/PolyesterForwardDiff", "Back/SecondOrder", "Misc/SparsityDetector"]'), matrix.group) }}
+          - ${{ github.event.pull_request.draft }}
         exclude:
           - skip_lts: true
             version: "lts"
           - skip_pre: true
             version: "pre"
+          # lts
+          - version: "lts"
+            group: Back/ChainRulesCore
+          - version: "lts"
+            group: Back/Diffractor
+          - version: "lts"
+            group: Back/Enzyme
+          - version: "lts"
+            group: Back/FiniteDiff
+          - version: "lts"
+            group: Back/FastDifferentiation
+          - version: "lts"
+            group: Back/Mooncake
+          - version: "lts"
+            group: Back/PolyesterForwardDiff
+          - version: "lts"
+            group: Back/SecondOrder
+          - version: "lts"
+            group: Back/Symbolics
+          - version: "lts"
+            group: Internals/Formalities
+          - version: "lts"
+            group: Internals/SparsityDetector
+          - version: "lts"
+            group: Down/Flux
+          - version: "lts"
+            group: Down/Lux
+          # pre-release
+          - version: "pre"
+            group: Back/ChainRulesCore
+          - version: "pre"
+            group: Back/Enzyme
+          - version: "pre"
+            group: Back/Mooncake
+          - version: "pre"
+            group: Back/SecondOrder
+          - version: "pre"
+            group: Internals/Formalities
+          - version: "pre"
+            group: Internals/SparsityDetector
     env:
       JULIA_DI_TEST_GROUP: ${{ matrix.group }}
     steps:
@@ -110,10 +150,14 @@ jobs:
           - Standard
           - Weird
         skip_lts:
-          - ${{ github.event.pull_request.draft || contains(fromJSON('["Formalities", "Weird"]'), matrix.group) }}
+          - ${{ github.event.pull_request.draft }}
         exclude:
           - skip_lts: true
             version: "lts"
+          - version: "lts"
+            group: Formalities
+          - version: "lts"
+            group: Weird
     env:
       JULIA_DIT_TEST_GROUP: ${{ matrix.group }}
     steps:

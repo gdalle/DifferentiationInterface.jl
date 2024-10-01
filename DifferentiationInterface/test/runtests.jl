@@ -13,43 +13,18 @@ GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "All")
 
 ## Main tests
 
-function subtest(category, folder)
-    @testset "$file" for file in readdir(joinpath(@__DIR__, category, folder))
-        @info "Testing $category/$folder/$file"
-        include(joinpath(@__DIR__, category, folder, file))
-    end
-    return nothing
-end
-
 @testset verbose = true "DifferentiationInterface.jl" begin
-    if GROUP == "Formalities" || GROUP == "All"
-        @testset "Formalities/$file" for file in readdir(joinpath(@__DIR__, "Formalities"))
-            @info "Testing Formalities/$file"
-            include(joinpath(@__DIR__, "Formalities", file))
-        end
-    end
-
-    if GROUP == "Internals" || GROUP == "All"
-        @testset "Internals/$file" for file in readdir(joinpath(@__DIR__, "Internals"))
-            @info "Testing Internals/$file"
-            include(joinpath(@__DIR__, "Internals", file))
-        end
-    end
-
-    if GROUP == "All"
-        @testset verbose = true "$category" for category in ["Back", "Down"]
-            @testset verbose = true "$folder" for folder in
-                                                  readdir(joinpath(@__DIR__, category))
-                subtest(category, folder)
-            end
-        end
-    elseif startswith(GROUP, "Back") ||
-        startswith(GROUP, "Down") ||
-        startswith(GROUP, "Misc")
-        category, folder = split(GROUP, '/')
-        @testset verbose = true "$category" begin
-            @testset verbose = true "$folder" begin
-                subtest(category, folder)
+    for category in readdir(@__DIR__)
+        isdir(category) || continue
+        for folder in readdir(joinpath(@__DIR__, category))
+            if GROUP == "All" || (category, folder) == split(GROUP, '/')
+                @testset verbose = true "$category/$folder" begin
+                    @testset "$file" for file in
+                                         readdir(joinpath(@__DIR__, category, folder))
+                        @info "Testing $category/$folder/$file"
+                        include(joinpath(@__DIR__, category, folder, file))
+                    end
+                end
             end
         end
     end
