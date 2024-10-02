@@ -28,15 +28,15 @@ function make_dual!(::Type{T}, xdual, x, tx::NTuple{B}) where {T,B}
     return xdual .= Dual{T}.(x, tx...)
 end
 
-myvalue(::Type{T}, ydual::Dual{T}) where {T} = value(T, ydual)
+myvalue(::Type{T}, ydual::Number) where {T} = value(T, ydual)
 myvalue(::Type{T}, ydual) where {T} = myvalue.(T, ydual)
 myvalue!(::Type{T}, y, ydual) where {T} = y .= myvalue.(T, ydual)
 
-myderivative(::Type{T}, ydual::Dual{T}) where {T} = extract_derivative(T, ydual)
+myderivative(::Type{T}, ydual::Number) where {T} = extract_derivative(T, ydual)
 myderivative(::Type{T}, ydual) where {T} = myderivative.(T, ydual)
 myderivative!(::Type{T}, dy, ydual) where {T} = dy .= myderivative.(T, ydual)
 
-function mypartials(::Type{T}, ::Val{B}, ydual::Dual) where {T,B}
+function mypartials(::Type{T}, ::Val{B}, ydual::Number) where {T,B}
     return partials(T, ydual).values
 end
 
