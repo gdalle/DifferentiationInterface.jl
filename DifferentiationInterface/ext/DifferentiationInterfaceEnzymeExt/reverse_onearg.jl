@@ -349,11 +349,15 @@ end
 
 struct EnzymeReverseOneArgJacobianPrep{Sy,B} <: JacobianPrep end
 
+function EnzymeReverseOneArgJacobianPrep(::Val{Sy}, ::Val{B}) where {Sy,B}
+    return EnzymeReverseOneArgJacobianPrep{Sy,B}()
+end
+
 function DI.prepare_jacobian(f::F, backend::AutoEnzyme{<:ReverseMode,Nothing}, x) where {F}
     y = f(x)
     Sy = size(y)
-    B = pick_batchsize(backend, prod(Sy))
-    return EnzymeReverseOneArgJacobianPrep{Sy,B}()
+    valB = pick_batchsize(backend, prod(Sy))
+    return EnzymeReverseOneArgJacobianPrep(Val(Sy), valB)
 end
 
 function DI.jacobian(
