@@ -37,17 +37,18 @@ DifferentiationInterface does this automatically if you pass a backend of type [
 
 ### `AutoSparse` object
 
+`AutoSparse` backends only support [`jacobian`](@ref) and [`hessian`](@ref) (as well as their variants), because other operators do not output matrices.
 An `AutoSparse` backend must be constructed from three ingredients:
 
-1. An underlying (dense) backend
+1. An underlying (dense) backend, which can be [`SecondOrder`](@ref) or anything from [ADTypes.jl](https://github.com/SciML/ADTypes.jl)
 2. A sparsity pattern detector like:
    - [`TracerSparsityDetector`](@extref SparseConnectivityTracer.TracerSparsityDetector) from [SparseConnectivityTracer.jl](https://github.com/adrhill/SparseConnectivityTracer.jl)
    - [`SymbolicsSparsityDetector`](@extref Symbolics.SymbolicsSparsityDetector) from [Symbolics.jl](https://github.com/JuliaSymbolics/Symbolics.jl)
    - [`DenseSparsityDetector`](@ref) from DifferentiationInterface.jl (beware that this detector only gives a locally valid pattern)
-3. A coloring algorithm: [`GreedyColoringAlgorithm`](@extref SparseMatrixColorings.GreedyColoringAlgorithm) from [SparseMatrixColorings.jl](https://github.com/gdalle/SparseMatrixColorings.jl) is the only one we support. As a result, sparse AD is now located in a package extension which depends on SparseMatrixColorings.jl.
-
-`AutoSparse` backends only support [`jacobian`](@ref) and [`hessian`](@ref) (as well as their variants), because other operators do not output matrices.
-To obtain sparse Hessians, you need to put the `SecondOrder` backend inside `AutoSparse`, and not the other way around.
+   - [`KnownJacobianSparsityDetector`](@extref ADTypes.KnownJacobianSparsityDetector) or [`KnownHessianSparsityDetector`](@extref ADTypes.KnownHessianSparsityDetector) from [ADTypes.jl](https://github.com/SciML/ADTypes.jl) (if you already know the pattern)
+3. A coloring algorithm from [SparseMatrixColorings.jl](https://github.com/gdalle/SparseMatrixColorings.jl), such as:
+   - [`GreedyColoringAlgorithm`](@extref SparseMatrixColorings.GreedyColoringAlgorithm) (our generic recommendation)
+   - [`ConstantColoringAlgorithm`](@extref SparseMatrixColorings.ConstantColoringAlgorithm) (if you have already computed the optimal coloring and always want to return it)
 
 !!! note
     Symbolic backends have built-in sparsity handling, so `AutoSparse(AutoSymbolics())` and `AutoSparse(AutoFastDifferentiation())` do not need additional configuration for pattern detection or coloring.
@@ -59,3 +60,10 @@ But after preparation, the more zeros are present in the matrix, the greater the
 
 !!! danger
     The result of preparation for an `AutoSparse` backend cannot be reused if the sparsity pattern changes.
+
+### Tuning the coloring algorithm
+
+The complexity of sparse Jacobians or Hessians grows with the number of distinct colors in a coloring of the sparsity pattern.
+To reduce this number of colors, [`GreedyColoringAlgorithm`](@ref) has two main settings: the order used for vertices and the decompression method.
+Depending on your use case, you may want to modify either of these options to increase performance.
+See the documentation of [SparseMatrixColorings.jl](https://github.com/gdalle/SparseMatrixColorings.jl) for details.

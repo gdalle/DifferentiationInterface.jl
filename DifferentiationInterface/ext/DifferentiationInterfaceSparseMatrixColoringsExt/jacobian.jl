@@ -10,6 +10,12 @@ end
 
 abstract type SparseJacobianPrep <: JacobianPrep end
 
+SMC.sparsity_pattern(prep::SparseJacobianPrep) = sparsity_pattern(prep.coloring_result)
+SMC.column_colors(prep::SparseJacobianPrep) = column_colors(prep.coloring_result)
+SMC.column_groups(prep::SparseJacobianPrep) = column_groups(prep.coloring_result)
+SMC.row_colors(prep::SparseJacobianPrep) = row_colors(prep.coloring_result)
+SMC.row_groups(prep::SparseJacobianPrep) = row_groups(prep.coloring_result)
+
 struct PushforwardSparseJacobianPrep{
     B,
     C<:AbstractColoringResult{:nonsymmetric,:column},
@@ -148,16 +154,17 @@ end
 
 ## One argument
 
-function DI.jacobian(
-    f::F, prep::SparseJacobianPrep, backend::AutoSparse, x, contexts::Vararg{Context,C}
-) where {F,C}
-    return _sparse_jacobian_aux((f,), prep, backend, x, contexts...)
-end
-
 function DI.jacobian!(
     f::F, jac, prep::SparseJacobianPrep, backend::AutoSparse, x, contexts::Vararg{Context,C}
 ) where {F,C}
     return _sparse_jacobian_aux!((f,), jac, prep, backend, x, contexts...)
+end
+
+function DI.jacobian(
+    f::F, prep::SparseJacobianPrep, backend::AutoSparse, x, contexts::Vararg{Context,C}
+) where {F,C}
+    jac = similar(sparsity_pattern(prep), eltype(x))
+    return DI.jacobian!(f, jac, prep, backend, x, contexts...)
 end
 
 function DI.value_and_jacobian(
@@ -174,12 +181,6 @@ end
 
 ## Two arguments
 
-function DI.jacobian(
-    f!::F, y, prep::SparseJacobianPrep, backend::AutoSparse, x, contexts::Vararg{Context,C}
-) where {F,C}
-    return _sparse_jacobian_aux((f!, y), prep, backend, x, contexts...)
-end
-
 function DI.jacobian!(
     f!::F,
     y,
@@ -190,6 +191,13 @@ function DI.jacobian!(
     contexts::Vararg{Context,C},
 ) where {F,C}
     return _sparse_jacobian_aux!((f!, y), jac, prep, backend, x, contexts...)
+end
+
+function DI.jacobian(
+    f!::F, y, prep::SparseJacobianPrep, backend::AutoSparse, x, contexts::Vararg{Context,C}
+) where {F,C}
+    jac = similar(sparsity_pattern(prep), promote_type(eltype(x), eltype(y)))
+    return DI.jacobian!(f!, y, jac, prep, backend, x, contexts...)
 end
 
 function DI.value_and_jacobian(
@@ -215,74 +223,6 @@ function DI.value_and_jacobian!(
 end
 
 ## Common auxiliaries
-
-function _sparse_jacobian_aux(
-    f_or_f!y::FY,
-    prep::PushforwardSparseJacobianPrep{B},
-    backend::AutoSparse,
-    x,
-    contexts::Vararg{Context,C},
-) where {FY,B,C}
-    @compat (; coloring_result, batched_seeds, pushforward_prep) = prep
-    dense_backend = dense_ad(backend)
-    Ng = length(column_groups(coloring_result))
-
-    pushforward_prep_same = prepare_pushforward_same_point(
-        f_or_f!y..., pushforward_prep, dense_backend, x, batched_seeds[1], contexts...
-    )
-
-    compressed_blocks = map(eachindex(batched_seeds)) do a
-        dy_batch = pushforward(
-            f_or_f!y...,
-            pushforward_prep_same,
-            dense_backend,
-            x,
-            batched_seeds[a],
-            contexts...,
-        )
-        stack(vec, dy_batch; dims=2)
-    end
-
-    compressed_matrix = reduce(hcat, compressed_blocks)
-    if Ng < size(compressed_matrix, 2)
-        compressed_matrix = compressed_matrix[:, 1:Ng]
-    end
-    return decompress(compressed_matrix, coloring_result)
-end
-
-function _sparse_jacobian_aux(
-    f_or_f!y::FY,
-    prep::PullbackSparseJacobianPrep{B},
-    backend::AutoSparse,
-    x,
-    contexts::Vararg{Context,C},
-) where {FY,B,C}
-    @compat (; coloring_result, batched_seeds, pullback_prep) = prep
-    dense_backend = dense_ad(backend)
-    Ng = length(row_groups(coloring_result))
-
-    pullback_prep_same = prepare_pullback_same_point(
-        f_or_f!y..., pullback_prep, dense_backend, x, batched_seeds[1], contexts...
-    )
-
-    compressed_blocks = map(eachindex(batched_seeds)) do a
-        dx_batch = pullback(
-            f_or_f!y...,
-            pullback_prep_same,
-            dense_backend,
-            x,
-            batched_seeds[a],
-            contexts...,
-        )
-        stack(vec, dx_batch; dims=1)
-    end
-
-    compressed_matrix = reduce(vcat, compressed_blocks)
-    if Ng < size(compressed_matrix, 1)
-        compressed_matrix = compressed_matrix[1:Ng, :]
-    end
-    return decompress(compressed_matrix, coloring_result)
-end
 
 function _sparse_jacobian_aux!(
     f_or_f!y::FY,
