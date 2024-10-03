@@ -137,11 +137,8 @@ For every operator, preparation generates an [executable function](https://brian
 ### FiniteDiff
 
 Whenever possible, preparation creates a cache object.
-Pushforward is implemented rather slowly using a closure.
 
 ### FiniteDifferences
-
-Nothing specific to mention.
 
 ### ForwardDiff
 
@@ -155,12 +152,9 @@ Most operators fall back on `AutoForwardDiff`.
 ### ReverseDiff
 
 Wherever possible, preparation records a [tape](https://juliadiff.org/ReverseDiff.jl/dev/api/#The-AbstractTape-API) of the function's execution.
-This tape is computed from the arguments `x` and `contexts...` provided at preparation time.
-It is control-flow dependent, so only one branch is recorded at each `if` statement.
 
-!!! danger
-    If your function has value-specific control flow (like `if x[1] > 0` or `if c == 1`), you may get silently wrong results whenever it takes new branches that were not taken during preparation.
-    You must make sure to run preparation with an input and contexts whose values trigger the correct control flow for future executions.
+!!! warning
+    This tape is specific to the control flow inside the function, and cannot be reused if the control flow is value-dependent (like `if x[1] > 0`).
 
 ### Symbolics
 
@@ -182,3 +176,4 @@ Same-point preparation runs the forward sweep and returns the pullback closure a
 
 We implement `pullback` based on `Zygote.pullback`.
 Same-point preparation runs the forward sweep and returns the pullback closure at `x`.
+
