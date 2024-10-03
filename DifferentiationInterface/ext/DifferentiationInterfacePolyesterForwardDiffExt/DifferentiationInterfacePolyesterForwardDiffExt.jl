@@ -33,8 +33,8 @@ function DI.pick_batchsize(backend::AutoPolyesterForwardDiff, dimension::Integer
 end
 
 function DI.threshold_batchsize(
-    backend::AutoPolyesterForwardDiff{C1}, ::Val{C2}
-) where {C1,C2}
+    backend::AutoPolyesterForwardDiff{C1}, C2::Integer
+) where {C1}
     C = (C1 === nothing) ? nothing : min(C1, C2)
     return AutoPolyesterForwardDiff(; chunksize=C, tag=backend.tag)
 end
