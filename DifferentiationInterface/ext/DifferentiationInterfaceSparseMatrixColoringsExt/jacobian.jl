@@ -197,7 +197,7 @@ function DI.jacobian(
     f!::F, y, prep::SparseJacobianPrep, backend::AutoSparse, x, contexts::Vararg{Context,C}
 ) where {F,C}
     jac = similar(sparsity_pattern(prep), promote_type(eltype(x), eltype(y)))
-    return DI.jacobian!(f!, y, jac, prep, backend, x, contexts)
+    return DI.jacobian!(f!, y, jac, prep, backend, x, contexts...)
 end
 
 function DI.value_and_jacobian(
