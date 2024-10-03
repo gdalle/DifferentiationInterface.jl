@@ -16,7 +16,8 @@ using ADTypes:
     ForwardMode,
     ForwardOrReverseMode,
     ReverseMode,
-    SymbolicMode
+    SymbolicMode,
+    mode
 using Chairmarks: @be, Benchmark, Sample
 using Compat
 using DataFrames: DataFrame

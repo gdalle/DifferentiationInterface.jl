@@ -142,9 +142,8 @@ column_groups(jac_prep)
 When preparation is used, the speedup due to sparsity becomes very visible in large dimensions.
 
 ```@example tuto_advanced
-n = 1000
-xbig = rand(n)
-# nothing
+xbig = rand(1000)
+nothing  # hide
 ```
 
 ```@example tuto_advanced
@@ -157,9 +156,33 @@ jac_prep_sparse = prepare_jacobian(f_sparse_vector, sparse_first_order_backend, 
 @benchmark jacobian($f_sparse_vector, $jac_prep_sparse, $sparse_first_order_backend, $xbig)
 ```
 
-Even better performance can be achieved by pre-allocating the matrix from the preparation result (so that it has the correct structure).
+Better memory use can be achieved by pre-allocating the matrix from the preparation result (so that it has the correct structure).
 
 ```@example tuto_advanced
 jac_buffer = similar(sparsity_pattern(jac_prep_sparse), eltype(xbig))
 @benchmark jacobian!($f_sparse_vector, $jac_buffer, $jac_prep_sparse, $sparse_first_order_backend, $xbig)
+```
+
+And for optimal speed, one should write non-allocating and type-stable functions.
+
+```@example tuto_advanced
+function f_sparse_vector!(y::AbstractVector, x::AbstractVector)
+    n = length(x)
+    for i in eachindex(y)
+        y[i] = abs2(x[i + 1]) - abs2(x[i]) + abs2(x[n - i]) - abs2(x[n - i + 1])
+    end
+    return nothing
+end
+
+ybig = zeros(length(xbig) - 1)
+f_sparse_vector!(ybig, xbig)
+ybig ≈ f_sparse_vector(xbig)
+```
+
+In this case, the sparse Jacobian should also become non-allocating (for our specific choice of backend).
+
+```@example tuto_advanced
+jac_prep_sparse_nonallocating = prepare_jacobian(f_sparse_vector!, zero(ybig), sparse_first_order_backend, zero(xbig))
+jac_buffer = similar(sparsity_pattern(jac_prep_sparse_nonallocating), eltype(xbig))
+@benchmark jacobian!($f_sparse_vector!, $ybig, $jac_buffer, $jac_prep_sparse_nonallocating, $sparse_first_order_backend, $xbig)
 ```
