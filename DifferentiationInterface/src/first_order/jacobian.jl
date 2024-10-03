@@ -241,13 +241,14 @@ function _jacobian_aux(
             batched_seeds[a],
             contexts...,
         )
-        stack(vec, dy_batch; dims=2)
+        block = stack(vec, dy_batch; dims=2)
+        if N % B != 0 && a == lastindex(batched_seeds)
+            block = block[:, 1:(N - (a - 1) * B)]
+        end
+        block
     end
 
     jac = reduce(hcat, jac_blocks)
-    if N < size(jac, 2)
-        jac = jac[:, 1:N]
-    end
     return jac
 end
 
@@ -268,13 +269,14 @@ function _jacobian_aux(
         dx_batch = pullback(
             f_or_f!y..., pullback_prep_same, backend, x, batched_seeds[a], contexts...
         )
-        stack(vec, dx_batch; dims=1)
+        block = stack(vec, dx_batch; dims=1)
+        if M % B != 0 && a == lastindex(batched_seeds)
+            block = block[1:(M - (a - 1) * B), :]
+        end
+        block
     end
 
     jac = reduce(vcat, jac_blocks)
-    if M < size(jac, 1)
-        jac = jac[1:M, :]
-    end
     return jac
 end
 
