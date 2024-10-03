@@ -72,8 +72,14 @@ end
 function prepare_hessian(
     f::F, backend::AbstractADType, x, contexts::Vararg{Context,C}
 ) where {F,C}
+    valB = pick_batchsize(backend, length(x))
+    return _prepare_hessian_aux(valB, f, backend, x, contexts...)
+end
+
+function _prepare_hessian_aux(
+    ::Val{B}, f::F, backend::AbstractADType, x, contexts::Vararg{Context,C}
+) where {B,F,C}
     N = length(x)
-    B = pick_batchsize(outer(backend), N)
     seeds = [basis(backend, x, ind) for ind in eachindex(x)]
     batched_seeds = [
         ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % N], Val(B)) for

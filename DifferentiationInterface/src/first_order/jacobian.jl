@@ -86,29 +86,29 @@ function prepare_jacobian(
     f::F, backend::AbstractADType, x, contexts::Vararg{Context,C}
 ) where {F,C}
     y = f(x, map(unwrap, contexts)...)
-    return _prepare_jacobian_aux(
-        pushforward_performance(backend), y, (f,), backend, x, contexts...
-    )
+    perf = pushforward_performance(backend)
+    valB = pick_jacobian_batchsize(perf, backend; N=length(x), M=length(y))
+    return _prepare_jacobian_aux(perf, valB, y, (f,), backend, x, contexts...)
 end
 
 function prepare_jacobian(
     f!::F, y, backend::AbstractADType, x, contexts::Vararg{Context,C}
 ) where {F,C}
-    return _prepare_jacobian_aux(
-        pushforward_performance(backend), y, (f!, y), backend, x, contexts...
-    )
+    perf = pushforward_performance(backend)
+    valB = pick_jacobian_batchsize(perf, backend; N=length(x), M=length(y))
+    return _prepare_jacobian_aux(perf, valB, y, (f!, y), backend, x, contexts...)
 end
 
 function _prepare_jacobian_aux(
     ::PushforwardFast,
+    ::Val{B},
     y,
     f_or_f!y::FY,
     backend::AbstractADType,
     x,
     contexts::Vararg{Context,C},
-) where {FY,C}
+) where {B,FY,C}
     N = length(x)
-    B = pick_batchsize(backend, N)
     seeds = [basis(backend, x, ind) for ind in eachindex(x)]
     batched_seeds = [
         ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % N], Val(B)) for
@@ -128,14 +128,14 @@ end
 
 function _prepare_jacobian_aux(
     ::PushforwardSlow,
+    ::Val{B},
     y,
     f_or_f!y::FY,
     backend::AbstractADType,
     x,
     contexts::Vararg{Context,C},
-) where {FY,C}
+) where {B,FY,C}
     M = length(y)
-    B = pick_batchsize(backend, M)
     seeds = [basis(backend, y, ind) for ind in eachindex(y)]
     batched_seeds = [
         ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % M], Val(B)) for

@@ -42,6 +42,13 @@ SMC.column_groups(prep::SparseHessianPrep) = column_groups(prep.coloring_result)
 function DI.prepare_hessian(
     f::F, backend::AutoSparse, x, contexts::Vararg{Context,C}
 ) where {F,C}
+    valB = pick_batchsize(backend, length(x))
+    return _prepare_sparse_hessian_aux(valB, f, backend, x, contexts...)
+end
+
+function _prepare_sparse_hessian_aux(
+    ::Val{B}, f::F, backend::AutoSparse, x, contexts::Vararg{Context,C}
+) where {B,F,C}
     dense_backend = dense_ad(backend)
     sparsity = hessian_sparsity(
         with_contexts(f, contexts...), x, sparsity_detector(backend)
@@ -52,7 +59,6 @@ function DI.prepare_hessian(
     )
     groups = column_groups(coloring_result)
     Ng = length(groups)
-    B = pick_batchsize(outer(dense_backend), Ng)
     seeds = [multibasis(backend, x, eachindex(x)[group]) for group in groups]
     compressed_matrix = stack(_ -> vec(similar(x)), groups; dims=2)
     batched_seeds = [

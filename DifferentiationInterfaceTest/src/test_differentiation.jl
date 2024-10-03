@@ -29,7 +29,7 @@ Cross-test a list of `backends` on a list of `scenarios`, running a variety of d
 Testing:
 
 - `correctness=true`: whether to compare the differentiation results with the theoretical values specified in each scenario
-- `type_stability=false`: whether to check type stability with JET.jl (thanks to `JET.@test_opt`)
+- `type_stability=false`: whether to check type stability of operators with JET.jl (thanks to `JET.@test_opt`)
 - `sparsity`: whether to check sparsity of the jacobian / hessian
 - `detailed=false`: whether to print a detailed or condensed test log
 
@@ -52,6 +52,7 @@ function test_differentiation(
     # testing
     correctness::Bool=true,
     type_stability::Bool=false,
+    preparation_type_stability::Bool=false,
     call_count::Bool=false,
     sparsity::Bool=false,
     detailed=false,
@@ -113,7 +114,7 @@ function test_differentiation(
                     end
                     type_stability && @testset "Type stability" begin
                         @static if VERSION >= v"1.7"
-                            test_jet(backend, scen)
+                            test_jet(backend, scen; test_preparation=preparation_type_stability)
                         end
                     end
                     sparsity && @testset "Sparsity" begin

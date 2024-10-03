@@ -24,6 +24,7 @@ using DifferentiationInterface:
     outer,
     multibasis,
     pick_batchsize,
+    pick_jacobian_batchsize,
     pushforward_performance,
     unwrap,
     with_contexts
