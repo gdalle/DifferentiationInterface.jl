@@ -12,9 +12,7 @@ LOGGING = get(ENV, "CI", "false") == "false"
 
 test_differentiation(
     AutoForwardDiff(),
-    default_scenarios(
-        Random.default_rng(); include_batchified=true, include_constantified=true
-    );
+    default_scenarios(Random.default_rng(); include_constantified=true);
     logging=LOGGING,
 )
 

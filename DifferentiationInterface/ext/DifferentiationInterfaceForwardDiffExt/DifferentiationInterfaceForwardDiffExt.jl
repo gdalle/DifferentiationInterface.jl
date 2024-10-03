@@ -57,6 +57,11 @@ function DI.pick_batchsize(::AutoForwardDiff{nothing}, dimension::Integer)
     return Val(ForwardDiff.pickchunksize(dimension))
 end
 
+function DI.threshold_batchsize(backend::AutoForwardDiff{C1}, C2::Integer) where {C1}
+    C = (C1 === nothing) ? nothing : min(C1, C2)
+    return AutoForwardDiff(; chunksize=C, tag=backend.tag)
+end
+
 include("utils.jl")
 include("onearg.jl")
 include("twoarg.jl")

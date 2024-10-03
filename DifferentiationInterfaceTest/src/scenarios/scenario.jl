@@ -121,3 +121,11 @@ function Base.show(
     end
     return nothing
 end
+
+adapt_batchsize(backend::AbstractADType, ::Scenario) = backend
+
+function adapt_batchsize(
+    backend::Union{ADTypes.AutoForwardDiff,ADTypes.AutoPolyesterForwardDiff}, scen::Scenario
+)
+    return DI.threshold_batchsize(backend, length(scen.x))
+end

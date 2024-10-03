@@ -50,8 +50,8 @@ using DifferentiationInterface:
     PushforwardPrep,
     SecondDerivativePrep,
     Rewrap
-using DocStringExtensions
 import DifferentiationInterface as DI
+using DocStringExtensions
 using Functors: fmap
 using JET: JET
 using LinearAlgebra: Adjoint, Diagonal, Transpose, dot, parent

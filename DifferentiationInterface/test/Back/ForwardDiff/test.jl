@@ -36,6 +36,14 @@ test_differentiation(
 );
 
 test_differentiation(
+    AutoForwardDiff(; chunksize=5);
+    correctness=false,
+    type_stability=true,
+    preparation_type_stability=true,
+    logging=LOGGING,
+);
+
+test_differentiation(
     dense_backends,
     # ForwardDiff accesses individual indices
     vcat(component_scenarios(), static_scenarios());
