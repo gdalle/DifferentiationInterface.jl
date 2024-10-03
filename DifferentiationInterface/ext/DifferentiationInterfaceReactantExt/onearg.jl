@@ -1,14 +1,15 @@
 struct ReactantGradientPrep{F,G} <: GradientPrep
-    compiled_function::F
-    compiled_gradient::G
+    compiled_gradient::F
+    compiled_value_and_gradient::G
 end
 
 function DI.prepare_gradient(f, rebackend::ReactantBackend, x)
     xr = to_rarray(x)
     gradient_closure(xr) = DI.gradient(f, rebackend.backend, xr)
-    compiled_function = @compile f(xr)
+    value_and_gradient_closure(xr) = DI.value_and_gradient(f, rebackend.backend, xr)
     compiled_gradient = @compile gradient_closure(xr)
-    return ReactantGradientPrep(compiled_function, compiled_gradient)
+    compiled_value_and_gradient = @compile gradient_closure(xr)
+    return ReactantGradientPrep(compiled_gradient, compiled_value_and_gradient)
 end
 
 function DI.gradient(f, prep::ReactantGradientPrep, ::ReactantBackend, x)
@@ -18,9 +19,9 @@ function DI.gradient(f, prep::ReactantGradientPrep, ::ReactantBackend, x)
 end
 
 function DI.value_and_gradient(f, prep::ReactantGradientPrep, ::ReactantBackend, x)
-    @compat (; compiled_function, compiled_gradient) = prep
+    @compat (; compiled_value_and_gradient) = prep
     xr = to_rarray(x)
-    return compiled_function(xr), compiled_gradient(xr)
+    return compiled_value_and_gradient(xr)
 end
 
 function DI.gradient!(f, grad, prep::ReactantGradientPrep, rebackend::ReactantBackend, x)
