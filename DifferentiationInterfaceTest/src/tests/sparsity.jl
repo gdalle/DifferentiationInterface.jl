@@ -14,7 +14,7 @@ function test_sparsity(ba::AbstractADType, scen::Scenario{:jacobian,:out,:out})
             @test nameof(typeof(jac1)) == nameof(typeof(SMC.sparsity_pattern(prep)))
             @test nameof(typeof(jac2)) == nameof(typeof(SMC.sparsity_pattern(prep)))
             if mode(ba) isa Union{ForwardMode,ForwardOrReverseMode}
-                @test maximum(SMC.column_colors(prep)) == length(SMC.color_groups(prep))
+                @test maximum(SMC.column_colors(prep)) == length(SMC.column_groups(prep))
             else
                 @test maximum(SMC.row_colors(prep)) == length(SMC.row_groups(prep))
             end
@@ -37,7 +37,7 @@ function test_sparsity(ba::AbstractADType, scen::Scenario{:jacobian,:in,:out})
             @test nameof(typeof(jac1)) == nameof(typeof(SMC.sparsity_pattern(prep)))
             @test nameof(typeof(jac2)) == nameof(typeof(SMC.sparsity_pattern(prep)))
             if mode(ba) isa Union{ForwardMode,ForwardOrReverseMode}
-                @test maximum(SMC.column_colors(prep)) == length(SMC.color_groups(prep))
+                @test maximum(SMC.column_colors(prep)) == length(SMC.column_groups(prep))
             else
                 @test maximum(SMC.row_colors(prep)) == length(SMC.row_groups(prep))
             end
@@ -61,7 +61,7 @@ function test_sparsity(ba::AbstractADType, scen::Scenario{:jacobian,:out,:in})
             @test nameof(typeof(jac1)) == nameof(typeof(SMC.sparsity_pattern(prep)))
             @test nameof(typeof(jac2)) == nameof(typeof(SMC.sparsity_pattern(prep)))
             if mode(ba) isa Union{ForwardMode,ForwardOrReverseMode}
-                @test maximum(SMC.column_colors(prep)) == length(SMC.color_groups(prep))
+                @test maximum(SMC.column_colors(prep)) == length(SMC.column_groups(prep))
             else
                 @test maximum(SMC.row_colors(prep)) == length(SMC.row_groups(prep))
             end
@@ -87,7 +87,7 @@ function test_sparsity(ba::AbstractADType, scen::Scenario{:jacobian,:in,:in})
             @test nameof(typeof(jac1)) == nameof(typeof(SMC.sparsity_pattern(prep)))
             @test nameof(typeof(jac2)) == nameof(typeof(SMC.sparsity_pattern(prep)))
             if mode(ba) isa Union{ForwardMode,ForwardOrReverseMode}
-                @test maximum(SMC.column_colors(prep)) == length(SMC.color_groups(prep))
+                @test maximum(SMC.column_colors(prep)) == length(SMC.column_groups(prep))
             else
                 @test maximum(SMC.row_colors(prep)) == length(SMC.row_groups(prep))
             end
@@ -111,7 +111,7 @@ function test_sparsity(ba::AbstractADType, scen::Scenario{:hessian,:out,:out})
         if !isa(mode(ba), SymbolicMode)
             @test nameof(typeof(hess1)) == nameof(typeof(SMC.sparsity_pattern(prep)))
             @test nameof(typeof(hess2)) == nameof(typeof(SMC.sparsity_pattern(prep)))
-            @test maximum(SMC.column_colors(prep)) == length(SMC.color_groups(prep))
+            @test maximum(SMC.column_colors(prep)) == length(SMC.column_groups(prep))
         end
     end
     return nothing
@@ -132,7 +132,7 @@ function test_sparsity(ba::AbstractADType, scen::Scenario{:hessian,:in,:out})
         if !isa(mode(ba), SymbolicMode)
             @test nameof(typeof(hess1)) == nameof(typeof(SMC.sparsity_pattern(prep)))
             @test nameof(typeof(hess2)) == nameof(typeof(SMC.sparsity_pattern(prep)))
-            @test maximum(SMC.column_colors(prep)) == length(SMC.color_groups(prep))
+            @test maximum(SMC.column_colors(prep)) == length(SMC.column_groups(prep))
         end
     end
     return nothing
