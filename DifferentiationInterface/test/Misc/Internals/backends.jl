@@ -33,7 +33,11 @@ end
 end
 
 @testset "Batch size" begin
-    @test DI.pick_batchsize(AutoZygote(), 2) == 1
-    @test DI.pick_batchsize(AutoForwardDiff(; chunksize=4), 2) == 2
-    @test DI.pick_batchsize(AutoForwardDiff(; chunksize=4), 6) == 4
+    @test DI.pick_batchsize(AutoZygote(), 2) == Val(1)
+    @test DI.pick_batchsize(AutoForwardDiff(), 2) == Val(2)
+    @test DI.pick_batchsize(AutoForwardDiff(), 6) == Val(6)
+    @test DI.pick_batchsize(AutoForwardDiff(), 100) == Val(12)
+    @test DI.pick_batchsize(AutoForwardDiff(; chunksize=4), 2) == Val(4)
+    @test DI.pick_batchsize(AutoForwardDiff(; chunksize=4), 6) == Val(4)
+    @test DI.pick_batchsize(AutoForwardDiff(; chunksize=4), 100) == Val(4)
 end

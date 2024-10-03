@@ -52,7 +52,7 @@ DI.check_available(::AutoForwardDiff) = true
 
 DI.pick_batchsize(::AutoForwardDiff{C}, dimension::Integer) where {C} = Val(C)
 
-function DI.pick_batchsize(::AutoForwardDiff{Nothing}, dimension::Integer)
+function DI.pick_batchsize(::AutoForwardDiff{nothing}, dimension::Integer)
     # type-unstable
     return Val(ForwardDiff.pickchunksize(dimension))
 end
