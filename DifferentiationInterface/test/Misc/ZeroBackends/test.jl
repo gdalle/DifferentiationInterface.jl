@@ -3,6 +3,7 @@ using DifferentiationInterface: AutoZeroForward, AutoZeroReverse
 using DifferentiationInterfaceTest
 using ComponentArrays: ComponentArrays
 using JLArrays: JLArrays
+using SparseMatrixColorings
 using StaticArrays: StaticArrays
 using Test
 
@@ -19,9 +20,10 @@ end
 
 test_differentiation(
     zero_backends,
-    zero.(default_scenarios(; include_constantified=true));
-    correctness=true,
+    default_scenarios(; include_constantified=true);
+    correctness=false,
     type_stability=true,
+    preparation_type_stability=true,
     logging=LOGGING,
 )
 
@@ -33,7 +35,18 @@ test_differentiation(
     default_scenarios();
     correctness=false,
     type_stability=true,
+    preparation_type_stability=true,
     first_order=false,
+    logging=LOGGING,
+)
+
+test_differentiation(
+    AutoSparse.(zero_backends, coloring_algorithm=GreedyColoringAlgorithm()),
+    default_scenarios(; include_constantified=true);
+    correctness=false,
+    type_stability=true,
+    preparation_type_stability=true,
+    excluded=[:pushforward, :pullback, :gradient, :derivative, :hvp, :second_derivative],
     logging=LOGGING,
 )
 

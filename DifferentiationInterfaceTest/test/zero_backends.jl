@@ -15,6 +15,7 @@ test_differentiation(
     zero.(default_scenarios());
     correctness=true,
     type_stability=true,
+    preparation_type_stability=true,
     logging=LOGGING,
 )
 

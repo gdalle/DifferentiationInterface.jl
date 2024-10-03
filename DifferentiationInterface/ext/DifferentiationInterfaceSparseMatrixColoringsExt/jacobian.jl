@@ -74,22 +74,28 @@ function DI.prepare_jacobian(
     f::F, backend::AutoSparse, x, contexts::Vararg{Context,C}
 ) where {F,C}
     y = f(x, map(unwrap, contexts)...)
-    return _prepare_sparse_jacobian_aux(
-        pushforward_performance(backend), y, (f,), backend, x, contexts...
-    )
+    perf = pushforward_performance(backend)
+    valB = pick_jacobian_batchsize(perf, backend; N=length(x), M=length(y))
+    return _prepare_sparse_jacobian_aux(perf, valB, y, (f,), backend, x, contexts...)
 end
 
 function DI.prepare_jacobian(
     f!::F, y, backend::AutoSparse, x, contexts::Vararg{Context,C}
 ) where {F,C}
-    return _prepare_sparse_jacobian_aux(
-        pushforward_performance(backend), y, (f!, y), backend, x, contexts...
-    )
+    perf = pushforward_performance(backend)
+    valB = pick_jacobian_batchsize(perf, backend; N=length(x), M=length(y))
+    return _prepare_sparse_jacobian_aux(perf, valB, y, (f!, y), backend, x, contexts...)
 end
 
 function _prepare_sparse_jacobian_aux(
-    ::PushforwardFast, y, f_or_f!y::FY, backend::AutoSparse, x, contexts::Vararg{Context,C}
-) where {FY,C}
+    ::PushforwardFast,
+    ::Val{B},
+    y,
+    f_or_f!y::FY,
+    backend::AutoSparse,
+    x,
+    contexts::Vararg{Context,C},
+) where {B,FY,C}
     dense_backend = dense_ad(backend)
 
     sparsity = jacobian_sparsity(
@@ -104,7 +110,6 @@ function _prepare_sparse_jacobian_aux(
     )
     groups = column_groups(coloring_result)
     Ng = length(groups)
-    B = pick_batchsize(dense_backend, Ng)
     seeds = [multibasis(backend, x, eachindex(x)[group]) for group in groups]
     compressed_matrix = stack(_ -> vec(similar(y)), groups; dims=2)
     batched_seeds = [
@@ -121,8 +126,14 @@ function _prepare_sparse_jacobian_aux(
 end
 
 function _prepare_sparse_jacobian_aux(
-    ::PushforwardSlow, y, f_or_f!y::FY, backend::AutoSparse, x, contexts::Vararg{Context,C}
-) where {FY,C}
+    ::PushforwardSlow,
+    ::Val{B},
+    y,
+    f_or_f!y::FY,
+    backend::AutoSparse,
+    x,
+    contexts::Vararg{Context,C},
+) where {B,FY,C}
     dense_backend = dense_ad(backend)
     sparsity = jacobian_sparsity(
         fy_with_contexts(f_or_f!y..., contexts...)..., x, sparsity_detector(backend)
@@ -136,7 +147,6 @@ function _prepare_sparse_jacobian_aux(
     )
     groups = row_groups(coloring_result)
     Ng = length(groups)
-    B = pick_batchsize(dense_backend, Ng)
     seeds = [multibasis(backend, y, eachindex(y)[group]) for group in groups]
     compressed_matrix = stack(_ -> vec(similar(x)), groups; dims=1)
     batched_seeds = [
