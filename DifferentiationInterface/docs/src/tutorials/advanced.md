@@ -7,7 +7,7 @@ using BenchmarkTools
 using DifferentiationInterface
 import ForwardDiff, Zygote
 using SparseConnectivityTracer: TracerSparsityDetector
-using SparseMatrixColorings: GreedyColoringAlgorithm
+using SparseMatrixColorings
 ```
 
 ## Contexts
@@ -88,13 +88,13 @@ The following are reasonable defaults:
 
 ```@example tuto_advanced
 sparse_first_order_backend = AutoSparse(
-    AutoForwardDiff();
+    dense_first_order_backend;
     sparsity_detector=TracerSparsityDetector(),
     coloring_algorithm=GreedyColoringAlgorithm(),
 )
 
 sparse_second_order_backend = AutoSparse(
-    SecondOrder(AutoForwardDiff(), AutoZygote());
+    dense_second_order_backend;
     sparsity_detector=TracerSparsityDetector(),
     coloring_algorithm=GreedyColoringAlgorithm(),
 )
@@ -116,19 +116,50 @@ hessian(f_sparse_scalar, sparse_second_order_backend, x)
 In the examples above, we didn't use preparation.
 Sparse preparation is more costly than dense preparation, but it is even more essential.
 Indeed, once preparation is done, sparse differentiation is much faster than dense differentiation, because it makes fewer calls to the underlying function.
-The speedup becomes very visible in large dimensions.
+
+Some result analysis functions from [SparseMatrixColorings.jl](https://github.com/gdalle/SparseMatrixColorings.jl) can help you figure out what the preparation contains.
+First, it records the sparsity pattern itself (the one returned by the detector).
+
+```@example tuto_advanced
+jac_prep = prepare_jacobian(f_sparse_vector, sparse_first_order_backend, x)
+sparsity_pattern(jac_prep)
+```
+
+In forward mode, each column of the sparsity pattern gets a color.
+
+```@example tuto_advanced
+column_colors(jac_prep)
+```
+
+And the colors in turn define non-overlapping groups (for Jacobians at least, Hessians are a bit more complicated).
+
+```@example tuto_advanced
+column_groups(jac_prep)
+```
+
+### Sparsity speedup
+
+When preparation is used, the speedup due to sparsity becomes very visible in large dimensions.
 
 ```@example tuto_advanced
 n = 1000
-jac_prep_dense = prepare_jacobian(f_sparse_vector, dense_first_order_backend, zeros(n))
-jac_prep_sparse = prepare_jacobian(f_sparse_vector, sparse_first_order_backend, zeros(n))
-nothing  # hide
+xbig = rand(n)
+# nothing
 ```
 
 ```@example tuto_advanced
-@benchmark jacobian($f_sparse_vector, $jac_prep_dense, $dense_first_order_backend, $(randn(n)))
+jac_prep_dense = prepare_jacobian(f_sparse_vector, dense_first_order_backend, zero(xbig))
+@benchmark jacobian($f_sparse_vector, $jac_prep_dense, $dense_first_order_backend, $xbig)
 ```
 
 ```@example tuto_advanced
-@benchmark jacobian($f_sparse_vector, $jac_prep_sparse, $sparse_first_order_backend, $(randn(n)))
+jac_prep_sparse = prepare_jacobian(f_sparse_vector, sparse_first_order_backend, zero(xbig))
+@benchmark jacobian($f_sparse_vector, $jac_prep_sparse, $sparse_first_order_backend, $xbig)
+```
+
+Even better performance can be achieved by pre-allocating the matrix from the preparation result (so that it has the correct structure).
+
+```@example tuto_advanced
+jac_buffer = similar(sparsity_pattern(jac_prep_sparse), eltype(xbig))
+@benchmark jacobian!($f_sparse_vector, $jac_buffer, $jac_prep_sparse, $sparse_first_order_backend, $xbig)
 ```

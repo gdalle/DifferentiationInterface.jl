@@ -37,8 +37,10 @@ using SparseMatrixColorings:
     row_colors,
     column_groups,
     row_groups,
+    sparsity_pattern,
     decompress,
     decompress!
+import SparseMatrixColorings as SMC
 
 include("jacobian.jl")
 include("hessian.jl")
