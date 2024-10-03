@@ -10,7 +10,7 @@ function test_sparsity(ba::AbstractADType, scen::Scenario{:jacobian,:out,:out})
     @testset "Sparsity pattern" begin
         @test mynnz(jac1) == mynnz(scen.res1)
         @test mynnz(jac2) == mynnz(scen.res1)
-        if !isa(mode(ba), SymbolicMode)
+        if hasmethod(SMC.sparsity_pattern, (typeof(prep),))
             @test nameof(typeof(jac1)) == nameof(typeof(SMC.sparsity_pattern(prep)))
             @test nameof(typeof(jac2)) == nameof(typeof(SMC.sparsity_pattern(prep)))
             if mode(ba) isa Union{ForwardMode,ForwardOrReverseMode}
@@ -33,7 +33,7 @@ function test_sparsity(ba::AbstractADType, scen::Scenario{:jacobian,:in,:out})
     @testset "Sparsity pattern" begin
         @test mynnz(jac1) == mynnz(scen.res1)
         @test mynnz(jac2) == mynnz(scen.res1)
-        if !isa(mode(ba), SymbolicMode)
+        if hasmethod(SMC.sparsity_pattern, (typeof(prep),))
             @test nameof(typeof(jac1)) == nameof(typeof(SMC.sparsity_pattern(prep)))
             @test nameof(typeof(jac2)) == nameof(typeof(SMC.sparsity_pattern(prep)))
             if mode(ba) isa Union{ForwardMode,ForwardOrReverseMode}
@@ -57,7 +57,7 @@ function test_sparsity(ba::AbstractADType, scen::Scenario{:jacobian,:out,:in})
     @testset "Sparsity pattern" begin
         @test mynnz(jac1) == mynnz(scen.res1)
         @test mynnz(jac2) == mynnz(scen.res1)
-        if !isa(mode(ba), SymbolicMode)
+        if hasmethod(SMC.sparsity_pattern, (typeof(prep),))
             @test nameof(typeof(jac1)) == nameof(typeof(SMC.sparsity_pattern(prep)))
             @test nameof(typeof(jac2)) == nameof(typeof(SMC.sparsity_pattern(prep)))
             if mode(ba) isa Union{ForwardMode,ForwardOrReverseMode}
@@ -83,7 +83,7 @@ function test_sparsity(ba::AbstractADType, scen::Scenario{:jacobian,:in,:in})
     @testset "Sparsity pattern" begin
         @test mynnz(jac1) == mynnz(scen.res1)
         @test mynnz(jac2) == mynnz(scen.res1)
-        if !isa(mode(ba), SymbolicMode)
+        if hasmethod(SMC.sparsity_pattern, (typeof(prep),))
             @test nameof(typeof(jac1)) == nameof(typeof(SMC.sparsity_pattern(prep)))
             @test nameof(typeof(jac2)) == nameof(typeof(SMC.sparsity_pattern(prep)))
             if mode(ba) isa Union{ForwardMode,ForwardOrReverseMode}
@@ -108,7 +108,7 @@ function test_sparsity(ba::AbstractADType, scen::Scenario{:hessian,:out,:out})
     @testset "Sparsity pattern" begin
         @test mynnz(hess1) == mynnz(scen.res2)
         @test mynnz(hess2) == mynnz(scen.res2)
-        if !isa(mode(ba), SymbolicMode)
+        if hasmethod(SMC.sparsity_pattern, (typeof(prep),))
             @test nameof(typeof(hess1)) == nameof(typeof(SMC.sparsity_pattern(prep)))
             @test nameof(typeof(hess2)) == nameof(typeof(SMC.sparsity_pattern(prep)))
             @test maximum(SMC.column_colors(prep)) == length(SMC.column_groups(prep))
@@ -129,7 +129,7 @@ function test_sparsity(ba::AbstractADType, scen::Scenario{:hessian,:in,:out})
     @testset "Sparsity pattern" begin
         @test mynnz(hess1) == mynnz(scen.res2)
         @test mynnz(hess2) == mynnz(scen.res2)
-        if !isa(mode(ba), SymbolicMode)
+        if hasmethod(SMC.sparsity_pattern, (typeof(prep),))
             @test nameof(typeof(hess1)) == nameof(typeof(SMC.sparsity_pattern(prep)))
             @test nameof(typeof(hess2)) == nameof(typeof(SMC.sparsity_pattern(prep)))
             @test maximum(SMC.column_colors(prep)) == length(SMC.column_groups(prep))
