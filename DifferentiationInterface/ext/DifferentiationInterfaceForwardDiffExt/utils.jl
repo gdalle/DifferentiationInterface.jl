@@ -1,5 +1,5 @@
 choose_chunk(::AutoForwardDiff{nothing}, x) = Chunk(x)
-choose_chunk(::AutoForwardDiff{C}, x) where {C} = Chunk{min(length(x), C)}()
+choose_chunk(::AutoForwardDiff{C}, x) where {C} = Chunk{C}()
 
 tag_type(f, ::AutoForwardDiff{C,T}, x) where {C,T} = T
 tag_type(f, ::AutoForwardDiff{C,Nothing}, x) where {C} = typeof(Tag(f, eltype(x)))
