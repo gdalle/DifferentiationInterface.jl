@@ -3,6 +3,7 @@ using DifferentiationInterfaceTest
 using Aqua: Aqua
 using JET: JET
 using JuliaFormatter: JuliaFormatter
+using SparseMatrixColorings: SparseMatrixColorings
 using Test
 
 @testset "Aqua" begin
