@@ -114,12 +114,16 @@ struct EnzymeForwardGradientPrep{B,O} <: GradientPrep
     shadows::O
 end
 
+function EnzymeForwardGradientPrep(::Val{B}, shadows::O) where {B,O}
+    return EnzymeForwardGradientPrep{B,O}(shadows)
+end
+
 function DI.prepare_gradient(
     f::F, backend::AutoEnzyme{<:ForwardMode,<:Union{Nothing,Const}}, x
 ) where {F}
-    B = pick_batchsize(backend, length(x))
-    shadows = create_shadows(Val(B), x)
-    return EnzymeForwardGradientPrep{B,typeof(shadows)}(shadows)
+    valB = pick_batchsize(backend, length(x))
+    shadows = create_shadows(valB, x)
+    return EnzymeForwardGradientPrep(valB, shadows)
 end
 
 function DI.gradient(
@@ -176,13 +180,19 @@ struct EnzymeForwardOneArgJacobianPrep{B,O} <: JacobianPrep
     output_length::Int
 end
 
+function EnzymeForwardOneArgJacobianPrep(
+    ::Val{B}, shadows::O, output_length::Integer
+) where {B,O}
+    return EnzymeForwardOneArgJacobianPrep{B,O}(shadows, output_length)
+end
+
 function DI.prepare_jacobian(
     f::F, backend::AutoEnzyme{<:Union{ForwardMode,Nothing},<:Union{Nothing,Const}}, x
 ) where {F}
     y = f(x)
-    B = pick_batchsize(backend, length(x))
-    shadows = create_shadows(Val(B), x)
-    return EnzymeForwardOneArgJacobianPrep{B,typeof(shadows)}(shadows, length(y))
+    valB = pick_batchsize(backend, length(x))
+    shadows = create_shadows(valB, x)
+    return EnzymeForwardOneArgJacobianPrep(valB, shadows, length(y))
 end
 
 function DI.jacobian(
