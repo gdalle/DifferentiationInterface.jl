@@ -16,16 +16,9 @@ using Test
 
 LOGGING = get(ENV, "CI", "false") == "false"
 
-rebackend = ReactantBackend(AutoEnzyme())
-x = rand(3)
-xr = Reactant.to_rarray(x)
-prep = prepare_gradient(sum, rebackend, x)
+scenarios = [
+    Scenario{:gradient,:out}(sum, [1.0, 2.0]; res1=ones(2)),
+    Scenario{:gradient,:in}(sum, [1.0, 2.0]; res1=ones(2)),
+]
 
-test_differentiation(
-    ReactantBackend(AutoEnzyme()),
-    default_scenarios(; linalg=true);
-    excluded=[
-        :derivative, :jacobian, :hessian, :hvp, :pullback, :pushforward, :second_derivative
-    ],
-    logging=LOGGING,
-)
+test_differentiation(ReactantBackend(AutoEnzyme()), scenarios; logging=LOGGING)
