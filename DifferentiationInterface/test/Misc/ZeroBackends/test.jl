@@ -51,8 +51,7 @@ test_differentiation(
     AutoSparse.(zero_backends, coloring_algorithm=GreedyColoringAlgorithm()),
     default_scenarios(; include_constantified=true);
     correctness=false,
-    type_stability=true,
-    preparation_type_stability=true,
+    type_stability=(; preparation=true, prepared_op=true, unprepared_op=false),
     excluded=[:pushforward, :pullback, :gradient, :derivative, :hvp, :second_derivative],
     logging=LOGGING,
 )
