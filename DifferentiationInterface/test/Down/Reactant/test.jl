@@ -10,9 +10,16 @@ using LinearAlgebra
 using Reactant: Reactant
 using Test
 
+@assert !isnothing(
+    Base.get_extension(DifferentiationInterface, :DifferentiationInterfaceReactantExt)
+)
+
 LOGGING = get(ENV, "CI", "false") == "false"
 
 rebackend = ReactantBackend(AutoEnzyme())
+x = rand(3)
+xr = Reactant.to_rarray(x)
+prep = prepare_gradient(sum, rebackend, x)
 
 test_differentiation(
     ReactantBackend(AutoEnzyme()),
