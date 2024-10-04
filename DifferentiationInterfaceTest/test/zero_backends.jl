@@ -11,24 +11,35 @@ LOGGING = get(ENV, "CI", "false") == "false"
 ## Type stability
 
 test_differentiation(
-    [AutoZeroForward(), AutoZeroReverse()],
-    zero.(default_scenarios());
+    AutoZeroForward(),
+    zero.(default_scenarios(; include_batchified=false));
+    correctness=true,
+    type_stability=(; preparation=true, prepared_op=true, unprepared_op=true),
+    logging=LOGGING,
+)
+
+test_differentiation(
+    AutoZeroReverse(),
+    zero.(default_scenarios(; include_batchified=false));
     correctness=true,
     type_stability=true,
-    preparation_type_stability=true,
     logging=LOGGING,
 )
 
 ## Benchmark
 
 data1 = benchmark_differentiation(
-    [AutoZeroForward()], default_scenarios(; include_constantified=true); logging=LOGGING
+    [AutoZeroForward()],
+    default_scenarios(; include_batchified=false, include_constantified=true);
+    logging=LOGGING,
 );
 
 struct FakeBackend <: ADTypes.AbstractADType end
 ADTypes.mode(::FakeBackend) = ADTypes.ForwardMode()
 
-data2 = benchmark_differentiation([FakeBackend()], default_scenarios(); logging=false);
+data2 = benchmark_differentiation(
+    [FakeBackend()], default_scenarios(; include_batchified=false); logging=false
+);
 
 @testset "Benchmarking DataFrame" begin
     for col in eachcol(data1)

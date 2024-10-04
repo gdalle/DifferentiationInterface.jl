@@ -19,11 +19,19 @@ end
 ## Type stability
 
 test_differentiation(
-    zero_backends,
-    default_scenarios(; include_constantified=true);
+    AutoZeroForward(),
+    default_scenarios(; include_batchified=false, include_constantified=true);
     correctness=false,
-    type_stability=true,
-    preparation_type_stability=true,
+    type_stability=(; preparation=true, prepared_op=true, unprepared_op=true),
+    logging=LOGGING,
+)
+
+test_differentiation(
+    AutoZeroReverse(),
+    default_scenarios(; include_batchified=false, include_constantified=true);
+    correctness=false,
+    # TODO: set unprepared_op=true after ignoring DataFrames
+    type_stability=(; preparation=true, prepared_op=true, unprepared_op=false),
     logging=LOGGING,
 )
 
@@ -32,10 +40,9 @@ test_differentiation(
         SecondOrder(AutoZeroForward(), AutoZeroReverse()),
         SecondOrder(AutoZeroReverse(), AutoZeroForward()),
     ],
-    default_scenarios();
+    default_scenarios(; include_batchified=false, include_constantified=true);
     correctness=false,
-    type_stability=true,
-    preparation_type_stability=true,
+    type_stability=(; preparation=true, prepared_op=true, unprepared_op=true),
     first_order=false,
     logging=LOGGING,
 )

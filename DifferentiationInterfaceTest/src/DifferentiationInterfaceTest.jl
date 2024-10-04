@@ -53,7 +53,7 @@ using DifferentiationInterface:
 import DifferentiationInterface as DI
 using DocStringExtensions
 using Functors: fmap
-using JET: JET
+using JET: JET, @test_opt, @test_call
 using LinearAlgebra: Adjoint, Diagonal, Transpose, dot, parent
 using PackageExtensionCompat: @require_extensions
 using ProgressMeter: ProgressUnknown, next!
