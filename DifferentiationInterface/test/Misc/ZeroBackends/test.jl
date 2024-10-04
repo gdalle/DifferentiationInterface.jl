@@ -22,7 +22,7 @@ test_differentiation(
     AutoZeroForward(),
     default_scenarios(; include_batchified=false, include_constantified=true);
     correctness=false,
-    type_stability=(; preparation=true, prepared_op=true, unprepared_op=true),
+    type_stability=true,
     logging=LOGGING,
 )
 
