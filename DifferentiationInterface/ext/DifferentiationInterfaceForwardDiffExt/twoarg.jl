@@ -212,36 +212,56 @@ end
 ### Unprepared, only when chunk size is not specified
 
 function DI.value_and_jacobian(
-    f!::F, y, ::AutoForwardDiff{nothing}, x, contexts::Vararg{Context,C}
-) where {F,C}
-    fc! = with_contexts(f!, contexts...)
-    jac = similar(y, length(y), length(x))
-    result = MutableDiffResult(y, (jac,))
-    result = jacobian!(result, fc!, y, x)
-    return DiffResults.value(result), DiffResults.jacobian(result)
+    f!::F, y, backend::AutoForwardDiff{chunksize}, x, contexts::Vararg{Context,C}
+) where {F,C,chunksize}
+    if isnothing(chunksize)
+        fc! = with_contexts(f!, contexts...)
+        jac = similar(y, length(y), length(x))
+        result = MutableDiffResult(y, (jac,))
+        result = jacobian!(result, fc!, y, x)
+        return DiffResults.value(result), DiffResults.jacobian(result)
+    else
+        prep = DI.prepare_jacobian(f!, y, backend, x, contexts...)
+        return DI.value_and_jacobian(f!, y, prep, backend, x, contexts...)
+    end
 end
 
 function DI.value_and_jacobian!(
-    f!::F, y, jac, ::AutoForwardDiff{nothing}, x, contexts::Vararg{Context,C}
-) where {F,C}
-    fc! = with_contexts(f!, contexts...)
-    result = MutableDiffResult(y, (jac,))
-    result = jacobian!(result, fc!, y, x)
-    return DiffResults.value(result), DiffResults.jacobian(result)
+    f!::F, y, jac, backend::AutoForwardDiff{chunksize}, x, contexts::Vararg{Context,C}
+) where {F,C,chunksize}
+    if isnothing(chunksize)
+        fc! = with_contexts(f!, contexts...)
+        result = MutableDiffResult(y, (jac,))
+        result = jacobian!(result, fc!, y, x)
+        return DiffResults.value(result), DiffResults.jacobian(result)
+    else
+        prep = DI.prepare_jacobian(f!, y, backend, x, contexts...)
+        return DI.value_and_jacobian!(f!, y, jac, prep, backend, x, contexts...)
+    end
 end
 
 function DI.jacobian(
-    f!::F, y, ::AutoForwardDiff{nothing}, x, contexts::Vararg{Context,C}
-) where {F,C}
-    fc! = with_contexts(f!, contexts...)
-    return jacobian(fc!, y, x)
+    f!::F, y, backend::AutoForwardDiff{chunksize}, x, contexts::Vararg{Context,C}
+) where {F,C,chunksize}
+    if isnothing(chunksize)
+        fc! = with_contexts(f!, contexts...)
+        return jacobian(fc!, y, x)
+    else
+        prep = DI.prepare_jacobian(f!, y, backend, x, contexts...)
+        return DI.jacobian(f!, y, prep, backend, x, contexts...)
+    end
 end
 
 function DI.jacobian!(
-    f!::F, y, jac, ::AutoForwardDiff{nothing}, x, contexts::Vararg{Context,C}
-) where {F,C}
-    fc! = with_contexts(f!, contexts...)
-    return jacobian!(jac, fc!, y, x)
+    f!::F, y, jac, backend::AutoForwardDiff{chunksize}, x, contexts::Vararg{Context,C}
+) where {F,C,chunksize}
+    if isnothing(chunksize)
+        fc! = with_contexts(f!, contexts...)
+        return jacobian!(jac, fc!, y, x)
+    else
+        prep = DI.prepare_jacobian(f!, y, backend, x, contexts...)
+        return DI.jacobian!(f!, y, jac, prep, backend, x, contexts...)
+    end
 end
 
 ### Prepared

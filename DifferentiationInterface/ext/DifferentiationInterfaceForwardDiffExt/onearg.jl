@@ -162,37 +162,57 @@ end
 ### Unprepared, only when chunk size not specified
 
 function DI.value_and_gradient!(
-    f::F, grad, ::AutoForwardDiff{nothing}, x, contexts::Vararg{Context,C}
-) where {F,C}
-    fc = with_contexts(f, contexts...)
-    result = DiffResult(zero(eltype(x)), (grad,))
-    result = gradient!(result, fc, x)
-    y = DR.value(result)
-    grad === DR.gradient(result) || copyto!(grad, DR.gradient(result))
-    return y, grad
+    f::F, grad, backend::AutoForwardDiff{chunksize}, x, contexts::Vararg{Context,C}
+) where {F,C,chunksize}
+    if isnothing(chunksize)
+        fc = with_contexts(f, contexts...)
+        result = DiffResult(zero(eltype(x)), (grad,))
+        result = gradient!(result, fc, x)
+        y = DR.value(result)
+        grad === DR.gradient(result) || copyto!(grad, DR.gradient(result))
+        return y, grad
+    else
+        prep = DI.prepare_gradient(f, backend, x, contexts...)
+        return DI.value_and_gradient!(f, grad, prep, backend, x, contexts...)
+    end
 end
 
 function DI.value_and_gradient(
-    f::F, ::AutoForwardDiff{nothing}, x, contexts::Vararg{Context,C}
-) where {F,C}
-    fc = with_contexts(f, contexts...)
-    result = GradientResult(x)
-    result = gradient!(result, fc, x)
-    return DR.value(result), DR.gradient(result)
+    f::F, backend::AutoForwardDiff{chunksize}, x, contexts::Vararg{Context,C}
+) where {F,C,chunksize}
+    if isnothing(chunksize)
+        fc = with_contexts(f, contexts...)
+        result = GradientResult(x)
+        result = gradient!(result, fc, x)
+        return DR.value(result), DR.gradient(result)
+    else
+        prep = DI.prepare_gradient(f, backend, x, contexts...)
+        return DI.value_and_gradient(f, prep, backend, x, contexts...)
+    end
 end
 
 function DI.gradient!(
-    f::F, grad, ::AutoForwardDiff{nothing}, x, contexts::Vararg{Context,C}
-) where {F,C}
-    fc = with_contexts(f, contexts...)
-    return gradient!(grad, fc, x)
+    f::F, grad, backend::AutoForwardDiff{chunksize}, x, contexts::Vararg{Context,C}
+) where {F,C,chunksize}
+    if isnothing(chunksize)
+        fc = with_contexts(f, contexts...)
+        return gradient!(grad, fc, x)
+    else
+        prep = DI.prepare_gradient(f, backend, x, contexts...)
+        return DI.gradient!(f, grad, prep, backend, x, contexts...)
+    end
 end
 
 function DI.gradient(
-    f::F, ::AutoForwardDiff{nothing}, x, contexts::Vararg{Context,C}
-) where {F,C}
-    fc = with_contexts(f, contexts...)
-    return gradient(fc, x)
+    f::F, backend::AutoForwardDiff{chunksize}, x, contexts::Vararg{Context,C}
+) where {F,C,chunksize}
+    if isnothing(chunksize)
+        fc = with_contexts(f, contexts...)
+        return gradient(fc, x)
+    else
+        prep = DI.prepare_gradient(f, backend, x, contexts...)
+        return DI.gradient(f, prep, backend, x, contexts...)
+    end
 end
 
 ### Prepared
@@ -257,36 +277,56 @@ end
 ### Unprepared, only when chunk size not specified
 
 function DI.value_and_jacobian!(
-    f::F, jac, ::AutoForwardDiff{nothing}, x, contexts::Vararg{Context,C}
-) where {F,C}
-    fc = with_contexts(f, contexts...)
-    y = fc(x)
-    result = DiffResult(y, (jac,))
-    result = jacobian!(result, fc, x)
-    y = DR.value(result)
-    jac === DR.jacobian(result) || copyto!(jac, DR.jacobian(result))
-    return y, jac
+    f::F, jac, backend::AutoForwardDiff{chunksize}, x, contexts::Vararg{Context,C}
+) where {F,C,chunksize}
+    if isnothing(chunksize)
+        fc = with_contexts(f, contexts...)
+        y = fc(x)
+        result = DiffResult(y, (jac,))
+        result = jacobian!(result, fc, x)
+        y = DR.value(result)
+        jac === DR.jacobian(result) || copyto!(jac, DR.jacobian(result))
+        return y, jac
+    else
+        prep = DI.prepare_jacobian(f, backend, x, contexts...)
+        return DI.value_and_jacobian!(f, jac, prep, backend, x, contexts...)
+    end
 end
 
 function DI.value_and_jacobian(
-    f::F, ::AutoForwardDiff{nothing}, x, contexts::Vararg{Context,C}
-) where {F,C}
-    fc = with_contexts(f, contexts...)
-    return fc(x), jacobian(fc, x)
+    f::F, backend::AutoForwardDiff{chunksize}, x, contexts::Vararg{Context,C}
+) where {F,C,chunksize}
+    if isnothing(chunksize)
+        fc = with_contexts(f, contexts...)
+        return fc(x), jacobian(fc, x)
+    else
+        prep = DI.prepare_jacobian(f, backend, x, contexts...)
+        return DI.value_and_jacobian(f, prep, backend, x, contexts...)
+    end
 end
 
 function DI.jacobian!(
-    f::F, jac, ::AutoForwardDiff{nothing}, x, contexts::Vararg{Context,C}
-) where {F,C}
-    fc = with_contexts(f, contexts...)
-    return jacobian!(jac, fc, x)
+    f::F, jac, backend::AutoForwardDiff{chunksize}, x, contexts::Vararg{Context,C}
+) where {F,C,chunksize}
+    if isnothing(chunksize)
+        fc = with_contexts(f, contexts...)
+        return jacobian!(jac, fc, x)
+    else
+        prep = DI.prepare_jacobian(f, backend, x, contexts...)
+        return DI.jacobian!(f, jac, prep, backend, x, contexts...)
+    end
 end
 
 function DI.jacobian(
-    f::F, ::AutoForwardDiff{nothing}, x, contexts::Vararg{Context,C}
-) where {F,C}
-    fc = with_contexts(f, contexts...)
-    return jacobian(fc, x)
+    f::F, backend::AutoForwardDiff{chunksize}, x, contexts::Vararg{Context,C}
+) where {F,C,chunksize}
+    if isnothing(chunksize)
+        fc = with_contexts(f, contexts...)
+        return jacobian(fc, x)
+    else
+        prep = DI.prepare_jacobian(f, backend, x, contexts...)
+        return DI.jacobian(f, prep, backend, x, contexts...)
+    end
 end
 
 ### Prepared
