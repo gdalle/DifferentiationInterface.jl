@@ -33,11 +33,22 @@ function SparseHessianPrep{B}(;
     )
 end
 
+SMC.sparsity_pattern(prep::SparseHessianPrep) = sparsity_pattern(prep.coloring_result)
+SMC.column_colors(prep::SparseHessianPrep) = column_colors(prep.coloring_result)
+SMC.column_groups(prep::SparseHessianPrep) = column_groups(prep.coloring_result)
+
 ## Hessian, one argument
 
 function DI.prepare_hessian(
     f::F, backend::AutoSparse, x, contexts::Vararg{Context,C}
 ) where {F,C}
+    valB = pick_batchsize(backend, length(x))
+    return _prepare_sparse_hessian_aux(valB, f, backend, x, contexts...)
+end
+
+function _prepare_sparse_hessian_aux(
+    ::Val{B}, f::F, backend::AutoSparse, x, contexts::Vararg{Context,C}
+) where {B,F,C}
     dense_backend = dense_ad(backend)
     sparsity = hessian_sparsity(
         with_contexts(f, contexts...), x, sparsity_detector(backend)
@@ -48,7 +59,6 @@ function DI.prepare_hessian(
     )
     groups = column_groups(coloring_result)
     Ng = length(groups)
-    B = pick_batchsize(outer(dense_backend), Ng)
     seeds = [multibasis(backend, x, eachindex(x)[group]) for group in groups]
     compressed_matrix = stack(_ -> vec(similar(x)), groups; dims=2)
     batched_seeds = [
@@ -66,29 +76,6 @@ function DI.prepare_hessian(
         hvp_prep,
         gradient_prep,
     )
-end
-
-function DI.hessian(
-    f::F, prep::SparseHessianPrep{B}, backend::AutoSparse, x, contexts::Vararg{Context,C}
-) where {F,B,C}
-    @compat (; coloring_result, batched_seeds, hvp_prep) = prep
-    dense_backend = dense_ad(backend)
-    Ng = length(column_groups(coloring_result))
-
-    hvp_prep_same = prepare_hvp_same_point(
-        f, hvp_prep, dense_backend, x, batched_seeds[1], contexts...
-    )
-
-    compressed_blocks = map(eachindex(batched_seeds)) do a
-        dg_batch = hvp(f, hvp_prep_same, dense_backend, x, batched_seeds[a], contexts...)
-        stack(vec, dg_batch; dims=2)
-    end
-
-    compressed_matrix = reduce(hcat, compressed_blocks)
-    if Ng < size(compressed_matrix, 2)
-        compressed_matrix = compressed_matrix[:, 1:Ng]
-    end
-    return decompress(compressed_matrix, coloring_result)
 end
 
 function DI.hessian!(
@@ -130,6 +117,13 @@ function DI.hessian!(
 
     decompress!(hess, compressed_matrix, coloring_result)
     return hess
+end
+
+function DI.hessian(
+    f::F, prep::SparseHessianPrep{B}, backend::AutoSparse, x, contexts::Vararg{Context,C}
+) where {F,B,C}
+    hess = similar(sparsity_pattern(prep), eltype(x))
+    return DI.hessian!(f, hess, prep, backend, x, contexts...)
 end
 
 function DI.value_gradient_and_hessian!(

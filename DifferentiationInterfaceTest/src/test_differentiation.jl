@@ -29,7 +29,7 @@ Cross-test a list of `backends` on a list of `scenarios`, running a variety of d
 Testing:
 
 - `correctness=true`: whether to compare the differentiation results with the theoretical values specified in each scenario
-- `type_stability=false`: whether to check type stability with JET.jl (thanks to `JET.@test_opt`)
+- `type_stability=false`: whether to check type stability of operators with JET.jl (thanks to `JET.@test_opt`)
 - `sparsity`: whether to check sparsity of the jacobian / hessian
 - `detailed=false`: whether to print a detailed or condensed test log
 
@@ -52,6 +52,7 @@ function test_differentiation(
     # testing
     correctness::Bool=true,
     type_stability::Bool=false,
+    preparation_type_stability::Bool=false,
     call_count::Bool=false,
     sparsity::Bool=false,
     detailed=false,
@@ -108,16 +109,23 @@ function test_differentiation(
                             (:nb_contexts, length(scen.contexts)),
                         ],
                     )
+                    adapted_backend = adapt_batchsize(backend, scen)
                     correctness && @testset "Correctness" begin
-                        test_correctness(backend, scen; isapprox, atol, rtol, scenario_intact)
+                        test_correctness(
+                            adapted_backend, scen; isapprox, atol, rtol, scenario_intact
+                        )
                     end
                     type_stability && @testset "Type stability" begin
                         @static if VERSION >= v"1.7"
-                            test_jet(backend, scen)
+                            test_jet(
+                                adapted_backend,
+                                scen;
+                                test_preparation=preparation_type_stability,
+                            )
                         end
                     end
                     sparsity && @testset "Sparsity" begin
-                        test_sparsity(backend, scen)
+                        test_sparsity(adapted_backend, scen)
                     end
                     yield()
                 end
@@ -185,7 +193,8 @@ function benchmark_differentiation(
                         (:nb_contexts, length(scen.contexts)),
                     ],
                 )
-                run_benchmark!(benchmark_data, backend, scen; logging)
+                adapted_backend = adapt_batchsize(backend, scen)
+                run_benchmark!(benchmark_data, adapted_backend, scen; logging)
                 yield()
             end
         end

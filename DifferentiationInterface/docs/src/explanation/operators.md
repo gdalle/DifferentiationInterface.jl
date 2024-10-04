@@ -125,13 +125,14 @@ Here are the general rules that we strive to implement:
 
 For different-point preparation, the output `prep` of `prepare_op(f, b, x, [t])` can be reused in `op(f, prep, b, other_x, [other_t])`, provided that:
 
-- the inputs `x` and `other_x` have similar types and equal shapes
-- the tangents in `t` and `other_t` have similar types and equal shapes
+- the inputs `x` and `other_x` have the same types and sizes
+- the tangents in `t` and `other_t` have the same types and sizes
 
 For same-point preparation, the output `prep` of `prepare_op_same_point(f, b, x, [t])` can be reused in `op(f, prep, b, x, other_t)`, provided that:
 
-- the input `x` remains the same (as well as the [`Context`](@ref) constants)
-- the tangents in `t` and `other_t` have similar types and equal shapes
+- the input `x` remains exactly the same (as well as any [`Constant`](@ref) context)
+- the tangents in `t` and `other_t` have the same types and sizes
 
 !!! warning
     These rules hold for the majority of backends, but there are some exceptions.
+    The most important exception is [ReverseDiff](@ref) and its taping mechanism, which is sensitive to control flow inside the function.

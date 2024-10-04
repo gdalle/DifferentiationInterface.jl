@@ -32,7 +32,15 @@ test_differentiation(
 );
 
 test_differentiation(
-    dense_backends; correctness=false, type_stability=true, logging=LOGGING
+    AutoForwardDiff(); correctness=false, type_stability=true, logging=LOGGING
+);
+
+test_differentiation(
+    AutoForwardDiff(; chunksize=5);
+    correctness=false,
+    type_stability=true,
+    preparation_type_stability=true,
+    logging=LOGGING,
 );
 
 test_differentiation(

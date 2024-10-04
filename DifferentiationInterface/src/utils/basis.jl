@@ -71,12 +71,3 @@ function multibasis(a::AbstractArray{T,N}, inds::AbstractVector) where {T,N}
     end
     return seed
 end
-
-"""
-    pick_batchsize(backend::AbstractADType, dimension::Integer)
-
-Pick a reasonable batch size for batched derivative evaluation with a given total `dimension`.
-
-Returns `1` for backends which have not overloaded it.
-"""
-pick_batchsize(::AbstractADType, dimension::Integer) = 1

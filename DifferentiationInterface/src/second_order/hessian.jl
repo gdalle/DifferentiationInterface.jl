@@ -72,8 +72,14 @@ end
 function prepare_hessian(
     f::F, backend::AbstractADType, x, contexts::Vararg{Context,C}
 ) where {F,C}
+    valB = pick_batchsize(backend, length(x))
+    return _prepare_hessian_aux(valB, f, backend, x, contexts...)
+end
+
+function _prepare_hessian_aux(
+    ::Val{B}, f::F, backend::AbstractADType, x, contexts::Vararg{Context,C}
+) where {B,F,C}
     N = length(x)
-    B = pick_batchsize(outer(backend), N)
     seeds = [basis(backend, x, ind) for ind in eachindex(x)]
     batched_seeds = [
         ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % N], Val(B)) for
@@ -107,7 +113,11 @@ function hessian(
 
     hess_blocks = map(eachindex(batched_seeds)) do a
         dg_batch = hvp(f, hvp_prep_same, backend, x, batched_seeds[a], contexts...)
-        stack(vec, dg_batch; dims=2)
+        block = stack(vec, dg_batch; dims=2)
+        if N % B != 0 && a == lastindex(batched_seeds)
+            block = block[:, 1:(N - (a - 1) * B)]
+        end
+        block
     end
 
     hess = reduce(hcat, hess_blocks)

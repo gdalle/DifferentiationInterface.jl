@@ -24,6 +24,7 @@ using DifferentiationInterface:
     outer,
     multibasis,
     pick_batchsize,
+    pick_jacobian_batchsize,
     pushforward_performance,
     unwrap,
     with_contexts
@@ -37,8 +38,10 @@ using SparseMatrixColorings:
     row_colors,
     column_groups,
     row_groups,
+    sparsity_pattern,
     decompress,
     decompress!
+import SparseMatrixColorings as SMC
 
 include("jacobian.jl")
 include("hessian.jl")

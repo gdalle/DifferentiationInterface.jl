@@ -16,7 +16,8 @@ using ADTypes:
     ForwardMode,
     ForwardOrReverseMode,
     ReverseMode,
-    SymbolicMode
+    SymbolicMode,
+    mode
 using Chairmarks: @be, Benchmark, Sample
 using Compat
 using DataFrames: DataFrame
@@ -49,8 +50,8 @@ using DifferentiationInterface:
     PushforwardPrep,
     SecondDerivativePrep,
     Rewrap
-using DocStringExtensions
 import DifferentiationInterface as DI
+using DocStringExtensions
 using Functors: fmap
 using JET: JET
 using LinearAlgebra: Adjoint, Diagonal, Transpose, dot, parent
@@ -58,6 +59,7 @@ using PackageExtensionCompat: @require_extensions
 using ProgressMeter: ProgressUnknown, next!
 using Random: AbstractRNG, default_rng, rand!
 using SparseArrays: SparseArrays, SparseMatrixCSC, nnz, spdiagm
+import SparseMatrixColorings as SMC
 using Test: @testset, @test
 
 include("utils.jl")
