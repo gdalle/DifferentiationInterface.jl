@@ -159,10 +159,10 @@ end
 
 ## Gradient
 
-### Unprepared
+### Unprepared, only when chunk size not specified
 
 function DI.value_and_gradient!(
-    f::F, grad, ::AutoForwardDiff, x, contexts::Vararg{Context,C}
+    f::F, grad, ::AutoForwardDiff{nothing}, x, contexts::Vararg{Context,C}
 ) where {F,C}
     fc = with_contexts(f, contexts...)
     result = DiffResult(zero(eltype(x)), (grad,))
@@ -173,7 +173,7 @@ function DI.value_and_gradient!(
 end
 
 function DI.value_and_gradient(
-    f::F, ::AutoForwardDiff, x, contexts::Vararg{Context,C}
+    f::F, ::AutoForwardDiff{nothing}, x, contexts::Vararg{Context,C}
 ) where {F,C}
     fc = with_contexts(f, contexts...)
     result = GradientResult(x)
@@ -182,13 +182,15 @@ function DI.value_and_gradient(
 end
 
 function DI.gradient!(
-    f::F, grad, ::AutoForwardDiff, x, contexts::Vararg{Context,C}
+    f::F, grad, ::AutoForwardDiff{nothing}, x, contexts::Vararg{Context,C}
 ) where {F,C}
     fc = with_contexts(f, contexts...)
     return gradient!(grad, fc, x)
 end
 
-function DI.gradient(f::F, ::AutoForwardDiff, x, contexts::Vararg{Context,C}) where {F,C}
+function DI.gradient(
+    f::F, ::AutoForwardDiff{nothing}, x, contexts::Vararg{Context,C}
+) where {F,C}
     fc = with_contexts(f, contexts...)
     return gradient(fc, x)
 end
@@ -252,10 +254,10 @@ end
 
 ## Jacobian
 
-### Unprepared
+### Unprepared, only when chunk size not specified
 
 function DI.value_and_jacobian!(
-    f::F, jac, ::AutoForwardDiff, x, contexts::Vararg{Context,C}
+    f::F, jac, ::AutoForwardDiff{nothing}, x, contexts::Vararg{Context,C}
 ) where {F,C}
     fc = with_contexts(f, contexts...)
     y = fc(x)
@@ -267,20 +269,22 @@ function DI.value_and_jacobian!(
 end
 
 function DI.value_and_jacobian(
-    f::F, ::AutoForwardDiff, x, contexts::Vararg{Context,C}
+    f::F, ::AutoForwardDiff{nothing}, x, contexts::Vararg{Context,C}
 ) where {F,C}
     fc = with_contexts(f, contexts...)
     return fc(x), jacobian(fc, x)
 end
 
 function DI.jacobian!(
-    f::F, jac, ::AutoForwardDiff, x, contexts::Vararg{Context,C}
+    f::F, jac, ::AutoForwardDiff{nothing}, x, contexts::Vararg{Context,C}
 ) where {F,C}
     fc = with_contexts(f, contexts...)
     return jacobian!(jac, fc, x)
 end
 
-function DI.jacobian(f::F, ::AutoForwardDiff, x, contexts::Vararg{Context,C}) where {F,C}
+function DI.jacobian(
+    f::F, ::AutoForwardDiff{nothing}, x, contexts::Vararg{Context,C}
+) where {F,C}
     fc = with_contexts(f, contexts...)
     return jacobian(fc, x)
 end

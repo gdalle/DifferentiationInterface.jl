@@ -209,10 +209,10 @@ end
 
 ## Jacobian
 
-### Unprepared
+### Unprepared, only when chunk size is not specified
 
 function DI.value_and_jacobian(
-    f!::F, y, ::AutoForwardDiff, x, contexts::Vararg{Context,C}
+    f!::F, y, ::AutoForwardDiff{nothing}, x, contexts::Vararg{Context,C}
 ) where {F,C}
     fc! = with_contexts(f!, contexts...)
     jac = similar(y, length(y), length(x))
@@ -222,7 +222,7 @@ function DI.value_and_jacobian(
 end
 
 function DI.value_and_jacobian!(
-    f!::F, y, jac, ::AutoForwardDiff, x, contexts::Vararg{Context,C}
+    f!::F, y, jac, ::AutoForwardDiff{nothing}, x, contexts::Vararg{Context,C}
 ) where {F,C}
     fc! = with_contexts(f!, contexts...)
     result = MutableDiffResult(y, (jac,))
@@ -231,14 +231,14 @@ function DI.value_and_jacobian!(
 end
 
 function DI.jacobian(
-    f!::F, y, ::AutoForwardDiff, x, contexts::Vararg{Context,C}
+    f!::F, y, ::AutoForwardDiff{nothing}, x, contexts::Vararg{Context,C}
 ) where {F,C}
     fc! = with_contexts(f!, contexts...)
     return jacobian(fc!, y, x)
 end
 
 function DI.jacobian!(
-    f!::F, y, jac, ::AutoForwardDiff, x, contexts::Vararg{Context,C}
+    f!::F, y, jac, ::AutoForwardDiff{nothing}, x, contexts::Vararg{Context,C}
 ) where {F,C}
     fc! = with_contexts(f!, contexts...)
     return jacobian!(jac, fc!, y, x)
