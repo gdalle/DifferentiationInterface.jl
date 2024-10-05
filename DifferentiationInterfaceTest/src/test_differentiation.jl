@@ -29,7 +29,7 @@ Cross-test a list of `backends` on a list of `scenarios`, running a variety of d
 Testing:
 
 - `correctness=true`: whether to compare the differentiation results with the theoretical values specified in each scenario
-- `type_stability=false`: whether to check type stability of operators with JET.jl (thanks to `JET.@test_opt`)
+- `type_stability=false`: whether to check type stability of operators with JET.jl (thanks to `JET.@test_opt`). It can be either a `Bool` or a more detailed named tuple `(; preparation, prepared_op, unprepared_op)` to specify which variants should be analyzed.
 - `sparsity`: whether to check sparsity of the jacobian / hessian
 - `detailed=false`: whether to print a detailed or condensed test log
 
@@ -51,8 +51,7 @@ function test_differentiation(
     scenarios::Vector{<:Scenario}=default_scenarios();
     # testing
     correctness::Bool=true,
-    type_stability::Bool=false,
-    preparation_type_stability::Bool=false,
+    type_stability=false,
     call_count::Bool=false,
     sparsity::Bool=false,
     detailed=false,
@@ -73,10 +72,12 @@ function test_differentiation(
         scenarios; first_order, second_order, input_type, output_type, excluded
     )
 
+    bool_type_stability = (type_stability == true || type_stability isa NamedTuple)
+
     title_additions =
         (correctness != false ? " + correctness" : "") *
         (call_count ? " + calls" : "") *
-        (type_stability ? " + types" : "") *
+        (bool_type_stability ? " + type stability" : "") *
         (sparsity ? " + sparsity" : "")
     title = "Testing" * title_additions[3:end]
 
@@ -115,13 +116,14 @@ function test_differentiation(
                             adapted_backend, scen; isapprox, atol, rtol, scenario_intact
                         )
                     end
-                    type_stability && @testset "Type stability" begin
+                    kwargs_type_stability = if type_stability isa NamedTuple
+                        type_stability
+                    else
+                        (; preparation=false, prepared_op=type_stability, unprepared_op=false)
+                    end
+                    bool_type_stability && @testset "Type stability" begin
                         @static if VERSION >= v"1.7"
-                            test_jet(
-                                adapted_backend,
-                                scen;
-                                test_preparation=preparation_type_stability,
-                            )
+                            test_jet(adapted_backend, scen; kwargs_type_stability...)
                         end
                     end
                     sparsity && @testset "Sparsity" begin
