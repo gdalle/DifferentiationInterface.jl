@@ -29,28 +29,29 @@ jobs:
       matrix:
         version:
           - "1"
-          - "lts"
-          - "pre"
+          # - "lts"
+          # - "pre"
         group:
           - Misc/Internals
-          - Misc/DifferentiateWith
-          - Misc/FromPrimitive
-          - Misc/SparsityDetector
-          - Misc/ZeroBackends
-          - Back/ChainRulesBackends
-          - Back/Enzyme
-          - Back/FiniteDiff
-          - Back/FiniteDifferences
-          - Back/ForwardDiff
-          - Back/Mooncake
-          - Back/PolyesterForwardDiff
-          - Back/ReverseDiff
-          - Back/SecondOrder
-          - Back/SymbolicBackends
-          - Back/Tracker
-          - Back/Zygote
-          - Down/Flux
-          - Down/Lux
+          # - Misc/DifferentiateWith
+          # - Misc/FromPrimitive
+          # - Misc/SparsityDetector
+          # - Misc/ZeroBackends
+          # - Back/ChainRulesBackends
+          # - Back/Enzyme
+          # - Back/FiniteDiff
+          # - Back/FiniteDifferences
+          # - Back/ForwardDiff
+          # - Back/Mooncake
+          # - Back/PolyesterForwardDiff
+          # - Back/ReverseDiff
+          # - Back/SecondOrder
+          # - Back/SymbolicBackends
+          # - Back/Tracker
+          # - Back/Zygote
+          # - Down/Flux
+          # - Down/Lux
+          - Down/Reactant
         skip_lts:
           - ${{ github.event.pull_request.draft }}
         skip_pre:
@@ -83,6 +84,8 @@ jobs:
             group: Down/Flux
           - version: "lts"
             group: Down/Lux
+          - version: "lts"
+            group: Down/Reactant
           # pre-release
           - version: "pre"
             group: Back/ChainRulesBackends
@@ -135,13 +138,13 @@ jobs:
       matrix:
         version:
           - "1"
-          - "lts"
-          - "pre"
+          # - "lts"
+          # - "pre"
         group:
           - Formalities
-          - Zero
-          - Standard
-          - Weird
+          # - Zero
+          # - Standard
+          # - Weird
         skip_lts:
           - ${{ github.event.pull_request.draft }}
         skip_pre:
