@@ -30,7 +30,7 @@ jobs:
         version:
           - "1.10"  # TODO: 1 (as of 2024.10.08, 1 means 1.11 and we're not ready yet)
           - "lts"
-          # - "pre"
+          - "pre"
         group:
           - Misc/Internals
           - Misc/DifferentiateWith
