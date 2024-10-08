@@ -6,7 +6,6 @@ using DocumenterMermaid
 using DocumenterInterLinks
 
 using ADTypes: ADTypes
-using Enzyme: Enzyme
 using ForwardDiff: ForwardDiff
 using Zygote: Zygote
 
