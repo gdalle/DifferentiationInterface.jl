@@ -30,8 +30,7 @@ test_differentiation(
     AutoZeroReverse(),
     default_scenarios(; include_batchified=false, include_constantified=true);
     correctness=false,
-    # TODO: set unprepared_op=true after ignoring DataFrames
-    type_stability=(; preparation=true, prepared_op=true, unprepared_op=false),
+    type_stability=(; preparation=true, prepared_op=true, unprepared_op=true),
     logging=LOGGING,
 )
 
