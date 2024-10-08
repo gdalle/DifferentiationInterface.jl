@@ -18,16 +18,6 @@ We support the following dense backend choices from [ADTypes.jl](https://github.
 - [`AutoTracker`](@extref ADTypes.AutoTracker)
 - [`AutoZygote`](@extref ADTypes.AutoZygote)
 
-!!! note
-    DifferentiationInterface.jl itself is compatible with Julia 1.6, the Long Term Support (LTS) version of the language.
-    However, we were only able to test the following backends on Julia 1.6:
-    - `AutoFiniteDifferences`
-    - `AutoForwardDiff`
-    - `AutoReverseDiff`
-    - `AutoTracker`
-    - `AutoZygote`
-    We strongly recommend that users upgrade to Julia 1.10 or above, where all backends are tested.
-
 ## Features
 
 Given a backend object, you can use:

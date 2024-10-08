@@ -54,7 +54,7 @@ for op in [
             rtol::Real,
             scenario_intact::Bool,
         )
-            @compat (; f, x, y, res1, contexts) = new_scen = deepcopy(scen)
+            (; f, x, y, res1, contexts) = new_scen = deepcopy(scen)
             xrand = myrandom(x)
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
@@ -100,7 +100,7 @@ for op in [
             rtol::Real,
             scenario_intact::Bool,
         )
-            @compat (; f, x, y, res1, contexts) = new_scen = deepcopy(scen)
+            (; f, x, y, res1, contexts) = new_scen = deepcopy(scen)
             xrand = myrandom(x)
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
@@ -160,7 +160,7 @@ for op in [
             rtol::Real,
             scenario_intact::Bool,
         )
-            @compat (; f, x, y, res1, contexts) = new_scen = deepcopy(scen)
+            (; f, x, y, res1, contexts) = new_scen = deepcopy(scen)
             xrand, yrand = myrandom(x), myrandom(y)
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
@@ -213,7 +213,7 @@ for op in [
             rtol::Real,
             scenario_intact::Bool,
         )
-            @compat (; f, x, y, res1, contexts) = new_scen = deepcopy(scen)
+            (; f, x, y, res1, contexts) = new_scen = deepcopy(scen)
             xrand, yrand = myrandom(x), myrandom(y)
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
@@ -275,7 +275,7 @@ for op in [
             rtol::Real,
             scenario_intact::Bool,
         )
-            @compat (; f, x, y, res1, res2, contexts) = new_scen = deepcopy(scen)
+            (; f, x, y, res1, res2, contexts) = new_scen = deepcopy(scen)
             xrand = myrandom(x)
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
@@ -323,7 +323,7 @@ for op in [
             rtol::Real,
             scenario_intact::Bool,
         )
-            @compat (; f, x, y, res1, res2, contexts) = new_scen = deepcopy(scen)
+            (; f, x, y, res1, res2, contexts) = new_scen = deepcopy(scen)
             xrand = myrandom(x)
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
@@ -386,7 +386,7 @@ for op in [
             rtol::Real,
             scenario_intact::Bool,
         )
-            @compat (; f, x, y, tang, res1, contexts) = new_scen = deepcopy(scen)
+            (; f, x, y, tang, res1, contexts) = new_scen = deepcopy(scen)
             xrand, tangrand = myrandom(x), myrandom(tang)
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
@@ -434,7 +434,7 @@ for op in [
             rtol::Real,
             scenario_intact::Bool,
         )
-            @compat (; f, x, y, tang, res1, contexts) = new_scen = deepcopy(scen)
+            (; f, x, y, tang, res1, contexts) = new_scen = deepcopy(scen)
             xrand, tangrand = myrandom(x), myrandom(tang)
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
@@ -494,7 +494,7 @@ for op in [
             rtol::Real,
             scenario_intact::Bool,
         )
-            @compat (; f, x, y, tang, res1, contexts) = new_scen = deepcopy(scen)
+            (; f, x, y, tang, res1, contexts) = new_scen = deepcopy(scen)
             xrand, yrand, tangrand = myrandom(x), myrandom(y), myrandom(tang)
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
@@ -553,7 +553,7 @@ for op in [
             rtol::Real,
             scenario_intact::Bool,
         )
-            @compat (; f, x, y, tang, res1, contexts) = new_scen = deepcopy(scen)
+            (; f, x, y, tang, res1, contexts) = new_scen = deepcopy(scen)
             xrand, yrand, tangrand = myrandom(x), myrandom(y), myrandom(tang)
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
@@ -631,7 +631,7 @@ for op in [
             rtol::Real,
             scenario_intact::Bool,
         )
-            @compat (; f, x, y, tang, res2, contexts) = new_scen = deepcopy(scen)
+            (; f, x, y, tang, res2, contexts) = new_scen = deepcopy(scen)
             xrand, tangrand = myrandom(x), myrandom(tang)
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
@@ -667,7 +667,7 @@ for op in [
             rtol::Real,
             scenario_intact::Bool,
         )
-            @compat (; f, x, y, tang, res2, contexts) = new_scen = deepcopy(scen)
+            (; f, x, y, tang, res2, contexts) = new_scen = deepcopy(scen)
             xrand, tangrand = myrandom(x), myrandom(tang)
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)

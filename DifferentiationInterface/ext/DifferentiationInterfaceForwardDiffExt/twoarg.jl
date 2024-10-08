@@ -24,7 +24,7 @@ function compute_ydual_twoarg(
     tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,T,C}
-    @compat (; ydual_tmp) = prep
+    (; ydual_tmp) = prep
     xdual_tmp = make_dual(T, x, tx)
     f!(ydual_tmp, xdual_tmp, map(unwrap, contexts)...)
     return ydual_tmp
@@ -38,7 +38,7 @@ function compute_ydual_twoarg(
     tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,T,C}
-    @compat (; xdual_tmp, ydual_tmp) = prep
+    (; xdual_tmp, ydual_tmp) = prep
     make_dual!(T, xdual_tmp, x, tx)
     f!(ydual_tmp, xdual_tmp, map(unwrap, contexts)...)
     return ydual_tmp

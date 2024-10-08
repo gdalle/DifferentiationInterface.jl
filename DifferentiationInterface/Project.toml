@@ -1,13 +1,11 @@
 name = "DifferentiationInterface"
 uuid = "a0c0ee7d-e4b9-4e03-894e-1c5f64a51d63"
 authors = ["Guillaume Dalle", "Adrian Hill"]
-version = "0.6.7"
+version = "0.6.8"
 
 [deps]
 ADTypes = "47edcb42-4c32-4615-8424-f2b9edc5f35b"
-Compat = "34da2185-b29b-5c13-b0c7-acf172513d20"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
-PackageExtensionCompat = "65ce6f38-6b18-4e1d-a461-8949797d7930"
 
 [weakdeps]
 ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
@@ -46,7 +44,6 @@ DifferentiationInterfaceZygoteExt = ["Zygote", "ForwardDiff"]
 [compat]
 ADTypes = "1.9.0"
 ChainRulesCore = "1.23.0"
-Compat = "3.46,4.2"
 Diffractor = "=0.2.6"
 Enzyme = "0.13.6"
 FastDifferentiation = "0.4.1"
@@ -55,7 +52,6 @@ FiniteDifferences = "0.12.31"
 ForwardDiff = "0.10.36"
 LinearAlgebra = "<0.0.1,1"
 Mooncake = "0.4.0"
-PackageExtensionCompat = "1.0.2"
 PolyesterForwardDiff = "0.1.2"
 ReverseDiff = "1.15.1"
 SparseArrays = "<0.0.1,1"

@@ -31,7 +31,7 @@ function compute_ydual_onearg(
     tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,T,C}
-    @compat (; xdual_tmp) = prep
+    (; xdual_tmp) = prep
     make_dual!(T, xdual_tmp, x, tx)
     ydual = f(xdual_tmp, map(unwrap, contexts)...)
     return ydual

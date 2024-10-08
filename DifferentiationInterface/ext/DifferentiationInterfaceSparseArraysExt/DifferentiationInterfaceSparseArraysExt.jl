@@ -1,7 +1,6 @@
 module DifferentiationInterfaceSparseArraysExt
 
 using ADTypes: ADTypes
-using Compat
 using DifferentiationInterface
 using DifferentiationInterface:
     DenseSparsityDetector, PushforwardFast, PushforwardSlow, basis, pushforward_performance

@@ -1,7 +1,7 @@
 ## Jacobian
 
 function test_sparsity(ba::AbstractADType, scen::Scenario{:jacobian,:out,:out})
-    @compat (; f, x, y, contexts) = scen = deepcopy(scen)
+    (; f, x, y, contexts) = scen = deepcopy(scen)
     prep = prepare_jacobian(f, ba, x, contexts...)
 
     _, jac1 = value_and_jacobian(f, prep, ba, x, contexts...)
@@ -15,7 +15,7 @@ function test_sparsity(ba::AbstractADType, scen::Scenario{:jacobian,:out,:out})
 end
 
 function test_sparsity(ba::AbstractADType, scen::Scenario{:jacobian,:in,:out})
-    @compat (; f, x, y, contexts) = deepcopy(scen)
+    (; f, x, y, contexts) = deepcopy(scen)
     prep = prepare_jacobian(f, ba, x, contexts...)
 
     _, jac1 = value_and_jacobian!(f, mysimilar(scen.res1), prep, ba, x, contexts...)
@@ -29,7 +29,7 @@ function test_sparsity(ba::AbstractADType, scen::Scenario{:jacobian,:in,:out})
 end
 
 function test_sparsity(ba::AbstractADType, scen::Scenario{:jacobian,:out,:in})
-    @compat (; f, x, y, contexts) = deepcopy(scen)
+    (; f, x, y, contexts) = deepcopy(scen)
     f! = f
     prep = prepare_jacobian(f!, mysimilar(y), ba, x, contexts...)
 
@@ -44,7 +44,7 @@ function test_sparsity(ba::AbstractADType, scen::Scenario{:jacobian,:out,:in})
 end
 
 function test_sparsity(ba::AbstractADType, scen::Scenario{:jacobian,:in,:in})
-    @compat (; f, x, y, contexts) = deepcopy(scen)
+    (; f, x, y, contexts) = deepcopy(scen)
     f! = f
     prep = prepare_jacobian(f!, mysimilar(y), ba, x, contexts...)
 
@@ -63,7 +63,7 @@ end
 ## Hessian
 
 function test_sparsity(ba::AbstractADType, scen::Scenario{:hessian,:out,:out})
-    @compat (; f, x, y, contexts) = deepcopy(scen)
+    (; f, x, y, contexts) = deepcopy(scen)
     prep = prepare_hessian(f, ba, x, contexts...)
 
     hess1 = hessian(f, prep, ba, x, contexts...)
@@ -77,7 +77,7 @@ function test_sparsity(ba::AbstractADType, scen::Scenario{:hessian,:out,:out})
 end
 
 function test_sparsity(ba::AbstractADType, scen::Scenario{:hessian,:in,:out})
-    @compat (; f, x, y, contexts) = deepcopy(scen)
+    (; f, x, y, contexts) = deepcopy(scen)
     prep = prepare_hessian(f, ba, x, contexts...)
 
     hess1 = hessian!(f, mysimilar(scen.res2), prep, ba, x, contexts...)

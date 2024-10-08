@@ -19,7 +19,6 @@ using ADTypes:
     SymbolicMode,
     mode
 using Chairmarks: @be, Benchmark, Sample
-using Compat
 using DataFrames: DataFrame
 using DifferentiationInterface
 using DifferentiationInterface:
@@ -70,17 +69,11 @@ include("scenarios/allocfree.jl")
 include("scenarios/extensions.jl")
 
 include("tests/correctness_eval.jl")
-@static if VERSION >= v"1.7"
-    include("tests/type_stability_eval.jl")
-end
+include("tests/type_stability_eval.jl")
 include("tests/sparsity.jl")
 include("tests/benchmark.jl")
 include("tests/benchmark_eval.jl")
 include("test_differentiation.jl")
-
-function __init__()
-    @require_extensions
-end
 
 export Scenario
 export default_scenarios, sparse_scenarios

@@ -105,7 +105,7 @@ function hessian(
     x,
     contexts::Vararg{Context,C},
 ) where {F,B,C}
-    @compat (; batched_seeds, hvp_prep, N) = prep
+    (; batched_seeds, hvp_prep, N) = prep
 
     hvp_prep_same = prepare_hvp_same_point(
         f, hvp_prep, backend, x, batched_seeds[1], contexts...
@@ -135,7 +135,7 @@ function hessian!(
     x,
     contexts::Vararg{Context,C},
 ) where {F,B,C}
-    @compat (; batched_seeds, batched_results, hvp_prep, N) = prep
+    (; batched_seeds, batched_results, hvp_prep, N) = prep
 
     hvp_prep_same = prepare_hvp_same_point(
         f, hvp_prep, backend, x, batched_seeds[1], contexts...

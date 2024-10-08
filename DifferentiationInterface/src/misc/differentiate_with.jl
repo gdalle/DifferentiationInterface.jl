@@ -67,7 +67,7 @@ end
 (dw::DifferentiateWith)(x) = dw.f(x)
 
 function Base.show(io::IO, dw::DifferentiateWith)
-    @compat (; f, backend) = dw
+    (; f, backend) = dw
     return print(
         io,
         DifferentiateWith,

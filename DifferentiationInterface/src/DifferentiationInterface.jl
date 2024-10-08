@@ -29,9 +29,9 @@ using ADTypes:
     AutoSymbolics,
     AutoTracker,
     AutoZygote
-using Compat
 using LinearAlgebra: Symmetric, Transpose, dot, parent, transpose
-using PackageExtensionCompat: @require_extensions
+
+include("compat.jl")
 
 include("second_order/second_order.jl")
 
@@ -61,10 +61,6 @@ include("misc/differentiate_with.jl")
 include("misc/from_primitive.jl")
 include("misc/sparsity_detector.jl")
 include("misc/zero_backends.jl")
-
-function __init__()
-    @require_extensions
-end
 
 ## Exported
 
@@ -122,6 +118,6 @@ export AutoSparse
 
 ## Public but not exported
 
-@compat public inner, outer
+@public inner, outer
 
 end # module

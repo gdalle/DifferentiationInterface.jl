@@ -242,7 +242,7 @@ function _sparse_jacobian_aux!(
     x,
     contexts::Vararg{Context,C},
 ) where {FY,B,C}
-    @compat (;
+    (;
         coloring_result, compressed_matrix, batched_seeds, batched_results, pushforward_prep
     ) = prep
     dense_backend = dense_ad(backend)
@@ -283,9 +283,8 @@ function _sparse_jacobian_aux!(
     x,
     contexts::Vararg{Context,C},
 ) where {FY,B,C}
-    @compat (;
-        coloring_result, compressed_matrix, batched_seeds, batched_results, pullback_prep
-    ) = prep
+    (; coloring_result, compressed_matrix, batched_seeds, batched_results, pullback_prep) =
+        prep
     dense_backend = dense_ad(backend)
     Ng = length(row_groups(coloring_result))
 

@@ -56,7 +56,7 @@ function DI.hvp(
     tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    @compat (; tagged_outer_backend, inner_gradient, outer_pushforward_prep) = prep
+    (; tagged_outer_backend, inner_gradient, outer_pushforward_prep) = prep
     return DI.pushforward(
         inner_gradient, outer_pushforward_prep, tagged_outer_backend, x, tx, contexts...
     )
@@ -71,7 +71,7 @@ function DI.hvp!(
     tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    @compat (; tagged_outer_backend, inner_gradient, outer_pushforward_prep) = prep
+    (; tagged_outer_backend, inner_gradient, outer_pushforward_prep) = prep
     DI.pushforward!(
         inner_gradient, tg, outer_pushforward_prep, tagged_outer_backend, x, tx, contexts...
     )

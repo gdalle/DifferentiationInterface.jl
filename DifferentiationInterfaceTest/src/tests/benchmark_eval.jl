@@ -32,7 +32,7 @@ for op in [
         scenario::Union{$S1out,$S1in,$S2out,$S2in};
         logging::Bool,
     )
-        @compat (; bench0, bench1, bench2, calls0, calls1, calls2) = try
+        (; bench0, bench1, bench2, calls0, calls1, calls2) = try
             run_benchmark_aux(backend, scenario)
         catch exception
             logging && @warn "Error during benchmarking" backend scenario exception
@@ -53,7 +53,7 @@ for op in [
 
     if op in [:derivative, :gradient, :jacobian]
         @eval function run_benchmark_aux(ba::AbstractADType, scen::$S1out)
-            @compat (; f, x, contexts) = deepcopy(scen)
+            (; f, x, contexts) = deepcopy(scen)
             # benchmark
             prep = $prep_op(f, ba, x, contexts...)
             bench0 = @be $prep_op(f, ba, x, contexts...) samples = 1 evals = 1
@@ -71,7 +71,7 @@ for op in [
         end
 
         @eval function run_benchmark_aux(ba::AbstractADType, scen::$S1in)
-            @compat (; f, x, res1, contexts) = deepcopy(scen)
+            (; f, x, res1, contexts) = deepcopy(scen)
             # benchmark
             prep = $prep_op(f, ba, x, contexts...)
             bench0 = @be $prep_op(f, ba, x, contexts...) samples = 1 evals = 1
@@ -92,7 +92,7 @@ for op in [
         op == :gradient && continue
 
         @eval function run_benchmark_aux(ba::AbstractADType, scen::$S2out)
-            @compat (; f, x, y, contexts) = deepcopy(scen)
+            (; f, x, y, contexts) = deepcopy(scen)
             # benchmark
             prep = $prep_op(f, y, ba, x, contexts...)
             bench0 = @be $prep_op(f, y, ba, x, contexts...) samples = 1 evals = 1
@@ -110,7 +110,7 @@ for op in [
         end
 
         @eval function run_benchmark_aux(ba::AbstractADType, scen::$S2in)
-            @compat (; f, x, y, res1, contexts) = deepcopy(scen)
+            (; f, x, y, res1, contexts) = deepcopy(scen)
             # benchmark
             prep = $prep_op(f, y, ba, x, contexts...)
             bench0 = @be $prep_op(f, y, ba, x, contexts...) samples = 1 evals = 1
@@ -132,7 +132,7 @@ for op in [
 
     elseif op in [:hessian, :second_derivative]
         @eval function run_benchmark_aux(ba::AbstractADType, scen::$S1out)
-            @compat (; f, x, contexts) = deepcopy(scen)
+            (; f, x, contexts) = deepcopy(scen)
             # benchmark
             prep = $prep_op(f, ba, x, contexts...)
             bench0 = @be $prep_op(f, ba, x, contexts...) samples = 1 evals = 1
@@ -150,7 +150,7 @@ for op in [
         end
 
         @eval function run_benchmark_aux(ba::AbstractADType, scen::$S1in)
-            @compat (; f, x, res1, res2, contexts) = deepcopy(scen)
+            (; f, x, res1, res2, contexts) = deepcopy(scen)
             # benchmark
             prep = $prep_op(f, ba, x, contexts...)
             bench0 = @be $prep_op(f, ba, x, contexts...) samples = 1 evals = 1
@@ -171,7 +171,7 @@ for op in [
 
     elseif op in [:pushforward, :pullback]
         @eval function run_benchmark_aux(ba::AbstractADType, scen::$S1out)
-            @compat (; f, x, tang, contexts) = deepcopy(scen)
+            (; f, x, tang, contexts) = deepcopy(scen)
             # benchmark
             prep = $prep_op(f, ba, x, tang, contexts...)
             bench0 = @be $prep_op(f, ba, x, tang, contexts...) samples = 1 evals = 1
@@ -189,7 +189,7 @@ for op in [
         end
 
         @eval function run_benchmark_aux(ba::AbstractADType, scen::$S1in)
-            @compat (; f, x, tang, res1, contexts) = deepcopy(scen)
+            (; f, x, tang, res1, contexts) = deepcopy(scen)
             # benchmark
             prep = $prep_op(f, ba, x, tang, contexts...)
             bench0 = @be $prep_op(f, ba, x, tang, contexts...) samples = 1 evals = 1
@@ -209,7 +209,7 @@ for op in [
         end
 
         @eval function run_benchmark_aux(ba::AbstractADType, scen::$S2out)
-            @compat (; f, x, y, tang, contexts) = deepcopy(scen)
+            (; f, x, y, tang, contexts) = deepcopy(scen)
             # benchmark
             prep = $prep_op(f, y, ba, x, tang, contexts...)
             bench0 = @be $prep_op(f, y, ba, x, tang, contexts...) samples = 1 evals = 1
@@ -228,7 +228,7 @@ for op in [
         end
 
         @eval function run_benchmark_aux(ba::AbstractADType, scen::$S2in)
-            @compat (; f, x, y, tang, res1, contexts) = deepcopy(scen)
+            (; f, x, y, tang, res1, contexts) = deepcopy(scen)
             # benchmark
             prep = $prep_op(f, y, ba, x, tang, contexts...)
             bench0 = @be $prep_op(f, y, ba, x, tang, contexts...) samples = 1 evals = 1
@@ -250,7 +250,7 @@ for op in [
 
     elseif op in [:hvp]
         @eval function run_benchmark_aux(ba::AbstractADType, scen::$S1out)
-            @compat (; f, x, tang, contexts) = deepcopy(scen)
+            (; f, x, tang, contexts) = deepcopy(scen)
             # benchmark
             prep = $prep_op(f, ba, x, tang, contexts...)
             bench0 = @be $prep_op(f, ba, x, tang, contexts...) samples = 1 evals = 1
@@ -267,7 +267,7 @@ for op in [
         end
 
         @eval function run_benchmark_aux(ba::AbstractADType, scen::$S1in)
-            @compat (; f, x, tang, res2, contexts) = deepcopy(scen)
+            (; f, x, tang, res2, contexts) = deepcopy(scen)
             # benchmark
             prep = $prep_op(f, ba, x, tang, contexts...)
             bench0 = @be $prep_op(f, ba, x, tang, contexts...) samples = 1 evals = 1

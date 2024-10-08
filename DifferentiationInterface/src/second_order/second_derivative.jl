@@ -76,7 +76,7 @@ function second_derivative(
     x,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    @compat (; inner_derivative, outer_derivative_prep) = prep
+    (; inner_derivative, outer_derivative_prep) = prep
     return derivative(
         inner_derivative, outer_derivative_prep, outer(backend), x, contexts...
     )
@@ -89,7 +89,7 @@ function value_derivative_and_second_derivative(
     x,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    @compat (; inner_derivative, outer_derivative_prep) = prep
+    (; inner_derivative, outer_derivative_prep) = prep
     y = f(x, map(unwrap, contexts)...)
     der, der2 = value_and_derivative(
         inner_derivative, outer_derivative_prep, outer(backend), x, contexts...
@@ -105,7 +105,7 @@ function second_derivative!(
     x,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    @compat (; inner_derivative, outer_derivative_prep) = prep
+    (; inner_derivative, outer_derivative_prep) = prep
     return derivative!(
         inner_derivative, der2, outer_derivative_prep, outer(backend), x, contexts...
     )
@@ -120,7 +120,7 @@ function value_derivative_and_second_derivative!(
     x,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    @compat (; inner_derivative, outer_derivative_prep) = prep
+    (; inner_derivative, outer_derivative_prep) = prep
     y = f(x, map(unwrap, contexts)...)
     new_der, _ = value_and_derivative!(
         inner_derivative, der2, outer_derivative_prep, outer(backend), x, contexts...
