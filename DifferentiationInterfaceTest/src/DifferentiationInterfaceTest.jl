@@ -52,7 +52,6 @@ using DocStringExtensions
 using Functors: fmap
 using JET: JET
 using LinearAlgebra: Adjoint, Diagonal, Transpose, dot, parent
-using PackageExtensionCompat: @require_extensions
 using ProgressMeter: ProgressUnknown, next!
 using Random: AbstractRNG, default_rng, rand!
 using SparseArrays: SparseArrays, SparseMatrixCSC, nnz, spdiagm
