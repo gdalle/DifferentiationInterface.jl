@@ -41,7 +41,7 @@ julia> function f(x::Vector{Float64})
            return a[1]
        end;
 
-julia> f2 = DifferentiateWith(f, FiniteDiff());
+julia> f2 = DifferentiateWith(f, AutoFiniteDiff());
 
 julia> f([3.0, 5.0]) == f2([3.0, 5.0])
 true
