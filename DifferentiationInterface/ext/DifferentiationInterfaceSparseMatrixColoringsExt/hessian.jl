@@ -86,9 +86,7 @@ function DI.hessian!(
     x,
     contexts::Vararg{Context,C},
 ) where {F,B,C}
-    @compat (;
-        coloring_result, compressed_matrix, batched_seeds, batched_results, hvp_prep
-    ) = prep
+    (; coloring_result, compressed_matrix, batched_seeds, batched_results, hvp_prep) = prep
     dense_backend = dense_ad(backend)
     Ng = length(column_groups(coloring_result))
 

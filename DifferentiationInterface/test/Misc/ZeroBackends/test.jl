@@ -65,11 +65,9 @@ test_differentiation(
     logging=LOGGING,
 )
 
-if VERSION >= v"1.10"
-    test_differentiation(
-        [AutoZeroForward(), AutoZeroReverse()],
-        zero.(gpu_scenarios());
-        correctness=true,
-        logging=LOGGING,
-    )
-end
+test_differentiation(
+    [AutoZeroForward(), AutoZeroReverse()],
+    zero.(gpu_scenarios());
+    correctness=true,
+    logging=LOGGING,
+)

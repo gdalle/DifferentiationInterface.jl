@@ -1,6 +1,5 @@
 module DifferentiationInterfaceTestStaticArraysExt
 
-using Compat
 import DifferentiationInterface as DI
 using DifferentiationInterfaceTest
 import DifferentiationInterfaceTest as DIT
@@ -46,7 +45,7 @@ mySArray(::Nothing) = nothing
 myMArray(::Nothing) = nothing
 
 function mySArray(scen::Scenario{op,pl_op,pl_fun}) where {op,pl_op,pl_fun}
-    @compat (; f, x, y, tang, contexts, res1, res2) = scen
+    (; f, x, y, tang, contexts, res1, res2) = scen
     return Scenario{op,pl_op,pl_fun}(
         mySArray(f);
         x=mySArray(x),
@@ -59,7 +58,7 @@ function mySArray(scen::Scenario{op,pl_op,pl_fun}) where {op,pl_op,pl_fun}
 end
 
 function myMArray(scen::Scenario{op,pl_op,pl_fun}) where {op,pl_op,pl_fun}
-    @compat (; f, x, y, tang, contexts, res1, res2) = scen
+    (; f, x, y, tang, contexts, res1, res2) = scen
     return Scenario{op,pl_op,pl_fun}(
         myMArray(f);
         x=myMArray(x),

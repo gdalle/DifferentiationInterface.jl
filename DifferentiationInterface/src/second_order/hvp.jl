@@ -169,7 +169,7 @@ function hvp(
     tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    @compat (; inner_gradient, outer_pushforward_prep) = prep
+    (; inner_gradient, outer_pushforward_prep) = prep
     return pushforward(
         inner_gradient, outer_pushforward_prep, outer(backend), x, tx, contexts...
     )
@@ -183,7 +183,7 @@ function hvp(
     tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    @compat (; inner_gradient, outer_pushforward_prep) = prep
+    (; inner_gradient, outer_pushforward_prep) = prep
     return pushforward(
         inner_gradient, outer_pushforward_prep, outer(backend), x, tx, contexts...
     )
@@ -197,7 +197,7 @@ function hvp(
     tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    @compat (; inner_pushforward, outer_gradient_prep) = prep
+    (; inner_pushforward, outer_gradient_prep) = prep
     tg = map(tx) do dx
         gradient(inner_pushforward, outer(backend), x, Constant(dx), contexts...)
     end
@@ -212,7 +212,7 @@ function hvp(
     tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    @compat (; inner_gradient, outer_pullback_prep) = prep
+    (; inner_gradient, outer_pullback_prep) = prep
     return pullback(inner_gradient, outer_pullback_prep, outer(backend), x, tx, contexts...)
 end
 
@@ -225,7 +225,7 @@ function hvp!(
     tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    @compat (; inner_gradient, outer_pushforward_prep) = prep
+    (; inner_gradient, outer_pushforward_prep) = prep
     return pushforward!(
         inner_gradient, tg, outer_pushforward_prep, outer(backend), x, tx, contexts...
     )
@@ -240,7 +240,7 @@ function hvp!(
     tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    @compat (; inner_gradient, outer_pushforward_prep) = prep
+    (; inner_gradient, outer_pushforward_prep) = prep
     return pushforward!(
         inner_gradient, tg, outer_pushforward_prep, outer(backend), x, tx, contexts...
     )
@@ -255,7 +255,7 @@ function hvp!(
     tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    @compat (; inner_pushforward, outer_gradient_prep) = prep
+    (; inner_pushforward, outer_gradient_prep) = prep
     for b in eachindex(tx, tg)
         gradient!(
             inner_pushforward,
@@ -279,7 +279,7 @@ function hvp!(
     tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    @compat (; inner_gradient, outer_pullback_prep) = prep
+    (; inner_gradient, outer_pullback_prep) = prep
     return pullback!(
         inner_gradient, tg, outer_pullback_prep, outer(backend), x, tx, contexts...
     )

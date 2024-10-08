@@ -1,6 +1,5 @@
 module DifferentiationInterfaceTestLuxExt
 
-using Compat: @compat
 using ComponentArrays: ComponentArray
 using DifferentiationInterface
 import DifferentiationInterface as DI

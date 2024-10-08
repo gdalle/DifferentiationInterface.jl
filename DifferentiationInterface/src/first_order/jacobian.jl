@@ -226,7 +226,7 @@ function _jacobian_aux(
     x,
     contexts::Vararg{Context,C},
 ) where {FY,B,C}
-    @compat (; batched_seeds, pushforward_prep, N) = prep
+    (; batched_seeds, pushforward_prep, N) = prep
 
     pushforward_prep_same = prepare_pushforward_same_point(
         f_or_f!y..., pushforward_prep, backend, x, batched_seeds[1], contexts...
@@ -259,7 +259,7 @@ function _jacobian_aux(
     x,
     contexts::Vararg{Context,C},
 ) where {FY,B,C}
-    @compat (; batched_seeds, pullback_prep, M) = prep
+    (; batched_seeds, pullback_prep, M) = prep
 
     pullback_prep_same = prepare_pullback_same_point(
         f_or_f!y..., prep.pullback_prep, backend, x, batched_seeds[1], contexts...
@@ -288,7 +288,7 @@ function _jacobian_aux!(
     x,
     contexts::Vararg{Context,C},
 ) where {FY,B,C}
-    @compat (; batched_seeds, batched_results, pushforward_prep, N) = prep
+    (; batched_seeds, batched_results, pushforward_prep, N) = prep
 
     pushforward_prep_same = prepare_pushforward_same_point(
         f_or_f!y..., pushforward_prep, backend, x, batched_seeds[1], contexts...
@@ -323,7 +323,7 @@ function _jacobian_aux!(
     x,
     contexts::Vararg{Context,C},
 ) where {FY,B,C}
-    @compat (; batched_seeds, batched_results, pullback_prep, M) = prep
+    (; batched_seeds, batched_results, pullback_prep, M) = prep
 
     pullback_prep_same = prepare_pullback_same_point(
         f_or_f!y..., prep.pullback_prep, backend, x, batched_seeds[1], contexts...

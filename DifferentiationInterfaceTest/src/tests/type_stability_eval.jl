@@ -33,7 +33,7 @@ for op in [
             prepared_op::Bool,
             unprepared_op::Bool,
         )
-            @compat (; f, x, contexts) = deepcopy(scen)
+            (; f, x, contexts) = deepcopy(scen)
             prep = $prep_op(f, ba, x, contexts...)
             preparation && JET.@test_opt $prep_op(f, ba, x, contexts...)
             prepared_op && JET.@test_opt $op(f, prep, ba, x, contexts...)
@@ -54,7 +54,7 @@ for op in [
             prepared_op::Bool,
             unprepared_op::Bool,
         )
-            @compat (; f, x, res1, contexts) = deepcopy(scen)
+            (; f, x, res1, contexts) = deepcopy(scen)
             prep = $prep_op(f, ba, x, contexts...)
             preparation && JET.@test_opt $prep_op(f, ba, x, contexts...)
             prepared_op && JET.@test_opt $op!(f, res1, prep, ba, x, contexts...)
@@ -77,7 +77,7 @@ for op in [
             prepared_op::Bool,
             unprepared_op::Bool,
         )
-            @compat (; f, x, y, contexts) = deepcopy(scen)
+            (; f, x, y, contexts) = deepcopy(scen)
             prep = $prep_op(f, y, ba, x, contexts...)
             preparation && JET.@test_opt $prep_op(f, y, ba, x, contexts...)
             prepared_op && JET.@test_opt $op(f, y, prep, ba, x, contexts...)
@@ -98,7 +98,7 @@ for op in [
             prepared_op::Bool,
             unprepared_op::Bool,
         )
-            @compat (; f, x, y, res1, contexts) = deepcopy(scen)
+            (; f, x, y, res1, contexts) = deepcopy(scen)
             prep = $prep_op(f, y, ba, x, contexts...)
             preparation && JET.@test_opt $prep_op(f, y, ba, x, contexts...)
             prepared_op && JET.@test_opt $op!(f, y, res1, prep, ba, x, contexts...)
@@ -120,7 +120,7 @@ for op in [
             prepared_op::Bool,
             unprepared_op::Bool,
         )
-            @compat (; f, x, contexts) = deepcopy(scen)
+            (; f, x, contexts) = deepcopy(scen)
             prep = $prep_op(f, ba, x, contexts...)
             preparation && JET.@test_opt $prep_op(f, ba, x, contexts...)
             prepared_op && JET.@test_opt $op(f, prep, ba, x, contexts...)
@@ -141,7 +141,7 @@ for op in [
             prepared_op::Bool,
             unprepared_op::Bool,
         )
-            @compat (; f, x, res1, res2, contexts) = deepcopy(scen)
+            (; f, x, res1, res2, contexts) = deepcopy(scen)
             prep = $prep_op(f, ba, x, contexts...)
             preparation && JET.@test_opt $prep_op(f, ba, x, contexts...)
             prepared_op && JET.@test_opt $op!(f, res2, prep, ba, x, contexts...)
@@ -165,7 +165,7 @@ for op in [
             prepared_op::Bool,
             unprepared_op::Bool,
         )
-            @compat (; f, x, tang, contexts) = deepcopy(scen)
+            (; f, x, tang, contexts) = deepcopy(scen)
             prep = $prep_op(f, ba, x, tang, contexts...)
             preparation && JET.@test_opt $prep_op(f, ba, x, tang, contexts...)
             prepared_op && JET.@test_opt $op(f, prep, ba, x, tang, contexts...)
@@ -186,7 +186,7 @@ for op in [
             prepared_op::Bool,
             unprepared_op::Bool,
         )
-            @compat (; f, x, tang, res1, res2, contexts) = deepcopy(scen)
+            (; f, x, tang, res1, res2, contexts) = deepcopy(scen)
             prep = $prep_op(f, ba, x, tang, contexts...)
             preparation && JET.@test_opt $prep_op(f, ba, x, tang, contexts...)
             prepared_op && JET.@test_opt $op!(f, res1, prep, ba, x, tang, contexts...)
@@ -209,7 +209,7 @@ for op in [
             prepared_op::Bool,
             unprepared_op::Bool,
         )
-            @compat (; f, x, y, tang, contexts) = deepcopy(scen)
+            (; f, x, y, tang, contexts) = deepcopy(scen)
             prep = $prep_op(f, y, ba, x, tang, contexts...)
             preparation && JET.@test_opt $prep_op(f, y, ba, x, tang, contexts...)
             prepared_op && JET.@test_opt $op(f, y, prep, ba, x, tang, contexts...)
@@ -230,7 +230,7 @@ for op in [
             prepared_op::Bool,
             unprepared_op::Bool,
         )
-            @compat (; f, x, y, tang, res1, contexts) = deepcopy(scen)
+            (; f, x, y, tang, res1, contexts) = deepcopy(scen)
             prep = $prep_op(f, y, ba, x, tang, contexts...)
             preparation && JET.@test_opt $prep_op(f, y, ba, x, tang, contexts...)
             prepared_op && JET.@test_opt $op!(f, y, res1, prep, ba, x, tang, contexts...)
@@ -256,7 +256,7 @@ for op in [
             prepared_op::Bool,
             unprepared_op::Bool,
         )
-            @compat (; f, x, tang, contexts) = deepcopy(scen)
+            (; f, x, tang, contexts) = deepcopy(scen)
             prep = $prep_op(f, ba, x, tang, contexts...)
             preparation && JET.@test_opt $prep_op(f, ba, x, tang, contexts...)
             prepared_op && JET.@test_opt $op(f, prep, ba, x, tang, contexts...)
@@ -273,7 +273,7 @@ for op in [
             prepared_op::Bool,
             unprepared_op::Bool,
         )
-            @compat (; f, x, tang, res1, res2, contexts) = deepcopy(scen)
+            (; f, x, tang, res1, res2, contexts) = deepcopy(scen)
             prep = $prep_op(f, ba, x, tang, contexts...)
             preparation && JET.@test_opt $prep_op(f, ba, x, tang, contexts...)
             prepared_op && JET.@test_opt $op!(f, res2, prep, ba, x, tang, contexts...)

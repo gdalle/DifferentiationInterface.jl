@@ -48,7 +48,7 @@ function DI.value_and_pullback(
     ty::NTuple,
     contexts::Vararg{Constant,C},
 ) where {C}
-    @compat (; y, pb) = prep
+    (; y, pb) = prep
     tx = map(ty) do dy
         pb(dy)[2]
     end
@@ -63,7 +63,7 @@ function DI.pullback(
     ty::NTuple,
     contexts::Vararg{Constant,C},
 ) where {C}
-    @compat (; pb) = prep
+    (; pb) = prep
     tx = map(ty) do dy
         pb(dy)[2]
     end

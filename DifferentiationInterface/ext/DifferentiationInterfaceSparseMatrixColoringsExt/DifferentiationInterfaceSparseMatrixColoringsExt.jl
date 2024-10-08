@@ -9,7 +9,6 @@ using ADTypes:
     sparsity_detector,
     jacobian_sparsity,
     hessian_sparsity
-using Compat
 using DifferentiationInterface
 using DifferentiationInterface:
     GradientPrep,

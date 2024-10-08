@@ -122,9 +122,7 @@ function test_differentiation(
                         (; preparation=false, prepared_op=type_stability, unprepared_op=false)
                     end
                     bool_type_stability && @testset "Type stability" begin
-                        @static if VERSION >= v"1.7"
-                            test_jet(adapted_backend, scen; kwargs_type_stability...)
-                        end
+                        test_jet(adapted_backend, scen; kwargs_type_stability...)
                     end
                     sparsity && @testset "Sparsity" begin
                         test_sparsity(adapted_backend, scen)

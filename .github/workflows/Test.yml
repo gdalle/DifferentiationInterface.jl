@@ -29,8 +29,7 @@ jobs:
       matrix:
         version:
           - "1.10"  # TODO: 1 (as of 2024.10.08, 1 means 1.11 and we're not ready yet)
-          - "lts"
-          - "pre"
+          - "1.11"
         group:
           - Misc/Internals
           - Misc/DifferentiateWith
@@ -51,50 +50,22 @@ jobs:
           - Back/Zygote
           - Down/Flux
           - Down/Lux
-        skip_lts:
-          - ${{ github.event.pull_request.draft }}
         skip_pre:
           - ${{ github.event.pull_request.draft }}
         exclude:
-          - skip_lts: true
-            version: "lts"
           - skip_pre: true
-            version: "pre"
-          # lts
-          - version: "lts"
+            version: "1.11"
+          - version: "1.11"
             group: Back/ChainRulesBackends
-          - version: "lts"
+          - version: "1.11"
             group: Back/Enzyme
-          - version: "lts"
-            group: Back/FiniteDiff
-          - version: "lts"
+          - version: "1.11"
             group: Back/Mooncake
-          - version: "lts"
-            group: Back/PolyesterForwardDiff
-          - version: "lts"
+          - version: "1.11"
             group: Back/SecondOrder
-          - version: "lts"
-            group: Back/SymbolicBackends
-          - version: "lts"
+          - version: "1.11"
             group: Misc/Internals
-          - version: "lts"
-            group: Misc/SparsityDetector
-          - version: "lts"
-            group: Down/Flux
-          - version: "lts"
-            group: Down/Lux
-          # pre-release
-          - version: "pre"
-            group: Back/ChainRulesBackends
-          - version: "pre"
-            group: Back/Enzyme
-          - version: "pre"
-            group: Back/Mooncake
-          - version: "pre"
-            group: Back/SecondOrder
-          - version: "pre"
-            group: Misc/Internals
-          - version: "pre"
+          - version: "1.11"
             group: Misc/SparsityDetector
     env:
       JULIA_DI_TEST_GROUP: ${{ matrix.group }}
@@ -135,26 +106,17 @@ jobs:
       matrix:
         version:
           - "1.10"  # TODO: 1
-          - "lts"
-          - "pre"
+          - "1.11"
         group:
           - Formalities
           - Zero
           - Standard
           - Weird
-        skip_lts:
-          - ${{ github.event.pull_request.draft }}
         skip_pre:
           - ${{ github.event.pull_request.draft }}
         exclude:
-          - skip_lts: true
-            version: "lts"
           - skip_pre: true
-            version: "pre"
-          - version: "lts"
-            group: Formalities
-          - version: "lts"
-            group: Weird
+            version: "1.11"
     env:
       JULIA_DIT_TEST_GROUP: ${{ matrix.group }}
     steps:
