@@ -5,6 +5,7 @@ using ADTypes:
     AbstractADType,
     AutoSparse,
     coloring_algorithm,
+    dense_ad,
     sparsity_detector,
     jacobian_sparsity,
     hessian_sparsity
@@ -19,7 +20,6 @@ using DifferentiationInterface:
     PushforwardPrep,
     PushforwardFast,
     PushforwardSlow,
-    dense_ad,
     inner,
     outer,
     multibasis,

@@ -13,6 +13,7 @@ using ADTypes:
     ForwardOrReverseMode,
     ReverseMode,
     SymbolicMode,
+    dense_ad,
     mode
 using ADTypes:
     AutoChainRules,

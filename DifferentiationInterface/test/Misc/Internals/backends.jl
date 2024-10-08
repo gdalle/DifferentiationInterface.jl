@@ -43,4 +43,5 @@ end
     @test DI.threshold_batchsize(AutoForwardDiff(), 2) isa AutoForwardDiff{nothing}
     @test DI.threshold_batchsize(AutoForwardDiff(; chunksize=4), 2) isa AutoForwardDiff{2}
     @test DI.threshold_batchsize(AutoForwardDiff(; chunksize=4), 6) isa AutoForwardDiff{4}
+    @test DI.pick_batchsize(AutoSparse(AutoForwardDiff(; chunksize=4)), 10) == Val(4)
 end

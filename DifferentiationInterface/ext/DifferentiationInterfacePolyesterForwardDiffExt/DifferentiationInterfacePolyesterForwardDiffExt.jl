@@ -22,8 +22,8 @@ using PolyesterForwardDiff: threaded_gradient!, threaded_jacobian!
 using PolyesterForwardDiff.ForwardDiff: Chunk
 using PolyesterForwardDiff.ForwardDiff.DiffResults: DiffResults
 
-function single_threaded(backend::AutoPolyesterForwardDiff{C,T}) where {C,T}
-    return AutoForwardDiff{C,T}(backend.tag)
+function single_threaded(backend::AutoPolyesterForwardDiff{chunksize,T}) where {chunksize,T}
+    return AutoForwardDiff{chunksize,T}(backend.tag)
 end
 
 DI.check_available(::AutoPolyesterForwardDiff) = true
@@ -33,10 +33,10 @@ function DI.pick_batchsize(backend::AutoPolyesterForwardDiff, dimension::Integer
 end
 
 function DI.threshold_batchsize(
-    backend::AutoPolyesterForwardDiff{C1}, C2::Integer
-) where {C1}
-    C = (C1 === nothing) ? nothing : min(C1, C2)
-    return AutoPolyesterForwardDiff(; chunksize=C, tag=backend.tag)
+    backend::AutoPolyesterForwardDiff{chunksize1}, chunksize2::Integer
+) where {chunksize1}
+    chunksize = (chunksize1 === nothing) ? nothing : min(chunksize1, chunksize2)
+    return AutoPolyesterForwardDiff(; chunksize, tag=backend.tag)
 end
 
 include("onearg.jl")

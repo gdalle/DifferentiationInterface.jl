@@ -24,8 +24,6 @@ using DataFrames: DataFrame
 using DifferentiationInterface
 using DifferentiationInterface:
     inner,
-    inner,
-    dense_ad,
     mode,
     outer,
     inplace_support,
