@@ -18,7 +18,5 @@ for backend in backends
 end
 
 test_differentiation(
-    backends,  #
-    default_scenarios(; include_constantified=true);
-    logging=LOGGING,
+    backends, default_scenarios(; include_constantified=true); logging=LOGGING
 );

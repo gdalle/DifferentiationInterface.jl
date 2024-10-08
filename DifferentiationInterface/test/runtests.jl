@@ -1,6 +1,15 @@
 using DifferentiationInterface
 using Pkg
 using Test
+using SparseMatrixColorings, SparseConnectivityTracer
+
+function MyAutoSparse(backend)
+    return AutoSparse(
+        backend;
+        sparsity_detector=TracerSparsityDetector(),
+        coloring_algorithm=GreedyColoringAlgorithm(),
+    )
+end
 
 DIT_PATH = joinpath(@__DIR__, "..", "..", "DifferentiationInterfaceTest")
 if isdir(DIT_PATH)

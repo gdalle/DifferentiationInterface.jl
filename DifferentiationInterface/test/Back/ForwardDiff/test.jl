@@ -4,30 +4,22 @@ Pkg.add("ForwardDiff")
 using ComponentArrays: ComponentArrays
 using DifferentiationInterface, DifferentiationInterfaceTest
 using ForwardDiff: ForwardDiff
-using SparseConnectivityTracer, SparseMatrixColorings
 using StaticArrays: StaticArrays
 using Test
 
 LOGGING = get(ENV, "CI", "false") == "false"
 
-dense_backends = [AutoForwardDiff(; tag=:hello), AutoForwardDiff(; chunksize=5)]
+backends = [AutoForwardDiff(; tag=:hello), AutoForwardDiff(; chunksize=5)]
 
-sparse_backends =
-    AutoSparse.(
-        dense_backends;
-        sparsity_detector=TracerSparsityDetector(),
-        coloring_algorithm=GreedyColoringAlgorithm(),
-    )
-
-for backend in vcat(dense_backends, sparse_backends)
+for backend in backends
     @test check_available(backend)
     @test check_inplace(backend)
 end
 
-## Dense backends
+## Dense
 
 test_differentiation(
-    dense_backends, default_scenarios(; include_constantified=true); logging=LOGGING
+    backends, default_scenarios(; include_constantified=true); logging=LOGGING
 );
 
 test_differentiation(
@@ -42,26 +34,19 @@ test_differentiation(
 );
 
 test_differentiation(
-    dense_backends,
-    # ForwardDiff accesses individual indices
-    vcat(component_scenarios(), static_scenarios());
-    # jacobian is super slow for some reason
-    excluded=[:jacobian],
+    backends,
+    vcat(component_scenarios(), static_scenarios()); # FD accesses individual indices
+    excluded=[:jacobian],  # jacobian is super slow for some reason
     second_order=false,
     logging=LOGGING,
 );
 
-## Sparse backends
+## Sparse
+
+test_differentiation(MyAutoSparse.(backends), default_scenarios(); logging=LOGGING);
 
 test_differentiation(
-    sparse_backends,
-    default_scenarios();
-    excluded=[:derivative, :gradient, :hvp, :pullback, :pushforward, :second_derivative],
-    logging=LOGGING,
-);
-
-test_differentiation(
-    sparse_backends,
+    MyAutoSparse.(backends),
     sparse_scenarios(; include_constantified=true);
     sparsity=true,
     logging=LOGGING,

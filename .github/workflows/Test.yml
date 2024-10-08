@@ -25,7 +25,7 @@ jobs:
       actions: write
       contents: read
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         version:
           - "1.10"  # TODO: 1 (as of 2024.10.08, 1 means 1.11 and we're not ready yet)
@@ -44,7 +44,6 @@ jobs:
           - Back/Mooncake
           - Back/PolyesterForwardDiff
           - Back/ReverseDiff
-          - Back/SecondOrder
           - Back/SymbolicBackends
           - Back/Tracker
           - Back/Zygote
@@ -61,12 +60,6 @@ jobs:
             group: Back/Enzyme
           - version: "1.11"
             group: Back/Mooncake
-          - version: "1.11"
-            group: Back/SecondOrder
-          - version: "1.11"
-            group: Misc/Internals
-          - version: "1.11"
-            group: Misc/SparsityDetector
     env:
       JULIA_DI_TEST_GROUP: ${{ matrix.group }}
     steps:

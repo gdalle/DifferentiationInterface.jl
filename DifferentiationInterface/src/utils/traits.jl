@@ -134,8 +134,7 @@ function hvp_mode(ba::SecondOrder)
         return ReverseOverForward()
     elseif Bool(pullback_performance(outer(ba))) && Bool(pullback_performance(inner(ba)))
         return ReverseOverReverse()
-    elseif Bool(pushforward_performance(outer(ba))) &&
-        Bool(pushforward_performance(inner(ba)))
+    else
         return ForwardOverForward()
     end
 end
