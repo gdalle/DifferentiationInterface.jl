@@ -75,7 +75,7 @@ function DI.prepare_jacobian(
 ) where {F,C}
     y = f(x, map(unwrap, contexts)...)
     perf = pushforward_performance(backend)
-    valB = pick_jacobian_batchsize(perf, backend; N=length(x), M=length(y))
+    valB = pick_jacobian_batchsize(perf, dense_ad(backend); N=length(x), M=length(y))
     return _prepare_sparse_jacobian_aux(perf, valB, y, (f,), backend, x, contexts...)
 end
 
@@ -83,7 +83,7 @@ function DI.prepare_jacobian(
     f!::F, y, backend::AutoSparse, x, contexts::Vararg{Context,C}
 ) where {F,C}
     perf = pushforward_performance(backend)
-    valB = pick_jacobian_batchsize(perf, backend; N=length(x), M=length(y))
+    valB = pick_jacobian_batchsize(perf, dense_ad(backend); N=length(x), M=length(y))
     return _prepare_sparse_jacobian_aux(perf, valB, y, (f!, y), backend, x, contexts...)
 end
 

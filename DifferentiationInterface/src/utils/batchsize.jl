@@ -7,6 +7,10 @@ Returns `Val(1)` for backends which have not overloaded it.
 """
 pick_batchsize(::AbstractADType, dimension::Integer) = Val(1)
 
+function pick_batchsize(backend::AutoSparse, dimension::Integer)
+    return pick_batchsize(dense_ad(backend), dimension)
+end
+
 function pick_jacobian_batchsize(
     ::PushforwardFast, backend::AbstractADType; M::Integer, N::Integer
 )

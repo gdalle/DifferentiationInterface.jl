@@ -118,18 +118,32 @@ end
 
 ## Jacobian
 
+struct PolyesterForwardDiffTwoArgJacobianPrep{chunksize} <: JacobianPrep
+    chunk::Chunk{chunksize}
+end
+
 function DI.prepare_jacobian(
-    f!, y, ::AutoPolyesterForwardDiff, x, contexts::Vararg{Context,C}
-) where {C}
-    return NoJacobianPrep()
+    f!, y, ::AutoPolyesterForwardDiff{chunksize}, x, contexts::Vararg{Context,C}
+) where {chunksize,C}
+    if isnothing(chunksize)
+        chunk = Chunk(x)
+    else
+        chunk = Chunk{chunksize}()
+    end
+    return PolyesterForwardDiffTwoArgJacobianPrep(chunk)
 end
 
 function DI.value_and_jacobian(
-    f!, y, ::NoJacobianPrep, ::AutoPolyesterForwardDiff{K}, x, contexts::Vararg{Context,C}
+    f!,
+    y,
+    prep::PolyesterForwardDiffTwoArgJacobianPrep,
+    ::AutoPolyesterForwardDiff{K},
+    x,
+    contexts::Vararg{Context,C},
 ) where {K,C}
     fc! = with_contexts(f!, contexts...)
     jac = similar(y, length(y), length(x))
-    threaded_jacobian!(fc!, y, jac, x, Chunk{K}())
+    threaded_jacobian!(fc!, y, jac, x, prep.chunk)
     fc!(y, x)
     return y, jac
 end
@@ -138,23 +152,28 @@ function DI.value_and_jacobian!(
     f!,
     y,
     jac,
-    ::NoJacobianPrep,
+    prep::PolyesterForwardDiffTwoArgJacobianPrep,
     ::AutoPolyesterForwardDiff{K},
     x,
     contexts::Vararg{Context,C},
 ) where {K,C}
     fc! = with_contexts(f!, contexts...)
-    threaded_jacobian!(fc!, y, jac, x, Chunk{K}())
+    threaded_jacobian!(fc!, y, jac, x, prep.chunk)
     fc!(y, x)
     return y, jac
 end
 
 function DI.jacobian(
-    f!, y, ::NoJacobianPrep, ::AutoPolyesterForwardDiff{K}, x, contexts::Vararg{Context,C}
-) where {K,C}
+    f!,
+    y,
+    prep::PolyesterForwardDiffTwoArgJacobianPrep,
+    ::AutoPolyesterForwardDiff,
+    x,
+    contexts::Vararg{Context,C},
+) where {C}
     fc! = with_contexts(f!, contexts...)
     jac = similar(y, length(y), length(x))
-    threaded_jacobian!(fc!, y, jac, x, Chunk{K}())
+    threaded_jacobian!(fc!, y, jac, x, prep.chunk)
     return jac
 end
 
@@ -162,12 +181,12 @@ function DI.jacobian!(
     f!,
     y,
     jac,
-    ::NoJacobianPrep,
-    ::AutoPolyesterForwardDiff{K},
+    prep::PolyesterForwardDiffTwoArgJacobianPrep,
+    ::AutoPolyesterForwardDiff,
     x,
     contexts::Vararg{Context,C},
-) where {K,C}
+) where {C}
     fc! = with_contexts(f!, contexts...)
-    threaded_jacobian!(fc!, y, jac, x, Chunk{K}())
+    threaded_jacobian!(fc!, y, jac, x, prep.chunk)
     return jac
 end

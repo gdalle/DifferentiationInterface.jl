@@ -10,15 +10,14 @@ using Test
 
 LOGGING = get(ENV, "CI", "false") == "false"
 
-dense_backends = [AutoForwardDiff(), AutoForwardDiff(; chunksize=5, tag=:hello)]
+dense_backends = [AutoForwardDiff(; tag=:hello), AutoForwardDiff(; chunksize=5)]
 
-sparse_backends = [
-    AutoSparse(
-        AutoForwardDiff(; chunksize=5);
+sparse_backends =
+    AutoSparse.(
+        dense_backends;
         sparsity_detector=TracerSparsityDetector(),
         coloring_algorithm=GreedyColoringAlgorithm(),
-    ),
-]
+    )
 
 for backend in vcat(dense_backends, sparse_backends)
     @test check_available(backend)

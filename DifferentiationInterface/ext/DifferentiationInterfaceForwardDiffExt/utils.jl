@@ -1,8 +1,11 @@
 choose_chunk(::AutoForwardDiff{nothing}, x) = Chunk(x)
-choose_chunk(::AutoForwardDiff{C}, x) where {C} = Chunk{C}()
+choose_chunk(::AutoForwardDiff{chunksize}, x) where {chunksize} = Chunk{chunksize}()
 
-tag_type(f, ::AutoForwardDiff{C,T}, x) where {C,T} = T
-tag_type(f, ::AutoForwardDiff{C,Nothing}, x) where {C} = typeof(Tag(f, eltype(x)))
+tag_type(f, ::AutoForwardDiff{chunksize,T}, x) where {chunksize,T} = T
+
+function tag_type(f, ::AutoForwardDiff{chunksize,Nothing}, x) where {chunksize}
+    return typeof(Tag(f, eltype(x)))
+end
 
 function make_dual_similar(::Type{T}, x::Number, tx::NTuple{B}) where {T,B}
     return Dual{T}(x, tx...)
