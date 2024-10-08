@@ -100,8 +100,9 @@ end
 
 function compatible(backend::AbstractADType, scen::Scenario)
     place_compatible = function_place(scen) == :out || Bool(inplace_support(backend))
-    secondorder_compatible = order(scen) == 2 || !isa(backend, SecondOrder)
     sparse_compatible = operator(scen) in (:jacobian, :hessian) || !isa(backend, AutoSparse)
+    secondorder_compatible =
+        order(scen) == 2 || !isa(backend, Union{SecondOrder,AutoSparse{<:SecondOrder}})
     return place_compatible && secondorder_compatible && sparse_compatible
 end
 
