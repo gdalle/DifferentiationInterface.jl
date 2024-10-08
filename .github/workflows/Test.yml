@@ -44,7 +44,6 @@ jobs:
           - Back/Mooncake
           - Back/PolyesterForwardDiff
           - Back/ReverseDiff
-          - Back/SecondOrder
           - Back/SymbolicBackends
           - Back/Tracker
           - Back/Zygote

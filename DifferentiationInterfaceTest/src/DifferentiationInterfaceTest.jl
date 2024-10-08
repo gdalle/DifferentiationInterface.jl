@@ -13,6 +13,7 @@ using ADTypes
 using ADTypes:
     AbstractADType,
     AbstractMode,
+    AutoSparse,
     ForwardMode,
     ForwardOrReverseMode,
     ReverseMode,
@@ -46,6 +47,7 @@ using DifferentiationInterface:
     PullbackPrep,
     PushforwardPrep,
     SecondDerivativePrep,
+    SecondOrder,
     Rewrap
 import DifferentiationInterface as DI
 using DocStringExtensions
