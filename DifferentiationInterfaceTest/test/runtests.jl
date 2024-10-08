@@ -5,6 +5,8 @@ using Pkg
 using SparseConnectivityTracer
 using Test
 
+Pkg.add(; url="https://github.com/gdalle/SparseMatrixColorings.jl", rev="bicoloring")
+
 GROUP = get(ENV, "JULIA_DIT_TEST_GROUP", "All")
 
 ## Main tests

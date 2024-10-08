@@ -47,6 +47,7 @@ using DifferentiationInterface:
     PullbackPrep,
     PushforwardPrep,
     SecondDerivativePrep,
+    MixedMode,
     SecondOrder,
     Rewrap
 import DifferentiationInterface as DI

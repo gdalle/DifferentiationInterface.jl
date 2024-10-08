@@ -103,7 +103,12 @@ function compatible(backend::AbstractADType, scen::Scenario)
     sparse_compatible = operator(scen) in (:jacobian, :hessian) || !isa(backend, AutoSparse)
     secondorder_compatible =
         order(scen) == 2 || !isa(backend, Union{SecondOrder,AutoSparse{<:SecondOrder}})
-    return place_compatible && secondorder_compatible && sparse_compatible
+    mixedmode_compatible =
+        operator(scen) == :jacobian || !isa(backend, AutoSparse{<:MixedMode})
+    return place_compatible &&
+           secondorder_compatible &&
+           sparse_compatible &&
+           mixedmode_compatible
 end
 
 function group_by_operator(scenarios::AbstractVector{<:Scenario})

@@ -33,6 +33,7 @@ using LinearAlgebra: Symmetric, Transpose, dot, parent, transpose
 
 include("compat.jl")
 
+include("first_order/mixed_mode.jl")
 include("second_order/second_order.jl")
 
 include("utils/prep.jl")
@@ -65,7 +66,7 @@ include("misc/zero_backends.jl")
 ## Exported
 
 export Context, Constant
-export SecondOrder
+export MixedMode, SecondOrder
 
 export value_and_pushforward!, value_and_pushforward
 export value_and_pullback!, value_and_pullback
