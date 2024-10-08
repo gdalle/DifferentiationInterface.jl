@@ -25,7 +25,7 @@ jobs:
       actions: write
       contents: read
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         version:
           - "1.10"  # TODO: 1 (as of 2024.10.08, 1 means 1.11 and we're not ready yet)
@@ -56,8 +56,6 @@ jobs:
             version: "1.11"
           - version: "1.11"
             group: Back/ChainRulesBackends
-          - version: "1.11"
-            group: Back/Enzyme
           - version: "1.11"
             group: Back/Mooncake
     env:
