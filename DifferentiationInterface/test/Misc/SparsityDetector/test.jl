@@ -1,10 +1,10 @@
 using Pkg
-Pkg.add(["Enzyme", "ForwardDiff"])
+Pkg.add(["ForwardDiff", "ReverseDiff"])
 
 using ADTypes: jacobian_sparsity, hessian_sparsity
 using DifferentiationInterface
 using ForwardDiff: ForwardDiff
-using Enzyme: Enzyme
+using ReverseDiff: ReverseDiff
 using LinearAlgebra
 using SparseArrays
 using StableRNGs
@@ -26,9 +26,8 @@ end
 g(x::AbstractVector) = dot(x, Hc, x)
 g(x::AbstractMatrix) = g(vec(x))
 
-@testset verbose = true "$(typeof(backend))" for backend in [
-    AutoEnzyme(; mode=Enzyme.Reverse), AutoForwardDiff()
-]
+@testset verbose = true "$(typeof(backend))" for backend in
+                                                 [AutoForwardDiff(), AutoReverseDiff()]
     @test_throws ArgumentError DenseSparsityDetector(backend; atol=1e-5, method=:random)
     @testset "$method" for method in (:iterative, :direct)
         detector = DenseSparsityDetector(backend; atol=1e-5, method)
@@ -37,10 +36,8 @@ g(x::AbstractMatrix) = g(vec(x))
             @test Jc == jacobian_sparsity(f, x, detector)
             @test Jc == jacobian_sparsity(f!, copy(y), x, detector)
         end
-        if backend isa AutoForwardDiff
-            for x in (rand(20), rand(2, 10))
-                @test Hc == hessian_sparsity(g, x, detector)
-            end
+        for x in (rand(20), rand(2, 10))
+            @test Hc == hessian_sparsity(g, x, detector)
         end
     end
 end

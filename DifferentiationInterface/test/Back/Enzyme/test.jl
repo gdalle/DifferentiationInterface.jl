@@ -30,8 +30,14 @@ sparse_backends =
         coloring_algorithm=GreedyColoringAlgorithm(),
     )
 
+second_order_backends = [
+    SecondOrder(AutoEnzyme(; mode=Reverse), AutoEnzyme(; mode=Enzyme.Forward)),
+    SecondOrder(AutoEnzyme(; mode=Forward), AutoEnzyme(; mode=Enzyme.Revers)),
+]
+
 @testset "Checks" begin
-    @testset "Check $(typeof(backend))" for backend in vcat(dense_backends, sparse_backends)
+    @testset "Check $(typeof(backend))" for backend in
+                                            vcat(dense_backends, second_order_backends)
         @test check_available(backend)
         @test check_inplace(backend)
     end
@@ -57,6 +63,21 @@ test_differentiation(
     logging=LOGGING,
 );
 
+#=
+# TODO: reactivate type stability tests
+
+test_differentiation(
+    AutoEnzyme(; mode=Enzyme.Forward),  # TODO: add more
+    default_scenarios(; include_batchified=false);
+    correctness=false,
+    type_stability=true,
+    second_order=false,
+    logging=LOGGING,
+);
+=#
+
+## Second order
+
 test_differentiation(
     [AutoEnzyme(; mode=nothing), AutoEnzyme(; mode=Enzyme.Reverse)];
     first_order=false,
@@ -71,18 +92,7 @@ test_differentiation(
     logging=LOGGING,
 );
 
-#=
-# TODO: reactivate type stability tests
-
-test_differentiation(
-    AutoEnzyme(; mode=Enzyme.Forward),  # TODO: add more
-    default_scenarios(; include_batchified=false);
-    correctness=false,
-    type_stability=true,
-    second_order=false,
-    logging=LOGGING,
-);
-=#
+test_differentiation(second_order_backends; first_order=false, logging=LOGGING);
 
 ## Sparse backends
 

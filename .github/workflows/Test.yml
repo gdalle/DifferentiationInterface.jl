@@ -61,12 +61,6 @@ jobs:
             group: Back/Enzyme
           - version: "1.11"
             group: Back/Mooncake
-          - version: "1.11"
-            group: Back/SecondOrder
-          - version: "1.11"
-            group: Misc/Internals
-          - version: "1.11"
-            group: Misc/SparsityDetector
     env:
       JULIA_DI_TEST_GROUP: ${{ matrix.group }}
     steps:
