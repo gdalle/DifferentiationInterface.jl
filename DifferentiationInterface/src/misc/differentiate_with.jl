@@ -33,7 +33,7 @@ Moreover, any larger algorithm `alg` that calls `f2` instead of `f` will also be
 ```jldoctest
 julia> using DifferentiationInterface
 
-julia> import Enzyme, ForwardDiff, Zygote
+julia> import FiniteDiff, ForwardDiff, Zygote
 
 julia> function f(x::Vector{Float64})
            a = Vector{Float64}(undef, 1)  # type constraint breaks ForwardDiff
@@ -41,7 +41,7 @@ julia> function f(x::Vector{Float64})
            return a[1]
        end;
 
-julia> f2 = DifferentiateWith(f, AutoEnzyme());
+julia> f2 = DifferentiateWith(f, FiniteDiff());
 
 julia> f([3.0, 5.0]) == f2([3.0, 5.0])
 true
