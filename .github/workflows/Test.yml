@@ -28,7 +28,7 @@ jobs:
       fail-fast: true
       matrix:
         version:
-          - "1.10"  # as of 2024.10.08, v1 seems to mean v1.11 and we're not ready yet
+          - "1.10"  # TODO: 1 (as of 2024.10.08, 1 means 1.11 and we're not ready yet)
           - "lts"
           # - "pre"
         group:
