@@ -219,14 +219,8 @@ function DI.gradient(
     contexts::Vararg{Context,C},
 ) where {F,C}
     f_and_df = get_f_and_df(f, backend)
-    grad = make_zero(x)
-    autodiff(
-        reverse_noprimal(backend),
-        f_and_df,
-        Active,
-        Duplicated(x, grad),
-        map(translate, contexts)...,
-    )
+    ders = gradient(reverse_noprimal(backend), f_and_df, x, map(translate, contexts)...)
+    grad = first(ders)
     return grad
 end
 
@@ -237,14 +231,10 @@ function DI.value_and_gradient(
     contexts::Vararg{Context,C},
 ) where {F,C}
     f_and_df = get_f_and_df(f, backend)
-    grad = make_zero(x)
-    _, y = autodiff(
-        reverse_withprimal(backend),
-        f_and_df,
-        Active,
-        Duplicated(x, grad),
-        map(translate, contexts)...,
+    ders, y = gradient(
+        reverse_withprimal(backend), f_and_df, x, map(translate, contexts)...
     )
+    grad = first(ders)
     return y, grad
 end
 
@@ -272,13 +262,8 @@ function DI.gradient(
     contexts::Vararg{Context,C},
 ) where {F,C}
     f_and_df = get_f_and_df(f, backend)
-    grad = make_zero(x)
-    autodiff(
-        reverse_noprimal(backend),
-        f_and_df,
-        Duplicated(x, grad),
-        map(translate, contexts)...,
-    )
+    ders = gradient(reverse_noprimal(backend), f_and_df, x, map(translate, contexts)...)
+    grad = first(ders)
     return grad
 end
 
@@ -300,7 +285,7 @@ function DI.gradient!(
         Duplicated(x, grad_righttype),
         map(translate, contexts)...,
     )
-    grad isa typeof(x) || copyto!(grad, grad_righttype)
+    grad === grad_righttype || copyto!(grad, grad_righttype)
     return grad
 end
 
@@ -312,14 +297,10 @@ function DI.value_and_gradient(
     contexts::Vararg{Context,C},
 ) where {F,C}
     f_and_df = get_f_and_df(f, backend)
-    grad = make_zero(x)
-    _, y = autodiff(
-        reverse_withprimal(backend),
-        f_and_df,
-        Active,
-        Duplicated(x, grad),
-        map(translate, contexts)...,
+    ders, y = gradient(
+        reverse_withprimal(backend), f_and_df, x, map(translate, contexts)...
     )
+    grad = first(ders)
     return y, grad
 end
 
@@ -341,7 +322,7 @@ function DI.value_and_gradient!(
         Duplicated(x, grad_righttype),
         map(translate, contexts)...,
     )
-    grad isa typeof(x) || copyto!(grad, grad_righttype)
+    grad === grad_righttype || copyto!(grad, grad_righttype)
     return y, grad
 end
 
