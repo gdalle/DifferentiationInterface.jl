@@ -111,7 +111,7 @@ function hessian(
         f, hvp_prep, backend, x, batched_seeds[1], contexts...
     )
 
-    hess_blocks = map(eachindex(batched_seeds)) do a
+    hess = mapreduce(hcat, eachindex(batched_seeds)) do a
         dg_batch = hvp(f, hvp_prep_same, backend, x, batched_seeds[a], contexts...)
         block = stack_vec_col(dg_batch)
         if N % B != 0 && a == lastindex(batched_seeds)
@@ -119,8 +119,6 @@ function hessian(
         end
         block
     end
-
-    hess = reduce(hcat, hess_blocks)
     return hess
 end
 
