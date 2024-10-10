@@ -82,7 +82,7 @@ function _prepare_hessian_aux(
     N = length(x)
     seeds = [basis(backend, x, ind) for ind in eachindex(x)]
     batched_seeds = [
-        ntuple(b -> seeds[mod1((a - 1) * B + (b - 1), N)], Val(B)) for
+        ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % N], Val(B)) for
         a in 1:div(N, B, RoundUp)
     ]
     batched_results = [ntuple(b -> similar(x), Val(B)) for _ in batched_seeds]

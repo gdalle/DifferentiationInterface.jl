@@ -113,7 +113,7 @@ function _prepare_sparse_jacobian_aux(
     seeds = [multibasis(backend, x, eachindex(x)[group]) for group in groups]
     compressed_matrix = stack(_ -> vec(similar(y)), groups; dims=2)
     batched_seeds = [
-        ntuple(b -> seeds[mod1((a - 1) * B + (b - 1), Ng)], Val(B)) for
+        ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % Ng], Val(B)) for
         a in 1:div(Ng, B, RoundUp)
     ]
     batched_results = [ntuple(b -> similar(y), Val(B)) for _ in batched_seeds]
@@ -150,7 +150,7 @@ function _prepare_sparse_jacobian_aux(
     seeds = [multibasis(backend, y, eachindex(y)[group]) for group in groups]
     compressed_matrix = stack(_ -> vec(similar(x)), groups; dims=1)
     batched_seeds = [
-        ntuple(b -> seeds[mod1((a - 1) * B + (b - 1), Ng)], Val(B)) for
+        ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % Ng], Val(B)) for
         a in 1:div(Ng, B, RoundUp)
     ]
     batched_results = [ntuple(b -> similar(x), Val(B)) for _ in batched_seeds]

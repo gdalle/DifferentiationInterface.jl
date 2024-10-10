@@ -111,7 +111,7 @@ function _prepare_jacobian_aux(
     N = length(x)
     seeds = [basis(backend, x, ind) for ind in eachindex(x)]
     batched_seeds = [
-        ntuple(b -> seeds[mod1((a - 1) * B + (b - 1), N)], Val(B)) for
+        ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % N], Val(B)) for
         a in 1:div(N, B, RoundUp)
     ]
     batched_results = [ntuple(b -> similar(y), Val(B)) for _ in batched_seeds]
@@ -138,7 +138,7 @@ function _prepare_jacobian_aux(
     M = length(y)
     seeds = [basis(backend, y, ind) for ind in eachindex(y)]
     batched_seeds = [
-        ntuple(b -> seeds[mod1((a - 1) * B + (b - 1), M)], Val(B)) for
+        ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % M], Val(B)) for
         a in 1:div(M, B, RoundUp)
     ]
     batched_results = [ntuple(b -> similar(x), Val(B)) for _ in batched_seeds]
