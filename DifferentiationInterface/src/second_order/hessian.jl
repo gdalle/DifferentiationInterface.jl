@@ -121,9 +121,6 @@ function hessian(
     end
 
     hess = reduce(hcat, hess_blocks)
-    if N < size(hess, 2)
-        hess = hess[:, 1:N]
-    end
     return hess
 end
 
