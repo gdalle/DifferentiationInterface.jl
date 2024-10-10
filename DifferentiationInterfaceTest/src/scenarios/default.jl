@@ -78,6 +78,8 @@ struct NumToArr{A} end
 NumToArr(::Type{A}) where {A} = NumToArr{A}()
 Base.eltype(::NumToArr{A}) where {A} = eltype(A)
 
+Base.show(io::IO, ::NumToArr{A}) where {A} = print(io, "num_to_arr{$A}")
+
 function (f::NumToArr{A})(x::Number) where {A}
     a = multiplicator(A)
     return sin.(x .* a)

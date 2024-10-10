@@ -27,10 +27,7 @@ test_differentiation(
 );
 
 test_differentiation(
-    AutoForwardDiff(; chunksize=5);
-    correctness=false,
-    type_stability=(; preparation=true, prepared_op=true, unprepared_op=false),
-    logging=LOGGING,
+    AutoForwardDiff(; chunksize=5); correctness=false, type_stability=:full, logging=LOGGING
 );
 
 test_differentiation(

@@ -1,14 +1,20 @@
+@kwdef struct BenchmarkResult
+    prepared_valop::Benchmark = failed_bench()
+    prepared_op::Benchmark = failed_bench()
+    preparation::Benchmark = failed_bench()
+    unprepared_valop::Benchmark = failed_bench()
+    unprepared_op::Benchmark = failed_bench()
+end
 
-for op in [
-    :derivative,
-    :gradient,
-    :hessian,
-    :hvp,
-    :jacobian,
-    :pullback,
-    :pushforward,
-    :second_derivative,
-]
+@kwdef struct CallsResult
+    preparation::Int = -1
+    prepared_valop::Int = -1
+    prepared_op::Int = -1
+    unprepared_valop::Int = -1
+    unprepared_op::Int = -1
+end
+
+for op in ALL_OPS
     op! = Symbol(op, "!")
     val_prefix = if op == :second_derivative
         "value_derivative_and_"
@@ -31,257 +37,506 @@ for op in [
         backend::AbstractADType,
         scenario::Union{$S1out,$S1in,$S2out,$S2in};
         logging::Bool,
+        subset::Symbol,
+        count_calls::Bool,
     )
-        (; bench0, bench1, bench2, calls0, calls1, calls2) = try
-            run_benchmark_aux(backend, scenario)
+        @assert subset in (:full, :prepared)
+
+        bench_result = try
+            benchmark_aux(backend, scenario; subset)
         catch exception
             logging && @warn "Error during benchmarking" backend scenario exception
-            bench0, bench1, bench2 = failed_benchs(3)
-            calls0, calls1, calls2 = -1, -1, -1
-            (; bench0, bench1, bench2, calls0, calls1, calls2)
+            BenchmarkResult()
         end
-        record!(data, backend, scenario, $prep_op, bench0, calls0)
+
+        if count_calls
+            calls_result = try
+                calls_aux(backend, scenario; subset)
+            catch exception
+                logging && @warn "Error during call counting" backend scenario exception
+                CallsResult()
+            end
+        else
+            calls_result = CallsResult()
+        end
+
+        prep_string = $(string(prep_op))
         if scenario isa Union{$S1out,$S2out}
-            record!(data, backend, scenario, $(string(val_and_op)), bench1, calls1)
-            record!(data, backend, scenario, $(string(op)), bench2, calls2)
-        elseif scenario isa Union{$S1in,$S2in}
-            record!(data, backend, scenario, $(string(val_and_op!)), bench1, calls1)
-            record!(data, backend, scenario, $(string(op!)), bench2, calls2)
+            valop_string = $(string(val_and_op))
+            op_string = $(string(op))
+        else
+            valop_string = $(string(val_and_op!))
+            op_string = $(string(op!))
+        end
+
+        record!(
+            data;
+            backend,
+            scenario,
+            operator=valop_string,
+            prepared=true,
+            bench=bench_result.prepared_valop,
+            calls=calls_result.prepared_valop,
+        )
+        record!(
+            data;
+            backend,
+            scenario,
+            operator=op_string,
+            prepared=true,
+            bench=bench_result.prepared_op,
+            calls=calls_result.prepared_op,
+        )
+        if subset == :full
+            record!(
+                data;
+                backend,
+                scenario,
+                operator=prep_string,
+                prepared=nothing,
+                bench=bench_result.preparation,
+                calls=calls_result.preparation,
+            )
+            record!(
+                data;
+                backend,
+                scenario,
+                operator=valop_string,
+                prepared=false,
+                bench=bench_result.unprepared_valop,
+                calls=calls_result.unprepared_valop,
+            )
+            record!(
+                data;
+                backend,
+                scenario,
+                operator=op_string,
+                prepared=false,
+                bench=bench_result.unprepared_op,
+                calls=calls_result.unprepared_op,
+            )
         end
         return nothing
     end
 
     if op in [:derivative, :gradient, :jacobian]
-        @eval function run_benchmark_aux(ba::AbstractADType, scen::$S1out)
+        @eval function benchmark_aux(ba::AbstractADType, scen::$S1out; subset::Symbol)
             (; f, x, contexts) = deepcopy(scen)
-            # benchmark
             prep = $prep_op(f, ba, x, contexts...)
-            bench0 = @be $prep_op(f, ba, x, contexts...) samples = 1 evals = 1
-            bench1 = @be prep $val_and_op(f, _, ba, x, contexts...) evals = 1
-            bench2 = @be prep $op(f, _, ba, x, contexts...) evals = 1
-            # count
-            cc = CallCounter(f)
-            prep = $prep_op(cc, ba, x, contexts...)
-            calls0 = reset_count!(cc)
-            $val_and_op(cc, prep, ba, x, contexts...)
-            calls1 = reset_count!(cc)
-            $op(cc, prep, ba, x, contexts...)
-            calls2 = reset_count!(cc)
-            return (; bench0, bench1, bench2, calls0, calls1, calls2)
+            prepared_valop = @be prep $val_and_op(f, _, ba, x, contexts...)
+            prepared_op = @be prep $op(f, _, ba, x, contexts...)
+            if subset == :full
+                preparation = @be $prep_op(f, ba, x, contexts...)
+                unprepared_valop = @be $val_and_op(f, ba, x, contexts...)
+                unprepared_op = @be $op(f, ba, x, contexts...)
+                return BenchmarkResult(;
+                    prepared_valop,
+                    prepared_op,
+                    preparation,
+                    unprepared_valop,
+                    unprepared_op,
+                )
+            else
+                return BenchmarkResult(; prepared_valop, prepared_op)
+            end
         end
 
-        @eval function run_benchmark_aux(ba::AbstractADType, scen::$S1in)
-            (; f, x, res1, contexts) = deepcopy(scen)
-            # benchmark
-            prep = $prep_op(f, ba, x, contexts...)
-            bench0 = @be $prep_op(f, ba, x, contexts...) samples = 1 evals = 1
-            bench1 = @be (res1, prep) $val_and_op!(f, _[1], _[2], ba, x, contexts...) evals =
-                1
-            bench2 = @be (res1, prep) $op!(f, _[1], _[2], ba, x, contexts...) evals = 1
-            # count
+        @eval function calls_aux(ba::AbstractADType, scen::$S1out; subset::Symbol)
+            (; f, x, contexts) = deepcopy(scen)
             cc = CallCounter(f)
             prep = $prep_op(cc, ba, x, contexts...)
-            calls0 = reset_count!(cc)
+            preparation = reset_count!(cc)
+            $val_and_op(cc, prep, ba, x, contexts...)
+            prepared_valop = reset_count!(cc)
+            $op(cc, prep, ba, x, contexts...)
+            prepared_op = reset_count!(cc)
+            return CallsResult(; preparation, prepared_valop, prepared_op)
+        end
+
+        @eval function benchmark_aux(ba::AbstractADType, scen::$S1in; subset::Symbol)
+            (; f, x, res1, contexts) = deepcopy(scen)
+            prep = $prep_op(f, ba, x, contexts...)
+            prepared_valop = @be (res1, prep) $val_and_op!(
+                f, _[1], _[2], ba, x, contexts...
+            )
+            prepared_op = @be (res1, prep) $op!(f, _[1], _[2], ba, x, contexts...)
+            if subset == :full
+                preparation = @be $prep_op(f, ba, x, contexts...)
+                unprepared_valop = @be res1 $val_and_op!(f, _, ba, x, contexts...)
+                unprepared_op = @be res1 $op!(f, _, ba, x, contexts...)
+                return BenchmarkResult(;
+                    prepared_valop,
+                    prepared_op,
+                    preparation,
+                    unprepared_valop,
+                    unprepared_op,
+                )
+            else
+                return BenchmarkResult(; prepared_valop, prepared_op)
+            end
+        end
+
+        @eval function calls_aux(ba::AbstractADType, scen::$S1in; subset::Symbol)
+            (; f, x, res1, contexts) = deepcopy(scen)
+            cc = CallCounter(f)
+            prep = $prep_op(cc, ba, x, contexts...)
+            preparation = reset_count!(cc)
             $val_and_op!(cc, res1, prep, ba, x, contexts...)
-            calls1 = reset_count!(cc)
+            prepared_valop = reset_count!(cc)
             $op!(cc, res1, prep, ba, x, contexts...)
-            calls2 = reset_count!(cc)
-            return (; bench0, bench1, bench2, calls0, calls1, calls2)
+            prepared_op = reset_count!(cc)
+            return CallsResult(; preparation, prepared_valop, prepared_op)
         end
 
         op == :gradient && continue
 
-        @eval function run_benchmark_aux(ba::AbstractADType, scen::$S2out)
+        @eval function benchmark_aux(ba::AbstractADType, scen::$S2out; subset::Symbol)
             (; f, x, y, contexts) = deepcopy(scen)
-            # benchmark
             prep = $prep_op(f, y, ba, x, contexts...)
-            bench0 = @be $prep_op(f, y, ba, x, contexts...) samples = 1 evals = 1
-            bench1 = @be (y, prep) $val_and_op(f, _[1], _[2], ba, x, contexts...) evals = 1
-            bench2 = @be (y, prep) $op(f, _[1], _[2], ba, x, contexts...) evals = 1
-            # count
-            cc = CallCounter(f)
-            prep = $prep_op(cc, y, ba, x, contexts...)
-            calls0 = reset_count!(cc)
-            $val_and_op(cc, y, prep, ba, x, contexts...)
-            calls1 = reset_count!(cc)
-            $op(cc, y, prep, ba, x, contexts...)
-            calls2 = reset_count!(cc)
-            return (; bench0, bench1, bench2, calls0, calls1, calls2)
+            prepared_valop = @be (y, prep) $val_and_op(f, _[1], _[2], ba, x, contexts...)
+            prepared_op = @be (y, prep) $op(f, _[1], _[2], ba, x, contexts...)
+            if subset == :full
+                preparation = @be $prep_op(f, y, ba, x, contexts...)
+                unprepared_valop = @be y $val_and_op(f, _, ba, x, contexts...)
+                unprepared_op = @be y $op(f, _, ba, x, contexts...)
+                return BenchmarkResult(;
+                    prepared_valop,
+                    prepared_op,
+                    preparation,
+                    unprepared_valop,
+                    unprepared_op,
+                )
+            else
+                return BenchmarkResult(; prepared_valop, prepared_op)
+            end
         end
 
-        @eval function run_benchmark_aux(ba::AbstractADType, scen::$S2in)
-            (; f, x, y, res1, contexts) = deepcopy(scen)
-            # benchmark
-            prep = $prep_op(f, y, ba, x, contexts...)
-            bench0 = @be $prep_op(f, y, ba, x, contexts...) samples = 1 evals = 1
-            bench1 = @be (y, res1, prep) $val_and_op!(
-                f, _[1], _[2], _[3], ba, x, contexts...
-            ) evals = 1
-            bench2 = @be (y, res1, prep) $op!(f, _[1], _[2], _[3], ba, x, contexts...) evals =
-                1
-            # count
+        @eval function calls_aux(ba::AbstractADType, scen::$S2out; subset::Symbol)
+            (; f, x, y, contexts) = deepcopy(scen)
             cc = CallCounter(f)
             prep = $prep_op(cc, y, ba, x, contexts...)
-            calls0 = reset_count!(cc)
+            preparation = reset_count!(cc)
+            $val_and_op(cc, y, prep, ba, x, contexts...)
+            prepared_valop = reset_count!(cc)
+            $op(cc, y, prep, ba, x, contexts...)
+            prepared_op = reset_count!(cc)
+            return CallsResult(; preparation, prepared_valop, prepared_op)
+        end
+
+        @eval function benchmark_aux(ba::AbstractADType, scen::$S2in; subset::Symbol)
+            (; f, x, y, res1, contexts) = deepcopy(scen)
+            prep = $prep_op(f, y, ba, x, contexts...)
+            prepared_valop = @be (y, res1, prep) $val_and_op!(
+                f, _[1], _[2], _[3], ba, x, contexts...
+            )
+            prepared_op = @be (y, res1, prep) $op!(f, _[1], _[2], _[3], ba, x, contexts...)
+            if subset == :full
+                preparation = @be $prep_op(f, y, ba, x, contexts...)
+                unprepared_valop = @be (y, res1) $val_and_op!(
+                    f, _[1], _[2], ba, x, contexts...
+                )
+                unprepared_op = @be (y, res1) $op!(f, _[1], _[2], ba, x, contexts...)
+                return BenchmarkResult(;
+                    prepared_valop,
+                    prepared_op,
+                    preparation,
+                    unprepared_valop,
+                    unprepared_op,
+                )
+            else
+                return BenchmarkResult(; prepared_valop, prepared_op)
+            end
+        end
+
+        @eval function calls_aux(ba::AbstractADType, scen::$S2in; subset::Symbol)
+            (; f, x, y, res1, contexts) = deepcopy(scen)
+            cc = CallCounter(f)
+            prep = $prep_op(cc, y, ba, x, contexts...)
+            preparation = reset_count!(cc)
             $val_and_op!(cc, y, res1, prep, ba, x, contexts...)
-            calls1 = reset_count!(cc)
+            prepared_valop = reset_count!(cc)
             $op!(cc, y, res1, prep, ba, x, contexts...)
-            calls2 = reset_count!(cc)
-            return (; bench0, bench1, bench2, calls0, calls1, calls2)
+            prepared_op = reset_count!(cc)
+            return CallsResult(; preparation, prepared_valop, prepared_op)
         end
 
     elseif op in [:hessian, :second_derivative]
-        @eval function run_benchmark_aux(ba::AbstractADType, scen::$S1out)
+        @eval function benchmark_aux(ba::AbstractADType, scen::$S1out; subset::Symbol)
             (; f, x, contexts) = deepcopy(scen)
-            # benchmark
             prep = $prep_op(f, ba, x, contexts...)
-            bench0 = @be $prep_op(f, ba, x, contexts...) samples = 1 evals = 1
-            bench1 = @be prep $val_and_op(f, _, ba, x, contexts...) evals = 1
-            bench2 = @be prep $op(f, _, ba, x, contexts...) evals = 1
-            # count
-            cc = CallCounter(f)
-            prep = $prep_op(cc, ba, x, contexts...)
-            calls0 = reset_count!(cc)
-            $val_and_op(cc, prep, ba, x, contexts...)
-            calls1 = reset_count!(cc)
-            $op(cc, prep, ba, x, contexts...)
-            calls2 = reset_count!(cc)
-            return (; bench0, bench1, bench2, calls0, calls1, calls2)
+            prepared_valop = @be prep $val_and_op(f, _, ba, x, contexts...)
+            prepared_op = @be prep $op(f, _, ba, x, contexts...)
+            if subset == :full
+                preparation = @be $prep_op(f, ba, x, contexts...)
+                unprepared_valop = @be $val_and_op(f, ba, x, contexts...)
+                unprepared_op = @be $op(f, ba, x, contexts...)
+                return BenchmarkResult(;
+                    prepared_valop,
+                    prepared_op,
+                    preparation,
+                    unprepared_valop,
+                    unprepared_op,
+                )
+            else
+                return BenchmarkResult(; prepared_valop, prepared_op)
+            end
         end
 
-        @eval function run_benchmark_aux(ba::AbstractADType, scen::$S1in)
-            (; f, x, res1, res2, contexts) = deepcopy(scen)
-            # benchmark
-            prep = $prep_op(f, ba, x, contexts...)
-            bench0 = @be $prep_op(f, ba, x, contexts...) samples = 1 evals = 1
-            bench1 = @be (res1, res2, prep) $val_and_op!(
-                f, _[1], _[2], _[3], ba, x, contexts...
-            ) evals = 1
-            bench2 = @be (res2, prep) $op!(f, _[1], _[2], ba, x, contexts...) evals = 1
-            # count
+        @eval function calls_aux(ba::AbstractADType, scen::$S1out; subset::Symbol)
+            (; f, x, contexts) = deepcopy(scen)
             cc = CallCounter(f)
             prep = $prep_op(cc, ba, x, contexts...)
-            calls0 = reset_count!(cc)
+            preparation = reset_count!(cc)
+            $val_and_op(cc, prep, ba, x, contexts...)
+            prepared_valop = reset_count!(cc)
+            $op(cc, prep, ba, x, contexts...)
+            prepared_op = reset_count!(cc)
+            return CallsResult(; preparation, prepared_valop, prepared_op)
+        end
+
+        @eval function benchmark_aux(ba::AbstractADType, scen::$S1in; subset::Symbol)
+            (; f, x, res1, res2, contexts) = deepcopy(scen)
+
+            prep = $prep_op(f, ba, x, contexts...)
+            prepared_valop = @be (res1, res2, prep) $val_and_op!(
+                f, _[1], _[2], _[3], ba, x, contexts...
+            )
+            prepared_op = @be (res2, prep) $op!(f, _[1], _[2], ba, x, contexts...)
+            if subset == :full
+                preparation = @be $prep_op(f, ba, x, contexts...)
+                unprepared_valop = @be (res1, res2) $val_and_op!(
+                    f, _[1], _[2], ba, x, contexts...
+                )
+                unprepared_op = @be res2 $op!(f, _, ba, x, contexts...)
+                return BenchmarkResult(;
+                    prepared_valop,
+                    prepared_op,
+                    preparation,
+                    unprepared_valop,
+                    unprepared_op,
+                )
+            else
+                return BenchmarkResult(; prepared_valop, prepared_op)
+            end
+        end
+
+        @eval function calls_aux(ba::AbstractADType, scen::$S1in; subset::Symbol)
+            (; f, x, res1, res2, contexts) = deepcopy(scen)
+            cc = CallCounter(f)
+            prep = $prep_op(cc, ba, x, contexts...)
+            preparation = reset_count!(cc)
             $val_and_op!(cc, res1, res2, prep, ba, x, contexts...)
-            calls1 = reset_count!(cc)
+            prepared_valop = reset_count!(cc)
             $op!(cc, res2, prep, ba, x, contexts...)
-            calls2 = reset_count!(cc)
-            return (; bench0, bench1, bench2, calls0, calls1, calls2)
+            prepared_op = reset_count!(cc)
+            return CallsResult(; preparation, prepared_valop, prepared_op)
         end
 
     elseif op in [:pushforward, :pullback]
-        @eval function run_benchmark_aux(ba::AbstractADType, scen::$S1out)
+        @eval function benchmark_aux(ba::AbstractADType, scen::$S1out; subset::Symbol)
             (; f, x, tang, contexts) = deepcopy(scen)
-            # benchmark
             prep = $prep_op(f, ba, x, tang, contexts...)
-            bench0 = @be $prep_op(f, ba, x, tang, contexts...) samples = 1 evals = 1
-            bench1 = @be prep $val_and_op(f, _, ba, x, tang, contexts...) evals = 1
-            bench2 = @be prep $op(f, _, ba, x, tang, contexts...) evals = 1
-            # count
+            prepared_valop = @be prep $val_and_op(f, _, ba, x, tang, contexts...)
+            prepared_op = @be prep $op(f, _, ba, x, tang, contexts...)
+            if subset == :full
+                preparation = @be $prep_op(f, ba, x, tang, contexts...)
+                unprepared_valop = @be $val_and_op(f, ba, x, tang, contexts...)
+                unprepared_op = @be $op(f, ba, x, tang, contexts...)
+                return BenchmarkResult(;
+                    prepared_valop,
+                    prepared_op,
+                    preparation,
+                    unprepared_valop,
+                    unprepared_op,
+                )
+            else
+                return BenchmarkResult(; prepared_valop, prepared_op)
+            end
+        end
+        @eval function calls_aux(ba::AbstractADType, scen::$S1out; subset::Symbol)
+            (; f, x, tang, contexts) = deepcopy(scen)
             cc = CallCounter(f)
             prep = $prep_op(cc, ba, x, tang, contexts...)
-            calls0 = reset_count!(cc)
+            preparation = reset_count!(cc)
             $val_and_op(cc, prep, ba, x, tang, contexts...)
-            calls1 = reset_count!(cc)
+            prepared_valop = reset_count!(cc)
             $op(cc, prep, ba, x, tang, contexts...)
-            calls2 = reset_count!(cc)
-            return (; bench0, bench1, bench2, calls0, calls1, calls2)
+            prepared_op = reset_count!(cc)
+            return CallsResult(; preparation, prepared_valop, prepared_op)
         end
 
-        @eval function run_benchmark_aux(ba::AbstractADType, scen::$S1in)
+        @eval function benchmark_aux(ba::AbstractADType, scen::$S1in; subset::Symbol)
             (; f, x, tang, res1, contexts) = deepcopy(scen)
-            # benchmark
             prep = $prep_op(f, ba, x, tang, contexts...)
-            bench0 = @be $prep_op(f, ba, x, tang, contexts...) samples = 1 evals = 1
-            bench1 = @be (res1, prep) $val_and_op!(f, _[1], _[2], ba, x, tang, contexts...) evals =
-                1
-            bench2 = @be (res1, prep) $op!(f, _[1], _[2], ba, x, tang, contexts...) evals =
-                1
-            # count
+            prepared_valop = @be (res1, prep) $val_and_op!(
+                f, _[1], _[2], ba, x, tang, contexts...
+            )
+            prepared_op = @be (res1, prep) $op!(f, _[1], _[2], ba, x, tang, contexts...)
+            if subset == :full
+                preparation = @be $prep_op(f, ba, x, tang, contexts...)
+                unprepared_valop = @be res1 $val_and_op!(f, _, ba, x, tang, contexts...)
+                unprepared_op = @be res1 $op!(f, _, ba, x, tang, contexts...)
+                return BenchmarkResult(;
+                    prepared_valop,
+                    prepared_op,
+                    preparation,
+                    unprepared_valop,
+                    unprepared_op,
+                )
+            else
+                return BenchmarkResult(; prepared_valop, prepared_op)
+            end
+        end
+
+        @eval function calls_aux(ba::AbstractADType, scen::$S1in; subset::Symbol)
+            (; f, x, tang, res1, contexts) = deepcopy(scen)
             cc = CallCounter(f)
             prep = $prep_op(cc, ba, x, tang, contexts...)
-            calls0 = reset_count!(cc)
+            preparation = reset_count!(cc)
             $val_and_op!(cc, res1, prep, ba, x, tang, contexts...)
-            calls1 = reset_count!(cc)
+            prepared_valop = reset_count!(cc)
             $op!(cc, res1, prep, ba, x, tang, contexts...)
-            calls2 = reset_count!(cc)
-            return (; bench0, bench1, bench2, calls0, calls1, calls2)
+            prepared_op = reset_count!(cc)
+            return CallsResult(; preparation, prepared_valop, prepared_op)
         end
 
-        @eval function run_benchmark_aux(ba::AbstractADType, scen::$S2out)
+        @eval function benchmark_aux(ba::AbstractADType, scen::$S2out; subset::Symbol)
             (; f, x, y, tang, contexts) = deepcopy(scen)
-            # benchmark
             prep = $prep_op(f, y, ba, x, tang, contexts...)
-            bench0 = @be $prep_op(f, y, ba, x, tang, contexts...) samples = 1 evals = 1
-            bench1 = @be (y, prep) $val_and_op(f, _[1], _[2], ba, x, tang, contexts...) evals =
-                1
-            bench2 = @be (y, prep) $op(f, _[1], _[2], ba, x, tang, contexts...) evals = 1
-            # count
-            cc = CallCounter(f)
-            prep = $prep_op(cc, y, ba, x, tang, contexts...)
-            calls0 = reset_count!(cc)
-            $val_and_op(cc, y, prep, ba, x, tang, contexts...)
-            calls1 = reset_count!(cc)
-            $op(cc, y, prep, ba, x, tang, contexts...)
-            calls2 = reset_count!(cc)
-            return (; bench0, bench1, bench2, calls0, calls1, calls2)
+            prepared_valop = @be (y, prep) $val_and_op(
+                f, _[1], _[2], ba, x, tang, contexts...
+            )
+            prepared_op = @be (y, prep) $op(f, _[1], _[2], ba, x, tang, contexts...)
+            if subset == :full
+                preparation = @be $prep_op(f, y, ba, x, tang, contexts...)
+                unprepared_valop = @be y $val_and_op(f, _, ba, x, tang, contexts...)
+                unprepared_op = @be y $op(f, _, ba, x, tang, contexts...)
+                return BenchmarkResult(;
+                    prepared_valop,
+                    prepared_op,
+                    preparation,
+                    unprepared_valop,
+                    unprepared_op,
+                )
+            else
+                return BenchmarkResult(; prepared_valop, prepared_op)
+            end
         end
 
-        @eval function run_benchmark_aux(ba::AbstractADType, scen::$S2in)
-            (; f, x, y, tang, res1, contexts) = deepcopy(scen)
-            # benchmark
-            prep = $prep_op(f, y, ba, x, tang, contexts...)
-            bench0 = @be $prep_op(f, y, ba, x, tang, contexts...) samples = 1 evals = 1
-            bench1 = @be (y, res1, prep) $val_and_op!(
-                f, _[1], _[2], _[3], ba, x, tang, contexts...
-            ) evals = 1
-            bench2 = @be (y, res1, prep) $op!(f, _[1], _[2], _[3], ba, x, tang, contexts...) evals =
-                1
-            # count
+        @eval function calls_aux(ba::AbstractADType, scen::$S2out; subset::Symbol)
+            (; f, x, y, tang, contexts) = deepcopy(scen)
             cc = CallCounter(f)
             prep = $prep_op(cc, y, ba, x, tang, contexts...)
-            calls0 = reset_count!(cc)
+            preparation = reset_count!(cc)
+            $val_and_op(cc, y, prep, ba, x, tang, contexts...)
+            prepared_valop = reset_count!(cc)
+            $op(cc, y, prep, ba, x, tang, contexts...)
+            prepared_op = reset_count!(cc)
+            return CallsResult(; preparation, prepared_valop, prepared_op)
+        end
+
+        @eval function benchmark_aux(ba::AbstractADType, scen::$S2in; subset::Symbol)
+            (; f, x, y, tang, res1, contexts) = deepcopy(scen)
+            prep = $prep_op(f, y, ba, x, tang, contexts...)
+            prepared_valop = @be (y, res1, prep) $val_and_op!(
+                f, _[1], _[2], _[3], ba, x, tang, contexts...
+            )
+            prepared_op = @be (y, res1, prep) $op!(
+                f, _[1], _[2], _[3], ba, x, tang, contexts...
+            )
+            if subset == :full
+                preparation = @be $prep_op(f, y, ba, x, tang, contexts...)
+                unprepared_valop = @be (y, res1) $val_and_op!(
+                    f, _[1], _[2], ba, x, tang, contexts...
+                )
+                unprepared_op = @be (y, res1) $op!(f, _[1], _[2], ba, x, tang, contexts...)
+                return BenchmarkResult(;
+                    prepared_valop,
+                    prepared_op,
+                    preparation,
+                    unprepared_valop,
+                    unprepared_op,
+                )
+            else
+                return BenchmarkResult(; prepared_valop, prepared_op)
+            end
+        end
+
+        @eval function calls_aux(ba::AbstractADType, scen::$S2in; subset::Symbol)
+            (; f, x, y, tang, res1, contexts) = deepcopy(scen)
+            cc = CallCounter(f)
+            prep = $prep_op(cc, y, ba, x, tang, contexts...)
+            preparation = reset_count!(cc)
             $val_and_op!(cc, y, res1, prep, ba, x, tang, contexts...)
-            calls1 = reset_count!(cc)
+            prepared_valop = reset_count!(cc)
             $op!(cc, y, res1, prep, ba, x, tang, contexts...)
-            calls2 = reset_count!(cc)
-            return (; bench0, bench1, bench2, calls0, calls1, calls2)
+            prepared_op = reset_count!(cc)
+            return CallsResult(; preparation, prepared_valop, prepared_op)
         end
 
     elseif op in [:hvp]
-        @eval function run_benchmark_aux(ba::AbstractADType, scen::$S1out)
+        @eval function benchmark_aux(ba::AbstractADType, scen::$S1out; subset::Symbol)
             (; f, x, tang, contexts) = deepcopy(scen)
-            # benchmark
             prep = $prep_op(f, ba, x, tang, contexts...)
-            bench0 = @be $prep_op(f, ba, x, tang, contexts...) samples = 1 evals = 1
-            bench1 = @be +(1, 1) evals = 1  # TODO: fix
-            bench2 = @be prep $op(f, _, ba, x, tang, contexts...) evals = 1
-            # count
-            cc = CallCounter(f)
-            prep = $prep_op(cc, ba, x, tang, contexts...)
-            calls0 = reset_count!(cc)
-            calls1 = -1  # TODO: fix
-            $op(cc, prep, ba, x, tang, contexts...)
-            calls2 = reset_count!(cc)
-            return (; bench0, bench1, bench2, calls0, calls1, calls2)
+            prepared_valop = @be +(1, 1)   # TODO: fix
+            prepared_op = @be prep $op(f, _, ba, x, tang, contexts...)
+            if subset == :full
+                preparation = @be $prep_op(f, ba, x, tang, contexts...)
+                unprepared_valop = @be +(1, 1)   # TODO: fix
+                unprepared_op = @be $op(f, ba, x, tang, contexts...)
+                return BenchmarkResult(;
+                    prepared_valop,
+                    prepared_op,
+                    preparation,
+                    unprepared_valop,
+                    unprepared_op,
+                )
+            else
+                return BenchmarkResult(; prepared_valop, prepared_op)
+            end
         end
 
-        @eval function run_benchmark_aux(ba::AbstractADType, scen::$S1in)
-            (; f, x, tang, res2, contexts) = deepcopy(scen)
-            # benchmark
-            prep = $prep_op(f, ba, x, tang, contexts...)
-            bench0 = @be $prep_op(f, ba, x, tang, contexts...) samples = 1 evals = 1
-            bench1 = @be +(1, 1) evals = 1  # TODO: fix
-            bench2 = @be (res2, prep) $op!(f, _[1], _[2], ba, x, tang, contexts...) evals =
-                1
-            # count
+        @eval function calls_aux(ba::AbstractADType, scen::$S1out; subset::Symbol)
+            (; f, x, tang, contexts) = deepcopy(scen)
             cc = CallCounter(f)
             prep = $prep_op(cc, ba, x, tang, contexts...)
-            calls0 = reset_count!(cc)
-            calls1 = -1  # TODO: fix
+            preparation = reset_count!(cc)
+            prepared_valop = -1  # TODO: fix
+            $op(cc, prep, ba, x, tang, contexts...)
+            prepared_op = reset_count!(cc)
+            return CallsResult(; preparation, prepared_valop, prepared_op)
+        end
+
+        @eval function benchmark_aux(ba::AbstractADType, scen::$S1in; subset::Symbol)
+            (; f, x, tang, res2, contexts) = deepcopy(scen)
+            prep = $prep_op(f, ba, x, tang, contexts...)
+            prepared_valop = @be +(1, 1)   # TODO: fix
+            prepared_op = @be (res2, prep) $op!(f, _[1], _[2], ba, x, tang, contexts...)
+            if subset == :full
+                preparation = @be $prep_op(f, ba, x, tang, contexts...)
+                unprepared_valop = @be +(1, 1)   # TODO: fix
+                unprepared_op = @be res2 $op!(f, _, ba, x, tang, contexts...)
+                return BenchmarkResult(;
+                    prepared_valop,
+                    prepared_op,
+                    preparation,
+                    unprepared_valop,
+                    unprepared_op,
+                )
+            else
+                return BenchmarkResult(; prepared_valop, prepared_op)
+            end
+        end
+
+        @eval function calls_aux(ba::AbstractADType, scen::$S1in; subset::Symbol)
+            (; f, x, tang, res2, contexts) = deepcopy(scen)
+            cc = CallCounter(f)
+            prep = $prep_op(cc, ba, x, tang, contexts...)
+            preparation = reset_count!(cc)
+            prepared_valop = -1  # TODO: fix
             $op!(cc, res2, prep, ba, x, tang, contexts...)
-            calls2 = reset_count!(cc)
-            return (; bench0, bench1, bench2, calls0, calls1, calls2)
+            prepared_op = reset_count!(cc)
+            return CallsResult(; preparation, prepared_valop, prepared_op)
         end
     end
 end

@@ -15,6 +15,13 @@ DifferentiationInterfaceTest
 Scenario
 test_differentiation
 benchmark_differentiation
+FIRST_ORDER
+SECOND_ORDER
+```
+
+## Utilities
+
+```@docs
 DifferentiationBenchmarkDataRow
 ```
 
@@ -28,6 +35,12 @@ sparse_scenarios
 component_scenarios
 gpu_scenarios
 static_scenarios
+```
+
+## Utilities
+
+```@docs
+DifferentiationBenchmarkDataRow
 ```
 
 ## Internals

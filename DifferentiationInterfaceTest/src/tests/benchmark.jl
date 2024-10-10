@@ -45,24 +45,13 @@ function failed_bench()
     return Benchmark([sample])
 end
 
-function failed_benchs(k::Integer)
-    return ntuple(i -> failed_bench(), k)
-end
+failed_benchs(k::Integer) = ntuple(i -> failed_bench(), k)
+failed_calls(k::Integer) = ntuple(i -> -1, k)
 
 """
     DifferentiationBenchmarkDataRow
 
 Ad-hoc storage type for differentiation benchmarking results.
-
-If you have a vector `rows::Vector{DifferentiationBenchmarkDataRow}`, you can turn it into a `DataFrame` as follows:
-
-```julia
-using DataFrames
-
-df = DataFrame(rows)
-```
-
-The resulting `DataFrame` will have one column for each of the following fields.
 
 #  Fields
 
@@ -77,6 +66,8 @@ Base.@kwdef struct DifferentiationBenchmarkDataRow
     scenario::Scenario
     "differentiation operator used for benchmarking, e.g. `:gradient` or `:hessian`"
     operator::Symbol
+    "whether the operator had been prepared"
+    prepared::Union{Nothing,Bool}
     "number of calls to the differentiated function for one call to the operator"
     calls::Int
     "number of benchmarking samples taken"
@@ -96,10 +87,11 @@ Base.@kwdef struct DifferentiationBenchmarkDataRow
 end
 
 function record!(
-    data::Vector{DifferentiationBenchmarkDataRow},
+    data::Vector{DifferentiationBenchmarkDataRow};
     backend::AbstractADType,
     scenario::Scenario,
-    operator,
+    operator::String,
+    prepared::Union{Nothing,Bool},
     bench::Benchmark,
     calls::Integer,
 )
@@ -108,6 +100,7 @@ function record!(
         backend=backend,
         scenario=scenario,
         operator=Symbol(operator),
+        prepared=prepared,
         calls=calls,
         samples=length(bench.samples),
         evals=Int(bench_min.evals),

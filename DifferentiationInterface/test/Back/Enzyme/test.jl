@@ -54,7 +54,7 @@ test_differentiation(
     AutoEnzyme(; mode=Enzyme.Forward),  # TODO: add more
     default_scenarios(; include_batchified=false);
     correctness=false,
-    type_stability=true,
+    type_stability=:prepared,
     second_order=false,
     logging=LOGGING,
 );
