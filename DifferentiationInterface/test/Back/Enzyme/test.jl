@@ -7,7 +7,7 @@ import DifferentiationInterfaceTest as DIT
 using Enzyme: Enzyme
 using Test
 
-LOGGING = get(ENV, "CI", "false") == "false"
+LOGGING = true || get(ENV, "CI", "false") == "false"
 
 backends = [
     AutoEnzyme(; mode=nothing),
