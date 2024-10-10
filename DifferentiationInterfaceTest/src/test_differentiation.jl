@@ -48,6 +48,7 @@ For `type_stability` and `benchmark`, the possible values are `:none`, `:prepare
 **Type stability options:**
 
 - `ignored_modules=nothing`: list of modules that JET.jl should ignore
+- `function_filter`: filter for functions that JET.jl should ignore (with a reasonable default)
 
 **Benchmark options:**
 
@@ -72,6 +73,11 @@ function test_differentiation(
     sparsity::Bool=false,
     # type stability options
     ignored_modules=nothing,
+    function_filter=if VERSION >= v"1.11"
+        @nospecialize(f) -> true
+    else
+        @nospecialize(f) -> f != Base.mapreduce_empty  # fix for `mapreduce` in jacobian and hessian
+    end,
     # benchmark options
     count_calls::Bool=true,
 )
@@ -136,7 +142,8 @@ function test_differentiation(
                             adapted_backend,
                             scen;
                             subset=type_stability,
-                            ignored_modules=ignored_modules,
+                            ignored_modules,
+                            function_filter,
                         )
                     end
                     yield()
