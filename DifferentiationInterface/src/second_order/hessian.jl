@@ -111,18 +111,13 @@ function hessian(
         f, hvp_prep, backend, x, batched_seeds[1], contexts...
     )
 
-    hess_blocks = map(eachindex(batched_seeds)) do a
+    hess = mapreduce(hcat, eachindex(batched_seeds)) do a
         dg_batch = hvp(f, hvp_prep_same, backend, x, batched_seeds[a], contexts...)
         block = stack(vec, dg_batch; dims=2)
         if N % B != 0 && a == lastindex(batched_seeds)
             block = block[:, 1:(N - (a - 1) * B)]
         end
         block
-    end
-
-    hess = reduce(hcat, hess_blocks)
-    if N < size(hess, 2)
-        hess = hess[:, 1:N]
     end
     return hess
 end
