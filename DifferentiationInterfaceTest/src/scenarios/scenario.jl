@@ -1,14 +1,3 @@
-const ALL_OPS = (
-    :pushforward,
-    :pullback,
-    :derivative,
-    :gradient,
-    :jacobian,
-    :hessian,
-    :hvp,
-    :second_derivative,
-)
-
 """
     Scenario{op,pl_op,pl_fun}
 

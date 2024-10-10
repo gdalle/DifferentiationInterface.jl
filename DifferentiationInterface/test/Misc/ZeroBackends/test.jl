@@ -22,7 +22,7 @@ test_differentiation(
     AutoZeroForward(),
     default_scenarios(; include_batchified=false, include_constantified=true);
     correctness=false,
-    type_stability=true,
+    type_stability=:full,
     logging=LOGGING,
 )
 
@@ -30,7 +30,7 @@ test_differentiation(
     AutoZeroReverse(),
     default_scenarios(; include_batchified=false, include_constantified=true);
     correctness=false,
-    type_stability=(; preparation=true, prepared_op=true, unprepared_op=false),
+    type_stability=:full,
     logging=LOGGING,
 )
 
@@ -41,8 +41,7 @@ test_differentiation(
     ],
     default_scenarios(; include_batchified=false, include_constantified=true);
     correctness=false,
-    type_stability=(; preparation=true, prepared_op=true, unprepared_op=true),
-    first_order=false,
+    type_stability=:full,
     logging=LOGGING,
 )
 
@@ -50,7 +49,7 @@ test_differentiation(
     AutoSparse.(zero_backends, coloring_algorithm=GreedyColoringAlgorithm()),
     default_scenarios(; include_constantified=true);
     correctness=false,
-    type_stability=(; preparation=true, prepared_op=true, unprepared_op=false),
+    type_stability=:full,
     excluded=[:pushforward, :pullback, :gradient, :derivative, :hvp, :second_derivative],
     logging=LOGGING,
 )

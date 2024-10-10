@@ -51,14 +51,28 @@ using DifferentiationInterface:
     Rewrap
 import DifferentiationInterface as DI
 using DocStringExtensions
-using Functors: fmap
-using JET: JET
+using JET: @test_opt
 using LinearAlgebra: Adjoint, Diagonal, Transpose, dot, parent
 using ProgressMeter: ProgressUnknown, next!
 using Random: AbstractRNG, default_rng, rand!
-using SparseArrays: SparseArrays, SparseMatrixCSC, nnz, spdiagm
-import SparseMatrixColorings as SMC
+using SparseArrays: SparseArrays, AbstractSparseMatrix, SparseMatrixCSC, nnz, spdiagm
 using Test: @testset, @test
+
+"""
+    FIRST_ORDER = [:pushforward, :pullback, :derivative, :gradient, :jacobian]
+
+List of all first-order operators, to facilitate exclusion during tests.
+"""
+const FIRST_ORDER = [:pushforward, :pullback, :derivative, :gradient, :jacobian]
+
+"""
+    SECOND_ORDER = [:hvp, :second_derivative, :hessian]
+
+List of all second-order operators, to facilitate exclusion during tests.
+"""
+const SECOND_ORDER = [:hvp, :second_derivative, :hessian]
+
+const ALL_OPS = vcat(FIRST_ORDER, SECOND_ORDER)
 
 include("utils.jl")
 
@@ -71,11 +85,11 @@ include("scenarios/extensions.jl")
 
 include("tests/correctness_eval.jl")
 include("tests/type_stability_eval.jl")
-include("tests/sparsity.jl")
 include("tests/benchmark.jl")
 include("tests/benchmark_eval.jl")
 include("test_differentiation.jl")
 
+export FIRST_ORDER, SECOND_ORDER
 export Scenario
 export default_scenarios, sparse_scenarios
 export test_differentiation, benchmark_differentiation

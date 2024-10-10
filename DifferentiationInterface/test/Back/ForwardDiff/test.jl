@@ -23,21 +23,21 @@ test_differentiation(
 );
 
 test_differentiation(
-    AutoForwardDiff(); correctness=false, type_stability=true, logging=LOGGING
+    AutoForwardDiff(); correctness=false, type_stability=:prepared, logging=LOGGING
 );
 
 test_differentiation(
     AutoForwardDiff(; chunksize=5);
     correctness=false,
-    type_stability=(; preparation=true, prepared_op=true, unprepared_op=false),
+    type_stability=:full,
+    excluded=[:hessian],
     logging=LOGGING,
 );
 
 test_differentiation(
     backends,
     vcat(component_scenarios(), static_scenarios()); # FD accesses individual indices
-    excluded=[:jacobian],  # jacobian is super slow for some reason
-    second_order=false,
+    excluded=vcat(SECOND_ORDER, [:jacobian]),  # jacobian is super slow for some reason
     logging=LOGGING,
 );
 

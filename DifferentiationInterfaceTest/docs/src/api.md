@@ -15,7 +15,14 @@ DifferentiationInterfaceTest
 Scenario
 test_differentiation
 benchmark_differentiation
-DifferentiationBenchmarkDataRow
+FIRST_ORDER
+SECOND_ORDER
+```
+
+## Utilities
+
+```@docs
+DifferentiationInterfaceTest.DifferentiationBenchmarkDataRow
 ```
 
 ## Pre-made scenario lists

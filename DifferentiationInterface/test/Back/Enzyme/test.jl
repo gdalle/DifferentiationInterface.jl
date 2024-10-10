@@ -31,19 +31,19 @@ end;
 
 ## First order
 
-test_differentiation(backends, default_scenarios(); second_order=false, logging=LOGGING);
+test_differentiation(backends, default_scenarios(); excluded=SECOND_ORDER, logging=LOGGING);
 
 test_differentiation(
     backends[1:3],
     default_scenarios(; include_normal=false, include_constantified=true);
-    second_order=false,
+    excluded=SECOND_ORDER,
     logging=LOGGING,
 );
 
 test_differentiation(
     duplicated_backends,
     default_scenarios(; include_normal=false, include_closurified=true);
-    second_order=false,
+    excluded=SECOND_ORDER,
     logging=LOGGING,
 );
 
@@ -54,8 +54,8 @@ test_differentiation(
     AutoEnzyme(; mode=Enzyme.Forward),  # TODO: add more
     default_scenarios(; include_batchified=false);
     correctness=false,
-    type_stability=true,
-    second_order=false,
+    type_stability=:prepared,
+    excluded=SECOND_ORDER,
     logging=LOGGING,
 );
 =#
@@ -65,27 +65,24 @@ test_differentiation(
 test_differentiation(
     AutoEnzyme(),
     default_scenarios(; include_constantified=true);
-    first_order=false,
+    excluded=FIRST_ORDER,
     logging=LOGGING,
 );
 
 test_differentiation(
     AutoEnzyme(; mode=Enzyme.Forward);
-    first_order=false,
-    excluded=[:hessian, :hvp],
+    excluded=vcat(FIRST_ORDER, [:hessian, :hvp]),
     logging=LOGGING,
 );
 
 test_differentiation(
     AutoEnzyme(; mode=Enzyme.Reverse);
-    first_order=false,
-    excluded=[:second_derivative],
+    excluded=vcat(FIRST_ORDER, [:second_derivative]),
     logging=LOGGING,
 );
 
 test_differentiation(
     SecondOrder(AutoEnzyme(; mode=Enzyme.Reverse), AutoEnzyme(; mode=Enzyme.Forward));
-    first_order=false,
     logging=LOGGING,
 );
 

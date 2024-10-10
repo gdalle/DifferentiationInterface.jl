@@ -28,12 +28,12 @@ test_differentiation(
     logging=LOGGING,
 );
 
-test_differentiation(second_order_backends; first_order=false, logging=LOGGING);
+test_differentiation(second_order_backends; logging=LOGGING);
 
 test_differentiation(
     backends[1],
     vcat(component_scenarios(), gpu_scenarios());
-    second_order=false,
+    excluded=SECOND_ORDER,
     logging=LOGGING,
 )
 
