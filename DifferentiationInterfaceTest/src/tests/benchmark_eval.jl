@@ -232,9 +232,9 @@ for op in ALL_OPS
             prepared_valop = reset_count!(cc)
             $op(cc, y, prep, ba, x, contexts...)
             prepared_op = reset_count!(cc)
-            $val_and_op(cc, y,, ba, x, contexts...)
+            $val_and_op(cc, y, ba, x, contexts...)
             unprepared_valop = reset_count!(cc)
-            $op(cc, y,, ba, x, contexts...)
+            $op(cc, y, ba, x, contexts...)
             unprepared_op = reset_count!(cc)
             return CallsResult(;
                 prepared_valop, prepared_op, preparation, unprepared_valop, unprepared_op
