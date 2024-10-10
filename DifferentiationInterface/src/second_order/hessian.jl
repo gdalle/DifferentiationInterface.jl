@@ -82,7 +82,7 @@ function _prepare_hessian_aux(
     N = length(x)
     seeds = [basis(backend, x, ind) for ind in eachindex(x)]
     batched_seeds = [
-        ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % N], Val(B)) for
+        ntuple(b -> seeds[mod1((a - 1) * B + (b - 1), N)], Val(B)) for
         a in 1:div(N, B, RoundUp)
     ]
     batched_results = [ntuple(b -> similar(x), Val(B)) for _ in batched_seeds]
@@ -111,7 +111,7 @@ function hessian(
         f, hvp_prep, backend, x, batched_seeds[1], contexts...
     )
 
-    hess_blocks = map(eachindex(batched_seeds)) do a
+    hess = mapreduce(hcat, eachindex(batched_seeds)) do a
         dg_batch = hvp(f, hvp_prep_same, backend, x, batched_seeds[a], contexts...)
         block = stack_vec_col(dg_batch)
         if N % B != 0 && a == lastindex(batched_seeds)
@@ -119,8 +119,6 @@ function hessian(
         end
         block
     end
-
-    hess = reduce(hcat, hess_blocks)
     return hess
 end
 
