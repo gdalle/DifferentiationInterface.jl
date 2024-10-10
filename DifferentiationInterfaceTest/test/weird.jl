@@ -36,14 +36,14 @@ test_differentiation(AutoForwardDiff(), static_scenarios(); logging=LOGGING)
 
 test_differentiation(AutoForwardDiff(), component_scenarios(); logging=LOGGING)
 
-test_differentiation(AutoZygote(), gpu_scenarios(); second_order=false, logging=LOGGING)
+test_differentiation(AutoZygote(), gpu_scenarios(); excluded=SECOND_ORDER, logging=LOGGING)
 
 ## Closures
 
 test_differentiation(
     AutoFiniteDiff(),
     default_scenarios(; include_normal=false, include_closurified=true);
-    second_order=false,
+    excluded=SECOND_ORDER,
     logging=LOGGING,
 );
 

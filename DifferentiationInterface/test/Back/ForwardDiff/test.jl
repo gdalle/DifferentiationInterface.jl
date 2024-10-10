@@ -34,7 +34,7 @@ test_differentiation(
     backends,
     vcat(component_scenarios(), static_scenarios()); # FD accesses individual indices
     excluded=[:jacobian],  # jacobian is super slow for some reason
-    second_order=false,
+    excluded=SECOND_ORDER,
     logging=LOGGING,
 );
 

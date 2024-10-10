@@ -23,6 +23,6 @@ test_differentiation(
 test_differentiation(
     AutoChainRules(ZygoteRuleConfig()),
     default_scenarios(; include_normal=false, include_constantified=true);
-    second_order=false,
+    excluded=SECOND_ORDER,
     logging=LOGGING,
 );

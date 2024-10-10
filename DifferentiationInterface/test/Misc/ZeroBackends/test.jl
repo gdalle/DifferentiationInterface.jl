@@ -42,7 +42,6 @@ test_differentiation(
     default_scenarios(; include_batchified=false, include_constantified=true);
     correctness=false,
     type_stability=:full,
-    first_order=false,
     logging=LOGGING,
 )
 

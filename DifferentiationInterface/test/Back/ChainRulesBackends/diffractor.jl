@@ -13,5 +13,8 @@ for backend in [AutoDiffractor()]
 end
 
 test_differentiation(
-    AutoDiffractor(), default_scenarios(; linalg=false); second_order=false, logging=LOGGING
+    AutoDiffractor(),
+    default_scenarios(; linalg=false);
+    excluded=SECOND_ORDER,
+    logging=LOGGING,
 );

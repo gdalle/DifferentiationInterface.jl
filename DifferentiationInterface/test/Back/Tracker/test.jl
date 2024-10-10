@@ -15,6 +15,6 @@ end
 test_differentiation(
     AutoTracker(),
     default_scenarios(; include_constantified=true);
-    second_order=false,
+    excluded=SECOND_ORDER,
     logging=LOGGING,
 );
