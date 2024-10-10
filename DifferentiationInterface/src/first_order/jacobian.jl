@@ -232,7 +232,7 @@ function _jacobian_aux(
         f_or_f!y..., pushforward_prep, backend, x, batched_seeds[1], contexts...
     )
 
-    jac = mapreduce(hcat, eachindex(batched_seeds)) do a
+    jac_blocks = map(eachindex(batched_seeds)) do a
         dy_batch = pushforward(
             f_or_f!y...,
             pushforward_prep_same,
@@ -247,6 +247,8 @@ function _jacobian_aux(
         end
         block
     end
+
+    jac = reduce(hcat, jac_blocks)
     return jac
 end
 
@@ -263,7 +265,7 @@ function _jacobian_aux(
         f_or_f!y..., prep.pullback_prep, backend, x, batched_seeds[1], contexts...
     )
 
-    jac = mapreduce(vcat, eachindex(batched_seeds)) do a
+    jac_blocks = map(eachindex(batched_seeds)) do a
         dx_batch = pullback(
             f_or_f!y..., pullback_prep_same, backend, x, batched_seeds[a], contexts...
         )
@@ -273,6 +275,8 @@ function _jacobian_aux(
         end
         block
     end
+
+    jac = reduce(vcat, jac_blocks)
     return jac
 end
 
