@@ -241,7 +241,7 @@ function _jacobian_aux(
             batched_seeds[a],
             contexts...,
         )
-        block = stack(vec, dy_batch; dims=2)
+        block = stack_vec_col(dy_batch)
         if N % B != 0 && a == lastindex(batched_seeds)
             block = block[:, 1:(N - (a - 1) * B)]
         end
@@ -269,7 +269,7 @@ function _jacobian_aux(
         dx_batch = pullback(
             f_or_f!y..., pullback_prep_same, backend, x, batched_seeds[a], contexts...
         )
-        block = stack(vec, dx_batch; dims=1)
+        block = stack_vec_row(dx_batch)
         if M % B != 0 && a == lastindex(batched_seeds)
             block = block[1:(M - (a - 1) * B), :]
         end

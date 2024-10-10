@@ -113,7 +113,7 @@ function hessian(
 
     hess_blocks = map(eachindex(batched_seeds)) do a
         dg_batch = hvp(f, hvp_prep_same, backend, x, batched_seeds[a], contexts...)
-        block = stack(vec, dg_batch; dims=2)
+        block = stack_vec_col(dg_batch)
         if N % B != 0 && a == lastindex(batched_seeds)
             block = block[:, 1:(N - (a - 1) * B)]
         end

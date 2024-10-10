@@ -43,6 +43,7 @@ include("utils/check.jl")
 include("utils/exceptions.jl")
 include("utils/printing.jl")
 include("utils/context.jl")
+include("utils/linalg.jl")
 
 include("first_order/pushforward.jl")
 include("first_order/pullback.jl")
