@@ -22,7 +22,7 @@ SECOND_ORDER
 ## Utilities
 
 ```@docs
-DifferentiationBenchmarkDataRow
+DifferentiationInterfaceTest.DifferentiationBenchmarkDataRow
 ```
 
 ## Pre-made scenario lists
