@@ -79,7 +79,7 @@ for op in ALL_OPS
                     @test res1_out1_noval ≈ scen.res1
                     @test res1_out2_noval ≈ scen.res1
                 end
-                if sparsity && op == :jacobian
+                if sparsity && $op == jacobian
                     @test mynnz(res1_out1_val) == mynnz(scen.res1)
                     @test mynnz(res1_out2_val) == mynnz(scen.res1)
                     @test mynnz(res1_out1_noval) == mynnz(scen.res1)
@@ -144,7 +144,7 @@ for op in ALL_OPS
                     @test res1_out1_noval ≈ scen.res1
                     @test res1_out2_noval ≈ scen.res1
                 end
-                if sparsity && op == :jacobian
+                if sparsity && $op == jacobian
                     @test mynnz(res1_out1_val) == mynnz(scen.res1)
                     @test mynnz(res1_out2_val) == mynnz(scen.res1)
                     @test mynnz(res1_out1_noval) == mynnz(scen.res1)
@@ -206,7 +206,7 @@ for op in ALL_OPS
                     @test res1_out1_noval ≈ scen.res1
                     @test res1_out2_noval ≈ scen.res1
                 end
-                if sparsity && op == :jacobian
+                if sparsity && $op == jacobian
                     @test mynnz(res1_out1_val) == mynnz(scen.res1)
                     @test mynnz(res1_out2_val) == mynnz(scen.res1)
                     @test mynnz(res1_out1_noval) == mynnz(scen.res1)
@@ -274,7 +274,7 @@ for op in ALL_OPS
                     @test res1_out1_noval ≈ scen.res1
                     @test res1_out2_noval ≈ scen.res1
                 end
-                if sparsity && op == :jacobian
+                if sparsity && $op == jacobian
                     @test mynnz(res1_out1_val) == mynnz(scen.res1)
                     @test mynnz(res1_out2_val) == mynnz(scen.res1)
                     @test mynnz(res1_out1_noval) == mynnz(scen.res1)
@@ -330,7 +330,7 @@ for op in ALL_OPS
                     @test res2_out1_noval ≈ scen.res2
                     @test res2_out2_noval ≈ scen.res2
                 end
-                if sparsity && op == :hessian
+                if sparsity && $op == hessian
                     @test mynnz(res2_out1_val) == mynnz(scen.res2)
                     @test mynnz(res2_out2_val) == mynnz(scen.res2)
                     @test mynnz(res2_out1_noval) == mynnz(scen.res2)
@@ -399,7 +399,7 @@ for op in ALL_OPS
                     @test res2_out1_noval ≈ scen.res2
                     @test res2_out2_noval ≈ scen.res2
                 end
-                if sparsity && op == :hessian
+                if sparsity && $op == hessian
                     @test mynnz(res2_out1_val) == mynnz(scen.res2)
                     @test mynnz(res2_out2_val) == mynnz(scen.res2)
                     @test mynnz(res2_out1_noval) == mynnz(scen.res2)
