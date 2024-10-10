@@ -150,7 +150,13 @@ for op in ALL_OPS
             prepared_valop = reset_count!(cc)
             $op(cc, prep, ba, x, contexts...)
             prepared_op = reset_count!(cc)
-            return CallsResult(; preparation, prepared_valop, prepared_op)
+            $val_and_op(cc, ba, x, contexts...)
+            unprepared_valop = reset_count!(cc)
+            $op(cc, ba, x, contexts...)
+            unprepared_op = reset_count!(cc)
+            return CallsResult(;
+                prepared_valop, prepared_op, preparation, unprepared_valop, unprepared_op
+            )
         end
 
         @eval function benchmark_aux(ba::AbstractADType, scen::$S1in; subset::Symbol)
@@ -185,7 +191,13 @@ for op in ALL_OPS
             prepared_valop = reset_count!(cc)
             $op!(cc, res1, prep, ba, x, contexts...)
             prepared_op = reset_count!(cc)
-            return CallsResult(; preparation, prepared_valop, prepared_op)
+            $val_and_op!(cc, res1, ba, x, contexts...)
+            unprepared_valop = reset_count!(cc)
+            $op!(cc, res1, ba, x, contexts...)
+            unprepared_op = reset_count!(cc)
+            return CallsResult(;
+                prepared_valop, prepared_op, preparation, unprepared_valop, unprepared_op
+            )
         end
 
         op == :gradient && continue
@@ -220,7 +232,13 @@ for op in ALL_OPS
             prepared_valop = reset_count!(cc)
             $op(cc, y, prep, ba, x, contexts...)
             prepared_op = reset_count!(cc)
-            return CallsResult(; preparation, prepared_valop, prepared_op)
+            $val_and_op(cc, y,, ba, x, contexts...)
+            unprepared_valop = reset_count!(cc)
+            $op(cc, y,, ba, x, contexts...)
+            unprepared_op = reset_count!(cc)
+            return CallsResult(;
+                prepared_valop, prepared_op, preparation, unprepared_valop, unprepared_op
+            )
         end
 
         @eval function benchmark_aux(ba::AbstractADType, scen::$S2in; subset::Symbol)
@@ -257,7 +275,13 @@ for op in ALL_OPS
             prepared_valop = reset_count!(cc)
             $op!(cc, y, res1, prep, ba, x, contexts...)
             prepared_op = reset_count!(cc)
-            return CallsResult(; preparation, prepared_valop, prepared_op)
+            $val_and_op!(cc, y, res1, ba, x, contexts...)
+            unprepared_valop = reset_count!(cc)
+            $op!(cc, y, res1, ba, x, contexts...)
+            unprepared_op = reset_count!(cc)
+            return CallsResult(;
+                prepared_valop, prepared_op, preparation, unprepared_valop, unprepared_op
+            )
         end
 
     elseif op in [:hessian, :second_derivative]
@@ -291,7 +315,13 @@ for op in ALL_OPS
             prepared_valop = reset_count!(cc)
             $op(cc, prep, ba, x, contexts...)
             prepared_op = reset_count!(cc)
-            return CallsResult(; preparation, prepared_valop, prepared_op)
+            $val_and_op(cc, ba, x, contexts...)
+            unprepared_valop = reset_count!(cc)
+            $op(cc, ba, x, contexts...)
+            unprepared_op = reset_count!(cc)
+            return CallsResult(;
+                prepared_valop, prepared_op, preparation, unprepared_valop, unprepared_op
+            )
         end
 
         @eval function benchmark_aux(ba::AbstractADType, scen::$S1in; subset::Symbol)
@@ -329,7 +359,13 @@ for op in ALL_OPS
             prepared_valop = reset_count!(cc)
             $op!(cc, res2, prep, ba, x, contexts...)
             prepared_op = reset_count!(cc)
-            return CallsResult(; preparation, prepared_valop, prepared_op)
+            $val_and_op!(cc, res1, res2, ba, x, contexts...)
+            unprepared_valop = reset_count!(cc)
+            $op!(cc, res2, ba, x, contexts...)
+            unprepared_op = reset_count!(cc)
+            return CallsResult(;
+                prepared_valop, prepared_op, preparation, unprepared_valop, unprepared_op
+            )
         end
 
     elseif op in [:pushforward, :pullback]
@@ -362,7 +398,13 @@ for op in ALL_OPS
             prepared_valop = reset_count!(cc)
             $op(cc, prep, ba, x, tang, contexts...)
             prepared_op = reset_count!(cc)
-            return CallsResult(; preparation, prepared_valop, prepared_op)
+            $val_and_op(cc, ba, x, tang, contexts...)
+            unprepared_valop = reset_count!(cc)
+            $op(cc, ba, x, tang, contexts...)
+            unprepared_op = reset_count!(cc)
+            return CallsResult(;
+                prepared_valop, prepared_op, preparation, unprepared_valop, unprepared_op
+            )
         end
 
         @eval function benchmark_aux(ba::AbstractADType, scen::$S1in; subset::Symbol)
@@ -397,7 +439,13 @@ for op in ALL_OPS
             prepared_valop = reset_count!(cc)
             $op!(cc, res1, prep, ba, x, tang, contexts...)
             prepared_op = reset_count!(cc)
-            return CallsResult(; preparation, prepared_valop, prepared_op)
+            $val_and_op!(cc, res1, ba, x, tang, contexts...)
+            unprepared_valop = reset_count!(cc)
+            $op!(cc, res1, ba, x, tang, contexts...)
+            unprepared_op = reset_count!(cc)
+            return CallsResult(;
+                prepared_valop, prepared_op, preparation, unprepared_valop, unprepared_op
+            )
         end
 
         @eval function benchmark_aux(ba::AbstractADType, scen::$S2out; subset::Symbol)
@@ -432,7 +480,13 @@ for op in ALL_OPS
             prepared_valop = reset_count!(cc)
             $op(cc, y, prep, ba, x, tang, contexts...)
             prepared_op = reset_count!(cc)
-            return CallsResult(; preparation, prepared_valop, prepared_op)
+            $val_and_op(cc, y, ba, x, tang, contexts...)
+            unprepared_valop = reset_count!(cc)
+            $op(cc, y, ba, x, tang, contexts...)
+            unprepared_op = reset_count!(cc)
+            return CallsResult(;
+                prepared_valop, prepared_op, preparation, unprepared_valop, unprepared_op
+            )
         end
 
         @eval function benchmark_aux(ba::AbstractADType, scen::$S2in; subset::Symbol)
@@ -471,7 +525,13 @@ for op in ALL_OPS
             prepared_valop = reset_count!(cc)
             $op!(cc, y, res1, prep, ba, x, tang, contexts...)
             prepared_op = reset_count!(cc)
-            return CallsResult(; preparation, prepared_valop, prepared_op)
+            $val_and_op!(cc, y, res1, ba, x, tang, contexts...)
+            unprepared_valop = reset_count!(cc)
+            $op!(cc, y, res1, ba, x, tang, contexts...)
+            unprepared_op = reset_count!(cc)
+            return CallsResult(;
+                prepared_valop, prepared_op, preparation, unprepared_valop, unprepared_op
+            )
         end
 
     elseif op in [:hvp]
@@ -504,7 +564,12 @@ for op in ALL_OPS
             prepared_valop = -1  # TODO: fix
             $op(cc, prep, ba, x, tang, contexts...)
             prepared_op = reset_count!(cc)
-            return CallsResult(; preparation, prepared_valop, prepared_op)
+            unprepared_valop = -1  # TODO: fix
+            $op(cc, ba, x, tang, contexts...)
+            unprepared_op = reset_count!(cc)
+            return CallsResult(;
+                prepared_valop, prepared_op, preparation, unprepared_valop, unprepared_op
+            )
         end
 
         @eval function benchmark_aux(ba::AbstractADType, scen::$S1in; subset::Symbol)
@@ -536,7 +601,12 @@ for op in ALL_OPS
             prepared_valop = -1  # TODO: fix
             $op!(cc, res2, prep, ba, x, tang, contexts...)
             prepared_op = reset_count!(cc)
-            return CallsResult(; preparation, prepared_valop, prepared_op)
+            unprepared_valop = -1  # TODO: fix
+            $op!(cc, res2, ba, x, tang, contexts...)
+            unprepared_op = reset_count!(cc)
+            return CallsResult(;
+                prepared_valop, prepared_op, preparation, unprepared_valop, unprepared_op
+            )
         end
     end
 end
