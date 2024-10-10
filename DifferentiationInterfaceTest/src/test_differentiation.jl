@@ -132,7 +132,12 @@ function test_differentiation(
                     end
                     yield()
                     (type_stability != :none) && @testset "Type stability" begin
-                        test_jet(adapted_backend, scen; subset=type_stability, ignored_modules)
+                        test_jet(
+                            adapted_backend,
+                            scen;
+                            subset=type_stability,
+                            ignored_modules=ignored_modules,
+                        )
                     end
                     yield()
                     (benchmark != :none) && @testset "Benchmark" begin
@@ -176,7 +181,7 @@ Specifying the set of scenarios is mandatory for this function.
 function benchmark_differentiation(
     backends,
     scenarios::Vector{<:Scenario};
-    benchmark::Symbol=:full,
+    benchmark::Symbol=:prepared,
     excluded::Vector{Symbol}=Symbol[],
     logging::Bool=false,
 )

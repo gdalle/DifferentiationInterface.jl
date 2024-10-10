@@ -45,9 +45,6 @@ function failed_bench()
     return Benchmark([sample])
 end
 
-failed_benchs(k::Integer) = ntuple(i -> failed_bench(), k)
-failed_calls(k::Integer) = ntuple(i -> -1, k)
-
 """
     DifferentiationBenchmarkDataRow
 
