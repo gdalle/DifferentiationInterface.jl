@@ -9,16 +9,6 @@ for op in [
     :hvp,
 ]
     op! = Symbol(op, "!")
-    val_and_op = if op == :second_derivative
-        :value_derivative_and_second_derivative
-    elseif op == :hessian
-        :value_gradient_and_hessian
-    elseif op == :hvp
-        nothing
-    else
-        Symbol("value_and_", op)
-    end
-    val_and_op! = Symbol(val_and_op, "!")
     prep_op = Symbol("prepare_", op)
     prep_op! = Symbol("prepare!_", op)
     prep_op_same_point = Symbol("prepare_", op, "_same_point")

@@ -52,24 +52,30 @@ function hvp! end
 
 ## Preparation
 
-struct ForwardOverForwardHVPPrep{G,E<:PushforwardPrep} <: HVPPrep
+abstract type StandardHVPPrep <: HVPPrep end
+
+struct ForwardOverForwardHVPPrep{G,E2<:PushforwardPrep,E1<:GradientPrep} <: StandardHVPPrep
     inner_gradient::G
-    outer_pushforward_prep::E
+    outer_pushforward_prep::E2
+    gradient_prep::E1
 end
 
-struct ForwardOverReverseHVPPrep{G,E<:PushforwardPrep} <: HVPPrep
+struct ForwardOverReverseHVPPrep{G,E2<:PushforwardPrep,E1<:GradientPrep} <: StandardHVPPrep
     inner_gradient::G
-    outer_pushforward_prep::E
+    outer_pushforward_prep::E2
+    gradient_prep::E1
 end
 
-struct ReverseOverForwardHVPPrep{P,E} <: HVPPrep
+struct ReverseOverForwardHVPPrep{P,E2<:GradientPrep,E1<:GradientPrep} <: StandardHVPPrep
     inner_pushforward::P
-    outer_gradient_prep::E
+    outer_gradient_prep::E2
+    gradient_prep::E1
 end
 
-struct ReverseOverReverseHVPPrep{G,E<:PullbackPrep} <: HVPPrep
+struct ReverseOverReverseHVPPrep{G,E2<:PullbackPrep,E1<:GradientPrep} <: StandardHVPPrep
     inner_gradient::G
-    outer_pullback_prep::E
+    outer_pullback_prep::E2
+    gradient_prep::E1
 end
 
 function prepare_hvp(
@@ -95,7 +101,8 @@ function _prepare_hvp_aux(
     outer_pushforward_prep = prepare_pushforward(
         inner_gradient, outer(backend), x, tx, contexts...
     )
-    return ForwardOverForwardHVPPrep(inner_gradient, outer_pushforward_prep)
+    gradient_prep = prepare_gradient(f, inner(backend), x, contexts...)
+    return ForwardOverForwardHVPPrep(inner_gradient, outer_pushforward_prep, gradient_prep)
 end
 
 function _prepare_hvp_aux(
@@ -115,7 +122,8 @@ function _prepare_hvp_aux(
     outer_pushforward_prep = prepare_pushforward(
         inner_gradient, outer(backend), x, tx, contexts...
     )
-    return ForwardOverReverseHVPPrep(inner_gradient, outer_pushforward_prep)
+    gradient_prep = prepare_gradient(f, inner(backend), x, contexts...)
+    return ForwardOverReverseHVPPrep(inner_gradient, outer_pushforward_prep, gradient_prep)
 end
 
 function _prepare_hvp_aux(
@@ -136,7 +144,8 @@ function _prepare_hvp_aux(
     outer_gradient_prep = prepare_gradient(
         inner_pushforward, outer(backend), x, contexts...
     )
-    return ReverseOverForwardHVPPrep(inner_pushforward, outer_gradient_prep)
+    gradient_prep = prepare_gradient(f, inner(backend), x, contexts...)
+    return ReverseOverForwardHVPPrep(inner_pushforward, outer_gradient_prep, gradient_prep)
 end
 
 function _prepare_hvp_aux(
@@ -156,7 +165,8 @@ function _prepare_hvp_aux(
     outer_pullback_prep = prepare_pullback(
         inner_gradient, outer(backend), x, tx, contexts...
     )
-    return ReverseOverReverseHVPPrep(inner_gradient, outer_pullback_prep)
+    gradient_prep = prepare_gradient(f, inner(backend), x, contexts...)
+    return ReverseOverReverseHVPPrep(inner_gradient, outer_pullback_prep, gradient_prep)
 end
 
 ## One argument
@@ -283,4 +293,32 @@ function hvp!(
     return pullback!(
         inner_gradient, tg, outer_pullback_prep, outer(backend), x, tx, contexts...
     )
+end
+
+function gradient_and_hvp(
+    f::F,
+    prep::StandardHVPPrep,
+    backend::AbstractADType,
+    x,
+    tx::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    tg = hvp(f, prep, backend, x, tx, contexts...)
+    grad = gradient(f, prep.gradient_prep, inner(backend), x, contexts...)
+    return grad, tg
+end
+
+function gradient_and_hvp!(
+    f::F,
+    grad,
+    tg::NTuple,
+    prep::StandardHVPPrep,
+    backend::AbstractADType,
+    x,
+    tx::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    hvp!(f, tg, prep, backend, x, tx, contexts...)
+    gradient!(f, grad, prep.gradient_prep, inner(backend), x, contexts...)
+    return grad, tg
 end
