@@ -43,7 +43,7 @@ For `type_stability` and `benchmark`, the possible values are `:none`, `:prepare
 - `atol=0`: absolute precision for correctness testing (when comparing to the reference outputs)
 - `rtol=1e-3`: relative precision for correctness testing (when comparing to the reference outputs)
 - `scenario_intact=true`: whether to check that the scenario remains unchanged after the operators are applied
-- `sparsity`: whether to check sparsity patterns for Jacobians / Hessians
+- `sparsity=false`: whether to check sparsity patterns for Jacobians / Hessians
 
 **Type stability options:**
 
@@ -69,7 +69,7 @@ function test_differentiation(
     atol::Real=0,
     rtol::Real=1e-3,
     scenario_intact::Bool=true,
-    sparsity::Bool=true,
+    sparsity::Bool=false,
     # type stability options
     ignored_modules=nothing,
     # benchmark options
