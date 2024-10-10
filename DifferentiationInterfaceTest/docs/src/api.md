@@ -37,12 +37,6 @@ gpu_scenarios
 static_scenarios
 ```
 
-## Utilities
-
-```@docs
-DifferentiationBenchmarkDataRow
-```
-
 ## Internals
 
 This is not part of the public API.

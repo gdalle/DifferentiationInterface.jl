@@ -23,7 +23,7 @@ test_differentiation(
 );
 
 test_differentiation(
-    AutoForwardDiff(); correctness=false, type_stability=true, logging=LOGGING
+    AutoForwardDiff(); correctness=false, type_stability=:full, logging=LOGGING
 );
 
 test_differentiation(

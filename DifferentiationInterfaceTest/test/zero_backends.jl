@@ -62,14 +62,16 @@ data_allocfree = vcat(
         AutoZeroForward(),
         allocfree_scenarios();
         excluded=[:pullback, :gradient],
+        benchmark=:prepared,
         logging=LOGGING,
     ),
     benchmark_differentiation(
         AutoZeroReverse(),
         allocfree_scenarios();
         excluded=[:pushforward, :derivative],
+        benchmark=:prepared,
         logging=LOGGING,
     ),
 )
 
-@test is_allocfree(data_allocfree);
+@test all(iszero, data_allocfree[!, :allocs])
