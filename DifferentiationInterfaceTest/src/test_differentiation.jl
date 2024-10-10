@@ -184,7 +184,7 @@ function benchmark_differentiation(
     benchmark::Symbol=:prepared,
     excluded::Vector{Symbol}=Symbol[],
     logging::Bool=false,
-    count_calls::Bool,
+    count_calls::Bool=true,
 )
     return test_differentiation(
         backends,
