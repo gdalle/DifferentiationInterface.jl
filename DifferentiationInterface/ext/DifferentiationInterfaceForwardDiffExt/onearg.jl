@@ -558,7 +558,7 @@ function DI.hessian!(
 end
 
 function DI.hessian(
-    f::F, ::AutoForwardDiff{chunksize,T}, x, contexts::Vararg{Context,C}
+    f::F, backend::AutoForwardDiff{chunksize,T}, x, contexts::Vararg{Context,C}
 ) where {F,C,chunksize,T}
     if isnothing(chunksize) && T === Nothing
         fc = with_contexts(f, contexts...)
@@ -570,7 +570,7 @@ function DI.hessian(
 end
 
 function DI.value_gradient_and_hessian!(
-    f::F, grad, hess, ::AutoForwardDiff{chunksize,T}, x, contexts::Vararg{Context,C}
+    f::F, grad, hess, backend::AutoForwardDiff{chunksize,T}, x, contexts::Vararg{Context,C}
 ) where {F,C,chunksize,T}
     if isnothing(chunksize) && T === Nothing
         fc = with_contexts(f, contexts...)
@@ -587,7 +587,7 @@ function DI.value_gradient_and_hessian!(
 end
 
 function DI.value_gradient_and_hessian(
-    f::F, ::AutoForwardDiff{chunksize,T}, x, contexts::Vararg{Context,C}
+    f::F, backend::AutoForwardDiff{chunksize,T}, x, contexts::Vararg{Context,C}
 ) where {F,C,chunksize,T}
     if isnothing(chunksize) && T === Nothing
         fc = with_contexts(f, contexts...)
