@@ -7,15 +7,11 @@ end
 
 Return a new `AutoForwardDiff` backend with a fixed tag linked to `f`, so that we know how to prepare the inner gradient of the HVP without depending on what that gradient closure looks like.
 """
-function tag_backend_hvp(f::F, ::AutoForwardDiff{chunksize,Nothing}, x) where {F,chunksize}
-    return AutoForwardDiff(;
-        chunksize=chunksize,
-        tag=ForwardDiff.Tag(ForwardDiffOverSomethingHVPWrapper(f), eltype(x)),
-    )
-end
+tag_backend_hvp(f, backend::AutoForwardDiff, x) = backend
 
-function tag_backend_hvp(f, backend::AutoForwardDiff, x)
-    return backend
+function tag_backend_hvp(f::F, ::AutoForwardDiff{chunksize,Nothing}, x) where {F,chunksize}
+    tag = ForwardDiff.Tag(ForwardDiffOverSomethingHVPWrapper(f), eltype(x))
+    return AutoForwardDiff{chunksize,typeof(tag)}(tag)
 end
 
 struct ForwardDiffOverSomethingHVPPrep{B<:AutoForwardDiff,G,E<:PushforwardPrep} <: HVPPrep

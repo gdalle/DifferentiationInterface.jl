@@ -58,16 +58,18 @@ for op in ALL_OPS
                     function_filter $prep_op(f, ba, x, contexts...)
             (subset == :full) &&
                 @test_opt ignored_modules = ignored_modules function_filter =
-                    function_filter $op!(f, res1, ba, x, contexts...)
+                    function_filter $op!(f, mysimilar(res1), ba, x, contexts...)
             (subset == :full) &&
                 @test_opt ignored_modules = ignored_modules function_filter =
-                    function_filter $val_and_op!(f, res1, ba, x, contexts...)
+                    function_filter $val_and_op!(f, mysimilar(res1), ba, x, contexts...)
             (subset in (:prepared, :full)) &&
                 @test_opt ignored_modules = ignored_modules function_filter =
-                    function_filter $op!(f, res1, prep, ba, x, contexts...)
+                    function_filter $op!(f, mysimilar(res1), prep, ba, x, contexts...)
             (subset in (:prepared, :full)) &&
                 @test_opt ignored_modules = ignored_modules function_filter =
-                    function_filter $val_and_op!(f, res1, prep, ba, x, contexts...)
+                    function_filter $val_and_op!(
+                    f, mysimilar(res1), prep, ba, x, contexts...
+                )
             return nothing
         end
 
@@ -114,16 +116,18 @@ for op in ALL_OPS
                     function_filter $prep_op(f, y, ba, x, contexts...)
             (subset == :full) &&
                 @test_opt ignored_modules = ignored_modules function_filter =
-                    function_filter $op!(f, y, res1, ba, x, contexts...)
+                    function_filter $op!(f, y, mysimilar(res1), ba, x, contexts...)
             (subset == :full) &&
                 @test_opt ignored_modules = ignored_modules function_filter =
-                    function_filter $val_and_op!(f, y, res1, ba, x, contexts...)
+                    function_filter $val_and_op!(f, y, mysimilar(res1), ba, x, contexts...)
             (subset in (:prepared, :full)) &&
                 @test_opt ignored_modules = ignored_modules function_filter =
-                    function_filter $op!(f, y, res1, prep, ba, x, contexts...)
+                    function_filter $op!(f, y, mysimilar(res1), prep, ba, x, contexts...)
             (subset in (:prepared, :full)) &&
                 @test_opt ignored_modules = ignored_modules function_filter =
-                    function_filter $val_and_op!(f, y, res1, prep, ba, x, contexts...)
+                    function_filter $val_and_op!(
+                    f, y, mysimilar(res1), prep, ba, x, contexts...
+                )
             return nothing
         end
 
@@ -169,16 +173,20 @@ for op in ALL_OPS
                     function_filter $prep_op(f, ba, x, contexts...)
             (subset == :full) &&
                 @test_opt ignored_modules = ignored_modules function_filter =
-                    function_filter $op!(f, res2, ba, x, contexts...)
+                    function_filter $op!(f, mysimilar(res2), ba, x, contexts...)
             (subset == :full) &&
                 @test_opt ignored_modules = ignored_modules function_filter =
-                    function_filter $val_and_op!(f, res1, res2, ba, x, contexts...)
+                    function_filter $val_and_op!(
+                    f, mysimilar(res1), mysimilar(res2), ba, x, contexts...
+                )
             (subset in (:prepared, :full)) &&
                 @test_opt ignored_modules = ignored_modules function_filter =
-                    function_filter $op!(f, res2, prep, ba, x, contexts...)
+                    function_filter $op!(f, mysimilar(res2), prep, ba, x, contexts...)
             (subset in (:prepared, :full)) &&
                 @test_opt ignored_modules = ignored_modules function_filter =
-                    function_filter $val_and_op!(f, res1, res2, prep, ba, x, contexts...)
+                    function_filter $val_and_op!(
+                    f, mysimilar(res1), mysimilar(res2), prep, ba, x, contexts...
+                )
             return nothing
         end
 
@@ -224,16 +232,20 @@ for op in ALL_OPS
                     function_filter $prep_op(f, ba, x, tang, contexts...)
             (subset == :full) &&
                 @test_opt ignored_modules = ignored_modules function_filter =
-                    function_filter $op!(f, res1, ba, x, tang, contexts...)
+                    function_filter $op!(f, mysimilar(res1), ba, x, tang, contexts...)
             (subset == :full) &&
                 @test_opt ignored_modules = ignored_modules function_filter =
-                    function_filter $val_and_op!(f, res1, ba, x, tang, contexts...)
+                    function_filter $val_and_op!(
+                    f, mysimilar(res1), ba, x, tang, contexts...
+                )
             (subset in (:prepared, :full)) &&
                 @test_opt ignored_modules = ignored_modules function_filter =
-                    function_filter $op!(f, res1, prep, ba, x, tang, contexts...)
+                    function_filter $op!(f, mysimilar(res1), prep, ba, x, tang, contexts...)
             (subset in (:prepared, :full)) &&
                 @test_opt ignored_modules = ignored_modules function_filter =
-                    function_filter $val_and_op!(f, res1, prep, ba, x, tang, contexts...)
+                    function_filter $val_and_op!(
+                    f, mysimilar(res1), prep, ba, x, tang, contexts...
+                )
             return nothing
         end
 
@@ -278,16 +290,22 @@ for op in ALL_OPS
                     function_filter $prep_op(f, y, ba, x, tang, contexts...)
             (subset == :full) &&
                 @test_opt ignored_modules = ignored_modules function_filter =
-                    function_filter $op!(f, y, res1, ba, x, tang, contexts...)
+                    function_filter $op!(f, y, mysimilar(res1), ba, x, tang, contexts...)
             (subset == :full) &&
                 @test_opt ignored_modules = ignored_modules function_filter =
-                    function_filter $val_and_op!(f, y, res1, ba, x, tang, contexts...)
+                    function_filter $val_and_op!(
+                    f, y, mysimilar(res1), ba, x, tang, contexts...
+                )
             (subset in (:prepared, :full)) &&
                 @test_opt ignored_modules = ignored_modules function_filter =
-                    function_filter $op!(f, y, res1, prep, ba, x, tang, contexts...)
+                    function_filter $op!(
+                    f, y, mysimilar(res1), prep, ba, x, tang, contexts...
+                )
             (subset in (:prepared, :full)) &&
                 @test_opt ignored_modules = ignored_modules function_filter =
-                    function_filter $val_and_op!(f, y, res1, prep, ba, x, tang, contexts...)
+                    function_filter $val_and_op!(
+                    f, y, mysimilar(res1), prep, ba, x, tang, contexts...
+                )
             return nothing
         end
 
@@ -327,10 +345,10 @@ for op in ALL_OPS
                     function_filter $prep_op(f, ba, x, tang, contexts...)
             (subset == :full) &&
                 @test_opt ignored_modules = ignored_modules function_filter =
-                    function_filter $op!(f, res2, ba, x, tang, contexts...)
+                    function_filter $op!(f, mysimilar(res2), ba, x, tang, contexts...)
             (subset in (:prepared, :full)) &&
                 @test_opt ignored_modules = ignored_modules function_filter =
-                    function_filter $op!(f, res2, prep, ba, x, tang, contexts...)
+                    function_filter $op!(f, mysimilar(res2), prep, ba, x, tang, contexts...)
             return nothing
         end
     end

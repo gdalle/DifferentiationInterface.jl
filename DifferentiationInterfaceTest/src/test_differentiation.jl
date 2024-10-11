@@ -52,7 +52,8 @@ For `type_stability` and `benchmark`, the possible values are `:none`, `:prepare
 
 **Benchmark options:**
 
-- `count_calls::Bool`: whether to also count function calls during benchmarking
+- `count_calls=true`: whether to also count function calls during benchmarking
+- `benchmark_test=true`: whether to include tests which succeed iff benchmark doesn't error
 """
 function test_differentiation(
     backends::Vector{<:AbstractADType},
@@ -80,6 +81,7 @@ function test_differentiation(
     end,
     # benchmark options
     count_calls::Bool=true,
+    benchmark_test::Bool=true,
 )
     @assert type_stability in (:none, :prepared, :full)
     @assert benchmark in (:none, :prepared, :full)
@@ -155,6 +157,7 @@ function test_differentiation(
                             logging,
                             subset=benchmark,
                             count_calls,
+                            benchmark_test,
                         )
                     end
                     yield()
@@ -192,6 +195,7 @@ function benchmark_differentiation(
     excluded::Vector{Symbol}=Symbol[],
     logging::Bool=false,
     count_calls::Bool=true,
+    benchmark_test::Bool=true,
 )
     return test_differentiation(
         backends,
@@ -202,5 +206,6 @@ function benchmark_differentiation(
         logging,
         excluded,
         count_calls,
+        benchmark_test,
     )
 end

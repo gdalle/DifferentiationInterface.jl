@@ -39,23 +39,30 @@ for op in ALL_OPS
         logging::Bool,
         subset::Symbol,
         count_calls::Bool,
+        benchmark_test::Bool,
     )
         @assert subset in (:full, :prepared)
 
+        bench_success = true
         bench_result = try
             benchmark_aux(backend, scenario; subset)
         catch exception
+            bench_success = false
             logging && @warn "Error during benchmarking" backend scenario exception
             BenchmarkResult()
         end
+        benchmark_test && @test bench_success
 
         if count_calls
+            count_success = true
             calls_result = try
                 calls_aux(backend, scenario; subset)
             catch exception
+                count_success = false
                 logging && @warn "Error during call counting" backend scenario exception
                 CallsResult()
             end
+            benchmark_test && @test count_success
         else
             calls_result = CallsResult()
         end
@@ -162,14 +169,18 @@ for op in ALL_OPS
         @eval function benchmark_aux(ba::AbstractADType, scen::$S1in; subset::Symbol)
             (; f, x, res1, contexts) = deepcopy(scen)
             prep = $prep_op(f, ba, x, contexts...)
-            prepared_valop = @be (res1, prep) $val_and_op!(
+            prepared_valop = @be (mysimilar(res1), prep) $val_and_op!(
                 f, _[1], _[2], ba, x, contexts...
             )
-            prepared_op = @be (res1, prep) $op!(f, _[1], _[2], ba, x, contexts...)
+            prepared_op = @be (mysimilar(res1), prep) $op!(
+                f, _[1], _[2], ba, x, contexts...
+            )
             if subset == :full
                 preparation = @be $prep_op(f, ba, x, contexts...)
-                unprepared_valop = @be res1 $val_and_op!(f, _, ba, x, contexts...)
-                unprepared_op = @be res1 $op!(f, _, ba, x, contexts...)
+                unprepared_valop = @be mysimilar(res1) $val_and_op!(
+                    f, _, ba, x, contexts...
+                )
+                unprepared_op = @be mysimilar(res1) $op!(f, _, ba, x, contexts...)
                 return BenchmarkResult(;
                     prepared_valop,
                     prepared_op,
@@ -187,13 +198,13 @@ for op in ALL_OPS
             cc = CallCounter(f)
             prep = $prep_op(cc, ba, x, contexts...)
             preparation = reset_count!(cc)
-            $val_and_op!(cc, res1, prep, ba, x, contexts...)
+            $val_and_op!(cc, mysimilar(res1), prep, ba, x, contexts...)
             prepared_valop = reset_count!(cc)
-            $op!(cc, res1, prep, ba, x, contexts...)
+            $op!(cc, mysimilar(res1), prep, ba, x, contexts...)
             prepared_op = reset_count!(cc)
-            $val_and_op!(cc, res1, ba, x, contexts...)
+            $val_and_op!(cc, mysimilar(res1), ba, x, contexts...)
             unprepared_valop = reset_count!(cc)
-            $op!(cc, res1, ba, x, contexts...)
+            $op!(cc, mysimilar(res1), ba, x, contexts...)
             unprepared_op = reset_count!(cc)
             return CallsResult(;
                 prepared_valop, prepared_op, preparation, unprepared_valop, unprepared_op
@@ -244,16 +255,20 @@ for op in ALL_OPS
         @eval function benchmark_aux(ba::AbstractADType, scen::$S2in; subset::Symbol)
             (; f, x, y, res1, contexts) = deepcopy(scen)
             prep = $prep_op(f, y, ba, x, contexts...)
-            prepared_valop = @be (y, res1, prep) $val_and_op!(
+            prepared_valop = @be (y, mysimilar(res1), prep) $val_and_op!(
                 f, _[1], _[2], _[3], ba, x, contexts...
             )
-            prepared_op = @be (y, res1, prep) $op!(f, _[1], _[2], _[3], ba, x, contexts...)
+            prepared_op = @be (y, mysimilar(res1), prep) $op!(
+                f, _[1], _[2], _[3], ba, x, contexts...
+            )
             if subset == :full
                 preparation = @be $prep_op(f, y, ba, x, contexts...)
-                unprepared_valop = @be (y, res1) $val_and_op!(
+                unprepared_valop = @be (y, mysimilar(res1)) $val_and_op!(
                     f, _[1], _[2], ba, x, contexts...
                 )
-                unprepared_op = @be (y, res1) $op!(f, _[1], _[2], ba, x, contexts...)
+                unprepared_op = @be (y, mysimilar(res1)) $op!(
+                    f, _[1], _[2], ba, x, contexts...
+                )
                 return BenchmarkResult(;
                     prepared_valop,
                     prepared_op,
@@ -271,13 +286,13 @@ for op in ALL_OPS
             cc = CallCounter(f)
             prep = $prep_op(cc, y, ba, x, contexts...)
             preparation = reset_count!(cc)
-            $val_and_op!(cc, y, res1, prep, ba, x, contexts...)
+            $val_and_op!(cc, y, mysimilar(res1), prep, ba, x, contexts...)
             prepared_valop = reset_count!(cc)
-            $op!(cc, y, res1, prep, ba, x, contexts...)
+            $op!(cc, y, mysimilar(res1), prep, ba, x, contexts...)
             prepared_op = reset_count!(cc)
-            $val_and_op!(cc, y, res1, ba, x, contexts...)
+            $val_and_op!(cc, y, mysimilar(res1), ba, x, contexts...)
             unprepared_valop = reset_count!(cc)
-            $op!(cc, y, res1, ba, x, contexts...)
+            $op!(cc, y, mysimilar(res1), ba, x, contexts...)
             unprepared_op = reset_count!(cc)
             return CallsResult(;
                 prepared_valop, prepared_op, preparation, unprepared_valop, unprepared_op
@@ -328,16 +343,18 @@ for op in ALL_OPS
             (; f, x, res1, res2, contexts) = deepcopy(scen)
 
             prep = $prep_op(f, ba, x, contexts...)
-            prepared_valop = @be (res1, res2, prep) $val_and_op!(
+            prepared_valop = @be (mysimilar(res1), mysimilar(res2), prep) $val_and_op!(
                 f, _[1], _[2], _[3], ba, x, contexts...
             )
-            prepared_op = @be (res2, prep) $op!(f, _[1], _[2], ba, x, contexts...)
+            prepared_op = @be (mysimilar(res2), prep) $op!(
+                f, _[1], _[2], ba, x, contexts...
+            )
             if subset == :full
                 preparation = @be $prep_op(f, ba, x, contexts...)
-                unprepared_valop = @be (res1, res2) $val_and_op!(
+                unprepared_valop = @be (mysimilar(res1), mysimilar(res2)) $val_and_op!(
                     f, _[1], _[2], ba, x, contexts...
                 )
-                unprepared_op = @be res2 $op!(f, _, ba, x, contexts...)
+                unprepared_op = @be mysimilar(res2) $op!(f, _, ba, x, contexts...)
                 return BenchmarkResult(;
                     prepared_valop,
                     prepared_op,
@@ -355,13 +372,13 @@ for op in ALL_OPS
             cc = CallCounter(f)
             prep = $prep_op(cc, ba, x, contexts...)
             preparation = reset_count!(cc)
-            $val_and_op!(cc, res1, res2, prep, ba, x, contexts...)
+            $val_and_op!(cc, mysimilar(res1), mysimilar(res2), prep, ba, x, contexts...)
             prepared_valop = reset_count!(cc)
-            $op!(cc, res2, prep, ba, x, contexts...)
+            $op!(cc, mysimilar(res2), prep, ba, x, contexts...)
             prepared_op = reset_count!(cc)
-            $val_and_op!(cc, res1, res2, ba, x, contexts...)
+            $val_and_op!(cc, mysimilar(res1), mysimilar(res2), ba, x, contexts...)
             unprepared_valop = reset_count!(cc)
-            $op!(cc, res2, ba, x, contexts...)
+            $op!(cc, mysimilar(res2), ba, x, contexts...)
             unprepared_op = reset_count!(cc)
             return CallsResult(;
                 prepared_valop, prepared_op, preparation, unprepared_valop, unprepared_op
@@ -410,14 +427,18 @@ for op in ALL_OPS
         @eval function benchmark_aux(ba::AbstractADType, scen::$S1in; subset::Symbol)
             (; f, x, tang, res1, contexts) = deepcopy(scen)
             prep = $prep_op(f, ba, x, tang, contexts...)
-            prepared_valop = @be (res1, prep) $val_and_op!(
+            prepared_valop = @be (mysimilar(res1), prep) $val_and_op!(
                 f, _[1], _[2], ba, x, tang, contexts...
             )
-            prepared_op = @be (res1, prep) $op!(f, _[1], _[2], ba, x, tang, contexts...)
+            prepared_op = @be (mysimilar(res1), prep) $op!(
+                f, _[1], _[2], ba, x, tang, contexts...
+            )
             if subset == :full
                 preparation = @be $prep_op(f, ba, x, tang, contexts...)
-                unprepared_valop = @be res1 $val_and_op!(f, _, ba, x, tang, contexts...)
-                unprepared_op = @be res1 $op!(f, _, ba, x, tang, contexts...)
+                unprepared_valop = @be mysimilar(res1) $val_and_op!(
+                    f, _, ba, x, tang, contexts...
+                )
+                unprepared_op = @be mysimilar(res1) $op!(f, _, ba, x, tang, contexts...)
                 return BenchmarkResult(;
                     prepared_valop,
                     prepared_op,
@@ -435,13 +456,13 @@ for op in ALL_OPS
             cc = CallCounter(f)
             prep = $prep_op(cc, ba, x, tang, contexts...)
             preparation = reset_count!(cc)
-            $val_and_op!(cc, res1, prep, ba, x, tang, contexts...)
+            $val_and_op!(cc, mysimilar(res1), prep, ba, x, tang, contexts...)
             prepared_valop = reset_count!(cc)
-            $op!(cc, res1, prep, ba, x, tang, contexts...)
+            $op!(cc, mysimilar(res1), prep, ba, x, tang, contexts...)
             prepared_op = reset_count!(cc)
-            $val_and_op!(cc, res1, ba, x, tang, contexts...)
+            $val_and_op!(cc, mysimilar(res1), ba, x, tang, contexts...)
             unprepared_valop = reset_count!(cc)
-            $op!(cc, res1, ba, x, tang, contexts...)
+            $op!(cc, mysimilar(res1), ba, x, tang, contexts...)
             unprepared_op = reset_count!(cc)
             return CallsResult(;
                 prepared_valop, prepared_op, preparation, unprepared_valop, unprepared_op
@@ -492,18 +513,20 @@ for op in ALL_OPS
         @eval function benchmark_aux(ba::AbstractADType, scen::$S2in; subset::Symbol)
             (; f, x, y, tang, res1, contexts) = deepcopy(scen)
             prep = $prep_op(f, y, ba, x, tang, contexts...)
-            prepared_valop = @be (y, res1, prep) $val_and_op!(
+            prepared_valop = @be (y, mysimilar(res1), prep) $val_and_op!(
                 f, _[1], _[2], _[3], ba, x, tang, contexts...
             )
-            prepared_op = @be (y, res1, prep) $op!(
+            prepared_op = @be (y, mysimilar(res1), prep) $op!(
                 f, _[1], _[2], _[3], ba, x, tang, contexts...
             )
             if subset == :full
                 preparation = @be $prep_op(f, y, ba, x, tang, contexts...)
-                unprepared_valop = @be (y, res1) $val_and_op!(
+                unprepared_valop = @be (y, mysimilar(res1)) $val_and_op!(
                     f, _[1], _[2], ba, x, tang, contexts...
                 )
-                unprepared_op = @be (y, res1) $op!(f, _[1], _[2], ba, x, tang, contexts...)
+                unprepared_op = @be (y, mysimilar(res1)) $op!(
+                    f, _[1], _[2], ba, x, tang, contexts...
+                )
                 return BenchmarkResult(;
                     prepared_valop,
                     prepared_op,
@@ -521,13 +544,13 @@ for op in ALL_OPS
             cc = CallCounter(f)
             prep = $prep_op(cc, y, ba, x, tang, contexts...)
             preparation = reset_count!(cc)
-            $val_and_op!(cc, y, res1, prep, ba, x, tang, contexts...)
+            $val_and_op!(cc, y, mysimilar(res1), prep, ba, x, tang, contexts...)
             prepared_valop = reset_count!(cc)
-            $op!(cc, y, res1, prep, ba, x, tang, contexts...)
+            $op!(cc, y, mysimilar(res1), prep, ba, x, tang, contexts...)
             prepared_op = reset_count!(cc)
-            $val_and_op!(cc, y, res1, ba, x, tang, contexts...)
+            $val_and_op!(cc, y, mysimilar(res1), ba, x, tang, contexts...)
             unprepared_valop = reset_count!(cc)
-            $op!(cc, y, res1, ba, x, tang, contexts...)
+            $op!(cc, y, mysimilar(res1), ba, x, tang, contexts...)
             unprepared_op = reset_count!(cc)
             return CallsResult(;
                 prepared_valop, prepared_op, preparation, unprepared_valop, unprepared_op
@@ -576,11 +599,13 @@ for op in ALL_OPS
             (; f, x, tang, res2, contexts) = deepcopy(scen)
             prep = $prep_op(f, ba, x, tang, contexts...)
             prepared_valop = @be +(1, 1)   # TODO: fix
-            prepared_op = @be (res2, prep) $op!(f, _[1], _[2], ba, x, tang, contexts...)
+            prepared_op = @be (mysimilar(res2), prep) $op!(
+                f, _[1], _[2], ba, x, tang, contexts...
+            )
             if subset == :full
                 preparation = @be $prep_op(f, ba, x, tang, contexts...)
                 unprepared_valop = @be +(1, 1)   # TODO: fix
-                unprepared_op = @be res2 $op!(f, _, ba, x, tang, contexts...)
+                unprepared_op = @be mysimilar(res2) $op!(f, _, ba, x, tang, contexts...)
                 return BenchmarkResult(;
                     prepared_valop,
                     prepared_op,
@@ -599,10 +624,10 @@ for op in ALL_OPS
             prep = $prep_op(cc, ba, x, tang, contexts...)
             preparation = reset_count!(cc)
             prepared_valop = -1  # TODO: fix
-            $op!(cc, res2, prep, ba, x, tang, contexts...)
+            $op!(cc, mysimilar(res2), prep, ba, x, tang, contexts...)
             prepared_op = reset_count!(cc)
             unprepared_valop = -1  # TODO: fix
-            $op!(cc, res2, ba, x, tang, contexts...)
+            $op!(cc, mysimilar(res2), ba, x, tang, contexts...)
             unprepared_op = reset_count!(cc)
             return CallsResult(;
                 prepared_valop, prepared_op, preparation, unprepared_valop, unprepared_op
