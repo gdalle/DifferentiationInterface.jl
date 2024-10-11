@@ -32,7 +32,9 @@ static_scenarios(;
 
 ## Weird arrays
 
-test_differentiation(AutoForwardDiff(), static_scenarios(); logging=LOGGING)
+test_differentiation(
+    AutoForwardDiff(), static_scenarios(); benchmark=:full, logging=LOGGING
+)
 
 test_differentiation(AutoForwardDiff(), component_scenarios(); logging=LOGGING)
 

@@ -9,7 +9,9 @@ using Test
 
 LOGGING = get(ENV, "CI", "false") == "false"
 
-backends = [AutoForwardDiff(; tag=:hello), AutoForwardDiff(; chunksize=5)]
+backends = [
+    AutoForwardDiff(), AutoForwardDiff(; tag=:hello), AutoForwardDiff(; chunksize=5)
+]
 
 for backend in backends
     @test check_available(backend)
@@ -51,3 +53,7 @@ test_differentiation(
     sparsity=true,
     logging=LOGGING,
 );
+
+## Static
+
+test_differentiation(AutoForwardDiff(), static_scenarios(); logging=LOGGING)
