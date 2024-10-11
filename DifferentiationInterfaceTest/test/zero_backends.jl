@@ -3,7 +3,6 @@ using DifferentiationInterface
 using DifferentiationInterface: AutoZeroForward, AutoZeroReverse
 using DifferentiationInterfaceTest
 using DifferentiationInterfaceTest: allocfree_scenarios
-
 using Test
 
 LOGGING = get(ENV, "CI", "false") == "false"
@@ -47,8 +46,8 @@ ADTypes.mode(::FakeBackend) = ADTypes.ForwardMode()
 data2 = benchmark_differentiation(
     FakeBackend(),
     default_scenarios(; include_batchified=false);
-    count_calls=false,
     logging=false,
+    benchmark_test=false,
 );
 
 @testset "Benchmarking DataFrame" begin

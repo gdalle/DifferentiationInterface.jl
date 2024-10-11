@@ -39,6 +39,7 @@ for op in ALL_OPS
         logging::Bool,
         subset::Symbol,
         count_calls::Bool,
+        benchmark_test::Bool,
     )
         @assert subset in (:full, :prepared)
 
@@ -50,7 +51,7 @@ for op in ALL_OPS
             logging && @warn "Error during benchmarking" backend scenario exception
             BenchmarkResult()
         end
-        @test bench_success
+        benchmark_test && @test bench_success
 
         if count_calls
             count_success = true
@@ -61,7 +62,7 @@ for op in ALL_OPS
                 logging && @warn "Error during call counting" backend scenario exception
                 CallsResult()
             end
-            @test count_success
+            benchmark_test && @test count_success
         else
             calls_result = CallsResult()
         end
