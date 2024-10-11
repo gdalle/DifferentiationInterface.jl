@@ -128,14 +128,3 @@ function shuffled_gradient(
 ) where {F,C}
     return gradient(f, backend, x, rewrap(unannotated_contexts...)...)
 end
-
-function shuffled_gradient!(
-    grad,
-    x,
-    f::F,
-    backend::AbstractADType,
-    rewrap::Rewrap{C},
-    unannotated_contexts::Vararg{Any,C},
-) where {F,C}
-    return gradient!(f, grad, backend, x, rewrap(unannotated_contexts...)...)
-end
