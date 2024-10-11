@@ -192,3 +192,22 @@ function derivative!(
     pushforward!(f!, y, (der,), prep.pushforward_prep, backend, x, (one(x),), contexts...)
     return der
 end
+
+## Shuffled
+
+function shuffled_derivative(
+    x, f::F, backend::AbstractADType, rewrap::Rewrap{C}, unannotated_contexts::Vararg{Any,C}
+) where {F,C}
+    return derivative(f, backend, x, rewrap(unannotated_contexts...)...)
+end
+
+function shuffled_derivative!(
+    der,
+    x,
+    f::F,
+    backend::AbstractADType,
+    rewrap::Rewrap{C},
+    unannotated_contexts::Vararg{Any,C},
+) where {F,C}
+    return derivative!(f, der, backend, x, rewrap(unannotated_contexts...)...)
+end

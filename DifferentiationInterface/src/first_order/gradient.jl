@@ -120,3 +120,22 @@ function gradient!(
     pullback!(f, (grad,), prep.pullback_prep, backend, x, (true,), contexts...)
     return grad
 end
+
+## Shuffled
+
+function shuffled_gradient(
+    x, f::F, backend::AbstractADType, rewrap::Rewrap{C}, unannotated_contexts::Vararg{Any,C}
+) where {F,C}
+    return gradient(f, backend, x, rewrap(unannotated_contexts...)...)
+end
+
+function shuffled_gradient!(
+    grad,
+    x,
+    f::F,
+    backend::AbstractADType,
+    rewrap::Rewrap{C},
+    unannotated_contexts::Vararg{Any,C},
+) where {F,C}
+    return gradient!(f, grad, backend, x, rewrap(unannotated_contexts...)...)
+end

@@ -326,3 +326,30 @@ function pushforward!(
 ) where {F,C}
     return value_and_pushforward!(f!, y, ty, prep, backend, x, tx, contexts...)[2]
 end
+
+## Shuffled
+
+function shuffled_single_pushforward(
+    x,
+    f::F,
+    backend::AbstractADType,
+    dx,
+    rewrap::Rewrap{C},
+    unannotated_contexts::Vararg{Any,C},
+) where {F,C}
+    ty = pushforward(f, backend, x, (dx,), rewrap(unannotated_contexts...)...)
+    return only(ty)
+end
+
+function shuffled_single_pushforward!(
+    dy,
+    x,
+    f::F,
+    backend::AbstractADType,
+    dx,
+    rewrap::Rewrap{C},
+    unannotated_contexts::Vararg{Any,C},
+) where {F,C}
+    pushforward!(f, (dy,), backend, x, (dx,), rewrap(unannotated_contexts...)...)
+    return dy
+end
