@@ -29,7 +29,7 @@ using ADTypes:
     AutoSymbolics,
     AutoTracker,
     AutoZygote
-using LinearAlgebra: Symmetric, Transpose, dot, parent, transpose
+using LinearAlgebra: dot
 
 include("compat.jl")
 

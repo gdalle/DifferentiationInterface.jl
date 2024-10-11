@@ -2,7 +2,6 @@ module DifferentiationInterfaceSparseMatrixColoringsExt
 
 using ADTypes:
     ADTypes,
-    AbstractADType,
     AutoSparse,
     coloring_algorithm,
     dense_ad,
@@ -20,7 +19,6 @@ using DifferentiationInterface:
     PushforwardFast,
     PushforwardSlow,
     inner,
-    outer,
     multibasis,
     pick_batchsize,
     pick_jacobian_batchsize,
@@ -31,14 +29,12 @@ import DifferentiationInterface as DI
 using SparseMatrixColorings:
     AbstractColoringResult,
     ColoringProblem,
-    GreedyColoringAlgorithm,
     coloring,
     column_colors,
     row_colors,
     column_groups,
     row_groups,
     sparsity_pattern,
-    decompress,
     decompress!
 import SparseMatrixColorings as SMC
 
