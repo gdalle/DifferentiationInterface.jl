@@ -48,7 +48,7 @@ In practice, many AD backends have custom implementations for high-level operato
     | `AutoMooncake`             | ❌    | ✅    | ❌     | ❌      | ❌     | ❌      | ❌     | ❌      |
     | `AutoPolyesterForwardDiff` | 🔀    | ❌    | 🔀     | ✅      | ✅     | 🔀      | 🔀     | 🔀      |
     | `AutoReverseDiff`          | ❌    | 🔀    | ❌     | ✅      | ✅     | ✅      | ❌     | ❌      |
-    | `AutoSymbolics`            | ✅    | ❌    | ✅     | ✅      | ✅     | ✅      | ❌     | ❌      |
+    | `AutoSymbolics`            | ✅    | ❌    | ✅     | ✅      | ✅     | ✅      | ✅     | ✅      |
     | `AutoTracker`              | ❌    | ✅    | ❌     | ✅      | ❌     | ❌      | ❌     | ❌      |
     | `AutoZygote`               | ❌    | ✅    | ❌     | ✅      | ✅     | ✅      | 🔀     | ❌      |
 
