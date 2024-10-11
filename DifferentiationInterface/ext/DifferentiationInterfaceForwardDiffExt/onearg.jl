@@ -272,7 +272,7 @@ function DI.prepare_gradient(
 ) where {F,C}
     fc = with_contexts(f, contexts...)
     chunk = choose_chunk(backend, x)
-    tag = get_tag(f, backend, x)
+    tag = get_tag(fc, backend, x)
     config = GradientConfig(fc, x, chunk, tag)
     return ForwardDiffGradientPrep(config)
 end
@@ -389,7 +389,7 @@ function DI.prepare_jacobian(
 ) where {F,C}
     fc = with_contexts(f, contexts...)
     chunk = choose_chunk(backend, x)
-    tag = get_tag(f, backend, x)
+    tag = get_tag(fc, backend, x)
     config = JacobianConfig(fc, x, chunk, tag)
     return ForwardDiffOneArgJacobianPrep(config)
 end
@@ -612,7 +612,7 @@ function DI.prepare_hessian(
 ) where {F,C}
     fc = with_contexts(f, contexts...)
     chunk = choose_chunk(backend, x)
-    tag = get_tag(f, backend, x)
+    tag = get_tag(fc, backend, x)
     result = HessianResult(x)
     array_config = HessianConfig(fc, x, chunk, tag)
     result_config = HessianConfig(fc, result, x, chunk, tag)
