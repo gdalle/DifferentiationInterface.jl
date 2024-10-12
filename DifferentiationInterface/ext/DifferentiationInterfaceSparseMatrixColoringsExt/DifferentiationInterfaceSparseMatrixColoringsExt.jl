@@ -20,7 +20,7 @@ using DifferentiationInterface:
     PushforwardSlow,
     inner,
     multibasis,
-    pick_batchsize,
+    pick_hessian_batchsize,
     pick_jacobian_batchsize,
     pushforward_performance,
     unwrap,
