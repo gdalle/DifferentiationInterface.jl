@@ -23,4 +23,8 @@ function pick_jacobian_batchsize(
     return pick_batchsize(backend, M)
 end
 
+function pick_hessian_batchsize(backend::AbstractADType, N::Integer)
+    return pick_batchsize(outer(backend), N)
+end
+
 threshold_batchsize(backend::AbstractADType, ::Integer) = backend

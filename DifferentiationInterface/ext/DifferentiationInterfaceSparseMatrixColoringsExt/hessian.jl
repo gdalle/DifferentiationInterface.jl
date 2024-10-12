@@ -42,7 +42,7 @@ SMC.column_groups(prep::SparseHessianPrep) = column_groups(prep.coloring_result)
 function DI.prepare_hessian(
     f::F, backend::AutoSparse, x, contexts::Vararg{Context,C}
 ) where {F,C}
-    valB = pick_batchsize(dense_ad(backend), length(x))
+    valB = pick_hessian_batchsize(dense_ad(backend), length(x))
     return _prepare_sparse_hessian_aux(valB, f, backend, x, contexts...)
 end
 
