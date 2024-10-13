@@ -87,7 +87,13 @@ function prepare_jacobian(
 ) where {F,C}
     y = f(x, map(unwrap, contexts)...)
     perf = pushforward_performance(backend)
-    valB = pick_jacobian_batchsize(perf, backend; N=length(x), M=length(y))
+    # type-unstable
+    if perf isa PushforwardFast
+        valB = pick_batchsize(backend, x)
+    else
+        valB = pick_batchsize(backend, y)
+    end
+    # function barrier
     return _prepare_jacobian_aux(perf, valB, y, (f,), backend, x, contexts...)
 end
 
@@ -95,7 +101,13 @@ function prepare_jacobian(
     f!::F, y, backend::AbstractADType, x, contexts::Vararg{Context,C}
 ) where {F,C}
     perf = pushforward_performance(backend)
-    valB = pick_jacobian_batchsize(perf, backend; N=length(x), M=length(y))
+    # type-unstable
+    if perf isa PushforwardFast
+        valB = pick_batchsize(backend, x)
+    else
+        valB = pick_batchsize(backend, y)
+    end
+    # function barrier
     return _prepare_jacobian_aux(perf, valB, y, (f!, y), backend, x, contexts...)
 end
 

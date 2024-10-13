@@ -28,14 +28,18 @@ end
 
 DI.check_available(::AutoPolyesterForwardDiff) = true
 
-function DI.pick_batchsize(backend::AutoPolyesterForwardDiff, dimension::Integer)
-    return DI.pick_batchsize(single_threaded(backend), dimension)
+function DI.fixed_batchsize(backend::AutoPolyesterForwardDiff)
+    return DI.fixed_batchsize(single_threaded(backend))
+end
+
+function DI.adaptive_batchsize(backend::AutoPolyesterForwardDiff, a)
+    return DI.adaptive_batchsize(single_threaded(backend), a)
 end
 
 function DI.threshold_batchsize(
     backend::AutoPolyesterForwardDiff{chunksize1}, chunksize2::Integer
 ) where {chunksize1}
-    chunksize = (chunksize1 === nothing) ? nothing : min(chunksize1, chunksize2)
+    chunksize = isnothing(chunksize1) ? nothing : min(chunksize1, chunksize2)
     return AutoPolyesterForwardDiff(; chunksize, tag=backend.tag)
 end
 

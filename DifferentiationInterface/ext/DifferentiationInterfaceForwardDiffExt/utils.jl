@@ -1,3 +1,26 @@
+function DI.has_fixed_batchsize(::AutoForwardDiff{chunksize}) where {chunksize}
+    return !isnothing(chunksize)
+end
+
+function DI.fixed_batchsize(::AutoForwardDiff{chunksize}) where {chunksize}
+    @assert !isnothing(chunksize)
+    return Val(chunksize)
+end
+
+chunk_to_val(::Chunk{C}) where {C} = Val(C)
+
+function DI.adaptive_batchsize(::AutoForwardDiff{nothing}, a)
+    chunk = Chunk(a)  # type-unstable
+    return chunk_to_val(chunk)
+end
+
+function DI.threshold_batchsize(
+    backend::AutoForwardDiff{chunksize1}, chunksize2::Integer
+) where {chunksize1}
+    chunksize = isnothing(chunksize1) ? nothing : min(chunksize1, chunksize2)
+    return AutoForwardDiff(; chunksize, tag=backend.tag)
+end
+
 choose_chunk(::AutoForwardDiff{nothing}, x) = Chunk(x)
 choose_chunk(::AutoForwardDiff{chunksize}, x) where {chunksize} = Chunk{chunksize}()
 

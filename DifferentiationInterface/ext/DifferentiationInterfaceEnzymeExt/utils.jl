@@ -1,5 +1,5 @@
 # until https://github.com/EnzymeAD/Enzyme.jl/pull/1545 is merged
-DI.pick_batchsize(::AutoEnzyme, dimension::Integer) = Val(min(dimension, 16))
+DI.adaptive_batchsize(::AutoEnzyme, a) = Val(min(length(a), 16))
 
 ## Annotations
 

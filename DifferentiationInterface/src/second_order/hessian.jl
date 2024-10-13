@@ -72,7 +72,9 @@ end
 function prepare_hessian(
     f::F, backend::AbstractADType, x, contexts::Vararg{Context,C}
 ) where {F,C}
-    valB = pick_hessian_batchsize(backend, length(x))
+    # type-unstable
+    valB = pick_batchsize(outer(backend), x)
+    # function barrier
     return _prepare_hessian_aux(valB, f, backend, x, contexts...)
 end
 

@@ -1,30 +1,26 @@
-"""
-    pick_batchsize(backend::AbstractADType, dimension::Integer)
+has_fixed_batchsize(::AbstractADType) = true
+fixed_batchsize(::AbstractADType) = Val(1)
 
-Pick a reasonable batch size for batched derivative evaluation with a given total `dimension`.
+function adaptive_batchsize end
 
-Returns `Val(1)` for backends which have not overloaded it.
-"""
-pick_batchsize(::AbstractADType, dimension::Integer) = Val(1)
-
-function pick_batchsize(backend::AutoSparse, dimension::Integer)
-    return pick_batchsize(dense_ad(backend), dimension)
-end
-
-function pick_jacobian_batchsize(
-    ::PushforwardFast, backend::AbstractADType; M::Integer, N::Integer
-)
-    return pick_batchsize(backend, N)
-end
-
-function pick_jacobian_batchsize(
-    ::PushforwardSlow, backend::AbstractADType; M::Integer, N::Integer
-)
-    return pick_batchsize(backend, M)
-end
-
-function pick_hessian_batchsize(backend::AbstractADType, N::Integer)
-    return pick_batchsize(outer(backend), N)
+function pick_batchsize(backend::AbstractADType, a)
+    if backend isa SecondOrder
+        throw(
+            ArgumentError(
+                "You should select the batch size for the inner or outer backend of $backend",
+            ),
+        )
+    elseif backend isa AutoSparse
+        throw(
+            ArgumentError(
+                "You should select the batch size for the dense backend of $backend"
+            ),
+        )
+    elseif has_fixed_batchsize(backend)
+        return fixed_batchsize(backend)
+    else
+        return adaptive_batchsize(backend, a)
+    end
 end
 
 threshold_batchsize(backend::AbstractADType, ::Integer) = backend

@@ -49,24 +49,6 @@ using LinearAlgebra: dot, mul!
 
 DI.check_available(::AutoForwardDiff) = true
 
-function DI.pick_batchsize(
-    ::AutoForwardDiff{chunksize}, dimension::Integer
-) where {chunksize}
-    return Val{chunksize}()
-end
-
-function DI.pick_batchsize(::AutoForwardDiff{nothing}, dimension::Integer)
-    # type-unstable
-    return Val(ForwardDiff.pickchunksize(dimension))
-end
-
-function DI.threshold_batchsize(
-    backend::AutoForwardDiff{chunksize1}, chunksize2::Integer
-) where {chunksize1}
-    chunksize = (chunksize1 === nothing) ? nothing : min(chunksize1, chunksize2)
-    return AutoForwardDiff(; chunksize, tag=backend.tag)
-end
-
 include("utils.jl")
 include("onearg.jl")
 include("twoarg.jl")
