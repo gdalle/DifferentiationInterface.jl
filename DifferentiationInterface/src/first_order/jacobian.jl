@@ -67,15 +67,17 @@ function jacobian! end
 
 ## Preparation
 
-struct PushforwardJacobianPrep{B,TD<:NTuple{B},TR<:NTuple{B},E<:PushforwardPrep} <:
-       JacobianPrep
+struct PushforwardJacobianPrep{
+    B,singlebatch,TD<:NTuple{B},TR<:NTuple{B},E<:PushforwardPrep
+} <: JacobianPrep
     batched_seeds::Vector{TD}
     batched_results::Vector{TR}
     pushforward_prep::E
     N::Int
 end
 
-struct PullbackJacobianPrep{B,TD<:NTuple{B},TR<:NTuple{B},E<:PullbackPrep} <: JacobianPrep
+struct PullbackJacobianPrep{B,singlebatch,TD<:NTuple{B},TR<:NTuple{B},E<:PullbackPrep} <:
+       JacobianPrep
     batched_seeds::Vector{TD}
     batched_results::Vector{TR}
     pullback_prep::E
@@ -90,11 +92,15 @@ function prepare_jacobian(
     # type-unstable
     if perf isa PushforwardFast
         valB = pick_batchsize(backend, x)
+        val_singlebatch = Val(unval(valB) >= length(x))
     else
         valB = pick_batchsize(backend, y)
+        val_singlebatch = Val(unval(valB) >= length(y))
     end
     # function barrier
-    return _prepare_jacobian_aux(perf, valB, y, (f,), backend, x, contexts...)
+    return _prepare_jacobian_aux(
+        perf, valB, val_singlebatch, y, (f,), backend, x, contexts...
+    )
 end
 
 function prepare_jacobian(
@@ -104,22 +110,27 @@ function prepare_jacobian(
     # type-unstable
     if perf isa PushforwardFast
         valB = pick_batchsize(backend, x)
+        val_singlebatch = Val(unval(valB) >= length(x))
     else
         valB = pick_batchsize(backend, y)
+        val_singlebatch = Val(unval(valB) >= length(y))
     end
     # function barrier
-    return _prepare_jacobian_aux(perf, valB, y, (f!, y), backend, x, contexts...)
+    return _prepare_jacobian_aux(
+        perf, valB, val_singlebatch, y, (f!, y), backend, x, contexts...
+    )
 end
 
 function _prepare_jacobian_aux(
     ::PushforwardFast,
     ::Val{B},
+    ::Val{singlebatch},
     y,
     f_or_f!y::FY,
     backend::AbstractADType,
     x,
     contexts::Vararg{Context,C},
-) where {B,FY,C}
+) where {B,singlebatch,FY,C}
     N = length(x)
     seeds = [basis(backend, x, ind) for ind in eachindex(x)]
     batched_seeds = [
@@ -133,7 +144,7 @@ function _prepare_jacobian_aux(
     TD = eltype(batched_seeds)
     TR = eltype(batched_results)
     E = typeof(pushforward_prep)
-    return PushforwardJacobianPrep{B,TD,TR,E}(
+    return PushforwardJacobianPrep{B,singlebatch,TD,TR,E}(
         batched_seeds, batched_results, pushforward_prep, N
     )
 end
@@ -141,12 +152,13 @@ end
 function _prepare_jacobian_aux(
     ::PushforwardSlow,
     ::Val{B},
+    ::Val{singlebatch},
     y,
     f_or_f!y::FY,
     backend::AbstractADType,
     x,
     contexts::Vararg{Context,C},
-) where {B,FY,C}
+) where {B,singlebatch,FY,C}
     M = length(y)
     seeds = [basis(backend, y, ind) for ind in eachindex(y)]
     batched_seeds = [
@@ -158,7 +170,9 @@ function _prepare_jacobian_aux(
     TD = eltype(batched_seeds)
     TR = eltype(batched_results)
     E = typeof(pullback_prep)
-    return PullbackJacobianPrep{B,TD,TR,E}(batched_seeds, batched_results, pullback_prep, M)
+    return PullbackJacobianPrep{B,singlebatch,TD,TR,E}(
+        batched_seeds, batched_results, pullback_prep, M
+    )
 end
 
 ## One argument
@@ -233,7 +247,22 @@ end
 
 function _jacobian_aux(
     f_or_f!y::FY,
-    prep::PushforwardJacobianPrep{B},
+    prep::PushforwardJacobianPrep{B,true},
+    backend::AbstractADType,
+    x,
+    contexts::Vararg{Context,C},
+) where {FY,B,C}
+    (; batched_seeds, pushforward_prep, N) = prep
+    dy_batch = pushforward(
+        f_or_f!y..., pushforward_prep, backend, x, only(batched_seeds), contexts...
+    )
+    block = stack_vec_col(dy_batch)
+    return block
+end
+
+function _jacobian_aux(
+    f_or_f!y::FY,
+    prep::PushforwardJacobianPrep{B,false},
     backend::AbstractADType,
     x,
     contexts::Vararg{Context,C},
@@ -264,7 +293,22 @@ end
 
 function _jacobian_aux(
     f_or_f!y::FY,
-    prep::PullbackJacobianPrep{B},
+    prep::PullbackJacobianPrep{B,true},
+    backend::AbstractADType,
+    x,
+    contexts::Vararg{Context,C},
+) where {FY,B,C}
+    (; batched_seeds, pullback_prep, M) = prep
+    dx_batch = pullback(
+        f_or_f!y..., pullback_prep, backend, x, only(batched_seeds), contexts...
+    )
+    block = stack_vec_row(dx_batch)
+    return block
+end
+
+function _jacobian_aux(
+    f_or_f!y::FY,
+    prep::PullbackJacobianPrep{B,false},
     backend::AbstractADType,
     x,
     contexts::Vararg{Context,C},

@@ -60,8 +60,9 @@ function value_gradient_and_hessian! end
 
 ## Preparation
 
-struct HVPGradientHessianPrep{B,TD<:NTuple{B},TR<:NTuple{B},E2<:HVPPrep,E1<:GradientPrep} <:
-       HessianPrep
+struct HVPGradientHessianPrep{
+    B,singlebatch,TD<:NTuple{B},TR<:NTuple{B},E2<:HVPPrep,E1<:GradientPrep
+} <: HessianPrep
     batched_seeds::Vector{TD}
     batched_results::Vector{TR}
     hvp_prep::E2
@@ -74,13 +75,19 @@ function prepare_hessian(
 ) where {F,C}
     # type-unstable
     valB = pick_batchsize(outer(backend), x)
+    val_singlebatch = Val(unval(valB) >= length(x))
     # function barrier
-    return _prepare_hessian_aux(valB, f, backend, x, contexts...)
+    return _prepare_hessian_aux(valB, val_singlebatch, f, backend, x, contexts...)
 end
 
 function _prepare_hessian_aux(
-    ::Val{B}, f::F, backend::AbstractADType, x, contexts::Vararg{Context,C}
-) where {B,F,C}
+    ::Val{B},
+    ::Val{singlebatch},
+    f::F,
+    backend::AbstractADType,
+    x,
+    contexts::Vararg{Context,C},
+) where {B,singlebatch,F,C}
     N = length(x)
     seeds = [basis(backend, x, ind) for ind in eachindex(x)]
     batched_seeds = [
@@ -93,12 +100,25 @@ function _prepare_hessian_aux(
     TD = eltype(batched_seeds)
     TR = eltype(batched_results)
     E2, E1 = typeof(hvp_prep), typeof(gradient_prep)
-    return HVPGradientHessianPrep{B,TD,TR,E2,E1}(
+    return HVPGradientHessianPrep{B,singlebatch,TD,TR,E2,E1}(
         batched_seeds, batched_results, hvp_prep, gradient_prep, N
     )
 end
 
 ## One argument
+
+function hessian(
+    f::F,
+    prep::HVPGradientHessianPrep{B,true},
+    backend::AbstractADType,
+    x,
+    contexts::Vararg{Context,C},
+) where {F,B,C}
+    (; batched_seeds, hvp_prep, N) = prep
+    dg_batch = hvp(f, hvp_prep, backend, x, only(batched_seeds), contexts...)
+    block = stack_vec_col(dg_batch)
+    return block
+end
 
 function hessian(
     f::F,

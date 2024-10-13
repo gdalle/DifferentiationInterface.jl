@@ -1,3 +1,5 @@
+unval(::Val{B}) where {B} = B
+
 has_fixed_batchsize(::AbstractADType) = true
 fixed_batchsize(::AbstractADType) = Val(1)
 

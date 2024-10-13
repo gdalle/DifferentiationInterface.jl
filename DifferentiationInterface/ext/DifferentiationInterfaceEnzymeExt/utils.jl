@@ -1,4 +1,5 @@
 # until https://github.com/EnzymeAD/Enzyme.jl/pull/1545 is merged
+DI.has_fixed_batchsize(::AutoEnzyme) = false
 DI.adaptive_batchsize(::AutoEnzyme, a) = Val(min(length(a), 16))
 
 ## Annotations
