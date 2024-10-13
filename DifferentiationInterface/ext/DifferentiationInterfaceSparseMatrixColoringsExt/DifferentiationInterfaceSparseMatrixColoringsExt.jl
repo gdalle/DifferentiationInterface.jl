@@ -19,6 +19,7 @@ using DifferentiationInterface:
     PushforwardFast,
     PushforwardSlow,
     inner,
+    outer,
     multibasis,
     pick_batchsize,
     pushforward_performance,
