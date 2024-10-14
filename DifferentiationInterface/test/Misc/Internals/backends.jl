@@ -1,7 +1,7 @@
 using ADTypes
 using DifferentiationInterface
 using DifferentiationInterface:
-    pick_batchsize, inner, outer, inplace_support, threshold_batchsize
+    BatchSizeSettings, pick_batchsize, inner, outer, inplace_support, threshold_batchsize
 import DifferentiationInterface as DI
 using ForwardDiff: ForwardDiff
 using StaticArrays

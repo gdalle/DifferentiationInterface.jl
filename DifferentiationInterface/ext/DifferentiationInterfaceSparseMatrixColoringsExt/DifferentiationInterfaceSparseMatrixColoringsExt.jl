@@ -19,7 +19,6 @@ using DifferentiationInterface:
     PushforwardPrep,
     PushforwardFast,
     PushforwardPerformance,
-    PushforwardSlow,
     inner,
     outer,
     multibasis,
