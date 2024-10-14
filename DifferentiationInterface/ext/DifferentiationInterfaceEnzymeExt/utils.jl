@@ -68,14 +68,6 @@ end
 set_err(mode::Mode, ::AutoEnzyme{<:Any,Nothing}) = EnzymeCore.set_err_if_func_written(mode)
 set_err(mode::Mode, ::AutoEnzyme{<:Any,<:Annotation}) = mode
 
-batchify_activity(::Type{Const{T}}, ::Val{B}) where {T,B} = Const{T}
-batchify_activity(::Type{Active{T}}, ::Val{B}) where {T,B} = Active{T}
-batchify_activity(::Type{Duplicated{T}}, ::Val{B}) where {T,B} = BatchDuplicated{T,B}
-
-function batchify_activity(::Type{MixedDuplicated{T}}, ::Val{B}) where {T,B}
-    return BatchMixedDuplicated{T,B}
-end
-
 function maybe_reshape(A::AbstractMatrix, m, n)
     @assert size(A) == (m, n)
     return A

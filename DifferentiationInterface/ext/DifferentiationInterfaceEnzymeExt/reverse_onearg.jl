@@ -71,7 +71,7 @@ function DI.value_and_pullback(
 ) where {F,C}
     f_and_df = force_annotation(get_f_and_df(f, backend))
     mode = reverse_split_withprimal(backend)
-    RA = guess_activity(eltype(ty), mode)
+    RA = eltype(ty) <: Number ? Active : Duplicated
     dinputs, result = seeded_autodiff_thunk(
         mode, only(ty), f_and_df, RA, Active(x), map(translate, contexts)...
     )
@@ -88,7 +88,7 @@ function DI.value_and_pullback(
 ) where {F,B,C}
     f_and_df = force_annotation(get_f_and_df(f, backend, Val(B)))
     mode = reverse_split_withprimal(backend)
-    RA = batchify_activity(guess_activity(eltype(ty), mode), Val(B))
+    RA = eltype(ty) <: Number ? Active : BatchDuplicated
     dinputs, result = batch_seeded_autodiff_thunk(
         mode, ty, f_and_df, RA, Active(x), map(translate, contexts)...
     )
@@ -105,7 +105,7 @@ function DI.value_and_pullback(
 ) where {F,C}
     f_and_df = force_annotation(get_f_and_df(f, backend))
     mode = reverse_split_withprimal(backend)
-    RA = guess_activity(eltype(ty), mode)
+    RA = eltype(ty) <: Number ? Active : Duplicated
     dx = make_zero(x)
     _, result = seeded_autodiff_thunk(
         mode, only(ty), f_and_df, RA, Duplicated(x, dx), map(translate, contexts)...
@@ -123,7 +123,7 @@ function DI.value_and_pullback(
 ) where {F,B,C}
     f_and_df = force_annotation(get_f_and_df(f, backend, Val(B)))
     mode = reverse_split_withprimal(backend)
-    RA = batchify_activity(guess_activity(eltype(ty), mode), Val(B))
+    RA = eltype(ty) <: Number ? Active : BatchDuplicated
     tx = ntuple(_ -> make_zero(x), Val(B))
     _, result = batch_seeded_autodiff_thunk(
         mode, ty, f_and_df, RA, BatchDuplicated(x, tx), map(translate, contexts)...
@@ -155,7 +155,7 @@ function DI.value_and_pullback!(
 ) where {F,C}
     f_and_df = force_annotation(get_f_and_df(f, backend))
     mode = reverse_split_withprimal(backend)
-    RA = guess_activity(eltype(ty), mode)
+    RA = eltype(ty) <: Number ? Active : Duplicated
     dx_righttype = convert(typeof(x), only(tx))
     make_zero!(dx_righttype)
     _, result = seeded_autodiff_thunk(
@@ -181,7 +181,7 @@ function DI.value_and_pullback!(
 ) where {F,B,C}
     f_and_df = force_annotation(get_f_and_df(f, backend, Val(B)))
     mode = reverse_split_withprimal(backend)
-    RA = batchify_activity(guess_activity(eltype(ty), mode), Val(B))
+    RA = eltype(ty) <: Number ? Active : BatchDuplicated
     tx_righttype = map(Fix1(convert, typeof(x)), tx)
     make_zero!(tx_righttype)
     _, result = batch_seeded_autodiff_thunk(
