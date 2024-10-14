@@ -37,14 +37,16 @@ end
     @test_throws ArgumentError pick_batchsize(
         AutoForwardDiff(; chunksize=4), @SVector(zeros(2))
     )
-    @test (@inferred pick_batchsize(AutoForwardDiff(; chunksize=4), zeros(6))) isa BSS{4}
-    @test (@inferred pick_batchsize(AutoForwardDiff(; chunksize=4), zeros(100))) isa BSS{4}
+    @test pick_batchsize(AutoForwardDiff(; chunksize=4), zeros(6)) isa BSS{4}
+    @test pick_batchsize(AutoForwardDiff(; chunksize=4), zeros(100)) isa BSS{4}
     BSS{4,true,true}
+    @test pick_batchsize(AutoForwardDiff(; chunksize=4), zeros(99)) isa BSS{4}
+    BSS{4,true,false}
     @test (@inferred pick_batchsize(AutoForwardDiff(; chunksize=4), @SVector(zeros(6)))) isa
-        BSS{4,true,true}
+        BSS{4,false,false}
     @test (@inferred pick_batchsize(
         AutoForwardDiff(; chunksize=4), @SVector(zeros(100))
-    )) isa BSS{4,true,true}
+    )) isa BSS{4,false,true}
 end
 
 @testset "Thresholding" begin
