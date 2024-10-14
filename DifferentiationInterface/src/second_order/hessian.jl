@@ -113,7 +113,7 @@ function hessian(
     x,
     contexts::Vararg{Context,C},
 ) where {F,B,C}
-    (; batched_seeds, hvp_prep, N) = prep
+    (; batched_seeds, hvp_prep) = prep
     dg_batch = hvp(f, hvp_prep, backend, x, only(batched_seeds), contexts...)
     block = stack_vec_col(dg_batch)
     return block
