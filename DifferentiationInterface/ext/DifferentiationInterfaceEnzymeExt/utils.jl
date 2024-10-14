@@ -6,7 +6,7 @@ function DI.BatchSizeSettings(::AutoEnzyme, N::Integer)
     return DI.BatchSizeSettings{B,singlebatch,aligned}(N)
 end
 
-to_val(::BatchSizeSettings{B}) where {B} = Val(B)
+to_val(::DI.BatchSizeSettings{B}) where {B} = Val(B)
 
 ## Annotations
 
