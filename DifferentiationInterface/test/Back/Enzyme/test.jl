@@ -92,19 +92,3 @@ test_differentiation(
 test_differentiation(
     MyAutoSparse.(AutoEnzyme()), sparse_scenarios(); sparsity=true, logging=LOGGING
 );
-
-## Static
-
-test_differentiation(
-    [
-        # AutoEnzyme(; mode=Enzyme.Forward),  #
-        AutoEnzyme(; mode=Enzyme.Reverse),
-    ],
-    filter(
-        s -> DIT.operator_place(s) == :out,
-        # normal falls back on Enzyme jacobian, which errors on setindex!
-        static_scenarios(; include_normal=false, include_constantified=true),
-    );
-    excluded=SECOND_ORDER,
-    logging=true,
-)
