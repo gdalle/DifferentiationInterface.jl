@@ -12,6 +12,10 @@ BSS = BatchSizeSettings
 @testset "Default" begin
     @test (@inferred pick_batchsize(AutoZygote(), zeros(2))) isa BSS{1,false,true}
     @test (@inferred pick_batchsize(AutoZygote(), zeros(100))) isa BSS{1,false,true}
+    @test_throws ArgumentError pick_batchsize(AutoSparse(AutoZygote()), zeros(2))
+    @test_throws ArgumentError pick_batchsize(
+        SecondOrder(AutoZygote(), AutoZygote()), zeros(2)
+    )
 end
 
 @testset "ForwardDiff (adaptive)" begin
