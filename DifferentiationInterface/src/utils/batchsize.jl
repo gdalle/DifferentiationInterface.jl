@@ -58,3 +58,28 @@ function pick_batchsize(backend::AbstractADType, x_or_N::Union{AbstractArray,Int
 end
 
 threshold_batchsize(backend::AbstractADType, ::Integer) = backend
+
+function threshold_batchsize(backend::AutoSparse, B::Integer)
+    return AutoSparse(
+        threshold_batchsize(dense_ad(backend), B);
+        sparsity_detector=backend.sparsity_detector,
+        coloring_algorithm=backend.coloring_algorithm,
+    )
+end
+
+function threshold_batchsize(backend::SecondOrder, B::Integer)
+    return SecondOrder(
+        threshold_batchsize(outer(backend), B), threshold_batchsize(inner(backend), B)
+    )
+end
+
+function reasonable_batchsize(N::Integer, Bmax::Integer)
+    # borrowed from https://github.com/JuliaDiff/ForwardDiff.jl/blob/ec74fbc32b10bbf60b3c527d8961666310733728/src/prelude.jl#L19-L29
+    if N <= Bmax
+        return N
+    else
+        A = div(N, Bmax, RoundUp)
+        B = div(N, A, RoundUp)
+        return B
+    end
+end

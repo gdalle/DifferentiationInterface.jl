@@ -337,7 +337,7 @@ end
 function DI.prepare_jacobian(f::F, backend::AutoEnzyme{<:ReverseMode,Nothing}, x) where {F}
     y = f(x)
     Sy = size(y)
-    valB = pick_batchsize(backend, prod(Sy))
+    valB = to_val(pick_batchsize(backend, prod(Sy)))
     return EnzymeReverseOneArgJacobianPrep(Val(Sy), valB)
 end
 

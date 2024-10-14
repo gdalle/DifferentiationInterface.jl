@@ -63,6 +63,10 @@ pushforward_performance(::ForwardOrReverseMode) = PushforwardFast()
 pushforward_performance(::ReverseMode) = PushforwardSlow()
 pushforward_performance(::SymbolicMode) = PushforwardFast()
 
+function pushforward_performance(backend::Union{AutoSparse,SecondOrder})
+    throw(ArgumentError("Pushforward performance not defined for $backend`."))
+end
+
 ## Pullback
 
 abstract type PullbackPerformance end
@@ -91,6 +95,10 @@ pullback_performance(::ForwardMode) = PullbackSlow()
 pullback_performance(::ForwardOrReverseMode) = PullbackFast()
 pullback_performance(::ReverseMode) = PullbackFast()
 pullback_performance(::SymbolicMode) = PullbackFast()
+
+function pullback_performance(backend::Union{AutoSparse,SecondOrder})
+    throw(ArgumentError("Pullback performance not defined for $backend`."))
+end
 
 ## HVP
 
@@ -136,6 +144,10 @@ function hvp_mode(ba::SecondOrder)
     else
         return ForwardOverForward()
     end
+end
+
+function hvp_mode(backend::AutoSparse)
+    throw(ArgumentError("HVP mode not defined for $backend`."))
 end
 
 ## Conversions
