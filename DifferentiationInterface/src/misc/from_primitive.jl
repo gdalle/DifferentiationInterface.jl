@@ -23,6 +23,10 @@ end
 
 ADTypes.mode(::AutoForwardFromPrimitive) = ADTypes.ForwardMode()
 
+function threshold_batchsize(fromprim::AutoForwardFromPrimitive, dimension::Integer)
+    return AutoForwardFromPrimitive(threshold_batchsize(fromprim.backend, dimension))
+end
+
 struct FromPrimitivePushforwardPrep{E<:PushforwardPrep} <: PushforwardPrep
     pushforward_prep::E
 end
@@ -104,6 +108,10 @@ struct AutoReverseFromPrimitive{B} <: FromPrimitive
 end
 
 ADTypes.mode(::AutoReverseFromPrimitive) = ADTypes.ReverseMode()
+
+function threshold_batchsize(fromprim::AutoReverseFromPrimitive, dimension::Integer)
+    return AutoReverseFromPrimitive(threshold_batchsize(fromprim.backend, dimension))
+end
 
 struct FromPrimitivePullbackPrep{E<:PullbackPrep} <: PullbackPrep
     pullback_prep::E
