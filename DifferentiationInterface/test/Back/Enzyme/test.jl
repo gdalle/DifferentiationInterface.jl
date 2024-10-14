@@ -5,6 +5,7 @@ using ADTypes: ADTypes
 using DifferentiationInterface, DifferentiationInterfaceTest
 import DifferentiationInterfaceTest as DIT
 using Enzyme: Enzyme
+using StaticArrays
 using Test
 
 LOGGING = get(ENV, "CI", "false") == "false"

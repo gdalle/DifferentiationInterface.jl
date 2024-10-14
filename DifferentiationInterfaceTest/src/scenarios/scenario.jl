@@ -115,10 +115,16 @@ function Base.show(
     return nothing
 end
 
-adapt_batchsize(backend::AbstractADType, ::Scenario) = backend
-
-function adapt_batchsize(
-    backend::Union{ADTypes.AutoForwardDiff,ADTypes.AutoPolyesterForwardDiff}, scen::Scenario
-)
-    return DI.threshold_batchsize(backend, length(scen.x))
+function adapt_batchsize(backend::AbstractADType, scen::Scenario)
+    if operator(scen) == :jacobian
+        if ADTypes.mode(backend) isa Union{ADTypes.ForwardMode,ADTypes.ForwardOrReverseMode}
+            return DI.threshold_batchsize(backend, length(scen.x))
+        else
+            return DI.threshold_batchsize(backend, length(scen.y))
+        end
+    elseif operator(scen) == :hessian
+        return DI.threshold_batchsize(backend, length(scen.x))
+    else
+        return backend
+    end
 end

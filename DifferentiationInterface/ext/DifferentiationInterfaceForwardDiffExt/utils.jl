@@ -1,3 +1,27 @@
+function DI.BatchSizeSettings(::AutoForwardDiff{nothing}, N::Integer)
+    B = ForwardDiff.pickchunksize(N)
+    singlebatch = B == N
+    aligned = N % B == 0
+    return BatchSizeSettings{B,singlebatch,aligned}(N)
+end
+
+function DI.BatchSizeSettings(::AutoForwardDiff{chunksize}, N::Integer) where {chunksize}
+    if chunksize > N
+        throw(ArgumentError("Fixed chunksize $chunksize larger than input size $N"))
+    end
+    B = chunksize
+    singlebatch = B == N
+    aligned = N % B == 0
+    return BatchSizeSettings{B,singlebatch,aligned}(N)
+end
+
+function DI.threshold_batchsize(
+    backend::AutoForwardDiff{chunksize1}, chunksize2::Integer
+) where {chunksize1}
+    chunksize = isnothing(chunksize1) ? nothing : min(chunksize1, chunksize2)
+    return AutoForwardDiff(; chunksize, tag=backend.tag)
+end
+
 choose_chunk(::AutoForwardDiff{nothing}, x) = Chunk(x)
 choose_chunk(::AutoForwardDiff{chunksize}, x) where {chunksize} = Chunk{chunksize}()
 

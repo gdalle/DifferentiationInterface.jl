@@ -1,30 +1,85 @@
 """
-    pick_batchsize(backend::AbstractADType, dimension::Integer)
+    BatchSizeSettings{B,singlebatch,aligned}
 
-Pick a reasonable batch size for batched derivative evaluation with a given total `dimension`.
+Configuration for the batch size deduced from a backend and a sample array of length `N`.
 
-Returns `Val(1)` for backends which have not overloaded it.
+# Type parameters
+
+- `B::Int`: batch size
+- `singlebatch::Bool`: whether `B > N`
+- `aligned::Bool`: whether `N % B == 0`
+
+# Fields
+
+- `N::Int`: array length
+- `A::Int`: number of batches `A = div(N, B, RoundUp)`
+- `B_last::Int`: size of the last batch (if `aligned` is `false`)
 """
-pick_batchsize(::AbstractADType, dimension::Integer) = Val(1)
-
-function pick_batchsize(backend::AutoSparse, dimension::Integer)
-    return pick_batchsize(dense_ad(backend), dimension)
+struct BatchSizeSettings{B,singlebatch,aligned}
+    N::Int
+    A::Int
+    B_last::Int
 end
 
-function pick_jacobian_batchsize(
-    ::PushforwardFast, backend::AbstractADType; M::Integer, N::Integer
-)
-    return pick_batchsize(backend, N)
+function BatchSizeSettings{B,singlebatch,aligned}(N::Integer) where {B,singlebatch,aligned}
+    A = div(N, B, RoundUp)
+    B_last = N % B
+    return BatchSizeSettings{B,singlebatch,aligned}(N, A, B_last)
 end
 
-function pick_jacobian_batchsize(
-    ::PushforwardSlow, backend::AbstractADType; M::Integer, N::Integer
-)
-    return pick_batchsize(backend, M)
+function BatchSizeSettings(::AbstractADType, N::Integer)
+    B = 1
+    singlebatch = false
+    aligned = true
+    return BatchSizeSettings{B,singlebatch,aligned}(N)
 end
 
-function pick_hessian_batchsize(backend::AbstractADType, N::Integer)
-    return pick_batchsize(outer(backend), N)
+function BatchSizeSettings(backend::AbstractADType, x::AbstractArray)
+    N = length(x)
+    return BatchSizeSettings(backend, N)
+end
+
+function pick_batchsize(backend::AbstractADType, x_or_N::Union{AbstractArray,Integer})
+    if backend isa SecondOrder
+        throw(
+            ArgumentError(
+                "You should select the batch size for the inner or outer backend of $backend",
+            ),
+        )
+    elseif backend isa AutoSparse
+        throw(
+            ArgumentError(
+                "You should select the batch size for the dense backend of $backend"
+            ),
+        )
+    else
+        return BatchSizeSettings(backend, x_or_N)
+    end
 end
 
 threshold_batchsize(backend::AbstractADType, ::Integer) = backend
+
+function threshold_batchsize(backend::AutoSparse, B::Integer)
+    return AutoSparse(
+        threshold_batchsize(dense_ad(backend), B);
+        sparsity_detector=backend.sparsity_detector,
+        coloring_algorithm=backend.coloring_algorithm,
+    )
+end
+
+function threshold_batchsize(backend::SecondOrder, B::Integer)
+    return SecondOrder(
+        threshold_batchsize(outer(backend), B), threshold_batchsize(inner(backend), B)
+    )
+end
+
+function reasonable_batchsize(N::Integer, Bmax::Integer)
+    # borrowed from https://github.com/JuliaDiff/ForwardDiff.jl/blob/ec74fbc32b10bbf60b3c527d8961666310733728/src/prelude.jl#L19-L29
+    if N <= Bmax
+        return N
+    else
+        A = div(N, Bmax, RoundUp)
+        B = div(N, A, RoundUp)
+        return B
+    end
+end

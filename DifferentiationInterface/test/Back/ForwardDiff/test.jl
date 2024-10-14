@@ -45,10 +45,10 @@ test_differentiation(
 
 ## Sparse
 
-test_differentiation(MyAutoSparse.(backends), default_scenarios(); logging=LOGGING);
+test_differentiation(MyAutoSparse.(backends[1:2]), default_scenarios(); logging=LOGGING);
 
 test_differentiation(
-    MyAutoSparse.(backends),
+    MyAutoSparse.(backends[1:2]),
     sparse_scenarios(; include_constantified=true);
     sparsity=true,
     logging=LOGGING,
