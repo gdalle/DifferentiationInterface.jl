@@ -115,8 +115,6 @@ function Base.show(
     return nothing
 end
 
-adapt_batchsize(backend::AbstractADType, ::Scenario) = backend
-
 function adapt_batchsize(backend::AbstractADType, scen::Scenario)
     if operator(scen) == :jacobian
         if ADTypes.mode(backend) isa Union{ADTypes.ForwardMode,ADTypes.ForwardOrReverseMode}
