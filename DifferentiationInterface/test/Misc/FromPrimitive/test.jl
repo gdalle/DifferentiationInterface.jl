@@ -22,6 +22,19 @@ second_order_backends = [ #
     ),
 ]
 
+adaptive_backends = [ #
+    AutoForwardFromPrimitive(AutoForwardDiff()),
+    AutoReverseFromPrimitive(AutoForwardDiff()),
+    SecondOrder(
+        AutoForwardFromPrimitive(AutoForwardDiff()),
+        AutoReverseFromPrimitive(AutoForwardDiff()),
+    ),
+    SecondOrder(
+        AutoReverseFromPrimitive(AutoForwardDiff()),
+        AutoForwardFromPrimitive(AutoForwardDiff()),
+    ),
+]
+
 for backend in vcat(backends, second_order_backends)
     @test check_available(backend)
     @test check_inplace(backend)
@@ -38,13 +51,13 @@ test_differentiation(
 ## Sparse scenarios
 
 test_differentiation(
-    MyAutoSparse.(vcat(backends, second_order_backends)),
+    MyAutoSparse.(adaptive_backends),
     default_scenarios(; include_constantified=true);
     logging=LOGGING,
 );
 
 test_differentiation(
-    MyAutoSparse.(vcat(backends, second_order_backends)),
+    MyAutoSparse.(adaptive_backends),
     sparse_scenarios(; include_constantified=true);
     sparsity=true,
     logging=LOGGING,
