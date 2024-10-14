@@ -261,7 +261,8 @@ function _jacobian_aux(
     x,
     contexts::Vararg{Context,C},
 ) where {FY,B,aligned,C}
-    (; batched_seeds, pushforward_prep) = prep
+    (; batch_size_settings, batched_seeds, pushforward_prep) = prep
+    (; B_last) = batch_size_settings
     dy_batch = pushforward(
         f_or_f!y..., pushforward_prep, backend, x, only(batched_seeds), contexts...
     )
@@ -314,7 +315,7 @@ function _jacobian_aux(
     contexts::Vararg{Context,C},
 ) where {FY,B,aligned,C}
     (; batch_size_settings, batched_seeds, pullback_prep) = prep
-    (; N, A, B_last) = batch_size_settings
+    (; B_last) = batch_size_settings
     dx_batch = pullback(
         f_or_f!y..., pullback_prep, backend, x, only(batched_seeds), contexts...
     )
