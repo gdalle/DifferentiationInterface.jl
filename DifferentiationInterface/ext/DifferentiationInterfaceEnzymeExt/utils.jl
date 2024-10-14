@@ -3,7 +3,7 @@ function DI.BatchSizeSettings(::AutoEnzyme, N::Integer)
     B = DI.reasonable_batchsize(N, 16)
     singlebatch = B == N
     aligned = N % B == 0
-    return BatchSizeSettings{B,singlebatch,aligned}(N)
+    return DI.BatchSizeSettings{B,singlebatch,aligned}(N)
 end
 
 to_val(::BatchSizeSettings{B}) where {B} = Val(B)
@@ -24,9 +24,10 @@ function get_f_and_df(
         M,
         <:Union{
             Duplicated,
-            EnzymeCore.DuplicatedNoNeed,
+            MixedDuplicated,
             BatchDuplicated,
-            EnzymeCore.BatchDuplicatedFunc,
+            BatchMixedDuplicated,
+            EnzymeCore.DuplicatedNoNeed,
             EnzymeCore.BatchDuplicatedNoNeed,
         },
     },
@@ -66,6 +67,14 @@ end
 
 set_err(mode::Mode, ::AutoEnzyme{<:Any,Nothing}) = EnzymeCore.set_err_if_func_written(mode)
 set_err(mode::Mode, ::AutoEnzyme{<:Any,<:Annotation}) = mode
+
+batchify_activity(::Type{Const{T}}, ::Val{B}) where {T,B} = Const{T}
+batchify_activity(::Type{Active{T}}, ::Val{B}) where {T,B} = Active{T}
+batchify_activity(::Type{Duplicated{T}}, ::Val{B}) where {T,B} = BatchDuplicated{T,B}
+
+function batchify_activity(::Type{MixedDuplicated{T}}, ::Val{B}) where {T,B}
+    return BatchMixedDuplicated{T,B}
+end
 
 function maybe_reshape(A::AbstractMatrix, m, n)
     @assert size(A) == (m, n)

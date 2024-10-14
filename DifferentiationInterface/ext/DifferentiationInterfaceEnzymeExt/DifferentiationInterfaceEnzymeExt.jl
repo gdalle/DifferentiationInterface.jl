@@ -4,7 +4,6 @@ using ADTypes: ADTypes, AutoEnzyme
 using Base: Fix1
 import DifferentiationInterface as DI
 using DifferentiationInterface:
-    BatchSizeSettings,
     Context,
     DerivativePrep,
     GradientPrep,
@@ -17,12 +16,12 @@ using DifferentiationInterface:
     NoHVPPrep,
     NoJacobianPrep,
     NoPullbackPrep,
-    NoPushforwardPrep,
-    pick_batchsize
+    NoPushforwardPrep
 using Enzyme:
     Active,
     Annotation,
     BatchDuplicated,
+    BatchMixedDuplicated,
     Const,
     Duplicated,
     DuplicatedNoNeed,

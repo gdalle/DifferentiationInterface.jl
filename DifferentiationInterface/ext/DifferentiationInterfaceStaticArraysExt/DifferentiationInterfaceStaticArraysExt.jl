@@ -9,6 +9,10 @@ function DI.stack_vec_col(t::NTuple{B,<:StaticArray}) where {B}
     return hcat(map(vec, t)...)
 end
 
+function DI.stack_vec_row(t::NTuple{B,<:StaticArray}) where {B}
+    return vcat(transpose.(map(vec, t))...)
+end
+
 function DI.BatchSizeSettings(::AutoForwardDiff{nothing}, x::StaticArray)
     return BatchSizeSettings{length(x),true,true}(length(x))
 end
