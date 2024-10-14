@@ -10,8 +10,8 @@ function DI.BatchSizeSettings(::AutoForwardDiff{chunksize}, N::Integer) where {c
         throw(ArgumentError("Fixed chunksize $chunksize larger than input size $N"))
     end
     B = chunksize
-    singlebatch = true
-    aligned = true
+    singlebatch = B == N
+    aligned = N % B == 0
     return BatchSizeSettings{B,singlebatch,aligned}(N)
 end
 

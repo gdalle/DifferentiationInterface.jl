@@ -23,7 +23,7 @@ end
 
 function BatchSizeSettings{B,singlebatch,aligned}(N::Integer) where {B,singlebatch,aligned}
     A = div(N, B, RoundUp)
-    B_last = -1
+    B_last = N % B
     return BatchSizeSettings{B,singlebatch,aligned}(N, A, B_last)
 end
 

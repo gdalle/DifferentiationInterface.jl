@@ -117,8 +117,11 @@ end
 
 adapt_batchsize(backend::AbstractADType, ::Scenario) = backend
 
-function adapt_batchsize(
-    backend::Union{ADTypes.AutoForwardDiff,ADTypes.AutoPolyesterForwardDiff}, scen::Scenario
-)
-    return DI.threshold_batchsize(backend, length(scen.x))
+function adapt_batchsize(backend::AbstractADType, scen::Scenario)
+    if ADTypes.mode(backend) isa Union{ADTypes.ForwardMode,ADTypes.ForwardOrReverseMode} &&
+        operator(scen) in (:jacobian, :hessian)
+        return DI.threshold_batchsize(backend, length(scen.x))
+    else
+        return backend
+    end
 end

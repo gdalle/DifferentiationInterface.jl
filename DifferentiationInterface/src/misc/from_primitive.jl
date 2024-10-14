@@ -11,8 +11,12 @@ end
 check_available(fromprim::FromPrimitive) = check_available(fromprim.backend)
 inplace_support(fromprim::FromPrimitive) = inplace_support(fromprim.backend)
 
-function pick_batchsize(fromprim::FromPrimitive, dimension::Integer)
-    return pick_batchsize(fromprim.backend, dimension)
+function BatchSizeSettings(fromprim::FromPrimitive, x::AbstractArray)
+    return BatchSizeSettings(fromprim.backend, x)
+end
+
+function BatchSizeSettings(fromprim::FromPrimitive, N::Integer)
+    return BatchSizeSettings(fromprim.backend, N)
 end
 
 ## Forward
