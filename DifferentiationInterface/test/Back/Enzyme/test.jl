@@ -95,7 +95,6 @@ test_differentiation(
 
 ## Static
 
-#=
 test_differentiation(
     [
         AutoEnzyme(; mode=Enzyme.Forward),  #
@@ -109,4 +108,3 @@ test_differentiation(
     excluded=SECOND_ORDER,
     logging=LOGGING,
 )
-=#
