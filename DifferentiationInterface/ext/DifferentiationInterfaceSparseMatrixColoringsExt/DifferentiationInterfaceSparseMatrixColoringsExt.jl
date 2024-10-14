@@ -10,6 +10,7 @@ using ADTypes:
     hessian_sparsity
 using DifferentiationInterface
 using DifferentiationInterface:
+    BatchSizeSettings,
     GradientPrep,
     HessianPrep,
     HVPPrep,
@@ -17,6 +18,7 @@ using DifferentiationInterface:
     PullbackPrep,
     PushforwardPrep,
     PushforwardFast,
+    PushforwardPerformance,
     PushforwardSlow,
     inner,
     outer,

@@ -7,18 +7,18 @@ using Test
 LOGGING = get(ENV, "CI", "false") == "false"
 
 backends = [ #
-    AutoForwardFromPrimitive(AutoForwardDiff(; chunksize=5)),
-    AutoReverseFromPrimitive(AutoForwardDiff(; chunksize=4)),
+    AutoForwardFromPrimitive(AutoForwardDiff()),
+    AutoReverseFromPrimitive(AutoForwardDiff()),
 ]
 
 second_order_backends = [ #
     SecondOrder(
-        AutoForwardFromPrimitive(AutoForwardDiff(; chunksize=4)),
-        AutoReverseFromPrimitive(AutoForwardDiff(; chunksize=5)),
+        AutoForwardFromPrimitive(AutoForwardDiff()),
+        AutoReverseFromPrimitive(AutoForwardDiff()),
     ),
     SecondOrder(
-        AutoReverseFromPrimitive(AutoForwardDiff(; chunksize=5)),
-        AutoForwardFromPrimitive(AutoForwardDiff(; chunksize=4)),
+        AutoReverseFromPrimitive(AutoForwardDiff()),
+        AutoForwardFromPrimitive(AutoForwardDiff()),
     ),
 ]
 

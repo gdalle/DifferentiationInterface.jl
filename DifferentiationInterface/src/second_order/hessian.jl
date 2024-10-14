@@ -61,47 +61,46 @@ function value_gradient_and_hessian! end
 ## Preparation
 
 struct HVPGradientHessianPrep{
-    B,singlebatch,TD<:NTuple{B},TR<:NTuple{B},E2<:HVPPrep,E1<:GradientPrep
+    BS<:BatchSizeSettings,
+    S<:AbstractVector{<:NTuple},
+    R<:AbstractVector{<:NTuple},
+    E2<:HVPPrep,
+    E1<:GradientPrep,
 } <: HessianPrep
-    batched_seeds::Vector{TD}
-    batched_results::Vector{TR}
+    batch_size_settings::BS
+    batched_seeds::S
+    batched_results::R
     hvp_prep::E2
     gradient_prep::E1
-    N::Int
 end
 
 function prepare_hessian(
     f::F, backend::AbstractADType, x, contexts::Vararg{Context,C}
 ) where {F,C}
     # type-unstable
-    valB = pick_batchsize(outer(backend), x)
-    val_singlebatch = Val(unval(valB) >= length(x))
+    batch_size_settings = pick_batchsize(outer(backend), x)
     # function barrier
-    return _prepare_hessian_aux(valB, val_singlebatch, f, backend, x, contexts...)
+    return _prepare_hessian_aux(batch_size_settings, f, backend, x, contexts...)
 end
 
 function _prepare_hessian_aux(
-    ::Val{B},
-    ::Val{singlebatch},
+    batch_size_settings::BatchSizeSettings{B},
     f::F,
     backend::AbstractADType,
     x,
     contexts::Vararg{Context,C},
-) where {B,singlebatch,F,C}
+) where {B,F,C}
+    (; N, A) = batch_size_settings
     N = length(x)
     seeds = [basis(backend, x, ind) for ind in eachindex(x)]
     batched_seeds = [
-        ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % N], Val(B)) for
-        a in 1:div(N, B, RoundUp)
+        ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % N], Val(B)) for a in 1:A
     ]
     batched_results = [ntuple(b -> similar(x), Val(B)) for _ in batched_seeds]
     hvp_prep = prepare_hvp(f, backend, x, batched_seeds[1], contexts...)
     gradient_prep = prepare_gradient(f, inner(backend), x, contexts...)
-    TD = eltype(batched_seeds)
-    TR = eltype(batched_results)
-    E2, E1 = typeof(hvp_prep), typeof(gradient_prep)
-    return HVPGradientHessianPrep{B,singlebatch,TD,TR,E2,E1}(
-        batched_seeds, batched_results, hvp_prep, gradient_prep, N
+    return HVPGradientHessianPrep(
+        batch_size_settings, batched_seeds, batched_results, hvp_prep, gradient_prep
     )
 end
 
@@ -109,7 +108,7 @@ end
 
 function hessian(
     f::F,
-    prep::HVPGradientHessianPrep{B,true},
+    prep::HVPGradientHessianPrep{<:BatchSizeSettings{B,true}},
     backend::AbstractADType,
     x,
     contexts::Vararg{Context,C},
@@ -122,12 +121,13 @@ end
 
 function hessian(
     f::F,
-    prep::HVPGradientHessianPrep{B},
+    prep::HVPGradientHessianPrep{<:BatchSizeSettings{B,false,aligned}},
     backend::AbstractADType,
     x,
     contexts::Vararg{Context,C},
-) where {F,B,C}
-    (; batched_seeds, hvp_prep, N) = prep
+) where {F,B,aligned,C}
+    (; batch_size_settings, batched_seeds, hvp_prep) = prep
+    (; A, B_last) = batch_size_settings
 
     hvp_prep_same = prepare_hvp_same_point(
         f, hvp_prep, backend, x, batched_seeds[1], contexts...
@@ -136,10 +136,11 @@ function hessian(
     hess = mapreduce(hcat, eachindex(batched_seeds)) do a
         dg_batch = hvp(f, hvp_prep_same, backend, x, batched_seeds[a], contexts...)
         block = stack_vec_col(dg_batch)
-        if N % B != 0 && a == lastindex(batched_seeds)
-            block = block[:, 1:(N - (a - 1) * B)]
+        if !aligned && a == A
+            return block[:, 1:B_last]
+        else
+            return block
         end
-        block
     end
     return hess
 end
@@ -147,12 +148,13 @@ end
 function hessian!(
     f::F,
     hess,
-    prep::HVPGradientHessianPrep{B},
+    prep::HVPGradientHessianPrep{<:BatchSizeSettings{B}},
     backend::AbstractADType,
     x,
     contexts::Vararg{Context,C},
 ) where {F,B,C}
-    (; batched_seeds, batched_results, hvp_prep, N) = prep
+    (; batch_size_settings, batched_seeds, batched_results, hvp_prep) = prep
+    (; N) = batch_size_settings
 
     hvp_prep_same = prepare_hvp_same_point(
         f, hvp_prep, backend, x, batched_seeds[1], contexts...

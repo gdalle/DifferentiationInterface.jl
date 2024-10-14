@@ -1,6 +1,10 @@
 # until https://github.com/EnzymeAD/Enzyme.jl/pull/1545 is merged
-DI.has_fixed_batchsize(::AutoEnzyme) = false
-DI.adaptive_batchsize(::AutoEnzyme, a) = Val(min(length(a), 16))
+function DI.BatchSizeSettings(::AutoEnzyme, N::Integer)
+    B = min(N, 16)  # TODO: balance batches
+    singlebatch = B == N
+    aligned = N % B == 0
+    return BatchSizeSettings{B,singlebatch,aligned}(N)
+end
 
 ## Annotations
 

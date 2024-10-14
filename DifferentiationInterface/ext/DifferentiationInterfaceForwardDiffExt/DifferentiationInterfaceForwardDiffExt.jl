@@ -4,6 +4,7 @@ using ADTypes: AbstractADType, AutoForwardDiff
 using Base: Fix1, Fix2
 import DifferentiationInterface as DI
 using DifferentiationInterface:
+    BatchSizeSettings,
     Context,
     DerivativePrep,
     DifferentiateWith,
