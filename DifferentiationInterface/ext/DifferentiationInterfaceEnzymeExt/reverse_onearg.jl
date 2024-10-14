@@ -65,15 +65,16 @@ function DI.value_and_pullback(
     f::F,
     ::NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
-    x::Number,
+    x,
     ty::NTuple{1},
     contexts::Vararg{Context,C},
 ) where {F,C}
     f_and_df = force_annotation(get_f_and_df(f, backend))
     mode = reverse_split_withprimal(backend)
+    IA = guess_activity(typeof(x), mode)
     RA = guess_activity(eltype(ty), mode)
     dinputs, result = seeded_autodiff_thunk(
-        mode, only(ty), f_and_df, RA, Active(x), map(translate, contexts)...
+        mode, only(ty), f_and_df, RA, annotate(IA, x), map(translate, contexts)...
     )
     return result, (first(dinputs),)
 end
@@ -82,53 +83,18 @@ function DI.value_and_pullback(
     f::F,
     ::NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
-    x::Number,
+    x,
     ty::NTuple{B},
     contexts::Vararg{Context,C},
 ) where {F,B,C}
     f_and_df = force_annotation(get_f_and_df(f, backend, Val(B)))
     mode = reverse_split_withprimal(backend)
+    IA = batchify_activity(guess_activity(typeof(x), mode), Val(B))
     RA = batchify_activity(guess_activity(eltype(ty), mode), Val(B))
     dinputs, result = batch_seeded_autodiff_thunk(
-        mode, ty, f_and_df, RA, Active(x), map(translate, contexts)...
+        mode, ty, f_and_df, RA, annotate(IA, x), map(translate, contexts)...
     )
     return result, values(first(dinputs))
-end
-
-function DI.value_and_pullback(
-    f::F,
-    ::NoPullbackPrep,
-    backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
-    x,
-    ty::NTuple{1},
-    contexts::Vararg{Context,C},
-) where {F,C}
-    f_and_df = force_annotation(get_f_and_df(f, backend))
-    mode = reverse_split_withprimal(backend)
-    RA = guess_activity(eltype(ty), mode)
-    dx = make_zero(x)
-    _, result = seeded_autodiff_thunk(
-        mode, only(ty), f_and_df, RA, Duplicated(x, dx), map(translate, contexts)...
-    )
-    return result, (dx,)
-end
-
-function DI.value_and_pullback(
-    f::F,
-    ::NoPullbackPrep,
-    backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
-    x,
-    ty::NTuple{B},
-    contexts::Vararg{Context,C},
-) where {F,B,C}
-    f_and_df = force_annotation(get_f_and_df(f, backend, Val(B)))
-    mode = reverse_split_withprimal(backend)
-    RA = batchify_activity(guess_activity(eltype(ty), mode), Val(B))
-    tx = ntuple(_ -> make_zero(x), Val(B))
-    _, result = batch_seeded_autodiff_thunk(
-        mode, ty, f_and_df, RA, BatchDuplicated(x, tx), map(translate, contexts)...
-    )
-    return result, tx
 end
 
 function DI.pullback(
