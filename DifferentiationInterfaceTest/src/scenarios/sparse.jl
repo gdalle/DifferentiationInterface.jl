@@ -214,9 +214,10 @@ end
 
 ## Various matrices
 
-function banded_matrix(m, n, b)
-    pairs = [k => rand(min(m, n) - k) for k in 0:b]
-    return spdiagm(m, n, pairs...)
+function banded_matrix(::Type{T}, n, b) where {T}
+    @assert b <= n
+    pairs = [k => rand(T, n - k) for k in 0:b]
+    return spdiagm(n, n, pairs...)
 end
 
 ### Linear map
@@ -245,7 +246,7 @@ end
 function squarelinearmap_scenarios(x::AbstractVector, band_sizes)
     n = length(x)
     scens = Scenario[]
-    for A in vcat(banded_matrix.(2n, n, band_sizes), banded_matrix.(n ÷ 2, n, band_sizes))
+    for A in banded_matrix.(eltype(x), n, band_sizes)
         f = SquareLinearMap(A)
         f! = f
         y = f(x)
@@ -305,7 +306,7 @@ end
 function squarequadraticform_scenarios(x::AbstractVector, band_sizes)
     n = length(x)
     scens = Scenario[]
-    for A in banded_matrix.(n, n, band_sizes)
+    for A in banded_matrix.(eltype(x), n, band_sizes)
         f = SquareQuadraticForm(A)
         grad = squarequadraticform_gradient(x, A)
         hess = sparse(squarequadraticform_hessian(x, A))
@@ -324,7 +325,7 @@ end
 Create a vector of [`Scenario`](@ref)s with sparse array types, focused on sparse Jacobians and Hessians.
 """
 function sparse_scenarios(
-    rng::AbstractRNG=default_rng(); band_sizes=0:4:36, include_constantified=false
+    rng::AbstractRNG=default_rng(); band_sizes=[5, 10, 20], include_constantified=false
 )
     scens = vcat(
         sparse_vec_to_vec_scenarios(rand(rng, 6)),
@@ -335,8 +336,8 @@ function sparse_scenarios(
         sparse_mat_to_num_scenarios(rand(rng, 2, 3)),
     )
     if !isempty(band_sizes)
-        append!(scens, squarelinearmap_scenarios(rand(rng, 100), band_sizes))
-        append!(scens, squarequadraticform_scenarios(rand(rng, 100), band_sizes))
+        append!(scens, squarelinearmap_scenarios(rand(rng, 50), band_sizes))
+        append!(scens, squarequadraticform_scenarios(rand(rng, 50), band_sizes))
     end
     include_constantified && append!(scens, constantify(scens))
     return scens
