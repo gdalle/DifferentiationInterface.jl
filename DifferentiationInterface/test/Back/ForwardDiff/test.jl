@@ -67,7 +67,7 @@ test_differentiation(AutoForwardDiff(), static_scenarios(); logging=LOGGING)
         AutoForwardDiff(),
         filtered_static_scenarios;
         benchmark=:prepared,
-        excluded=vcat(SECOND_ORDER, :pullback, :pushforward),  # TODO: figure this out
+        excluded=[:hessian, :pullback],  # TODO: figure this out
         logging=LOGGING,
     )
     @testset "$(row[:scenario])" for row in eachrow(data)

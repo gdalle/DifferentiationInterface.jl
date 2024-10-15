@@ -77,8 +77,9 @@ function compute_ydual_onearg(
     tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,T,C}
-    (; xdual_tmp) = prep
-    make_dual!(T, xdual_tmp, x, tx)
+    # (; xdual_tmp) = prep
+    # make_dual!(T, xdual_tmp, x, tx)
+    xdual_tmp = make_dual(T, x, tx)  # TODO: discuss reuse of mutable dual array
     ydual = f(xdual_tmp, map(unwrap, contexts)...)
     return ydual
 end
