@@ -340,8 +340,8 @@ function sparse_scenarios(
         sparse_mat_to_num_scenarios(rand(rng, 2, 3)),
     )
     if fixed_matrices
-        append!(scens, squarelinearmap_scenarios(rand(rng, 100), 10))
-        append!(scens, squarequadraticform_scenarios(rand(rng, 100), 10))
+        append!(scens, squarelinearmap_scenarios(rand(rng, 100), 20))
+        append!(scens, squarequadraticform_scenarios(rand(rng, 100), 20))
     end
     include_constantified && append!(scens, constantify(scens))
     return scens
