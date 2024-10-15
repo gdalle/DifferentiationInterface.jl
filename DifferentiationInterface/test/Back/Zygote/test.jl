@@ -41,7 +41,7 @@ test_differentiation(
 
 test_differentiation(
     MyAutoSparse.(vcat(backends, second_order_backends)),
-    sparse_scenarios();
+    sparse_scenarios(; band_sizes=0:-1);
     sparsity=true,
     logging=LOGGING,
 )

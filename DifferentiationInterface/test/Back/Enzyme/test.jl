@@ -90,5 +90,8 @@ test_differentiation(
 ## Sparse
 
 test_differentiation(
-    MyAutoSparse.(AutoEnzyme()), sparse_scenarios(); sparsity=true, logging=LOGGING
+    MyAutoSparse.(AutoEnzyme(; function_annotation=Enzyme.Const)),
+    sparse_scenarios();
+    sparsity=true,
+    logging=LOGGING,
 );
