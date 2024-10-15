@@ -328,7 +328,9 @@ end
 
 Create a vector of [`Scenario`](@ref)s with sparse array types, focused on sparse Jacobians and Hessians.
 """
-function sparse_scenarios(rng::AbstractRNG=default_rng(); include_constantified=false)
+function sparse_scenarios(
+    rng::AbstractRNG=default_rng(); fixed_matrices=true, include_constantified=false
+)
     scens = vcat(
         sparse_vec_to_vec_scenarios(rand(rng, 6)),
         sparse_vec_to_mat_scenarios(rand(rng, 6)),
@@ -336,9 +338,11 @@ function sparse_scenarios(rng::AbstractRNG=default_rng(); include_constantified=
         sparse_mat_to_mat_scenarios(rand(rng, 2, 3)),
         sparse_vec_to_num_scenarios(rand(rng, 6)),
         sparse_mat_to_num_scenarios(rand(rng, 2, 3)),
-        squarelinearmap_scenarios(rand(rng, 100), 10),
-        squarequadraticform_scenarios(rand(rng, 100), 10),
     )
+    if fixed_matrices
+        append!(scens, squarelinearmap_scenarios(rand(rng, 100), 10))
+        append!(scens, squarequadraticform_scenarios(rand(rng, 100), 10))
+    end
     include_constantified && append!(scens, constantify(scens))
     return scens
 end
