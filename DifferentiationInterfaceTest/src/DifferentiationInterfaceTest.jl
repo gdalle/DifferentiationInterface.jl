@@ -19,6 +19,7 @@ using ADTypes:
     ReverseMode,
     SymbolicMode,
     mode
+using AllocCheck: check_allocs
 using Chairmarks: @be, Benchmark, Sample
 using DataFrames: DataFrame
 using DifferentiationInterface
@@ -87,6 +88,8 @@ include("tests/correctness_eval.jl")
 include("tests/type_stability_eval.jl")
 include("tests/benchmark.jl")
 include("tests/benchmark_eval.jl")
+include("tests/allocs_eval.jl")
+
 include("test_differentiation.jl")
 
 export FIRST_ORDER, SECOND_ORDER

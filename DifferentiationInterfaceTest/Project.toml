@@ -1,10 +1,11 @@
 name = "DifferentiationInterfaceTest"
 uuid = "a82114a7-5aa3-49a8-9643-716bb13727a3"
 authors = ["Guillaume Dalle", "Adrian Hill"]
-version = "0.8.2"
+version = "0.8.3"
 
 [deps]
 ADTypes = "47edcb42-4c32-4615-8424-f2b9edc5f35b"
+AllocCheck = "9b6a8646-10ed-4001-bbdc-1d2f46dfbb1a"
 Chairmarks = "0ca39b1e-fe0b-4e98-acfc-b1656634c4de"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 DifferentiationInterface = "a0c0ee7d-e4b9-4e03-894e-1c5f64a51d63"
@@ -20,8 +21,8 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 ComponentArrays = "b0b7db55-cfe3-40fc-9ded-d10e2dbeff66"
 FiniteDifferences = "26cc04aa-876d-5657-8c51-4c34ba976000"
 Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"
-Functors = "d9f16b24-f501-4c13-a1f2-28368ffc5196"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+Functors = "d9f16b24-f501-4c13-a1f2-28368ffc5196"
 JLArrays = "27aeb0d3-9eb9-45fb-866b-73c2ecf80fcb"
 Lux = "b2108857-7c20-44ae-9111-449ecde12c47"
 LuxTestUtils = "ac9de150-d08f-4546-94fb-7472b5760531"

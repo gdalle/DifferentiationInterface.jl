@@ -65,21 +65,48 @@ end
 
 ## Allocations
 
-data_allocfree = vcat(
-    benchmark_differentiation(
-        AutoZeroForward(),
-        allocfree_scenarios();
-        excluded=[:pullback, :gradient],
-        benchmark=:prepared,
-        logging=LOGGING,
-    ),
-    benchmark_differentiation(
-        AutoZeroReverse(),
-        allocfree_scenarios();
-        excluded=[:pushforward, :derivative],
-        benchmark=:prepared,
-        logging=LOGGING,
-    ),
+@testset "Benchmark for zero allocations" begin
+    data_allocfree = vcat(
+        benchmark_differentiation(
+            AutoZeroForward(),
+            allocfree_scenarios();
+            excluded=[:pullback, :gradient],
+            benchmark=:prepared,
+            logging=LOGGING,
+        ),
+        benchmark_differentiation(
+            AutoZeroReverse(),
+            allocfree_scenarios();
+            excluded=[:pushforward, :derivative],
+            benchmark=:prepared,
+            logging=LOGGING,
+        ),
+    )
+    @test all(iszero, data_allocfree[!, :allocs])
+end
+
+test_differentiation(
+    AutoZeroForward(),
+    allocfree_scenarios();
+    correctness=false,
+    allocations=:prepared,
+    excluded=[:pullback, :gradient, :jacobian],
+    logging=LOGGING,
 )
 
-@test all(iszero, data_allocfree[!, :allocs])
+test_differentiation(
+    AutoZeroReverse(),
+    allocfree_scenarios();
+    correctness=false,
+    allocations=:prepared,
+    excluded=[:pushforward, :derivative, :jacobian],
+    logging=LOGGING,
+)
+
+test_differentiation(
+    AutoZeroForward();
+    correctness=false,
+    allocations=:full,
+    skip_allocations=true,
+    logging=LOGGING,
+)

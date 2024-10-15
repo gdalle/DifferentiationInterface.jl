@@ -21,9 +21,11 @@ This function always creates and runs a `@testset`, though its contents may vary
 
 - `correctness=true`: whether to compare the differentiation results with the theoretical values specified in each scenario
 - `type_stability=:none`: whether (and how) to check type stability of operators with JET.jl.
+- `allocations=:none`: whether (and how) to check allocations inside operators with AllocCheck.jl
 - `benchmark=:none`: whether (and how) to benchmark operators with Chairmarks.jl
 
-For `type_stability` and `benchmark`, the possible values are `:none`, `:prepared` or `:full`, each concerns a different subset of calls:
+For `type_stability`, `allocations` and `benchmark`, the possible values are `:none`, `:prepared` or `:full`.
+Each setting tests/benchmarks a different subset of calls:
 
 | kwarg | prepared operator | unprepared operator | preparation |
 |---|---|---|---|
@@ -61,6 +63,7 @@ function test_differentiation(
     # test categories
     correctness::Bool=true,
     type_stability::Symbol=:none,
+    allocations::Symbol=:none,
     benchmark::Symbol=:none,
     # misc options
     excluded::Vector{Symbol}=Symbol[],
@@ -79,11 +82,14 @@ function test_differentiation(
     else
         @nospecialize(f) -> f != Base.mapreduce_empty  # fix for `mapreduce` in jacobian and hessian
     end,
+    # allocs options
+    skip_allocations::Bool=false,  # private, only for code coverage
     # benchmark options
     count_calls::Bool=true,
     benchmark_test::Bool=true,
 )
     @assert type_stability in (:none, :prepared, :full)
+    @assert allocations in (:none, :prepared, :full)
     @assert benchmark in (:none, :prepared, :full)
 
     scenarios = filter(s -> !(operator(s) in excluded), scenarios)
@@ -149,6 +155,15 @@ function test_differentiation(
                         )
                     end
                     yield()
+                    (allocations != :none) && @testset "Allocations" begin
+                        test_alloccheck(
+                            adapted_backend,
+                            scen;
+                            subset=allocations,
+                            skip=skip_allocations,
+                        )
+                    end
+                    yield()
                     (benchmark != :none) && @testset "Benchmark" begin
                         run_benchmark!(
                             benchmark_data,
@@ -202,6 +217,7 @@ function benchmark_differentiation(
         scenarios;
         correctness=false,
         type_stability=:none,
+        allocations=:none,
         benchmark,
         logging,
         excluded,
