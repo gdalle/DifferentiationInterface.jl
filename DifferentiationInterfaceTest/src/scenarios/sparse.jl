@@ -214,11 +214,9 @@ end
 
 ## Various matrices
 
-function generate_banded_matrices(m, n, maxbands)
-    return map(0:maxbands) do b
-        pairs = [k => rand(min(m, n) - k) for k in 0:b]
-        spdiagm(m, n, pairs...)
-    end
+function banded_matrix(m, n, b)
+    pairs = [k => rand(min(m, n) - k) for k in 0:b]
+    return spdiagm(m, n, pairs...)
 end
 
 ### Linear map
@@ -244,13 +242,10 @@ function squarelinearmap_jacobian(x::AbstractArray, A::AbstractMatrix)
     return 2 .* A .* transpose(vec(x))
 end
 
-function squarelinearmap_scenarios(x::AbstractVector, maxbands::Integer)
+function squarelinearmap_scenarios(x::AbstractVector, band_sizes)
     n = length(x)
     scens = Scenario[]
-    for A in vcat(
-        generate_banded_matrices(2n, n, maxbands),
-        generate_banded_matrices(n ÷ 2, n, maxbands),
-    )
+    for A in vcat(banded_matrix.(2n, n, band_sizes), banded_matrix.(n ÷ 2, n, band_sizes))
         f = SquareLinearMap(A)
         f! = f
         y = f(x)
@@ -307,10 +302,10 @@ function squarequadraticform_hessian(x::AbstractArray, A::AbstractMatrix)
     return H
 end
 
-function squarequadraticform_scenarios(x::AbstractVector, maxbands::Integer)
+function squarequadraticform_scenarios(x::AbstractVector, band_sizes)
     n = length(x)
     scens = Scenario[]
-    for A in generate_banded_matrices(n, n, maxbands)
+    for A in banded_matrix.(n, n, band_sizes)
         f = SquareQuadraticForm(A)
         grad = squarequadraticform_gradient(x, A)
         hess = sparse(squarequadraticform_hessian(x, A))
@@ -329,7 +324,7 @@ end
 Create a vector of [`Scenario`](@ref)s with sparse array types, focused on sparse Jacobians and Hessians.
 """
 function sparse_scenarios(
-    rng::AbstractRNG=default_rng(); fixed_matrices=true, include_constantified=false
+    rng::AbstractRNG=default_rng(); band_sizes=0:4:36, include_constantified=false
 )
     scens = vcat(
         sparse_vec_to_vec_scenarios(rand(rng, 6)),
@@ -339,9 +334,9 @@ function sparse_scenarios(
         sparse_vec_to_num_scenarios(rand(rng, 6)),
         sparse_mat_to_num_scenarios(rand(rng, 2, 3)),
     )
-    if fixed_matrices
-        append!(scens, squarelinearmap_scenarios(rand(rng, 100), 20))
-        append!(scens, squarequadraticform_scenarios(rand(rng, 100), 20))
+    if !isempty(band_sizes)
+        append!(scens, squarelinearmap_scenarios(rand(rng, 100), band_sizes))
+        append!(scens, squarequadraticform_scenarios(rand(rng, 100), band_sizes))
     end
     include_constantified && append!(scens, constantify(scens))
     return scens
