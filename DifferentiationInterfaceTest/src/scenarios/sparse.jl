@@ -178,7 +178,6 @@ end
 
 function sparse_vec_to_num_scenarios(x::AbstractVector)
     f = sumdiffcube
-    y = f(x)
     grad = sumdiffcube_gradient(x)
     hess = sumdiffcube_hessian(x)
 
@@ -203,13 +202,121 @@ end
 
 function sparse_mat_to_num_scenarios(x::AbstractMatrix)
     f = sumdiffcube_mat
-    y = f(x)
     grad = sumdiffcube_mat_gradient(x)
     hess = sumdiffcube_mat_hessian(x)
 
     scens = Scenario[]
     for pl_op in (:out, :in)
         append!(scens, [Scenario{:hessian,pl_op}(f, x; res1=grad, res2=hess)])
+    end
+    return scens
+end
+
+## Various matrices
+
+function generate_banded_matrices(m, n, maxbands)
+    return map(0:maxbands) do b
+        pairs = [k => rand(min(m, n) - k) for k in 0:b]
+        spdiagm(m, n, pairs...)
+    end
+end
+
+### Linear map
+
+struct SquareLinearMap{M<:AbstractMatrix}
+    A::M
+end
+
+function Base.show(io::IO, s::SquareLinearMap{M}) where {M}
+    return print(io, "SquareLinearMap{$M - $(size(s.A)) with $(mynnz(s.A)) nonzeros}")
+end
+
+function (s::SquareLinearMap)(x::AbstractArray)
+    return s.A * abs2.(vec(x))
+end
+
+function (s::SquareLinearMap)(y::AbstractArray, x::AbstractArray)
+    vec(y) .= s.A * abs2.(vec(x))
+    return nothing
+end
+
+function squarelinearmap_jacobian(x::AbstractArray, A::AbstractMatrix)
+    return 2 .* A .* transpose(vec(x))
+end
+
+function squarelinearmap_scenarios(x::AbstractVector, maxbands::Integer)
+    n = length(x)
+    scens = Scenario[]
+    for A in vcat(
+        generate_banded_matrices(2n, n, maxbands),
+        generate_banded_matrices(n ÷ 2, n, maxbands),
+    )
+        f = SquareLinearMap(A)
+        f! = f
+        y = f(x)
+        jac = sparse(squarelinearmap_jacobian(x, A))
+        for pl_op in (:out, :in)
+            append!(
+                scens,
+                [
+                    Scenario{:jacobian,pl_op}(f, x; res1=jac),
+                    Scenario{:jacobian,pl_op}(f!, y, x; res1=jac),
+                ],
+            )
+        end
+    end
+    return scens
+end
+
+### Quadratic form
+
+struct SquareQuadraticForm{M<:AbstractMatrix}
+    A::M
+end
+
+function Base.show(io::IO, s::SquareQuadraticForm{M}) where {M}
+    return print(io, "SquareQuadraticForm{$M - $(size(s.A)) with $(mynnz(s.A)) nonzeros}")
+end
+
+function (s::SquareQuadraticForm)(x::AbstractArray)
+    v = abs2.(vec(x))
+    return dot(v, s.A, v)
+end
+
+function squarequadraticform_gradient(x::AbstractArray, A::AbstractMatrix)
+    g = similar(x)
+    for i in eachindex(g)
+        g[i] =
+            4 * A[i, i] * x[i]^3 +
+            2 * sum((A[i, j] + A[j, i]) * x[i] * x[j]^2 for j in eachindex(g) if j != i)
+    end
+    return g
+end
+
+function squarequadraticform_hessian(x::AbstractArray, A::AbstractMatrix)
+    H = similar(x, length(x), length(x))
+    for i in axes(H, 1), j in axes(H, 2)
+        if i == j
+            H[i, i] =
+                12 * A[i, i] * x[i]^2 +
+                2 * sum((A[i, j2] + A[j2, i]) * x[j2]^2 for j2 in axes(H, 2) if j2 != i)
+        else
+            H[i, j] = 4 * (A[i, j] + A[j, i]) * x[i] * x[j]
+        end
+    end
+    return H
+end
+
+function squarequadraticform_scenarios(x::AbstractVector, maxbands::Integer)
+    n = length(x)
+    scens = Scenario[]
+    for A in generate_banded_matrices(n, n, maxbands)
+        f = SquareQuadraticForm(A)
+        grad = squarequadraticform_gradient(x, A)
+        hess = sparse(squarequadraticform_hessian(x, A))
+        for pl_op in (:out, :in)
+            push!(scens, Scenario{:hessian,pl_op}(f, x; res1=grad, res2=hess))
+        end
     end
     return scens
 end
@@ -229,6 +336,8 @@ function sparse_scenarios(rng::AbstractRNG=default_rng(); include_constantified=
         sparse_mat_to_mat_scenarios(rand(rng, 2, 3)),
         sparse_vec_to_num_scenarios(rand(rng, 6)),
         sparse_mat_to_num_scenarios(rand(rng, 2, 3)),
+        squarelinearmap_scenarios(rand(rng, 100), 10),
+        squarequadraticform_scenarios(rand(rng, 100), 10),
     )
     include_constantified && append!(scens, constantify(scens))
     return scens
