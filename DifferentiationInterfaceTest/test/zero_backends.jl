@@ -2,7 +2,7 @@ using ADTypes
 using DifferentiationInterface
 using DifferentiationInterface: AutoZeroForward, AutoZeroReverse
 using DifferentiationInterfaceTest
-using DifferentiationInterfaceTest: allocating, allocfree_scenarios
+using DifferentiationInterfaceTest: allocfree_scenarios
 using Test
 
 LOGGING = get(ENV, "CI", "false") == "false"
