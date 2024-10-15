@@ -2,7 +2,7 @@ using ADTypes
 using DifferentiationInterface
 using DifferentiationInterface: AutoZeroForward, AutoZeroReverse
 using DifferentiationInterfaceTest
-using DifferentiationInterfaceTest: allocfree_scenarios
+using DifferentiationInterfaceTest: allocating, allocfree_scenarios
 using Test
 
 LOGGING = get(ENV, "CI", "false") == "false"
@@ -65,21 +65,28 @@ end
 
 ## Allocations
 
-data_allocfree = vcat(
-    benchmark_differentiation(
-        AutoZeroForward(),
-        allocfree_scenarios();
-        excluded=[:pullback, :gradient],
-        benchmark=:prepared,
-        logging=LOGGING,
-    ),
-    benchmark_differentiation(
-        AutoZeroReverse(),
-        allocfree_scenarios();
-        excluded=[:pushforward, :derivative],
-        benchmark=:prepared,
-        logging=LOGGING,
-    ),
+test_differentiation(
+    AutoZeroForward(),
+    allocfree_scenarios();
+    correctness=false,
+    allocations=:prepared,
+    excluded=[:pullback, :gradient, :jacobian],
+    logging=LOGGING,
 )
 
-@test all(iszero, data_allocfree[!, :allocs])
+test_differentiation(
+    AutoZeroReverse(),
+    allocfree_scenarios();
+    correctness=false,
+    allocations=:prepared,
+    excluded=[:pushforward, :derivative, :jacobian],
+    logging=LOGGING,
+)
+
+test_differentiation(
+    AutoZeroForward();
+    correctness=false,
+    allocations=:full,
+    skip_allocations=true,
+    logging=LOGGING,
+)

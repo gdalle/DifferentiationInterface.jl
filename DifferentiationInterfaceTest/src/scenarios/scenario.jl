@@ -95,6 +95,26 @@ function compatible(backend::AbstractADType, scen::Scenario)
     return place_compatible && secondorder_compatible && sparse_compatible
 end
 
+function allocating(scen::Scenario)
+    if function_place(scen) == :out
+        if !isa(scen.y, Number)
+            return true
+        elseif operator_place(scen) == :out
+            if operator(scen) in [:gradient, :hvp, :jacobian, :hessian]
+                return true
+            elseif operator(scen) in [:derivative, :second_derivative, :pushforward]
+                return !isa(scen.y, Number)
+            elseif operator(scen) == :pullback
+                return !isa(scen.x, Number)
+            end
+        else
+            return !isa(scen.y, Number)
+        end
+    else
+        return operator_place(scen) == :out
+    end
+end
+
 function group_by_operator(scenarios::AbstractVector{<:Scenario})
     return Dict(
         op => filter(s -> operator(s) == op, scenarios) for
