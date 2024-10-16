@@ -33,7 +33,7 @@ test_differentiation(second_order_backends; logging=LOGGING);
 test_differentiation(
     backends[1],
     vcat(component_scenarios(), gpu_scenarios());
-    excluded=vcat(SECOND_ORDER, :derivative),
+    excluded=SECOND_ORDER,
     logging=LOGGING,
 )
 
