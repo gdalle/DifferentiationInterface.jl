@@ -10,8 +10,7 @@ using StaticArrays: MArray, MMatrix, MVector, SArray, SMatrix, SVector
 mySArray(f::Function) = f
 mySArray(::DIT.NumToArr{A}) where {T,A<:AbstractVector{T}} = DIT.NumToArr(SVector{6,T})
 mySArray(::DIT.NumToArr{A}) where {T,A<:AbstractMatrix{T}} = DIT.NumToArr(SMatrix{2,3,T,6})
-mySArray(f::DIT.MultiplyByConstant) = f
-mySArray(f::DIT.WritableClosure) = f
+mySArray(f::DIT.FunctionModifier) = f
 
 mySArray(x::Number) = x
 myMArray(x::Number) = x

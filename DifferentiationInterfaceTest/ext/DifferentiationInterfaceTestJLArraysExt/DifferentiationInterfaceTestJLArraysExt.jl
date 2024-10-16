@@ -21,8 +21,7 @@ function (f::DIT.NumToArr{JLMatrix{T}})(x::Number) where {T}
     return sin.(x .* a)
 end
 
-myjl(f::DIT.MultiplyByConstant) = f
-myjl(f::DIT.WritableClosure) = f
+myjl(f::DIT.FunctionModifier) = f
 
 myjl(x::Number) = x
 myjl(x::AbstractArray) = jl(x)

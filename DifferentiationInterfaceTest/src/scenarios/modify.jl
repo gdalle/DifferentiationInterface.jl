@@ -1,3 +1,5 @@
+abstract type FunctionModifier end
+
 """
     zero(scen::Scenario)
 
@@ -56,7 +58,7 @@ function batchify(scen::Scenario{op,pl_op,pl_fun}) where {op,pl_op,pl_fun}
     end
 end
 
-struct WritableClosure{pl_fun,F,X,Y}
+struct WritableClosure{pl_fun,F,X,Y} <: FunctionModifier
     f::F
     x_buffer::Vector{X}
     y_buffer::Vector{Y}
@@ -97,7 +99,7 @@ function closurify(scen::Scenario)
     return change_function(scen, closure_f)
 end
 
-struct MultiplyByConstant{pl_fun,F}
+struct MultiplyByConstant{pl_fun,F} <: FunctionModifier
     f::F
 end
 
@@ -138,7 +140,7 @@ function constantify(scen::Scenario{op,pl_op,pl_fun}) where {op,pl_op,pl_fun}
     )
 end
 
-struct StoreInCache{pl_fun,F}
+struct StoreInCache{pl_fun,F} <: FunctionModifier
     f::F
 end
 
