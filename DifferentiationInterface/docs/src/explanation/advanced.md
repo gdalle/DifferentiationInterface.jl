@@ -10,22 +10,29 @@ However, the release v0.6 introduced the possibility of additional "context" arg
 Contexts can be useful if you have a function `y = f(x, a, b, c, ...)` or `f!(y, x, a, b, c, ...)` and you want derivatives of `y` with respect to `x` only.
 Another option would be creating a closure, but that is sometimes undesirable.
 
-!!! warning
-    This feature is still experimental, and will likely not be supported by all backends.
-    At the moment, it only works with certain backends, among which ForwardDiff, Zygote and Enzyme.
-
 ### Types of contexts
 
 Every context argument must be wrapped in a subtype of [`Context`](@ref) and come after the differentiated input `x`.
-Right now, there is only one kind of context, namely [`Constant`](@ref), but we might add more.
-Semantically, calling
+Right now, there are two kinds of context: [`Constant`](@ref) and [`Cache`](@ref).
+
+!!! warning
+    This feature is still experimental and will not be supported by all backends.
+    At the moment:
+    - `Constant` is supported by all backends except symbolic ones
+    - `Cache` is only supported by finite difference backends
+
+Semantically, both of these calls compute the partial gradient of `f(x, c)` with respect to `x`, but they consider `c` differently:
 
 ```julia
 gradient(f, backend, x, Constant(c))
+gradient(f, backend, x, Cache(c))
 ```
 
-computes the partial gradient of `f(x, c)` with respect to `x`, while keeping `c` constant.
-Importantly, one can prepare an operator with an arbitrary value `c'` of the constant (subject to the usual restrictions on preparation).
+In the first call, `c` is kept unchanged throughout the function evaluation.
+In the second call, `c` can be mutated with values computed during the function.
+
+Importantly, one can prepare an operator with an arbitrary value `c'` of the `Constant` (subject to the usual restrictions on preparation).
+The values in a provided `Cache` never matter anyway.
 
 ## Sparsity
 

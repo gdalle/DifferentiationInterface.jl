@@ -69,7 +69,15 @@ function Base.:(==)(
     eq_x = scen1.x == scen2.x
     eq_y = scen1.y == scen2.y
     eq_tang = scen1.tang == scen2.tang
-    eq_contexts = scen1.contexts == scen2.contexts
+    eq_contexts = all(
+        map(scen1.contexts, scen2.contexts) do c1, c2
+            if c1 isa Cache || c2 isa Cache
+                return true
+            else
+                return c1 == c2
+            end
+        end,
+    )
     eq_res1 = scen1.res1 == scen2.res1
     eq_res2 = scen1.res2 == scen2.res2
     return (eq_x && eq_y && eq_tang && eq_contexts && eq_res1 && eq_res2)

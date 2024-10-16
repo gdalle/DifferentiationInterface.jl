@@ -14,7 +14,7 @@ end
 
 test_differentiation(
     AutoFiniteDiff(),
-    default_scenarios(; include_constantified=true);
+    default_scenarios(; include_constantified=true, include_cachified=true);
     excluded=[:second_derivative, :hvp],
     logging=LOGGING,
 );

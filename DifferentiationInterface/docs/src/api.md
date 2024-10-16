@@ -13,6 +13,7 @@ DifferentiationInterface
 ```@docs
 Context
 Constant
+Cache
 ```
 
 ## First order
