@@ -191,10 +191,7 @@ end
 ### Without preparation
 
 function DI.gradient(
-    f::F,
-    backend::AutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}},
-    x,
-    contexts::Vararg{Context,C},
+    f::F, backend::AutoEnzyme{<:Union{ReverseMode,Nothing}}, x, contexts::Vararg{Context,C}
 ) where {F,C}
     f_and_df = get_f_and_df(f, backend)
     mode = reverse_noprimal(backend)
@@ -212,10 +209,7 @@ function DI.gradient(
 end
 
 function DI.value_and_gradient(
-    f::F,
-    backend::AutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}},
-    x,
-    contexts::Vararg{Context,C},
+    f::F, backend::AutoEnzyme{<:Union{ReverseMode,Nothing}}, x, contexts::Vararg{Context,C}
 ) where {F,C}
     f_and_df = get_f_and_df(f, backend)
     mode = reverse_withprimal(backend)
@@ -239,10 +233,7 @@ struct EnzymeGradientPrep{G} <: GradientPrep
 end
 
 function DI.prepare_gradient(
-    f::F,
-    ::AutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}},
-    x,
-    contexts::Vararg{Context,C},
+    f::F, ::AutoEnzyme{<:Union{ReverseMode,Nothing}}, x, contexts::Vararg{Context,C}
 ) where {F,C}
     grad_righttype = make_zero(x)
     return EnzymeGradientPrep(grad_righttype)
@@ -251,7 +242,7 @@ end
 function DI.gradient(
     f::F,
     ::EnzymeGradientPrep,
-    backend::AutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}},
+    backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
     contexts::Vararg{Context,C},
 ) where {F,C}
@@ -262,7 +253,7 @@ function DI.gradient!(
     f::F,
     grad,
     prep::EnzymeGradientPrep,
-    backend::AutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}},
+    backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
     contexts::Vararg{Context,C},
 ) where {F,C}
@@ -283,7 +274,7 @@ end
 function DI.value_and_gradient(
     f::F,
     ::EnzymeGradientPrep,
-    backend::AutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}},
+    backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
     contexts::Vararg{Context,C},
 ) where {F,C}
@@ -294,7 +285,7 @@ function DI.value_and_gradient!(
     f::F,
     grad,
     prep::EnzymeGradientPrep,
-    backend::AutoEnzyme{<:Union{ReverseMode,Nothing},<:Union{Nothing,Const}},
+    backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
     contexts::Vararg{Context,C},
 ) where {F,C}

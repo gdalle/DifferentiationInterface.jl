@@ -106,5 +106,5 @@ test_differentiation(
     [AutoEnzyme(; mode=Enzyme.Forward), AutoEnzyme(; mode=Enzyme.Reverse)],
     filtered_static_scenarios;
     excluded=SECOND_ORDER,
-    logging=true,
+    logging=LOGGING,
 )
