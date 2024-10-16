@@ -33,7 +33,7 @@ function DI.pushforward(
 )
     ty = map(tx) do dx
         v_vec = vcat(myvec(x), myvec(dx))
-        dy = prep.pushforward_exe(v_vec)
+        return dy = prep.pushforward_exe(v_vec)
     end
     return ty
 end

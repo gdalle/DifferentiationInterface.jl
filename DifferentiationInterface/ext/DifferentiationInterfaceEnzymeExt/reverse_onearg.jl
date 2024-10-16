@@ -36,7 +36,7 @@ function batch_seeded_autodiff_thunk(
         dinputs = only(reverse(f, args..., dresults_righttype, tape))
     else
         foreach(shadow_results, dresults) do d0, d
-            d0 .+= d  # use recursive_add here?
+            return d0 .+= d  # use recursive_add here?
         end
         dinputs = only(reverse(f, args..., tape))
     end

@@ -35,7 +35,7 @@ function DI.pushforward(
 )
     ty = map(tx) do dx
         v_vec = vcat(myvec(x), myvec(dx))
-        dy = prep.pf_exe(v_vec)
+        return dy = prep.pf_exe(v_vec)
     end
     return ty
 end
@@ -302,7 +302,7 @@ function DI.hvp(f, prep::SymbolicsOneArgHVPPrep, ::AutoSymbolics, x, tx::NTuple)
     return map(tx) do dx
         v_vec = vcat(vec(x), vec(dx))
         dg_vec = prep.hvp_exe(v_vec)
-        reshape(dg_vec, size(x))
+        return reshape(dg_vec, size(x))
     end
 end
 

@@ -18,7 +18,7 @@ function DI.pushforward(f, ::NoPushforwardPrep, ::AutoDiffractor, x, tx::NTuple)
         # code copied from Diffractor.jl
         z = ∂☆{1}()(ZeroBundle{1}(f), bundle(x, dx))
         dy = z[TaylorTangentIndex(1)]
-        dy
+        return dy
     end
     return ty
 end

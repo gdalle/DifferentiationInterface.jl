@@ -182,7 +182,7 @@ function _pullback_via_pushforward(
 ) where {F,C}
     dx = map(CartesianIndices(x)) do j
         t1 = pushforward(f, pushforward_prep, backend, x, (basis(backend, x, j),), contexts...)
-        dot(dy, only(t1))
+        return dot(dy, only(t1))
     end
     return dx
 end
@@ -270,7 +270,7 @@ function _pullback_via_pushforward(
         t1 = pushforward(
             f!, y, pushforward_prep, backend, x, (basis(backend, x, j),), contexts...
         )
-        dot(dy, only(t1))
+        return dot(dy, only(t1))
     end
     return dx
 end

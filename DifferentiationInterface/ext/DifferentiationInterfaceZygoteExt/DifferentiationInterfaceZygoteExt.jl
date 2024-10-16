@@ -45,7 +45,7 @@ function DI.value_and_pullback(
 ) where {C}
     y, pb = pullback(f, x, map(unwrap, contexts)...)
     tx = map(ty) do dy
-        first(pb(dy))
+        return first(pb(dy))
     end
     return y, tx
 end
@@ -60,7 +60,7 @@ function DI.value_and_pullback(
 ) where {C}
     (; y, pb) = prep
     tx = map(ty) do dy
-        first(pb(dy))
+        return first(pb(dy))
     end
     return copy(y), tx
 end
@@ -75,7 +75,7 @@ function DI.pullback(
 ) where {C}
     (; pb) = prep
     tx = map(ty) do dy
-        first(pb(dy))
+        return first(pb(dy))
     end
     return tx
 end

@@ -16,7 +16,9 @@ function DI.pushforward(
 ) where {C}
     step(t::Number, dx) = f(x .+ t .* dx, map(unwrap, contexts)...)
     ty = map(tx) do dx
-        finite_difference_derivative(Base.Fix2(step, dx), zero(eltype(x)), fdtype(backend))
+        return finite_difference_derivative(
+            Base.Fix2(step, dx), zero(eltype(x)), fdtype(backend)
+        )
     end
     return ty
 end
@@ -32,7 +34,7 @@ function DI.value_and_pushforward(
     step(t::Number, dx) = f(x .+ t .* dx, map(unwrap, contexts)...)
     y = f(x, map(unwrap, contexts)...)
     ty = map(tx) do dx
-        finite_difference_derivative(
+        return finite_difference_derivative(
             Base.Fix2(step, dx), zero(eltype(x)), fdtype(backend), eltype(y), y
         )
     end

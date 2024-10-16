@@ -56,8 +56,8 @@ end
 
 function diffsquarecube_matvec!(y::AbstractVector, x::AbstractMatrix)
     m, n = size(x)
-    diffsquare!(view(y, 1:(m * n - 1)), vec(x))
-    diffcube!(view(y, (m * n):(2(m * n) - 2)), vec(x))
+    diffsquare!(view(y, 1:(m*n-1)), vec(x))
+    diffcube!(view(y, (m*n):(2(m*n)-2)), vec(x))
     return nothing
 end
 

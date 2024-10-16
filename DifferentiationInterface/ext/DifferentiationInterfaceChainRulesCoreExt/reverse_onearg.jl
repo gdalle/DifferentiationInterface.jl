@@ -35,7 +35,7 @@ function DI.value_and_pullback(
     rc = ruleconfig(backend)
     y, pb = rrule_via_ad(rc, f, x, map(unwrap, contexts)...)
     tx = map(ty) do dy
-        pb(dy)[2]
+        return pb(dy)[2]
     end
     return y, tx
 end
@@ -50,7 +50,7 @@ function DI.value_and_pullback(
 ) where {C}
     (; y, pb) = prep
     tx = map(ty) do dy
-        pb(dy)[2]
+        return pb(dy)[2]
     end
     return copy(y), tx
 end
@@ -65,7 +65,7 @@ function DI.pullback(
 ) where {C}
     (; pb) = prep
     tx = map(ty) do dy
-        pb(dy)[2]
+        return pb(dy)[2]
     end
     return tx
 end

@@ -193,7 +193,7 @@ function hvp(
     (; outer_gradient_prep) = prep
     rewrap = Rewrap(contexts...)
     tg = map(tx) do dx
-        gradient(
+        return gradient(
             shuffled_single_pushforward,
             outer_gradient_prep,
             outer(backend),

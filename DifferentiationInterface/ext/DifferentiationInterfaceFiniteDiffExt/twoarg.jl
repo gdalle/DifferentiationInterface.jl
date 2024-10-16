@@ -21,7 +21,7 @@ function DI.value_and_pushforward(
         return new_y
     end
     ty = map(tx) do dx
-        finite_difference_derivative(
+        return finite_difference_derivative(
             Base.Fix2(step, dx), zero(eltype(x)), fdtype(backend), eltype(y), y
         )
     end

@@ -59,7 +59,7 @@ for op in ALL_OPS
                     xrand,
                     contextsrand...,
                 )
-                [(), (prep,), (prepprep,)]
+                return [(), (prep,), (prepprep,)]
             end
             for (preptup_val, preptup_noval) in zip(preptup_cands_val, preptup_cands_noval)
                 y_out1_val, res1_out1_val = $val_and_op(
@@ -112,7 +112,7 @@ for op in ALL_OPS
                     xrand,
                     contextsrand...,
                 )
-                [(), (prep,), (prepprep,)]
+                return [(), (prep,), (prepprep,)]
             end
             for (preptup_val, preptup_noval) in zip(preptup_cands_val, preptup_cands_noval)
                 res1_in1_val = mysimilar(res1)
@@ -180,7 +180,7 @@ for op in ALL_OPS
                     xrand,
                     contextsrand...,
                 )
-                [(), (prep,), (prepprep,)]
+                return [(), (prep,), (prepprep,)]
             end
             for (preptup_val, preptup_noval) in zip(preptup_cands_val, preptup_cands_noval)
                 y_in1_val = mysimilar(y)
@@ -240,7 +240,7 @@ for op in ALL_OPS
                     xrand,
                     contextsrand...,
                 )
-                [(), (prep,), (prepprep,)]
+                return [(), (prep,), (prepprep,)]
             end
             for (preptup_val, preptup_noval) in zip(preptup_cands_val, preptup_cands_noval)
                 y_in1_val, res1_in1_val = mysimilar(y), mysimilar(res1)
@@ -308,7 +308,7 @@ for op in ALL_OPS
                     xrand,
                     contextsrand...,
                 )
-                [(), (prep,), (prepprep,)]
+                return [(), (prep,), (prepprep,)]
             end
             for (preptup_val, preptup_noval) in zip(preptup_cands_val, preptup_cands_noval)
                 y_out1_val, res1_out1_val, res2_out1_val = $val_and_op(
@@ -363,7 +363,7 @@ for op in ALL_OPS
                     xrand,
                     contextsrand...,
                 )
-                [(), (prep,), (prepprep,)]
+                return [(), (prep,), (prepprep,)]
             end
             for (preptup_val, preptup_noval) in zip(preptup_cands_val, preptup_cands_noval)
                 res1_in1_val, res2_in1_val = mysimilar(res1), mysimilar(res2)
@@ -435,7 +435,7 @@ for op in ALL_OPS
                     contextsrand...,
                 )
                 prep_same = $prep_op_same(f, ba, x, tangrand, contexts...)
-                [(), (prep,), (prepprep,), (prep_same,)]
+                return [(), (prep,), (prepprep,), (prep_same,)]
             end
             for (preptup_val, preptup_noval) in zip(preptup_cands_val, preptup_cands_noval)
                 y_out1_val, res1_out1_val = $val_and_op(
@@ -484,7 +484,7 @@ for op in ALL_OPS
                     contextsrand...,
                 )
                 prep_same = $prep_op_same(f, ba, x, tangrand, contexts...)
-                [(), (prep,), (prepprep,), (prep_same,)]
+                return [(), (prep,), (prepprep,), (prep_same,)]
             end
             for (preptup_val, preptup_noval) in zip(preptup_cands_val, preptup_cands_noval)
                 res1_in1_val = mysimilar(res1)
@@ -546,7 +546,7 @@ for op in ALL_OPS
                     contextsrand...,
                 )
                 prep_same = $prep_op_same(f, copy(yrand), ba, x, tangrand, contexts...)
-                [(), (prep,), (prepprep,), (prep_same,)]
+                return [(), (prep,), (prepprep,), (prep_same,)]
             end
             for (preptup_val, preptup_noval) in zip(preptup_cands_val, preptup_cands_noval)
                 y_in1_val = mysimilar(y)
@@ -606,7 +606,7 @@ for op in ALL_OPS
                     contextsrand...,
                 )
                 prep_same = $prep_op_same(f, copy(yrand), ba, x, tangrand, contexts...)
-                [(), (prep,), (prepprep,), (prep_same,)]
+                return [(), (prep,), (prepprep,), (prep_same,)]
             end
             for (preptup_val, preptup_noval) in zip(preptup_cands_val, preptup_cands_noval)
                 y_in1_val, res1_in1_val = mysimilar(y), mysimilar(res1)
