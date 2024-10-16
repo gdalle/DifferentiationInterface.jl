@@ -90,6 +90,7 @@ Return a new `Scenario` identical to `scen` except for the function `f` which is
 """
 function closurify(scen::Scenario)
     (; f, x, y) = scen
+    @assert isempty(scen.contexts)
     x_buffer = [zero(x)]
     y_buffer = [zero(y)]
     closure_f = WritableClosure{function_place(scen)}(f, x_buffer, y_buffer)
@@ -123,6 +124,7 @@ The output and result fields are updated accordingly.
 """
 function constantify(scen::Scenario{op,pl_op,pl_fun}) where {op,pl_op,pl_fun}
     (; f,) = scen
+    @assert isempty(scen.contexts)
     multiply_f = MultiplyByConstant{pl_fun}(f)
     a = 3.0
     return Scenario{op,pl_op,pl_fun}(
@@ -136,11 +138,63 @@ function constantify(scen::Scenario{op,pl_op,pl_fun}) where {op,pl_op,pl_fun}
     )
 end
 
+struct StoreInCache{pl_fun,F}
+    f::F
+end
+
+function StoreInCache{pl_fun}(f::F) where {pl_fun,F}
+    return StoreInCache{pl_fun,F}(f)
+end
+
+Base.show(io::IO, f::StoreInCache) = print(io, "StoreInCache($(f.f))")
+
+function (sc::StoreInCache{:out})(x, y_cache)
+    y = sc.f(x)
+    if y isa Number
+        y_cache[1] = y
+        return y_cache[1]
+    else
+        copyto!(y_cache, y)
+        return copy(y_cache)
+    end
+end
+
+function (sc::StoreInCache{:in})(y, x, y_cache)
+    sc.f(y_cache, x)
+    copyto!(y, y_cache)
+    return nothing
+end
+
+"""
+    cachify(scen::Scenario)
+
+Return a new `Scenario` identical to `scen` except for the function `f`, which is made to accept an additional cache argument `a` to store the result before it is returned.
+"""
+function cachify(scen::Scenario{op,pl_op,pl_fun}) where {op,pl_op,pl_fun}
+    (; f,) = scen
+    @assert isempty(scen.contexts)
+    cache_f = StoreInCache{pl_fun}(f)
+    y_cache = if scen.y isa Number
+        [myzero(scen.y)]
+    else
+        mysimilar(scen.y)
+    end
+    return Scenario{op,pl_op,pl_fun}(
+        cache_f;
+        x=scen.x,
+        y=scen.y,
+        tang=scen.tang,
+        contexts=(Cache(y_cache),),
+        res1=scen.res1,
+        res2=scen.res2,
+    )
+end
+
 function batchify(scens::AbstractVector{<:Scenario})
     batchifiable_scens = filter(s -> operator(s) in (:pushforward, :pullback, :hvp), scens)
     return batchify.(batchifiable_scens)
 end
 
 closurify(scens::AbstractVector{<:Scenario}) = closurify.(scens)
-
 constantify(scens::AbstractVector{<:Scenario}) = constantify.(scens)
+cachify(scens::AbstractVector{<:Scenario}) = cachify.(scens)
