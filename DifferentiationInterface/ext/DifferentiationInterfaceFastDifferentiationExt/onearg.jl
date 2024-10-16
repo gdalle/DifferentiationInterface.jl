@@ -402,7 +402,7 @@ struct FastDifferentiationHVPPrep{E2,E2!,E1} <: HVPPrep
     gradient_prep::E1
 end
 
-function DI.prepare_hvp(f, ::AutoFastDifferentiation, x, tx::NTuple)
+function DI.prepare_hvp(f, backend::AutoFastDifferentiation, x, tx::NTuple)
     x_var = make_variables(:x, size(x)...)
     y_var = f(x_var)
 
@@ -450,7 +450,7 @@ function DI.gradient_and_hvp(
     return grad, tg
 end
 
-function DI.hvp!(
+function DI.gradient_and_hvp!(
     f,
     grad,
     tg::NTuple,
