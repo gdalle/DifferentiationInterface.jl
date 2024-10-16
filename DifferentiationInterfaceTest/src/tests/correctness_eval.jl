@@ -1,13 +1,4 @@
-for op in [
-    :derivative,
-    :gradient,
-    :hessian,
-    :hvp,
-    :jacobian,
-    :pullback,
-    :pushforward,
-    :second_derivative,
-]
+for op in ALL_OPS
     op! = Symbol(op, "!")
     val_prefix = if op == :second_derivative
         "value_derivative_and_"
@@ -53,8 +44,9 @@ for op in [
             atol::Real,
             rtol::Real,
             scenario_intact::Bool,
+            sparsity::Bool,
         )
-            @compat (; f, x, y, res1, contexts) = new_scen = deepcopy(scen)
+            (; f, x, y, res1, contexts) = new_scen = deepcopy(scen)
             xrand = myrandom(x)
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
@@ -87,6 +79,12 @@ for op in [
                     @test res1_out1_noval ≈ scen.res1
                     @test res1_out2_noval ≈ scen.res1
                 end
+                if sparsity && $op == jacobian
+                    @test mynnz(res1_out1_val) == mynnz(scen.res1)
+                    @test mynnz(res1_out2_val) == mynnz(scen.res1)
+                    @test mynnz(res1_out1_noval) == mynnz(scen.res1)
+                    @test mynnz(res1_out2_noval) == mynnz(scen.res1)
+                end
             end
             scenario_intact && @test new_scen == scen
             return nothing
@@ -99,8 +97,9 @@ for op in [
             atol::Real,
             rtol::Real,
             scenario_intact::Bool,
+            sparsity::Bool,
         )
-            @compat (; f, x, y, res1, contexts) = new_scen = deepcopy(scen)
+            (; f, x, y, res1, contexts) = new_scen = deepcopy(scen)
             xrand = myrandom(x)
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
@@ -145,6 +144,12 @@ for op in [
                     @test res1_out1_noval ≈ scen.res1
                     @test res1_out2_noval ≈ scen.res1
                 end
+                if sparsity && $op == jacobian
+                    @test mynnz(res1_out1_val) == mynnz(scen.res1)
+                    @test mynnz(res1_out2_val) == mynnz(scen.res1)
+                    @test mynnz(res1_out1_noval) == mynnz(scen.res1)
+                    @test mynnz(res1_out2_noval) == mynnz(scen.res1)
+                end
             end
             scenario_intact && @test new_scen == scen
             return nothing
@@ -159,8 +164,9 @@ for op in [
             atol::Real,
             rtol::Real,
             scenario_intact::Bool,
+            sparsity::Bool,
         )
-            @compat (; f, x, y, res1, contexts) = new_scen = deepcopy(scen)
+            (; f, x, y, res1, contexts) = new_scen = deepcopy(scen)
             xrand, yrand = myrandom(x), myrandom(y)
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
@@ -200,6 +206,12 @@ for op in [
                     @test res1_out1_noval ≈ scen.res1
                     @test res1_out2_noval ≈ scen.res1
                 end
+                if sparsity && $op == jacobian
+                    @test mynnz(res1_out1_val) == mynnz(scen.res1)
+                    @test mynnz(res1_out2_val) == mynnz(scen.res1)
+                    @test mynnz(res1_out1_noval) == mynnz(scen.res1)
+                    @test mynnz(res1_out2_noval) == mynnz(scen.res1)
+                end
             end
             scenario_intact && @test new_scen == scen
             return nothing
@@ -212,8 +224,9 @@ for op in [
             atol::Real,
             rtol::Real,
             scenario_intact::Bool,
+            sparsity::Bool,
         )
-            @compat (; f, x, y, res1, contexts) = new_scen = deepcopy(scen)
+            (; f, x, y, res1, contexts) = new_scen = deepcopy(scen)
             xrand, yrand = myrandom(x), myrandom(y)
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
@@ -261,6 +274,12 @@ for op in [
                     @test res1_out1_noval ≈ scen.res1
                     @test res1_out2_noval ≈ scen.res1
                 end
+                if sparsity && $op == jacobian
+                    @test mynnz(res1_out1_val) == mynnz(scen.res1)
+                    @test mynnz(res1_out2_val) == mynnz(scen.res1)
+                    @test mynnz(res1_out1_noval) == mynnz(scen.res1)
+                    @test mynnz(res1_out2_noval) == mynnz(scen.res1)
+                end
             end
             scenario_intact && @test new_scen == scen
             return nothing
@@ -274,8 +293,9 @@ for op in [
             atol::Real,
             rtol::Real,
             scenario_intact::Bool,
+            sparsity::Bool,
         )
-            @compat (; f, x, y, res1, res2, contexts) = new_scen = deepcopy(scen)
+            (; f, x, y, res1, res2, contexts) = new_scen = deepcopy(scen)
             xrand = myrandom(x)
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
@@ -310,6 +330,12 @@ for op in [
                     @test res2_out1_noval ≈ scen.res2
                     @test res2_out2_noval ≈ scen.res2
                 end
+                if sparsity && $op == hessian
+                    @test mynnz(res2_out1_val) == mynnz(scen.res2)
+                    @test mynnz(res2_out2_val) == mynnz(scen.res2)
+                    @test mynnz(res2_out1_noval) == mynnz(scen.res2)
+                    @test mynnz(res2_out2_noval) == mynnz(scen.res2)
+                end
             end
             scenario_intact && @test new_scen == scen
             return nothing
@@ -322,8 +348,9 @@ for op in [
             atol::Real,
             rtol::Real,
             scenario_intact::Bool,
+            sparsity::Bool,
         )
-            @compat (; f, x, y, res1, res2, contexts) = new_scen = deepcopy(scen)
+            (; f, x, y, res1, res2, contexts) = new_scen = deepcopy(scen)
             xrand = myrandom(x)
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
@@ -372,6 +399,12 @@ for op in [
                     @test res2_out1_noval ≈ scen.res2
                     @test res2_out2_noval ≈ scen.res2
                 end
+                if sparsity && $op == hessian
+                    @test mynnz(res2_out1_val) == mynnz(scen.res2)
+                    @test mynnz(res2_out2_val) == mynnz(scen.res2)
+                    @test mynnz(res2_out1_noval) == mynnz(scen.res2)
+                    @test mynnz(res2_out2_noval) == mynnz(scen.res2)
+                end
             end
             scenario_intact && @test new_scen == scen
             return nothing
@@ -385,8 +418,9 @@ for op in [
             atol::Real,
             rtol::Real,
             scenario_intact::Bool,
+            sparsity::Bool,
         )
-            @compat (; f, x, y, tang, res1, contexts) = new_scen = deepcopy(scen)
+            (; f, x, y, tang, res1, contexts) = new_scen = deepcopy(scen)
             xrand, tangrand = myrandom(x), myrandom(tang)
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
@@ -433,8 +467,9 @@ for op in [
             atol::Real,
             rtol::Real,
             scenario_intact::Bool,
+            sparsity::Bool,
         )
-            @compat (; f, x, y, tang, res1, contexts) = new_scen = deepcopy(scen)
+            (; f, x, y, tang, res1, contexts) = new_scen = deepcopy(scen)
             xrand, tangrand = myrandom(x), myrandom(tang)
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
@@ -493,8 +528,9 @@ for op in [
             atol::Real,
             rtol::Real,
             scenario_intact::Bool,
+            sparsity::Bool,
         )
-            @compat (; f, x, y, tang, res1, contexts) = new_scen = deepcopy(scen)
+            (; f, x, y, tang, res1, contexts) = new_scen = deepcopy(scen)
             xrand, yrand, tangrand = myrandom(x), myrandom(y), myrandom(tang)
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
@@ -552,8 +588,9 @@ for op in [
             atol::Real,
             rtol::Real,
             scenario_intact::Bool,
+            sparsity::Bool,
         )
-            @compat (; f, x, y, tang, res1, contexts) = new_scen = deepcopy(scen)
+            (; f, x, y, tang, res1, contexts) = new_scen = deepcopy(scen)
             xrand, yrand, tangrand = myrandom(x), myrandom(y), myrandom(tang)
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
@@ -630,8 +667,9 @@ for op in [
             atol::Real,
             rtol::Real,
             scenario_intact::Bool,
+            sparsity::Bool,
         )
-            @compat (; f, x, y, tang, res2, contexts) = new_scen = deepcopy(scen)
+            (; f, x, y, tang, res2, contexts) = new_scen = deepcopy(scen)
             xrand, tangrand = myrandom(x), myrandom(tang)
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
@@ -666,8 +704,9 @@ for op in [
             atol::Real,
             rtol::Real,
             scenario_intact::Bool,
+            sparsity::Bool,
         )
-            @compat (; f, x, y, tang, res2, contexts) = new_scen = deepcopy(scen)
+            (; f, x, y, tang, res2, contexts) = new_scen = deepcopy(scen)
             xrand, tangrand = myrandom(x), myrandom(tang)
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)

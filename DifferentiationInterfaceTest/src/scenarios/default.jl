@@ -71,12 +71,14 @@ end
 
 ## Number to array
 
-multiplicator(::Type{A}) where {A<:AbstractVector} = convert(A, float.(1:6))
-multiplicator(::Type{A}) where {A<:AbstractMatrix} = convert(A, reshape(float.(1:6), 2, 3))
+multiplicator(::Type{A}) where {A<:AbstractVector} = A(1:6)
+multiplicator(::Type{A}) where {A<:AbstractMatrix} = A(reshape(1:6, 2, 3))
 
 struct NumToArr{A} end
 NumToArr(::Type{A}) where {A} = NumToArr{A}()
 Base.eltype(::NumToArr{A}) where {A} = eltype(A)
+
+Base.show(io::IO, ::NumToArr{A}) where {A} = print(io, "num_to_arr{$A}")
 
 function (f::NumToArr{A})(x::Number) where {A}
     a = multiplicator(A)

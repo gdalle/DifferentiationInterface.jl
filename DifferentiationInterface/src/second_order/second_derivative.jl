@@ -48,8 +48,7 @@ function value_derivative_and_second_derivative! end
 
 ## Preparation
 
-struct ClosureSecondDerivativePrep{ID,E<:DerivativePrep} <: SecondDerivativePrep
-    inner_derivative::ID
+struct DerivativeSecondDerivativePrep{E<:DerivativePrep} <: SecondDerivativePrep
     outer_derivative_prep::E
 end
 
@@ -57,42 +56,43 @@ function prepare_second_derivative(
     f::F, backend::AbstractADType, x, contexts::Vararg{Context,C}
 ) where {F,C}
     rewrap = Rewrap(contexts...)
-    function inner_derivative(_x, unannotated_contexts...)
-        annotated_contexts = rewrap(unannotated_contexts...)
-        return derivative(f, nested(inner(backend)), _x, annotated_contexts...)
-    end
+    new_contexts = (Constant(f), Constant(inner(backend)), Constant(rewrap), contexts...)
     outer_derivative_prep = prepare_derivative(
-        inner_derivative, outer(backend), x, contexts...
+        shuffled_derivative, outer(backend), x, new_contexts...
     )
-    return ClosureSecondDerivativePrep(inner_derivative, outer_derivative_prep)
+    return DerivativeSecondDerivativePrep(outer_derivative_prep)
 end
 
 ## One argument
 
 function second_derivative(
     f::F,
-    prep::ClosureSecondDerivativePrep,
+    prep::DerivativeSecondDerivativePrep,
     backend::AbstractADType,
     x,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    @compat (; inner_derivative, outer_derivative_prep) = prep
+    (; outer_derivative_prep) = prep
+    rewrap = Rewrap(contexts...)
+    new_contexts = (Constant(f), Constant(inner(backend)), Constant(rewrap), contexts...)
     return derivative(
-        inner_derivative, outer_derivative_prep, outer(backend), x, contexts...
+        shuffled_derivative, outer_derivative_prep, outer(backend), x, new_contexts...
     )
 end
 
 function value_derivative_and_second_derivative(
     f::F,
-    prep::ClosureSecondDerivativePrep,
+    prep::DerivativeSecondDerivativePrep,
     backend::AbstractADType,
     x,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    @compat (; inner_derivative, outer_derivative_prep) = prep
+    (; outer_derivative_prep) = prep
+    rewrap = Rewrap(contexts...)
+    new_contexts = (Constant(f), Constant(inner(backend)), Constant(rewrap), contexts...)
     y = f(x, map(unwrap, contexts)...)
     der, der2 = value_and_derivative(
-        inner_derivative, outer_derivative_prep, outer(backend), x, contexts...
+        shuffled_derivative, outer_derivative_prep, outer(backend), x, new_contexts...
     )
     return y, der, der2
 end
@@ -105,9 +105,11 @@ function second_derivative!(
     x,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    @compat (; inner_derivative, outer_derivative_prep) = prep
+    (; outer_derivative_prep) = prep
+    rewrap = Rewrap(contexts...)
+    new_contexts = (Constant(f), Constant(inner(backend)), Constant(rewrap), contexts...)
     return derivative!(
-        inner_derivative, der2, outer_derivative_prep, outer(backend), x, contexts...
+        shuffled_derivative, der2, outer_derivative_prep, outer(backend), x, new_contexts...
     )
 end
 
@@ -120,10 +122,12 @@ function value_derivative_and_second_derivative!(
     x,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    @compat (; inner_derivative, outer_derivative_prep) = prep
+    (; outer_derivative_prep) = prep
+    rewrap = Rewrap(contexts...)
+    new_contexts = (Constant(f), Constant(inner(backend)), Constant(rewrap), contexts...)
     y = f(x, map(unwrap, contexts)...)
     new_der, _ = value_and_derivative!(
-        inner_derivative, der2, outer_derivative_prep, outer(backend), x, contexts...
+        shuffled_derivative, der2, outer_derivative_prep, outer(backend), x, new_contexts...
     )
     return y, copyto!(der, new_der), der2
 end

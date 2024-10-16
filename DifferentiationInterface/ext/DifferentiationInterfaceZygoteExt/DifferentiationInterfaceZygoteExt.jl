@@ -16,7 +16,6 @@ using DifferentiationInterface:
 using ForwardDiff: ForwardDiff
 using Zygote:
     ZygoteRuleConfig, gradient, hessian, jacobian, pullback, withgradient, withjacobian
-using Compat
 
 DI.check_available(::AutoZygote) = true
 DI.inplace_support(::AutoZygote) = DI.InPlaceNotSupported()
@@ -59,7 +58,7 @@ function DI.value_and_pullback(
     ty::NTuple,
     contexts::Vararg{Constant,C},
 ) where {C}
-    @compat (; y, pb) = prep
+    (; y, pb) = prep
     tx = map(ty) do dy
         first(pb(dy))
     end
@@ -74,7 +73,7 @@ function DI.pullback(
     ty::NTuple,
     contexts::Vararg{Constant,C},
 ) where {C}
-    @compat (; pb) = prep
+    (; pb) = prep
     tx = map(ty) do dy
         first(pb(dy))
     end
@@ -90,7 +89,7 @@ end
 function DI.value_and_gradient(
     f, ::NoGradientPrep, ::AutoZygote, x, contexts::Vararg{Constant,C}
 ) where {C}
-    @compat (; val, grad) = withgradient(f, x, map(unwrap, contexts)...)
+    (; val, grad) = withgradient(f, x, map(unwrap, contexts)...)
     return val, first(grad)
 end
 

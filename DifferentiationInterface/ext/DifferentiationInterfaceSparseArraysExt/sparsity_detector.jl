@@ -1,19 +1,19 @@
 ## Direct
 
 function ADTypes.jacobian_sparsity(f, x, detector::DenseSparsityDetector{:direct})
-    @compat (; backend, atol) = detector
+    (; backend, atol) = detector
     J = jacobian(f, backend, x)
     return sparse(abs.(J) .> atol)
 end
 
 function ADTypes.jacobian_sparsity(f!, y, x, detector::DenseSparsityDetector{:direct})
-    @compat (; backend, atol) = detector
+    (; backend, atol) = detector
     J = jacobian(f!, y, backend, x)
     return sparse(abs.(J) .> atol)
 end
 
 function ADTypes.hessian_sparsity(f, x, detector::DenseSparsityDetector{:direct})
-    @compat (; backend, atol) = detector
+    (; backend, atol) = detector
     H = hessian(f, backend, x)
     return sparse(abs.(H) .> atol)
 end
@@ -21,7 +21,7 @@ end
 ## Iterative
 
 function ADTypes.jacobian_sparsity(f, x, detector::DenseSparsityDetector{:iterative})
-    @compat (; backend, atol) = detector
+    (; backend, atol) = detector
     y = f(x)
     n, m = length(x), length(y)
     I, J = Int[], Int[]
@@ -58,7 +58,7 @@ function ADTypes.jacobian_sparsity(f, x, detector::DenseSparsityDetector{:iterat
 end
 
 function ADTypes.jacobian_sparsity(f!, y, x, detector::DenseSparsityDetector{:iterative})
-    @compat (; backend, atol) = detector
+    (; backend, atol) = detector
     n, m = length(x), length(y)
     I, J = Int[], Int[]
     if pushforward_performance(backend) isa PushforwardFast
@@ -94,7 +94,7 @@ function ADTypes.jacobian_sparsity(f!, y, x, detector::DenseSparsityDetector{:it
 end
 
 function ADTypes.hessian_sparsity(f, x, detector::DenseSparsityDetector{:iterative})
-    @compat (; backend, atol) = detector
+    (; backend, atol) = detector
     n = length(x)
     I, J = Int[], Int[]
     p = similar(x)

@@ -4,7 +4,7 @@ end
 
 (rz::ReturnZero)(i) = zero(rz.template)
 
-_zero!(x::AbstractArray) = x .= zero(eltype(x))
+_zero!(x::AbstractArray{T}) where {T} = fill!(x, zero(T))
 
 ## Forward
 

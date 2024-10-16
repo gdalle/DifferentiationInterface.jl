@@ -7,13 +7,16 @@ using Test
 
 LOGGING = get(ENV, "CI", "false") == "false"
 
-for backend in [AutoPolyesterForwardDiff(; chunksize=1)]
+backends = [
+    AutoPolyesterForwardDiff(; tag=:hello),  #
+    AutoPolyesterForwardDiff(; chunksize=2),
+]
+
+for backend in backends
     @test check_available(backend)
     @test check_inplace(backend)
 end
 
 test_differentiation(
-    AutoPolyesterForwardDiff(; chunksize=1),
-    default_scenarios(; include_constantified=true);
-    logging=LOGGING,
+    backends, default_scenarios(; include_constantified=true); logging=LOGGING
 );

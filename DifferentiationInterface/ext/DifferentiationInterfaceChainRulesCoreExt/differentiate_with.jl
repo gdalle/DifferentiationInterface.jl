@@ -1,5 +1,5 @@
 function ChainRulesCore.rrule(dw::DifferentiateWith, x)
-    @compat (; f, backend) = dw
+    (; f, backend) = dw
     y = f(x)
     prep_same = DI.prepare_pullback_same_point(f, backend, x, (y,))
     function pullbackfunc(dy)

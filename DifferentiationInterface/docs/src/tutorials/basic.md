@@ -104,12 +104,12 @@ Beware that the `prep` object is nearly always mutated by differentiation operat
 ## Switching backends
 
 The whole point of DifferentiationInterface.jl is that you can easily experiment with different AD solutions.
-Typically, for gradients, reverse mode AD might be a better fit, so let's try the state-of-the-art [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl)!
+Typically, for gradients, reverse mode AD might be a better fit, so let's try [Zygote.jl](https://github.com/FluxML/Zygote.jl)!
 
 ```@example tuto_basic
-import Enzyme
+import Zygote
 
-backend2 = AutoEnzyme()
+backend2 = AutoZygote()
 ```
 
 Once the backend is created, things run smoothly with exactly the same syntax as before:

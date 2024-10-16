@@ -1,14 +1,3 @@
-const ALL_OPS = (
-    :pushforward,
-    :pullback,
-    :derivative,
-    :gradient,
-    :jacobian,
-    :hessian,
-    :hvp,
-    :second_derivative,
-)
-
 """
     Scenario{op,pl_op,pl_fun}
 
@@ -99,7 +88,11 @@ function order(scen::Scenario)
 end
 
 function compatible(backend::AbstractADType, scen::Scenario)
-    return function_place(scen) == :out || Bool(inplace_support(backend))
+    place_compatible = function_place(scen) == :out || Bool(inplace_support(backend))
+    sparse_compatible = operator(scen) in (:jacobian, :hessian) || !isa(backend, AutoSparse)
+    secondorder_compatible =
+        order(scen) == 2 || !isa(backend, Union{SecondOrder,AutoSparse{<:SecondOrder}})
+    return place_compatible && secondorder_compatible && sparse_compatible
 end
 
 function group_by_operator(scenarios::AbstractVector{<:Scenario})
@@ -122,10 +115,16 @@ function Base.show(
     return nothing
 end
 
-adapt_batchsize(backend::AbstractADType, ::Scenario) = backend
-
-function adapt_batchsize(
-    backend::Union{ADTypes.AutoForwardDiff,ADTypes.AutoPolyesterForwardDiff}, scen::Scenario
-)
-    return DI.threshold_batchsize(backend, length(scen.x))
+function adapt_batchsize(backend::AbstractADType, scen::Scenario)
+    if operator(scen) == :jacobian
+        if ADTypes.mode(backend) isa Union{ADTypes.ForwardMode,ADTypes.ForwardOrReverseMode}
+            return DI.threshold_batchsize(backend, length(scen.x))
+        else
+            return DI.threshold_batchsize(backend, length(scen.y))
+        end
+    elseif operator(scen) == :hessian
+        return DI.threshold_batchsize(backend, length(scen.x))
+    else
+        return backend
+    end
 end

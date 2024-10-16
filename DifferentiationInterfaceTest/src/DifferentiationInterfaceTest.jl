@@ -13,19 +13,18 @@ using ADTypes
 using ADTypes:
     AbstractADType,
     AbstractMode,
+    AutoSparse,
     ForwardMode,
     ForwardOrReverseMode,
     ReverseMode,
     SymbolicMode,
     mode
+using AllocCheck: check_allocs
 using Chairmarks: @be, Benchmark, Sample
-using Compat
 using DataFrames: DataFrame
 using DifferentiationInterface
 using DifferentiationInterface:
     inner,
-    inner,
-    dense_ad,
     mode,
     outer,
     inplace_support,
@@ -49,18 +48,33 @@ using DifferentiationInterface:
     PullbackPrep,
     PushforwardPrep,
     SecondDerivativePrep,
+    SecondOrder,
     Rewrap
 import DifferentiationInterface as DI
 using DocStringExtensions
-using Functors: fmap
-using JET: JET
+using JET: @test_opt
 using LinearAlgebra: Adjoint, Diagonal, Transpose, dot, parent
-using PackageExtensionCompat: @require_extensions
 using ProgressMeter: ProgressUnknown, next!
 using Random: AbstractRNG, default_rng, rand!
-using SparseArrays: SparseArrays, SparseMatrixCSC, nnz, spdiagm
-import SparseMatrixColorings as SMC
+using SparseArrays:
+    SparseArrays, AbstractSparseMatrix, SparseMatrixCSC, nnz, sparse, spdiagm
 using Test: @testset, @test
+
+"""
+    FIRST_ORDER = [:pushforward, :pullback, :derivative, :gradient, :jacobian]
+
+List of all first-order operators, to facilitate exclusion during tests.
+"""
+const FIRST_ORDER = [:pushforward, :pullback, :derivative, :gradient, :jacobian]
+
+"""
+    SECOND_ORDER = [:hvp, :second_derivative, :hessian]
+
+List of all second-order operators, to facilitate exclusion during tests.
+"""
+const SECOND_ORDER = [:hvp, :second_derivative, :hessian]
+
+const ALL_OPS = vcat(FIRST_ORDER, SECOND_ORDER)
 
 include("utils.jl")
 
@@ -72,18 +86,14 @@ include("scenarios/allocfree.jl")
 include("scenarios/extensions.jl")
 
 include("tests/correctness_eval.jl")
-@static if VERSION >= v"1.7"
-    include("tests/type_stability_eval.jl")
-end
-include("tests/sparsity.jl")
+include("tests/type_stability_eval.jl")
 include("tests/benchmark.jl")
 include("tests/benchmark_eval.jl")
+include("tests/allocs_eval.jl")
+
 include("test_differentiation.jl")
 
-function __init__()
-    @require_extensions
-end
-
+export FIRST_ORDER, SECOND_ORDER
 export Scenario
 export default_scenarios, sparse_scenarios
 export test_differentiation, benchmark_differentiation

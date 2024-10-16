@@ -2,9 +2,9 @@ module DifferentiationInterfaceForwardDiffExt
 
 using ADTypes: AbstractADType, AutoForwardDiff
 using Base: Fix1, Fix2
-using Compat
 import DifferentiationInterface as DI
 using DifferentiationInterface:
+    BatchSizeSettings,
     Context,
     DerivativePrep,
     DifferentiateWith,
@@ -49,18 +49,6 @@ using ForwardDiff:
 using LinearAlgebra: dot, mul!
 
 DI.check_available(::AutoForwardDiff) = true
-
-DI.pick_batchsize(::AutoForwardDiff{C}, dimension::Integer) where {C} = Val(C)
-
-function DI.pick_batchsize(::AutoForwardDiff{nothing}, dimension::Integer)
-    # type-unstable
-    return Val(ForwardDiff.pickchunksize(dimension))
-end
-
-function DI.threshold_batchsize(backend::AutoForwardDiff{C1}, C2::Integer) where {C1}
-    C = (C1 === nothing) ? nothing : min(C1, C2)
-    return AutoForwardDiff(; chunksize=C, tag=backend.tag)
-end
 
 include("utils.jl")
 include("onearg.jl")

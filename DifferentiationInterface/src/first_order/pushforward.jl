@@ -204,7 +204,7 @@ function value_and_pushforward(
     tx::NTuple{B},
     contexts::Vararg{Context,C},
 ) where {F,B,C}
-    @compat (; pullback_prep) = prep
+    (; pullback_prep) = prep
     y = f(x, map(unwrap, contexts)...)
     ty = ntuple(
         b -> _pushforward_via_pullback(y, f, pullback_prep, backend, x, tx[b], contexts...),
@@ -277,7 +277,7 @@ function value_and_pushforward(
     tx::NTuple{B},
     contexts::Vararg{Context,C},
 ) where {F,B,C}
-    @compat (; pullback_prep) = prep
+    (; pullback_prep) = prep
     ty = ntuple(
         b ->
             _pushforward_via_pullback(f!, y, pullback_prep, backend, x, tx[b], contexts...),
@@ -325,4 +325,18 @@ function pushforward!(
     contexts::Vararg{Context,C},
 ) where {F,C}
     return value_and_pushforward!(f!, y, ty, prep, backend, x, tx, contexts...)[2]
+end
+
+## Shuffled
+
+function shuffled_single_pushforward(
+    x,
+    f::F,
+    backend::AbstractADType,
+    dx,
+    rewrap::Rewrap{C},
+    unannotated_contexts::Vararg{Any,C},
+) where {F,C}
+    ty = pushforward(f, backend, x, (dx,), rewrap(unannotated_contexts...)...)
+    return only(ty)
 end

@@ -1,8 +1,37 @@
-choose_chunk(::AutoForwardDiff{nothing}, x) = Chunk(x)
-choose_chunk(::AutoForwardDiff{C}, x) where {C} = Chunk{C}()
+function DI.BatchSizeSettings(::AutoForwardDiff{nothing}, N::Integer)
+    B = ForwardDiff.pickchunksize(N)
+    singlebatch = B == N
+    aligned = N % B == 0
+    return BatchSizeSettings{B,singlebatch,aligned}(N)
+end
 
-tag_type(f, ::AutoForwardDiff{C,T}, x) where {C,T} = T
-tag_type(f, ::AutoForwardDiff{C,Nothing}, x) where {C} = typeof(Tag(f, eltype(x)))
+function DI.BatchSizeSettings(::AutoForwardDiff{chunksize}, N::Integer) where {chunksize}
+    if chunksize > N
+        throw(ArgumentError("Fixed chunksize $chunksize larger than input size $N"))
+    end
+    B = chunksize
+    singlebatch = B == N
+    aligned = N % B == 0
+    return BatchSizeSettings{B,singlebatch,aligned}(N)
+end
+
+function DI.threshold_batchsize(
+    backend::AutoForwardDiff{chunksize1}, chunksize2::Integer
+) where {chunksize1}
+    chunksize = isnothing(chunksize1) ? nothing : min(chunksize1, chunksize2)
+    return AutoForwardDiff(; chunksize, tag=backend.tag)
+end
+
+choose_chunk(::AutoForwardDiff{nothing}, x) = Chunk(x)
+choose_chunk(::AutoForwardDiff{chunksize}, x) where {chunksize} = Chunk{chunksize}()
+
+get_tag(f, backend::AutoForwardDiff, x) = backend.tag
+
+function get_tag(f::F, ::AutoForwardDiff{chunksize,Nothing}, x) where {F,chunksize}
+    return Tag(f, eltype(x))
+end
+
+tag_type(f::F, backend::AutoForwardDiff, x) where {F} = typeof(get_tag(f, backend, x))
 
 function make_dual_similar(::Type{T}, x::Number, tx::NTuple{B}) where {T,B}
     return Dual{T}(x, tx...)

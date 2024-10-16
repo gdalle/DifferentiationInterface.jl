@@ -1,5 +1,12 @@
 # until https://github.com/EnzymeAD/Enzyme.jl/pull/1545 is merged
-DI.pick_batchsize(::AutoEnzyme, dimension::Integer) = Val(16)
+function DI.BatchSizeSettings(::AutoEnzyme, N::Integer)
+    B = DI.reasonable_batchsize(N, 16)
+    singlebatch = B == N
+    aligned = N % B == 0
+    return DI.BatchSizeSettings{B,singlebatch,aligned}(N)
+end
+
+to_val(::DI.BatchSizeSettings{B}) where {B} = Val(B)
 
 ## Annotations
 
@@ -17,9 +24,10 @@ function get_f_and_df(
         M,
         <:Union{
             Duplicated,
-            EnzymeCore.DuplicatedNoNeed,
+            MixedDuplicated,
             BatchDuplicated,
-            EnzymeCore.BatchDuplicatedFunc,
+            BatchMixedDuplicated,
+            EnzymeCore.DuplicatedNoNeed,
             EnzymeCore.BatchDuplicatedNoNeed,
         },
     },

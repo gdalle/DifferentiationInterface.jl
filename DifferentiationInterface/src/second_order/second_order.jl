@@ -60,12 +60,3 @@ outer(backend::AbstractADType) = backend
 Return the _outer_ mode of the second-order backend.
 """
 ADTypes.mode(backend::SecondOrder) = mode(outer(backend))
-
-"""
-    nested(backend)
-
-Return a possibly modified `backend` that can work while nested inside another differentiation procedure.
-
-At the moment this function is pretty much useless.
-"""
-nested(backend::AbstractADType) = backend

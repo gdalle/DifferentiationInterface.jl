@@ -4,7 +4,7 @@ We present a typical workflow with DifferentiationInterfaceTest.jl, building on 
 
 ```@repl tuto
 using DifferentiationInterface, DifferentiationInterfaceTest
-import ForwardDiff, Enzyme
+import ForwardDiff, Zygote
 ```
 
 ## Introduction
@@ -12,7 +12,7 @@ import ForwardDiff, Enzyme
 The AD backends we want to compare are [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl) and [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl).
 
 ```@example tuto
-backends = [AutoForwardDiff(), AutoEnzyme(; mode=Enzyme.Reverse)]
+backends = [AutoForwardDiff(), AutoZygote()]
 ```
 
 To do that, we are going to take gradients of a simple function:
@@ -55,7 +55,7 @@ test_differentiation(
     backends,  # the backends you want to compare
     scenarios,  # the scenarios you defined,
     correctness=true,  # compares values against the reference
-    type_stability=false,  # checks type stability with JET.jl
+    type_stability=:none,  # checks type stability with JET.jl
     detailed=true,  # prints a detailed test set
 )
 ```

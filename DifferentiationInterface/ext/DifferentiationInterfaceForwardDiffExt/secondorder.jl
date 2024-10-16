@@ -7,15 +7,11 @@ end
 
 Return a new `AutoForwardDiff` backend with a fixed tag linked to `f`, so that we know how to prepare the inner gradient of the HVP without depending on what that gradient closure looks like.
 """
-function tag_backend_hvp(f::F, ::AutoForwardDiff{chunksize,Nothing}, x) where {F,chunksize}
-    return AutoForwardDiff(;
-        chunksize=chunksize,
-        tag=ForwardDiff.Tag(ForwardDiffOverSomethingHVPWrapper(f), eltype(x)),
-    )
-end
+tag_backend_hvp(f, backend::AutoForwardDiff, x) = backend
 
-function tag_backend_hvp(f, backend::AutoForwardDiff, x)
-    return backend
+function tag_backend_hvp(f::F, ::AutoForwardDiff{chunksize,Nothing}, x) where {F,chunksize}
+    tag = ForwardDiff.Tag(ForwardDiffOverSomethingHVPWrapper(f), eltype(x))
+    return AutoForwardDiff{chunksize,typeof(tag)}(tag)
 end
 
 struct ForwardDiffOverSomethingHVPPrep{B<:AutoForwardDiff,G,E<:PushforwardPrep} <: HVPPrep
@@ -56,7 +52,7 @@ function DI.hvp(
     tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    @compat (; tagged_outer_backend, inner_gradient, outer_pushforward_prep) = prep
+    (; tagged_outer_backend, inner_gradient, outer_pushforward_prep) = prep
     return DI.pushforward(
         inner_gradient, outer_pushforward_prep, tagged_outer_backend, x, tx, contexts...
     )
@@ -71,7 +67,7 @@ function DI.hvp!(
     tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {F,C}
-    @compat (; tagged_outer_backend, inner_gradient, outer_pushforward_prep) = prep
+    (; tagged_outer_backend, inner_gradient, outer_pushforward_prep) = prep
     DI.pushforward!(
         inner_gradient, tg, outer_pushforward_prep, tagged_outer_backend, x, tx, contexts...
     )

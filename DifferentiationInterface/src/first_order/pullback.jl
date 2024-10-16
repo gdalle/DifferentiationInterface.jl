@@ -195,7 +195,7 @@ function value_and_pullback(
     ty::NTuple{B},
     contexts::Vararg{Context,C},
 ) where {F,B,C}
-    @compat (; pushforward_prep) = prep
+    (; pushforward_prep) = prep
     y = f(x, map(unwrap, contexts)...)
     tx = ntuple(
         b -> _pullback_via_pushforward(f, pushforward_prep, backend, x, ty[b], contexts...),
@@ -284,7 +284,7 @@ function value_and_pullback(
     ty::NTuple{B},
     contexts::Vararg{Context,C},
 ) where {F,B,C}
-    @compat (; pushforward_prep) = prep
+    (; pushforward_prep) = prep
     tx = ntuple(
         b -> _pullback_via_pushforward(
             f!, y, pushforward_prep, backend, x, ty[b], contexts...

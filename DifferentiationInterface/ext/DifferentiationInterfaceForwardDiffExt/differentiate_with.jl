@@ -1,5 +1,5 @@
 function (dw::DifferentiateWith)(x::Dual{T,V,N}) where {T,V,N}
-    @compat (; f, backend) = dw
+    (; f, backend) = dw
     xval = myvalue(T, x)
     tx = mypartials(T, Val(N), x)
     y, ty = DI.value_and_pushforward(f, backend, xval, tx)
@@ -7,7 +7,7 @@ function (dw::DifferentiateWith)(x::Dual{T,V,N}) where {T,V,N}
 end
 
 function (dw::DifferentiateWith)(x::AbstractArray{Dual{T,V,N}}) where {T,V,N}
-    @compat (; f, backend) = dw
+    (; f, backend) = dw
     xval = myvalue(T, x)
     tx = mypartials(T, Val(N), x)
     y, ty = DI.value_and_pushforward(f, backend, xval, tx)

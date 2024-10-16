@@ -13,6 +13,7 @@ using ADTypes:
     ForwardOrReverseMode,
     ReverseMode,
     SymbolicMode,
+    dense_ad,
     mode
 using ADTypes:
     AutoChainRules,
@@ -28,9 +29,9 @@ using ADTypes:
     AutoSymbolics,
     AutoTracker,
     AutoZygote
-using Compat
-using LinearAlgebra: Symmetric, Transpose, dot, parent, transpose
-using PackageExtensionCompat: @require_extensions
+using LinearAlgebra: dot
+
+include("compat.jl")
 
 include("second_order/second_order.jl")
 
@@ -42,6 +43,7 @@ include("utils/check.jl")
 include("utils/exceptions.jl")
 include("utils/printing.jl")
 include("utils/context.jl")
+include("utils/linalg.jl")
 
 include("first_order/pushforward.jl")
 include("first_order/pullback.jl")
@@ -63,10 +65,6 @@ include("misc/zero_backends.jl")
 
 struct ReactantBackend{B} <: ADTypes.AbstractADType
     backend::B
-end
-
-function __init__()
-    @require_extensions
 end
 
 ## Exported
@@ -125,6 +123,6 @@ export AutoSparse
 
 ## Public but not exported
 
-@compat public inner, outer
+@public inner, outer
 
 end # module

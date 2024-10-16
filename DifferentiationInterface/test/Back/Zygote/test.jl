@@ -1,58 +1,47 @@
 using Pkg
-Pkg.add("Zygote")
+Pkg.add(["ForwardDiff", "Zygote"])
 
 using ComponentArrays: ComponentArrays
 using DifferentiationInterface, DifferentiationInterfaceTest
+using ForwardDiff: ForwardDiff
 using JLArrays: JLArrays
-using SparseConnectivityTracer, SparseMatrixColorings
 using StaticArrays: StaticArrays
 using Test
 using Zygote: Zygote
 
 LOGGING = get(ENV, "CI", "false") == "false"
 
-dense_backends = [AutoZygote()]
+backends = [AutoZygote()]
+second_order_backends = [SecondOrder(AutoForwardDiff(), AutoZygote())]
 
-sparse_backends = [
-    AutoSparse(
-        AutoZygote();
-        sparsity_detector=TracerSparsityDetector(),
-        coloring_algorithm=GreedyColoringAlgorithm(),
-    ),
-]
-
-for backend in vcat(dense_backends, sparse_backends)
+for backend in vcat(backends, second_order_backends)
     @test check_available(backend)
     @test !check_inplace(backend)
 end
 
-## Dense backends
-
-test_differentiation(AutoZygote(); excluded=[:second_derivative], logging=LOGGING);
+## Dense
 
 test_differentiation(
-    AutoZygote(),
-    default_scenarios(; include_normal=false, include_constantified=true);
-    second_order=false,
+    backends,
+    default_scenarios(; include_constantified=true);
+    excluded=[:second_derivative],
     logging=LOGGING,
 );
 
-if VERSION >= v"1.10"
-    test_differentiation(
-        AutoZygote(),
-        vcat(component_scenarios(), gpu_scenarios());
-        second_order=false,
-        logging=LOGGING,
-    )
-end
-
-## Sparse backends
+test_differentiation(second_order_backends; logging=LOGGING);
 
 test_differentiation(
-    sparse_backends,
-    default_scenarios();
-    excluded=[:derivative, :gradient, :hvp, :pullback, :pushforward, :second_derivative],
+    backends[1],
+    vcat(component_scenarios(), gpu_scenarios());
+    excluded=SECOND_ORDER,
     logging=LOGGING,
-);
+)
 
-test_differentiation(sparse_backends, sparse_scenarios(); sparsity=true, logging=LOGGING)
+## Sparse
+
+test_differentiation(
+    MyAutoSparse.(vcat(backends, second_order_backends)),
+    sparse_scenarios(; band_sizes=0:-1);
+    sparsity=true,
+    logging=LOGGING,
+)

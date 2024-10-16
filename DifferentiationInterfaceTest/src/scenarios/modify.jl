@@ -40,7 +40,7 @@ Return a new `Scenario` identical to `scen` except for the tangents `tang` and a
 Only works if `scen` is a `pushforward`, `pullback` or `hvp` scenario.
 """
 function batchify(scen::Scenario{op,pl_op,pl_fun}) where {op,pl_op,pl_fun}
-    @compat (; f, x, y, tang, contexts, res1, res2) = scen
+    (; f, x, y, tang, contexts, res1, res2) = scen
     if op == :pushforward || op == :pullback
         new_tang = (only(tang), -only(tang))
         new_res1 = (only(res1), -only(res1))
@@ -89,7 +89,7 @@ end
 Return a new `Scenario` identical to `scen` except for the function `f` which is made to close over differentiable data.
 """
 function closurify(scen::Scenario)
-    @compat (; f, x, y) = scen
+    (; f, x, y) = scen
     x_buffer = [zero(x)]
     y_buffer = [zero(y)]
     closure_f = WritableClosure{function_place(scen)}(f, x_buffer, y_buffer)
@@ -122,7 +122,7 @@ Return a new `Scenario` identical to `scen` except for the function `f`, which i
 The output and result fields are updated accordingly.
 """
 function constantify(scen::Scenario{op,pl_op,pl_fun}) where {op,pl_op,pl_fun}
-    @compat (; f,) = scen
+    (; f,) = scen
     multiply_f = MultiplyByConstant{pl_fun}(f)
     a = 3.0
     return Scenario{op,pl_op,pl_fun}(

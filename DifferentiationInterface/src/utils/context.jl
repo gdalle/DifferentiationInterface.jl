@@ -59,12 +59,13 @@ end
 Base.convert(::Type{Constant{T}}, x) where {T} = Constant(convert(T, x))
 
 struct Rewrap{C,T}
-    contexts::T
     function Rewrap(contexts::Vararg{Context,C}) where {C}
         T = typeof(contexts)
-        return new{C,T}(contexts)
+        return new{C,T}()
     end
 end
+
+(::Rewrap{0})() = ()
 
 function (r::Rewrap{C,T})(unannotated_contexts::Vararg{Any,C}) where {C,T}
     return T(unannotated_contexts)

@@ -67,3 +67,23 @@ The complexity of sparse Jacobians or Hessians grows with the number of distinct
 To reduce this number of colors, [`GreedyColoringAlgorithm`](@ref) has two main settings: the order used for vertices and the decompression method.
 Depending on your use case, you may want to modify either of these options to increase performance.
 See the documentation of [SparseMatrixColorings.jl](https://github.com/gdalle/SparseMatrixColorings.jl) for details.
+
+## Batch mode
+
+### Multiple tangents
+
+The [`jacobian`](@ref) and [`hessian`](@ref) operators compute matrices by repeatedly applying lower-level operators ([`pushforward`](@ref), [`pullback`](@ref) or [`hvp`](@ref)) to a set of tangents.
+The tangents usually correspond to basis elements of the appropriate vector space.
+We could call the lower-level operator on each tangent separately, but some packages ([ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl) and [Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl)) have optimized implementations to handle multiple tangents at once.
+
+This behavior is often called "vector mode" AD, but we call it "batch mode" to avoid confusion with Julia's `Vector` type.
+As a matter of fact, the optimal batch size $B$ (number of simultaneous tangents) is usually very small, so tangents are passed within an `NTuple` and not a `Vector`.
+When the underlying vector space has dimension $N$, the operators `jacobian` and `hessian` process $\lceil N / B \rceil$ batches of size $B$ each.
+
+### Optimal batch size
+
+For every backend which does not support batch mode, the batch size is set to $B = 1$.
+But for [`AutoForwardDiff`](@extref ADTypes.AutoForwardDiff) and [`AutoEnzyme`](@extref ADTypes.AutoEnzyme), more complicated rules apply.
+If the backend object has a pre-determined batch size $B_0$, then we always set $B = B_0$.
+In particular, this will throw errors when $N < B_0$.
+On the other hand, without a pre-determined batch size, we apply backend-specific heuristics to pick $B$ based on $N$.

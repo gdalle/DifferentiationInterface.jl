@@ -11,8 +11,12 @@ end
 check_available(fromprim::FromPrimitive) = check_available(fromprim.backend)
 inplace_support(fromprim::FromPrimitive) = inplace_support(fromprim.backend)
 
-function pick_batchsize(fromprim::FromPrimitive, dimension::Integer)
-    return pick_batchsize(fromprim.backend, dimension)
+function BatchSizeSettings(fromprim::FromPrimitive, x::AbstractArray)
+    return BatchSizeSettings(fromprim.backend, x)
+end
+
+function BatchSizeSettings(fromprim::FromPrimitive, N::Integer)
+    return BatchSizeSettings(fromprim.backend, N)
 end
 
 ## Forward
@@ -22,6 +26,10 @@ struct AutoForwardFromPrimitive{B} <: FromPrimitive
 end
 
 ADTypes.mode(::AutoForwardFromPrimitive) = ADTypes.ForwardMode()
+
+function threshold_batchsize(fromprim::AutoForwardFromPrimitive, dimension::Integer)
+    return AutoForwardFromPrimitive(threshold_batchsize(fromprim.backend, dimension))
+end
 
 struct FromPrimitivePushforwardPrep{E<:PushforwardPrep} <: PushforwardPrep
     pushforward_prep::E
@@ -104,6 +112,10 @@ struct AutoReverseFromPrimitive{B} <: FromPrimitive
 end
 
 ADTypes.mode(::AutoReverseFromPrimitive) = ADTypes.ReverseMode()
+
+function threshold_batchsize(fromprim::AutoReverseFromPrimitive, dimension::Integer)
+    return AutoReverseFromPrimitive(threshold_batchsize(fromprim.backend, dimension))
+end
 
 struct FromPrimitivePullbackPrep{E<:PullbackPrep} <: PullbackPrep
     pullback_prep::E
