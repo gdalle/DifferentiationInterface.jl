@@ -65,7 +65,7 @@ include("misc/zero_backends.jl")
 
 ## Exported
 
-export Context, Constant
+export Context, Constant, Cache
 export SecondOrder
 
 export value_and_pushforward!, value_and_pushforward

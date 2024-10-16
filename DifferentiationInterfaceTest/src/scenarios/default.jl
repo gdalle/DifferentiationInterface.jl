@@ -459,6 +459,7 @@ function default_scenarios(
     include_batchified=true,
     include_closurified=false,
     include_constantified=false,
+    include_cachified=false,
 )
     x_ = rand(rng)
     dx_ = rand(rng)
@@ -504,6 +505,7 @@ function default_scenarios(
     include_normal && append!(final_scens, scens)
     include_closurified && append!(final_scens, closurify(scens))
     include_constantified && append!(final_scens, constantify(scens))
+    include_cachified && append!(final_scens, cachify(scens))
 
     return final_scens
 end

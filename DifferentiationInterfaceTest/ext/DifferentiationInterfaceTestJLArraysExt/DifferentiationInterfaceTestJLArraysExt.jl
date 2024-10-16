@@ -21,13 +21,13 @@ function (f::DIT.NumToArr{JLMatrix{T}})(x::Number) where {T}
     return sin.(x .* a)
 end
 
-myjl(f::DIT.MultiplyByConstant) = f
-myjl(f::DIT.WritableClosure) = f
+myjl(f::DIT.FunctionModifier) = f
 
 myjl(x::Number) = x
 myjl(x::AbstractArray) = jl(x)
 myjl(x::Tuple) = map(myjl, x)
 myjl(x::DI.Constant) = DI.Constant(myjl(DI.unwrap(x)))
+myjl(x::DI.Cache) = DI.Cache(myjl(DI.unwrap(x)))
 myjl(::Nothing) = nothing
 
 function myjl(scen::Scenario{op,pl_op,pl_fun}) where {op,pl_op,pl_fun}
