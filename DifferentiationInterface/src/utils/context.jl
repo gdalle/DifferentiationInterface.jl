@@ -15,6 +15,7 @@ Abstract supertype for additional context arguments, which can be passed to diff
 # See also
 
 - [`Constant`](@ref)
+- [`Cache`](@ref)
 """
 abstract type Context end
 
@@ -57,6 +58,25 @@ function Base.convert(::Type{Constant{T}}, x::Constant) where {T}
 end
 
 Base.convert(::Type{Constant{T}}, x) where {T} = Constant(convert(T, x))
+
+"""
+    Cache
+
+Concrete type of [`Context`](@ref) argument which can be mutated with active values during differentiation.
+
+The initial values present inside the cache do not matter.
+"""
+struct Cache{T} <: Context
+    data::T
+end
+
+unwrap(c::Cache) = c.data
+
+function Base.convert(::Type{Cache{T}}, x::Cache) where {T}
+    return Cache(convert(T, x.data))
+end
+
+Base.convert(::Type{Cache{T}}, x) where {T} = Cache(convert(T, x))
 
 struct Rewrap{C,T}
     function Rewrap(contexts::Vararg{Context,C}) where {C}
