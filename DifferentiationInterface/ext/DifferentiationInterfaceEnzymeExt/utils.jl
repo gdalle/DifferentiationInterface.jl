@@ -10,11 +10,11 @@ to_val(::DI.BatchSizeSettings{B}) where {B} = Val(B)
 
 ## Annotations
 
-function get_f_and_df(f::F, ::AutoEnzyme{M,Nothing}, ::Val{B}=Val(1)) where {F,M,B}
+function get_f_and_df(f::F, ::AutoEnzyme{M,Nothing}; (::Val{B})=Val(1)) where {F,M,B}
     return f
 end
 
-function get_f_and_df(f::F, ::AutoEnzyme{M,<:Const}, ::Val{B}=Val(1)) where {F,M,B}
+function get_f_and_df(f::F, ::AutoEnzyme{M,<:Const}; (::Val{B})=Val(1)) where {F,M,B}
     return Const(f)
 end
 
@@ -30,8 +30,8 @@ function get_f_and_df(
             EnzymeCore.DuplicatedNoNeed,
             EnzymeCore.BatchDuplicatedNoNeed,
         },
-    },
-    ::Val{B}=Val(1),
+    };
+    (::Val{B})=Val(1),
 ) where {F,M,B}
     # TODO: needs more sophistication for mixed activities
     if B == 1

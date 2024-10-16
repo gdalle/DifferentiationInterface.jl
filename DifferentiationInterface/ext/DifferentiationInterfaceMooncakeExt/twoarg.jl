@@ -84,7 +84,7 @@ function DI.value_and_pullback(
 ) where {C}
     tx = map(ty) do dy
         _, tx = DI.value_and_pullback(f!, y, prep, backend, x, (dy,), contexts...)
-        only(tx)
+        return only(tx)
     end
     return y, tx
 end

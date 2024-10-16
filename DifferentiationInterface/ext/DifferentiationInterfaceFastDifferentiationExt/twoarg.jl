@@ -32,7 +32,7 @@ function DI.pushforward(
 )
     ty = map(tx) do dx
         v_vec = vcat(myvec(x), myvec(dx))
-        reshape(prep.jvp_exe(v_vec), size(y))
+        return reshape(prep.jvp_exe(v_vec), size(y))
     end
     return ty
 end

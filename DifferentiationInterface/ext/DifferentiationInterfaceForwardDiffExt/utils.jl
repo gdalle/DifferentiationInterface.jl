@@ -67,13 +67,13 @@ myderivative!(::Type{T}, dy, ydual) where {T} = dy .= myderivative.(T, ydual)
 
 function mypartials(::Type{T}, ::Val{B}, ydual::Number) where {T,B}
     return ntuple(Val(B)) do b
-        partials(T, ydual, b)
+        return partials(T, ydual, b)
     end
 end
 
 function mypartials(::Type{T}, ::Val{B}, ydual) where {T,B}
     return ntuple(Val(B)) do b
-        partials.(T, ydual, b)
+        return partials.(T, ydual, b)
     end
 end
 

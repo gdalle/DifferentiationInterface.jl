@@ -73,7 +73,7 @@ function DI.value_and_pullback(
 ) where {C}
     ys_and_tx = map(ty) do dy
         y, tx = DI.value_and_pullback(f, prep, backend, x, (dy,), contexts...)
-        y, only(tx)
+        return y, only(tx)
     end
     y = first(ys_and_tx[1])
     tx = last.(ys_and_tx)
@@ -91,7 +91,7 @@ function DI.value_and_pullback!(
 ) where {C}
     ys = map(tx, ty) do dx, dy
         y, _ = DI.value_and_pullback!(f, (dx,), prep, backend, x, (dy,), contexts...)
-        y
+        return y
     end
     y = ys[1]
     return y, tx

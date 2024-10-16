@@ -24,7 +24,7 @@ function DI.value_and_pullback(
         return dot(y_copy, dy)
     end
     tx = map(ty) do dy
-        gradient(Fix2(dotclosure, dy), x)
+        return gradient(Fix2(dotclosure, dy), x)
     end
     fc!(y, x)
     return y, tx
@@ -70,7 +70,7 @@ function DI.pullback(
         return dot(y_copy, dy)
     end
     tx = map(ty) do dy
-        gradient(Fix2(dotclosure, dy), x)
+        return gradient(Fix2(dotclosure, dy), x)
     end
     return tx
 end

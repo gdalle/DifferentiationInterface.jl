@@ -34,7 +34,7 @@ function DI.pushforward(
 ) where {C}
     fc = with_contexts(f, contexts...)
     ty = map(tx) do dx
-        jvp(backend.fdm, fc, (x, dx))
+        return jvp(backend.fdm, fc, (x, dx))
     end
     return ty
 end
@@ -69,7 +69,7 @@ function DI.pullback(
 ) where {C}
     fc = with_contexts(f, contexts...)
     tx = map(ty) do dy
-        only(j′vp(backend.fdm, fc, dy, x))
+        return only(j′vp(backend.fdm, fc, dy, x))
     end
     return tx
 end

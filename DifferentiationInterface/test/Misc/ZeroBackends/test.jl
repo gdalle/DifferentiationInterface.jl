@@ -46,7 +46,7 @@ test_differentiation(
 )
 
 test_differentiation(
-    AutoSparse.(zero_backends, coloring_algorithm=GreedyColoringAlgorithm()),
+    AutoSparse.(zero_backends; coloring_algorithm=GreedyColoringAlgorithm()),
     default_scenarios(; include_constantified=true);
     correctness=false,
     type_stability=:full,
