@@ -337,7 +337,7 @@ function gradient_and_hvp(
     f::F, prep::HVPPrep, backend::AbstractADType, x, tx::NTuple, contexts::Vararg{Context,C}
 ) where {F,C}
     tg = hvp(f, prep, backend, x, tx, contexts...)
-    grad = gradient(f, backend, x, contexts...)  # TODO: optimize
+    grad = gradient(f, inner(backend), x, contexts...)  # TODO: optimize
     return grad, tg
 end
 
@@ -352,6 +352,6 @@ function gradient_and_hvp!(
     contexts::Vararg{Context,C},
 ) where {F,C}
     hvp!(f, tg, prep, backend, x, tx, contexts...)
-    gradient!(f, grad, backend, x, contexts...)  # TODO: optimize
+    gradient!(f, grad, inner(backend), x, contexts...)  # TODO: optimize
     return grad, tg
 end

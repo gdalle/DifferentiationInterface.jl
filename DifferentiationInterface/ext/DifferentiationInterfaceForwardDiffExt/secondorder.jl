@@ -83,7 +83,7 @@ function DI.gradient_and_hvp(
     contexts::Vararg{Context,C},
 ) where {F,C}
     tg = DI.hvp(f, prep, backend, x, tx, contexts...)
-    grad = DI.gradient(f, backend, x, tx, contexts...)  # TODO: optimize
+    grad = DI.gradient(f, inner(backend), x, tx, contexts...)  # TODO: optimize
     return grad, tg
 end
 
@@ -98,6 +98,6 @@ function DI.gradient_and_hvp!(
     contexts::Vararg{Context,C},
 ) where {F,C}
     DI.hvp!(f, tg, prep, backend, x, tx, contexts...)
-    DI.gradient(f, grad, backend, x, tx, contexts...)  # TODO: optimize
+    DI.gradient(f, grad, inner(backend), x, tx, contexts...)  # TODO: optimize
     return grad, tg
 end
