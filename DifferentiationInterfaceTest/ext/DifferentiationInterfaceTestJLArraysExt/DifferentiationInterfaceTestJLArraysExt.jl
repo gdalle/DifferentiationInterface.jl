@@ -3,12 +3,22 @@ module DifferentiationInterfaceTestJLArraysExt
 import DifferentiationInterface as DI
 using DifferentiationInterfaceTest
 import DifferentiationInterfaceTest as DIT
-using JLArrays: JLArray, jl
+using JLArrays: JLArray, JLVector, JLMatrix, jl
 using Random: AbstractRNG, default_rng
 
 myjl(f::Function) = f
 function myjl(::DIT.NumToArr{A}) where {T,N,A<:AbstractArray{T,N}}
     return DIT.NumToArr(JLArray{T,N})
+end
+
+function (f::DIT.NumToArr{JLVector{T}})(x::Number) where {T}
+    a = JLVector{T}(Vector(1:6))  # avoid mutation
+    return sin.(x .* a)
+end
+
+function (f::DIT.NumToArr{JLMatrix{T}})(x::Number) where {T}
+    a = JLMatrix{T}(Matrix(reshape(1:6, 2, 3)))  # avoid mutation
+    return sin.(x .* a)
 end
 
 myjl(f::DIT.MultiplyByConstant) = f
