@@ -38,6 +38,7 @@ DifferentiationInterfaceTestStaticArraysExt = "StaticArrays"
 
 [compat]
 ADTypes = "1.7.0"
+AllocCheck = "0.2"
 Chairmarks = "1.2.1"
 ComponentArrays = "0.15"
 DataFrames = "1.6.1"
