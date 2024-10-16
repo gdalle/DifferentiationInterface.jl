@@ -50,6 +50,24 @@ $(document_preparation("hvp"; same_point=true))
 """
 function hvp! end
 
+"""
+    gradient_and_hvp(f, [prep,] backend, x, tx, [contexts...]) -> (grad, tg)
+
+Compute the gradient and the Hessian-vector product of `f` at point `x` with a tuple of tangents `tx`.
+
+$(document_preparation("hvp"; same_point=true))
+"""
+function gradient_and_hvp end
+
+"""
+    gradient_and_hvp!(f, grad, tg, [prep,] backend, x, tx, [contexts...]) -> (grad, tg)
+
+Compute the gradient and the Hessian-vector product of `f` at point `x` with a tuple of tangents `tx`, overwriting `grad` and `tg`.
+
+$(document_preparation("hvp"; same_point=true))
+"""
+function gradient_and_hvp! end
+
 ## Preparation
 
 struct ForwardOverForwardHVPPrep{E<:PushforwardPrep} <: HVPPrep
@@ -313,4 +331,27 @@ function hvp!(
     return pullback!(
         shuffled_gradient, tg, outer_pullback_prep, outer(backend), x, tx, new_contexts...
     )
+end
+
+function gradient_and_hvp(
+    f::F, prep::HVPPrep, backend::AbstractADType, x, tx::NTuple, contexts::Vararg{Context,C}
+) where {F,C}
+    tg = hvp(f, prep, backend, x, tx, contexts...)
+    grad = gradient(f, backend, x, contexts...)  # TODO: optimize
+    return grad, tg
+end
+
+function gradient_and_hvp!(
+    f::F,
+    grad,
+    tg::NTuple,
+    prep::HVPPrep,
+    backend::AbstractADType,
+    x,
+    tx::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    hvp!(f, tg, prep, backend, x, tx, contexts...)
+    gradient!(f, grad, backend, x, contexts...)  # TODO: optimize
+    return grad, tg
 end

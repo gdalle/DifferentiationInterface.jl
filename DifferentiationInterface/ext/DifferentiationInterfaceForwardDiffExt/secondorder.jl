@@ -73,3 +73,31 @@ function DI.hvp!(
     )
     return tg
 end
+
+function DI.gradient_and_hvp(
+    f::F,
+    prep::ForwardDiffOverSomethingHVPPrep,
+    backend::SecondOrder{<:AutoForwardDiff},
+    x,
+    tx::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    tg = DI.hvp(f, prep, backend, x, tx, contexts...)
+    grad = DI.gradient(f, backend, x, tx, contexts...)  # TODO: optimize
+    return grad, tg
+end
+
+function DI.gradient_and_hvp!(
+    f::F,
+    grad,
+    tg::NTuple,
+    prep::ForwardDiffOverSomethingHVPPrep,
+    backend::SecondOrder{<:AutoForwardDiff},
+    x,
+    tx::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    DI.hvp!(f, tg, prep, backend, x, tx, contexts...)
+    DI.gradient(f, grad, backend, x, tx, contexts...)  # TODO: optimize
+    return grad, tg
+end

@@ -18,8 +18,10 @@ for op in ALL_OPS
     op! = Symbol(op, "!")
     val_prefix = if op == :second_derivative
         "value_derivative_and_"
-    elseif op in [:hessian, :hvp]
+    elseif op == :hessian
         "value_gradient_and_"
+    elseif op == :hvp
+        "gradient_and_"
     else
         "value_and_"
     end
@@ -561,11 +563,11 @@ for op in ALL_OPS
         @eval function benchmark_aux(ba::AbstractADType, scen::$S1out; subset::Symbol)
             (; f, x, tang, contexts) = deepcopy(scen)
             prep = $prep_op(f, ba, x, tang, contexts...)
-            prepared_valop = @be +(1, 1)   # TODO: fix
+            prepared_valop = @be prep $val_and_op(f, _, ba, x, tang, contexts...)
             prepared_op = @be prep $op(f, _, ba, x, tang, contexts...)
             if subset == :full
                 preparation = @be $prep_op(f, ba, x, tang, contexts...)
-                unprepared_valop = @be +(1, 1)   # TODO: fix
+                unprepared_valop = @be $val_and_op(f, ba, x, tang, contexts...)
                 unprepared_op = @be $op(f, ba, x, tang, contexts...)
                 return BenchmarkResult(;
                     prepared_valop,
@@ -584,10 +586,12 @@ for op in ALL_OPS
             cc = CallCounter(f)
             prep = $prep_op(cc, ba, x, tang, contexts...)
             preparation = reset_count!(cc)
-            prepared_valop = -1  # TODO: fix
+            $val_and_op(cc, prep, ba, x, tang, contexts...)
+            prepared_valop = reset_count!(cc)
             $op(cc, prep, ba, x, tang, contexts...)
             prepared_op = reset_count!(cc)
-            unprepared_valop = -1  # TODO: fix
+            $val_and_op(cc, ba, x, tang, contexts...)
+            unprepared_valop = reset_count!(cc)
             $op(cc, ba, x, tang, contexts...)
             unprepared_op = reset_count!(cc)
             return CallsResult(;
@@ -596,15 +600,19 @@ for op in ALL_OPS
         end
 
         @eval function benchmark_aux(ba::AbstractADType, scen::$S1in; subset::Symbol)
-            (; f, x, tang, res2, contexts) = deepcopy(scen)
+            (; f, x, tang, res1, res2, contexts) = deepcopy(scen)
             prep = $prep_op(f, ba, x, tang, contexts...)
-            prepared_valop = @be +(1, 1)   # TODO: fix
+            prepared_valop = @be (mysimilar(res1), mysimilar(res2), prep) $val_and_op!(
+                f, _[1], _[2], _[3], ba, x, tang, contexts...
+            )
             prepared_op = @be (mysimilar(res2), prep) $op!(
                 f, _[1], _[2], ba, x, tang, contexts...
             )
             if subset == :full
                 preparation = @be $prep_op(f, ba, x, tang, contexts...)
-                unprepared_valop = @be +(1, 1)   # TODO: fix
+                unprepared_valop = @be (mysimilar(res1), mysimilar(res2)) $val_and_op!(
+                    f, _[1], _[2], ba, x, tang, contexts...
+                )
                 unprepared_op = @be mysimilar(res2) $op!(f, _, ba, x, tang, contexts...)
                 return BenchmarkResult(;
                     prepared_valop,
@@ -619,14 +627,18 @@ for op in ALL_OPS
         end
 
         @eval function calls_aux(ba::AbstractADType, scen::$S1in; subset::Symbol)
-            (; f, x, tang, res2, contexts) = deepcopy(scen)
+            (; f, x, tang, res1, res2, contexts) = deepcopy(scen)
             cc = CallCounter(f)
             prep = $prep_op(cc, ba, x, tang, contexts...)
             preparation = reset_count!(cc)
-            prepared_valop = -1  # TODO: fix
+            $val_and_op!(
+                cc, mysimilar(res1), mysimilar(res2), prep, ba, x, tang, contexts...
+            )
+            prepared_valop = reset_count!(cc)
             $op!(cc, mysimilar(res2), prep, ba, x, tang, contexts...)
             prepared_op = reset_count!(cc)
-            unprepared_valop = -1  # TODO: fix
+            $val_and_op!(cc, mysimilar(res1), mysimilar(res2), ba, x, tang, contexts...)
+            unprepared_valop = reset_count!(cc)
             $op!(cc, mysimilar(res2), ba, x, tang, contexts...)
             unprepared_op = reset_count!(cc)
             return CallsResult(;
