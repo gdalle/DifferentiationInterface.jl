@@ -95,3 +95,16 @@ test_differentiation(
     sparsity=true,
     logging=LOGGING,
 );
+
+##
+
+filtered_static_scenarios = filter(static_scenarios()) do s
+    DIT.operator_place(s) == :out && DIT.function_place(s) == :out
+end
+
+test_differentiation(
+    [AutoEnzyme(; mode=Enzyme.Forward), AutoEnzyme(; mode=Enzyme.Reverse)],
+    filtered_static_scenarios;
+    excluded=SECOND_ORDER,
+    logging=true,
+)

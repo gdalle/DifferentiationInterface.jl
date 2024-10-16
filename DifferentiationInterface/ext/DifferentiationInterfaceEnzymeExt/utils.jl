@@ -76,3 +76,13 @@ end
 function maybe_reshape(A::AbstractArray, m, n)
     return reshape(A, m, n)
 end
+
+annotate(::Type{Active{T}}, x, dx) where {T} = Active(x)
+annotate(::Type{Duplicated{T}}, x, dx) where {T} = Duplicated(x, dx)
+
+function annotate(::Type{BatchDuplicated{T,B}}, x, tx::NTuple{B}) where {T,B}
+    return BatchDuplicated(x, tx)
+end
+
+batchify_activity(::Type{Active{T}}, ::Val{B}) where {T,B} = Active{T}
+batchify_activity(::Type{Duplicated{T}}, ::Val{B}) where {T,B} = BatchDuplicated{T,B}
