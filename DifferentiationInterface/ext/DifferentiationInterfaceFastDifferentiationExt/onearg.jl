@@ -396,12 +396,13 @@ end
 
 ## HVP
 
-struct FastDifferentiationHVPPrep{E2,E2!} <: HVPPrep
+struct FastDifferentiationHVPPrep{E2,E2!,E1} <: HVPPrep
     hvp_exe::E2
     hvp_exe!::E2!
+    gradient_prep::E1
 end
 
-function DI.prepare_hvp(f, ::AutoFastDifferentiation, x, tx::NTuple)
+function DI.prepare_hvp(f, backend::AutoFastDifferentiation, x, tx::NTuple)
     x_var = make_variables(:x, size(x)...)
     y_var = f(x_var)
 
@@ -409,7 +410,9 @@ function DI.prepare_hvp(f, ::AutoFastDifferentiation, x, tx::NTuple)
     hv_vec_var, v_vec_var = hessian_times_v(y_var, x_vec_var)
     hvp_exe = make_function(hv_vec_var, vcat(x_vec_var, v_vec_var); in_place=false)
     hvp_exe! = make_function(hv_vec_var, vcat(x_vec_var, v_vec_var); in_place=true)
-    return FastDifferentiationHVPPrep(hvp_exe, hvp_exe!)
+
+    gradient_prep = DI.prepare_gradient(f, backend, x)
+    return FastDifferentiationHVPPrep(hvp_exe, hvp_exe!, gradient_prep)
 end
 
 function DI.hvp(
@@ -437,6 +440,28 @@ function DI.hvp!(
         prep.hvp_exe!(dg, v_vec)
     end
     return tg
+end
+
+function DI.gradient_and_hvp(
+    f, prep::FastDifferentiationHVPPrep, backend::AutoFastDifferentiation, x, tx::NTuple
+)
+    tg = DI.hvp(f, prep, backend, x, tx)
+    grad = DI.gradient(f, prep.gradient_prep, backend, x)
+    return grad, tg
+end
+
+function DI.gradient_and_hvp!(
+    f,
+    grad,
+    tg::NTuple,
+    prep::FastDifferentiationHVPPrep,
+    backend::AutoFastDifferentiation,
+    x,
+    tx::NTuple,
+)
+    DI.hvp!(f, tg, prep, backend, x, tx)
+    DI.gradient!(f, grad, prep.gradient_prep, backend, x)
+    return grad, tg
 end
 
 ## Hessian

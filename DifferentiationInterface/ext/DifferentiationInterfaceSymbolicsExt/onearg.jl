@@ -317,6 +317,22 @@ function DI.hvp!(
     return tg
 end
 
+function DI.gradient_and_hvp(
+    f, prep::SymbolicsOneArgHVPPrep, backend::AutoSymbolics, x, tx::NTuple
+)
+    tg = DI.hvp(f, prep, backend, x, tx)
+    grad = DI.gradient(f, prep.gradient_prep, backend, x)
+    return grad, tg
+end
+
+function DI.gradient_and_hvp!(
+    f, grad, tg::NTuple, prep::SymbolicsOneArgHVPPrep, backend::AutoSymbolics, x, tx::NTuple
+)
+    DI.hvp!(f, tg, prep, backend, x, tx)
+    DI.gradient!(f, grad, prep.gradient_prep, backend, x)
+    return grad, tg
+end
+
 ## Second derivative
 
 struct SymbolicsOneArgSecondDerivativePrep{D,E1,E1!} <: SecondDerivativePrep

@@ -7,8 +7,10 @@ for op in ALL_OPS
     op! = Symbol(op, "!")
     val_prefix = if op == :second_derivative
         "value_derivative_and_"
-    elseif op in [:hessian, :hvp]
+    elseif op == :hessian
         "value_gradient_and_"
+    elseif op == :hvp
+        "gradient_and_"
     else
         "value_and_"
     end
@@ -200,7 +202,11 @@ for op in ALL_OPS
             (; f, x, tang, contexts) = deepcopy(scen)
             prep = $prep_op(f, ba, x, tang, contexts...)
             (subset == :full) && test_noallocs(skip, $prep_op, f, ba, x, tang, contexts...)
+            (subset == :full) &&
+                test_noallocs(skip, $val_and_op, f, ba, x, tang, contexts...)
             (subset == :full) && test_noallocs(skip, $op, f, ba, x, tang, contexts...)
+            (subset != :none) &&
+                test_noallocs(skip, $val_and_op, f, prep, ba, x, tang, contexts...)
             (subset != :none) && test_noallocs(skip, $op, f, prep, ba, x, tang, contexts...)
             return nothing
         end
@@ -214,8 +220,23 @@ for op in ALL_OPS
             (subset == :full) && test_noallocs(skip, $prep_op, f, ba, x, tang, contexts...)
             (subset == :full) &&
                 test_noallocs(skip, $op!, f, res2_sim, ba, x, tang, contexts...)
+            (subset == :full) && test_noallocs(
+                skip, $val_and_op!, f, res1_sim, res2_sim, ba, x, tang, contexts...
+            )
             (subset != :none) &&
                 test_noallocs(skip, $op!, f, res2_sim, prep, ba, x, tang, contexts...)
+            (subset != :none) && test_noallocs(
+                skip,
+                $val_and_op!,
+                f,
+                res1_sim,
+                res2_sim,
+                prep,
+                ba,
+                x,
+                tang,
+                contexts...,
+            )
             return nothing
         end
     end

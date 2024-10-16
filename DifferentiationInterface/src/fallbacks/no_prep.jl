@@ -14,7 +14,7 @@ for op in [
     elseif op == :hessian
         :value_gradient_and_hessian
     elseif op == :hvp
-        nothing
+        :gradient_and_hvp
     else
         Symbol("value_and_", op)
     end
@@ -138,26 +138,44 @@ for op in [
             prep = $prep_op(f, backend, x, seed, contexts...)
             return $op!(f, result, prep, backend, x, seed, contexts...)
         end
-
-        op == :hvp && continue
-
         @eval function $val_and_op(
             f::F, backend::AbstractADType, x, seed::NTuple, contexts::Vararg{Context,C}
         ) where {F,C}
             prep = $prep_op(f, backend, x, seed, contexts...)
             return $val_and_op(f, prep, backend, x, seed, contexts...)
         end
-        @eval function $val_and_op!(
-            f::F,
-            result::NTuple,
-            backend::AbstractADType,
-            x,
-            seed::NTuple,
-            contexts::Vararg{Context,C},
-        ) where {F,C}
-            prep = $prep_op(f, backend, x, seed, contexts...)
-            return $val_and_op!(f, result, prep, backend, x, seed, contexts...)
+
+        if op in (:pushforward, :pullback)
+            @eval function $val_and_op!(
+                f::F,
+                result::NTuple,
+                backend::AbstractADType,
+                x,
+                seed::NTuple,
+                contexts::Vararg{Context,C},
+            ) where {F,C}
+                prep = $prep_op(f, backend, x, seed, contexts...)
+                return $val_and_op!(f, result, prep, backend, x, seed, contexts...)
+            end
+        elseif op == :hvp
+            @eval function $val_and_op!(
+                f::F,
+                result1,
+                result2::NTuple,
+                backend::AbstractADType,
+                x,
+                seed::NTuple,
+                contexts::Vararg{Context,C},
+            ) where {F,C}
+                prep = $prep_op(f, backend, x, seed, contexts...)
+                return $val_and_op!(
+                    f, result1, result2, prep, backend, x, seed, contexts...
+                )
+            end
         end
+
+        op == :hvp && continue
+
         @eval function $op(
             f!::F, y, backend::AbstractADType, x, seed::NTuple, contexts::Vararg{Context,C}
         ) where {F,C}

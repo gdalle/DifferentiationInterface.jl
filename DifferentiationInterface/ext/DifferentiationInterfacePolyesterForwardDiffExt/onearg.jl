@@ -309,6 +309,32 @@ function DI.hvp!(
     return DI.hvp!(f, tg, prep, single_threaded(backend), x, tx, contexts...)
 end
 
+function DI.gradient_and_hvp(
+    f,
+    prep::HVPPrep,
+    backend::AutoPolyesterForwardDiff,
+    x,
+    tx::NTuple,
+    contexts::Vararg{Context,C},
+) where {C}
+    return DI.gradient_and_hvp(f, prep, single_threaded(backend), x, tx, contexts...)
+end
+
+function DI.gradient_and_hvp!(
+    f,
+    grad,
+    tg::NTuple,
+    prep::HVPPrep,
+    backend::AutoPolyesterForwardDiff,
+    x,
+    tx::NTuple,
+    contexts::Vararg{Context,C},
+) where {C}
+    return DI.gradient_and_hvp!(
+        f, grad, tg, prep, single_threaded(backend), x, tx, contexts...
+    )
+end
+
 ## Second derivative
 
 function DI.prepare_second_derivative(

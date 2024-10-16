@@ -541,6 +541,32 @@ function DI.hvp!(
     return DI.hvp!(f, tg, prep, SecondOrder(backend, backend), x, tx, contexts...)
 end
 
+function DI.gradient_and_hvp(
+    f::F,
+    prep::HVPPrep,
+    backend::AutoForwardDiff,
+    x,
+    tx::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    return DI.gradient_and_hvp(f, prep, SecondOrder(backend, backend), x, tx, contexts...)
+end
+
+function DI.gradient_and_hvp!(
+    f::F,
+    grad,
+    tg::NTuple,
+    prep::HVPPrep,
+    backend::AutoForwardDiff,
+    x,
+    tx::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    return DI.gradient_and_hvp!(
+        f, grad, tg, prep, SecondOrder(backend, backend), x, tx, contexts...
+    )
+end
+
 ## Hessian
 
 ### Unprepared, only when chunk size and tag are not specified

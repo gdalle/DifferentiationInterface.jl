@@ -2,8 +2,10 @@ for op in ALL_OPS
     op! = Symbol(op, "!")
     val_prefix = if op == :second_derivative
         "value_derivative_and_"
-    elseif op in [:hessian, :hvp]
+    elseif op == :hessian
         "value_gradient_and_"
+    elseif op == :hvp
+        "gradient_and_"
     else
         "value_and_"
     end
@@ -325,9 +327,15 @@ for op in ALL_OPS
             (subset == :full) &&
                 @test_opt ignored_modules = ignored_modules function_filter =
                     function_filter $op(f, ba, x, tang, contexts...)
+            (subset == :full) &&
+                @test_opt ignored_modules = ignored_modules function_filter =
+                    function_filter $val_and_op(f, ba, x, tang, contexts...)
             (subset in (:prepared, :full)) &&
                 @test_opt ignored_modules = ignored_modules function_filter =
                     function_filter $op(f, prep, ba, x, tang, contexts...)
+            (subset in (:prepared, :full)) &&
+                @test_opt ignored_modules = ignored_modules function_filter =
+                    function_filter $val_and_op(f, prep, ba, x, tang, contexts...)
             return nothing
         end
 
@@ -346,9 +354,19 @@ for op in ALL_OPS
             (subset == :full) &&
                 @test_opt ignored_modules = ignored_modules function_filter =
                     function_filter $op!(f, mysimilar(res2), ba, x, tang, contexts...)
+            (subset == :full) &&
+                @test_opt ignored_modules = ignored_modules function_filter =
+                    function_filter $val_and_op!(
+                    f, mysimilar(res1), mysimilar(res2), ba, x, tang, contexts...
+                )
             (subset in (:prepared, :full)) &&
                 @test_opt ignored_modules = ignored_modules function_filter =
                     function_filter $op!(f, mysimilar(res2), prep, ba, x, tang, contexts...)
+            (subset in (:prepared, :full)) &&
+                @test_opt ignored_modules = ignored_modules function_filter =
+                    function_filter $val_and_op!(
+                    f, mysimilar(res1), mysimilar(res2), prep, ba, x, tang, contexts...
+                )
             return nothing
         end
     end

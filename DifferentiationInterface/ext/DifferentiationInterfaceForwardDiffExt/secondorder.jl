@@ -32,6 +32,7 @@ function DI.prepare_hvp(
     T = tag_type(f, tagged_outer_backend, x)
     xdual = make_dual(T, x, tx)
     gradient_prep = DI.prepare_gradient(f, inner(backend), xdual, contexts...)
+    # TODO: get rid of closure?
     function inner_gradient(x, unannotated_contexts...)
         annotated_contexts = rewrap(unannotated_contexts...)
         return DI.gradient(f, gradient_prep, inner(backend), x, annotated_contexts...)
@@ -72,4 +73,35 @@ function DI.hvp!(
         inner_gradient, tg, outer_pushforward_prep, tagged_outer_backend, x, tx, contexts...
     )
     return tg
+end
+
+function DI.gradient_and_hvp(
+    f::F,
+    prep::ForwardDiffOverSomethingHVPPrep,
+    ::SecondOrder{<:AutoForwardDiff},
+    x,
+    tx::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    (; tagged_outer_backend, inner_gradient, outer_pushforward_prep) = prep
+    return DI.value_and_pushforward(
+        inner_gradient, outer_pushforward_prep, tagged_outer_backend, x, tx, contexts...
+    )
+end
+
+function DI.gradient_and_hvp!(
+    f::F,
+    grad,
+    tg::NTuple,
+    prep::ForwardDiffOverSomethingHVPPrep,
+    ::SecondOrder{<:AutoForwardDiff},
+    x,
+    tx::NTuple,
+    contexts::Vararg{Context,C},
+) where {F,C}
+    (; tagged_outer_backend, inner_gradient, outer_pushforward_prep) = prep
+    new_grad, _ = DI.value_and_pushforward!(
+        inner_gradient, tg, outer_pushforward_prep, tagged_outer_backend, x, tx, contexts...
+    )
+    return copyto!(grad, new_grad), tg
 end
