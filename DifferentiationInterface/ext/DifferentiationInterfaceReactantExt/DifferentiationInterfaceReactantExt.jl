@@ -1,7 +1,6 @@
 module DifferentiationInterfaceReactantExt
 
 using ADTypes: ADTypes
-using Compat
 import DifferentiationInterface as DI
 using DifferentiationInterface:
     ReactantBackend,

@@ -8,7 +8,7 @@ struct ReactantGradientPrep{XR,GR,CG,CG!,CVG,CVG!} <: GradientPrep
 end
 
 function DI.prepare_gradient(f, rebackend::ReactantBackend, x)
-    @compat (; backend) = rebackend
+    (; backend) = rebackend
     xr = to_rarray(x)
     gr = to_rarray(similar(x))
     _gradient(_xr) = DI.gradient(f, backend, _xr)
@@ -30,26 +30,26 @@ function DI.prepare_gradient(f, rebackend::ReactantBackend, x)
 end
 
 function DI.gradient(f, prep::ReactantGradientPrep, ::ReactantBackend, x)
-    @compat (; xr, compiled_gradient) = prep
+    (; xr, compiled_gradient) = prep
     copyto!(xr, x)
     return compiled_gradient(xr)
 end
 
 function DI.value_and_gradient(f, prep::ReactantGradientPrep, ::ReactantBackend, x)
-    @compat (; xr, compiled_value_and_gradient) = prep
+    (; xr, compiled_value_and_gradient) = prep
     copyto!(xr, x)
     return compiled_value_and_gradient(xr)
 end
 
 function DI.gradient!(f, grad, prep::ReactantGradientPrep, ::ReactantBackend, x)
-    @compat (; xr, gr, compiled_gradient!) = prep
+    (; xr, gr, compiled_gradient!) = prep
     copyto!(xr, x)
     prep.compiled_gradient!(gr, xr)
     return copyto!(grad, gr)
 end
 
 function DI.value_and_gradient!(f, grad, prep::ReactantGradientPrep, ::ReactantBackend, x)
-    @compat (; xr, gr, compiled_value_and_gradient!) = prep
+    (; xr, gr, compiled_value_and_gradient!) = prep
     copyto!(xr, x)
     y, gr = compiled_value_and_gradient!(gr, xr)
     return y, copyto!(grad, gr)
