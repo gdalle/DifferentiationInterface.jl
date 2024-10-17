@@ -83,3 +83,17 @@ function mypartials!(::Type{T}, ty::NTuple{B}, ydual) where {T,B}
     end
     return ty
 end
+
+_translate(::Type{T}, ::Val{B}, c::Constant) where {T,B} = unwrap(c)
+
+function _translate(::Type{T}, ::Val{B}, c::Cache) where {T,B}
+    c0 = unwrap(c)
+    return make_dual(T, c0, ntuple(_ -> similar(c0), Val(B)))  # TODO: optimize
+end
+
+function translate(::Type{T}, ::Val{B}, contexts::Vararg{Context,C}) where {T,B,C}
+    new_contexts = map(contexts) do c
+        _translate(T, Val(B), c)
+    end
+    return new_contexts
+end

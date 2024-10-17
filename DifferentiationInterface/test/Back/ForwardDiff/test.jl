@@ -25,6 +25,14 @@ test_differentiation(
 );
 
 test_differentiation(
+    AutoForwardDiff(),
+    default_scenarios(;
+        include_normal=false, include_batchified=false, include_cachified=true
+    );
+    logging=LOGGING,
+);
+
+test_differentiation(
     AutoForwardDiff(); correctness=false, type_stability=:prepared, logging=LOGGING
 );
 

@@ -5,6 +5,8 @@ using Base: Fix1, Fix2
 import DifferentiationInterface as DI
 using DifferentiationInterface:
     BatchSizeSettings,
+    Cache,
+    Constant,
     Context,
     DerivativePrep,
     DifferentiateWith,
