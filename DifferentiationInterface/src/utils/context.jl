@@ -52,6 +52,7 @@ struct Constant{T} <: Context
 end
 
 constant_maker(c) = Constant(c)
+maker(::Constant) = constant_maker
 unwrap(c::Constant) = c.data
 
 Base.:(==)(c1::Constant, c2::Constant) = c1.data == c2.data
@@ -68,6 +69,7 @@ struct Cache{T} <: Context
 end
 
 cache_maker(c) = Cache(c)
+maker(::Cache) = cache_maker
 unwrap(c::Cache) = c.data
 
 Base.:(==)(c1::Cache, c2::Cache) = c1.data == c2.data
@@ -75,15 +77,7 @@ Base.:(==)(c1::Cache, c2::Cache) = c1.data == c2.data
 struct Rewrap{C,T}
     context_makers::T
     function Rewrap(contexts::Vararg{Context,C}) where {C}
-        context_makers = map(contexts) do c
-            if c isa Cache
-                cache_maker
-            elseif c isa Constant
-                constant_maker
-            else
-                nothing
-            end
-        end
+        context_makers = map(maker, contexts)
         return new{C,typeof(context_makers)}(context_makers)
     end
 end
