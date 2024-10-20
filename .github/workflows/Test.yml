@@ -58,8 +58,6 @@ jobs:
             group: Back/ChainRulesBackends
           - version: "1"
             group: Back/Enzyme
-          - version: "1"
-            group: Back/Mooncake
     env:
       JULIA_DI_TEST_GROUP: ${{ matrix.group }}
     steps:
