@@ -19,7 +19,7 @@ Right now, there are two kinds of context: [`Constant`](@ref) and [`Cache`](@ref
     This feature is still experimental and will not be supported by all backends.
     At the moment:
     - `Constant` is supported by all backends except symbolic ones
-    - `Cache` is only supported by finite difference backends
+    - `Cache` is only supported by finite difference backends and [`AutoForwardDiff`](@ref), but it is not yet optimized
 
 Semantically, both of these calls compute the partial gradient of `f(x, c)` with respect to `x`, but they consider `c` differently:
 

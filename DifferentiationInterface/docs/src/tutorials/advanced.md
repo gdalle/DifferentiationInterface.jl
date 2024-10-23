@@ -49,6 +49,8 @@ prep_other_constant = prepare_gradient(f_multiarg, backend, x, Constant(-1))
 gradient(f_multiarg, prep_other_constant, backend, x, Constant(10))
 ```
 
+For additional arguments which act as mutated buffers, the [`Cache`](@ref) wrapper is the appropriate choice instead of [`Constant`](@ref).
+
 ## Sparsity
 
 Sparse AD is very useful when Jacobian or Hessian matrices have a lot of zeros.

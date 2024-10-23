@@ -51,13 +51,11 @@ struct Constant{T} <: Context
     data::T
 end
 
+constant_maker(c) = Constant(c)
+maker(::Constant) = constant_maker
 unwrap(c::Constant) = c.data
 
-function Base.convert(::Type{Constant{T}}, x::Constant) where {T}
-    return Constant(convert(T, x.data))
-end
-
-Base.convert(::Type{Constant{T}}, x) where {T} = Constant(convert(T, x))
+Base.:(==)(c1::Constant, c2::Constant) = c1.data == c2.data
 
 """
     Cache
@@ -70,25 +68,26 @@ struct Cache{T} <: Context
     data::T
 end
 
+cache_maker(c) = Cache(c)
+maker(::Cache) = cache_maker
 unwrap(c::Cache) = c.data
 
-function Base.convert(::Type{Cache{T}}, x::Cache) where {T}
-    return Cache(convert(T, x.data))
-end
-
-Base.convert(::Type{Cache{T}}, x) where {T} = Cache(convert(T, x))
+Base.:(==)(c1::Cache, c2::Cache) = c1.data == c2.data
 
 struct Rewrap{C,T}
+    context_makers::T
     function Rewrap(contexts::Vararg{Context,C}) where {C}
-        T = typeof(contexts)
-        return new{C,T}()
+        context_makers = map(maker, contexts)
+        return new{C,typeof(context_makers)}(context_makers)
     end
 end
 
 (::Rewrap{0})() = ()
 
 function (r::Rewrap{C,T})(unannotated_contexts::Vararg{Any,C}) where {C,T}
-    return T(unannotated_contexts)
+    return map(r.context_makers, unannotated_contexts) do maker, c
+        maker(c)
+    end
 end
 
 with_contexts(f) = f

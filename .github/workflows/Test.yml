@@ -54,12 +54,14 @@ jobs:
         exclude:
           # - skip_lts: true
           #   version: "1.10"
-          - version: "1"
-            group: Back/ChainRulesBackends
+          # - version: "1"
+          #   group: Back/ChainRulesBackends
           # - version: "1"
           #   group: Back/Enzyme
-          - version: "1"
-            group: Back/Mooncake
+          # - version: "1"
+          #   group: Back/Mooncake
+          # - version: "1"
+          #   group: Back/Enzyme
     env:
       JULIA_DI_TEST_GROUP: ${{ matrix.group }}
     steps:
