@@ -31,6 +31,10 @@ function get_tag(f::F, ::AutoForwardDiff{chunksize,Nothing}, x) where {F,chunksi
     return Tag(f, eltype(x))
 end
 
+function get_tag(ft::FixTail, ::AutoForwardDiff{chunksize,Nothing}, x) where {chunksize}
+    return Tag(ft.f, eltype(x))
+end
+
 tag_type(f::F, backend::AutoForwardDiff, x) where {F} = typeof(get_tag(f, backend, x))
 
 function make_dual_similar(::Type{T}, x::Number, tx::NTuple{B}) where {T,B}
@@ -85,6 +89,7 @@ function mypartials!(::Type{T}, ty::NTuple{B}, ydual) where {T,B}
 end
 
 _translate(::Type{T}, ::Val{B}, c::Constant) where {T,B} = unwrap(c)
+_translate(::Type{T}, ::Val{B}, c::PrepContext) where {T,B} = unwrap(c)
 
 function _translate(::Type{T}, ::Val{B}, c::Cache) where {T,B}
     c0 = unwrap(c)
