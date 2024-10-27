@@ -78,11 +78,7 @@ struct PrepContext{T<:Prep} <: Context
     data::T
 end
 
-prepcontext_maker(c) = PrepContext(c)
-maker(::PrepContext) = prepcontext_maker
 unwrap(c::PrepContext) = c.data
-
-Base.:(==)(c1::PrepContext, c2::PrepContext) = c1.data == c2.data
 
 struct Rewrap{C,T}
     context_makers::T
