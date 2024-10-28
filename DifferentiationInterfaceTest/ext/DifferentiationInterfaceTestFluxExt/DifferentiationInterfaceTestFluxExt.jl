@@ -12,8 +12,8 @@ using Random: AbstractRNG, default_rng
 #=
 Relevant discussions:
 
-- https://github.com/gdalle/DifferentiationInterface.jl/issues/105
-- https://github.com/gdalle/DifferentiationInterface.jl/issues/343
+- https://github.com/JuliaDiff/DifferentiationInterface.jl/issues/105
+- https://github.com/JuliaDiff/DifferentiationInterface.jl/issues/343
 - https://github.com/FluxML/Flux.jl/issues/2469
 =#
 

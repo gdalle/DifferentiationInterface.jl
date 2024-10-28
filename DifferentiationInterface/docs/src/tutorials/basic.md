@@ -127,5 +127,5 @@ prep2 = prepare_gradient(f, backend2, zero(x))
 ```
 
 In short, DifferentiationInterface.jl allows for easy testing and comparison of AD backends.
-If you want to go further, check out the [documentation of DifferentiationInterfaceTest.jl](https://gdalle.github.io/DifferentiationInterface.jl/DifferentiationInterfaceTest).
+If you want to go further, check out the [documentation of DifferentiationInterfaceTest.jl](https://juliadiff.org/DifferentiationInterface.jl/DifferentiationInterfaceTest).
 This related package provides benchmarking utilities to compare backends and help you select the one that is best suited for your problem.
