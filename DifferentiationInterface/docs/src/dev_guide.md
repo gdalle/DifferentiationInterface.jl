@@ -57,11 +57,11 @@ Every other operator can be deduced from these two, but you can gain efficiency 
 ### Tests and docs
 
 Once that is done, you need to add your new backend to the test suite.
-Test files should be gathered in a folder named `SuperDiff` inside [`DifferentiationInterface/test/Back`](https://github.com/gdalle/DifferentiationInterface.jl/tree/main/DifferentiationInterface/test/Back).
-They should use [DifferentiationInterfaceTest.jl](https://github.com/gdalle/DifferentiationInterface.jl/tree/main/DifferentiationInterfaceTest) to check correctness against the default scenarios.
+Test files should be gathered in a folder named `SuperDiff` inside [`DifferentiationInterface/test/Back`](https://github.com/JuliaDiff/DifferentiationInterface.jl/tree/main/DifferentiationInterface/test/Back).
+They should use [DifferentiationInterfaceTest.jl](https://github.com/JuliaDiff/DifferentiationInterface.jl/tree/main/DifferentiationInterfaceTest) to check correctness against the default scenarios.
 Take inspiration from the tests of other backends to write your own.
-To activate tests in CI, modify the [test workflow](https://github.com/gdalle/DifferentiationInterface.jl/blob/main/.github/workflows/Test.yml) and add your package to the list.
-To run the tests locally, replace the following line in [`DifferentiationInterface/test/runtests.jl`](https://github.com/gdalle/DifferentiationInterface.jl/blob/main/DifferentiationInterface/test/runtests.jl)
+To activate tests in CI, modify the [test workflow](https://github.com/JuliaDiff/DifferentiationInterface.jl/blob/main/.github/workflows/Test.yml) and add your package to the list.
+To run the tests locally, replace the following line in [`DifferentiationInterface/test/runtests.jl`](https://github.com/JuliaDiff/DifferentiationInterface.jl/blob/main/DifferentiationInterface/test/runtests.jl)
 
 ```julia
 GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "All")

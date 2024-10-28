@@ -38,7 +38,7 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/gdalle/DifferentiationInterface.jl",
+    repo="github.com/JuliaDiff/DifferentiationInterface.jl",
     devbranch="main",
     dirname="DifferentiationInterface",
     tag_prefix="DifferentiationInterface-",
