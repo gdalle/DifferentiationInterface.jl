@@ -15,7 +15,7 @@ function Base.showerror(io::IO, e::MissingBackendError)
     else
         print(
             io,
-            "Please open an issue: https://github.com/gdalle/DifferentiationInterface.jl/issues/new",
+            "Please open an issue: https://github.com/JuliaDiff/DifferentiationInterface.jl/issues/new",
         )
     end
 end

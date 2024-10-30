@@ -63,7 +63,7 @@ SparseMatrixColorings = "0.4.4"
 StaticArrays = "1.9"
 Test = "<0.0.1,1"
 Zygote = "0.6"
-julia = "1.6"
+julia = "1.10"
 
 [extras]
 ADTypes = "47edcb42-4c32-4615-8424-f2b9edc5f35b"
