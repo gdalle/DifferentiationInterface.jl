@@ -74,6 +74,12 @@ unwrap(c::Cache) = c.data
 
 Base.:(==)(c1::Cache, c2::Cache) = c1.data == c2.data
 
+struct PrepContext{T<:Prep} <: Context
+    data::T
+end
+
+unwrap(c::PrepContext) = c.data
+
 struct Rewrap{C,T}
     context_makers::T
     function Rewrap(contexts::Vararg{Context,C}) where {C}

@@ -7,7 +7,9 @@ using DifferentiationInterface:
     BatchSizeSettings,
     Cache,
     Constant,
+    PrepContext,
     Context,
+    FixTail,
     DerivativePrep,
     DifferentiateWith,
     GradientPrep,
@@ -21,6 +23,7 @@ using DifferentiationInterface:
     SecondOrder,
     inner,
     outer,
+    shuffled_gradient,
     unwrap,
     with_contexts
 import ForwardDiff.DiffResults as DR

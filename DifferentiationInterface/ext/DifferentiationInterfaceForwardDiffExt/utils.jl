@@ -85,6 +85,7 @@ function mypartials!(::Type{T}, ty::NTuple{B}, ydual) where {T,B}
 end
 
 _translate(::Type{T}, ::Val{B}, c::Constant) where {T,B} = unwrap(c)
+_translate(::Type{T}, ::Val{B}, c::PrepContext) where {T,B} = unwrap(c)
 
 function _translate(::Type{T}, ::Val{B}, c::Cache) where {T,B}
     c0 = unwrap(c)
