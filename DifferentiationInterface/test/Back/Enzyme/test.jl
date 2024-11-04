@@ -8,7 +8,7 @@ using Enzyme: Enzyme
 using StaticArrays
 using Test
 
-LOGGING = get(ENV, "CI", "false") == "false"
+LOGGING = true # get(ENV, "CI", "false") == "false"
 
 backends = [
     AutoEnzyme(; mode=nothing),
