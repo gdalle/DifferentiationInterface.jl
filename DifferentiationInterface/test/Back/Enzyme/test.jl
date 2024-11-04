@@ -8,7 +8,7 @@ using Enzyme: Enzyme
 using StaticArrays
 using Test
 
-LOGGING = true # get(ENV, "CI", "false") == "false"
+LOGGING = get(ENV, "CI", "false") == "false"
 
 backends = [
     AutoEnzyme(; mode=nothing),
@@ -45,7 +45,7 @@ test_differentiation(
     duplicated_backends,
     default_scenarios(; include_normal=false, include_closurified=true);
     excluded=SECOND_ORDER,
-    logging=LOGGING,
+    logging=true,
 );
 
 #=
