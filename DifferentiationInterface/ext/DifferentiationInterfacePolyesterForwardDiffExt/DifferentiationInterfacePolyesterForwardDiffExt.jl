@@ -15,6 +15,7 @@ using DifferentiationInterface:
     NoJacobianPrep,
     PushforwardPrep,
     SecondDerivativePrep,
+    SecondOrder,
     unwrap,
     with_contexts
 using LinearAlgebra: mul!
