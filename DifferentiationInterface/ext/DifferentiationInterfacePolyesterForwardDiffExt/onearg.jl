@@ -283,7 +283,9 @@ end
 function DI.prepare_hvp(
     f, backend::AutoPolyesterForwardDiff, x, tx::NTuple, contexts::Vararg{Context,C}
 ) where {C}
-    return DI.prepare_hvp(f, single_threaded(backend), x, tx, contexts...)
+    return DI.prepare_hvp(
+        f, SecondOrder(single_threaded(backend), backend), x, tx, contexts...
+    )
 end
 
 function DI.hvp(
@@ -294,7 +296,9 @@ function DI.hvp(
     tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {C}
-    return DI.hvp(f, prep, single_threaded(backend), x, tx, contexts...)
+    return DI.hvp(
+        f, prep, SecondOrder(single_threaded(backend), backend), x, tx, contexts...
+    )
 end
 
 function DI.hvp!(
@@ -306,7 +310,9 @@ function DI.hvp!(
     tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {C}
-    return DI.hvp!(f, tg, prep, single_threaded(backend), x, tx, contexts...)
+    return DI.hvp!(
+        f, tg, prep, SecondOrder(single_threaded(backend), backend), x, tx, contexts...
+    )
 end
 
 function DI.gradient_and_hvp(
@@ -317,7 +323,9 @@ function DI.gradient_and_hvp(
     tx::NTuple,
     contexts::Vararg{Context,C},
 ) where {C}
-    return DI.gradient_and_hvp(f, prep, single_threaded(backend), x, tx, contexts...)
+    return DI.gradient_and_hvp(
+        f, prep, SecondOrder(single_threaded(backend), backend), x, tx, contexts...
+    )
 end
 
 function DI.gradient_and_hvp!(
@@ -331,7 +339,14 @@ function DI.gradient_and_hvp!(
     contexts::Vararg{Context,C},
 ) where {C}
     return DI.gradient_and_hvp!(
-        f, grad, tg, prep, single_threaded(backend), x, tx, contexts...
+        f,
+        grad,
+        tg,
+        prep,
+        SecondOrder(single_threaded(backend), backend),
+        x,
+        tx,
+        contexts...,
     )
 end
 
