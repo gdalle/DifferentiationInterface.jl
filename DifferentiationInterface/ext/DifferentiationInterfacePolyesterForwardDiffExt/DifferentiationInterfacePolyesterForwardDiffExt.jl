@@ -28,8 +28,12 @@ end
 
 DI.check_available(::AutoPolyesterForwardDiff) = true
 
-function DI.BatchSizeSettings(backend::AutoPolyesterForwardDiff, x_or_N)
-    return DI.BatchSizeSettings(single_threaded(backend), x_or_N)
+function DI.BatchSizeSettings(backend::AutoPolyesterForwardDiff, x::AbstractArray)
+    return DI.BatchSizeSettings(single_threaded(backend), x)
+end
+
+function DI.BatchSizeSettings(backend::AutoPolyesterForwardDiff, N::Integer)
+    return DI.BatchSizeSettings(single_threaded(backend), N)
 end
 
 function DI.threshold_batchsize(

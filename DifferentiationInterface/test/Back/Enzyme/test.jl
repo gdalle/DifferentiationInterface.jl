@@ -41,12 +41,16 @@ test_differentiation(
     logging=LOGGING,
 );
 
+#=
+# TODO: reactivate closurified tests once Enzyme#2056 is fixed
+
 test_differentiation(
     duplicated_backends,
     default_scenarios(; include_normal=false, include_closurified=true);
     excluded=SECOND_ORDER,
     logging=LOGGING,
 );
+=#
 
 #=
 # TODO: reactivate type stability tests
