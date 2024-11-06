@@ -14,6 +14,7 @@ contexts = ()
 r = @inferred Rewrap()
 @test r() == ()
 
-contexts = (Constant(1), Constant(2.0))
+contexts = (Constant(1.0), Cache([2.0]))
 r = @inferred Rewrap(contexts...)
-@test r(3, 4) == (Constant(3), Constant(4.0))
+@test (@inferred r(3.0, [4.0])) == (Constant(3.0), Cache([4.0]))
+@test (@inferred r(3, [4.0f0])) isa Tuple{Constant{Int},Cache{Vector{Float32}}}

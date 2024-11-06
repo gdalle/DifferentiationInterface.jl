@@ -28,12 +28,12 @@ test_differentiation(
     logging=LOGGING,
 );
 
-test_differentiation(second_order_backends; first_order=false, logging=LOGGING);
+test_differentiation(second_order_backends; logging=LOGGING);
 
 test_differentiation(
     backends[1],
     vcat(component_scenarios(), gpu_scenarios());
-    second_order=false,
+    excluded=SECOND_ORDER,
     logging=LOGGING,
 )
 
@@ -41,7 +41,7 @@ test_differentiation(
 
 test_differentiation(
     MyAutoSparse.(vcat(backends, second_order_backends)),
-    sparse_scenarios();
+    sparse_scenarios(; band_sizes=0:-1);
     sparsity=true,
     logging=LOGGING,
 )

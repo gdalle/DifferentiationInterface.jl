@@ -1,14 +1,3 @@
-const ALL_OPS = (
-    :pushforward,
-    :pullback,
-    :derivative,
-    :gradient,
-    :jacobian,
-    :hessian,
-    :hvp,
-    :second_derivative,
-)
-
 """
     Scenario{op,pl_op,pl_fun}
 
@@ -80,7 +69,15 @@ function Base.:(==)(
     eq_x = scen1.x == scen2.x
     eq_y = scen1.y == scen2.y
     eq_tang = scen1.tang == scen2.tang
-    eq_contexts = scen1.contexts == scen2.contexts
+    eq_contexts = all(
+        map(scen1.contexts, scen2.contexts) do c1, c2
+            if c1 isa Cache || c2 isa Cache
+                return true
+            else
+                return c1 == c2
+            end
+        end,
+    )
     eq_res1 = scen1.res1 == scen2.res1
     eq_res2 = scen1.res2 == scen2.res2
     return (eq_x && eq_y && eq_tang && eq_contexts && eq_res1 && eq_res2)
@@ -131,10 +128,16 @@ function Base.show(
     return nothing
 end
 
-adapt_batchsize(backend::AbstractADType, ::Scenario) = backend
-
-function adapt_batchsize(
-    backend::Union{ADTypes.AutoForwardDiff,ADTypes.AutoPolyesterForwardDiff}, scen::Scenario
-)
-    return DI.threshold_batchsize(backend, length(scen.x))
+function adapt_batchsize(backend::AbstractADType, scen::Scenario)
+    if operator(scen) == :jacobian
+        if ADTypes.mode(backend) isa Union{ADTypes.ForwardMode,ADTypes.ForwardOrReverseMode}
+            return DI.threshold_batchsize(backend, length(scen.x))
+        else
+            return DI.threshold_batchsize(backend, length(scen.y))
+        end
+    elseif operator(scen) == :hessian
+        return DI.threshold_batchsize(backend, length(scen.x))
+    else
+        return backend
+    end
 end

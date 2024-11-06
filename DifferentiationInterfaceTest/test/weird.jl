@@ -24,26 +24,36 @@ LOGGING = get(ENV, "CI", "false") == "false"
 ## Generate all scenarios
 
 gpu_scenarios(;
-    include_constantified=true, include_closurified=true, include_batchified=true
+    include_constantified=true,
+    include_closurified=true,
+    include_batchified=true,
+    include_cachified=true,
 )
 static_scenarios(;
-    include_constantified=true, include_closurified=true, include_batchified=true
+    include_constantified=true,
+    include_closurified=true,
+    include_batchified=true,
+    include_cachified=true,
 )
 
 ## Weird arrays
 
-test_differentiation(AutoForwardDiff(), static_scenarios(); logging=LOGGING)
+test_differentiation(
+    AutoForwardDiff(), static_scenarios(); benchmark=:full, logging=LOGGING
+)
 
 test_differentiation(AutoForwardDiff(), component_scenarios(); logging=LOGGING)
 
-test_differentiation(AutoZygote(), gpu_scenarios(); second_order=false, logging=LOGGING)
+test_differentiation(AutoZygote(), gpu_scenarios(); excluded=SECOND_ORDER, logging=LOGGING)
 
-## Closures
+## Closures & caches
 
 test_differentiation(
     AutoFiniteDiff(),
-    default_scenarios(; include_normal=false, include_closurified=true);
-    second_order=false,
+    default_scenarios(;
+        include_normal=false, include_closurified=true, include_cachified=true
+    );
+    excluded=SECOND_ORDER,
     logging=LOGGING,
 );
 

@@ -17,6 +17,6 @@ end
 test_differentiation(
     backends,
     default_scenarios(; include_constantified=true);
-    second_order=false,
+    excluded=SECOND_ORDER,
     logging=LOGGING,
 );

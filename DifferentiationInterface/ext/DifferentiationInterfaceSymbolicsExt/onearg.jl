@@ -275,3 +275,112 @@ function DI.value_gradient_and_hessian!(
     DI.hessian!(f, hess, prep, backend, x)
     return y, grad, hess
 end
+
+## HVP
+
+struct SymbolicsOneArgHVPPrep{G,E2,E2!} <: HVPPrep
+    gradient_prep::G
+    hvp_exe::E2
+    hvp_exe!::E2!
+end
+
+function DI.prepare_hvp(f, backend::AutoSymbolics, x, tx::NTuple)
+    x_var = variables(:x, axes(x)...)
+    dx_var = variables(:dx, axes(x)...)
+    # Symbolic.hessian only accepts vectors
+    hess_var = hessian(f(x_var), vec(x_var))
+    hvp_vec_var = hess_var * vec(dx_var)
+
+    res = build_function(hvp_vec_var, vcat(vec(x_var), vec(dx_var)); expression=Val(false))
+    (hvp_exe, hvp_exe!) = res
+
+    gradient_prep = DI.prepare_gradient(f, backend, x)
+    return SymbolicsOneArgHVPPrep(gradient_prep, hvp_exe, hvp_exe!)
+end
+
+function DI.hvp(f, prep::SymbolicsOneArgHVPPrep, ::AutoSymbolics, x, tx::NTuple)
+    return map(tx) do dx
+        v_vec = vcat(vec(x), vec(dx))
+        dg_vec = prep.hvp_exe(v_vec)
+        reshape(dg_vec, size(x))
+    end
+end
+
+function DI.hvp!(
+    f, tg::NTuple, prep::SymbolicsOneArgHVPPrep, ::AutoSymbolics, x, tx::NTuple
+)
+    for b in eachindex(tx, tg)
+        dx, dg = tx[b], tg[b]
+        v_vec = vcat(vec(x), vec(dx))
+        prep.hvp_exe!(vec(dg), v_vec)
+    end
+    return tg
+end
+
+function DI.gradient_and_hvp(
+    f, prep::SymbolicsOneArgHVPPrep, backend::AutoSymbolics, x, tx::NTuple
+)
+    tg = DI.hvp(f, prep, backend, x, tx)
+    grad = DI.gradient(f, prep.gradient_prep, backend, x)
+    return grad, tg
+end
+
+function DI.gradient_and_hvp!(
+    f, grad, tg::NTuple, prep::SymbolicsOneArgHVPPrep, backend::AutoSymbolics, x, tx::NTuple
+)
+    DI.hvp!(f, tg, prep, backend, x, tx)
+    DI.gradient!(f, grad, prep.gradient_prep, backend, x)
+    return grad, tg
+end
+
+## Second derivative
+
+struct SymbolicsOneArgSecondDerivativePrep{D,E1,E1!} <: SecondDerivativePrep
+    derivative_prep::D
+    der2_exe::E1
+    der2_exe!::E1!
+end
+
+function DI.prepare_second_derivative(f, backend::AutoSymbolics, x)
+    x_var = variable(:x)
+    der_var = derivative(f(x_var), x_var)
+    der2_var = derivative(der_var, x_var)
+
+    res = build_function(der2_var, x_var; expression=Val(false))
+    (der2_exe, der2_exe!) = if res isa Tuple
+        res
+    elseif res isa RuntimeGeneratedFunction
+        res, nothing
+    end
+    derivative_prep = DI.prepare_derivative(f, backend, x)
+    return SymbolicsOneArgSecondDerivativePrep(derivative_prep, der2_exe, der2_exe!)
+end
+
+function DI.second_derivative(
+    f, prep::SymbolicsOneArgSecondDerivativePrep, ::AutoSymbolics, x
+)
+    return prep.der2_exe(x)
+end
+
+function DI.second_derivative!(
+    f, der2, prep::SymbolicsOneArgSecondDerivativePrep, ::AutoSymbolics, x
+)
+    prep.der2_exe!(der2, x)
+    return der2
+end
+
+function DI.value_derivative_and_second_derivative(
+    f, prep::SymbolicsOneArgSecondDerivativePrep, backend::AutoSymbolics, x
+)
+    y, der = DI.value_and_derivative(f, prep.derivative_prep, backend, x)
+    der2 = DI.second_derivative(f, prep, backend, x)
+    return y, der, der2
+end
+
+function DI.value_derivative_and_second_derivative!(
+    f, der, der2, prep::SymbolicsOneArgSecondDerivativePrep, backend::AutoSymbolics, x
+)
+    y, _ = DI.value_and_derivative!(f, der, prep.derivative_prep, backend, x)
+    DI.second_derivative!(f, der2, prep, backend, x)
+    return y, der, der2
+end

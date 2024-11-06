@@ -29,7 +29,7 @@ using ADTypes:
     AutoSymbolics,
     AutoTracker,
     AutoZygote
-using LinearAlgebra: Symmetric, Transpose, dot, parent, transpose
+using LinearAlgebra: dot
 
 include("compat.jl")
 
@@ -44,6 +44,7 @@ include("utils/check.jl")
 include("utils/exceptions.jl")
 include("utils/printing.jl")
 include("utils/context.jl")
+include("utils/linalg.jl")
 
 include("first_order/pushforward.jl")
 include("first_order/pullback.jl")
@@ -65,7 +66,7 @@ include("misc/zero_backends.jl")
 
 ## Exported
 
-export Context, Constant
+export Context, Constant, Cache
 export MixedMode, SecondOrder
 
 export value_and_pushforward!, value_and_pushforward
@@ -84,7 +85,7 @@ export jacobian!, jacobian
 
 export second_derivative!, second_derivative
 export value_derivative_and_second_derivative, value_derivative_and_second_derivative!
-export hvp!, hvp
+export hvp!, hvp, gradient_and_hvp, gradient_and_hvp!
 export hessian!, hessian
 export value_gradient_and_hessian, value_gradient_and_hessian!
 

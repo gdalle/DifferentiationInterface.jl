@@ -121,7 +121,7 @@ end
 function DI.prepare_gradient(
     f::F, backend::AutoEnzyme{<:ForwardMode,<:Union{Nothing,Const}}, x
 ) where {F}
-    valB = pick_batchsize(backend, length(x))
+    valB = to_val(DI.pick_batchsize(backend, x))
     shadows = create_shadows(valB, x)
     return EnzymeForwardGradientPrep(valB, shadows)
 end
@@ -190,7 +190,7 @@ function DI.prepare_jacobian(
     f::F, backend::AutoEnzyme{<:Union{ForwardMode,Nothing},<:Union{Nothing,Const}}, x
 ) where {F}
     y = f(x)
-    valB = pick_batchsize(backend, length(x))
+    valB = to_val(DI.pick_batchsize(backend, x))
     shadows = create_shadows(valB, x)
     return EnzymeForwardOneArgJacobianPrep(valB, shadows, length(y))
 end

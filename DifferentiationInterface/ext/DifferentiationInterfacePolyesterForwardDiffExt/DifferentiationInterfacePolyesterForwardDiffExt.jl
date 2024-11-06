@@ -15,6 +15,7 @@ using DifferentiationInterface:
     NoJacobianPrep,
     PushforwardPrep,
     SecondDerivativePrep,
+    SecondOrder,
     unwrap,
     with_contexts
 using LinearAlgebra: mul!
@@ -28,14 +29,18 @@ end
 
 DI.check_available(::AutoPolyesterForwardDiff) = true
 
-function DI.pick_batchsize(backend::AutoPolyesterForwardDiff, dimension::Integer)
-    return DI.pick_batchsize(single_threaded(backend), dimension)
+function DI.BatchSizeSettings(backend::AutoPolyesterForwardDiff, x::AbstractArray)
+    return DI.BatchSizeSettings(single_threaded(backend), x)
+end
+
+function DI.BatchSizeSettings(backend::AutoPolyesterForwardDiff, N::Integer)
+    return DI.BatchSizeSettings(single_threaded(backend), N)
 end
 
 function DI.threshold_batchsize(
     backend::AutoPolyesterForwardDiff{chunksize1}, chunksize2::Integer
 ) where {chunksize1}
-    chunksize = (chunksize1 === nothing) ? nothing : min(chunksize1, chunksize2)
+    chunksize = isnothing(chunksize1) ? nothing : min(chunksize1, chunksize2)
     return AutoPolyesterForwardDiff(; chunksize, tag=backend.tag)
 end
 

@@ -15,6 +15,7 @@ Abstract supertype for additional context arguments, which can be passed to diff
 # See also
 
 - [`Constant`](@ref)
+- [`Cache`](@ref)
 """
 abstract type Context end
 
@@ -50,24 +51,49 @@ struct Constant{T} <: Context
     data::T
 end
 
+constant_maker(c) = Constant(c)
+maker(::Constant) = constant_maker
 unwrap(c::Constant) = c.data
 
-function Base.convert(::Type{Constant{T}}, x::Constant) where {T}
-    return Constant(convert(T, x.data))
+Base.:(==)(c1::Constant, c2::Constant) = c1.data == c2.data
+
+"""
+    Cache
+
+Concrete type of [`Context`](@ref) argument which can be mutated with active values during differentiation.
+
+The initial values present inside the cache do not matter.
+"""
+struct Cache{T} <: Context
+    data::T
 end
 
-Base.convert(::Type{Constant{T}}, x) where {T} = Constant(convert(T, x))
+cache_maker(c) = Cache(c)
+maker(::Cache) = cache_maker
+unwrap(c::Cache) = c.data
+
+Base.:(==)(c1::Cache, c2::Cache) = c1.data == c2.data
+
+struct PrepContext{T<:Prep} <: Context
+    data::T
+end
+
+unwrap(c::PrepContext) = c.data
 
 struct Rewrap{C,T}
-    contexts::T
+    context_makers::T
     function Rewrap(contexts::Vararg{Context,C}) where {C}
-        T = typeof(contexts)
-        return new{C,T}(contexts)
+        context_makers = map(maker, contexts)
+        return new{C,typeof(context_makers)}(context_makers)
     end
 end
 
+(::Rewrap{0})() = ()
+
 function (r::Rewrap{C,T})(unannotated_contexts::Vararg{Any,C}) where {C,T}
-    return T(unannotated_contexts)
+    return map(r.context_makers, unannotated_contexts) do maker, c
+        maker(c)
+    end
 end
 
 with_contexts(f) = f

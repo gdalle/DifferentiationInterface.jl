@@ -13,6 +13,7 @@ DifferentiationInterface
 ```@docs
 Context
 Constant
+Cache
 ```
 
 ## First order
@@ -93,6 +94,8 @@ prepare_hvp
 prepare_hvp_same_point
 hvp
 hvp!
+gradient_and_hvp
+gradient_and_hvp!
 ```
 
 ### Hessian

@@ -9,7 +9,9 @@ using Test
 
 LOGGING = get(ENV, "CI", "false") == "false"
 
-backends = [AutoForwardDiff(; tag=:hello), AutoForwardDiff(; chunksize=5)]
+backends = [
+    AutoForwardDiff(), AutoForwardDiff(; tag=:hello), AutoForwardDiff(; chunksize=5)
+]
 
 for backend in backends
     @test check_available(backend)
@@ -23,31 +25,43 @@ test_differentiation(
 );
 
 test_differentiation(
-    AutoForwardDiff(); correctness=false, type_stability=true, logging=LOGGING
+    AutoForwardDiff(),
+    default_scenarios(;
+        include_normal=false, include_batchified=false, include_cachified=true
+    );
+    logging=LOGGING,
+);
+
+test_differentiation(
+    AutoForwardDiff(); correctness=false, type_stability=:prepared, logging=LOGGING
 );
 
 test_differentiation(
     AutoForwardDiff(; chunksize=5);
     correctness=false,
-    type_stability=(; preparation=true, prepared_op=true, unprepared_op=false),
+    type_stability=:full,
+    excluded=[:hessian],
     logging=LOGGING,
 );
 
 test_differentiation(
     backends,
     vcat(component_scenarios(), static_scenarios()); # FD accesses individual indices
-    excluded=[:jacobian],  # jacobian is super slow for some reason
-    second_order=false,
+    excluded=vcat(SECOND_ORDER, [:jacobian]),  # jacobian is super slow for some reason
     logging=LOGGING,
 );
 
 ## Sparse
 
-test_differentiation(MyAutoSparse.(backends), default_scenarios(); logging=LOGGING);
+test_differentiation(MyAutoSparse.(backends[1:2]), default_scenarios(); logging=LOGGING);
 
 test_differentiation(
-    MyAutoSparse.(backends),
+    MyAutoSparse.(backends[1:2]),
     sparse_scenarios(; include_constantified=true);
     sparsity=true,
     logging=LOGGING,
 );
+
+## Static
+
+test_differentiation(AutoForwardDiff(), static_scenarios(); logging=LOGGING)

@@ -24,7 +24,8 @@ Return [`InPlaceSupported`](@ref) or [`InPlaceNotSupported`](@ref) in a statical
 inplace_support(::AbstractADType) = InPlaceSupported()
 
 function inplace_support(backend::SecondOrder)
-    if Bool(inplace_support(inner(backend))) && Bool(inplace_support(outer(backend)))
+    if inplace_support(inner(backend)) isa InPlaceSupported &&
+        inplace_support(outer(backend)) isa InPlaceSupported
         return InPlaceSupported()
     else
         return InPlaceNotSupported()
@@ -70,7 +71,10 @@ pushforward_performance(::ForwardMode) = PushforwardFast()
 pushforward_performance(::ForwardOrReverseMode) = PushforwardFast()
 pushforward_performance(::ReverseMode) = PushforwardSlow()
 pushforward_performance(::SymbolicMode) = PushforwardFast()
-pushforward_performance(backend::AutoSparse) = pushforward_performance(dense_ad(backend))
+
+function pushforward_performance(backend::Union{AutoSparse,SecondOrder})
+    throw(ArgumentError("Pushforward performance not defined for $backend`."))
+end
 
 ## Pullback
 
@@ -100,7 +104,10 @@ pullback_performance(::ForwardMode) = PullbackSlow()
 pullback_performance(::ForwardOrReverseMode) = PullbackFast()
 pullback_performance(::ReverseMode) = PullbackFast()
 pullback_performance(::SymbolicMode) = PullbackFast()
-pullback_performance(backend::AutoSparse) = pullback_performance(dense_ad(backend))
+
+function pullback_performance(backend::Union{AutoSparse,SecondOrder})
+    throw(ArgumentError("Pullback performance not defined for $backend`."))
+end
 
 ## HVP
 
@@ -148,7 +155,9 @@ function hvp_mode(ba::SecondOrder)
     end
 end
 
-hvp_mode(backend::AutoSparse{<:SecondOrder}) = hvp_mode(dense_ad(backend))
+function hvp_mode(backend::AutoSparse)
+    throw(ArgumentError("HVP mode not defined for $backend`."))
+end
 
 ## Conversions
 

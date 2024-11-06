@@ -171,6 +171,29 @@ function DI.hvp!(
     return DI.hvp!(f, tg, prep, SecondOrder(AutoForwardDiff(), backend), x, tx, contexts...)
 end
 
+function DI.gradient_and_hvp(
+    f, prep::HVPPrep, backend::AutoZygote, x, tx::NTuple, contexts::Vararg{Constant,C}
+) where {C}
+    return DI.gradient_and_hvp(
+        f, prep, SecondOrder(AutoForwardDiff(), backend), x, tx, contexts...
+    )
+end
+
+function DI.gradient_and_hvp!(
+    f,
+    grad,
+    tg::NTuple,
+    prep::HVPPrep,
+    backend::AutoZygote,
+    x,
+    tx::NTuple,
+    contexts::Vararg{Constant,C},
+) where {C}
+    return DI.gradient_and_hvp!(
+        f, grad, tg, prep, SecondOrder(AutoForwardDiff(), backend), x, tx, contexts...
+    )
+end
+
 ## Hessian
 
 function DI.prepare_hessian(f, ::AutoZygote, x, contexts::Vararg{Constant,C}) where {C}

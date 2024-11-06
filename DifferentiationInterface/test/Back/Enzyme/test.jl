@@ -5,6 +5,7 @@ using ADTypes: ADTypes
 using DifferentiationInterface, DifferentiationInterfaceTest
 import DifferentiationInterfaceTest as DIT
 using Enzyme: Enzyme
+using StaticArrays
 using Test
 
 LOGGING = get(ENV, "CI", "false") == "false"
@@ -31,21 +32,25 @@ end;
 
 ## First order
 
-test_differentiation(backends, default_scenarios(); second_order=false, logging=LOGGING);
+test_differentiation(backends, default_scenarios(); excluded=SECOND_ORDER, logging=LOGGING);
 
 test_differentiation(
     backends[1:3],
     default_scenarios(; include_normal=false, include_constantified=true);
-    second_order=false,
+    excluded=SECOND_ORDER,
     logging=LOGGING,
 );
+
+#=
+# TODO: reactivate closurified tests once Enzyme#2056 is fixed
 
 test_differentiation(
     duplicated_backends,
     default_scenarios(; include_normal=false, include_closurified=true);
-    second_order=false,
+    excluded=SECOND_ORDER,
     logging=LOGGING,
 );
+=#
 
 #=
 # TODO: reactivate type stability tests
@@ -54,8 +59,8 @@ test_differentiation(
     AutoEnzyme(; mode=Enzyme.Forward),  # TODO: add more
     default_scenarios(; include_batchified=false);
     correctness=false,
-    type_stability=true,
-    second_order=false,
+    type_stability=:prepared,
+    excluded=SECOND_ORDER,
     logging=LOGGING,
 );
 =#
@@ -65,32 +70,45 @@ test_differentiation(
 test_differentiation(
     AutoEnzyme(),
     default_scenarios(; include_constantified=true);
-    first_order=false,
+    excluded=FIRST_ORDER,
     logging=LOGGING,
 );
 
 test_differentiation(
     AutoEnzyme(; mode=Enzyme.Forward);
-    first_order=false,
-    excluded=[:hessian, :hvp],
+    excluded=vcat(FIRST_ORDER, [:hessian, :hvp]),
     logging=LOGGING,
 );
 
 test_differentiation(
     AutoEnzyme(; mode=Enzyme.Reverse);
-    first_order=false,
-    excluded=[:second_derivative],
+    excluded=vcat(FIRST_ORDER, [:second_derivative]),
     logging=LOGGING,
 );
 
 test_differentiation(
     SecondOrder(AutoEnzyme(; mode=Enzyme.Reverse), AutoEnzyme(; mode=Enzyme.Forward));
-    first_order=false,
     logging=LOGGING,
 );
 
 ## Sparse
 
 test_differentiation(
-    MyAutoSparse.(AutoEnzyme()), sparse_scenarios(); sparsity=true, logging=LOGGING
+    MyAutoSparse.(AutoEnzyme(; function_annotation=Enzyme.Const)),
+    sparse_scenarios();
+    sparsity=true,
+    logging=LOGGING,
 );
+
+##
+
+filtered_static_scenarios = filter(static_scenarios()) do s
+    DIT.operator_place(s) == :out && DIT.function_place(s) == :out
+end
+
+test_differentiation(
+    [AutoEnzyme(; mode=Enzyme.Forward), AutoEnzyme(; mode=Enzyme.Reverse)],
+    filtered_static_scenarios;
+    excluded=SECOND_ORDER,
+    logging=LOGGING,
+)

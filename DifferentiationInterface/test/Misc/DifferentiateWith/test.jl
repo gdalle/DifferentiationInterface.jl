@@ -24,6 +24,6 @@ end
 test_differentiation(
     [AutoForwardDiff(), AutoZygote()],
     differentiatewith_scenarios();
-    second_order=false,
+    excluded=SECOND_ORDER,
     logging=LOGGING,
 )

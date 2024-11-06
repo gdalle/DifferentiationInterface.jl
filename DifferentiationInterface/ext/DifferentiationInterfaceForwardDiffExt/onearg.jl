@@ -1,5 +1,65 @@
 ## Pushforward
 
+### Unprepared (avoid working on `similar(x)`)
+
+function DI.value_and_pushforward(
+    f::F, backend::AutoForwardDiff, x, tx::NTuple{B}, contexts::Vararg{Context,C}
+) where {F,B,C}
+    T = tag_type(f, backend, x)
+    xdual = make_dual(T, x, tx)
+    contexts_dual = translate(T, Val(B), contexts...)
+    ydual = f(xdual, contexts_dual...)
+    y = myvalue(T, ydual)
+    ty = mypartials(T, Val(B), ydual)
+    return y, ty
+end
+
+function DI.value_and_pushforward!(
+    f::F,
+    ty::NTuple{B},
+    backend::AutoForwardDiff,
+    x,
+    tx::NTuple{B},
+    contexts::Vararg{Context,C},
+) where {F,B,C}
+    T = tag_type(f, backend, x)
+    xdual = make_dual(T, x, tx)
+    contexts_dual = translate(T, Val(B), contexts...)
+    ydual = f(xdual, contexts_dual...)
+    y = myvalue(T, ydual)
+    mypartials!(T, ty, ydual)
+    return y, ty
+end
+
+function DI.pushforward(
+    f::F, backend::AutoForwardDiff, x, tx::NTuple{B}, contexts::Vararg{Context,C}
+) where {F,B,C}
+    T = tag_type(f, backend, x)
+    xdual = make_dual(T, x, tx)
+    contexts_dual = translate(T, Val(B), contexts...)
+    ydual = f(xdual, contexts_dual...)
+    ty = mypartials(T, Val(B), ydual)
+    return ty
+end
+
+function DI.pushforward!(
+    f::F,
+    ty::NTuple{B},
+    backend::AutoForwardDiff,
+    x,
+    tx::NTuple{B},
+    contexts::Vararg{Context,C},
+) where {F,B,C}
+    T = tag_type(f, backend, x)
+    xdual = make_dual(T, x, tx)
+    contexts_dual = translate(T, Val(B), contexts...)
+    ydual = f(xdual, contexts_dual...)
+    mypartials!(T, ty, ydual)
+    return ty
+end
+
+### Prepared
+
 struct ForwardDiffOneArgPushforwardPrep{T,X} <: PushforwardPrep
     xdual_tmp::X
 end
@@ -16,11 +76,12 @@ function compute_ydual_onearg(
     f::F,
     prep::ForwardDiffOneArgPushforwardPrep{T},
     x::Number,
-    tx::NTuple,
+    tx::NTuple{B},
     contexts::Vararg{Context,C},
-) where {F,T,C}
-    xdual_tmp = make_dual(T, x, tx)
-    ydual = f(xdual_tmp, map(unwrap, contexts)...)
+) where {F,T,B,C}
+    xdual = make_dual(T, x, tx)
+    contexts_dual = translate(T, Val(B), contexts...)
+    ydual = f(xdual, contexts_dual...)
     return ydual
 end
 
@@ -28,12 +89,13 @@ function compute_ydual_onearg(
     f::F,
     prep::ForwardDiffOneArgPushforwardPrep{T},
     x,
-    tx::NTuple,
+    tx::NTuple{B},
     contexts::Vararg{Context,C},
-) where {F,T,C}
+) where {F,T,B,C}
     (; xdual_tmp) = prep
     make_dual!(T, xdual_tmp, x, tx)
-    ydual = f(xdual_tmp, map(unwrap, contexts)...)
+    contexts_dual = translate(T, Val(B), contexts...)
+    ydual = f(xdual_tmp, contexts_dual...)
     return ydual
 end
 
@@ -100,7 +162,7 @@ struct ForwardDiffOneArgDerivativePrep{E} <: DerivativePrep
 end
 
 function DI.prepare_derivative(
-    f::F, backend::AutoForwardDiff, x, contexts::Vararg{Context,C}
+    f::F, backend::AutoForwardDiff, x, contexts::Vararg{Constant,C}
 ) where {F,C}
     pushforward_prep = DI.prepare_pushforward(f, backend, x, (one(x),), contexts...)
     return ForwardDiffOneArgDerivativePrep(pushforward_prep)
@@ -111,7 +173,7 @@ function DI.value_and_derivative(
     prep::ForwardDiffOneArgDerivativePrep,
     backend::AutoForwardDiff,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{Constant,C},
 ) where {F,C}
     y, ty = DI.value_and_pushforward(
         f, prep.pushforward_prep, backend, x, (one(x),), contexts...
@@ -125,7 +187,7 @@ function DI.value_and_derivative!(
     prep::ForwardDiffOneArgDerivativePrep,
     backend::AutoForwardDiff,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{Constant,C},
 ) where {F,C}
     y, _ = DI.value_and_pushforward!(
         f, (der,), prep.pushforward_prep, backend, x, (one(x),), contexts...
@@ -138,7 +200,7 @@ function DI.derivative(
     prep::ForwardDiffOneArgDerivativePrep,
     backend::AutoForwardDiff,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{Constant,C},
 ) where {F,C}
     return only(
         DI.pushforward(f, prep.pushforward_prep, backend, x, (one(x),), contexts...)
@@ -151,7 +213,7 @@ function DI.derivative!(
     prep::ForwardDiffOneArgDerivativePrep,
     backend::AutoForwardDiff,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{Constant,C},
 ) where {F,C}
     DI.pushforward!(f, (der,), prep.pushforward_prep, backend, x, (one(x),), contexts...)
     return der
@@ -159,12 +221,12 @@ end
 
 ## Gradient
 
-### Unprepared, only when chunk size not specified
+### Unprepared, only when chunk size and tag are not specified
 
 function DI.value_and_gradient!(
-    f::F, grad, backend::AutoForwardDiff{chunksize}, x, contexts::Vararg{Context,C}
-) where {F,C,chunksize}
-    if isnothing(chunksize)
+    f::F, grad, backend::AutoForwardDiff{chunksize,T}, x, contexts::Vararg{Constant,C}
+) where {F,C,chunksize,T}
+    if isnothing(chunksize) && T === Nothing
         fc = with_contexts(f, contexts...)
         result = DiffResult(zero(eltype(x)), (grad,))
         result = gradient!(result, fc, x)
@@ -178,9 +240,9 @@ function DI.value_and_gradient!(
 end
 
 function DI.value_and_gradient(
-    f::F, backend::AutoForwardDiff{chunksize}, x, contexts::Vararg{Context,C}
-) where {F,C,chunksize}
-    if isnothing(chunksize)
+    f::F, backend::AutoForwardDiff{chunksize,T}, x, contexts::Vararg{Constant,C}
+) where {F,C,chunksize,T}
+    if isnothing(chunksize) && T === Nothing
         fc = with_contexts(f, contexts...)
         result = GradientResult(x)
         result = gradient!(result, fc, x)
@@ -192,9 +254,9 @@ function DI.value_and_gradient(
 end
 
 function DI.gradient!(
-    f::F, grad, backend::AutoForwardDiff{chunksize}, x, contexts::Vararg{Context,C}
-) where {F,C,chunksize}
-    if isnothing(chunksize)
+    f::F, grad, backend::AutoForwardDiff{chunksize,T}, x, contexts::Vararg{Constant,C}
+) where {F,C,chunksize,T}
+    if isnothing(chunksize) && T === Nothing
         fc = with_contexts(f, contexts...)
         return gradient!(grad, fc, x)
     else
@@ -204,9 +266,9 @@ function DI.gradient!(
 end
 
 function DI.gradient(
-    f::F, backend::AutoForwardDiff{chunksize}, x, contexts::Vararg{Context,C}
-) where {F,C,chunksize}
-    if isnothing(chunksize)
+    f::F, backend::AutoForwardDiff{chunksize,T}, x, contexts::Vararg{Constant,C}
+) where {F,C,chunksize,T}
+    if isnothing(chunksize) && T === Nothing
         fc = with_contexts(f, contexts...)
         return gradient(fc, x)
     else
@@ -222,10 +284,13 @@ struct ForwardDiffGradientPrep{C} <: GradientPrep
 end
 
 function DI.prepare_gradient(
-    f::F, backend::AutoForwardDiff, x::AbstractArray, contexts::Vararg{Context,C}
+    f::F, backend::AutoForwardDiff, x::AbstractArray, contexts::Vararg{Constant,C}
 ) where {F,C}
     fc = with_contexts(f, contexts...)
-    return ForwardDiffGradientPrep(GradientConfig(fc, x, choose_chunk(backend, x)))
+    chunk = choose_chunk(backend, x)
+    tag = get_tag(fc, backend, x)
+    config = GradientConfig(fc, x, chunk, tag)
+    return ForwardDiffGradientPrep(config)
 end
 
 function DI.value_and_gradient!(
@@ -234,7 +299,7 @@ function DI.value_and_gradient!(
     prep::ForwardDiffGradientPrep,
     ::AutoForwardDiff,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{Constant,C},
 ) where {F,C}
     fc = with_contexts(f, contexts...)
     result = DiffResult(zero(eltype(x)), (grad,))
@@ -245,7 +310,7 @@ function DI.value_and_gradient!(
 end
 
 function DI.value_and_gradient(
-    f::F, prep::ForwardDiffGradientPrep, ::AutoForwardDiff, x, contexts::Vararg{Context,C}
+    f::F, prep::ForwardDiffGradientPrep, ::AutoForwardDiff, x, contexts::Vararg{Constant,C}
 ) where {F,C}
     fc = with_contexts(f, contexts...)
     result = GradientResult(x)
@@ -259,14 +324,14 @@ function DI.gradient!(
     prep::ForwardDiffGradientPrep,
     ::AutoForwardDiff,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{Constant,C},
 ) where {F,C}
     fc = with_contexts(f, contexts...)
     return gradient!(grad, fc, x, prep.config)
 end
 
 function DI.gradient(
-    f::F, prep::ForwardDiffGradientPrep, ::AutoForwardDiff, x, contexts::Vararg{Context,C}
+    f::F, prep::ForwardDiffGradientPrep, ::AutoForwardDiff, x, contexts::Vararg{Constant,C}
 ) where {F,C}
     fc = with_contexts(f, contexts...)
     return gradient(fc, x, prep.config)
@@ -274,12 +339,12 @@ end
 
 ## Jacobian
 
-### Unprepared, only when chunk size not specified
+### Unprepared, only when chunk size and tag are not specified
 
 function DI.value_and_jacobian!(
-    f::F, jac, backend::AutoForwardDiff{chunksize}, x, contexts::Vararg{Context,C}
-) where {F,C,chunksize}
-    if isnothing(chunksize)
+    f::F, jac, backend::AutoForwardDiff{chunksize,T}, x, contexts::Vararg{Constant,C}
+) where {F,C,chunksize,T}
+    if isnothing(chunksize) && T === Nothing
         fc = with_contexts(f, contexts...)
         y = fc(x)
         result = DiffResult(y, (jac,))
@@ -294,9 +359,9 @@ function DI.value_and_jacobian!(
 end
 
 function DI.value_and_jacobian(
-    f::F, backend::AutoForwardDiff{chunksize}, x, contexts::Vararg{Context,C}
-) where {F,C,chunksize}
-    if isnothing(chunksize)
+    f::F, backend::AutoForwardDiff{chunksize,T}, x, contexts::Vararg{Constant,C}
+) where {F,C,chunksize,T}
+    if isnothing(chunksize) && T === Nothing
         fc = with_contexts(f, contexts...)
         return fc(x), jacobian(fc, x)
     else
@@ -306,9 +371,9 @@ function DI.value_and_jacobian(
 end
 
 function DI.jacobian!(
-    f::F, jac, backend::AutoForwardDiff{chunksize}, x, contexts::Vararg{Context,C}
-) where {F,C,chunksize}
-    if isnothing(chunksize)
+    f::F, jac, backend::AutoForwardDiff{chunksize,T}, x, contexts::Vararg{Constant,C}
+) where {F,C,chunksize,T}
+    if isnothing(chunksize) && T === Nothing
         fc = with_contexts(f, contexts...)
         return jacobian!(jac, fc, x)
     else
@@ -318,9 +383,9 @@ function DI.jacobian!(
 end
 
 function DI.jacobian(
-    f::F, backend::AutoForwardDiff{chunksize}, x, contexts::Vararg{Context,C}
-) where {F,C,chunksize}
-    if isnothing(chunksize)
+    f::F, backend::AutoForwardDiff{chunksize,T}, x, contexts::Vararg{Constant,C}
+) where {F,C,chunksize,T}
+    if isnothing(chunksize) && T === Nothing
         fc = with_contexts(f, contexts...)
         return jacobian(fc, x)
     else
@@ -336,10 +401,13 @@ struct ForwardDiffOneArgJacobianPrep{C} <: JacobianPrep
 end
 
 function DI.prepare_jacobian(
-    f::F, backend::AutoForwardDiff, x, contexts::Vararg{Context,C}
+    f::F, backend::AutoForwardDiff, x, contexts::Vararg{Constant,C}
 ) where {F,C}
     fc = with_contexts(f, contexts...)
-    return ForwardDiffOneArgJacobianPrep(JacobianConfig(fc, x, choose_chunk(backend, x)))
+    chunk = choose_chunk(backend, x)
+    tag = get_tag(fc, backend, x)
+    config = JacobianConfig(fc, x, chunk, tag)
+    return ForwardDiffOneArgJacobianPrep(config)
 end
 
 function DI.value_and_jacobian!(
@@ -348,7 +416,7 @@ function DI.value_and_jacobian!(
     prep::ForwardDiffOneArgJacobianPrep,
     ::AutoForwardDiff,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{Constant,C},
 ) where {F,C}
     fc = with_contexts(f, contexts...)
     y = fc(x)
@@ -364,7 +432,7 @@ function DI.value_and_jacobian(
     prep::ForwardDiffOneArgJacobianPrep,
     ::AutoForwardDiff,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{Constant,C},
 ) where {F,C}
     fc = with_contexts(f, contexts...)
     return fc(x), jacobian(fc, x, prep.config)
@@ -376,7 +444,7 @@ function DI.jacobian!(
     prep::ForwardDiffOneArgJacobianPrep,
     ::AutoForwardDiff,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{Constant,C},
 ) where {F,C}
     fc = with_contexts(f, contexts...)
     return jacobian!(jac, fc, x, prep.config)
@@ -387,7 +455,7 @@ function DI.jacobian(
     prep::ForwardDiffOneArgJacobianPrep,
     ::AutoForwardDiff,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{Constant,C},
 ) where {F,C}
     fc = with_contexts(f, contexts...)
     return jacobian(fc, x, prep.config)
@@ -396,13 +464,17 @@ end
 ## Second derivative
 
 function DI.prepare_second_derivative(
-    f::F, backend::AutoForwardDiff, x, contexts::Vararg{Context,C}
+    f::F, backend::AutoForwardDiff, x, contexts::Vararg{Constant,C}
 ) where {F,C}
     return NoSecondDerivativePrep()
 end
 
 function DI.second_derivative(
-    f::F, ::NoSecondDerivativePrep, backend::AutoForwardDiff, x, contexts::Vararg{Context,C}
+    f::F,
+    ::NoSecondDerivativePrep,
+    backend::AutoForwardDiff,
+    x,
+    contexts::Vararg{Constant,C},
 ) where {F,C}
     T = tag_type(f, backend, x)
     xdual = make_dual(T, x, one(x))
@@ -417,7 +489,7 @@ function DI.second_derivative!(
     ::NoSecondDerivativePrep,
     backend::AutoForwardDiff,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{Constant,C},
 ) where {F,C}
     T = tag_type(f, backend, x)
     xdual = make_dual(T, x, one(x))
@@ -427,7 +499,11 @@ function DI.second_derivative!(
 end
 
 function DI.value_derivative_and_second_derivative(
-    f::F, ::NoSecondDerivativePrep, backend::AutoForwardDiff, x, contexts::Vararg{Context,C}
+    f::F,
+    ::NoSecondDerivativePrep,
+    backend::AutoForwardDiff,
+    x,
+    contexts::Vararg{Constant,C},
 ) where {F,C}
     T = tag_type(f, backend, x)
     xdual = make_dual(T, x, one(x))
@@ -446,7 +522,7 @@ function DI.value_derivative_and_second_derivative!(
     ::NoSecondDerivativePrep,
     backend::AutoForwardDiff,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{Constant,C},
 ) where {F,C}
     T = tag_type(f, backend, x)
     xdual = make_dual(T, x, one(x))
@@ -461,7 +537,7 @@ end
 ## HVP
 
 function DI.prepare_hvp(
-    f::F, backend::AutoForwardDiff, x, tx::NTuple, contexts::Vararg{Context,C}
+    f::F, backend::AutoForwardDiff, x, tx::NTuple, contexts::Vararg{Constant,C}
 ) where {F,C}
     return DI.prepare_hvp(f, SecondOrder(backend, backend), x, tx, contexts...)
 end
@@ -472,7 +548,7 @@ function DI.hvp(
     backend::AutoForwardDiff,
     x,
     tx::NTuple,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{Constant,C},
 ) where {F,C}
     return DI.hvp(f, prep, SecondOrder(backend, backend), x, tx, contexts...)
 end
@@ -484,69 +560,113 @@ function DI.hvp!(
     backend::AutoForwardDiff,
     x,
     tx::NTuple,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{Constant,C},
 ) where {F,C}
     return DI.hvp!(f, tg, prep, SecondOrder(backend, backend), x, tx, contexts...)
 end
 
-## Hessian
-
-### Unprepared
-
-function DI.hessian!(
-    f::F, hess, ::AutoForwardDiff, x, contexts::Vararg{Context,C}
+function DI.gradient_and_hvp(
+    f::F,
+    prep::HVPPrep,
+    backend::AutoForwardDiff,
+    x,
+    tx::NTuple,
+    contexts::Vararg{Constant,C},
 ) where {F,C}
-    fc = with_contexts(f, contexts...)
-    return hessian!(hess, fc, x)
+    return DI.gradient_and_hvp(f, prep, SecondOrder(backend, backend), x, tx, contexts...)
 end
 
-function DI.hessian(f::F, ::AutoForwardDiff, x, contexts::Vararg{Context,C}) where {F,C}
-    fc = with_contexts(f, contexts...)
-    return hessian(fc, x)
+function DI.gradient_and_hvp!(
+    f::F,
+    grad,
+    tg::NTuple,
+    prep::HVPPrep,
+    backend::AutoForwardDiff,
+    x,
+    tx::NTuple,
+    contexts::Vararg{Constant,C},
+) where {F,C}
+    return DI.gradient_and_hvp!(
+        f, grad, tg, prep, SecondOrder(backend, backend), x, tx, contexts...
+    )
+end
+
+## Hessian
+
+### Unprepared, only when chunk size and tag are not specified
+
+function DI.hessian!(
+    f::F, hess, backend::AutoForwardDiff{chunksize,T}, x, contexts::Vararg{Constant,C}
+) where {F,C,chunksize,T}
+    if isnothing(chunksize) && T === Nothing
+        fc = with_contexts(f, contexts...)
+        return hessian!(hess, fc, x)
+    else
+        prep = DI.prepare_hessian(f, backend, x, contexts...)
+        return DI.hessian!(f, hess, prep, backend, x, contexts...)
+    end
+end
+
+function DI.hessian(
+    f::F, backend::AutoForwardDiff{chunksize,T}, x, contexts::Vararg{Constant,C}
+) where {F,C,chunksize,T}
+    if isnothing(chunksize) && T === Nothing
+        fc = with_contexts(f, contexts...)
+        return hessian(fc, x)
+    else
+        prep = DI.prepare_hessian(f, backend, x, contexts...)
+        return DI.hessian(f, prep, backend, x, contexts...)
+    end
 end
 
 function DI.value_gradient_and_hessian!(
-    f::F, grad, hess, ::AutoForwardDiff, x, contexts::Vararg{Context,C}
-) where {F,C}
-    fc = with_contexts(f, contexts...)
-    result = DiffResult(one(eltype(x)), (grad, hess))
-    result = hessian!(result, fc, x)
-    y = DR.value(result)
-    grad === DR.gradient(result) || copyto!(grad, DR.gradient(result))
-    hess === DR.hessian(result) || copyto!(hess, DR.hessian(result))
-    return (y, grad, hess)
+    f::F, grad, hess, backend::AutoForwardDiff{chunksize,T}, x, contexts::Vararg{Constant,C}
+) where {F,C,chunksize,T}
+    if isnothing(chunksize) && T === Nothing
+        fc = with_contexts(f, contexts...)
+        result = DiffResult(one(eltype(x)), (grad, hess))
+        result = hessian!(result, fc, x)
+        y = DR.value(result)
+        grad === DR.gradient(result) || copyto!(grad, DR.gradient(result))
+        hess === DR.hessian(result) || copyto!(hess, DR.hessian(result))
+        return (y, grad, hess)
+    else
+        prep = DI.prepare_hessian(f, backend, x, contexts...)
+        return DI.value_gradient_and_hessian!(f, grad, hess, prep, backend, x, contexts...)
+    end
 end
 
 function DI.value_gradient_and_hessian(
-    f::F, ::AutoForwardDiff, x, contexts::Vararg{Context,C}
-) where {F,C}
-    fc = with_contexts(f, contexts...)
-    result = HessianResult(x)
-    result = hessian!(result, fc, x)
-    return (DR.value(result), DR.gradient(result), DR.hessian(result))
+    f::F, backend::AutoForwardDiff{chunksize,T}, x, contexts::Vararg{Constant,C}
+) where {F,C,chunksize,T}
+    if isnothing(chunksize) && T === Nothing
+        fc = with_contexts(f, contexts...)
+        result = HessianResult(x)
+        result = hessian!(result, fc, x)
+        return (DR.value(result), DR.gradient(result), DR.hessian(result))
+    else
+        prep = DI.prepare_hessian(f, backend, x, contexts...)
+        return DI.value_gradient_and_hessian(f, prep, backend, x, contexts...)
+    end
 end
 
 ### Prepared
 
-struct ForwardDiffHessianPrep{C1,C2,C3} <: HessianPrep
+struct ForwardDiffHessianPrep{C1,C2} <: HessianPrep
     array_config::C1
-    manual_result_config::C2
-    auto_result_config::C3
+    result_config::C2
 end
 
 function DI.prepare_hessian(
-    f::F, backend::AutoForwardDiff, x, contexts::Vararg{Context,C}
+    f::F, backend::AutoForwardDiff, x, contexts::Vararg{Constant,C}
 ) where {F,C}
     fc = with_contexts(f, contexts...)
-    manual_result = MutableDiffResult(
-        one(eltype(x)), (similar(x), similar(x, length(x), length(x)))
-    )
-    auto_result = HessianResult(x)
     chunk = choose_chunk(backend, x)
-    array_config = HessianConfig(fc, x, chunk)
-    manual_result_config = HessianConfig(fc, manual_result, x, chunk)
-    auto_result_config = HessianConfig(fc, auto_result, x, chunk)
-    return ForwardDiffHessianPrep(array_config, manual_result_config, auto_result_config)
+    tag = get_tag(fc, backend, x)
+    result = HessianResult(x)
+    array_config = HessianConfig(fc, x, chunk, tag)
+    result_config = HessianConfig(fc, result, x, chunk, tag)
+    return ForwardDiffHessianPrep(array_config, result_config)
 end
 
 function DI.hessian!(
@@ -555,14 +675,14 @@ function DI.hessian!(
     prep::ForwardDiffHessianPrep,
     ::AutoForwardDiff,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{Constant,C},
 ) where {F,C}
     fc = with_contexts(f, contexts...)
     return hessian!(hess, fc, x, prep.array_config)
 end
 
 function DI.hessian(
-    f::F, prep::ForwardDiffHessianPrep, ::AutoForwardDiff, x, contexts::Vararg{Context,C}
+    f::F, prep::ForwardDiffHessianPrep, ::AutoForwardDiff, x, contexts::Vararg{Constant,C}
 ) where {F,C}
     fc = with_contexts(f, contexts...)
     return hessian(fc, x, prep.array_config)
@@ -575,11 +695,11 @@ function DI.value_gradient_and_hessian!(
     prep::ForwardDiffHessianPrep,
     ::AutoForwardDiff,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{Constant,C},
 ) where {F,C}
     fc = with_contexts(f, contexts...)
     result = DiffResult(one(eltype(x)), (grad, hess))
-    result = hessian!(result, fc, x, prep.manual_result_config)
+    result = hessian!(result, fc, x, prep.result_config)
     y = DR.value(result)
     grad === DR.gradient(result) || copyto!(grad, DR.gradient(result))
     hess === DR.hessian(result) || copyto!(hess, DR.hessian(result))
@@ -587,10 +707,10 @@ function DI.value_gradient_and_hessian!(
 end
 
 function DI.value_gradient_and_hessian(
-    f::F, prep::ForwardDiffHessianPrep, ::AutoForwardDiff, x, contexts::Vararg{Context,C}
+    f::F, prep::ForwardDiffHessianPrep, ::AutoForwardDiff, x, contexts::Vararg{Constant,C}
 ) where {F,C}
     fc = with_contexts(f, contexts...)
     result = HessianResult(x)
-    result = hessian!(result, fc, x, prep.auto_result_config)
+    result = hessian!(result, fc, x, prep.result_config)
     return (DR.value(result), DR.gradient(result), DR.hessian(result))
 end

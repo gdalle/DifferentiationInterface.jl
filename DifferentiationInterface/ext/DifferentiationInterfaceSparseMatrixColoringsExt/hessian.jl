@@ -1,36 +1,19 @@
 struct SparseHessianPrep{
-    B,
+    BS<:BatchSizeSettings,
     C<:AbstractColoringResult{:symmetric,:column},
     M<:AbstractMatrix{<:Real},
-    TD<:NTuple{B},
-    TR<:NTuple{B},
+    S<:AbstractVector{<:NTuple},
+    R<:AbstractVector{<:NTuple},
     E2<:HVPPrep,
     E1<:GradientPrep,
 } <: HessianPrep
+    batch_size_settings::BS
     coloring_result::C
     compressed_matrix::M
-    batched_seeds::Vector{TD}
-    batched_results::Vector{TR}
+    batched_seeds::S
+    batched_results::R
     hvp_prep::E2
     gradient_prep::E1
-end
-
-function SparseHessianPrep{B}(;
-    coloring_result::C,
-    compressed_matrix::M,
-    batched_seeds::Vector{TD},
-    batched_results::Vector{TR},
-    hvp_prep::E2,
-    gradient_prep::E1,
-) where {B,C,M,TD,TR,E2,E1}
-    return SparseHessianPrep{B,C,M,TD,TR,E2,E1}(
-        coloring_result,
-        compressed_matrix,
-        batched_seeds,
-        batched_results,
-        hvp_prep,
-        gradient_prep,
-    )
 end
 
 SMC.sparsity_pattern(prep::SparseHessianPrep) = sparsity_pattern(prep.coloring_result)
@@ -42,13 +25,6 @@ SMC.column_groups(prep::SparseHessianPrep) = column_groups(prep.coloring_result)
 function DI.prepare_hessian(
     f::F, backend::AutoSparse, x, contexts::Vararg{Context,C}
 ) where {F,C}
-    valB = pick_batchsize(dense_ad(backend), length(x))
-    return _prepare_sparse_hessian_aux(valB, f, backend, x, contexts...)
-end
-
-function _prepare_sparse_hessian_aux(
-    ::Val{B}, f::F, backend::AutoSparse, x, contexts::Vararg{Context,C}
-) where {B,F,C}
     dense_backend = dense_ad(backend)
     sparsity = hessian_sparsity(
         with_contexts(f, contexts...), x, sparsity_detector(backend)
@@ -57,18 +33,34 @@ function _prepare_sparse_hessian_aux(
     coloring_result = coloring(
         sparsity, problem, coloring_algorithm(backend); decompression_eltype=eltype(x)
     )
+    N = length(column_groups(coloring_result))
+    batch_size_settings = pick_batchsize(outer(dense_backend), N)
+    return _prepare_sparse_hessian_aux(
+        batch_size_settings, coloring_result, f, backend, x, contexts...
+    )
+end
+
+function _prepare_sparse_hessian_aux(
+    batch_size_settings::BatchSizeSettings{B},
+    coloring_result::AbstractColoringResult{:symmetric,:column},
+    f::F,
+    backend::AutoSparse,
+    x,
+    contexts::Vararg{Context,C},
+) where {B,F,C}
+    (; N, A) = batch_size_settings
+    dense_backend = dense_ad(backend)
     groups = column_groups(coloring_result)
-    Ng = length(groups)
     seeds = [multibasis(backend, x, eachindex(x)[group]) for group in groups]
     compressed_matrix = stack(_ -> vec(similar(x)), groups; dims=2)
     batched_seeds = [
-        ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % Ng], Val(B)) for
-        a in 1:div(Ng, B, RoundUp)
+        ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % N], Val(B)) for a in 1:A
     ]
     batched_results = [ntuple(b -> similar(x), Val(B)) for _ in batched_seeds]
     hvp_prep = prepare_hvp(f, dense_backend, x, batched_seeds[1], contexts...)
     gradient_prep = prepare_gradient(f, inner(dense_backend), x, contexts...)
-    return SparseHessianPrep{B}(;
+    return SparseHessianPrep(
+        batch_size_settings,
         coloring_result,
         compressed_matrix,
         batched_seeds,
@@ -81,14 +73,21 @@ end
 function DI.hessian!(
     f::F,
     hess,
-    prep::SparseHessianPrep{B},
+    prep::SparseHessianPrep{<:BatchSizeSettings{B}},
     backend::AutoSparse,
     x,
     contexts::Vararg{Context,C},
 ) where {F,B,C}
-    (; coloring_result, compressed_matrix, batched_seeds, batched_results, hvp_prep) = prep
+    (;
+        batch_size_settings,
+        coloring_result,
+        compressed_matrix,
+        batched_seeds,
+        batched_results,
+        hvp_prep,
+    ) = prep
+    (; N) = batch_size_settings
     dense_backend = dense_ad(backend)
-    Ng = length(column_groups(coloring_result))
 
     hvp_prep_same = prepare_hvp_same_point(
         f, hvp_prep, dense_backend, x, batched_seeds[1], contexts...
@@ -107,7 +106,7 @@ function DI.hessian!(
 
         for b in eachindex(batched_results[a])
             copyto!(
-                view(compressed_matrix, :, 1 + ((a - 1) * B + (b - 1)) % Ng),
+                view(compressed_matrix, :, 1 + ((a - 1) * B + (b - 1)) % N),
                 vec(batched_results[a][b]),
             )
         end

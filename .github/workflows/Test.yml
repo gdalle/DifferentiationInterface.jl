@@ -25,11 +25,11 @@ jobs:
       actions: write
       contents: read
     strategy:
-      fail-fast: false
+      fail-fast: false  # TODO: toggle
       matrix:
         version:
-          - "1.10"  # TODO: 1 (as of 2024.10.08, 1 means 1.11 and we're not ready yet)
-          - "1.11"
+          - "1.10"
+          - "1"
         group:
           - Misc/Internals
           - Misc/DifferentiateWith
@@ -49,17 +49,15 @@ jobs:
           - Back/Zygote
           - Down/Flux
           - Down/Lux
-        skip_pre:
+        skip_lts:
           - ${{ github.event.pull_request.draft }}
         exclude:
-          - skip_pre: true
-            version: "1.11"
-          - version: "1.11"
+          # - skip_lts: true
+          #   version: "1.10"
+          - version: "1"
             group: Back/ChainRulesBackends
-          - version: "1.11"
+          - version: "1"
             group: Back/Enzyme
-          - version: "1.11"
-            group: Back/Mooncake
     env:
       JULIA_DI_TEST_GROUP: ${{ matrix.group }}
     steps:
@@ -98,18 +96,18 @@ jobs:
       fail-fast: true
       matrix:
         version:
-          - "1.10"  # TODO: 1
-          - "1.11"
+          - "1.10"
+          - "1"
         group:
           - Formalities
           - Zero
           - Standard
           - Weird
-        skip_pre:
+        skip_lts:
           - ${{ github.event.pull_request.draft }}
-        exclude:
-          - skip_pre: true
-            version: "1.11"
+        # exclude:
+        #   - skip_lts: true
+        #     version: "1.10"
     env:
       JULIA_DIT_TEST_GROUP: ${{ matrix.group }}
     steps:

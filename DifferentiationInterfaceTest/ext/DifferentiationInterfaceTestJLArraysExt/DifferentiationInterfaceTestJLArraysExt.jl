@@ -3,7 +3,7 @@ module DifferentiationInterfaceTestJLArraysExt
 import DifferentiationInterface as DI
 using DifferentiationInterfaceTest
 import DifferentiationInterfaceTest as DIT
-using JLArrays: JLArray, jl
+using JLArrays: JLArray, JLVector, JLMatrix, jl
 using Random: AbstractRNG, default_rng
 
 myjl(f::Function) = f
@@ -11,13 +11,23 @@ function myjl(::DIT.NumToArr{A}) where {T,N,A<:AbstractArray{T,N}}
     return DIT.NumToArr(JLArray{T,N})
 end
 
-myjl(f::DIT.MultiplyByConstant) = f
-myjl(f::DIT.WritableClosure) = f
+function (f::DIT.NumToArr{JLVector{T}})(x::Number) where {T}
+    a = JLVector{T}(Vector(1:6))  # avoid mutation
+    return sin.(x .* a)
+end
+
+function (f::DIT.NumToArr{JLMatrix{T}})(x::Number) where {T}
+    a = JLMatrix{T}(Matrix(reshape(1:6, 2, 3)))  # avoid mutation
+    return sin.(x .* a)
+end
+
+myjl(f::DIT.FunctionModifier) = f
 
 myjl(x::Number) = x
 myjl(x::AbstractArray) = jl(x)
 myjl(x::Tuple) = map(myjl, x)
 myjl(x::DI.Constant) = DI.Constant(myjl(DI.unwrap(x)))
+myjl(x::DI.Cache) = DI.Cache(myjl(DI.unwrap(x)))
 myjl(::Nothing) = nothing
 
 function myjl(scen::Scenario{op,pl_op,pl_fun}) where {op,pl_op,pl_fun}

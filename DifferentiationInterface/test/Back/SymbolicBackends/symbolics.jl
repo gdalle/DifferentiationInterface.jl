@@ -15,5 +15,8 @@ end
 test_differentiation(AutoSymbolics(); logging=LOGGING);
 
 test_differentiation(
-    AutoSparse(AutoSymbolics()), sparse_scenarios(); sparsity=true, logging=LOGGING
+    AutoSparse(AutoSymbolics()),
+    sparse_scenarios(; band_sizes=0:-1);
+    sparsity=true,
+    logging=LOGGING,
 );

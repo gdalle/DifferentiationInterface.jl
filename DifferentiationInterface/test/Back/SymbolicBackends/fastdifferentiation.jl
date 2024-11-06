@@ -16,7 +16,7 @@ test_differentiation(AutoFastDifferentiation(); logging=LOGGING);
 
 test_differentiation(
     AutoSparse(AutoFastDifferentiation()),
-    sparse_scenarios();
+    sparse_scenarios(; band_sizes=0:-1);
     sparsity=true,
     logging=LOGGING,
 );

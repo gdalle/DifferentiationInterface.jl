@@ -1,18 +1,11 @@
-for op in [
-    :derivative,
-    :gradient,
-    :hessian,
-    :hvp,
-    :jacobian,
-    :pullback,
-    :pushforward,
-    :second_derivative,
-]
+for op in ALL_OPS
     op! = Symbol(op, "!")
     val_prefix = if op == :second_derivative
         "value_derivative_and_"
-    elseif op in [:hessian, :hvp]
+    elseif op == :hessian
         "value_gradient_and_"
+    elseif op == :hvp
+        "gradient_and_"
     else
         "value_and_"
     end
@@ -53,6 +46,7 @@ for op in [
             atol::Real,
             rtol::Real,
             scenario_intact::Bool,
+            sparsity::Bool,
         )
             (; f, x, y, res1, contexts) = new_scen = deepcopy(scen)
             xrand = myrandom(x)
@@ -87,6 +81,12 @@ for op in [
                     @test res1_out1_noval ≈ scen.res1
                     @test res1_out2_noval ≈ scen.res1
                 end
+                if sparsity && $op == jacobian
+                    @test mynnz(res1_out1_val) == mynnz(scen.res1)
+                    @test mynnz(res1_out2_val) == mynnz(scen.res1)
+                    @test mynnz(res1_out1_noval) == mynnz(scen.res1)
+                    @test mynnz(res1_out2_noval) == mynnz(scen.res1)
+                end
             end
             scenario_intact && @test new_scen == scen
             return nothing
@@ -99,6 +99,7 @@ for op in [
             atol::Real,
             rtol::Real,
             scenario_intact::Bool,
+            sparsity::Bool,
         )
             (; f, x, y, res1, contexts) = new_scen = deepcopy(scen)
             xrand = myrandom(x)
@@ -145,6 +146,12 @@ for op in [
                     @test res1_out1_noval ≈ scen.res1
                     @test res1_out2_noval ≈ scen.res1
                 end
+                if sparsity && $op == jacobian
+                    @test mynnz(res1_out1_val) == mynnz(scen.res1)
+                    @test mynnz(res1_out2_val) == mynnz(scen.res1)
+                    @test mynnz(res1_out1_noval) == mynnz(scen.res1)
+                    @test mynnz(res1_out2_noval) == mynnz(scen.res1)
+                end
             end
             scenario_intact && @test new_scen == scen
             return nothing
@@ -159,6 +166,7 @@ for op in [
             atol::Real,
             rtol::Real,
             scenario_intact::Bool,
+            sparsity::Bool,
         )
             (; f, x, y, res1, contexts) = new_scen = deepcopy(scen)
             xrand, yrand = myrandom(x), myrandom(y)
@@ -200,6 +208,12 @@ for op in [
                     @test res1_out1_noval ≈ scen.res1
                     @test res1_out2_noval ≈ scen.res1
                 end
+                if sparsity && $op == jacobian
+                    @test mynnz(res1_out1_val) == mynnz(scen.res1)
+                    @test mynnz(res1_out2_val) == mynnz(scen.res1)
+                    @test mynnz(res1_out1_noval) == mynnz(scen.res1)
+                    @test mynnz(res1_out2_noval) == mynnz(scen.res1)
+                end
             end
             scenario_intact && @test new_scen == scen
             return nothing
@@ -212,6 +226,7 @@ for op in [
             atol::Real,
             rtol::Real,
             scenario_intact::Bool,
+            sparsity::Bool,
         )
             (; f, x, y, res1, contexts) = new_scen = deepcopy(scen)
             xrand, yrand = myrandom(x), myrandom(y)
@@ -261,6 +276,12 @@ for op in [
                     @test res1_out1_noval ≈ scen.res1
                     @test res1_out2_noval ≈ scen.res1
                 end
+                if sparsity && $op == jacobian
+                    @test mynnz(res1_out1_val) == mynnz(scen.res1)
+                    @test mynnz(res1_out2_val) == mynnz(scen.res1)
+                    @test mynnz(res1_out1_noval) == mynnz(scen.res1)
+                    @test mynnz(res1_out2_noval) == mynnz(scen.res1)
+                end
             end
             scenario_intact && @test new_scen == scen
             return nothing
@@ -274,6 +295,7 @@ for op in [
             atol::Real,
             rtol::Real,
             scenario_intact::Bool,
+            sparsity::Bool,
         )
             (; f, x, y, res1, res2, contexts) = new_scen = deepcopy(scen)
             xrand = myrandom(x)
@@ -310,6 +332,12 @@ for op in [
                     @test res2_out1_noval ≈ scen.res2
                     @test res2_out2_noval ≈ scen.res2
                 end
+                if sparsity && $op == hessian
+                    @test mynnz(res2_out1_val) == mynnz(scen.res2)
+                    @test mynnz(res2_out2_val) == mynnz(scen.res2)
+                    @test mynnz(res2_out1_noval) == mynnz(scen.res2)
+                    @test mynnz(res2_out2_noval) == mynnz(scen.res2)
+                end
             end
             scenario_intact && @test new_scen == scen
             return nothing
@@ -322,6 +350,7 @@ for op in [
             atol::Real,
             rtol::Real,
             scenario_intact::Bool,
+            sparsity::Bool,
         )
             (; f, x, y, res1, res2, contexts) = new_scen = deepcopy(scen)
             xrand = myrandom(x)
@@ -372,6 +401,12 @@ for op in [
                     @test res2_out1_noval ≈ scen.res2
                     @test res2_out2_noval ≈ scen.res2
                 end
+                if sparsity && $op == hessian
+                    @test mynnz(res2_out1_val) == mynnz(scen.res2)
+                    @test mynnz(res2_out2_val) == mynnz(scen.res2)
+                    @test mynnz(res2_out1_noval) == mynnz(scen.res2)
+                    @test mynnz(res2_out2_noval) == mynnz(scen.res2)
+                end
             end
             scenario_intact && @test new_scen == scen
             return nothing
@@ -385,6 +420,7 @@ for op in [
             atol::Real,
             rtol::Real,
             scenario_intact::Bool,
+            sparsity::Bool,
         )
             (; f, x, y, tang, res1, contexts) = new_scen = deepcopy(scen)
             xrand, tangrand = myrandom(x), myrandom(tang)
@@ -433,6 +469,7 @@ for op in [
             atol::Real,
             rtol::Real,
             scenario_intact::Bool,
+            sparsity::Bool,
         )
             (; f, x, y, tang, res1, contexts) = new_scen = deepcopy(scen)
             xrand, tangrand = myrandom(x), myrandom(tang)
@@ -493,6 +530,7 @@ for op in [
             atol::Real,
             rtol::Real,
             scenario_intact::Bool,
+            sparsity::Bool,
         )
             (; f, x, y, tang, res1, contexts) = new_scen = deepcopy(scen)
             xrand, yrand, tangrand = myrandom(x), myrandom(y), myrandom(tang)
@@ -552,6 +590,7 @@ for op in [
             atol::Real,
             rtol::Real,
             scenario_intact::Bool,
+            sparsity::Bool,
         )
             (; f, x, y, tang, res1, contexts) = new_scen = deepcopy(scen)
             xrand, yrand, tangrand = myrandom(x), myrandom(y), myrandom(tang)
@@ -630,29 +669,42 @@ for op in [
             atol::Real,
             rtol::Real,
             scenario_intact::Bool,
+            sparsity::Bool,
         )
-            (; f, x, y, tang, res2, contexts) = new_scen = deepcopy(scen)
+            (; f, x, y, tang, res1, res2, contexts) = new_scen = deepcopy(scen)
             xrand, tangrand = myrandom(x), myrandom(tang)
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
-            prep = $prep_op(f, ba, xrand, tangrand, contextsrand...)
-            prepprep = $prep_op!(
-                f,
-                $prep_op(f, ba, xrand, tangrand, contextsrand...),
-                ba,
-                xrand,
-                tangrand,
-                contextsrand...,
-            )
-            prep_same = $prep_op_same(f, ba, x, tangrand, contexts...)
-            preptup_cands_noval = [(), (prep,), (prepprep,), (prep_same,)]
-            for preptup_noval in preptup_cands_noval
+            preptup_cands_val, preptup_cands_noval = map(1:2) do _
+                prep = $prep_op(f, ba, xrand, tangrand, contextsrand...)
+                prepprep = $prep_op!(
+                    f,
+                    $prep_op(f, ba, xrand, tangrand, contextsrand...),
+                    ba,
+                    xrand,
+                    tangrand,
+                    contextsrand...,
+                )
+                prep_same = $prep_op_same(f, ba, x, tangrand, contexts...)
+                [(), (prep,), (prepprep,), (prep_same,)]
+            end
+            for (preptup_val, preptup_noval) in zip(preptup_cands_val, preptup_cands_noval)
                 res2_out1_noval = $op(f, preptup_noval..., ba, x, tang, contexts...)
                 res2_out2_noval = $op(f, preptup_noval..., ba, x, tang, contexts...)
+                res1_out1_val, res2_out1_val = $val_and_op(
+                    f, preptup_noval..., ba, x, tang, contexts...
+                )
+                res1_out2_val, res2_out2_val = $val_and_op(
+                    f, preptup_noval..., ba, x, tang, contexts...
+                )
                 let (≈)(x, y) = isapprox(x, y; atol, rtol)
                     @test isempty(preptup_noval) || only(preptup_noval) isa $P
                     @test all(res2_out1_noval .≈ scen.res2)
                     @test all(res2_out2_noval .≈ scen.res2)
+                    @test res1_out1_val ≈ scen.res1
+                    @test res1_out2_val ≈ scen.res1
+                    @test all(res2_out1_val .≈ scen.res2)
+                    @test all(res2_out2_val .≈ scen.res2)
                 end
             end
             scenario_intact && @test new_scen == scen
@@ -666,30 +718,55 @@ for op in [
             atol::Real,
             rtol::Real,
             scenario_intact::Bool,
+            sparsity::Bool,
         )
-            (; f, x, y, tang, res2, contexts) = new_scen = deepcopy(scen)
+            (; f, x, y, tang, res1, res2, contexts) = new_scen = deepcopy(scen)
             xrand, tangrand = myrandom(x), myrandom(tang)
             rewrap = Rewrap(contexts...)
             contextsrand = rewrap(map(myrandom ∘ unwrap, contexts)...)
-            prep = $prep_op(f, ba, xrand, tangrand, contextsrand...)
-            prepprep = $prep_op!(
-                f,
-                $prep_op(f, ba, xrand, tangrand, contextsrand...),
-                ba,
-                xrand,
-                tangrand,
-                contextsrand...,
-            )
-            prep_same = $prep_op_same(f, ba, x, tangrand, contexts...)
-            preptup_cands_noval = [(), (prep,), (prepprep,), (prep_same,)]
-            for preptup_noval in preptup_cands_noval
+            preptup_cands_val, preptup_cands_noval = map(1:2) do _
+                prep = $prep_op(f, ba, xrand, tangrand, contextsrand...)
+                prepprep = $prep_op!(
+                    f,
+                    $prep_op(f, ba, xrand, tangrand, contextsrand...),
+                    ba,
+                    xrand,
+                    tangrand,
+                    contextsrand...,
+                )
+                prep_same = $prep_op_same(f, ba, x, tangrand, contexts...)
+                [(), (prep,), (prepprep,), (prep_same,)]
+            end
+            for (preptup_val, preptup_noval) in zip(preptup_cands_val, preptup_cands_noval)
                 res2_in1_noval = mysimilar(res2)
                 res2_in2_noval = mysimilar(res2)
+                res1_in1_val, res2_in1_val = mysimilar(res1), mysimilar(res2)
+                res1_in2_val, res2_in2_val = mysimilar(res1), mysimilar(res2)
                 res2_out1_noval = $op!(
                     f, res2_in1_noval, preptup_noval..., ba, x, tang, contexts...
                 )
                 res2_out2_noval = $op!(
                     f, res2_in2_noval, preptup_noval..., ba, x, tang, contexts...
+                )
+                res1_out1_val, res2_out1_val = $val_and_op!(
+                    f,
+                    res1_in1_val,
+                    res2_in1_val,
+                    preptup_noval...,
+                    ba,
+                    x,
+                    tang,
+                    contexts...,
+                )
+                res1_out2_val, res2_out2_val = $val_and_op!(
+                    f,
+                    res1_in2_val,
+                    res2_in2_val,
+                    preptup_noval...,
+                    ba,
+                    x,
+                    tang,
+                    contexts...,
                 )
                 let (≈)(x, y) = isapprox(x, y; atol, rtol)
                     @test isempty(preptup_noval) || only(preptup_noval) isa $P
@@ -697,6 +774,14 @@ for op in [
                     @test all(res2_in2_noval .≈ scen.res2)
                     @test all(res2_out1_noval .≈ scen.res2)
                     @test all(res2_out2_noval .≈ scen.res2)
+                    @test res1_in1_val ≈ scen.res1
+                    @test res1_in2_val ≈ scen.res1
+                    @test res1_out1_val ≈ scen.res1
+                    @test res1_out2_val ≈ scen.res1
+                    @test all(res2_in1_val .≈ scen.res2)
+                    @test all(res2_in2_val .≈ scen.res2)
+                    @test all(res2_out1_val .≈ scen.res2)
+                    @test all(res2_out2_val .≈ scen.res2)
                 end
             end
             scenario_intact && @test new_scen == scen

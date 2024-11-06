@@ -24,5 +24,5 @@ mymultiply(x::AbstractArray, a::Number) = a .* x
 mymultiply(x::NTuple, a::Number) = map(Base.Fix2(mymultiply, a), x)
 mymultiply(::Nothing, a::Number) = nothing
 
-mynnz(A::AbstractMatrix) = nnz(A)
-mynnz(A::Union{Transpose,Adjoint}) = nnz(parent(A))  # fix for Julia 1.6
+mynnz(A::AbstractMatrix) = count(!iszero, A)
+mynnz(A::AbstractSparseMatrix) = nnz(A)

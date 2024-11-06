@@ -29,7 +29,9 @@ GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "All")
             isdir(joinpath(@__DIR__, category)) || continue
             @testset verbose = true for folder in readdir(joinpath(@__DIR__, category))
                 isdir(joinpath(@__DIR__, category, folder)) || continue
-                @testset "$file" for file in readdir(joinpath(@__DIR__, category, folder))
+                @testset verbose = true "$file" for file in readdir(
+                    joinpath(@__DIR__, category, folder)
+                )
                     endswith(file, ".jl") || continue
                     @info "Testing $category/$folder/$file"
                     include(joinpath(@__DIR__, category, folder, file))
@@ -40,7 +42,9 @@ GROUP = get(ENV, "JULIA_DI_TEST_GROUP", "All")
         category, folder = split(GROUP, '/')
         @testset verbose = true "$category" begin
             @testset verbose = true "$folder" begin
-                @testset "$file" for file in readdir(joinpath(@__DIR__, category, folder))
+                @testset verbose = true "$file" for file in readdir(
+                    joinpath(@__DIR__, category, folder)
+                )
                     endswith(file, ".jl") || continue
                     @info "Testing $category/$folder/$file"
                     include(joinpath(@__DIR__, category, folder, file))
