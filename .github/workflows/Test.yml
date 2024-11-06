@@ -56,8 +56,6 @@ jobs:
           #   version: "1.10"
           - version: "1"
             group: Back/ChainRulesBackends
-          - version: "1"
-            group: Back/Enzyme
     env:
       JULIA_DI_TEST_GROUP: ${{ matrix.group }}
     steps:
