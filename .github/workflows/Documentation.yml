@@ -44,6 +44,7 @@ jobs:
         run: julia --project=${{ matrix.pkg.dir}}/docs/ -e '
           using Pkg;
           Pkg.Registry.update();
+          Pkg.add(; url="https://github.com/gdalle/SparseMatrixColorings.jl", rev="bicoloring")
           if "${{ matrix.pkg.name}}" == "DifferentiationInterface";
               Pkg.develop(PackageSpec(path="./DifferentiationInterface"));
           else;
