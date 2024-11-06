@@ -362,17 +362,12 @@ function DI.value_gradient_and_hessian!(
     result = DiffResult(y, (grad, hess))
     if compile
         result = hessian!(result, prep.hessian_tape, x)
+        grad = gradient!(grad, prep.gradient_tape, x) # TODO: ReverseDiff#251
     else
         result = hessian!(result, f, x)  # TODO: add prep.hessian_config
+        grad = gradient!(grad, f, x, prep.gradient_config) # TODO: ReverseDiff#251
     end
-    y = DR.value(result)
-    # TODO: ReverseDiff#251
     # grad === DR.gradient(result) || copyto!(grad, DR.gradient(result))
-    if compile
-        grad = gradient!(grad, prep.gradient_tape, x)
-    else
-        grad = gradient!(grad, f, x, prep.gradient_config)
-    end
     hess === DR.hessian(result) || copyto!(hess, DR.hessian(result))
     return y, grad, hess
 end
@@ -387,7 +382,7 @@ function DI.value_gradient_and_hessian(
     else
         result = hessian!(result, f, x)  # todo: add prep.hessian_config
     end
-    return (DR.value(result), DR.gradient(result), DR.hessian(result))
+    return (y, DR.gradient(result), DR.hessian(result))
 end
 
 ### With contexts
