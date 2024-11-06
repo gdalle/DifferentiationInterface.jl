@@ -136,6 +136,8 @@ function adapt_batchsize(backend::AbstractADType, scen::Scenario)
             return DI.threshold_batchsize(backend, length(scen.y))
         elseif ADTypes.mode(backend) isa DifferentiationInterface.ForwardAndReverseMode
             return DI.threshold_batchsize(backend, min(length(scen.x), length(scen.y)))
+        elseif ADTypes.mode(backend) isa ADTypes.SymbolicMode
+            return backend
         else
             error("Unknown mode")
         end
