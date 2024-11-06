@@ -20,6 +20,7 @@ using ReverseDiff.DiffResults:
     DiffResults, DiffResult, GradientResult, HessianResult, MutableDiffResult
 using LinearAlgebra: dot, mul!
 using ReverseDiff:
+    ReverseDiff,
     CompiledGradient,
     CompiledHessian,
     CompiledJacobian,
@@ -29,7 +30,6 @@ using ReverseDiff:
     HessianTape,
     JacobianConfig,
     JacobianTape,
-    compile,
     gradient,
     gradient!,
     hessian,

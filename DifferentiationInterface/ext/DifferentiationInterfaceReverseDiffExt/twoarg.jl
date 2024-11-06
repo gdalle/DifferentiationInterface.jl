@@ -121,44 +121,65 @@ end
 
 ### Without contexts
 
-struct ReverseDiffTwoArgJacobianPrep{T} <: JacobianPrep
+@kwdef struct ReverseDiffTwoArgJacobianPrep{C,T} <: JacobianPrep
+    config::C
     tape::T
 end
 
-function DI.prepare_jacobian(f!, y, ::AutoReverseDiff{Compile}, x) where {Compile}
-    tape = JacobianTape(f!, y, x)
-    if Compile
-        tape = compile(tape)
+function DI.prepare_jacobian(f!, y, ::AutoReverseDiff{compile}, x) where {compile}
+    if compile
+        tape = ReverseDiff.compile(JacobianTape(f!, y, x))
+        return ReverseDiffTwoArgJacobianPrep(; config=nothing, tape=tape)
+    else
+        config = JacobianConfig(y, x)
+        return ReverseDiffTwoArgJacobianPrep(; config=config, tape=nothing)
     end
-    return ReverseDiffTwoArgJacobianPrep(tape)
 end
 
 function DI.value_and_jacobian(
-    _f!, y, prep::ReverseDiffTwoArgJacobianPrep, ::AutoReverseDiff, x
-)
+    f!, y, prep::ReverseDiffTwoArgJacobianPrep, ::AutoReverseDiff{compile}, x
+) where {compile}
     jac = similar(y, length(y), length(x))
     result = MutableDiffResult(y, (jac,))
-    result = jacobian!(result, prep.tape, x)
+    if compile
+        result = jacobian!(result, prep.tape, x)
+    else
+        result = jacobian!(result, f!, y, x, prep.config)
+    end
     return DiffResults.value(result), DiffResults.derivative(result)
 end
 
 function DI.value_and_jacobian!(
-    _f!, y, jac, prep::ReverseDiffTwoArgJacobianPrep, ::AutoReverseDiff, x
-)
+    f!, y, jac, prep::ReverseDiffTwoArgJacobianPrep, ::AutoReverseDiff{compile}, x
+) where {compile}
     result = MutableDiffResult(y, (jac,))
-    result = jacobian!(result, prep.tape, x)
+    if compile
+        result = jacobian!(result, prep.tape, x)
+    else
+        result = jacobian!(result, f!, y, x, prep.config)
+    end
     return DiffResults.value(result), DiffResults.derivative(result)
 end
 
-function DI.jacobian(_f!, _y, prep::ReverseDiffTwoArgJacobianPrep, ::AutoReverseDiff, x)
-    jac = jacobian!(prep.tape, x)
+function DI.jacobian(
+    f!, y, prep::ReverseDiffTwoArgJacobianPrep, ::AutoReverseDiff{compile}, x
+) where {compile}
+    if compile
+        jac = jacobian!(prep.tape, x)
+    else
+        jac = jacobian(f!, y, x, prep.config)
+    end
     return jac
 end
 
 function DI.jacobian!(
-    _f!, _y, jac, prep::ReverseDiffTwoArgJacobianPrep, ::AutoReverseDiff, x
-)
-    jac = jacobian!(jac, prep.tape, x)
+    f!, y, jac, prep::ReverseDiffTwoArgJacobianPrep, ::AutoReverseDiff{compile}, x
+) where {compile}
+    if compile
+        jac = jacobian!(jac, prep.tape, x)
+    else
+        jac = jacobian!(jac, f!, y, x, prep.config)
+    end
     return jac
 end
 
@@ -167,40 +188,63 @@ end
 function DI.prepare_jacobian(
     f!, y, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
 ) where {C}
-    return NoJacobianPrep()
+    config = JacobianConfig(y, x)
+    return ReverseDiffTwoArgJacobianPrep(; config=config, tape=nothing)
 end
 
 function DI.value_and_jacobian(
-    f!, y, ::NoJacobianPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
+    f!,
+    y,
+    prep::ReverseDiffTwoArgJacobianPrep,
+    ::AutoReverseDiff,
+    x,
+    contexts::Vararg{Context,C},
 ) where {C}
     fc! = with_contexts(f!, contexts...)
     jac = similar(y, length(y), length(x))
     result = MutableDiffResult(y, (jac,))
-    result = jacobian!(result, fc!, y, x)
+    result = jacobian!(result, fc!, y, x, prep.config)
     return DiffResults.value(result), DiffResults.derivative(result)
 end
 
 function DI.value_and_jacobian!(
-    f!, y, jac, ::NoJacobianPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
+    f!,
+    y,
+    jac,
+    prep::ReverseDiffTwoArgJacobianPrep,
+    ::AutoReverseDiff,
+    x,
+    contexts::Vararg{Context,C},
 ) where {C}
     fc! = with_contexts(f!, contexts...)
     result = MutableDiffResult(y, (jac,))
-    result = jacobian!(result, fc!, y, x)
+    result = jacobian!(result, fc!, y, x, prep.config)
     return DiffResults.value(result), DiffResults.derivative(result)
 end
 
 function DI.jacobian(
-    f!, y, ::NoJacobianPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
+    f!,
+    y,
+    prep::ReverseDiffTwoArgJacobianPrep,
+    ::AutoReverseDiff,
+    x,
+    contexts::Vararg{Context,C},
 ) where {C}
     fc! = with_contexts(f!, contexts...)
-    jac = jacobian(fc!, y, x)
+    jac = jacobian(fc!, y, x, prep.config)
     return jac
 end
 
 function DI.jacobian!(
-    f!, y, jac, ::NoJacobianPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
+    f!,
+    y,
+    jac,
+    prep::ReverseDiffTwoArgJacobianPrep,
+    ::AutoReverseDiff,
+    x,
+    contexts::Vararg{Context,C},
 ) where {C}
     fc! = with_contexts(f!, contexts...)
-    jac = jacobian!(jac, fc!, y, x)
+    jac = jacobian!(jac, fc!, y, x, prep.config)
     return jac
 end
