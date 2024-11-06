@@ -29,8 +29,8 @@ end
 
 function DI.value_and_pullback!(
     f,
-    ::NoPullbackPrep,
     tx::NTuple,
+    ::NoPullbackPrep,
     ::AutoReverseDiff,
     x::AbstractArray,
     ty::NTuple,
