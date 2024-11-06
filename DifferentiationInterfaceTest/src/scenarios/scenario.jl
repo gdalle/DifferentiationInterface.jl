@@ -132,8 +132,12 @@ function adapt_batchsize(backend::AbstractADType, scen::Scenario)
     if operator(scen) == :jacobian
         if ADTypes.mode(backend) isa Union{ADTypes.ForwardMode,ADTypes.ForwardOrReverseMode}
             return DI.threshold_batchsize(backend, length(scen.x))
-        else
+        elseif ADTypes.mode(backend) isa ADTypes.ReverseMode
             return DI.threshold_batchsize(backend, length(scen.y))
+        elseif ADTypes.mode(backend) isa DifferentiationInterface.ForwardAndReverseMode
+            return DI.threshold_batchsize(backend, min(length(scen.x), length(scen.y)))
+        else
+            error("Unknown mode")
         end
     elseif operator(scen) == :hessian
         return DI.threshold_batchsize(backend, length(scen.x))

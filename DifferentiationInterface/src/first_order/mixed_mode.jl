@@ -22,3 +22,6 @@ end
 
 forward_backend(m::MixedMode) = m.forward
 reverse_backend(m::MixedMode) = m.reverse
+
+struct ForwardAndReverseMode <: ADTypes.AbstractMode end
+ADTypes.mode(::MixedMode) = ForwardAndReverseMode()

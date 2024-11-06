@@ -17,16 +17,15 @@ using DifferentiationInterface:
     JacobianPrep,
     PullbackPrep,
     PushforwardPrep,
-    PushforwardPerformance,
     PushforwardFast,
-    PushforwardSlow,
-    forward_backend,
+    PushforwardPerformance,
     inner,
     outer,
+    forward_backend,
+    reverse_backend,
     multibasis,
     pick_batchsize,
     pushforward_performance,
-    reverse_backend,
     unwrap,
     with_contexts
 import DifferentiationInterface as DI
@@ -36,6 +35,7 @@ using SparseMatrixColorings:
     coloring,
     column_colors,
     row_colors,
+    ncolors,
     column_groups,
     row_groups,
     sparsity_pattern,
@@ -57,6 +57,7 @@ SMC.column_colors(prep::SparseJacobianPrep) = column_colors(prep.coloring_result
 SMC.column_groups(prep::SparseJacobianPrep) = column_groups(prep.coloring_result)
 SMC.row_colors(prep::SparseJacobianPrep) = row_colors(prep.coloring_result)
 SMC.row_groups(prep::SparseJacobianPrep) = row_groups(prep.coloring_result)
+SMC.ncolors(prep::SparseJacobianPrep) = ncolors(prep.coloring_result)
 
 include("jacobian.jl")
 include("jacobian_mixed.jl")
