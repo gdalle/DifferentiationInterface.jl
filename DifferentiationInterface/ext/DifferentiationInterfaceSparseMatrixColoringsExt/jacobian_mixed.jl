@@ -1,91 +1,51 @@
 ## Preparation
 
 struct MixedModeSparseJacobianPrep{
-    Bf,
-    Br,
+    BSf<:BatchSizeSettings,
+    BSr<:BatchSizeSettings,
     C<:AbstractColoringResult{:nonsymmetric,:bidirectional},
     M<:AbstractMatrix{<:Real},
-    TDf<:NTuple{Bf},
-    TDr<:NTuple{Br},
-    TRf<:NTuple{Bf},
-    TRr<:NTuple{Br},
+    Sf<:Vector{<:NTuple},
+    Sr<:Vector{<:NTuple},
+    Rf<:Vector{<:NTuple},
+    Rr<:Vector{<:NTuple},
     Ef<:PushforwardPrep,
     Er<:PullbackPrep,
 } <: SparseJacobianPrep
+    batch_size_settings_forward::BSf
+    batch_size_settings_reverse::BSr
     coloring_result::C
     compressed_matrix_forward::M
     compressed_matrix_reverse::M
-    batched_seeds_forward::Vector{TDf}
-    batched_seeds_reverse::Vector{TDr}
-    batched_results_forward::Vector{TRf}
-    batched_results_reverse::Vector{TRr}
+    batched_seeds_forward::Sf
+    batched_seeds_reverse::Sr
+    batched_results_forward::Rf
+    batched_results_reverse::Rr
     pushforward_prep::Ef
     pullback_prep::Er
-end
-
-function MixedModeSparseJacobianPrep{Bf,Br}(;
-    coloring_result::C,
-    compressed_matrix_forward::M,
-    compressed_matrix_reverse::M,
-    batched_seeds_forward::Vector{TDf},
-    batched_seeds_reverse::Vector{TDr},
-    batched_results_forward::Vector{TRf},
-    batched_results_reverse::Vector{TRr},
-    pushforward_prep::Ef,
-    pullback_prep::Er,
-) where {Bf,Br,C,M,TDf,TDr,TRf,TRr,Ef,Er}
-    return MixedModeSparseJacobianPrep{Bf,Br,C,M,TDf,TDr,TRf,TRr,Ef,Er}(
-        coloring_result,
-        compressed_matrix_forward,
-        compressed_matrix_reverse,
-        batched_seeds_forward,
-        batched_seeds_reverse,
-        batched_results_forward,
-        batched_results_reverse,
-        pushforward_prep,
-        pullback_prep,
-    )
 end
 
 function DI.prepare_jacobian(
     f::F, backend::AutoSparse{<:MixedMode}, x, contexts::Vararg{Context,C}
 ) where {F,C}
-    dense_backend = dense_ad(backend)
     y = f(x, map(unwrap, contexts)...)
-    valBf = pick_batchsize(forward_backend(dense_backend), length(x))
-    valBr = pick_batchsize(reverse_backend(dense_backend), length(y))
-    return _prepare_mixed_sparse_jacobian_aux(
-        valBf, valBr, y, (f,), backend, x, contexts...
-    )
+    return _prepare_mixed_sparse_jacobian_aux(y, (f,), backend, x, contexts...)
 end
 
 function DI.prepare_jacobian(
     f!::F, y, backend::AutoSparse{<:MixedMode}, x, contexts::Vararg{Context,C}
 ) where {F,C}
-    dense_backend = dense_ad(backend)
-    valBf = pick_batchsize(forward_backend(dense_backend), length(x))
-    valBr = pick_batchsize(reverse_backend(dense_backend), length(y))
-    return _prepare_mixed_sparse_jacobian_aux(
-        valBf, valBr, y, (f!, y), backend, x, contexts...
-    )
+    return _prepare_mixed_sparse_jacobian_aux(y, (f!, y), backend, x, contexts...)
 end
 
 function _prepare_mixed_sparse_jacobian_aux(
-    ::Val{Bf},
-    ::Val{Br},
-    y,
-    f_or_f!y::FY,
-    backend::AutoSparse{<:MixedMode},
-    x,
-    contexts::Vararg{Context,C},
-) where {Bf,Br,FY,C}
+    y, f_or_f!y::FY, backend::AutoSparse{<:MixedMode}, x, contexts::Vararg{Context,C}
+) where {FY,C}
     dense_backend = dense_ad(backend)
-
     sparsity = jacobian_sparsity(
         fy_with_contexts(f_or_f!y..., contexts...)..., x, sparsity_detector(backend)
     )
     problem = ColoringProblem{:nonsymmetric,:bidirectional}()
-
     coloring_result = coloring(
         sparsity,
         problem,
@@ -93,11 +53,40 @@ function _prepare_mixed_sparse_jacobian_aux(
         decompression_eltype=promote_type(eltype(x), eltype(y)),
     )
 
+    Nf = length(column_groups(coloring_result))
+    Nr = length(row_groups(coloring_result))
+    batch_size_settings_forward = pick_batchsize(forward_backend(dense_backend), Nf)
+    batch_size_settings_reverse = pick_batchsize(reverse_backend(dense_backend), Nr)
+
+    return _prepare_mixed_sparse_jacobian_aux_aux(
+        batch_size_settings_forward,
+        batch_size_settings_reverse,
+        coloring_result,
+        y,
+        f_or_f!y,
+        backend,
+        x,
+        contexts...,
+    )
+end
+
+function _prepare_mixed_sparse_jacobian_aux_aux(
+    batch_size_settings_forward::BatchSizeSettings{Bf},
+    batch_size_settings_reverse::BatchSizeSettings{Br},
+    coloring_result::AbstractColoringResult{:nonsymmetric,:bidirectional},
+    y,
+    f_or_f!y::FY,
+    backend::AutoSparse{<:MixedMode},
+    x,
+    contexts::Vararg{Context,C},
+) where {Bf,Br,FY,C}
+    Nf, Af = batch_size_settings_forward.N, batch_size_settings_forward.A
+    Nr, Ar = batch_size_settings_reverse.N, batch_size_settings_reverse.A
+
+    dense_backend = dense_ad(backend)
+
     groups_forward = column_groups(coloring_result)
     groups_reverse = row_groups(coloring_result)
-
-    Nf = length(groups_forward)
-    Nr = length(groups_reverse)
 
     seeds_forward = [
         multibasis(backend, x, eachindex(x)[group]) for group in groups_forward
@@ -110,12 +99,10 @@ function _prepare_mixed_sparse_jacobian_aux(
     compressed_matrix_reverse = stack(_ -> vec(similar(x)), groups_reverse; dims=1)
 
     batched_seeds_forward = [
-        ntuple(b -> seeds_forward[1 + ((a - 1) * Bf + (b - 1)) % Nf], Val(Bf)) for
-        a in 1:div(Nf, Bf, RoundUp)
+        ntuple(b -> seeds_forward[1 + ((a - 1) * Bf + (b - 1)) % Nf], Val(Bf)) for a in 1:Af
     ]
     batched_seeds_reverse = [
-        ntuple(b -> seeds_reverse[1 + ((a - 1) * Br + (b - 1)) % Nr], Val(Br)) for
-        a in 1:div(Nr, Br, RoundUp)
+        ntuple(b -> seeds_reverse[1 + ((a - 1) * Br + (b - 1)) % Nr], Val(Br)) for a in 1:Ar
     ]
 
     batched_results_forward = [
@@ -140,7 +127,9 @@ function _prepare_mixed_sparse_jacobian_aux(
         contexts...,
     )
 
-    return MixedModeSparseJacobianPrep{Bf,Br}(;
+    return MixedModeSparseJacobianPrep(
+        batch_size_settings_forward,
+        batch_size_settings_reverse,
         coloring_result,
         compressed_matrix_forward,
         compressed_matrix_reverse,
@@ -158,12 +147,14 @@ end
 function _sparse_jacobian_aux!(
     f_or_f!y::FY,
     jac,
-    prep::MixedModeSparseJacobianPrep{Bf,Br},
+    prep::MixedModeSparseJacobianPrep{<:BatchSizeSettings{Bf},<:BatchSizeSettings{Br}},
     backend::AutoSparse,
     x,
     contexts::Vararg{Context,C},
 ) where {FY,Bf,Br,C}
     (;
+        batch_size_settings_forward,
+        batch_size_settings_reverse,
         coloring_result,
         compressed_matrix_forward,
         compressed_matrix_reverse,
@@ -176,8 +167,8 @@ function _sparse_jacobian_aux!(
     ) = prep
 
     dense_backend = dense_ad(backend)
-    Nf = length(column_groups(coloring_result))
-    Nr = length(row_groups(coloring_result))
+    Nf = batch_size_settings_forward.N
+    Nr = batch_size_settings_reverse.N
 
     pushforward_prep_same = prepare_pushforward_same_point(
         f_or_f!y...,

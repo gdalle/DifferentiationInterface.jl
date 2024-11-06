@@ -57,7 +57,9 @@ test_differentiation(
 );
 
 test_differentiation(
-    MyAutoSparse.(vcat(adaptive_backends, MixedMode(backends[1], backends[2]))),
+    MyAutoSparse.(
+        vcat(adaptive_backends, MixedMode(adaptive_backends[1], adaptive_backends[2]))
+    ),
     sparse_scenarios(; include_constantified=true);
     sparsity=true,
     logging=LOGGING,
