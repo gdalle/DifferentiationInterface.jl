@@ -1,4 +1,4 @@
-@info "Trying out CUDA"
+@info "Testing CUDA"
 using Pkg
 Pkg.add("CUDA")
 using CUDA
