@@ -84,12 +84,12 @@ if VERSION <= v"1.11"
         excluded=vcat(FIRST_ORDER, [:second_derivative]),
         logging=LOGGING,
     )
-end
 
-test_differentiation(
-    SecondOrder(AutoEnzyme(; mode=Enzyme.Reverse), AutoEnzyme(; mode=Enzyme.Forward));
-    logging=LOGGING,
-);
+    test_differentiation(
+        SecondOrder(AutoEnzyme(; mode=Enzyme.Reverse), AutoEnzyme(; mode=Enzyme.Forward));
+        logging=LOGGING,
+    )
+end
 
 ## Sparse
 
