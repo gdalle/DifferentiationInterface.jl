@@ -1,0 +1,12 @@
+steps:
+  - label: "DI GPU tests"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1"
+    command: |
+      julia ./DifferentiationInterface/test/GPU/CUDA/simple.jl
+    agents:
+      queue: "juliagpu"
+      cuda: "*"
+    if: build.message !~ /\[skip tests\]/
+    timeout_in_minutes: 60
