@@ -452,12 +452,10 @@ for op in ALL_OPS
                     @test isempty(preptup_noval) || only(preptup_noval) isa $P
                     @test y_out1_val ≈ scen.y
                     @test y_out2_val ≈ scen.y
-                    for b in eachindex(scen.res1)
-                        @test res1_out1_val[b] ≈ scen.res1[b]
-                        @test res1_out2_val[b] ≈ scen.res1[b]
-                        @test res1_out1_noval[b] ≈ scen.res1[b]
-                        @test res1_out2_noval[b] ≈ scen.res1[b]
-                    end
+                    @test all(res1_out1_val .≈ scen.res1)
+                    @test all(res1_out2_val .≈ scen.res1)
+                    @test all(res1_out1_noval .≈ scen.res1)
+                    @test all(res1_out2_noval .≈ scen.res1)
                 end
             end
             scenario_intact && @test new_scen == scen
@@ -511,16 +509,14 @@ for op in ALL_OPS
                     @test isempty(preptup_noval) || only(preptup_noval) isa $P
                     @test y_out1_val ≈ scen.y
                     @test y_out2_val ≈ scen.y
-                    for b in eachindex(scen.res1)
-                        @test res1_in1_val[b] ≈ scen.res1[b]
-                        @test res1_in2_val[b] ≈ scen.res1[b]
-                        @test res1_out1_val[b] ≈ scen.res1[b]
-                        @test res1_out2_val[b] ≈ scen.res1[b]
-                        @test res1_in1_noval[b] ≈ scen.res1[b]
-                        @test res1_in2_noval[b] ≈ scen.res1[b]
-                        @test res1_out1_noval[b] ≈ scen.res1[b]
-                        @test res1_out2_noval[b] ≈ scen.res1[b]
-                    end
+                    @test all(res1_in1_val .≈ scen.res1)
+                    @test all(res1_in2_val .≈ scen.res1)
+                    @test all(res1_out1_val .≈ scen.res1)
+                    @test all(res1_out2_val .≈ scen.res1)
+                    @test all(res1_in1_noval .≈ scen.res1)
+                    @test all(res1_in2_noval .≈ scen.res1)
+                    @test all(res1_out1_noval .≈ scen.res1)
+                    @test all(res1_out2_noval .≈ scen.res1)
                 end
             end
             scenario_intact && @test new_scen == scen
@@ -577,12 +573,10 @@ for op in ALL_OPS
                     @test y_in2_val ≈ scen.y
                     @test y_out1_val ≈ scen.y
                     @test y_out2_val ≈ scen.y
-                    for b in eachindex(scen.res1)
-                        @test res1_out1_val[b] ≈ scen.res1[b]
-                        @test res1_out2_val[b] ≈ scen.res1[b]
-                        @test res1_out1_noval[b] ≈ scen.res1[b]
-                        @test res1_out2_noval[b] ≈ scen.res1[b]
-                    end
+                    @test all(res1_out1_val .≈ scen.res1)
+                    @test all(res1_out2_val .≈ scen.res1)
+                    @test all(res1_out1_noval .≈ scen.res1)
+                    @test all(res1_out2_noval .≈ scen.res1)
                 end
             end
             scenario_intact && @test new_scen == scen
@@ -653,16 +647,14 @@ for op in ALL_OPS
                     @test y_in2_val ≈ scen.y
                     @test y_out1_val ≈ scen.y
                     @test y_out2_val ≈ scen.y
-                    for b in eachindex(scen.res1)
-                        @test res1_in1_val[b] ≈ scen.res1[b]
-                        @test res1_in2_val[b] ≈ scen.res1[b]
-                        @test res1_out1_val[b] ≈ scen.res1[b]
-                        @test res1_out2_val[b] ≈ scen.res1[b]
-                        @test res1_in1_noval[b] ≈ scen.res1[b]
-                        @test res1_in2_noval[b] ≈ scen.res1[b]
-                        @test res1_out1_noval[b] ≈ scen.res1[b]
-                        @test res1_out2_noval[b] ≈ scen.res1[b]
-                    end
+                    @test all(res1_in1_val .≈ scen.res1)
+                    @test all(res1_in2_val .≈ scen.res1)
+                    @test all(res1_out1_val .≈ scen.res1)
+                    @test all(res1_out2_val .≈ scen.res1)
+                    @test all(res1_in1_noval .≈ scen.res1)
+                    @test all(res1_in2_noval .≈ scen.res1)
+                    @test all(res1_out1_noval .≈ scen.res1)
+                    @test all(res1_out2_noval .≈ scen.res1)
                 end
             end
             scenario_intact && @test new_scen == scen
@@ -707,16 +699,12 @@ for op in ALL_OPS
                 )
                 let (≈)(x, y) = isapprox(x, y; atol, rtol)
                     @test isempty(preptup_noval) || only(preptup_noval) isa $P
+                    @test all(res2_out1_noval .≈ scen.res2)
+                    @test all(res2_out2_noval .≈ scen.res2)
                     @test res1_out1_val ≈ scen.res1
                     @test res1_out2_val ≈ scen.res1
-                    @testset "HVP" begin
-                        for b in eachindex(scen.res2)
-                            @test res2_out1_noval[b] ≈ scen.res2[b]
-                            @test res2_out2_noval[b] ≈ scen.res2[b]
-                            @test res2_out1_val[b] ≈ scen.res2[b]
-                            @test res2_out2_val[b] ≈ scen.res2[b]
-                        end
-                    end
+                    @test all(res2_out1_val .≈ scen.res2)
+                    @test all(res2_out2_val .≈ scen.res2)
                 end
             end
             scenario_intact && @test new_scen == scen
@@ -782,22 +770,18 @@ for op in ALL_OPS
                 )
                 let (≈)(x, y) = isapprox(x, y; atol, rtol)
                     @test isempty(preptup_noval) || only(preptup_noval) isa $P
+                    @test all(res2_in1_noval .≈ scen.res2)
+                    @test all(res2_in2_noval .≈ scen.res2)
+                    @test all(res2_out1_noval .≈ scen.res2)
+                    @test all(res2_out2_noval .≈ scen.res2)
                     @test res1_in1_val ≈ scen.res1
                     @test res1_in2_val ≈ scen.res1
                     @test res1_out1_val ≈ scen.res1
                     @test res1_out2_val ≈ scen.res1
-                    @testset "HVP" begin
-                        for b in eachindex(scen.res2)
-                            @test res2_in1_noval[b] ≈ scen.res2[b]
-                            @test res2_in2_noval[b] ≈ scen.res2[b]
-                            @test res2_out1_noval[b] ≈ scen.res2[b]
-                            @test res2_out2_noval[b] ≈ scen.res2[b]
-                            @test res2_in1_val[b] ≈ scen.res2[b]
-                            @test res2_in2_val[b] ≈ scen.res2[b]
-                            @test res2_out1_val[b] ≈ scen.res2[b]
-                            @test res2_out2_val[b] ≈ scen.res2[b]
-                        end
-                    end
+                    @test all(res2_in1_val .≈ scen.res2)
+                    @test all(res2_in2_val .≈ scen.res2)
+                    @test all(res2_out1_val .≈ scen.res2)
+                    @test all(res2_out2_val .≈ scen.res2)
                 end
             end
             scenario_intact && @test new_scen == scen
