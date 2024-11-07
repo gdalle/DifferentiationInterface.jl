@@ -1,5 +1,8 @@
 steps:
   - label: "DI GPU tests"
+    if: |
+      !build.pull_request.draft &&
+        build.message !~ /skip tests/
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
@@ -8,5 +11,4 @@ steps:
     agents:
       queue: "juliagpu"
       cuda: "*"
-    if: build.message !~ /\[skip tests\]/
     timeout_in_minutes: 60
