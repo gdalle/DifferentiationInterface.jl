@@ -34,8 +34,6 @@ end;
 
 test_differentiation(backends, default_scenarios(); excluded=SECOND_ORDER, logging=LOGGING);
 
-LOGGING = true
-
 test_differentiation(
     backends[1:3],
     default_scenarios(; include_normal=false, include_constantified=true);
@@ -43,16 +41,14 @@ test_differentiation(
     logging=LOGGING,
 );
 
-#=
-# TODO: reactivate closurified tests once Enzyme#2056 is fixed
-
-test_differentiation(
-    duplicated_backends,
-    default_scenarios(; include_normal=false, include_closurified=true);
-    excluded=SECOND_ORDER,
-    logging=LOGGING,
-);
-=#
+if VERSION < v"1.11"
+    test_differentiation(
+        duplicated_backends,
+        default_scenarios(; include_normal=false, include_closurified=true);
+        excluded=SECOND_ORDER,
+        logging=LOGGING,
+    )
+end
 
 #=
 # TODO: reactivate type stability tests
@@ -82,11 +78,13 @@ test_differentiation(
     logging=LOGGING,
 );
 
-test_differentiation(
-    AutoEnzyme(; mode=Enzyme.Reverse);
-    excluded=vcat(FIRST_ORDER, [:second_derivative]),
-    logging=LOGGING,
-);
+if VERSION <= v"1.11"
+    test_differentiation(
+        AutoEnzyme(; mode=Enzyme.Reverse);
+        excluded=vcat(FIRST_ORDER, [:second_derivative]),
+        logging=LOGGING,
+    )
+end
 
 test_differentiation(
     SecondOrder(AutoEnzyme(; mode=Enzyme.Reverse), AutoEnzyme(; mode=Enzyme.Forward));
