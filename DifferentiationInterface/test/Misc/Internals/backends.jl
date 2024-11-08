@@ -2,7 +2,14 @@ using ADTypes
 using ADTypes: mode
 using DifferentiationInterface
 using DifferentiationInterface:
-    inner, outer, inplace_support, pushforward_performance, pullback_performance, hvp_mode
+    inner,
+    outer,
+    forward_backend,
+    reverse_backend,
+    inplace_support,
+    pushforward_performance,
+    pullback_performance,
+    hvp_mode
 import DifferentiationInterface as DI
 using ForwardDiff: ForwardDiff
 using Test
@@ -17,6 +24,17 @@ using Test
         (Bool(inplace_support(inner(backend))) && Bool(inplace_support(outer(backend))))
     @test_throws ArgumentError pushforward_performance(backend)
     @test_throws ArgumentError pullback_performance(backend)
+end
+
+@testset "MixedMode" begin
+    backend = MixedMode(AutoForwardDiff(), AutoZygote())
+    @test ADTypes.mode(backend) isa DifferentiationInterface.ForwardAndReverseMode
+    @test forward_backend(backend) isa AutoForwardDiff
+    @test reverse_backend(backend) isa AutoZygote
+    @test Bool(inplace_support(backend)) ==
+        (Bool(inplace_support(inner(backend))) && Bool(inplace_support(outer(backend))))
+    @test_throws MethodError pushforward_performance(backend)
+    @test_throws MethodError pullback_performance(backend)
 end
 
 @testset "Sparse" begin

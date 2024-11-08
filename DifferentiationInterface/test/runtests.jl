@@ -1,7 +1,6 @@
 using DifferentiationInterface
 using Pkg
 using Test
-Pkg.add(; url="https://github.com/gdalle/SparseMatrixColorings.jl", rev="bicoloring")
 using SparseMatrixColorings, SparseConnectivityTracer
 
 function MyAutoSparse(backend)

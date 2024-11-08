@@ -16,6 +16,9 @@ BSS = BatchSizeSettings
     @test_throws ArgumentError pick_batchsize(
         SecondOrder(AutoZygote(), AutoZygote()), zeros(2)
     )
+    @test_throws ArgumentError pick_batchsize(
+        MixedMode(AutoForwardDiff(), AutoZygote()), zeros(2)
+    )
 end
 
 @testset "ForwardDiff (adaptive)" begin
