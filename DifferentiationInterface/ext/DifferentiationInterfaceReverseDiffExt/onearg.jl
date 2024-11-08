@@ -29,8 +29,8 @@ end
 
 function DI.value_and_pullback!(
     f,
-    ::NoPullbackPrep,
     tx::NTuple,
+    ::NoPullbackPrep,
     ::AutoReverseDiff,
     x::AbstractArray,
     ty::NTuple,
@@ -69,24 +69,31 @@ end
 
 ### Without contexts
 
-struct ReverseDiffGradientPrep{T} <: GradientPrep
+@kwdef struct ReverseDiffGradientPrep{C,T} <: GradientPrep
+    config::C
     tape::T
 end
 
-function DI.prepare_gradient(f, ::AutoReverseDiff{Compile}, x) where {Compile}
-    tape = GradientTape(f, x)
-    if Compile
-        tape = compile(tape)
+function DI.prepare_gradient(f, ::AutoReverseDiff{compile}, x) where {compile}
+    if compile
+        tape = ReverseDiff.compile(GradientTape(f, x))
+        return ReverseDiffGradientPrep(; config=nothing, tape=tape)
+    else
+        config = GradientConfig(x)
+        return ReverseDiffGradientPrep(; config=config, tape=nothing)
     end
-    return ReverseDiffGradientPrep(tape)
 end
 
 function DI.value_and_gradient!(
-    f, grad, prep::ReverseDiffGradientPrep, ::AutoReverseDiff, x
-)
+    f, grad, prep::ReverseDiffGradientPrep, ::AutoReverseDiff{compile}, x
+) where {compile}
     y = f(x)  # TODO: ReverseDiff#251
     result = DiffResult(y, (grad,))
-    result = gradient!(result, prep.tape, x)
+    if compile
+        result = gradient!(result, prep.tape, x)
+    else
+        result = gradient!(result, f, x, prep.config)
+    end
     y = DR.value(result)
     grad === DR.gradient(result) || copyto!(grad, DR.gradient(result))
     return y, grad
@@ -99,220 +106,338 @@ function DI.value_and_gradient(
     return DI.value_and_gradient!(f, grad, prep, backend, x)
 end
 
-function DI.gradient!(_f, grad, prep::ReverseDiffGradientPrep, ::AutoReverseDiff, x)
-    return gradient!(grad, prep.tape, x)
+function DI.gradient!(
+    f, grad, prep::ReverseDiffGradientPrep, ::AutoReverseDiff{compile}, x
+) where {compile}
+    if compile
+        return gradient!(grad, prep.tape, x)
+    else
+        return gradient!(grad, f, x, prep.config)
+    end
 end
 
-function DI.gradient(_f, prep::ReverseDiffGradientPrep, ::AutoReverseDiff, x)
-    return gradient!(prep.tape, x)
+function DI.gradient(
+    f, prep::ReverseDiffGradientPrep, ::AutoReverseDiff{compile}, x
+) where {compile}
+    if compile
+        return gradient!(prep.tape, x)
+    else
+        return gradient(f, x, prep.config)
+    end
 end
 
 ### With contexts
 
 function DI.prepare_gradient(f, ::AutoReverseDiff, x, contexts::Vararg{Context,C}) where {C}
-    return NoGradientPrep()
+    config = GradientConfig(x)
+    return ReverseDiffGradientPrep(; config=config, tape=nothing)
 end
 
 function DI.value_and_gradient!(
-    f, grad, ::NoGradientPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
+    f,
+    grad,
+    prep::ReverseDiffGradientPrep,
+    ::AutoReverseDiff,
+    x,
+    contexts::Vararg{Context,C},
 ) where {C}
     fc = with_contexts(f, contexts...)
     y = fc(x)  # TODO: ReverseDiff#251
     result = DiffResult(y, (grad,))
-    result = gradient!(result, fc, x)
+    result = gradient!(result, fc, x, prep.config)
     y = DR.value(result)
     grad === DR.gradient(result) || copyto!(grad, DR.gradient(result))
     return y, grad
 end
 
 function DI.value_and_gradient(
-    f, prep::NoGradientPrep, backend::AutoReverseDiff, x, contexts::Vararg{Context,C}
+    f,
+    prep::ReverseDiffGradientPrep,
+    backend::AutoReverseDiff,
+    x,
+    contexts::Vararg{Context,C},
 ) where {C}
     grad = similar(x)
     return DI.value_and_gradient!(f, grad, prep, backend, x, contexts...)
 end
 
 function DI.gradient!(
-    f, grad, ::NoGradientPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
+    f,
+    grad,
+    prep::ReverseDiffGradientPrep,
+    ::AutoReverseDiff,
+    x,
+    contexts::Vararg{Context,C},
 ) where {C}
     fc = with_contexts(f, contexts...)
-    return gradient!(grad, fc, x)
+    return gradient!(grad, fc, x, prep.config)
 end
 
 function DI.gradient(
-    f, ::NoGradientPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
+    f, prep::ReverseDiffGradientPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
 ) where {C}
     fc = with_contexts(f, contexts...)
-    return gradient(fc, x)
+    return gradient(fc, x, prep.config)
 end
 
 ## Jacobian
 
 ### Without contexts
 
-struct ReverseDiffOneArgJacobianPrep{T} <: JacobianPrep
+@kwdef struct ReverseDiffOneArgJacobianPrep{C,T} <: JacobianPrep
+    config::C
     tape::T
 end
 
-function DI.prepare_jacobian(f, ::AutoReverseDiff{Compile}, x) where {Compile}
-    tape = JacobianTape(f, x)
-    if Compile
-        tape = compile(tape)
+function DI.prepare_jacobian(f, ::AutoReverseDiff{compile}, x) where {compile}
+    if compile
+        tape = ReverseDiff.compile(JacobianTape(f, x))
+        return ReverseDiffOneArgJacobianPrep(; config=nothing, tape=tape)
+    else
+        config = JacobianConfig(x)
+        return ReverseDiffOneArgJacobianPrep(; config=config, tape=nothing)
     end
-    return ReverseDiffOneArgJacobianPrep(tape)
 end
 
 function DI.value_and_jacobian!(
-    f, jac, prep::ReverseDiffOneArgJacobianPrep, ::AutoReverseDiff, x
-)
+    f, jac, prep::ReverseDiffOneArgJacobianPrep, ::AutoReverseDiff{compile}, x
+) where {compile}
     y = f(x)
     result = DiffResult(y, (jac,))
-    result = jacobian!(result, prep.tape, x)
-    y = DR.value(result)
-    jac === DR.jacobian(result) || copyto!(jac, DR.jacobian(result))
-    return y, jac
-end
-
-function DI.value_and_jacobian(f, prep::ReverseDiffOneArgJacobianPrep, ::AutoReverseDiff, x)
-    return f(x), jacobian!(prep.tape, x)
-end
-
-function DI.jacobian!(_f, jac, prep::ReverseDiffOneArgJacobianPrep, ::AutoReverseDiff, x)
-    return jacobian!(jac, prep.tape, x)
-end
-
-function DI.jacobian(f, prep::ReverseDiffOneArgJacobianPrep, ::AutoReverseDiff, x)
-    return jacobian!(prep.tape, x)
-end
-
-### With contexts
-
-function DI.prepare_jacobian(f, ::AutoReverseDiff, x, contexts::Vararg{Context,C}) where {C}
-    return NoJacobianPrep()
-end
-
-function DI.value_and_jacobian!(
-    f, jac, ::NoJacobianPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
-) where {C}
-    fc = with_contexts(f, contexts...)
-    y = fc(x)
-    result = DiffResult(y, (jac,))
-    result = jacobian!(result, fc, x)
+    if compile
+        result = jacobian!(result, prep.tape, x)
+    else
+        result = jacobian!(result, f, x, prep.config)
+    end
     y = DR.value(result)
     jac === DR.jacobian(result) || copyto!(jac, DR.jacobian(result))
     return y, jac
 end
 
 function DI.value_and_jacobian(
-    f, ::NoJacobianPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
-) where {C}
-    fc = with_contexts(f, contexts...)
-    return fc(x), jacobian(fc, x)
+    f, prep::ReverseDiffOneArgJacobianPrep, ::AutoReverseDiff{compile}, x
+) where {compile}
+    if compile
+        return f(x), jacobian!(prep.tape, x)
+    else
+        return f(x), jacobian(f, x, prep.config)
+    end
 end
 
 function DI.jacobian!(
-    f, jac, ::NoJacobianPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
-) where {C}
-    fc = with_contexts(f, contexts...)
-    return jacobian!(jac, fc, x)
+    f, jac, prep::ReverseDiffOneArgJacobianPrep, ::AutoReverseDiff{compile}, x
+) where {compile}
+    if compile
+        return jacobian!(jac, prep.tape, x)
+    else
+        return jacobian!(jac, f, x, prep.config)
+    end
 end
 
 function DI.jacobian(
-    f, ::NoJacobianPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
+    f, prep::ReverseDiffOneArgJacobianPrep, ::AutoReverseDiff{compile}, x
+) where {compile}
+    if compile
+        return jacobian!(prep.tape, x)
+    else
+        return jacobian(f, x, prep.config)
+    end
+end
+
+### With contexts
+
+function DI.prepare_jacobian(f, ::AutoReverseDiff, x, contexts::Vararg{Context,C}) where {C}
+    config = JacobianConfig(x)
+    return ReverseDiffOneArgJacobianPrep(; config=config, tape=nothing)
+end
+
+function DI.value_and_jacobian!(
+    f,
+    jac,
+    prep::ReverseDiffOneArgJacobianPrep,
+    ::AutoReverseDiff,
+    x,
+    contexts::Vararg{Context,C},
 ) where {C}
     fc = with_contexts(f, contexts...)
-    return jacobian(fc, x)
+    y = fc(x)
+    result = DiffResult(y, (jac,))
+    result = jacobian!(result, fc, x, prep.config)
+    y = DR.value(result)
+    jac === DR.jacobian(result) || copyto!(jac, DR.jacobian(result))
+    return y, jac
+end
+
+function DI.value_and_jacobian(
+    f,
+    prep::ReverseDiffOneArgJacobianPrep,
+    ::AutoReverseDiff,
+    x,
+    contexts::Vararg{Context,C},
+) where {C}
+    fc = with_contexts(f, contexts...)
+    return fc(x), jacobian(fc, x, prep.config)
+end
+
+function DI.jacobian!(
+    f,
+    jac,
+    prep::ReverseDiffOneArgJacobianPrep,
+    ::AutoReverseDiff,
+    x,
+    contexts::Vararg{Context,C},
+) where {C}
+    fc = with_contexts(f, contexts...)
+    return jacobian!(jac, fc, x, prep.config)
+end
+
+function DI.jacobian(
+    f,
+    prep::ReverseDiffOneArgJacobianPrep,
+    ::AutoReverseDiff,
+    x,
+    contexts::Vararg{Context,C},
+) where {C}
+    fc = with_contexts(f, contexts...)
+    return jacobian(fc, x, prep.config)
 end
 
 ## Hessian
 
 ### Without contexts
 
-struct ReverseDiffHessianGradientPrep{GT,HT} <: HessianPrep
+@kwdef struct ReverseDiffHessianPrep{GC,HC,GT,HT} <: HessianPrep
+    gradient_config::GC
+    hessian_config::HC
     gradient_tape::GT
     hessian_tape::HT
 end
 
-function DI.prepare_hessian(f, ::AutoReverseDiff{Compile}, x) where {Compile}
-    gradient_tape = GradientTape(f, x)
-    hessian_tape = HessianTape(f, x)
-    if Compile
-        gradient_tape = compile(gradient_tape)
-        hessian_tape = compile(hessian_tape)
+function DI.prepare_hessian(f, ::AutoReverseDiff{compile}, x) where {compile}
+    if compile
+        gradient_tape = ReverseDiff.compile(GradientTape(f, x))
+        hessian_tape = ReverseDiff.compile(HessianTape(f, x))
+        return ReverseDiffHessianPrep(;
+            gradient_config=nothing,
+            hessian_config=nothing,
+            gradient_tape=gradient_tape,
+            hessian_tape=hessian_tape,
+        )
+    else
+        gradient_config = GradientConfig(x)
+        hessian_config = HessianConfig(x)
+        return ReverseDiffHessianPrep(;
+            gradient_config=gradient_config,
+            hessian_config=hessian_config,
+            gradient_tape=nothing,
+            hessian_tape=nothing,
+        )
     end
-    return ReverseDiffHessianGradientPrep(gradient_tape, hessian_tape)
 end
 
-function DI.hessian!(_f, hess, prep::ReverseDiffHessianGradientPrep, ::AutoReverseDiff, x)
-    return hessian!(hess, prep.hessian_tape, x)
+function DI.hessian!(
+    f, hess, prep::ReverseDiffHessianPrep, ::AutoReverseDiff{compile}, x
+) where {compile}
+    if compile
+        return hessian!(hess, prep.hessian_tape, x)
+    else
+        return hessian!(hess, f, x, prep.hessian_config)
+    end
 end
 
-function DI.hessian(_f, prep::ReverseDiffHessianGradientPrep, ::AutoReverseDiff, x)
-    return hessian!(prep.hessian_tape, x)
+function DI.hessian(
+    f, prep::ReverseDiffHessianPrep, ::AutoReverseDiff{compile}, x
+) where {compile}
+    if compile
+        return hessian!(prep.hessian_tape, x)
+    else
+        return hessian(f, x, prep.hessian_config)
+    end
 end
 
 function DI.value_gradient_and_hessian!(
-    f, grad, hess, prep::ReverseDiffHessianGradientPrep, ::AutoReverseDiff, x
-)
+    f, grad, hess, prep::ReverseDiffHessianPrep, ::AutoReverseDiff{compile}, x
+) where {compile}
     y = f(x)  # TODO: ReverseDiff#251
     result = DiffResult(y, (grad, hess))
-    result = hessian!(result, prep.hessian_tape, x)
-    y = DR.value(result)
+    if compile
+        result = hessian!(result, prep.hessian_tape, x)
+        grad = gradient!(grad, prep.gradient_tape, x) # TODO: ReverseDiff#251
+    else
+        result = hessian!(result, f, x)  # TODO: add prep.hessian_config
+        grad = gradient!(grad, f, x, prep.gradient_config) # TODO: ReverseDiff#251
+    end
     # grad === DR.gradient(result) || copyto!(grad, DR.gradient(result))
-    grad = gradient!(grad, prep.gradient_tape, x)  # TODO: ReverseDiff#251
     hess === DR.hessian(result) || copyto!(hess, DR.hessian(result))
     return y, grad, hess
 end
 
 function DI.value_gradient_and_hessian(
-    f, prep::ReverseDiffHessianGradientPrep, ::AutoReverseDiff, x
-)
+    f, prep::ReverseDiffHessianPrep, ::AutoReverseDiff{compile}, x
+) where {compile}
     y = f(x)  # TODO: remove once ReverseDiff#251 is fixed
     result = DiffResult(y, (similar(x), similar(x, length(x), length(x))))
-    result = hessian!(result, prep.hessian_tape, x)
-    return (DR.value(result), DR.gradient(result), DR.hessian(result))
+    if compile
+        result = hessian!(result, prep.hessian_tape, x)
+    else
+        result = hessian!(result, f, x)  # todo: add prep.hessian_config
+    end
+    return (y, DR.gradient(result), DR.hessian(result))
 end
 
 ### With contexts
 
 function DI.prepare_hessian(f, ::AutoReverseDiff, x, contexts::Vararg{Context,C}) where {C}
-    return NoHessianPrep()
+    gradient_config = GradientConfig(x)
+    hessian_config = HessianConfig(x)
+    return ReverseDiffHessianPrep(;
+        gradient_config=gradient_config,
+        hessian_config=hessian_config,
+        gradient_tape=nothing,
+        hessian_tape=nothing,
+    )
 end
 
 function DI.hessian!(
-    f, hess, ::NoHessianPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
+    f, hess, prep::ReverseDiffHessianPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
 ) where {C}
     fc = with_contexts(f, contexts...)
-    return hessian!(hess, fc, x)
+    return hessian!(hess, fc, x, prep.hessian_config)
 end
 
 function DI.hessian(
-    f, ::NoHessianPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
+    f, prep::ReverseDiffHessianPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
 ) where {C}
     fc = with_contexts(f, contexts...)
-    return hessian(fc, x)
+    return hessian(fc, x, prep.hessian_config)
 end
 
 function DI.value_gradient_and_hessian!(
-    f, grad, hess, ::NoHessianPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
+    f,
+    grad,
+    hess,
+    prep::ReverseDiffHessianPrep,
+    ::AutoReverseDiff,
+    x,
+    contexts::Vararg{Context,C},
 ) where {C}
     fc = with_contexts(f, contexts...)
     y = fc(x)  # TODO: ReverseDiff#251
     result = DiffResult(y, (grad, hess))
-    result = hessian!(result, fc, x)
+    result = hessian!(result, fc, x)  # TODO: add prep.hessian_config
     y = DR.value(result)
     # grad === DR.gradient(result) || copyto!(grad, DR.gradient(result))
-    grad = gradient!(grad, fc, x)  # TODO: ReverseDiff#251
+    grad = gradient!(grad, fc, x, prep.gradient_config)  # TODO: ReverseDiff#251
     hess === DR.hessian(result) || copyto!(hess, DR.hessian(result))
     return y, grad, hess
 end
 
 function DI.value_gradient_and_hessian(
-    f, ::NoHessianPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
+    f, prep::ReverseDiffHessianPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
 ) where {C}
     fc = with_contexts(f, contexts...)
     y = fc(x)  # TODO: ReverseDiff#251
     result = HessianResult(x)
-    result = hessian!(result, fc, x)
+    result = hessian!(result, fc, x)  # TODO: add prep.hessian_config
     return (DR.value(result), DR.gradient(result), DR.hessian(result))
 end

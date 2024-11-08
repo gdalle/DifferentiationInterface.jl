@@ -144,13 +144,17 @@ Most operators fall back on `AutoForwardDiff`.
 
 ### ReverseDiff
 
-Wherever possible, preparation records a [tape](https://juliadiff.org/ReverseDiff.jl/dev/api/#The-AbstractTape-API) of the function's execution.
-This tape is computed from the arguments `x` and `contexts...` provided at preparation time.
+With `AutoReverseDiff(compile=false)`, preparation preallocates a [config](https://juliadiff.org/ReverseDiff.jl/dev/api/#The-AbstractConfig-API).
+
+With `AutoReverseDiff(compile=true)`, preparation records a [tape](https://juliadiff.org/ReverseDiff.jl/dev/api/#The-AbstractTape-API) of the function's execution.
+This tape is computed from the input `x` provided at preparation time.
 It is control-flow dependent, so only one branch is recorded at each `if` statement.
 
 !!! danger
     If your function has value-specific control flow (like `if x[1] > 0` or `if c == 1`), you may get silently wrong results whenever it takes new branches that were not taken during preparation.
     You must make sure to run preparation with an input and contexts whose values trigger the correct control flow for future executions.
+
+Whenever contexts are provided, tape recording is deactivated in all cases, because otherwise the context values would be hardcoded into a tape.
 
 ### Symbolics
 
