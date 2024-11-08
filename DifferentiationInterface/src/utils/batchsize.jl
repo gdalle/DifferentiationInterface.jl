@@ -52,6 +52,12 @@ function pick_batchsize(backend::AbstractADType, x_or_N::Union{AbstractArray,Int
                 "You should select the batch size for the dense backend of $backend"
             ),
         )
+    elseif backend isa MixedMode
+        throw(
+            ArgumentError(
+                "You should select the batch size for the forward or reverse backend of $backend",
+            ),
+        )
     else
         return BatchSizeSettings(backend, x_or_N)
     end

@@ -19,6 +19,7 @@ end
 SMC.sparsity_pattern(prep::SparseHessianPrep) = sparsity_pattern(prep.coloring_result)
 SMC.column_colors(prep::SparseHessianPrep) = column_colors(prep.coloring_result)
 SMC.column_groups(prep::SparseHessianPrep) = column_groups(prep.coloring_result)
+SMC.ncolors(prep::SparseHessianPrep) = ncolors(prep.coloring_result)
 
 ## Hessian, one argument
 

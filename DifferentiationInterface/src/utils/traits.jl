@@ -34,6 +34,15 @@ end
 
 inplace_support(backend::AutoSparse) = inplace_support(dense_ad(backend))
 
+function inplace_support(backend::MixedMode)
+    if Bool(inplace_support(forward_backend(backend))) &&
+        Bool(inplace_support(reverse_backend(backend)))
+        return InPlaceSupported()
+    else
+        return InPlaceNotSupported()
+    end
+end
+
 ## Pushforward
 
 abstract type PushforwardPerformance end
