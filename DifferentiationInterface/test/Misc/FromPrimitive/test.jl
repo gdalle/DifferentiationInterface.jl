@@ -77,6 +77,8 @@ test_differentiation(
     @test all(==(1), column_colors(jac_for_prep))
     @test all(==(1), row_colors(jac_rev_prep))
     @test all(==(1), column_colors(hess_prep))
+    @test ncolors(jac_for_prep) == 1
+    @test ncolors(hess_prep) == 1
     @test only(column_groups(jac_for_prep)) == 1:10
     @test only(row_groups(jac_rev_prep)) == 1:10
     @test only(column_groups(hess_prep)) == 1:10
