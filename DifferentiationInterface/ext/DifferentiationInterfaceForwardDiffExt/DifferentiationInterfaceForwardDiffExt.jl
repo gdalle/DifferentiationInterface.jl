@@ -25,7 +25,8 @@ using DifferentiationInterface:
     outer,
     shuffled_gradient,
     unwrap,
-    with_contexts
+    with_contexts,
+    ismutable_array
 import ForwardDiff.DiffResults as DR
 using ForwardDiff.DiffResults:
     DiffResults, DiffResult, GradientResult, HessianResult, MutableDiffResult

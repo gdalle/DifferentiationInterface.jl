@@ -68,7 +68,11 @@ function DI.prepare_pushforward(
     f::F, backend::AutoForwardDiff, x, tx::NTuple, contexts::Vararg{Context,C}
 ) where {F,C}
     T = tag_type(f, backend, x)
-    xdual_tmp = make_dual_similar(T, x, tx)
+    if ismutable_array(x)
+        xdual_tmp = make_dual_similar(T, x, tx)
+    else
+        xdual_tmp = nothing
+    end
     return ForwardDiffOneArgPushforwardPrep{T,typeof(xdual_tmp)}(xdual_tmp)
 end
 
@@ -92,8 +96,12 @@ function compute_ydual_onearg(
     tx::NTuple{B},
     contexts::Vararg{Context,C},
 ) where {F,T,B,C}
-    (; xdual_tmp) = prep
-    make_dual!(T, xdual_tmp, x, tx)
+    if ismutable_array(x)
+        make_dual!(T, prep.xdual_tmp, x, tx)
+        xdual_tmp = prep.xdual_tmp
+    else
+        xdual_tmp = make_dual(T, x, tx)
+    end
     contexts_dual = translate(T, Val(B), contexts...)
     ydual = f(xdual_tmp, contexts_dual...)
     return ydual

@@ -13,6 +13,8 @@ function DI.stack_vec_row(t::NTuple{B,<:StaticArray}) where {B}
     return vcat(transpose.(map(vec, t))...)
 end
 
+DI.ismutable_array(::Type{<:SArray}) = false
+
 function DI.BatchSizeSettings(::AutoForwardDiff{nothing}, x::StaticArray)
     return BatchSizeSettings{length(x),true,true}(length(x))
 end
