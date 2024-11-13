@@ -4,7 +4,6 @@ import DifferentiationInterface as DI
 using DifferentiationInterfaceTest
 import DifferentiationInterfaceTest as DIT
 using JLArrays: JLArray, JLVector, JLMatrix, jl
-using Random: AbstractRNG, default_rng
 
 myjl(f::Function) = f
 function myjl(::DIT.NumToArr{A}) where {T,N,A<:AbstractArray{T,N}}

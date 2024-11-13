@@ -452,12 +452,11 @@ end
 ## Gather
 
 """
-    default_scenarios(rng=Random.default_rng())
+    default_scenarios()
 
 Create a vector of [`Scenario`](@ref)s with standard array types.
 """
-function default_scenarios(
-    rng::AbstractRNG=default_rng();
+function default_scenarios(;
     linalg=true,
     include_normal=true,
     include_batchified=true,
@@ -465,20 +464,20 @@ function default_scenarios(
     include_constantified=false,
     include_cachified=false,
 )
-    x_ = rand(rng)
-    dx_ = rand(rng)
-    dy_ = rand(rng)
+    x_ = 0.42
+    dx_ = 3.14
+    dy_ = -1 / 12
 
-    x_6 = rand(rng, 6)
-    dx_6 = rand(rng, 6)
+    x_6 = float.(1:6)
+    dx_6 = float.(-1:-1:-6)
 
-    x_2_3 = rand(rng, 2, 3)
-    dx_2_3 = rand(rng, 2, 3)
+    x_2_3 = float.(reshape(1:6, 2, 3))
+    dx_2_3 = float.(reshape(-1:-1:-6, 2, 3))
 
-    dy_6 = rand(rng, 6)
-    dy_12 = rand(rng, 12)
-    dy_2_3 = rand(rng, 2, 3)
-    dy_6_2 = rand(rng, 6, 2)
+    dy_6 = float.(-5:2:5)
+    dy_12 = float.(-11:2:11)
+    dy_2_3 = float.(reshape(-5:2:5, 2, 3))
+    dy_6_2 = float.(reshape(-11:2:11, 6, 2))
 
     V = Vector{Float64}
     M = Matrix{Float64}

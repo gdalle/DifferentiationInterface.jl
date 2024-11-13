@@ -5,7 +5,6 @@ using DifferentiationInterface
 using DifferentiationInterfaceTest
 import DifferentiationInterfaceTest as DIT
 using LinearAlgebra: dot
-using Random: AbstractRNG, default_rng
 
 ## Vector to scalar
 
@@ -49,11 +48,11 @@ end
 
 ## Gather
 
-function DIT.component_scenarios(rng::AbstractRNG=default_rng())
-    dy_ = rand(rng)
+function DIT.component_scenarios()
+    dy_ = -1 / 12
 
-    x_comp = ComponentVector(; a=randn(rng, 4), b=randn(rng, 2))
-    dx_comp = ComponentVector(; a=randn(rng, 4), b=randn(rng, 2))
+    x_comp = ComponentVector(; a=float.(1:4), b=float.(5:6))
+    dx_comp = ComponentVector(; a=float.(4:-1:1), b=float.(6:-1:5))
 
     scens = vcat(
         # one argument
