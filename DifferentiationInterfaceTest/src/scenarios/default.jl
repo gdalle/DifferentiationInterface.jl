@@ -169,16 +169,20 @@ end
 
 ## Array to number
 
-const α = 4
-const β = 6
+const α = 3
 
-arr_to_num_linalg(x::AbstractArray) = sum(vec(x .^ α) .* transpose(vec(x .^ β)))
+@inline power(x) = x^α
+
+function arr_to_num_linalg(x::AbstractArray)
+    a = vec(map(power, x))
+    return sum(a * transpose(a))
+end
 
 function arr_to_num_no_linalg(x::AbstractArray)
     n = length(x)
     s = zero(eltype(x))
     for i in 1:n, j in 1:n
-        s += x[i]^α * x[j]^β
+        s += x[i]^α * x[j]^α
     end
     return s
 end
@@ -188,9 +192,9 @@ function arr_to_num_gradient(x0)
     g = similar(x)
     for k in eachindex(g, x)
         g[k] = (
-            α * x[k]^(α - 1) * sum(x[j]^β for j in eachindex(x) if j != k) +
-            β * x[k]^(β - 1) * sum(x[i]^α for i in eachindex(x) if i != k) +
-            (α + β) * x[k]^(α + β - 1)
+            α * x[k]^(α - 1) * sum(x[j]^α for j in eachindex(x) if j != k) +
+            α * x[k]^(α - 1) * sum(x[i]^α for i in eachindex(x) if i != k) +
+            2α * x[k]^(2α - 1)
         )
     end
     return convert(typeof(x0), g)
@@ -202,12 +206,12 @@ function arr_to_num_hessian(x0)
     for k in axes(H, 1), l in axes(H, 2)
         if k == l
             H[k, k] = (
-                α * (α - 1) * x[k]^(α - 2) * sum(x[j]^β for j in eachindex(x) if j != k) +
-                β * (β - 1) * x[k]^(β - 2) * sum(x[i]^α for i in eachindex(x) if i != k) +
-                (α + β) * (α + β - 1) * x[k]^(α + β - 2)
+                α * (α - 1) * x[k]^(α - 2) * sum(x[j]^α for j in eachindex(x) if j != k) +
+                α * (α - 1) * x[k]^(α - 2) * sum(x[i]^α for i in eachindex(x) if i != k) +
+                2α * (2α - 1) * x[k]^(2α - 2)
             )
         else
-            H[k, l] = α * β * (x[k]^(α - 1) * x[l]^(β - 1) + x[k]^(β - 1) * x[l]^(α - 1))
+            H[k, l] = α^2 * (x[k]^(α - 1) * x[l]^(α - 1) + x[k]^(α - 1) * x[l]^(α - 1))
         end
     end
     return convert(typeof(similar(x0, length(x0), length(x0))), H)
