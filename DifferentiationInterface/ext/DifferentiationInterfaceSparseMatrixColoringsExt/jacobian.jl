@@ -1,20 +1,4 @@
-function fy_with_contexts(f, contexts::Vararg{Context,C}) where {C}
-    return (with_contexts(f, contexts...),)
-end
-
-function fy_with_contexts(f!, y, contexts::Vararg{Context,C}) where {C}
-    return (with_contexts(f!, contexts...), y)
-end
-
 ## Preparation
-
-abstract type SparseJacobianPrep <: JacobianPrep end
-
-SMC.sparsity_pattern(prep::SparseJacobianPrep) = sparsity_pattern(prep.coloring_result)
-SMC.column_colors(prep::SparseJacobianPrep) = column_colors(prep.coloring_result)
-SMC.column_groups(prep::SparseJacobianPrep) = column_groups(prep.coloring_result)
-SMC.row_colors(prep::SparseJacobianPrep) = row_colors(prep.coloring_result)
-SMC.row_groups(prep::SparseJacobianPrep) = row_groups(prep.coloring_result)
 
 struct PushforwardSparseJacobianPrep{
     BS<:BatchSizeSettings,

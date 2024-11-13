@@ -100,7 +100,12 @@ function compatible(backend::AbstractADType, scen::Scenario)
     sparse_compatible = operator(scen) in (:jacobian, :hessian) || !isa(backend, AutoSparse)
     secondorder_compatible =
         order(scen) == 2 || !isa(backend, Union{SecondOrder,AutoSparse{<:SecondOrder}})
-    return place_compatible && secondorder_compatible && sparse_compatible
+    mixedmode_compatible =
+        operator(scen) == :jacobian || !isa(backend, AutoSparse{<:MixedMode})
+    return place_compatible &&
+           secondorder_compatible &&
+           sparse_compatible &&
+           mixedmode_compatible
 end
 
 function group_by_operator(scenarios::AbstractVector{<:Scenario})
@@ -127,8 +132,14 @@ function adapt_batchsize(backend::AbstractADType, scen::Scenario)
     if operator(scen) == :jacobian
         if ADTypes.mode(backend) isa Union{ADTypes.ForwardMode,ADTypes.ForwardOrReverseMode}
             return DI.threshold_batchsize(backend, length(scen.x))
-        else
+        elseif ADTypes.mode(backend) isa ADTypes.ReverseMode
             return DI.threshold_batchsize(backend, length(scen.y))
+        elseif ADTypes.mode(backend) isa DifferentiationInterface.ForwardAndReverseMode
+            return DI.threshold_batchsize(backend, min(length(scen.x), length(scen.y)))
+        elseif ADTypes.mode(backend) isa ADTypes.SymbolicMode
+            return backend
+        else
+            error("Unknown mode")
         end
     elseif operator(scen) == :hessian
         return DI.threshold_batchsize(backend, length(scen.x))

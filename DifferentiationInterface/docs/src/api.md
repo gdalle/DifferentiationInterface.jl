@@ -68,6 +68,7 @@ jacobian
 jacobian!
 value_and_jacobian
 value_and_jacobian!
+MixedMode
 ```
 
 ## Second order
