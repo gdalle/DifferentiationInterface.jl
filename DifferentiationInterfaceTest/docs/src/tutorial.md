@@ -60,8 +60,6 @@ test_differentiation(
 )
 ```
 
-If you are too lazy to manually specify the reference, you can also provide an AD backend as the `ref_backend` keyword argument, which will serve as the ground truth for comparison.
-
 ## Benchmarking
 
 Once you are confident that your backends give the correct answers, you probably want to compare their performance.
