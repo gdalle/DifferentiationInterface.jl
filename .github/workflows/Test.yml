@@ -80,7 +80,6 @@ jobs:
         with:
           files: lcov.info
           flags: DI
-          name: ${{ matrix.version }} - DI (${{ matrix.group }})
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
 
@@ -130,6 +129,5 @@ jobs:
         with:
           files: lcov.info
           flags: DIT
-          name: ${{ matrix.version }} - DIT (${{ matrix.group }})
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
