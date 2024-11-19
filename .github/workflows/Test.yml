@@ -36,7 +36,8 @@ jobs:
           - Misc/FromPrimitive
           - Misc/SparsityDetector
           - Misc/ZeroBackends
-          - Back/ChainRulesBackends
+          - Back/ChainRules
+          # - Back/Diffractor
           - Back/Enzyme
           - Back/FiniteDiff
           - Back/FiniteDifferences
@@ -55,7 +56,7 @@ jobs:
           # - skip_lts: true
           #   version: "1.10"
           - version: "1"
-            group: Back/ChainRulesBackends
+            group: Back/ChainRules
           - version: "1"
             group: Back/Enzyme
     env:
