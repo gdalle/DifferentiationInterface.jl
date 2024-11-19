@@ -24,7 +24,7 @@ using PolyesterForwardDiff.ForwardDiff: Chunk
 using PolyesterForwardDiff.ForwardDiff.DiffResults: DiffResults
 
 function single_threaded(backend::AutoPolyesterForwardDiff{chunksize,T}) where {chunksize,T}
-    return AutoForwardDiff{chunksize,T}(backend.tag)
+    return AutoForwardDiff(; chunksize, tag=backend.tag)
 end
 
 DI.check_available(::AutoPolyesterForwardDiff) = true
