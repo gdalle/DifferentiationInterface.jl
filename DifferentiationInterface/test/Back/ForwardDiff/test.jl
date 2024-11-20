@@ -10,8 +10,12 @@ using Test
 
 LOGGING = get(ENV, "CI", "false") == "false"
 
+struct MyTag end
+
 backends = [
-    AutoForwardDiff(), AutoForwardDiff(; tag=:hello), AutoForwardDiff(; chunksize=5)
+    AutoForwardDiff(),
+    AutoForwardDiff(; chunksize=5),
+    AutoForwardDiff(; tag=ForwardDiff.Tag(MyTag(), Float64)),
 ]
 
 for backend in backends
@@ -54,10 +58,10 @@ test_differentiation(
 
 ## Sparse
 
-test_differentiation(MyAutoSparse.(backends[1:2]), default_scenarios(); logging=LOGGING);
+test_differentiation(MyAutoSparse(AutoForwardDiff()), default_scenarios(); logging=LOGGING);
 
 test_differentiation(
-    MyAutoSparse.(backends[1:2]),
+    MyAutoSparse(AutoForwardDiff()),
     sparse_scenarios(; include_constantified=true);
     sparsity=true,
     logging=LOGGING,
@@ -78,7 +82,9 @@ test_differentiation(AutoForwardDiff(), static_scenarios(); logging=LOGGING)
         excluded=[:hessian, :pullback],  # TODO: figure this out
         logging=LOGGING,
     )
-    @testset "$(row[:scenario])" for row in eachrow(data)
-        @test row[:allocs] == 0
+    @testset "Analyzing benchmark results" begin
+        @testset "$(row[:scenario])" for row in eachrow(data)
+            @test row[:allocs] == 0
+        end
     end
 end;
