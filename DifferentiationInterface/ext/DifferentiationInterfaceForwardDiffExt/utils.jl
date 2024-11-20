@@ -31,6 +31,7 @@ function get_tag(f::F, ::AutoForwardDiff{chunksize,Nothing}, x) where {F,chunksi
     return Tag(f, eltype(x))
 end
 
+tag_type(::AutoForwardDiff{chunksize,T}) where {chunksize,T} = T
 tag_type(f::F, backend::AutoForwardDiff, x) where {F} = typeof(get_tag(f, backend, x))
 
 function make_dual_similar(::Type{T}, x::Number, tx::NTuple{B}) where {T,B}

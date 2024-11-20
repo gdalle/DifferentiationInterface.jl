@@ -305,24 +305,30 @@ function DI.value_and_gradient!(
     f::F,
     grad,
     prep::ForwardDiffGradientPrep,
-    ::AutoForwardDiff,
+    backend::AutoForwardDiff,
     x,
     contexts::Vararg{Constant,C},
 ) where {F,C}
     fc = with_contexts(f, contexts...)
     result = DiffResult(zero(eltype(x)), (grad,))
-    result = gradient!(result, fc, x, prep.config)
+    CHK = tag_type(backend) === Nothing
+    result = gradient!(result, fc, x, prep.config, Val(CHK))
     y = DR.value(result)
     grad === DR.gradient(result) || copyto!(grad, DR.gradient(result))
     return y, grad
 end
 
 function DI.value_and_gradient(
-    f::F, prep::ForwardDiffGradientPrep, ::AutoForwardDiff, x, contexts::Vararg{Constant,C}
+    f::F,
+    prep::ForwardDiffGradientPrep,
+    backend::AutoForwardDiff,
+    x,
+    contexts::Vararg{Constant,C},
 ) where {F,C}
     fc = with_contexts(f, contexts...)
     result = GradientResult(x)
-    result = gradient!(result, fc, x, prep.config)
+    CHK = tag_type(backend) === Nothing
+    result = gradient!(result, fc, x, prep.config, Val(CHK))
     return DR.value(result), DR.gradient(result)
 end
 
@@ -330,19 +336,25 @@ function DI.gradient!(
     f::F,
     grad,
     prep::ForwardDiffGradientPrep,
-    ::AutoForwardDiff,
+    backend::AutoForwardDiff,
     x,
     contexts::Vararg{Constant,C},
 ) where {F,C}
     fc = with_contexts(f, contexts...)
-    return gradient!(grad, fc, x, prep.config)
+    CHK = tag_type(backend) === Nothing
+    return gradient!(grad, fc, x, prep.config, Val(CHK))
 end
 
 function DI.gradient(
-    f::F, prep::ForwardDiffGradientPrep, ::AutoForwardDiff, x, contexts::Vararg{Constant,C}
+    f::F,
+    prep::ForwardDiffGradientPrep,
+    backend::AutoForwardDiff,
+    x,
+    contexts::Vararg{Constant,C},
 ) where {F,C}
     fc = with_contexts(f, contexts...)
-    return gradient(fc, x, prep.config)
+    CHK = tag_type(backend) === Nothing
+    return gradient(fc, x, prep.config, Val(CHK))
 end
 
 ## Jacobian
@@ -422,14 +434,15 @@ function DI.value_and_jacobian!(
     f::F,
     jac,
     prep::ForwardDiffOneArgJacobianPrep,
-    ::AutoForwardDiff,
+    backend::AutoForwardDiff,
     x,
     contexts::Vararg{Constant,C},
 ) where {F,C}
     fc = with_contexts(f, contexts...)
     y = fc(x)
     result = DiffResult(y, (jac,))
-    result = jacobian!(result, fc, x, prep.config)
+    CHK = tag_type(backend) === Nothing
+    result = jacobian!(result, fc, x, prep.config, Val(CHK))
     y = DR.value(result)
     jac === DR.jacobian(result) || copyto!(jac, DR.jacobian(result))
     return y, jac
@@ -438,35 +451,38 @@ end
 function DI.value_and_jacobian(
     f::F,
     prep::ForwardDiffOneArgJacobianPrep,
-    ::AutoForwardDiff,
+    backend::AutoForwardDiff,
     x,
     contexts::Vararg{Constant,C},
 ) where {F,C}
     fc = with_contexts(f, contexts...)
-    return fc(x), jacobian(fc, x, prep.config)
+    CHK = tag_type(backend) === Nothing
+    return fc(x), jacobian(fc, x, prep.config, Val(CHK))
 end
 
 function DI.jacobian!(
     f::F,
     jac,
     prep::ForwardDiffOneArgJacobianPrep,
-    ::AutoForwardDiff,
+    backend::AutoForwardDiff,
     x,
     contexts::Vararg{Constant,C},
 ) where {F,C}
     fc = with_contexts(f, contexts...)
-    return jacobian!(jac, fc, x, prep.config)
+    CHK = tag_type(backend) === Nothing
+    return jacobian!(jac, fc, x, prep.config, Val(CHK))
 end
 
 function DI.jacobian(
     f::F,
     prep::ForwardDiffOneArgJacobianPrep,
-    ::AutoForwardDiff,
+    backend::AutoForwardDiff,
     x,
     contexts::Vararg{Constant,C},
 ) where {F,C}
     fc = with_contexts(f, contexts...)
-    return jacobian(fc, x, prep.config)
+    CHK = tag_type(backend) === Nothing
+    return jacobian(fc, x, prep.config, Val(CHK))
 end
 
 ## Second derivative
@@ -681,19 +697,25 @@ function DI.hessian!(
     f::F,
     hess,
     prep::ForwardDiffHessianPrep,
-    ::AutoForwardDiff,
+    backend::AutoForwardDiff,
     x,
     contexts::Vararg{Constant,C},
 ) where {F,C}
     fc = with_contexts(f, contexts...)
-    return hessian!(hess, fc, x, prep.array_config)
+    CHK = tag_type(backend) === Nothing
+    return hessian!(hess, fc, x, prep.array_config, Val(CHK))
 end
 
 function DI.hessian(
-    f::F, prep::ForwardDiffHessianPrep, ::AutoForwardDiff, x, contexts::Vararg{Constant,C}
+    f::F,
+    prep::ForwardDiffHessianPrep,
+    backend::AutoForwardDiff,
+    x,
+    contexts::Vararg{Constant,C},
 ) where {F,C}
     fc = with_contexts(f, contexts...)
-    return hessian(fc, x, prep.array_config)
+    CHK = tag_type(backend) === Nothing
+    return hessian(fc, x, prep.array_config, Val(CHK))
 end
 
 function DI.value_gradient_and_hessian!(
@@ -701,13 +723,14 @@ function DI.value_gradient_and_hessian!(
     grad,
     hess,
     prep::ForwardDiffHessianPrep,
-    ::AutoForwardDiff,
+    backend::AutoForwardDiff,
     x,
     contexts::Vararg{Constant,C},
 ) where {F,C}
     fc = with_contexts(f, contexts...)
     result = DiffResult(one(eltype(x)), (grad, hess))
-    result = hessian!(result, fc, x, prep.result_config)
+    CHK = tag_type(backend) === Nothing
+    result = hessian!(result, fc, x, prep.result_config, Val(CHK))
     y = DR.value(result)
     grad === DR.gradient(result) || copyto!(grad, DR.gradient(result))
     hess === DR.hessian(result) || copyto!(hess, DR.hessian(result))
@@ -715,10 +738,15 @@ function DI.value_gradient_and_hessian!(
 end
 
 function DI.value_gradient_and_hessian(
-    f::F, prep::ForwardDiffHessianPrep, ::AutoForwardDiff, x, contexts::Vararg{Constant,C}
+    f::F,
+    prep::ForwardDiffHessianPrep,
+    backend::AutoForwardDiff,
+    x,
+    contexts::Vararg{Constant,C},
 ) where {F,C}
     fc = with_contexts(f, contexts...)
     result = HessianResult(x)
-    result = hessian!(result, fc, x, prep.result_config)
+    CHK = tag_type(backend) === Nothing
+    result = hessian!(result, fc, x, prep.result_config, Val(CHK))
     return (DR.value(result), DR.gradient(result), DR.hessian(result))
 end

@@ -181,13 +181,14 @@ function DI.value_and_derivative(
     f!::F,
     y,
     prep::ForwardDiffTwoArgDerivativePrep,
-    ::AutoForwardDiff,
+    backend::AutoForwardDiff,
     x,
     contexts::Vararg{Constant,C},
 ) where {F,C}
     fc! = with_contexts(f!, contexts...)
     result = MutableDiffResult(y, (similar(y),))
-    result = derivative!(result, fc!, y, x, prep.config)
+    CHK = tag_type(backend) === Nothing
+    result = derivative!(result, fc!, y, x, prep.config, Val(CHK))
     return DiffResults.value(result), DiffResults.derivative(result)
 end
 
@@ -196,13 +197,14 @@ function DI.value_and_derivative!(
     y,
     der,
     prep::ForwardDiffTwoArgDerivativePrep,
-    ::AutoForwardDiff,
+    backend::AutoForwardDiff,
     x,
     contexts::Vararg{Constant,C},
 ) where {F,C}
     fc! = with_contexts(f!, contexts...)
     result = MutableDiffResult(y, (der,))
-    result = derivative!(result, fc!, y, x, prep.config)
+    CHK = tag_type(backend) === Nothing
+    result = derivative!(result, fc!, y, x, prep.config, Val(CHK))
     return DiffResults.value(result), DiffResults.derivative(result)
 end
 
@@ -210,12 +212,13 @@ function DI.derivative(
     f!::F,
     y,
     prep::ForwardDiffTwoArgDerivativePrep,
-    ::AutoForwardDiff,
+    backend::AutoForwardDiff,
     x,
     contexts::Vararg{Constant,C},
 ) where {F,C}
     fc! = with_contexts(f!, contexts...)
-    return derivative(fc!, y, x, prep.config)
+    CHK = tag_type(backend) === Nothing
+    return derivative(fc!, y, x, prep.config, Val(CHK))
 end
 
 function DI.derivative!(
@@ -223,12 +226,13 @@ function DI.derivative!(
     y,
     der,
     prep::ForwardDiffTwoArgDerivativePrep,
-    ::AutoForwardDiff,
+    backend::AutoForwardDiff,
     x,
     contexts::Vararg{Constant,C},
 ) where {F,C}
     fc! = with_contexts(f!, contexts...)
-    return derivative!(der, fc!, y, x, prep.config)
+    CHK = tag_type(backend) === Nothing
+    return derivative!(der, fc!, y, x, prep.config, Val(CHK))
 end
 
 ## Jacobian
@@ -308,14 +312,15 @@ function DI.value_and_jacobian(
     f!::F,
     y,
     prep::ForwardDiffTwoArgJacobianPrep,
-    ::AutoForwardDiff,
+    backend::AutoForwardDiff,
     x,
     contexts::Vararg{Constant,C},
 ) where {F,C}
     fc! = with_contexts(f!, contexts...)
     jac = similar(y, length(y), length(x))
     result = MutableDiffResult(y, (jac,))
-    result = jacobian!(result, fc!, y, x, prep.config)
+    CHK = tag_type(backend) === Nothing
+    result = jacobian!(result, fc!, y, x, prep.config, Val(CHK))
     return DiffResults.value(result), DiffResults.jacobian(result)
 end
 
@@ -324,13 +329,14 @@ function DI.value_and_jacobian!(
     y,
     jac,
     prep::ForwardDiffTwoArgJacobianPrep,
-    ::AutoForwardDiff,
+    backend::AutoForwardDiff,
     x,
     contexts::Vararg{Constant,C},
 ) where {F,C}
     fc! = with_contexts(f!, contexts...)
     result = MutableDiffResult(y, (jac,))
-    result = jacobian!(result, fc!, y, x, prep.config)
+    CHK = tag_type(backend) === Nothing
+    result = jacobian!(result, fc!, y, x, prep.config, Val(CHK))
     return DiffResults.value(result), DiffResults.jacobian(result)
 end
 
@@ -338,12 +344,13 @@ function DI.jacobian(
     f!::F,
     y,
     prep::ForwardDiffTwoArgJacobianPrep,
-    ::AutoForwardDiff,
+    backend::AutoForwardDiff,
     x,
     contexts::Vararg{Constant,C},
 ) where {F,C}
     fc! = with_contexts(f!, contexts...)
-    return jacobian(fc!, y, x, prep.config)
+    CHK = tag_type(backend) === Nothing
+    return jacobian(fc!, y, x, prep.config, Val(CHK))
 end
 
 function DI.jacobian!(
@@ -351,10 +358,11 @@ function DI.jacobian!(
     y,
     jac,
     prep::ForwardDiffTwoArgJacobianPrep,
-    ::AutoForwardDiff,
+    backend::AutoForwardDiff,
     x,
     contexts::Vararg{Constant,C},
 ) where {F,C}
     fc! = with_contexts(f!, contexts...)
-    return jacobian!(jac, fc!, y, x, prep.config)
+    CHK = tag_type(backend) === Nothing
+    return jacobian!(jac, fc!, y, x, prep.config, Val(CHK))
 end

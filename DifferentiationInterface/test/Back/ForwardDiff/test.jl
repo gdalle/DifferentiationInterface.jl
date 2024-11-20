@@ -10,8 +10,12 @@ using Test
 
 LOGGING = get(ENV, "CI", "false") == "false"
 
+struct MyTag end
+
 backends = [
-    AutoForwardDiff(), AutoForwardDiff(; tag=:hello), AutoForwardDiff(; chunksize=5)
+    AutoForwardDiff(),
+    AutoForwardDiff(; chunksize=5),
+    AutoForwardDiff(; tag=ForwardDiff.Tag(MyTag(), Float64)),
 ]
 
 for backend in backends
