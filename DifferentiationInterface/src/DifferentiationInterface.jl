@@ -27,6 +27,7 @@ using ADTypes:
     AutoPolyesterForwardDiff,
     AutoReverseDiff,
     AutoSymbolics,
+    AutoTaylorDiff,
     AutoTracker,
     AutoZygote
 using LinearAlgebra: dot
@@ -113,6 +114,7 @@ export AutoMooncake
 export AutoPolyesterForwardDiff
 export AutoReverseDiff
 export AutoSymbolics
+export AutoTaylorDiff
 export AutoTracker
 export AutoZygote
 
