@@ -43,6 +43,7 @@ for op in ALL_OPS
         count_calls::Bool,
         benchmark_test::Bool,
         benchmark_seconds::Real,
+        benchmark_aggregation,
     )
         @assert subset in (:full, :prepared)
 
@@ -87,6 +88,7 @@ for op in ALL_OPS
             prepared=true,
             bench=bench_result.prepared_valop,
             calls=calls_result.prepared_valop,
+            aggregation=benchmark_aggregation,
         )
         record!(
             data;
@@ -96,6 +98,7 @@ for op in ALL_OPS
             prepared=true,
             bench=bench_result.prepared_op,
             calls=calls_result.prepared_op,
+            aggregation=benchmark_aggregation,
         )
         if subset == :full
             record!(
@@ -106,6 +109,7 @@ for op in ALL_OPS
                 prepared=nothing,
                 bench=bench_result.preparation,
                 calls=calls_result.preparation,
+                aggregation=benchmark_aggregation,
             )
             record!(
                 data;
@@ -115,6 +119,7 @@ for op in ALL_OPS
                 prepared=false,
                 bench=bench_result.unprepared_valop,
                 calls=calls_result.unprepared_valop,
+                aggregation=benchmark_aggregation,
             )
             record!(
                 data;
@@ -124,6 +129,7 @@ for op in ALL_OPS
                 prepared=false,
                 bench=bench_result.unprepared_op,
                 calls=calls_result.unprepared_op,
+                aggregation=benchmark_aggregation,
             )
         end
         return nothing

@@ -40,6 +40,7 @@ data1 = benchmark_differentiation(
     benchmark=:full,
     logging=LOGGING,
     benchmark_seconds=0.2,
+    benchmark_aggregation=maximum,
 );
 
 struct FakeBackend <: ADTypes.AbstractADType end
