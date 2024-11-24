@@ -31,6 +31,7 @@ data0 = benchmark_differentiation(
     AutoZeroForward(),
     default_scenarios(; include_batchified=false, include_constantified=true);
     logging=LOGGING,
+    benchmark_seconds=0.1,
 );
 
 data1 = benchmark_differentiation(
@@ -38,6 +39,8 @@ data1 = benchmark_differentiation(
     default_scenarios(; include_batchified=false);
     benchmark=:full,
     logging=LOGGING,
+    benchmark_seconds=0.2,
+    benchmark_aggregation=maximum,
 );
 
 struct FakeBackend <: ADTypes.AbstractADType end
