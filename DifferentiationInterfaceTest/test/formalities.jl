@@ -21,6 +21,12 @@ end
     JET.test_package(DifferentiationInterfaceTest; target_defined_modules=true)
 end
 
+@testset "Documentation" begin
+    if VERSION >= v"1.11"
+        @test isempty(Docs.undocumented_names(DifferentiationInterfaceTest))
+    end
+end
+
 @testset "ExplicitImports" begin
     @test_broken check_no_implicit_imports(DifferentiationInterfaceTest) === nothing
     @test_broken check_no_stale_explicit_imports(DifferentiationInterfaceTest) === nothing

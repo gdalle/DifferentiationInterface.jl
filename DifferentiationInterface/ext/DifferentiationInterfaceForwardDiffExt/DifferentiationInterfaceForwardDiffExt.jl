@@ -1,7 +1,6 @@
 module DifferentiationInterfaceForwardDiffExt
 
-using ADTypes: AbstractADType, AutoForwardDiff
-using Base: Fix1, Fix2
+using ADTypes: AutoForwardDiff
 import DifferentiationInterface as DI
 using DifferentiationInterface:
     BatchSizeSettings,
@@ -9,14 +8,12 @@ using DifferentiationInterface:
     Constant,
     PrepContext,
     Context,
-    FixTail,
     DerivativePrep,
     DifferentiateWith,
     GradientPrep,
     HessianPrep,
     HVPPrep,
     JacobianPrep,
-    NoDerivativePrep,
     NoSecondDerivativePrep,
     PushforwardPrep,
     Rewrap,
@@ -42,17 +39,14 @@ using ForwardDiff:
     derivative,
     derivative!,
     extract_derivative,
-    extract_derivative!,
     gradient,
     gradient!,
     hessian,
     hessian!,
     jacobian,
     jacobian!,
-    npartials,
     partials,
     value
-using LinearAlgebra: dot, mul!
 
 DI.check_available(::AutoForwardDiff) = true
 

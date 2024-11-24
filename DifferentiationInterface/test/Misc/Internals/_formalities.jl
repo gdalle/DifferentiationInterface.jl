@@ -23,6 +23,12 @@ end
     @test JuliaFormatter.format(DifferentiationInterface; verbose=false, overwrite=false)
 end
 
+@testset "Documentation" begin
+    if VERSION >= v"1.11"
+        @test isempty(Docs.undocumented_names(DifferentiationInterface))
+    end
+end
+
 @testset "ExplicitImports" begin
     @test check_no_implicit_imports(DifferentiationInterface) === nothing
     @test check_no_stale_explicit_imports(DifferentiationInterface) === nothing
