@@ -93,7 +93,6 @@ function record!(
     calls::Integer,
     aggregation,
 )
-    bench_agg = aggregation(bench)
     row = DifferentiationBenchmarkDataRow(;
         backend=backend,
         scenario=scenario,
@@ -101,12 +100,12 @@ function record!(
         prepared=prepared,
         calls=calls,
         samples=length(bench.samples),
-        evals=Int(bench_agg.evals),
-        time=bench_agg.time,
-        allocs=bench_agg.allocs,
-        bytes=bench_agg.bytes,
-        gc_fraction=bench_agg.gc_fraction,
-        compile_fraction=bench_agg.compile_fraction,
+        evals=Int(bench.samples[1].evals),
+        time=aggregation(getfield.(bench.samples, :time)),
+        allocs=aggregation(getfield.(bench.samples, :allocs)),
+        bytes=aggregation(getfield.(bench.samples, :bytes)),
+        gc_fraction=aggregation(getfield.(bench.samples, :gc_fraction)),
+        compile_fraction=aggregation(getfield.(bench.samples, :compile_fraction)),
     )
     return push!(data, row)
 end
