@@ -1,6 +1,7 @@
 using DifferentiationInterface
 using DifferentiationInterfaceTest
 using Aqua: Aqua
+using Documenter: Documenter
 using ExplicitImports
 using JET: JET
 using JuliaFormatter: JuliaFormatter
@@ -19,6 +20,13 @@ end
 end
 @testset verbose = true "JET" begin
     JET.test_package(DifferentiationInterfaceTest; target_defined_modules=true)
+end
+
+@testset "Documentation" begin
+    Documenter.doctest(DifferentiationInterfaceTest)
+    if VERSION >= v"1.11"
+        @test isempty(Docs.undocumented_names(DifferentiationInterfaceTest))
+    end
 end
 
 @testset "ExplicitImports" begin
