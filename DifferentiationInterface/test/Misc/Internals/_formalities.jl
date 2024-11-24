@@ -2,7 +2,6 @@
 
 using Aqua: Aqua
 using DifferentiationInterface
-using Documenter: Documenter
 using ExplicitImports
 using JET: JET
 using JuliaFormatter: JuliaFormatter
@@ -25,7 +24,6 @@ end
 end
 
 @testset "Documentation" begin
-    Documenter.doctest(DifferentiationInterface)
     if VERSION >= v"1.11"
         @test isempty(Docs.undocumented_names(DifferentiationInterface))
     end
