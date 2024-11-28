@@ -6,22 +6,13 @@ using DifferentiationInterface: Context, PullbackPrep, unwrap
 using Mooncake:
     CoDual,
     Config,
-    NoRData,
-    NoTangent,
-    build_rrule,
-    fdata,
-    get_interpreter,
-    increment!!,
     primal,
-    rdata,
-    set_to_zero!!,
     tangent,
     tangent_type,
     value_and_pullback!!,
-    zero_codual,
-    zero_fcodual,
     zero_tangent,
-    __value_and_pullback!!
+    prepare_pullback_cache,
+    Mooncake
 
 DI.check_available(::AutoMooncake) = true
 
