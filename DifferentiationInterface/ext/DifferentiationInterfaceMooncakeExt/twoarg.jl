@@ -7,7 +7,7 @@ end
 function DI.prepare_pullback(
     f!, y, backend::AutoMooncake, x, ty::NTuple, contexts::Vararg{Context,C}
 ) where {C}
-    target_function = function(f!, y, x, contexts...)
+    target_function = function (f!, y, x, contexts...)
         f!(y, x, contexts...)
         return y
     end
@@ -35,7 +35,7 @@ function DI.value_and_pullback(
         prep.cache, dy_righttype_after, prep.target_function, f!, y, x, contexts...
     )
     copyto!(y, y_after)
-    return y, (copy(dx), ) # TODO: remove this allocation in `value_and_pullback!`
+    return y, (copy(dx),) # TODO: remove this allocation in `value_and_pullback!`
 end
 
 function DI.value_and_pullback(
