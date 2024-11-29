@@ -11,7 +11,16 @@ function DI.prepare_pullback(
         f!(y, x, contexts...)
         return y
     end
-    cache = prepare_pullback_cache(target_function, f!, y, x, map(unwrap, contexts)...)
+    config = get_config(backend)
+    cache = prepare_pullback_cache(
+        target_function,
+        f!,
+        y,
+        x,
+        map(unwrap, contexts)...;
+        config.debug_mode,
+        config.silence_debug_messages,
+    )
     dy_righttype_after = zero_tangent(y)
     return MooncakeTwoArgPullbackPrep(cache, dy_righttype_after, target_function)
 end
