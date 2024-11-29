@@ -18,8 +18,8 @@ function DI.prepare_pullback(
         y,
         x,
         map(unwrap, contexts)...;
-        config.debug_mode,
-        config.silence_debug_messages,
+        debug_mode=config.debug_mode,
+        silence_debug_messages=config.silence_debug_messages,
     )
     dy_righttype_after = zero_tangent(y)
     return MooncakeTwoArgPullbackPrep(cache, dy_righttype_after, target_function)
