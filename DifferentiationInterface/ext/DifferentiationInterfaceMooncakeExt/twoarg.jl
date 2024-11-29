@@ -1,32 +1,28 @@
-struct MooncakeTwoArgPullbackPrep{R,F,Y,DX,DY} <: PullbackPrep
-    rrule::R
-    df!::F
-    y_copy::Y
-    dx_righttype::DX
+struct MooncakeTwoArgPullbackPrep{Tcache,DY,F} <: PullbackPrep
+    cache::Tcache
     dy_righttype::DY
-    dy_righttype_after::DY
+    target_function::F
 end
 
 function DI.prepare_pullback(
     f!, y, backend::AutoMooncake, x, ty::NTuple, contexts::Vararg{Context,C}
 ) where {C}
+    target_function = function (f!, y, x, contexts...)
+        f!(y, x, contexts...)
+        return y
+    end
     config = get_config(backend)
-    rrule = build_rrule(
-        get_interpreter(),
-        Tuple{typeof(f!),typeof(y),typeof(x),typeof.(map(unwrap, contexts))...};
+    cache = prepare_pullback_cache(
+        target_function,
+        f!,
+        y,
+        x,
+        map(unwrap, contexts)...;
         debug_mode=config.debug_mode,
         silence_debug_messages=config.silence_debug_messages,
     )
-    df! = zero_tangent(f!)
-    y_copy = copy(y)
-    dx_righttype = zero_tangent(x)
-    dy_righttype = zero_tangent(y)
     dy_righttype_after = zero_tangent(y)
-    prep = MooncakeTwoArgPullbackPrep(
-        rrule, df!, y_copy, dx_righttype, dy_righttype, dy_righttype_after
-    )
-    DI.value_and_pullback(f!, y, prep, backend, x, ty, contexts...)  # warm up
-    return prep
+    return MooncakeTwoArgPullbackPrep(cache, dy_righttype_after, target_function)
 end
 
 function DI.value_and_pullback(
@@ -38,39 +34,17 @@ function DI.value_and_pullback(
     ty::NTuple{1},
     contexts::Vararg{Context,C},
 ) where {C}
-    dy = only(ty)
-
-    # Set all tangent storage to zero.
-    df! = set_to_zero!!(prep.df!)
-    dx_righttype = set_to_zero!!(prep.dx_righttype)
-    dy_righttype = set_to_zero!!(prep.dy_righttype)
-
     # Prepare cotangent to add after the forward pass.
-    dy_righttype_after = copyto!(prep.dy_righttype_after, dy)
+    dy = only(ty)
+    dy_righttype_after = copyto!(prep.dy_righttype, dy)
 
-    contexts_coduals = map(zero_fcodual ∘ unwrap, contexts)
-
-    # Run the forward pass
-    out, pb!! = prep.rrule(
-        CoDual(f!, fdata(df!)),
-        CoDual(prep.y_copy, fdata(dy_righttype)),
-        CoDual(x, fdata(dx_righttype)),
-        contexts_coduals...,
+    # Run the reverse-pass and return the results.
+    contexts = map(unwrap, contexts)
+    y_after, (_, _, _, dx) = Mooncake.value_and_pullback!!(
+        prep.cache, dy_righttype_after, prep.target_function, f!, y, x, contexts...
     )
-
-    # Verify that the output is non-differentiable.
-    @assert primal(out) === nothing
-
-    # Increment the desired cotangent dy.
-    dy_righttype = increment!!(dy_righttype, dy_righttype_after)
-
-    # Record the state of y before running the reverse pass.
-    y = copyto!(y, prep.y_copy)
-
-    # Run the reverse pass.
-    _, _, new_dx = pb!!(NoRData())
-
-    return y, (tangent(copy(fdata(dx_righttype)), new_dx),)  # TODO: remove this allocation in `value_and_pullback!`
+    copyto!(y, y_after)
+    return y, (copy(dx),) # TODO: remove this allocation in `value_and_pullback!`
 end
 
 function DI.value_and_pullback(
