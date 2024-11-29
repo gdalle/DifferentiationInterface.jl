@@ -6,7 +6,7 @@ end
 function DI.prepare_pullback(
     f, backend::AutoMooncake, x, ty::NTuple, contexts::Vararg{Context,C}
 ) where {C}
-    config = backend.config === nothing ? Mooncake.Config() : backend.config
+    config = get_config(backend)
     cache = prepare_pullback_cache(
         f, x, map(unwrap, contexts)...; config.debug_mode, config.silence_debug_messages
     )
