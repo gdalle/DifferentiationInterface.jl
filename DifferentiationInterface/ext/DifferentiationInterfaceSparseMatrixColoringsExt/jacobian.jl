@@ -61,7 +61,7 @@ function _prepare_sparse_jacobian_aux(
     sparsity = jacobian_sparsity(
         fycont(f_or_f!y..., contexts...)..., x, sparsity_detector(backend)
     )
-    if perf isa PushforwardFast
+    if perf isa DI.PushforwardFast
         problem = ColoringProblem{:nonsymmetric,:column}()
     else
         problem = ColoringProblem{:nonsymmetric,:row}()
@@ -72,7 +72,7 @@ function _prepare_sparse_jacobian_aux(
         coloring_algorithm(backend);
         decompression_eltype=promote_type(eltype(x), eltype(y)),
     )
-    if perf isa PushforwardFast
+    if perf isa DI.PushforwardFast
         N = length(column_groups(coloring_result))
     else
         N = length(row_groups(coloring_result))

@@ -25,7 +25,7 @@ function ADTypes.jacobian_sparsity(f, x, detector::DI.DenseSparsityDetector{:ite
     y = f(x)
     n, m = length(x), length(y)
     I, J = Int[], Int[]
-    if DI.pushforward_performance(backend) isa PushforwardFast
+    if DI.pushforward_performance(backend) isa DI.PushforwardFast
         p = similar(y)
         prep = DI.prepare_pushforward_same_point(
             f, backend, x, (basis(backend, x, first(eachindex(x))),)
@@ -61,7 +61,7 @@ function ADTypes.jacobian_sparsity(f!, y, x, detector::DI.DenseSparsityDetector{
     (; backend, atol) = detector
     n, m = length(x), length(y)
     I, J = Int[], Int[]
-    if DI.pushforward_performance(backend) isa PushforwardFast
+    if DI.pushforward_performance(backend) isa DI.PushforwardFast
         p = similar(y)
         prep = DI.prepare_pushforward_same_point(
             f!, y, backend, x, (basis(backend, x, first(eachindex(x))),)
