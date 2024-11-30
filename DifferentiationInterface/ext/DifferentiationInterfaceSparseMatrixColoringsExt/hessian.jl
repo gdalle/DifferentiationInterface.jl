@@ -35,7 +35,7 @@ function DI.prepare_hessian(
         sparsity, problem, coloring_algorithm(backend); decompression_eltype=eltype(x)
     )
     N = length(column_groups(coloring_result))
-    batch_size_settings = DI.pick_batchsize(outer(dense_backend), N)
+    batch_size_settings = DI.pick_batchsize(DI.outer(dense_backend), N)
     return _prepare_sparse_hessian_aux(
         batch_size_settings, coloring_result, f, backend, x, contexts...
     )
@@ -52,14 +52,14 @@ function _prepare_sparse_hessian_aux(
     (; N, A) = batch_size_settings
     dense_backend = dense_ad(backend)
     groups = column_groups(coloring_result)
-    seeds = [multibasis(backend, x, eachindex(x)[group]) for group in groups]
+    seeds = [DI.multibasis(backend, x, eachindex(x)[group]) for group in groups]
     compressed_matrix = stack(_ -> vec(similar(x)), groups; dims=2)
     batched_seeds = [
         ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % N], Val(B)) for a in 1:A
     ]
     batched_results = [ntuple(b -> similar(x), Val(B)) for _ in batched_seeds]
     hvp_prep = DI.prepare_hvp(f, dense_backend, x, batched_seeds[1], contexts...)
-    gradient_prep = DI.prepare_gradient(f, inner(dense_backend), x, contexts...)
+    gradient_prep = DI.prepare_gradient(f, DI.inner(dense_backend), x, contexts...)
     return SparseHessianPrep(
         batch_size_settings,
         coloring_result,
@@ -134,7 +134,7 @@ function DI.value_gradient_and_hessian!(
     contexts::Vararg{DI.Context,C},
 ) where {F,C}
     y, _ = value_and_gradient!(
-        f, grad, prep.gradient_prep, inner(dense_ad(backend)), x, contexts...
+        f, grad, prep.gradient_prep, DI.inner(dense_ad(backend)), x, contexts...
     )
     hessian!(f, hess, prep, backend, x, contexts...)
     return y, grad, hess
@@ -144,7 +144,7 @@ function DI.value_gradient_and_hessian(
     f::F, prep::SparseHessianPrep, backend::AutoSparse, x, contexts::Vararg{DI.Context,C}
 ) where {F,C}
     y, grad = value_and_gradient(
-        f, prep.gradient_prep, inner(dense_ad(backend)), x, contexts...
+        f, prep.gradient_prep, DI.inner(dense_ad(backend)), x, contexts...
     )
     hess = hessian(f, prep, backend, x, contexts...)
     return y, grad, hess

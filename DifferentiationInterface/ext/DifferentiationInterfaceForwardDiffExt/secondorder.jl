@@ -11,19 +11,19 @@ function DI.prepare_hvp(
     tx::NTuple,
     contexts::Vararg{DI.Context,C},
 ) where {F,C}
-    T = tag_type(DI.shuffled_gradient, outer(backend), x)
+    T = tag_type(DI.shuffled_gradient, DI.outer(backend), x)
     xdual = make_dual(T, x, tx)
-    inner_gradient_prep = DI.prepare_gradient(f, inner(backend), xdual, contexts...)
+    inner_gradient_prep = DI.prepare_gradient(f, DI.inner(backend), xdual, contexts...)
     rewrap = DI.Rewrap(contexts...)
     new_contexts = (
         Constant(f),
         PrepContext(inner_gradient_prep),
-        Constant(inner(backend)),
+        Constant(DI.inner(backend)),
         Constant(rewrap),
         contexts...,
     )
     outer_pushforward_prep = DI.prepare_pushforward(
-        DI.shuffled_gradient, outer(backend), x, tx, new_contexts...
+        DI.shuffled_gradient, DI.outer(backend), x, tx, new_contexts...
     )
     return ForwardDiffOverSomethingHVPPrep(inner_gradient_prep, outer_pushforward_prep)
 end
@@ -41,12 +41,17 @@ function DI.hvp(
     new_contexts = (
         Constant(f),
         PrepContext(inner_gradient_prep),
-        Constant(inner(backend)),
+        Constant(DI.inner(backend)),
         Constant(rewrap),
         contexts...,
     )
     return DI.pushforward(
-        DI.shuffled_gradient, outer_pushforward_prep, outer(backend), x, tx, new_contexts...
+        DI.shuffled_gradient,
+        outer_pushforward_prep,
+        DI.outer(backend),
+        x,
+        tx,
+        new_contexts...,
     )
 end
 
@@ -64,7 +69,7 @@ function DI.hvp!(
     new_contexts = (
         Constant(f),
         PrepContext(inner_gradient_prep),
-        Constant(inner(backend)),
+        Constant(DI.inner(backend)),
         Constant(rewrap),
         contexts...,
     )
@@ -72,7 +77,7 @@ function DI.hvp!(
         DI.shuffled_gradient,
         tg,
         outer_pushforward_prep,
-        outer(backend),
+        DI.outer(backend),
         x,
         tx,
         new_contexts...,
@@ -93,12 +98,17 @@ function DI.gradient_and_hvp(
     new_contexts = (
         Constant(f),
         PrepContext(inner_gradient_prep),
-        Constant(inner(backend)),
+        Constant(DI.inner(backend)),
         Constant(rewrap),
         contexts...,
     )
     return DI.value_and_pushforward(
-        DI.shuffled_gradient, outer_pushforward_prep, outer(backend), x, tx, new_contexts...
+        DI.shuffled_gradient,
+        outer_pushforward_prep,
+        DI.outer(backend),
+        x,
+        tx,
+        new_contexts...,
     )
 end
 
@@ -117,7 +127,7 @@ function DI.gradient_and_hvp!(
     new_contexts = (
         Constant(f),
         PrepContext(inner_gradient_prep),
-        Constant(inner(backend)),
+        Constant(DI.inner(backend)),
         Constant(rewrap),
         contexts...,
     )
@@ -125,7 +135,7 @@ function DI.gradient_and_hvp!(
         DI.shuffled_gradient,
         tg,
         outer_pushforward_prep,
-        outer(backend),
+        DI.outer(backend),
         x,
         tx,
         new_contexts...,

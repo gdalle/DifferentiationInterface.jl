@@ -89,10 +89,10 @@ function _prepare_mixed_sparse_jacobian_aux_aux(
     groups_reverse = row_groups(coloring_result)
 
     seeds_forward = [
-        multibasis(backend, x, eachindex(x)[group]) for group in groups_forward
+        DI.multibasis(backend, x, eachindex(x)[group]) for group in groups_forward
     ]
     seeds_reverse = [
-        multibasis(backend, y, eachindex(y)[group]) for group in groups_reverse
+        DI.multibasis(backend, y, eachindex(y)[group]) for group in groups_reverse
     ]
 
     compressed_matrix_forward = stack(_ -> vec(similar(y)), groups_forward; dims=2)
