@@ -1,7 +1,7 @@
 struct SparseHessianPrep{
     BS<:BatchSizeSettings,
     C<:AbstractColoringResult{:symmetric,:column},
-    M<:AbstractMatrix{<:Real},
+    M<:AbstractMatrix{<:Number},
     S<:AbstractVector{<:NTuple},
     R<:AbstractVector{<:NTuple},
     E2<:HVPPrep,
