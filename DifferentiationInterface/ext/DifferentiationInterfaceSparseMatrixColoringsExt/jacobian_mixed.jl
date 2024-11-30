@@ -190,7 +190,7 @@ function _sparse_jacobian_aux!(
     )
 
     for a in eachindex(batched_seeds_forward, batched_results_forward)
-        pushforward!(
+        DI.pushforward!(
             f_or_f!y...,
             batched_results_forward[a],
             pushforward_prep_same,
@@ -209,7 +209,7 @@ function _sparse_jacobian_aux!(
     end
 
     for a in eachindex(batched_seeds_reverse, batched_results_reverse)
-        pullback!(
+        DI.pullback!(
             f_or_f!y...,
             batched_results_reverse[a],
             pullback_prep_same,

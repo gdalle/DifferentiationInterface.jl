@@ -95,7 +95,7 @@ function DI.hessian!(
     )
 
     for a in eachindex(batched_seeds, batched_results)
-        hvp!(
+        DI.hvp!(
             f,
             batched_results[a],
             hvp_prep_same,
@@ -133,19 +133,19 @@ function DI.value_gradient_and_hessian!(
     x,
     contexts::Vararg{DI.Context,C},
 ) where {F,C}
-    y, _ = value_and_gradient!(
+    y, _ = DI.value_and_gradient!(
         f, grad, prep.gradient_prep, DI.inner(dense_ad(backend)), x, contexts...
     )
-    hessian!(f, hess, prep, backend, x, contexts...)
+    DI.hessian!(f, hess, prep, backend, x, contexts...)
     return y, grad, hess
 end
 
 function DI.value_gradient_and_hessian(
     f::F, prep::SparseHessianPrep, backend::AutoSparse, x, contexts::Vararg{DI.Context,C}
 ) where {F,C}
-    y, grad = value_and_gradient(
+    y, grad = DI.value_and_gradient(
         f, prep.gradient_prep, DI.inner(dense_ad(backend)), x, contexts...
     )
-    hess = hessian(f, prep, backend, x, contexts...)
+    hess = DI.hessian(f, prep, backend, x, contexts...)
     return y, grad, hess
 end

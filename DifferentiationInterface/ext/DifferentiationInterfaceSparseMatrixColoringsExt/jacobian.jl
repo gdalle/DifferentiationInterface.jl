@@ -168,7 +168,7 @@ end
 function DI.value_and_jacobian(
     f::F, prep::SparseJacobianPrep, backend::AutoSparse, x, contexts::Vararg{DI.Context,C}
 ) where {F,C}
-    return f(x, map(DI.unwrap, contexts)...), jacobian(f, prep, backend, x, contexts...)
+    return f(x, map(DI.unwrap, contexts)...), DI.jacobian(f, prep, backend, x, contexts...)
 end
 
 function DI.value_and_jacobian!(
@@ -180,7 +180,7 @@ function DI.value_and_jacobian!(
     contexts::Vararg{DI.Context,C},
 ) where {F,C}
     return f(x, map(DI.unwrap, contexts)...),
-    jacobian!(f, jac, prep, backend, x, contexts...)
+    DI.jacobian!(f, jac, prep, backend, x, contexts...)
 end
 
 ## Two arguments
@@ -217,7 +217,7 @@ function DI.value_and_jacobian(
     x,
     contexts::Vararg{DI.Context,C},
 ) where {F,C}
-    jac = jacobian(f!, y, prep, backend, x, contexts...)
+    jac = DI.jacobian(f!, y, prep, backend, x, contexts...)
     f!(y, x, map(DI.unwrap, contexts)...)
     return y, jac
 end
@@ -231,7 +231,7 @@ function DI.value_and_jacobian!(
     x,
     contexts::Vararg{DI.Context,C},
 ) where {F,C}
-    jacobian!(f!, y, jac, prep, backend, x, contexts...)
+    DI.jacobian!(f!, y, jac, prep, backend, x, contexts...)
     f!(y, x, map(DI.unwrap, contexts)...)
     return y, jac
 end
@@ -262,7 +262,7 @@ function _sparse_jacobian_aux!(
     )
 
     for a in eachindex(batched_seeds, batched_results)
-        pushforward!(
+        DI.pushforward!(
             f_or_f!y...,
             batched_results[a],
             pushforward_prep_same,
@@ -308,7 +308,7 @@ function _sparse_jacobian_aux!(
     )
 
     for a in eachindex(batched_seeds, batched_results)
-        pullback!(
+        DI.pullback!(
             f_or_f!y...,
             batched_results[a],
             pullback_prep_same,
