@@ -20,7 +20,7 @@ function DI.prepare_pullback_same_point(
     contexts::Vararg{DI.Constant,C},
 ) where {C}
     rc = ruleconfig(backend)
-    y, pb = rrule_via_ad(rc, f, x, map(unwrap, contexts)...)
+    y, pb = rrule_via_ad(rc, f, x, map(DI.unwrap, contexts)...)
     return ChainRulesPullbackPrepSamePoint(y, pb)
 end
 
@@ -33,7 +33,7 @@ function DI.value_and_pullback(
     contexts::Vararg{DI.Constant,C},
 ) where {C}
     rc = ruleconfig(backend)
-    y, pb = rrule_via_ad(rc, f, x, map(unwrap, contexts)...)
+    y, pb = rrule_via_ad(rc, f, x, map(DI.unwrap, contexts)...)
     tx = map(ty) do dy
         pb(dy)[2]
     end

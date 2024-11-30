@@ -14,7 +14,7 @@ function DI.pushforward(
     tx::NTuple,
     contexts::Vararg{DI.Context,C},
 ) where {C}
-    step(t::Number, dx) = f(x .+ t .* dx, map(unwrap, contexts)...)
+    step(t::Number, dx) = f(x .+ t .* dx, map(DI.unwrap, contexts)...)
     ty = map(tx) do dx
         finite_difference_derivative(Base.Fix2(step, dx), zero(eltype(x)), fdtype(backend))
     end
@@ -29,8 +29,8 @@ function DI.value_and_pushforward(
     tx::NTuple,
     contexts::Vararg{DI.Context,C},
 ) where {C}
-    step(t::Number, dx) = f(x .+ t .* dx, map(unwrap, contexts)...)
-    y = f(x, map(unwrap, contexts)...)
+    step(t::Number, dx) = f(x .+ t .* dx, map(DI.unwrap, contexts)...)
+    y = f(x, map(DI.unwrap, contexts)...)
     ty = map(tx) do dx
         finite_difference_derivative(
             Base.Fix2(step, dx), zero(eltype(x)), fdtype(backend), eltype(y), y

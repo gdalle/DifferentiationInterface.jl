@@ -28,7 +28,7 @@ end
 function DI.prepare_jacobian(
     f::F, backend::AutoSparse{<:DI.MixedMode}, x, contexts::Vararg{DI.Context,C}
 ) where {F,C}
-    y = f(x, map(unwrap, contexts)...)
+    y = f(x, map(DI.unwrap, contexts)...)
     return _prepare_mixed_sparse_jacobian_aux(y, (f,), backend, x, contexts...)
 end
 

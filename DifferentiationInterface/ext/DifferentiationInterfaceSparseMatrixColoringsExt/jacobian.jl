@@ -36,7 +36,7 @@ function DI.prepare_jacobian(
     f::F, backend::AutoSparse, x, contexts::Vararg{DI.Context,C}
 ) where {F,C}
     dense_backend = dense_ad(backend)
-    y = f(x, map(unwrap, contexts)...)
+    y = f(x, map(DI.unwrap, contexts)...)
     perf = DI.pushforward_performance(dense_backend)
     return _prepare_sparse_jacobian_aux(perf, y, (f,), backend, x, contexts...)
 end
@@ -168,7 +168,7 @@ end
 function DI.value_and_jacobian(
     f::F, prep::SparseJacobianPrep, backend::AutoSparse, x, contexts::Vararg{DI.Context,C}
 ) where {F,C}
-    return f(x, map(unwrap, contexts)...), jacobian(f, prep, backend, x, contexts...)
+    return f(x, map(DI.unwrap, contexts)...), jacobian(f, prep, backend, x, contexts...)
 end
 
 function DI.value_and_jacobian!(
@@ -179,7 +179,8 @@ function DI.value_and_jacobian!(
     x,
     contexts::Vararg{DI.Context,C},
 ) where {F,C}
-    return f(x, map(unwrap, contexts)...), jacobian!(f, jac, prep, backend, x, contexts...)
+    return f(x, map(DI.unwrap, contexts)...),
+    jacobian!(f, jac, prep, backend, x, contexts...)
 end
 
 ## Two arguments
@@ -217,7 +218,7 @@ function DI.value_and_jacobian(
     contexts::Vararg{DI.Context,C},
 ) where {F,C}
     jac = jacobian(f!, y, prep, backend, x, contexts...)
-    f!(y, x, map(unwrap, contexts)...)
+    f!(y, x, map(DI.unwrap, contexts)...)
     return y, jac
 end
 
@@ -231,7 +232,7 @@ function DI.value_and_jacobian!(
     contexts::Vararg{DI.Context,C},
 ) where {F,C}
     jacobian!(f!, y, jac, prep, backend, x, contexts...)
-    f!(y, x, map(unwrap, contexts)...)
+    f!(y, x, map(DI.unwrap, contexts)...)
     return y, jac
 end
 

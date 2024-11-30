@@ -8,9 +8,9 @@ function DI.prepare_pullback(
 ) where {C}
     config = get_config(backend)
     cache = prepare_pullback_cache(
-        f, x, map(unwrap, contexts)...; config.debug_mode, config.silence_debug_messages
+        f, x, map(DI.unwrap, contexts)...; config.debug_mode, config.silence_debug_messages
     )
-    y = f(x, map(unwrap, contexts)...)
+    y = f(x, map(DI.unwrap, contexts)...)
     dy_righttype = zero_tangent(y)
     prep = MooncakeOneArgPullbackPrep(cache, dy_righttype)
     DI.value_and_pullback(f, prep, backend, x, ty, contexts...)
@@ -28,7 +28,7 @@ function DI.value_and_pullback(
     dy = only(ty)
     dy_righttype = dy isa tangent_type(Y) ? dy : copyto!!(prep.dy_righttype, dy)
     new_y, (_, new_dx) = Mooncake.value_and_pullback!!(
-        prep.cache, dy_righttype, f, x, map(unwrap, contexts)...
+        prep.cache, dy_righttype, f, x, map(DI.unwrap, contexts)...
     )
     return new_y, (copy(new_dx),)
 end

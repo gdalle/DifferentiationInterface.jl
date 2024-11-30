@@ -25,14 +25,14 @@ end
 function DI.prepare_pullback_same_point(
     f, ::DI.NoPullbackPrep, ::AutoZygote, x, ty::NTuple, contexts::Vararg{DI.Constant,C}
 ) where {C}
-    y, pb = pullback(f, x, map(unwrap, contexts)...)
+    y, pb = pullback(f, x, map(DI.unwrap, contexts)...)
     return ZygotePullbackPrepSamePoint(y, pb)
 end
 
 function DI.value_and_pullback(
     f, ::DI.NoPullbackPrep, ::AutoZygote, x, ty::NTuple, contexts::Vararg{DI.Constant,C}
 ) where {C}
-    y, pb = pullback(f, x, map(unwrap, contexts)...)
+    y, pb = pullback(f, x, map(DI.unwrap, contexts)...)
     tx = map(ty) do dy
         first(pb(dy))
     end
@@ -78,14 +78,14 @@ end
 function DI.value_and_gradient(
     f, ::DI.NoGradientPrep, ::AutoZygote, x, contexts::Vararg{DI.Constant,C}
 ) where {C}
-    (; val, grad) = withgradient(f, x, map(unwrap, contexts)...)
+    (; val, grad) = withgradient(f, x, map(DI.unwrap, contexts)...)
     return val, first(grad)
 end
 
 function DI.gradient(
     f, ::DI.NoGradientPrep, ::AutoZygote, x, contexts::Vararg{DI.Constant,C}
 ) where {C}
-    return first(gradient(f, x, map(unwrap, contexts)...))
+    return first(gradient(f, x, map(DI.unwrap, contexts)...))
 end
 
 function DI.value_and_gradient!(
@@ -120,13 +120,14 @@ end
 function DI.value_and_jacobian(
     f, ::DI.NoJacobianPrep, ::AutoZygote, x, contexts::Vararg{DI.Constant,C}
 ) where {C}
-    return f(x, map(unwrap, contexts)...), first(jacobian(f, x, map(unwrap, contexts)...))  # https://github.com/FluxML/Zygote.jl/issues/1506
+    return f(x, map(DI.unwrap, contexts)...),
+    first(jacobian(f, x, map(DI.unwrap, contexts)...))  # https://github.com/FluxML/Zygote.jl/issues/1506
 end
 
 function DI.jacobian(
     f, ::DI.NoJacobianPrep, ::AutoZygote, x, contexts::Vararg{DI.Constant,C}
 ) where {C}
-    return first(jacobian(f, x, map(unwrap, contexts)...))
+    return first(jacobian(f, x, map(DI.unwrap, contexts)...))
 end
 
 function DI.value_and_jacobian!(

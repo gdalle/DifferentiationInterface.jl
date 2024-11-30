@@ -17,7 +17,7 @@ function DI.prepare_pullback(
         f!,
         y,
         x,
-        map(unwrap, contexts)...;
+        map(DI.unwrap, contexts)...;
         debug_mode=config.debug_mode,
         silence_debug_messages=config.silence_debug_messages,
     )
@@ -39,7 +39,7 @@ function DI.value_and_pullback(
     dy_righttype_after = copyto!(prep.dy_righttype, dy)
 
     # Run the reverse-pass and return the results.
-    contexts = map(unwrap, contexts)
+    contexts = map(DI.unwrap, contexts)
     y_after, (_, _, _, dx) = Mooncake.value_and_pullback!!(
         prep.cache, dy_righttype_after, prep.target_function, f!, y, x, contexts...
     )

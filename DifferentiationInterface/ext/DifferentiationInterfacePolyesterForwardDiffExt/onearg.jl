@@ -216,7 +216,7 @@ function DI.value_and_jacobian(
     x,
     contexts::Vararg{DI.Context,C},
 ) where {C}
-    y = f(x, map(unwrap, contexts)...)
+    y = f(x, map(DI.unwrap, contexts)...)
     return DI.value_and_jacobian!(
         f, similar(y, length(y), length(x)), prep, backend, x, contexts...
     )
@@ -229,7 +229,7 @@ function DI.jacobian(
     x,
     contexts::Vararg{DI.Context,C},
 ) where {C}
-    y = f(x, map(unwrap, contexts)...)
+    y = f(x, map(DI.unwrap, contexts)...)
     return DI.jacobian!(f, similar(y, length(y), length(x)), prep, backend, x, contexts...)
 end
 

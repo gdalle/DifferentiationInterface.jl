@@ -503,7 +503,7 @@ function DI.second_derivative(
     T = tag_type(f, backend, x)
     xdual = make_dual(T, x, one(x))
     T2 = tag_type(f, backend, xdual)
-    ydual = f(make_dual(T2, xdual, one(xdual)), map(unwrap, contexts)...)
+    ydual = f(make_dual(T2, xdual, one(xdual)), map(DI.unwrap, contexts)...)
     return myderivative(T, myderivative(T2, ydual))
 end
 
@@ -518,7 +518,7 @@ function DI.second_derivative!(
     T = tag_type(f, backend, x)
     xdual = make_dual(T, x, one(x))
     T2 = tag_type(f, backend, xdual)
-    ydual = f(make_dual(T2, xdual, one(xdual)), map(unwrap, contexts)...)
+    ydual = f(make_dual(T2, xdual, one(xdual)), map(DI.unwrap, contexts)...)
     return myderivative!(T, der2, myderivative(T2, ydual))
 end
 
@@ -532,7 +532,7 @@ function DI.value_derivative_and_second_derivative(
     T = tag_type(f, backend, x)
     xdual = make_dual(T, x, one(x))
     T2 = tag_type(f, backend, xdual)
-    ydual = f(make_dual(T2, xdual, one(xdual)), map(unwrap, contexts)...)
+    ydual = f(make_dual(T2, xdual, one(xdual)), map(DI.unwrap, contexts)...)
     y = myvalue(T, myvalue(T2, ydual))
     der = myderivative(T, myvalue(T2, ydual))
     der2 = myderivative(T, myderivative(T2, ydual))
@@ -551,7 +551,7 @@ function DI.value_derivative_and_second_derivative!(
     T = tag_type(f, backend, x)
     xdual = make_dual(T, x, one(x))
     T2 = tag_type(f, backend, xdual)
-    ydual = f(make_dual(T2, xdual, one(xdual)), map(unwrap, contexts)...)
+    ydual = f(make_dual(T2, xdual, one(xdual)), map(DI.unwrap, contexts)...)
     y = myvalue(T, myvalue(T2, ydual))
     myderivative!(T, der, myvalue(T2, ydual))
     myderivative!(T, der2, myderivative(T2, ydual))

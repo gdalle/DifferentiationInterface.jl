@@ -23,14 +23,14 @@ end
 function DI.prepare_pullback_same_point(
     f, ::DI.NoPullbackPrep, ::AutoTracker, x, ty::NTuple, contexts::Vararg{DI.Constant,C}
 ) where {C}
-    y, pb = forward(f, x, map(unwrap, contexts)...)
+    y, pb = forward(f, x, map(DI.unwrap, contexts)...)
     return TrackerPullbackPrepSamePoint(y, pb)
 end
 
 function DI.value_and_pullback(
     f, ::DI.NoPullbackPrep, ::AutoTracker, x, ty::NTuple, contexts::Vararg{DI.Constant,C}
 ) where {C}
-    y, pb = forward(f, x, map(unwrap, contexts)...)
+    y, pb = forward(f, x, map(DI.unwrap, contexts)...)
     tx = map(ty) do dy
         data(first(pb(dy)))
     end
@@ -76,14 +76,14 @@ end
 function DI.value_and_gradient(
     f, ::DI.NoGradientPrep, ::AutoTracker, x, contexts::Vararg{DI.Constant,C}
 ) where {C}
-    (; val, grad) = withgradient(f, x, map(unwrap, contexts)...)
+    (; val, grad) = withgradient(f, x, map(DI.unwrap, contexts)...)
     return val, data(first(grad))
 end
 
 function DI.gradient(
     f, ::DI.NoGradientPrep, ::AutoTracker, x, contexts::Vararg{DI.Constant,C}
 ) where {C}
-    (; grad) = withgradient(f, x, map(unwrap, contexts)...)
+    (; grad) = withgradient(f, x, map(DI.unwrap, contexts)...)
     return data(first(grad))
 end
 

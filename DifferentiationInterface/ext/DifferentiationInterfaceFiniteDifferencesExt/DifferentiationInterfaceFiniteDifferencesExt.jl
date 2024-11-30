@@ -39,7 +39,7 @@ function DI.value_and_pushforward(
     tx::NTuple,
     contexts::Vararg{DI.Context,C},
 ) where {C}
-    return f(x, map(unwrap, contexts)...),
+    return f(x, map(DI.unwrap, contexts)...),
     DI.pushforward(f, prep, backend, x, tx, contexts...)
 end
 
@@ -74,7 +74,8 @@ function DI.value_and_pullback(
     ty::NTuple,
     contexts::Vararg{DI.Context,C},
 ) where {C}
-    return f(x, map(unwrap, contexts)...), DI.pullback(f, prep, backend, x, ty, contexts...)
+    return f(x, map(DI.unwrap, contexts)...),
+    DI.pullback(f, prep, backend, x, ty, contexts...)
 end
 
 ## Gradient
@@ -103,7 +104,7 @@ function DI.value_and_gradient(
     x,
     contexts::Vararg{DI.Context,C},
 ) where {C}
-    return f(x, map(unwrap, contexts)...), DI.gradient(f, prep, backend, x, contexts...)
+    return f(x, map(DI.unwrap, contexts)...), DI.gradient(f, prep, backend, x, contexts...)
 end
 
 function DI.gradient!(
@@ -155,7 +156,7 @@ function DI.value_and_jacobian(
     x,
     contexts::Vararg{DI.Context,C},
 ) where {C}
-    return f(x, map(unwrap, contexts)...), DI.jacobian(f, prep, backend, x, contexts...)
+    return f(x, map(DI.unwrap, contexts)...), DI.jacobian(f, prep, backend, x, contexts...)
 end
 
 function DI.jacobian!(

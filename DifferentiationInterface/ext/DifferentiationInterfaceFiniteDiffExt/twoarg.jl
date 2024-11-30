@@ -17,7 +17,7 @@ function DI.value_and_pushforward(
 ) where {C}
     function step(t::Number, dx)
         new_y = similar(y)
-        f!(new_y, x .+ t .* dx, map(unwrap, contexts)...)
+        f!(new_y, x .+ t .* dx, map(DI.unwrap, contexts)...)
         return new_y
     end
     ty = map(tx) do dx
@@ -25,7 +25,7 @@ function DI.value_and_pushforward(
             Base.Fix2(step, dx), zero(eltype(x)), fdtype(backend), eltype(y), y
         )
     end
-    f!(y, x, map(unwrap, contexts)...)
+    f!(y, x, map(DI.unwrap, contexts)...)
     return y, ty
 end
 
