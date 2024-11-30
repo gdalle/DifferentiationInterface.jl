@@ -8,26 +8,6 @@ using ADTypes:
     sparsity_detector,
     jacobian_sparsity,
     hessian_sparsity
-using DifferentiationInterface
-using DifferentiationInterface:
-    BatchSizeSettings,
-    GradientPrep,
-    HessianPrep,
-    HVPPrep,
-    JacobianPrep,
-    PullbackPrep,
-    PushforwardPrep,
-    PushforwardFast,
-    PushforwardPerformance,
-    inner,
-    outer,
-    forward_backend,
-    reverse_backend,
-    multibasis,
-    pick_batchsize,
-    pushforward_performance,
-    unwrap,
-    with_contexts
 import DifferentiationInterface as DI
 using SparseMatrixColorings:
     AbstractColoringResult,

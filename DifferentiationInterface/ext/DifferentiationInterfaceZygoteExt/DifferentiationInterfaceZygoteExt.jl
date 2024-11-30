@@ -2,17 +2,6 @@ module DifferentiationInterfaceZygoteExt
 
 using ADTypes: AutoForwardDiff, AutoZygote
 import DifferentiationInterface as DI
-using DifferentiationInterface:
-    Constant,
-    HVPPrep,
-    NoGradientPrep,
-    NoHessianPrep,
-    NoJacobianPrep,
-    NoPullbackPrep,
-    PullbackPrep,
-    SecondOrder,
-    unwrap,
-    with_contexts
 using ForwardDiff: ForwardDiff
 using Zygote:
     ZygoteRuleConfig, gradient, hessian, jacobian, pullback, withgradient, withjacobian

@@ -3,18 +3,6 @@ module DifferentiationInterfaceReverseDiffExt
 using ADTypes: AutoReverseDiff
 using Base: Fix2
 import DifferentiationInterface as DI
-using DifferentiationInterface:
-    Context,
-    DerivativePrep,
-    GradientPrep,
-    HessianPrep,
-    JacobianPrep,
-    NoGradientPrep,
-    NoHessianPrep,
-    NoJacobianPrep,
-    NoPullbackPrep,
-    unwrap,
-    with_contexts
 import ReverseDiff.DiffResults as DR
 using ReverseDiff.DiffResults:
     DiffResults, DiffResult, GradientResult, HessianResult, MutableDiffResult

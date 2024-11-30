@@ -2,7 +2,6 @@ module DifferentiationInterfaceStaticArraysExt
 
 using ADTypes: AutoForwardDiff, AutoEnzyme
 import DifferentiationInterface as DI
-using DifferentiationInterface: BatchSizeSettings
 using StaticArrays: SArray, StaticArray
 
 function DI.stack_vec_col(t::NTuple{B,<:StaticArray}) where {B}

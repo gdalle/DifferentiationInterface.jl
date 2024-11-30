@@ -2,14 +2,6 @@ module DifferentiationInterfaceFiniteDifferencesExt
 
 using ADTypes: AutoFiniteDifferences
 import DifferentiationInterface as DI
-using DifferentiationInterface:
-    Context,
-    NoGradientPrep,
-    NoJacobianPrep,
-    NoPullbackPrep,
-    NoPushforwardPrep,
-    unwrap,
-    with_contexts
 using FiniteDifferences: FiniteDifferences, grad, jacobian, jvp, j′vp
 using LinearAlgebra: dot
 

@@ -2,7 +2,6 @@ module DifferentiationInterfaceDiffractorExt
 
 using ADTypes: ADTypes, AutoDiffractor
 import DifferentiationInterface as DI
-using DifferentiationInterface: NoPushforwardPrep
 using Diffractor: DiffractorRuleConfig, TaylorTangentIndex, ZeroBundle, bundle, ∂☆
 
 DI.check_available(::AutoDiffractor) = true

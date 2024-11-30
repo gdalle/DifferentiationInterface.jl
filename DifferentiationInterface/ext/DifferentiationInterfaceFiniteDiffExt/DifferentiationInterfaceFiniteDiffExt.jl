@@ -2,22 +2,6 @@ module DifferentiationInterfaceFiniteDiffExt
 
 using ADTypes: AutoFiniteDiff
 import DifferentiationInterface as DI
-using DifferentiationInterface:
-    Context,
-    DerivativePrep,
-    GradientPrep,
-    HessianPrep,
-    JacobianPrep,
-    PullbackPrep,
-    PushforwardPrep,
-    NoDerivativePrep,
-    NoGradientPrep,
-    NoHessianPrep,
-    NoJacobianPrep,
-    NoPullbackPrep,
-    NoPushforwardPrep,
-    unwrap,
-    with_contexts
 using FiniteDiff:
     DerivativeCache,
     GradientCache,

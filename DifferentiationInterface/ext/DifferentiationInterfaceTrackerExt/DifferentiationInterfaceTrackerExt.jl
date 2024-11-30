@@ -2,8 +2,6 @@ module DifferentiationInterfaceTrackerExt
 
 using ADTypes: AutoTracker
 import DifferentiationInterface as DI
-using DifferentiationInterface:
-    Constant, NoGradientPrep, NoPullbackPrep, PullbackPrep, unwrap, with_contexts
 using Tracker: Tracker, back, data, forward, gradient, jacobian, param, withgradient
 
 DI.check_available(::AutoTracker) = true
