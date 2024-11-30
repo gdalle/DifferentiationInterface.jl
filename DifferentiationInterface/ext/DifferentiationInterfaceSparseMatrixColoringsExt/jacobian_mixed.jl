@@ -55,8 +55,8 @@ function _prepare_mixed_sparse_jacobian_aux(
 
     Nf = length(column_groups(coloring_result))
     Nr = length(row_groups(coloring_result))
-    batch_size_settings_forward = pick_batchsize(forward_backend(dense_backend), Nf)
-    batch_size_settings_reverse = pick_batchsize(reverse_backend(dense_backend), Nr)
+    batch_size_settings_forward = DI.pick_batchsize(forward_backend(dense_backend), Nf)
+    batch_size_settings_reverse = DI.pick_batchsize(reverse_backend(dense_backend), Nr)
 
     return _prepare_mixed_sparse_jacobian_aux_aux(
         batch_size_settings_forward,

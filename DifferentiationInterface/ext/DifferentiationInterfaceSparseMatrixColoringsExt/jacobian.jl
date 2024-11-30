@@ -77,7 +77,7 @@ function _prepare_sparse_jacobian_aux(
     else
         N = length(row_groups(coloring_result))
     end
-    batch_size_settings = pick_batchsize(dense_backend, N)
+    batch_size_settings = DI.pick_batchsize(dense_backend, N)
     return _prepare_sparse_jacobian_aux_aux(
         batch_size_settings, coloring_result, y, f_or_f!y, backend, x, contexts...
     )

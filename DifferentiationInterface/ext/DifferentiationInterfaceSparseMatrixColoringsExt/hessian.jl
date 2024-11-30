@@ -35,7 +35,7 @@ function DI.prepare_hessian(
         sparsity, problem, coloring_algorithm(backend); decompression_eltype=eltype(x)
     )
     N = length(column_groups(coloring_result))
-    batch_size_settings = pick_batchsize(outer(dense_backend), N)
+    batch_size_settings = DI.pick_batchsize(outer(dense_backend), N)
     return _prepare_sparse_hessian_aux(
         batch_size_settings, coloring_result, f, backend, x, contexts...
     )
