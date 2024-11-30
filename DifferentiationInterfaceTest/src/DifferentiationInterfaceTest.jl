@@ -22,6 +22,7 @@ using ADTypes:
 using AllocCheck: check_allocs
 using Chairmarks: @be, Benchmark, Sample
 using DataFrames: DataFrame
+import DifferentiationInterface as DI
 using DifferentiationInterface:
     prepare_pushforward,
     prepare_pushforward_same_point,
@@ -75,15 +76,6 @@ using DifferentiationInterface:
     value_gradient_and_hessian,
     value_gradient_and_hessian!
 using DifferentiationInterface:
-    inner,
-    mode,
-    outer,
-    inplace_support,
-    pushforward_performance,
-    pullback_performance,
-    unwrap
-using DifferentiationInterface: MixedMode, SecondOrder, Rewrap, Context, Constant, Cache
-using DifferentiationInterface:
     DerivativePrep,
     GradientPrep,
     HessianPrep,
@@ -92,7 +84,16 @@ using DifferentiationInterface:
     PullbackPrep,
     PushforwardPrep,
     SecondDerivativePrep
-import DifferentiationInterface as DI
+using DifferentiationInterface:
+    SecondOrder,
+    MixedMode,
+    inner,
+    mode,
+    outer,
+    inplace_support,
+    pushforward_performance,
+    pullback_performance
+using DifferentiationInterface: Rewrap, Context, Constant, Cache, unwrap
 using DocStringExtensions
 using JET: @test_opt
 using LinearAlgebra: Adjoint, Diagonal, Transpose, dot, parent

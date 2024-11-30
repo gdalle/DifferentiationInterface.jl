@@ -9,7 +9,7 @@ end
 
 function DI.value_and_pushforward(
     f,
-    prep::PushforwardPrep,
+    prep::DI.PushforwardPrep,
     backend::AutoPolyesterForwardDiff,
     x,
     tx::NTuple,
@@ -21,7 +21,7 @@ end
 function DI.value_and_pushforward!(
     f,
     ty::NTuple,
-    prep::PushforwardPrep,
+    prep::DI.PushforwardPrep,
     backend::AutoPolyesterForwardDiff,
     x,
     tx::NTuple,
@@ -34,7 +34,7 @@ end
 
 function DI.pushforward(
     f,
-    prep::PushforwardPrep,
+    prep::DI.PushforwardPrep,
     backend::AutoPolyesterForwardDiff,
     x,
     tx::NTuple,
@@ -46,7 +46,7 @@ end
 function DI.pushforward!(
     f,
     ty::NTuple,
-    prep::PushforwardPrep,
+    prep::DI.PushforwardPrep,
     backend::AutoPolyesterForwardDiff,
     x,
     tx::NTuple,
