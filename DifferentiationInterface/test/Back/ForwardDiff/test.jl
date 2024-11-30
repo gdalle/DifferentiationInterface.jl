@@ -100,5 +100,5 @@ end;
         coloring_algorithm=ConstantColoringAlgorithm(ones(3, 3), ones(Int64, 3)),
     )
     u1 = [2.0; 2.0; 3.0] .+ 1im
-    @test_nowarn DI.prepare_jacobian(loss, similar(u1), backend, u1)
+    @test_nowarn DI.prepare_jacobian(nothing, similar(u1), backend, u1)
 end
