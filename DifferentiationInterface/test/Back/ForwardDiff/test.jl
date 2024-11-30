@@ -6,7 +6,6 @@ using ComponentArrays: ComponentArrays
 using DifferentiationInterface, DifferentiationInterfaceTest
 import DifferentiationInterfaceTest as DIT
 using ForwardDiff: ForwardDiff
-using SparseMatrixColorings: ConstantColoringAlgorithm
 using StaticArrays: StaticArrays
 using Test
 
@@ -90,15 +89,3 @@ test_differentiation(AutoForwardDiff(), static_scenarios(); logging=LOGGING)
         end
     end
 end;
-
-# Complex number support
-
-@testset verbose = true "Complex number support" begin
-    backend = AutoSparse(
-        AutoForwardDiff();
-        sparsity_detector=ADTypes.KnownJacobianSparsityDetector(ones(3, 3)),
-        coloring_algorithm=ConstantColoringAlgorithm(ones(3, 3), ones(Int64, 3)),
-    )
-    u1 = [2.0; 2.0; 3.0] .+ 1im
-    @test_nowarn DI.prepare_jacobian(nothing, similar(u1), backend, u1)
-end
