@@ -25,8 +25,8 @@ function mymutablestatic(x::AbstractMatrix{T}) where {T}
 end
 
 mystatic(x::Tuple) = map(mystatic, x)
-mystatic(x::DI.Constant) = DI.Constant(mystatic(DI.unwrap(x)))
-mystatic(x::DI.Cache) = DI.Cache(mymutablestatic(DI.unwrap(x)))
+mystatic(x::DI.Constant) = DI.Constant(mystatic(DI.DI.unwrap(x)))
+mystatic(x::DI.Cache) = DI.Cache(mymutablestatic(DI.DI.unwrap(x)))
 mystatic(::Nothing) = nothing
 
 function mystatic(scen::Scenario{op,pl_op,pl_fun}) where {op,pl_op,pl_fun}

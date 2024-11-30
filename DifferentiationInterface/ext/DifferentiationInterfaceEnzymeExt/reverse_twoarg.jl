@@ -6,19 +6,19 @@ function DI.prepare_pullback(
     ::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
     ty::NTuple,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,C}
-    return NoPullbackPrep()
+    return DI.NoPullbackPrep()
 end
 
 function DI.value_and_pullback(
     f!::F,
     y,
-    ::NoPullbackPrep,
+    ::DI.NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x::Number,
     ty::NTuple{1},
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,C}
     f!_and_df! = get_f_and_df(f!, backend)
     dy_sametype = convert(typeof(y), copy(only(ty)))
@@ -40,11 +40,11 @@ end
 function DI.value_and_pullback(
     f!::F,
     y,
-    ::NoPullbackPrep,
+    ::DI.NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x::Number,
     ty::NTuple{B},
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,B,C}
     f!_and_df! = get_f_and_df(f!, backend, Val(B))
     ty_sametype = map(Fix1(convert, typeof(y)), copy.(ty))
@@ -66,11 +66,11 @@ end
 function DI.value_and_pullback(
     f!::F,
     y,
-    ::NoPullbackPrep,
+    ::DI.NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
     ty::NTuple{1},
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,C}
     f!_and_df! = get_f_and_df(f!, backend)
     dx_sametype = make_zero(x)
@@ -91,11 +91,11 @@ end
 function DI.value_and_pullback(
     f!::F,
     y,
-    ::NoPullbackPrep,
+    ::DI.NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
     ty::NTuple{B},
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,B,C}
     f!_and_df! = get_f_and_df(f!, backend, Val(B))
     tx_sametype = ntuple(_ -> make_zero(x), Val(B))

@@ -1,12 +1,12 @@
 ## Preparation
 
 struct PushforwardSparseJacobianPrep{
-    BS<:BatchSizeSettings,
+    BS<:DI.BatchSizeSettings,
     C<:AbstractColoringResult{:nonsymmetric,:column},
     M<:AbstractMatrix{<:Real},
     S<:AbstractVector{<:NTuple},
     R<:AbstractVector{<:NTuple},
-    E<:PushforwardPrep,
+    E<:DI.PushforwardPrep,
 } <: SparseJacobianPrep
     batch_size_settings::BS
     coloring_result::C
@@ -17,12 +17,12 @@ struct PushforwardSparseJacobianPrep{
 end
 
 struct PullbackSparseJacobianPrep{
-    BS<:BatchSizeSettings,
+    BS<:DI.BatchSizeSettings,
     C<:AbstractColoringResult{:nonsymmetric,:row},
     M<:AbstractMatrix{<:Real},
     S<:AbstractVector{<:NTuple},
     R<:AbstractVector{<:NTuple},
-    E<:PullbackPrep,
+    E<:DI.PullbackPrep,
 } <: SparseJacobianPrep
     batch_size_settings::BS
     coloring_result::C
@@ -33,33 +33,33 @@ struct PullbackSparseJacobianPrep{
 end
 
 function DI.prepare_jacobian(
-    f::F, backend::AutoSparse, x, contexts::Vararg{Context,C}
+    f::F, backend::AutoSparse, x, contexts::Vararg{DI.Context,C}
 ) where {F,C}
     dense_backend = dense_ad(backend)
     y = f(x, map(unwrap, contexts)...)
-    perf = pushforward_performance(dense_backend)
+    perf = DI.pushforward_performance(dense_backend)
     return _prepare_sparse_jacobian_aux(perf, y, (f,), backend, x, contexts...)
 end
 
 function DI.prepare_jacobian(
-    f!::F, y, backend::AutoSparse, x, contexts::Vararg{Context,C}
+    f!::F, y, backend::AutoSparse, x, contexts::Vararg{DI.Context,C}
 ) where {F,C}
     dense_backend = dense_ad(backend)
-    perf = pushforward_performance(dense_backend)
+    perf = DI.pushforward_performance(dense_backend)
     return _prepare_sparse_jacobian_aux(perf, y, (f!, y), backend, x, contexts...)
 end
 
 function _prepare_sparse_jacobian_aux(
-    perf::PushforwardPerformance,
+    perf::DI.PushforwardPerformance,
     y,
     f_or_f!y::FY,
     backend::AutoSparse,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {FY,C}
     dense_backend = dense_ad(backend)
     sparsity = jacobian_sparsity(
-        fy_with_contexts(f_or_f!y..., contexts...)..., x, sparsity_detector(backend)
+        fycont(f_or_f!y..., contexts...)..., x, sparsity_detector(backend)
     )
     if perf isa PushforwardFast
         problem = ColoringProblem{:nonsymmetric,:column}()
@@ -84,13 +84,13 @@ function _prepare_sparse_jacobian_aux(
 end
 
 function _prepare_sparse_jacobian_aux_aux(
-    batch_size_settings::BatchSizeSettings{B},
+    batch_size_settings::DI.BatchSizeSettings{B},
     coloring_result::AbstractColoringResult{:nonsymmetric,:column},
     y,
     f_or_f!y::FY,
     backend::AutoSparse,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {B,FY,C}
     (; N, A) = batch_size_settings
     dense_backend = dense_ad(backend)
@@ -101,7 +101,7 @@ function _prepare_sparse_jacobian_aux_aux(
         ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % N], Val(B)) for a in 1:A
     ]
     batched_results = [ntuple(b -> similar(y), Val(B)) for _ in batched_seeds]
-    pushforward_prep = prepare_pushforward(
+    pushforward_prep = DI.prepare_pushforward(
         f_or_f!y..., dense_backend, x, batched_seeds[1], contexts...
     )
     return PushforwardSparseJacobianPrep(
@@ -115,13 +115,13 @@ function _prepare_sparse_jacobian_aux_aux(
 end
 
 function _prepare_sparse_jacobian_aux_aux(
-    batch_size_settings::BatchSizeSettings{B},
+    batch_size_settings::DI.BatchSizeSettings{B},
     coloring_result::AbstractColoringResult{:nonsymmetric,:row},
     y,
     f_or_f!y::FY,
     backend::AutoSparse,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {B,FY,C}
     (; N, A) = batch_size_settings
     dense_backend = dense_ad(backend)
@@ -132,7 +132,7 @@ function _prepare_sparse_jacobian_aux_aux(
         ntuple(b -> seeds[1 + ((a - 1) * B + (b - 1)) % N], Val(B)) for a in 1:A
     ]
     batched_results = [ntuple(b -> similar(x), Val(B)) for _ in batched_seeds]
-    pullback_prep = prepare_pullback(
+    pullback_prep = DI.prepare_pullback(
         f_or_f!y..., dense_backend, x, batched_seeds[1], contexts...
     )
     return PullbackSparseJacobianPrep(
@@ -148,26 +148,36 @@ end
 ## One argument
 
 function DI.jacobian!(
-    f::F, jac, prep::SparseJacobianPrep, backend::AutoSparse, x, contexts::Vararg{Context,C}
+    f::F,
+    jac,
+    prep::SparseJacobianPrep,
+    backend::AutoSparse,
+    x,
+    contexts::Vararg{DI.Context,C},
 ) where {F,C}
     return _sparse_jacobian_aux!((f,), jac, prep, backend, x, contexts...)
 end
 
 function DI.jacobian(
-    f::F, prep::SparseJacobianPrep, backend::AutoSparse, x, contexts::Vararg{Context,C}
+    f::F, prep::SparseJacobianPrep, backend::AutoSparse, x, contexts::Vararg{DI.Context,C}
 ) where {F,C}
     jac = similar(sparsity_pattern(prep), eltype(x))
     return DI.jacobian!(f, jac, prep, backend, x, contexts...)
 end
 
 function DI.value_and_jacobian(
-    f::F, prep::SparseJacobianPrep, backend::AutoSparse, x, contexts::Vararg{Context,C}
+    f::F, prep::SparseJacobianPrep, backend::AutoSparse, x, contexts::Vararg{DI.Context,C}
 ) where {F,C}
     return f(x, map(unwrap, contexts)...), jacobian(f, prep, backend, x, contexts...)
 end
 
 function DI.value_and_jacobian!(
-    f::F, jac, prep::SparseJacobianPrep, backend::AutoSparse, x, contexts::Vararg{Context,C}
+    f::F,
+    jac,
+    prep::SparseJacobianPrep,
+    backend::AutoSparse,
+    x,
+    contexts::Vararg{DI.Context,C},
 ) where {F,C}
     return f(x, map(unwrap, contexts)...), jacobian!(f, jac, prep, backend, x, contexts...)
 end
@@ -181,20 +191,30 @@ function DI.jacobian!(
     prep::SparseJacobianPrep,
     backend::AutoSparse,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,C}
     return _sparse_jacobian_aux!((f!, y), jac, prep, backend, x, contexts...)
 end
 
 function DI.jacobian(
-    f!::F, y, prep::SparseJacobianPrep, backend::AutoSparse, x, contexts::Vararg{Context,C}
+    f!::F,
+    y,
+    prep::SparseJacobianPrep,
+    backend::AutoSparse,
+    x,
+    contexts::Vararg{DI.Context,C},
 ) where {F,C}
     jac = similar(sparsity_pattern(prep), promote_type(eltype(x), eltype(y)))
     return DI.jacobian!(f!, y, jac, prep, backend, x, contexts...)
 end
 
 function DI.value_and_jacobian(
-    f!::F, y, prep::SparseJacobianPrep, backend::AutoSparse, x, contexts::Vararg{Context,C}
+    f!::F,
+    y,
+    prep::SparseJacobianPrep,
+    backend::AutoSparse,
+    x,
+    contexts::Vararg{DI.Context,C},
 ) where {F,C}
     jac = jacobian(f!, y, prep, backend, x, contexts...)
     f!(y, x, map(unwrap, contexts)...)
@@ -208,7 +228,7 @@ function DI.value_and_jacobian!(
     prep::SparseJacobianPrep,
     backend::AutoSparse,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,C}
     jacobian!(f!, y, jac, prep, backend, x, contexts...)
     f!(y, x, map(unwrap, contexts)...)
@@ -220,10 +240,10 @@ end
 function _sparse_jacobian_aux!(
     f_or_f!y::FY,
     jac,
-    prep::PushforwardSparseJacobianPrep{<:BatchSizeSettings{B}},
+    prep::PushforwardSparseJacobianPrep{<:DI.BatchSizeSettings{B}},
     backend::AutoSparse,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {FY,B,C}
     (;
         batch_size_settings,
@@ -236,7 +256,7 @@ function _sparse_jacobian_aux!(
     (; N) = batch_size_settings
     dense_backend = dense_ad(backend)
 
-    pushforward_prep_same = prepare_pushforward_same_point(
+    pushforward_prep_same = DI.prepare_pushforward_same_point(
         f_or_f!y..., pushforward_prep, dense_backend, x, batched_seeds[1], contexts...
     )
 
@@ -266,10 +286,10 @@ end
 function _sparse_jacobian_aux!(
     f_or_f!y::FY,
     jac,
-    prep::PullbackSparseJacobianPrep{<:BatchSizeSettings{B}},
+    prep::PullbackSparseJacobianPrep{<:DI.BatchSizeSettings{B}},
     backend::AutoSparse,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {FY,B,C}
     (;
         batch_size_settings,
@@ -282,7 +302,7 @@ function _sparse_jacobian_aux!(
     (; N) = batch_size_settings
     dense_backend = dense_ad(backend)
 
-    pullback_prep_same = prepare_pullback_same_point(
+    pullback_prep_same = DI.prepare_pullback_same_point(
         f_or_f!y..., pullback_prep, dense_backend, x, batched_seeds[1], contexts...
     )
 

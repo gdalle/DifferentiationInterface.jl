@@ -1,6 +1,6 @@
 ## Pushforward
 
-struct SymbolicsOneArgPushforwardPrep{E1,E1!} <: PushforwardPrep
+struct SymbolicsOneArgPushforwardPrep{E1,E1!} <: DI.PushforwardPrep
     pf_exe::E1
     pf_exe!::E1!
 end
@@ -70,7 +70,7 @@ end
 
 ## Derivative
 
-struct SymbolicsOneArgDerivativePrep{E1,E1!} <: DerivativePrep
+struct SymbolicsOneArgDerivativePrep{E1,E1!} <: DI.DerivativePrep
     der_exe::E1
     der_exe!::E1!
 end
@@ -111,7 +111,7 @@ end
 
 ## Gradient
 
-struct SymbolicsOneArgGradientPrep{E1,E1!} <: GradientPrep
+struct SymbolicsOneArgGradientPrep{E1,E1!} <: DI.GradientPrep
     grad_exe::E1
     grad_exe!::E1!
 end
@@ -149,7 +149,7 @@ end
 
 ## Jacobian
 
-struct SymbolicsOneArgJacobianPrep{E1,E1!} <: JacobianPrep
+struct SymbolicsOneArgJacobianPrep{E1,E1!} <: DI.JacobianPrep
     jac_exe::E1
     jac_exe!::E1!
 end
@@ -210,7 +210,7 @@ end
 
 ## Hessian
 
-struct SymbolicsOneArgHessianPrep{G,E2,E2!} <: HessianPrep
+struct SymbolicsOneArgHessianPrep{G,E2,E2!} <: DI.HessianPrep
     gradient_prep::G
     hess_exe::E2
     hess_exe!::E2!
@@ -278,7 +278,7 @@ end
 
 ## HVP
 
-struct SymbolicsOneArgHVPPrep{G,E2,E2!} <: HVPPrep
+struct SymbolicsOneArgHVPPrep{G,E2,E2!} <: DI.HVPPrep
     gradient_prep::G
     hvp_exe::E2
     hvp_exe!::E2!
@@ -335,7 +335,7 @@ end
 
 ## Second derivative
 
-struct SymbolicsOneArgSecondDerivativePrep{D,E1,E1!} <: SecondDerivativePrep
+struct SymbolicsOneArgSecondDerivativePrep{D,E1,E1!} <: DI.SecondDerivativePrep
     derivative_prep::D
     der2_exe::E1
     der2_exe!::E1!

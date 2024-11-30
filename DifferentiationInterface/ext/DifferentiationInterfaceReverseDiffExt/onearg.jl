@@ -3,18 +3,18 @@
 function DI.prepare_pullback(
     f, ::AutoReverseDiff, x, ty::NTuple, contexts::Vararg{Context,C}
 ) where {C}
-    return NoPullbackPrep()
+    return DI.NoPullbackPrep()
 end
 
 function DI.value_and_pullback(
     f,
-    ::NoPullbackPrep,
+    ::DI.NoPullbackPrep,
     ::AutoReverseDiff,
     x::AbstractArray,
     ty::NTuple,
     contexts::Vararg{Context,C},
 ) where {C}
-    fc = with_contexts(f, contexts...)
+    fc = DI.with_contexts(f, contexts...)
     y = fc(x)
     dotclosure(z, dy) = dot(fc(z), dy)
     tx = map(ty) do dy
@@ -30,13 +30,13 @@ end
 function DI.value_and_pullback!(
     f,
     tx::NTuple,
-    ::NoPullbackPrep,
+    ::DI.NoPullbackPrep,
     ::AutoReverseDiff,
     x::AbstractArray,
     ty::NTuple,
     contexts::Vararg{Context,C},
 ) where {C}
-    fc = with_contexts(f, contexts...)
+    fc = DI.with_contexts(f, contexts...)
     y = fc(x)
     dotclosure(z, dy) = dot(fc(z), dy)
     for b in eachindex(tx, ty)
@@ -53,7 +53,7 @@ end
 
 function DI.value_and_pullback(
     f,
-    ::NoPullbackPrep,
+    ::DI.NoPullbackPrep,
     backend::AutoReverseDiff,
     x::Number,
     ty::NTuple,
@@ -69,7 +69,7 @@ end
 
 ### Without contexts
 
-@kwdef struct ReverseDiffGradientPrep{C,T} <: GradientPrep
+@kwdef struct ReverseDiffGradientPrep{C,T} <: DI.GradientPrep
     config::C
     tape::T
 end
@@ -141,7 +141,7 @@ function DI.value_and_gradient!(
     x,
     contexts::Vararg{Context,C},
 ) where {C}
-    fc = with_contexts(f, contexts...)
+    fc = DI.with_contexts(f, contexts...)
     y = fc(x)  # TODO: ReverseDiff#251
     result = DiffResult(y, (grad,))
     result = gradient!(result, fc, x, prep.config)
@@ -169,14 +169,14 @@ function DI.gradient!(
     x,
     contexts::Vararg{Context,C},
 ) where {C}
-    fc = with_contexts(f, contexts...)
+    fc = DI.with_contexts(f, contexts...)
     return gradient!(grad, fc, x, prep.config)
 end
 
 function DI.gradient(
     f, prep::ReverseDiffGradientPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
 ) where {C}
-    fc = with_contexts(f, contexts...)
+    fc = DI.with_contexts(f, contexts...)
     return gradient(fc, x, prep.config)
 end
 
@@ -184,7 +184,7 @@ end
 
 ### Without contexts
 
-@kwdef struct ReverseDiffOneArgJacobianPrep{C,T} <: JacobianPrep
+@kwdef struct ReverseDiffOneArgJacobianPrep{C,T} <: DI.JacobianPrep
     config::C
     tape::T
 end
@@ -259,7 +259,7 @@ function DI.value_and_jacobian!(
     x,
     contexts::Vararg{Context,C},
 ) where {C}
-    fc = with_contexts(f, contexts...)
+    fc = DI.with_contexts(f, contexts...)
     y = fc(x)
     result = DiffResult(y, (jac,))
     result = jacobian!(result, fc, x, prep.config)
@@ -275,7 +275,7 @@ function DI.value_and_jacobian(
     x,
     contexts::Vararg{Context,C},
 ) where {C}
-    fc = with_contexts(f, contexts...)
+    fc = DI.with_contexts(f, contexts...)
     return fc(x), jacobian(fc, x, prep.config)
 end
 
@@ -287,7 +287,7 @@ function DI.jacobian!(
     x,
     contexts::Vararg{Context,C},
 ) where {C}
-    fc = with_contexts(f, contexts...)
+    fc = DI.with_contexts(f, contexts...)
     return jacobian!(jac, fc, x, prep.config)
 end
 
@@ -298,7 +298,7 @@ function DI.jacobian(
     x,
     contexts::Vararg{Context,C},
 ) where {C}
-    fc = with_contexts(f, contexts...)
+    fc = DI.with_contexts(f, contexts...)
     return jacobian(fc, x, prep.config)
 end
 
@@ -306,7 +306,7 @@ end
 
 ### Without contexts
 
-@kwdef struct ReverseDiffHessianPrep{GC,HC,GT,HT} <: HessianPrep
+@kwdef struct ReverseDiffHessianPrep{GC,HC,GT,HT} <: DI.HessianPrep
     gradient_config::GC
     hessian_config::HC
     gradient_tape::GT
@@ -401,14 +401,14 @@ end
 function DI.hessian!(
     f, hess, prep::ReverseDiffHessianPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
 ) where {C}
-    fc = with_contexts(f, contexts...)
+    fc = DI.with_contexts(f, contexts...)
     return hessian!(hess, fc, x, prep.hessian_config)
 end
 
 function DI.hessian(
     f, prep::ReverseDiffHessianPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
 ) where {C}
-    fc = with_contexts(f, contexts...)
+    fc = DI.with_contexts(f, contexts...)
     return hessian(fc, x, prep.hessian_config)
 end
 
@@ -421,7 +421,7 @@ function DI.value_gradient_and_hessian!(
     x,
     contexts::Vararg{Context,C},
 ) where {C}
-    fc = with_contexts(f, contexts...)
+    fc = DI.with_contexts(f, contexts...)
     y = fc(x)  # TODO: ReverseDiff#251
     result = DiffResult(y, (grad, hess))
     result = hessian!(result, fc, x)  # TODO: add prep.hessian_config
@@ -435,7 +435,7 @@ end
 function DI.value_gradient_and_hessian(
     f, prep::ReverseDiffHessianPrep, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
 ) where {C}
-    fc = with_contexts(f, contexts...)
+    fc = DI.with_contexts(f, contexts...)
     y = fc(x)  # TODO: ReverseDiff#251
     result = HessianResult(x)
     result = hessian!(result, fc, x)  # TODO: add prep.hessian_config

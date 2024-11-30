@@ -15,11 +15,11 @@ end
 DI.ismutable_array(::Type{<:SArray}) = false
 
 function DI.BatchSizeSettings(::AutoForwardDiff{nothing}, x::StaticArray)
-    return BatchSizeSettings{length(x),true,true}(length(x))
+    return DI.BatchSizeSettings{length(x),true,true}(length(x))
 end
 
 function DI.BatchSizeSettings(::AutoEnzyme, x::StaticArray)
-    return BatchSizeSettings{length(x),true,true}(length(x))
+    return DI.BatchSizeSettings{length(x),true,true}(length(x))
 end
 
 end

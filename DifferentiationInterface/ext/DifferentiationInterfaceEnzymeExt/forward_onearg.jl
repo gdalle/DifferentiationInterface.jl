@@ -5,18 +5,18 @@ function DI.prepare_pushforward(
     ::AutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
     tx::NTuple,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,C}
-    return NoPushforwardPrep()
+    return DI.NoPushforwardPrep()
 end
 
 function DI.value_and_pushforward(
     f::F,
-    ::NoPushforwardPrep,
+    ::DI.NoPushforwardPrep,
     backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
     tx::NTuple{1},
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,C}
     f_and_df = get_f_and_df(f, backend)
     dx_sametype = convert(typeof(x), only(tx))
@@ -29,11 +29,11 @@ end
 
 function DI.value_and_pushforward(
     f::F,
-    ::NoPushforwardPrep,
+    ::DI.NoPushforwardPrep,
     backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
     tx::NTuple{B},
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,B,C}
     f_and_df = get_f_and_df(f, backend, Val(B))
     tx_sametype = map(Fix1(convert, typeof(x)), tx)
@@ -46,11 +46,11 @@ end
 
 function DI.pushforward(
     f::F,
-    ::NoPushforwardPrep,
+    ::DI.NoPushforwardPrep,
     backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
     tx::NTuple{1},
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,C}
     f_and_df = get_f_and_df(f, backend)
     dx_sametype = convert(typeof(x), only(tx))
@@ -63,11 +63,11 @@ end
 
 function DI.pushforward(
     f::F,
-    ::NoPushforwardPrep,
+    ::DI.NoPushforwardPrep,
     backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
     tx::NTuple{B},
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,B,C}
     f_and_df = get_f_and_df(f, backend, Val(B))
     tx_sametype = map(Fix1(convert, typeof(x)), tx)
@@ -81,11 +81,11 @@ end
 function DI.value_and_pushforward!(
     f::F,
     ty::NTuple,
-    prep::NoPushforwardPrep,
+    prep::DI.NoPushforwardPrep,
     backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
     tx::NTuple,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,C}
     # dy cannot be passed anyway
     y, new_ty = DI.value_and_pushforward(f, prep, backend, x, tx, contexts...)
@@ -96,11 +96,11 @@ end
 function DI.pushforward!(
     f::F,
     ty::NTuple,
-    prep::NoPushforwardPrep,
+    prep::DI.NoPushforwardPrep,
     backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
     tx::NTuple,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,C}
     # dy cannot be passed anyway
     new_ty = DI.pushforward(f, prep, backend, x, tx, contexts...)
@@ -110,7 +110,7 @@ end
 
 ## Gradient
 
-struct EnzymeForwardGradientPrep{B,O} <: GradientPrep
+struct EnzymeForwardGradientPrep{B,O} <: DI.GradientPrep
     shadows::O
 end
 
@@ -175,7 +175,7 @@ end
 
 ## Jacobian
 
-struct EnzymeForwardOneArgJacobianPrep{B,O} <: JacobianPrep
+struct EnzymeForwardOneArgJacobianPrep{B,O} <: DI.JacobianPrep
     shadows::O
     output_length::Int
 end

@@ -22,15 +22,15 @@ using SparseMatrixColorings:
     decompress!
 import SparseMatrixColorings as SMC
 
-function fy_with_contexts(f, contexts::Vararg{Context,C}) where {C}
-    return (with_contexts(f, contexts...),)
+function fycont(f, contexts::Vararg{DI.Context,C}) where {C}
+    return (DI.with_contexts(f, contexts...),)
 end
 
-function fy_with_contexts(f!, y, contexts::Vararg{Context,C}) where {C}
-    return (with_contexts(f!, contexts...), y)
+function fycont(f!, y, contexts::Vararg{DI.Context,C}) where {C}
+    return (DI.with_contexts(f!, contexts...), y)
 end
 
-abstract type SparseJacobianPrep <: JacobianPrep end
+abstract type SparseJacobianPrep <: DI.JacobianPrep end
 
 SMC.sparsity_pattern(prep::SparseJacobianPrep) = sparsity_pattern(prep.coloring_result)
 SMC.column_colors(prep::SparseJacobianPrep) = column_colors(prep.coloring_result)

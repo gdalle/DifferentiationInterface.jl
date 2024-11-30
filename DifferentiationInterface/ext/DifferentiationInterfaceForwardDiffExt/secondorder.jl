@@ -1,19 +1,20 @@
-struct ForwardDiffOverSomethingHVPPrep{E1<:GradientPrep,E2<:PushforwardPrep} <: HVPPrep
+struct ForwardDiffOverSomethingHVPPrep{E1<:DI.GradientPrep,E2<:DI.PushforwardPrep} <:
+       DI.HVPPrep
     inner_gradient_prep::E1
     outer_pushforward_prep::E2
 end
 
 function DI.prepare_hvp(
     f::F,
-    backend::SecondOrder{<:AutoForwardDiff},
+    backend::DI.SecondOrder{<:AutoForwardDiff},
     x,
     tx::NTuple,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,C}
     T = tag_type(shuffled_gradient, outer(backend), x)
     xdual = make_dual(T, x, tx)
     inner_gradient_prep = DI.prepare_gradient(f, inner(backend), xdual, contexts...)
-    rewrap = Rewrap(contexts...)
+    rewrap = DI.Rewrap(contexts...)
     new_contexts = (
         Constant(f),
         PrepContext(inner_gradient_prep),
@@ -30,13 +31,13 @@ end
 function DI.hvp(
     f::F,
     prep::ForwardDiffOverSomethingHVPPrep,
-    backend::SecondOrder{<:AutoForwardDiff},
+    backend::DI.SecondOrder{<:AutoForwardDiff},
     x,
     tx::NTuple,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,C}
     (; inner_gradient_prep, outer_pushforward_prep) = prep
-    rewrap = Rewrap(contexts...)
+    rewrap = DI.Rewrap(contexts...)
     new_contexts = (
         Constant(f),
         PrepContext(inner_gradient_prep),
@@ -53,13 +54,13 @@ function DI.hvp!(
     f::F,
     tg::NTuple,
     prep::ForwardDiffOverSomethingHVPPrep,
-    backend::SecondOrder{<:AutoForwardDiff},
+    backend::DI.SecondOrder{<:AutoForwardDiff},
     x,
     tx::NTuple,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,C}
     (; inner_gradient_prep, outer_pushforward_prep) = prep
-    rewrap = Rewrap(contexts...)
+    rewrap = DI.Rewrap(contexts...)
     new_contexts = (
         Constant(f),
         PrepContext(inner_gradient_prep),
@@ -82,13 +83,13 @@ end
 function DI.gradient_and_hvp(
     f::F,
     prep::ForwardDiffOverSomethingHVPPrep,
-    backend::SecondOrder{<:AutoForwardDiff},
+    backend::DI.SecondOrder{<:AutoForwardDiff},
     x,
     tx::NTuple,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,C}
     (; inner_gradient_prep, outer_pushforward_prep) = prep
-    rewrap = Rewrap(contexts...)
+    rewrap = DI.Rewrap(contexts...)
     new_contexts = (
         Constant(f),
         PrepContext(inner_gradient_prep),
@@ -106,13 +107,13 @@ function DI.gradient_and_hvp!(
     grad,
     tg::NTuple,
     prep::ForwardDiffOverSomethingHVPPrep,
-    backend::SecondOrder{<:AutoForwardDiff},
+    backend::DI.SecondOrder{<:AutoForwardDiff},
     x,
     tx::NTuple,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,C}
     (; inner_gradient_prep, outer_pushforward_prep) = prep
-    rewrap = Rewrap(contexts...)
+    rewrap = DI.Rewrap(contexts...)
     new_contexts = (
         Constant(f),
         PrepContext(inner_gradient_prep),

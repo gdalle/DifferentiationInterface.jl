@@ -54,20 +54,20 @@ function DI.prepare_pullback(
     ::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
     ty::NTuple,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,C}
-    return NoPullbackPrep()
+    return DI.NoPullbackPrep()
 end
 
 ### Out-of-place
 
 function DI.value_and_pullback(
     f::F,
-    ::NoPullbackPrep,
+    ::DI.NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
     ty::NTuple{1},
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,C}
     f_and_df = force_annotation(get_f_and_df(f, backend))
     mode = reverse_split_withprimal(backend)
@@ -87,11 +87,11 @@ end
 
 function DI.value_and_pullback(
     f::F,
-    ::NoPullbackPrep,
+    ::DI.NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
     ty::NTuple{B},
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,B,C}
     f_and_df = force_annotation(get_f_and_df(f, backend, Val(B)))
     mode = reverse_split_withprimal(backend)
@@ -111,11 +111,11 @@ end
 
 function DI.pullback(
     f::F,
-    prep::NoPullbackPrep,
+    prep::DI.NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
     ty::NTuple,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,C}
     return last(DI.value_and_pullback(f, prep, backend, x, ty, contexts...))
 end
@@ -125,11 +125,11 @@ end
 function DI.value_and_pullback!(
     f::F,
     tx::NTuple{1},
-    ::NoPullbackPrep,
+    ::DI.NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
     ty::NTuple{1},
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,C}
     f_and_df = force_annotation(get_f_and_df(f, backend))
     mode = reverse_split_withprimal(backend)
@@ -151,11 +151,11 @@ end
 function DI.value_and_pullback!(
     f::F,
     tx::NTuple{B},
-    ::NoPullbackPrep,
+    ::DI.NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
     ty::NTuple{B},
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,B,C}
     f_and_df = force_annotation(get_f_and_df(f, backend, Val(B)))
     mode = reverse_split_withprimal(backend)
@@ -177,11 +177,11 @@ end
 function DI.pullback!(
     f::F,
     tx::NTuple,
-    prep::NoPullbackPrep,
+    prep::DI.NoPullbackPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
     ty::NTuple,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,C}
     return last(DI.value_and_pullback!(f, tx, prep, backend, x, ty, contexts...))
 end
@@ -191,7 +191,10 @@ end
 ### Without preparation
 
 function DI.gradient(
-    f::F, backend::AutoEnzyme{<:Union{ReverseMode,Nothing}}, x, contexts::Vararg{Context,C}
+    f::F,
+    backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
+    x,
+    contexts::Vararg{DI.Context,C},
 ) where {F,C}
     f_and_df = get_f_and_df(f, backend)
     mode = reverse_noprimal(backend)
@@ -209,7 +212,10 @@ function DI.gradient(
 end
 
 function DI.value_and_gradient(
-    f::F, backend::AutoEnzyme{<:Union{ReverseMode,Nothing}}, x, contexts::Vararg{Context,C}
+    f::F,
+    backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
+    x,
+    contexts::Vararg{DI.Context,C},
 ) where {F,C}
     f_and_df = get_f_and_df(f, backend)
     mode = reverse_withprimal(backend)
@@ -228,12 +234,12 @@ end
 
 ### With preparation
 
-struct EnzymeGradientPrep{G} <: GradientPrep
+struct EnzymeGradientPrep{G} <: DI.GradientPrep
     grad_righttype::G
 end
 
 function DI.prepare_gradient(
-    f::F, ::AutoEnzyme{<:Union{ReverseMode,Nothing}}, x, contexts::Vararg{Context,C}
+    f::F, ::AutoEnzyme{<:Union{ReverseMode,Nothing}}, x, contexts::Vararg{DI.Context,C}
 ) where {F,C}
     grad_righttype = make_zero(x)
     return EnzymeGradientPrep(grad_righttype)
@@ -244,7 +250,7 @@ function DI.gradient(
     ::EnzymeGradientPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,C}
     return DI.gradient(f, backend, x, contexts...)
 end
@@ -255,7 +261,7 @@ function DI.gradient!(
     prep::EnzymeGradientPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,C}
     f_and_df = get_f_and_df(f, backend)
     grad_righttype = grad isa typeof(x) ? grad : prep.grad_righttype
@@ -276,7 +282,7 @@ function DI.value_and_gradient(
     ::EnzymeGradientPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,C}
     return DI.value_and_gradient(f, backend, x, contexts...)
 end
@@ -287,7 +293,7 @@ function DI.value_and_gradient!(
     prep::EnzymeGradientPrep,
     backend::AutoEnzyme{<:Union{ReverseMode,Nothing}},
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,C}
     f_and_df = get_f_and_df(f, backend)
     grad_righttype = grad isa typeof(x) ? grad : prep.grad_righttype
@@ -308,7 +314,7 @@ end
 # TODO: does not support static arrays
 
 #=
-struct EnzymeReverseOneArgJacobianPrep{Sy,B} <: JacobianPrep end
+struct EnzymeReverseOneArgJacobianPrep{Sy,B} <:DI.JacobianPrep end
 
 function EnzymeReverseOneArgJacobianPrep(::Val{Sy}, ::Val{B}) where {Sy,B}
     return EnzymeReverseOneArgJacobianPrep{Sy,B}()

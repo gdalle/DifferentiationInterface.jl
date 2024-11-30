@@ -12,7 +12,7 @@ DI.pullback_performance(::AutoDiffractor) = DI.PullbackSlow()
 
 DI.prepare_pushforward(f, ::AutoDiffractor, x, tx::NTuple) = NoPushforwardPrep()
 
-function DI.pushforward(f, ::NoPushforwardPrep, ::AutoDiffractor, x, tx::NTuple)
+function DI.pushforward(f, ::DI.NoPushforwardPrep, ::AutoDiffractor, x, tx::NTuple)
     ty = map(tx) do dx
         # code copied from Diffractor.jl
         z = ∂☆{1}()(ZeroBundle{1}(f), bundle(x, dx))
@@ -23,7 +23,7 @@ function DI.pushforward(f, ::NoPushforwardPrep, ::AutoDiffractor, x, tx::NTuple)
 end
 
 function DI.value_and_pushforward(
-    f, prep::NoPushforwardPrep, backend::AutoDiffractor, x, tx::NTuple
+    f, prep::DI.NoPushforwardPrep, backend::AutoDiffractor, x, tx::NTuple
 )
     return f(x), DI.pushforward(f, prep, backend, x, tx)
 end

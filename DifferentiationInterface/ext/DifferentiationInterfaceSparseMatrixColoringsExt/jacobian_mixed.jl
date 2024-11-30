@@ -1,16 +1,16 @@
 ## Preparation
 
 struct MixedModeSparseJacobianPrep{
-    BSf<:BatchSizeSettings,
-    BSr<:BatchSizeSettings,
+    BSf<:DI.BatchSizeSettings,
+    BSr<:DI.BatchSizeSettings,
     C<:AbstractColoringResult{:nonsymmetric,:bidirectional},
     M<:AbstractMatrix{<:Real},
     Sf<:Vector{<:NTuple},
     Sr<:Vector{<:NTuple},
     Rf<:Vector{<:NTuple},
     Rr<:Vector{<:NTuple},
-    Ef<:PushforwardPrep,
-    Er<:PullbackPrep,
+    Ef<:DI.PushforwardPrep,
+    Er<:DI.PullbackPrep,
 } <: SparseJacobianPrep
     batch_size_settings_forward::BSf
     batch_size_settings_reverse::BSr
@@ -26,24 +26,24 @@ struct MixedModeSparseJacobianPrep{
 end
 
 function DI.prepare_jacobian(
-    f::F, backend::AutoSparse{<:MixedMode}, x, contexts::Vararg{Context,C}
+    f::F, backend::AutoSparse{<:DI.MixedMode}, x, contexts::Vararg{DI.Context,C}
 ) where {F,C}
     y = f(x, map(unwrap, contexts)...)
     return _prepare_mixed_sparse_jacobian_aux(y, (f,), backend, x, contexts...)
 end
 
 function DI.prepare_jacobian(
-    f!::F, y, backend::AutoSparse{<:MixedMode}, x, contexts::Vararg{Context,C}
+    f!::F, y, backend::AutoSparse{<:DI.MixedMode}, x, contexts::Vararg{DI.Context,C}
 ) where {F,C}
     return _prepare_mixed_sparse_jacobian_aux(y, (f!, y), backend, x, contexts...)
 end
 
 function _prepare_mixed_sparse_jacobian_aux(
-    y, f_or_f!y::FY, backend::AutoSparse{<:MixedMode}, x, contexts::Vararg{Context,C}
+    y, f_or_f!y::FY, backend::AutoSparse{<:DI.MixedMode}, x, contexts::Vararg{DI.Context,C}
 ) where {FY,C}
     dense_backend = dense_ad(backend)
     sparsity = jacobian_sparsity(
-        fy_with_contexts(f_or_f!y..., contexts...)..., x, sparsity_detector(backend)
+        fycont(f_or_f!y..., contexts...)..., x, sparsity_detector(backend)
     )
     problem = ColoringProblem{:nonsymmetric,:bidirectional}()
     coloring_result = coloring(
@@ -71,14 +71,14 @@ function _prepare_mixed_sparse_jacobian_aux(
 end
 
 function _prepare_mixed_sparse_jacobian_aux_aux(
-    batch_size_settings_forward::BatchSizeSettings{Bf},
-    batch_size_settings_reverse::BatchSizeSettings{Br},
+    batch_size_settings_forward::DI.BatchSizeSettings{Bf},
+    batch_size_settings_reverse::DI.BatchSizeSettings{Br},
     coloring_result::AbstractColoringResult{:nonsymmetric,:bidirectional},
     y,
     f_or_f!y::FY,
-    backend::AutoSparse{<:MixedMode},
+    backend::AutoSparse{<:DI.MixedMode},
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {Bf,Br,FY,C}
     Nf, Af = batch_size_settings_forward.N, batch_size_settings_forward.A
     Nr, Ar = batch_size_settings_reverse.N, batch_size_settings_reverse.A
@@ -112,14 +112,14 @@ function _prepare_mixed_sparse_jacobian_aux_aux(
         ntuple(b -> similar(x), Val(Br)) for _ in batched_seeds_reverse
     ]
 
-    pushforward_prep = prepare_pushforward(
+    pushforward_prep = DI.prepare_pushforward(
         f_or_f!y...,
         forward_backend(dense_backend),
         x,
         batched_seeds_forward[1],
         contexts...,
     )
-    pullback_prep = prepare_pullback(
+    pullback_prep = DI.prepare_pullback(
         f_or_f!y...,
         reverse_backend(dense_backend),
         x,
@@ -147,10 +147,12 @@ end
 function _sparse_jacobian_aux!(
     f_or_f!y::FY,
     jac,
-    prep::MixedModeSparseJacobianPrep{<:BatchSizeSettings{Bf},<:BatchSizeSettings{Br}},
+    prep::MixedModeSparseJacobianPrep{
+        <:DI.BatchSizeSettings{Bf},<:DI.BatchSizeSettings{Br}
+    },
     backend::AutoSparse,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {FY,Bf,Br,C}
     (;
         batch_size_settings_forward,
@@ -170,7 +172,7 @@ function _sparse_jacobian_aux!(
     Nf = batch_size_settings_forward.N
     Nr = batch_size_settings_reverse.N
 
-    pushforward_prep_same = prepare_pushforward_same_point(
+    pushforward_prep_same = DI.prepare_pushforward_same_point(
         f_or_f!y...,
         pushforward_prep,
         forward_backend(dense_backend),
@@ -178,7 +180,7 @@ function _sparse_jacobian_aux!(
         batched_seeds_forward[1],
         contexts...,
     )
-    pullback_prep_same = prepare_pullback_same_point(
+    pullback_prep_same = DI.prepare_pullback_same_point(
         f_or_f!y...,
         pullback_prep,
         reverse_backend(dense_backend),

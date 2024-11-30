@@ -3,7 +3,7 @@
 function DI.prepare_pullback(
     f!, y, ::AutoReverseDiff, x, ty::NTuple, contexts::Vararg{Context,C}
 ) where {C}
-    return NoPullbackPrep()
+    return DI.NoPullbackPrep()
 end
 
 ### Array in
@@ -11,13 +11,13 @@ end
 function DI.value_and_pullback(
     f!,
     y,
-    ::NoPullbackPrep,
+    ::DI.NoPullbackPrep,
     ::AutoReverseDiff,
     x::AbstractArray,
     ty::NTuple,
     contexts::Vararg{Context,C},
 ) where {C}
-    fc! = with_contexts(f!, contexts...)
+    fc! = DI.with_contexts(f!, contexts...)
     function dotclosure(x, dy)
         y_copy = similar(y, eltype(x))
         fc!(y_copy, x)
@@ -34,13 +34,13 @@ function DI.value_and_pullback!(
     f!,
     y,
     tx::NTuple,
-    ::NoPullbackPrep,
+    ::DI.NoPullbackPrep,
     ::AutoReverseDiff,
     x::AbstractArray,
     ty::NTuple,
     contexts::Vararg{Context,C},
 ) where {C}
-    fc! = with_contexts(f!, contexts...)
+    fc! = DI.with_contexts(f!, contexts...)
     function dotclosure(x, dy)
         y_copy = similar(y, eltype(x))
         fc!(y_copy, x)
@@ -57,13 +57,13 @@ end
 function DI.pullback(
     f!,
     y,
-    ::NoPullbackPrep,
+    ::DI.NoPullbackPrep,
     ::AutoReverseDiff,
     x::AbstractArray,
     ty::NTuple,
     contexts::Vararg{Context,C},
 ) where {C}
-    fc! = with_contexts(f!, contexts...)
+    fc! = DI.with_contexts(f!, contexts...)
     function dotclosure(x, dy)
         y_copy = similar(y, eltype(x))
         fc!(y_copy, x)
@@ -79,13 +79,13 @@ function DI.pullback!(
     f!,
     y,
     tx::NTuple,
-    ::NoPullbackPrep,
+    ::DI.NoPullbackPrep,
     ::AutoReverseDiff,
     x::AbstractArray,
     ty::NTuple,
     contexts::Vararg{Context,C},
 ) where {C}
-    fc! = with_contexts(f!, contexts...)
+    fc! = DI.with_contexts(f!, contexts...)
     function dotclosure(x, dy)
         y_copy = similar(y, eltype(x))
         fc!(y_copy, x)
@@ -103,7 +103,7 @@ end
 function DI.value_and_pullback(
     f!,
     y,
-    ::NoPullbackPrep,
+    ::DI.NoPullbackPrep,
     backend::AutoReverseDiff,
     x::Number,
     ty::NTuple,
@@ -121,7 +121,7 @@ end
 
 ### Without contexts
 
-@kwdef struct ReverseDiffTwoArgJacobianPrep{C,T} <: JacobianPrep
+@kwdef struct ReverseDiffTwoArgJacobianPrep{C,T} <: DI.JacobianPrep
     config::C
     tape::T
 end
@@ -200,7 +200,7 @@ function DI.value_and_jacobian(
     x,
     contexts::Vararg{Context,C},
 ) where {C}
-    fc! = with_contexts(f!, contexts...)
+    fc! = DI.with_contexts(f!, contexts...)
     jac = similar(y, length(y), length(x))
     result = MutableDiffResult(y, (jac,))
     result = jacobian!(result, fc!, y, x, prep.config)
@@ -216,7 +216,7 @@ function DI.value_and_jacobian!(
     x,
     contexts::Vararg{Context,C},
 ) where {C}
-    fc! = with_contexts(f!, contexts...)
+    fc! = DI.with_contexts(f!, contexts...)
     result = MutableDiffResult(y, (jac,))
     result = jacobian!(result, fc!, y, x, prep.config)
     return DiffResults.value(result), DiffResults.derivative(result)
@@ -230,7 +230,7 @@ function DI.jacobian(
     x,
     contexts::Vararg{Context,C},
 ) where {C}
-    fc! = with_contexts(f!, contexts...)
+    fc! = DI.with_contexts(f!, contexts...)
     jac = jacobian(fc!, y, x, prep.config)
     return jac
 end
@@ -244,7 +244,7 @@ function DI.jacobian!(
     x,
     contexts::Vararg{Context,C},
 ) where {C}
-    fc! = with_contexts(f!, contexts...)
+    fc! = DI.with_contexts(f!, contexts...)
     jac = jacobian!(jac, fc!, y, x, prep.config)
     return jac
 end

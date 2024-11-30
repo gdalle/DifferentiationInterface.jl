@@ -1,6 +1,6 @@
 ## Pushforward
 
-struct FastDifferentiationOneArgPushforwardPrep{Y,E1,E1!} <: PushforwardPrep
+struct FastDifferentiationOneArgPushforwardPrep{Y,E1,E1!} <: DI.PushforwardPrep
     y_prototype::Y
     jvp_exe::E1
     jvp_exe!::E1!
@@ -80,7 +80,7 @@ end
 
 ## Pullback
 
-struct FastDifferentiationOneArgPullbackPrep{E1,E1!} <: PullbackPrep
+struct FastDifferentiationOneArgPullbackPrep{E1,E1!} <: DI.PullbackPrep
     vjp_exe::E1
     vjp_exe!::E1!
 end
@@ -154,7 +154,7 @@ end
 
 ## Derivative
 
-struct FastDifferentiationOneArgDerivativePrep{Y,E1,E1!} <: DerivativePrep
+struct FastDifferentiationOneArgDerivativePrep{Y,E1,E1!} <: DI.DerivativePrep
     y_prototype::Y
     der_exe::E1
     der_exe!::E1!
@@ -208,7 +208,7 @@ end
 
 ## Gradient
 
-struct FastDifferentiationOneArgGradientPrep{E1,E1!} <: GradientPrep
+struct FastDifferentiationOneArgGradientPrep{E1,E1!} <: DI.GradientPrep
     jac_exe::E1
     jac_exe!::E1!
 end
@@ -258,7 +258,7 @@ end
 
 ## Jacobian
 
-struct FastDifferentiationOneArgJacobianPrep{Y,E1,E1!} <: JacobianPrep
+struct FastDifferentiationOneArgJacobianPrep{Y,E1,E1!} <: DI.JacobianPrep
     y_prototype::Y
     jac_exe::E1
     jac_exe!::E1!
@@ -324,7 +324,8 @@ end
 
 ## Second derivative
 
-struct FastDifferentiationAllocatingSecondDerivativePrep{Y,D,E2,E2!} <: SecondDerivativePrep
+struct FastDifferentiationAllocatingSecondDerivativePrep{Y,D,E2,E2!} <:
+       DI.SecondDerivativePrep
     y_prototype::Y
     derivative_prep::D
     der2_exe::E2
@@ -396,7 +397,7 @@ end
 
 ## HVP
 
-struct FastDifferentiationHVPPrep{E2,E2!,E1} <: HVPPrep
+struct FastDifferentiationHVPPrep{E2,E2!,E1} <: DI.HVPPrep
     hvp_exe::E2
     hvp_exe!::E2!
     gradient_prep::E1
@@ -466,7 +467,7 @@ end
 
 ## Hessian
 
-struct FastDifferentiationHessianPrep{G,E2,E2!} <: HessianPrep
+struct FastDifferentiationHessianPrep{G,E2,E2!} <: DI.HessianPrep
     gradient_prep::G
     hess_exe::E2
     hess_exe!::E2!
