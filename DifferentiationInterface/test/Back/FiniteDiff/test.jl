@@ -3,6 +3,7 @@ Pkg.add("FiniteDiff")
 
 using DifferentiationInterface, DifferentiationInterfaceTest
 using FiniteDiff: FiniteDiff
+using SparseMatrixColorings
 using Test
 
 LOGGING = get(ENV, "CI", "false") == "false"
@@ -18,3 +19,11 @@ test_differentiation(
     excluded=[:second_derivative, :hvp],
     logging=LOGGING,
 );
+
+@testset verbose = true "Complex number support" begin
+    backend = AutoSparse(AutoFiniteDiff(); coloring_algorithm=GreedyColoringAlgorithm())
+    x = float.(1:3) .+ im
+    @test_nowarn jacobian(identity, backend, x)
+    @test_nowarn jacobian(copyto!, similar(x), backend, x)
+    @test_nowarn hessian(sum, backend, x)
+end

@@ -1,6 +1,7 @@
 using Pkg
 Pkg.add("ForwardDiff")
 
+using ADTypes: ADTypes
 using ComponentArrays: ComponentArrays
 using DifferentiationInterface, DifferentiationInterfaceTest
 import DifferentiationInterfaceTest as DIT

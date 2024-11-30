@@ -4,7 +4,7 @@ struct MixedModeSparseJacobianPrep{
     BSf<:BatchSizeSettings,
     BSr<:BatchSizeSettings,
     C<:AbstractColoringResult{:nonsymmetric,:bidirectional},
-    M<:AbstractMatrix{<:Real},
+    M<:AbstractMatrix{<:Number},
     Sf<:Vector{<:NTuple},
     Sr<:Vector{<:NTuple},
     Rf<:Vector{<:NTuple},

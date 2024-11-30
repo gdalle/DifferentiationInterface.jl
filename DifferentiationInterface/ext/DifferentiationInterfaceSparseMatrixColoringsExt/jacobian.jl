@@ -3,7 +3,7 @@
 struct PushforwardSparseJacobianPrep{
     BS<:BatchSizeSettings,
     C<:AbstractColoringResult{:nonsymmetric,:column},
-    M<:AbstractMatrix{<:Real},
+    M<:AbstractMatrix{<:Number},
     S<:AbstractVector{<:NTuple},
     R<:AbstractVector{<:NTuple},
     E<:PushforwardPrep,
@@ -19,7 +19,7 @@ end
 struct PullbackSparseJacobianPrep{
     BS<:BatchSizeSettings,
     C<:AbstractColoringResult{:nonsymmetric,:row},
-    M<:AbstractMatrix{<:Real},
+    M<:AbstractMatrix{<:Number},
     S<:AbstractVector{<:NTuple},
     R<:AbstractVector{<:NTuple},
     E<:PullbackPrep,
