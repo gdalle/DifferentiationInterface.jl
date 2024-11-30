@@ -1,7 +1,7 @@
 ## Pullback
 
 function DI.prepare_pullback(
-    f!, y, ::AutoReverseDiff, x, ty::NTuple, contexts::Vararg{Context,C}
+    f!, y, ::AutoReverseDiff, x, ty::NTuple, contexts::Vararg{DI.Context,C}
 ) where {C}
     return DI.NoPullbackPrep()
 end
@@ -15,7 +15,7 @@ function DI.value_and_pullback(
     ::AutoReverseDiff,
     x::AbstractArray,
     ty::NTuple,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
     fc! = DI.with_contexts(f!, contexts...)
     function dotclosure(x, dy)
@@ -38,7 +38,7 @@ function DI.value_and_pullback!(
     ::AutoReverseDiff,
     x::AbstractArray,
     ty::NTuple,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
     fc! = DI.with_contexts(f!, contexts...)
     function dotclosure(x, dy)
@@ -61,7 +61,7 @@ function DI.pullback(
     ::AutoReverseDiff,
     x::AbstractArray,
     ty::NTuple,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
     fc! = DI.with_contexts(f!, contexts...)
     function dotclosure(x, dy)
@@ -83,7 +83,7 @@ function DI.pullback!(
     ::AutoReverseDiff,
     x::AbstractArray,
     ty::NTuple,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
     fc! = DI.with_contexts(f!, contexts...)
     function dotclosure(x, dy)
@@ -107,7 +107,7 @@ function DI.value_and_pullback(
     backend::AutoReverseDiff,
     x::Number,
     ty::NTuple,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
     x_array = [x]
     function f!_array(_y::AbstractArray, _x_array, args...)
@@ -186,7 +186,7 @@ end
 ### With contexts
 
 function DI.prepare_jacobian(
-    f!, y, ::AutoReverseDiff, x, contexts::Vararg{Context,C}
+    f!, y, ::AutoReverseDiff, x, contexts::Vararg{DI.Context,C}
 ) where {C}
     config = JacobianConfig(y, x)
     return ReverseDiffTwoArgJacobianPrep(; config=config, tape=nothing)
@@ -198,7 +198,7 @@ function DI.value_and_jacobian(
     prep::ReverseDiffTwoArgJacobianPrep,
     ::AutoReverseDiff,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
     fc! = DI.with_contexts(f!, contexts...)
     jac = similar(y, length(y), length(x))
@@ -214,7 +214,7 @@ function DI.value_and_jacobian!(
     prep::ReverseDiffTwoArgJacobianPrep,
     ::AutoReverseDiff,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
     fc! = DI.with_contexts(f!, contexts...)
     result = MutableDiffResult(y, (jac,))
@@ -228,7 +228,7 @@ function DI.jacobian(
     prep::ReverseDiffTwoArgJacobianPrep,
     ::AutoReverseDiff,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
     fc! = DI.with_contexts(f!, contexts...)
     jac = jacobian(fc!, y, x, prep.config)
@@ -242,7 +242,7 @@ function DI.jacobian!(
     prep::ReverseDiffTwoArgJacobianPrep,
     ::AutoReverseDiff,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
     fc! = DI.with_contexts(f!, contexts...)
     jac = jacobian!(jac, fc!, y, x, prep.config)
