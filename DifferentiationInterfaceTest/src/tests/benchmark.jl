@@ -22,7 +22,7 @@ function reset_count!(cc::CallCounter)
 end
 
 function failed_bench()
-    evals = 0
+    evals = 0.0
     time = NaN
     allocs = NaN
     bytes = NaN

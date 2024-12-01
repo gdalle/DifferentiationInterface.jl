@@ -55,8 +55,8 @@ function _prepare_mixed_sparse_jacobian_aux(
 
     Nf = length(column_groups(coloring_result))
     Nr = length(row_groups(coloring_result))
-    batch_size_settings_forward = DI.pick_batchsize(forward_backend(dense_backend), Nf)
-    batch_size_settings_reverse = DI.pick_batchsize(reverse_backend(dense_backend), Nr)
+    batch_size_settings_forward = DI.pick_batchsize(DI.forward_backend(dense_backend), Nf)
+    batch_size_settings_reverse = DI.pick_batchsize(DI.reverse_backend(dense_backend), Nr)
 
     return _prepare_mixed_sparse_jacobian_aux_aux(
         batch_size_settings_forward,
@@ -114,14 +114,14 @@ function _prepare_mixed_sparse_jacobian_aux_aux(
 
     pushforward_prep = DI.prepare_pushforward(
         f_or_f!y...,
-        forward_backend(dense_backend),
+        DI.forward_backend(dense_backend),
         x,
         batched_seeds_forward[1],
         contexts...,
     )
     pullback_prep = DI.prepare_pullback(
         f_or_f!y...,
-        reverse_backend(dense_backend),
+        DI.reverse_backend(dense_backend),
         x,
         batched_seeds_reverse[1],
         contexts...,
@@ -175,7 +175,7 @@ function _sparse_jacobian_aux!(
     pushforward_prep_same = DI.prepare_pushforward_same_point(
         f_or_f!y...,
         pushforward_prep,
-        forward_backend(dense_backend),
+        DI.forward_backend(dense_backend),
         x,
         batched_seeds_forward[1],
         contexts...,
@@ -183,7 +183,7 @@ function _sparse_jacobian_aux!(
     pullback_prep_same = DI.prepare_pullback_same_point(
         f_or_f!y...,
         pullback_prep,
-        reverse_backend(dense_backend),
+        DI.reverse_backend(dense_backend),
         x,
         batched_seeds_reverse[1],
         contexts...,
@@ -194,7 +194,7 @@ function _sparse_jacobian_aux!(
             f_or_f!y...,
             batched_results_forward[a],
             pushforward_prep_same,
-            forward_backend(dense_backend),
+            DI.forward_backend(dense_backend),
             x,
             batched_seeds_forward[a],
             contexts...,
@@ -213,7 +213,7 @@ function _sparse_jacobian_aux!(
             f_or_f!y...,
             batched_results_reverse[a],
             pullback_prep_same,
-            reverse_backend(dense_backend),
+            DI.reverse_backend(dense_backend),
             x,
             batched_seeds_reverse[a],
             contexts...,

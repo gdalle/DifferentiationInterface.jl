@@ -243,7 +243,7 @@ end
 
 function DI.hessian(
     f,
-    prep::HessianPrep,
+    prep::DI.HessianPrep,
     backend::AutoPolyesterForwardDiff,
     x,
     contexts::Vararg{DI.Context,C},
@@ -254,7 +254,7 @@ end
 function DI.hessian!(
     f,
     hess,
-    prep::HessianPrep,
+    prep::DI.HessianPrep,
     backend::AutoPolyesterForwardDiff,
     x,
     contexts::Vararg{DI.Context,C},
@@ -264,7 +264,7 @@ end
 
 function DI.value_gradient_and_hessian(
     f,
-    prep::HessianPrep,
+    prep::DI.HessianPrep,
     backend::AutoPolyesterForwardDiff,
     x,
     contexts::Vararg{DI.Context,C},
@@ -276,7 +276,7 @@ function DI.value_gradient_and_hessian!(
     f,
     grad,
     hess,
-    prep::HessianPrep,
+    prep::DI.HessianPrep,
     backend::AutoPolyesterForwardDiff,
     x,
     contexts::Vararg{DI.Context,C},
