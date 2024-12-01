@@ -30,6 +30,7 @@ makedocs(;
             "explanation/operators.md",
             "explanation/backends.md",
             "explanation/advanced.md",
+            "explanation/faq.md",
         ],
         "api.md",
         "dev_guide.md",
