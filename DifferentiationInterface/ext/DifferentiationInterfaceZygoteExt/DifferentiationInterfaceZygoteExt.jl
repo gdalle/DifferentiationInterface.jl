@@ -218,7 +218,7 @@ end
 function DI.value_gradient_and_hessian(
     f, prep::DI.NoHessianPrep, backend::AutoZygote, x, contexts::Vararg{DI.Constant,C}
 ) where {C}
-    y, grad = DI.value_and_gradient(f, NoGradientPrep(), backend, x, contexts...)
+    y, grad = DI.value_and_gradient(f, DI.NoGradientPrep(), backend, x, contexts...)
     hess = DI.hessian(f, prep, backend, x, contexts...)
     return y, grad, hess
 end
@@ -232,7 +232,7 @@ function DI.value_gradient_and_hessian!(
     x,
     contexts::Vararg{DI.Constant,C},
 ) where {C}
-    y, _ = DI.value_and_gradient!(f, grad, NoGradientPrep(), backend, x, contexts...)
+    y, _ = DI.value_and_gradient!(f, grad, DI.NoGradientPrep(), backend, x, contexts...)
     DI.hessian!(f, hess, prep, backend, x, contexts...)
     return y, grad, hess
 end

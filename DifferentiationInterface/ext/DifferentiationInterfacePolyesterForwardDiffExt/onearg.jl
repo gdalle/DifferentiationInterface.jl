@@ -65,7 +65,7 @@ end
 
 function DI.value_and_derivative(
     f,
-    prep::DerivativePrep,
+    prep::DI.DerivativePrep,
     backend::AutoPolyesterForwardDiff,
     x,
     contexts::Vararg{DI.Context,C},
@@ -76,7 +76,7 @@ end
 function DI.value_and_derivative!(
     f,
     der,
-    prep::DerivativePrep,
+    prep::DI.DerivativePrep,
     backend::AutoPolyesterForwardDiff,
     x,
     contexts::Vararg{DI.Context,C},
@@ -86,7 +86,7 @@ end
 
 function DI.derivative(
     f,
-    prep::DerivativePrep,
+    prep::DI.DerivativePrep,
     backend::AutoPolyesterForwardDiff,
     x,
     contexts::Vararg{DI.Context,C},
@@ -97,7 +97,7 @@ end
 function DI.derivative!(
     f,
     der,
-    prep::DerivativePrep,
+    prep::DI.DerivativePrep,
     backend::AutoPolyesterForwardDiff,
     x,
     contexts::Vararg{DI.Context,C},
