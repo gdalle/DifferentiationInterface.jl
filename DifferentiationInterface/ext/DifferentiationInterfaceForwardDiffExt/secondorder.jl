@@ -16,10 +16,10 @@ function DI.prepare_hvp(
     inner_gradient_prep = DI.prepare_gradient(f, DI.inner(backend), xdual, contexts...)
     rewrap = DI.Rewrap(contexts...)
     new_contexts = (
-        Constant(f),
+        DI.Constant(f),
         PrepContext(inner_gradient_prep),
-        Constant(DI.inner(backend)),
-        Constant(rewrap),
+        DI.Constant(DI.inner(backend)),
+        DI.Constant(rewrap),
         contexts...,
     )
     outer_pushforward_prep = DI.prepare_pushforward(
@@ -39,10 +39,10 @@ function DI.hvp(
     (; inner_gradient_prep, outer_pushforward_prep) = prep
     rewrap = DI.Rewrap(contexts...)
     new_contexts = (
-        Constant(f),
+        DI.Constant(f),
         PrepContext(inner_gradient_prep),
-        Constant(DI.inner(backend)),
-        Constant(rewrap),
+        DI.Constant(DI.inner(backend)),
+        DI.Constant(rewrap),
         contexts...,
     )
     return DI.pushforward(
@@ -67,10 +67,10 @@ function DI.hvp!(
     (; inner_gradient_prep, outer_pushforward_prep) = prep
     rewrap = DI.Rewrap(contexts...)
     new_contexts = (
-        Constant(f),
+        DI.Constant(f),
         PrepContext(inner_gradient_prep),
-        Constant(DI.inner(backend)),
-        Constant(rewrap),
+        DI.Constant(DI.inner(backend)),
+        DI.Constant(rewrap),
         contexts...,
     )
     return DI.pushforward!(
@@ -96,10 +96,10 @@ function DI.gradient_and_hvp(
     (; inner_gradient_prep, outer_pushforward_prep) = prep
     rewrap = DI.Rewrap(contexts...)
     new_contexts = (
-        Constant(f),
+        DI.Constant(f),
         PrepContext(inner_gradient_prep),
-        Constant(DI.inner(backend)),
-        Constant(rewrap),
+        DI.Constant(DI.inner(backend)),
+        DI.Constant(rewrap),
         contexts...,
     )
     return DI.value_and_pushforward(
@@ -125,10 +125,10 @@ function DI.gradient_and_hvp!(
     (; inner_gradient_prep, outer_pushforward_prep) = prep
     rewrap = DI.Rewrap(contexts...)
     new_contexts = (
-        Constant(f),
+        DI.Constant(f),
         PrepContext(inner_gradient_prep),
-        Constant(DI.inner(backend)),
-        Constant(rewrap),
+        DI.Constant(DI.inner(backend)),
+        DI.Constant(rewrap),
         contexts...,
     )
     new_grad, _ = DI.value_and_pushforward!(

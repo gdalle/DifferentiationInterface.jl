@@ -3,9 +3,8 @@ module DifferentiationInterfaceReverseDiffExt
 using ADTypes: AutoReverseDiff
 using Base: Fix2
 import DifferentiationInterface as DI
-import ReverseDiff.DiffResults as DR
-using ReverseDiff.DiffResults:
-    DiffResults, DiffResult, GradientResult, HessianResult, MutableDiffResult
+import DiffResults as DR
+using DiffResults: DiffResults, DiffResult, GradientResult, HessianResult, MutableDiffResult
 using LinearAlgebra: dot, mul!
 using ReverseDiff:
     ReverseDiff,

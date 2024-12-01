@@ -2,9 +2,8 @@ module DifferentiationInterfaceForwardDiffExt
 
 using ADTypes: AutoForwardDiff
 import DifferentiationInterface as DI
-import ForwardDiff.DiffResults as DR
-using ForwardDiff.DiffResults:
-    DiffResults, DiffResult, GradientResult, HessianResult, MutableDiffResult
+import DiffResults as DR
+using DiffResults: DiffResults, DiffResult, GradientResult, HessianResult, MutableDiffResult
 using ForwardDiff:
     Chunk,
     Dual,
