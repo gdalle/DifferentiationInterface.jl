@@ -1,6 +1,6 @@
 ## Pushforward
 
-struct SymbolicsTwoArgPushforwardPrep{E1,E1!} <: PushforwardPrep
+struct SymbolicsTwoArgPushforwardPrep{E1,E1!} <: DI.PushforwardPrep
     pushforward_exe::E1
     pushforward_exe!::E1!
 end
@@ -73,7 +73,7 @@ end
 
 ## Derivative
 
-struct SymbolicsTwoArgDerivativePrep{E1,E1!} <: DerivativePrep
+struct SymbolicsTwoArgDerivativePrep{E1,E1!} <: DI.DerivativePrep
     der_exe::E1
     der_exe!::E1!
 end
@@ -116,7 +116,7 @@ end
 
 ## Jacobian
 
-struct SymbolicsTwoArgJacobianPrep{E1,E1!} <: JacobianPrep
+struct SymbolicsTwoArgJacobianPrep{E1,E1!} <: DI.JacobianPrep
     jac_exe::E1
     jac_exe!::E1!
 end

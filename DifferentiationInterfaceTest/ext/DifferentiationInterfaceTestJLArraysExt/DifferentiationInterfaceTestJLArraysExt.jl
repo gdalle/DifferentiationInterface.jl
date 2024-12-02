@@ -1,7 +1,6 @@
 module DifferentiationInterfaceTestJLArraysExt
 
 import DifferentiationInterface as DI
-using DifferentiationInterfaceTest
 import DifferentiationInterfaceTest as DIT
 using JLArrays: JLArray, JLVector, JLMatrix, jl
 
@@ -29,9 +28,9 @@ myjl(x::DI.Constant) = DI.Constant(myjl(DI.unwrap(x)))
 myjl(x::DI.Cache) = DI.Cache(myjl(DI.unwrap(x)))
 myjl(::Nothing) = nothing
 
-function myjl(scen::Scenario{op,pl_op,pl_fun}) where {op,pl_op,pl_fun}
+function myjl(scen::DIT.Scenario{op,pl_op,pl_fun}) where {op,pl_op,pl_fun}
     (; f, x, y, tang, contexts, res1, res2) = scen
-    return Scenario{op,pl_op,pl_fun}(
+    return DIT.Scenario{op,pl_op,pl_fun}(
         myjl(f);
         x=myjl(x),
         y=myjl(y),

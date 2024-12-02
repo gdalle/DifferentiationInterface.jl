@@ -2,7 +2,6 @@ module DifferentiationInterfaceStaticArraysExt
 
 using ADTypes: AutoForwardDiff, AutoEnzyme
 import DifferentiationInterface as DI
-using DifferentiationInterface: BatchSizeSettings
 using StaticArrays: SArray, StaticArray
 
 function DI.stack_vec_col(t::NTuple{B,<:StaticArray}) where {B}
@@ -16,11 +15,11 @@ end
 DI.ismutable_array(::Type{<:SArray}) = false
 
 function DI.BatchSizeSettings(::AutoForwardDiff{nothing}, x::StaticArray)
-    return BatchSizeSettings{length(x),true,true}(length(x))
+    return DI.BatchSizeSettings{length(x),true,true}(length(x))
 end
 
 function DI.BatchSizeSettings(::AutoEnzyme, x::StaticArray)
-    return BatchSizeSettings{length(x),true,true}(length(x))
+    return DI.BatchSizeSettings{length(x),true,true}(length(x))
 end
 
 end

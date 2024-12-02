@@ -2,7 +2,6 @@ module DifferentiationInterfaceMooncakeExt
 
 using ADTypes: ADTypes, AutoMooncake
 import DifferentiationInterface as DI
-using DifferentiationInterface: Context, PullbackPrep, unwrap
 using Mooncake:
     CoDual,
     Config,

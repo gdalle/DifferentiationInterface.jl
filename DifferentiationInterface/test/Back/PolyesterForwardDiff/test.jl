@@ -5,6 +5,9 @@ using DifferentiationInterface, DifferentiationInterfaceTest
 using PolyesterForwardDiff: PolyesterForwardDiff
 using Test
 
+using ExplicitImports
+check_no_implicit_imports(DifferentiationInterface)
+
 LOGGING = get(ENV, "CI", "false") == "false"
 
 backends = [

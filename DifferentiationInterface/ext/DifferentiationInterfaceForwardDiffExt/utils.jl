@@ -2,7 +2,7 @@ function DI.BatchSizeSettings(::AutoForwardDiff{nothing}, N::Integer)
     B = ForwardDiff.pickchunksize(N)
     singlebatch = B == N
     aligned = N % B == 0
-    return BatchSizeSettings{B,singlebatch,aligned}(N)
+    return DI.BatchSizeSettings{B,singlebatch,aligned}(N)
 end
 
 function DI.BatchSizeSettings(::AutoForwardDiff{chunksize}, N::Integer) where {chunksize}
@@ -12,7 +12,7 @@ function DI.BatchSizeSettings(::AutoForwardDiff{chunksize}, N::Integer) where {c
     B = chunksize
     singlebatch = B == N
     aligned = N % B == 0
-    return BatchSizeSettings{B,singlebatch,aligned}(N)
+    return DI.BatchSizeSettings{B,singlebatch,aligned}(N)
 end
 
 function DI.threshold_batchsize(
@@ -85,15 +85,15 @@ function mypartials!(::Type{T}, ty::NTuple{B}, ydual) where {T,B}
     return ty
 end
 
-_translate(::Type{T}, ::Val{B}, c::Constant) where {T,B} = unwrap(c)
-_translate(::Type{T}, ::Val{B}, c::PrepContext) where {T,B} = unwrap(c)
+_translate(::Type{T}, ::Val{B}, c::DI.Constant) where {T,B} = DI.unwrap(c)
+_translate(::Type{T}, ::Val{B}, c::DI.PrepContext) where {T,B} = DI.unwrap(c)
 
-function _translate(::Type{T}, ::Val{B}, c::Cache) where {T,B}
-    c0 = unwrap(c)
+function _translate(::Type{T}, ::Val{B}, c::DI.Cache) where {T,B}
+    c0 = DI.unwrap(c)
     return make_dual(T, c0, ntuple(_ -> similar(c0), Val(B)))  # TODO: optimize
 end
 
-function translate(::Type{T}, ::Val{B}, contexts::Vararg{Context,C}) where {T,B,C}
+function translate(::Type{T}, ::Val{B}, contexts::Vararg{DI.Context,C}) where {T,B,C}
     new_contexts = map(contexts) do c
         _translate(T, Val(B), c)
     end

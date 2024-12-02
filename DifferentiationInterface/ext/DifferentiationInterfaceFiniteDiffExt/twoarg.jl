@@ -1,23 +1,23 @@
 ## Pushforward
 
 function DI.prepare_pushforward(
-    f!, y, ::AutoFiniteDiff, x, tx::NTuple, contexts::Vararg{Context,C}
+    f!, y, ::AutoFiniteDiff, x, tx::NTuple, contexts::Vararg{DI.Context,C}
 ) where {C}
-    return NoPushforwardPrep()
+    return DI.NoPushforwardPrep()
 end
 
 function DI.value_and_pushforward(
     f!,
     y,
-    ::NoPushforwardPrep,
+    ::DI.NoPushforwardPrep,
     backend::AutoFiniteDiff,
     x,
     tx::NTuple,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
     function step(t::Number, dx)
         new_y = similar(y)
-        f!(new_y, x .+ t .* dx, map(unwrap, contexts)...)
+        f!(new_y, x .+ t .* dx, map(DI.unwrap, contexts)...)
         return new_y
     end
     ty = map(tx) do dx
@@ -25,18 +25,18 @@ function DI.value_and_pushforward(
             Base.Fix2(step, dx), zero(eltype(x)), fdtype(backend), eltype(y), y
         )
     end
-    f!(y, x, map(unwrap, contexts)...)
+    f!(y, x, map(DI.unwrap, contexts)...)
     return y, ty
 end
 
 ## Derivative
 
-struct FiniteDiffTwoArgDerivativePrep{C} <: DerivativePrep
+struct FiniteDiffTwoArgDerivativePrep{C} <: DI.DerivativePrep
     cache::C
 end
 
 function DI.prepare_derivative(
-    f!, y, backend::AutoFiniteDiff, x, contexts::Vararg{Context,C}
+    f!, y, backend::AutoFiniteDiff, x, contexts::Vararg{DI.Context,C}
 ) where {C}
     df = similar(y)
     cache = GradientCache(df, x, fdtype(backend), eltype(y), FUNCTION_INPLACE)
@@ -49,9 +49,9 @@ function DI.value_and_derivative(
     prep::FiniteDiffTwoArgDerivativePrep,
     backend::AutoFiniteDiff,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
-    fc! = with_contexts(f!, contexts...)
+    fc! = DI.with_contexts(f!, contexts...)
     fc!(y, x)
     der = finite_difference_gradient(fc!, x, prep.cache)
     return y, der
@@ -64,9 +64,9 @@ function DI.value_and_derivative!(
     prep::FiniteDiffTwoArgDerivativePrep,
     backend::AutoFiniteDiff,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
-    fc! = with_contexts(f!, contexts...)
+    fc! = DI.with_contexts(f!, contexts...)
     fc!(y, x)
     finite_difference_gradient!(der, fc!, x, prep.cache)
     return y, der
@@ -78,9 +78,9 @@ function DI.derivative(
     prep::FiniteDiffTwoArgDerivativePrep,
     backend::AutoFiniteDiff,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
-    fc! = with_contexts(f!, contexts...)
+    fc! = DI.with_contexts(f!, contexts...)
     fc!(y, x)
     der = finite_difference_gradient(fc!, x, prep.cache)
     return der
@@ -93,21 +93,21 @@ function DI.derivative!(
     prep::FiniteDiffTwoArgDerivativePrep,
     backend::AutoFiniteDiff,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
-    fc! = with_contexts(f!, contexts...)
+    fc! = DI.with_contexts(f!, contexts...)
     finite_difference_gradient!(der, fc!, x, prep.cache)
     return der
 end
 
 ## Jacobian
 
-struct FiniteDiffTwoArgJacobianPrep{C} <: JacobianPrep
+struct FiniteDiffTwoArgJacobianPrep{C} <: DI.JacobianPrep
     cache::C
 end
 
 function DI.prepare_jacobian(
-    f!, y, backend::AutoFiniteDiff, x, contexts::Vararg{Context,C}
+    f!, y, backend::AutoFiniteDiff, x, contexts::Vararg{DI.Context,C}
 ) where {C}
     x1 = similar(x)
     fx = similar(y)
@@ -122,9 +122,9 @@ function DI.value_and_jacobian(
     prep::FiniteDiffTwoArgJacobianPrep,
     ::AutoFiniteDiff,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
-    fc! = with_contexts(f!, contexts...)
+    fc! = DI.with_contexts(f!, contexts...)
     jac = similar(y, length(y), length(x))
     finite_difference_jacobian!(jac, fc!, x, prep.cache)
     fc!(y, x)
@@ -138,9 +138,9 @@ function DI.value_and_jacobian!(
     prep::FiniteDiffTwoArgJacobianPrep,
     ::AutoFiniteDiff,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
-    fc! = with_contexts(f!, contexts...)
+    fc! = DI.with_contexts(f!, contexts...)
     finite_difference_jacobian!(jac, fc!, x, prep.cache)
     fc!(y, x)
     return y, jac
@@ -152,9 +152,9 @@ function DI.jacobian(
     prep::FiniteDiffTwoArgJacobianPrep,
     ::AutoFiniteDiff,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
-    fc! = with_contexts(f!, contexts...)
+    fc! = DI.with_contexts(f!, contexts...)
     jac = similar(y, length(y), length(x))
     finite_difference_jacobian!(jac, fc!, x, prep.cache)
     return jac
@@ -167,9 +167,9 @@ function DI.jacobian!(
     prep::FiniteDiffTwoArgJacobianPrep,
     ::AutoFiniteDiff,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
-    fc! = with_contexts(f!, contexts...)
+    fc! = DI.with_contexts(f!, contexts...)
     finite_difference_jacobian!(jac, fc!, x, prep.cache)
     return jac
 end

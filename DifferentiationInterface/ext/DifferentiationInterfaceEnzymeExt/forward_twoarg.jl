@@ -6,19 +6,19 @@ function DI.prepare_pushforward(
     ::AutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
     tx::NTuple,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,C}
-    return NoPushforwardPrep()
+    return DI.NoPushforwardPrep()
 end
 
 function DI.value_and_pushforward(
     f!::F,
     y,
-    ::NoPushforwardPrep,
+    ::DI.NoPushforwardPrep,
     backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
     tx::NTuple{1},
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,C}
     f!_and_df! = get_f_and_df(f!, backend)
     dx_sametype = convert(typeof(x), only(tx))
@@ -39,11 +39,11 @@ end
 function DI.value_and_pushforward(
     f!::F,
     y,
-    ::NoPushforwardPrep,
+    ::DI.NoPushforwardPrep,
     backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
     tx::NTuple{B},
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,B,C}
     f!_and_df! = get_f_and_df(f!, backend, Val(B))
     tx_sametype = map(Fix1(convert, typeof(x)), tx)
@@ -64,11 +64,11 @@ end
 function DI.pushforward(
     f!::F,
     y,
-    prep::NoPushforwardPrep,
+    prep::DI.NoPushforwardPrep,
     backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
     tx::NTuple,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,C}
     _, ty = DI.value_and_pushforward(f!, y, prep, backend, x, tx, contexts...)
     return ty
@@ -78,11 +78,11 @@ function DI.value_and_pushforward!(
     f!::F,
     y,
     ty::NTuple,
-    prep::NoPushforwardPrep,
+    prep::DI.NoPushforwardPrep,
     backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
     tx::NTuple,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,C}
     y, new_ty = DI.value_and_pushforward(f!, y, prep, backend, x, tx, contexts...)
     foreach(copyto!, ty, new_ty)
@@ -93,11 +93,11 @@ function DI.pushforward!(
     f!::F,
     y,
     ty::NTuple,
-    prep::NoPushforwardPrep,
+    prep::DI.NoPushforwardPrep,
     backend::AutoEnzyme{<:Union{ForwardMode,Nothing}},
     x,
     tx::NTuple,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,C}
     new_ty = DI.pushforward(f!, y, prep, backend, x, tx, contexts...)
     foreach(copyto!, ty, new_ty)

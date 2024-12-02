@@ -3,20 +3,6 @@ module DifferentiationInterfaceEnzymeExt
 using ADTypes: ADTypes, AutoEnzyme
 using Base: Fix1
 import DifferentiationInterface as DI
-using DifferentiationInterface:
-    Context,
-    DerivativePrep,
-    GradientPrep,
-    JacobianPrep,
-    HVPPrep,
-    PullbackPrep,
-    PushforwardPrep,
-    NoDerivativePrep,
-    NoGradientPrep,
-    NoHVPPrep,
-    NoJacobianPrep,
-    NoPullbackPrep,
-    NoPushforwardPrep
 using Enzyme:
     Active,
     Annotation,

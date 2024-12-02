@@ -10,8 +10,6 @@ using ChainRulesCore:
     frule_via_ad,
     rrule_via_ad
 import DifferentiationInterface as DI
-using DifferentiationInterface:
-    Constant, DifferentiateWith, NoPullbackPrep, NoPushforwardPrep, PullbackPrep, unwrap
 
 ruleconfig(backend::AutoChainRules) = backend.ruleconfig
 

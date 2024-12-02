@@ -1,39 +1,39 @@
 ## Pullback
 
-struct ChainRulesPullbackPrepSamePoint{Y,PB} <: PullbackPrep
+struct ChainRulesPullbackPrepSamePoint{Y,PB} <: DI.PullbackPrep
     y::Y
     pb::PB
 end
 
 function DI.prepare_pullback(
-    f, ::AutoReverseChainRules, x, ty::NTuple, contexts::Vararg{Constant,C}
+    f, ::AutoReverseChainRules, x, ty::NTuple, contexts::Vararg{DI.Constant,C}
 ) where {C}
-    return NoPullbackPrep()
+    return DI.NoPullbackPrep()
 end
 
 function DI.prepare_pullback_same_point(
     f,
-    ::NoPullbackPrep,
+    ::DI.NoPullbackPrep,
     backend::AutoReverseChainRules,
     x,
     ty::NTuple,
-    contexts::Vararg{Constant,C},
+    contexts::Vararg{DI.Constant,C},
 ) where {C}
     rc = ruleconfig(backend)
-    y, pb = rrule_via_ad(rc, f, x, map(unwrap, contexts)...)
+    y, pb = rrule_via_ad(rc, f, x, map(DI.unwrap, contexts)...)
     return ChainRulesPullbackPrepSamePoint(y, pb)
 end
 
 function DI.value_and_pullback(
     f,
-    ::NoPullbackPrep,
+    ::DI.NoPullbackPrep,
     backend::AutoReverseChainRules,
     x,
     ty::NTuple,
-    contexts::Vararg{Constant,C},
+    contexts::Vararg{DI.Constant,C},
 ) where {C}
     rc = ruleconfig(backend)
-    y, pb = rrule_via_ad(rc, f, x, map(unwrap, contexts)...)
+    y, pb = rrule_via_ad(rc, f, x, map(DI.unwrap, contexts)...)
     tx = map(ty) do dy
         pb(dy)[2]
     end
@@ -46,7 +46,7 @@ function DI.value_and_pullback(
     ::AutoReverseChainRules,
     x,
     ty::NTuple,
-    contexts::Vararg{Constant,C},
+    contexts::Vararg{DI.Constant,C},
 ) where {C}
     (; y, pb) = prep
     tx = map(ty) do dy
@@ -61,7 +61,7 @@ function DI.pullback(
     ::AutoReverseChainRules,
     x,
     ty::NTuple,
-    contexts::Vararg{Constant,C},
+    contexts::Vararg{DI.Constant,C},
 ) where {C}
     (; pb) = prep
     tx = map(ty) do dy

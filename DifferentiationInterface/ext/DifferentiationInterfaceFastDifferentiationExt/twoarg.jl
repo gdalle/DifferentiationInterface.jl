@@ -1,6 +1,6 @@
 ## Pushforward
 
-struct FastDifferentiationTwoArgPushforwardPrep{E1,E1!} <: PushforwardPrep
+struct FastDifferentiationTwoArgPushforwardPrep{E1,E1!} <: DI.PushforwardPrep
     jvp_exe::E1
     jvp_exe!::E1!
 end
@@ -83,7 +83,7 @@ end
 
 ## Pullback
 
-struct FastDifferentiationTwoArgPullbackPrep{E1,E1!} <: PullbackPrep
+struct FastDifferentiationTwoArgPullbackPrep{E1,E1!} <: DI.PullbackPrep
     vjp_exe::E1
     vjp_exe!::E1!
 end
@@ -170,7 +170,7 @@ end
 
 ## Derivative
 
-struct FastDifferentiationTwoArgDerivativePrep{E1,E1!} <: DerivativePrep
+struct FastDifferentiationTwoArgDerivativePrep{E1,E1!} <: DI.DerivativePrep
     der_exe::E1
     der_exe!::E1!
 end
@@ -220,7 +220,7 @@ end
 
 ## Jacobian
 
-struct FastDifferentiationTwoArgJacobianPrep{E1,E1!} <: JacobianPrep
+struct FastDifferentiationTwoArgJacobianPrep{E1,E1!} <: DI.JacobianPrep
     jac_exe::E1
     jac_exe!::E1!
 end

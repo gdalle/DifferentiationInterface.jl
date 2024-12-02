@@ -1,20 +1,20 @@
 ## Pushforward
 
 function DI.prepare_pushforward(
-    f, ::AutoFiniteDiff, x, tx::NTuple, contexts::Vararg{Context,C}
+    f, ::AutoFiniteDiff, x, tx::NTuple, contexts::Vararg{DI.Context,C}
 ) where {C}
-    return NoPushforwardPrep()
+    return DI.NoPushforwardPrep()
 end
 
 function DI.pushforward(
     f,
-    ::NoPushforwardPrep,
+    ::DI.NoPushforwardPrep,
     backend::AutoFiniteDiff,
     x,
     tx::NTuple,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
-    step(t::Number, dx) = f(x .+ t .* dx, map(unwrap, contexts)...)
+    step(t::Number, dx) = f(x .+ t .* dx, map(DI.unwrap, contexts)...)
     ty = map(tx) do dx
         finite_difference_derivative(Base.Fix2(step, dx), zero(eltype(x)), fdtype(backend))
     end
@@ -23,14 +23,14 @@ end
 
 function DI.value_and_pushforward(
     f,
-    ::NoPushforwardPrep,
+    ::DI.NoPushforwardPrep,
     backend::AutoFiniteDiff,
     x,
     tx::NTuple,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
-    step(t::Number, dx) = f(x .+ t .* dx, map(unwrap, contexts)...)
-    y = f(x, map(unwrap, contexts)...)
+    step(t::Number, dx) = f(x .+ t .* dx, map(DI.unwrap, contexts)...)
+    y = f(x, map(DI.unwrap, contexts)...)
     ty = map(tx) do dx
         finite_difference_derivative(
             Base.Fix2(step, dx), zero(eltype(x)), fdtype(backend), eltype(y), y
@@ -41,14 +41,14 @@ end
 
 ## Derivative
 
-struct FiniteDiffOneArgDerivativePrep{C} <: DerivativePrep
+struct FiniteDiffOneArgDerivativePrep{C} <: DI.DerivativePrep
     cache::C
 end
 
 function DI.prepare_derivative(
-    f, backend::AutoFiniteDiff, x, contexts::Vararg{Context,C}
+    f, backend::AutoFiniteDiff, x, contexts::Vararg{DI.Context,C}
 ) where {C}
-    fc = with_contexts(f, contexts...)
+    fc = DI.with_contexts(f, contexts...)
     y = fc(x)
     cache = if y isa Number
         nothing
@@ -66,9 +66,9 @@ function DI.derivative(
     ::FiniteDiffOneArgDerivativePrep{Nothing},
     backend::AutoFiniteDiff,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
-    fc = with_contexts(f, contexts...)
+    fc = DI.with_contexts(f, contexts...)
     return finite_difference_derivative(fc, x, fdtype(backend))
 end
 
@@ -77,9 +77,9 @@ function DI.value_and_derivative(
     ::FiniteDiffOneArgDerivativePrep{Nothing},
     backend::AutoFiniteDiff,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
-    fc = with_contexts(f, contexts...)
+    fc = DI.with_contexts(f, contexts...)
     y = fc(x)
     return y, finite_difference_derivative(fc, x, fdtype(backend), eltype(y), y)
 end
@@ -91,9 +91,9 @@ function DI.derivative(
     prep::FiniteDiffOneArgDerivativePrep{<:GradientCache},
     ::AutoFiniteDiff,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
-    fc = with_contexts(f, contexts...)
+    fc = DI.with_contexts(f, contexts...)
     return finite_difference_gradient(fc, x, prep.cache)
 end
 
@@ -103,9 +103,9 @@ function DI.derivative!(
     prep::FiniteDiffOneArgDerivativePrep{<:GradientCache},
     ::AutoFiniteDiff,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
-    fc = with_contexts(f, contexts...)
+    fc = DI.with_contexts(f, contexts...)
     return finite_difference_gradient!(der, fc, x, prep.cache)
 end
 
@@ -114,9 +114,9 @@ function DI.value_and_derivative(
     prep::FiniteDiffOneArgDerivativePrep{<:GradientCache},
     ::AutoFiniteDiff,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
-    fc = with_contexts(f, contexts...)
+    fc = DI.with_contexts(f, contexts...)
     y = fc(x)
     return y, finite_difference_gradient(fc, x, prep.cache)
 end
@@ -127,22 +127,22 @@ function DI.value_and_derivative!(
     prep::FiniteDiffOneArgDerivativePrep{<:GradientCache},
     ::AutoFiniteDiff,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
-    fc = with_contexts(f, contexts...)
+    fc = DI.with_contexts(f, contexts...)
     return fc(x), finite_difference_gradient!(der, fc, x, prep.cache)
 end
 
 ## Gradient
 
-struct FiniteDiffGradientPrep{C} <: GradientPrep
+struct FiniteDiffGradientPrep{C} <: DI.GradientPrep
     cache::C
 end
 
 function DI.prepare_gradient(
-    f, backend::AutoFiniteDiff, x, contexts::Vararg{Context,C}
+    f, backend::AutoFiniteDiff, x, contexts::Vararg{DI.Context,C}
 ) where {C}
-    fc = with_contexts(f, contexts...)
+    fc = DI.with_contexts(f, contexts...)
     y = fc(x)
     df = zero(y) .* x
     cache = GradientCache(df, x, fdtype(backend))
@@ -154,9 +154,9 @@ function DI.gradient(
     prep::FiniteDiffGradientPrep,
     ::AutoFiniteDiff,
     x::AbstractArray,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
-    fc = with_contexts(f, contexts...)
+    fc = DI.with_contexts(f, contexts...)
     return finite_difference_gradient(fc, x, prep.cache)
 end
 
@@ -165,9 +165,9 @@ function DI.value_and_gradient(
     prep::FiniteDiffGradientPrep,
     ::AutoFiniteDiff,
     x::AbstractArray,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
-    fc = with_contexts(f, contexts...)
+    fc = DI.with_contexts(f, contexts...)
     return fc(x), finite_difference_gradient(fc, x, prep.cache)
 end
 
@@ -177,9 +177,9 @@ function DI.gradient!(
     prep::FiniteDiffGradientPrep,
     ::AutoFiniteDiff,
     x::AbstractArray,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
-    fc = with_contexts(f, contexts...)
+    fc = DI.with_contexts(f, contexts...)
     return finite_difference_gradient!(grad, fc, x, prep.cache)
 end
 
@@ -189,22 +189,22 @@ function DI.value_and_gradient!(
     prep::FiniteDiffGradientPrep,
     ::AutoFiniteDiff,
     x::AbstractArray,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
-    fc = with_contexts(f, contexts...)
+    fc = DI.with_contexts(f, contexts...)
     return fc(x), finite_difference_gradient!(grad, fc, x, prep.cache)
 end
 
 ## Jacobian
 
-struct FiniteDiffOneArgJacobianPrep{C} <: JacobianPrep
+struct FiniteDiffOneArgJacobianPrep{C} <: DI.JacobianPrep
     cache::C
 end
 
 function DI.prepare_jacobian(
-    f, backend::AutoFiniteDiff, x, contexts::Vararg{Context,C}
+    f, backend::AutoFiniteDiff, x, contexts::Vararg{DI.Context,C}
 ) where {C}
-    fc = with_contexts(f, contexts...)
+    fc = DI.with_contexts(f, contexts...)
     y = fc(x)
     x1 = similar(x)
     fx = similar(y)
@@ -214,16 +214,24 @@ function DI.prepare_jacobian(
 end
 
 function DI.jacobian(
-    f, prep::FiniteDiffOneArgJacobianPrep, ::AutoFiniteDiff, x, contexts::Vararg{Context,C}
+    f,
+    prep::FiniteDiffOneArgJacobianPrep,
+    ::AutoFiniteDiff,
+    x,
+    contexts::Vararg{DI.Context,C},
 ) where {C}
-    fc = with_contexts(f, contexts...)
+    fc = DI.with_contexts(f, contexts...)
     return finite_difference_jacobian(fc, x, prep.cache)
 end
 
 function DI.value_and_jacobian(
-    f, prep::FiniteDiffOneArgJacobianPrep, ::AutoFiniteDiff, x, contexts::Vararg{Context,C}
+    f,
+    prep::FiniteDiffOneArgJacobianPrep,
+    ::AutoFiniteDiff,
+    x,
+    contexts::Vararg{DI.Context,C},
 ) where {C}
-    fc = with_contexts(f, contexts...)
+    fc = DI.with_contexts(f, contexts...)
     y = fc(x)
     return y, finite_difference_jacobian(fc, x, prep.cache, y)
 end
@@ -234,9 +242,9 @@ function DI.jacobian!(
     prep::FiniteDiffOneArgJacobianPrep,
     ::AutoFiniteDiff,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
-    fc = with_contexts(f, contexts...)
+    fc = DI.with_contexts(f, contexts...)
     return copyto!(jac, finite_difference_jacobian(fc, x, prep.cache; jac_prototype=jac))
 end
 
@@ -246,9 +254,9 @@ function DI.value_and_jacobian!(
     prep::FiniteDiffOneArgJacobianPrep,
     ::AutoFiniteDiff,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
-    fc = with_contexts(f, contexts...)
+    fc = DI.with_contexts(f, contexts...)
     y = fc(x)
     return y,
     copyto!(jac, finite_difference_jacobian(fc, x, prep.cache, y; jac_prototype=jac))
@@ -256,15 +264,15 @@ end
 
 ## Hessian
 
-struct FiniteDiffHessianPrep{C1,C2} <: HessianPrep
+struct FiniteDiffHessianPrep{C1,C2} <: DI.HessianPrep
     gradient_cache::C1
     hessian_cache::C2
 end
 
 function DI.prepare_hessian(
-    f, backend::AutoFiniteDiff, x, contexts::Vararg{Context,C}
+    f, backend::AutoFiniteDiff, x, contexts::Vararg{DI.Context,C}
 ) where {C}
-    fc = with_contexts(f, contexts...)
+    fc = DI.with_contexts(f, contexts...)
     y = fc(x)
     df = zero(y) .* x
     gradient_cache = GradientCache(df, x, fdtype(backend))
@@ -273,9 +281,13 @@ function DI.prepare_hessian(
 end
 
 function DI.hessian(
-    f, prep::FiniteDiffHessianPrep, backend::AutoFiniteDiff, x, contexts::Vararg{Context,C}
+    f,
+    prep::FiniteDiffHessianPrep,
+    backend::AutoFiniteDiff,
+    x,
+    contexts::Vararg{DI.Context,C},
 ) where {C}
-    fc = with_contexts(f, contexts...)
+    fc = DI.with_contexts(f, contexts...)
     return finite_difference_hessian(fc, x, prep.hessian_cache)
 end
 
@@ -285,16 +297,20 @@ function DI.hessian!(
     prep::FiniteDiffHessianPrep,
     backend::AutoFiniteDiff,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
-    fc = with_contexts(f, contexts...)
+    fc = DI.with_contexts(f, contexts...)
     return finite_difference_hessian!(hess, fc, x, prep.hessian_cache)
 end
 
 function DI.value_gradient_and_hessian(
-    f, prep::FiniteDiffHessianPrep, backend::AutoFiniteDiff, x, contexts::Vararg{Context,C}
+    f,
+    prep::FiniteDiffHessianPrep,
+    backend::AutoFiniteDiff,
+    x,
+    contexts::Vararg{DI.Context,C},
 ) where {C}
-    fc = with_contexts(f, contexts...)
+    fc = DI.with_contexts(f, contexts...)
     grad = finite_difference_gradient(fc, x, prep.gradient_cache)
     hess = finite_difference_hessian(fc, x, prep.hessian_cache)
     return fc(x), grad, hess
@@ -307,9 +323,9 @@ function DI.value_gradient_and_hessian!(
     prep::FiniteDiffHessianPrep,
     backend::AutoFiniteDiff,
     x,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
-    fc = with_contexts(f, contexts...)
+    fc = DI.with_contexts(f, contexts...)
     finite_difference_gradient!(grad, fc, x, prep.gradient_cache)
     finite_difference_hessian!(hess, fc, x, prep.hessian_cache)
     return fc(x), grad, hess

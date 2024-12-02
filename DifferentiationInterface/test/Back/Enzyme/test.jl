@@ -8,6 +8,9 @@ using Enzyme: Enzyme
 using StaticArrays
 using Test
 
+using ExplicitImports
+check_no_implicit_imports(DifferentiationInterface)
+
 LOGGING = get(ENV, "CI", "false") == "false"
 
 backends = [

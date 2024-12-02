@@ -1,16 +1,16 @@
-struct MooncakeOneArgPullbackPrep{Tcache,DY} <: PullbackPrep
+struct MooncakeOneArgPullbackPrep{Tcache,DY} <: DI.PullbackPrep
     cache::Tcache
     dy_righttype::DY
 end
 
 function DI.prepare_pullback(
-    f, backend::AutoMooncake, x, ty::NTuple, contexts::Vararg{Context,C}
+    f, backend::AutoMooncake, x, ty::NTuple, contexts::Vararg{DI.Context,C}
 ) where {C}
     config = get_config(backend)
     cache = prepare_pullback_cache(
-        f, x, map(unwrap, contexts)...; config.debug_mode, config.silence_debug_messages
+        f, x, map(DI.unwrap, contexts)...; config.debug_mode, config.silence_debug_messages
     )
-    y = f(x, map(unwrap, contexts)...)
+    y = f(x, map(DI.unwrap, contexts)...)
     dy_righttype = zero_tangent(y)
     prep = MooncakeOneArgPullbackPrep(cache, dy_righttype)
     DI.value_and_pullback(f, prep, backend, x, ty, contexts...)
@@ -23,12 +23,12 @@ function DI.value_and_pullback(
     ::AutoMooncake,
     x,
     ty::NTuple{1},
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {F,Y,C}
     dy = only(ty)
     dy_righttype = dy isa tangent_type(Y) ? dy : copyto!!(prep.dy_righttype, dy)
     new_y, (_, new_dx) = Mooncake.value_and_pullback!!(
-        prep.cache, dy_righttype, f, x, map(unwrap, contexts)...
+        prep.cache, dy_righttype, f, x, map(DI.unwrap, contexts)...
     )
     return new_y, (copy(new_dx),)
 end
@@ -40,7 +40,7 @@ function DI.value_and_pullback!(
     backend::AutoMooncake,
     x,
     ty::NTuple{1},
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {Y,C}
     y, (new_dx,) = DI.value_and_pullback(f, prep, backend, x, ty, contexts...)
     copyto!(only(tx), new_dx)
@@ -53,7 +53,7 @@ function DI.value_and_pullback(
     backend::AutoMooncake,
     x,
     ty::NTuple,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
     ys_and_tx = map(ty) do dy
         y, tx = DI.value_and_pullback(f, prep, backend, x, (dy,), contexts...)
@@ -71,7 +71,7 @@ function DI.value_and_pullback!(
     backend::AutoMooncake,
     x,
     ty::NTuple,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
     ys = map(tx, ty) do dx, dy
         y, _ = DI.value_and_pullback!(f, (dx,), prep, backend, x, (dy,), contexts...)
@@ -87,7 +87,7 @@ function DI.pullback(
     backend::AutoMooncake,
     x,
     ty::NTuple,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
     return DI.value_and_pullback(f, prep, backend, x, ty, contexts...)[2]
 end
@@ -99,7 +99,7 @@ function DI.pullback!(
     backend::AutoMooncake,
     x,
     ty::NTuple,
-    contexts::Vararg{Context,C},
+    contexts::Vararg{DI.Context,C},
 ) where {C}
     return DI.value_and_pullback!(f, tx, prep, backend, x, ty, contexts...)[2]
 end

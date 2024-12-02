@@ -9,6 +9,9 @@ using ForwardDiff: ForwardDiff
 using StaticArrays: StaticArrays
 using Test
 
+using ExplicitImports
+check_no_implicit_imports(DifferentiationInterface)
+
 LOGGING = get(ENV, "CI", "false") == "false"
 
 struct MyTag end
