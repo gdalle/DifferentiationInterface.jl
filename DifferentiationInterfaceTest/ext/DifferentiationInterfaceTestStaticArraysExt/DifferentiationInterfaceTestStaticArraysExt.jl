@@ -1,7 +1,6 @@
 module DifferentiationInterfaceTestStaticArraysExt
 
 import DifferentiationInterface as DI
-using DifferentiationInterfaceTest
 import DifferentiationInterfaceTest as DIT
 using SparseArrays: SparseArrays, SparseMatrixCSC, nnz, spdiagm
 using StaticArrays: MArray, MMatrix, MVector, SArray, SMatrix, SVector
@@ -29,9 +28,9 @@ mystatic(x::DI.Constant) = DI.Constant(mystatic(DI.unwrap(x)))
 mystatic(x::DI.Cache) = DI.Cache(mymutablestatic(DI.unwrap(x)))
 mystatic(::Nothing) = nothing
 
-function mystatic(scen::Scenario{op,pl_op,pl_fun}) where {op,pl_op,pl_fun}
+function mystatic(scen::DIT.Scenario{op,pl_op,pl_fun}) where {op,pl_op,pl_fun}
     (; f, x, y, tang, contexts, res1, res2) = scen
-    return Scenario{op,pl_op,pl_fun}(
+    return DIT.Scenario{op,pl_op,pl_fun}(
         mystatic(f);
         x=mystatic(x),
         y=pl_fun == :in ? mymutablestatic(y) : mystatic(y),

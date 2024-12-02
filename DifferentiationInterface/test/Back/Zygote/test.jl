@@ -9,6 +9,9 @@ using StaticArrays: StaticArrays
 using Test
 using Zygote: Zygote
 
+using ExplicitImports
+check_no_implicit_imports(DifferentiationInterface)
+
 LOGGING = get(ENV, "CI", "false") == "false"
 
 backends = [AutoZygote()]

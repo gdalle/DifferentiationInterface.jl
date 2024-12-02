@@ -28,7 +28,7 @@ end
 end
 
 @testset "ExplicitImports" begin
-    @test_broken check_no_implicit_imports(DifferentiationInterfaceTest) === nothing
+    @test check_no_implicit_imports(DifferentiationInterfaceTest) === nothing
     @test_broken check_no_stale_explicit_imports(DifferentiationInterfaceTest) === nothing
     @test_broken check_all_explicit_imports_via_owners(DifferentiationInterfaceTest) ===
         nothing

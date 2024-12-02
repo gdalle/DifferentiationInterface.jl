@@ -5,6 +5,9 @@ using DifferentiationInterface, DifferentiationInterfaceTest
 using FiniteDiff: FiniteDiff
 using Test
 
+using ExplicitImports
+check_no_implicit_imports(DifferentiationInterface)
+
 LOGGING = get(ENV, "CI", "false") == "false"
 
 for backend in [AutoFiniteDiff()]

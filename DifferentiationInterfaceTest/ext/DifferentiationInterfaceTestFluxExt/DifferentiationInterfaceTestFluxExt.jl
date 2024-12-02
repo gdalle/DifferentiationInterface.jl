@@ -1,11 +1,28 @@
 module DifferentiationInterfaceTestFluxExt
 
-using DifferentiationInterface
-using DifferentiationInterfaceTest
+import DifferentiationInterface as DI
 import DifferentiationInterfaceTest as DIT
 using FiniteDifferences: FiniteDifferences
-using Flux
-using Functors
+using Flux:
+    Flux,
+    Bilinear,
+    Chain,
+    Conv,
+    ConvTranspose,
+    Dense,
+    GRU,
+    LSTM,
+    Maxout,
+    MeanPool,
+    RNN,
+    SamePad,
+    Scale,
+    SkipConnection,
+    destructure,
+    f64,
+    glorot_uniform,
+    relu
+using Functors: @functor, fmapstructure_with_path, fleaves
 using LinearAlgebra
 using Random: AbstractRNG, default_rng
 
@@ -18,7 +35,7 @@ Relevant discussions:
 =#
 
 function gradient_finite_differences(loss, model, x)
-    v, re = Flux.destructure(model)
+    v, re = destructure(model)
     fdm = FiniteDifferences.central_fdm(5, 1)
     gs = FiniteDifferences.grad(fdm, model -> loss(re(model), x), f64(v))
     return re(only(gs))
@@ -64,9 +81,9 @@ end
 @functor SimpleDense
 
 function DIT.flux_scenarios(rng::AbstractRNG=default_rng())
-    init = Flux.glorot_uniform(rng)
+    init = glorot_uniform(rng)
 
-    scens = Scenario[]
+    scens = DIT.Scenario[]
 
     # Simple dense
 
@@ -78,7 +95,9 @@ function DIT.flux_scenarios(rng::AbstractRNG=default_rng())
     x = randn(rng, d_in)
     g = gradient_finite_differences(square_loss, model, x)
 
-    scen = Scenario{:gradient,:out}(square_loss, model; contexts=(Constant(x),), res1=g)
+    scen = DIT.Scenario{:gradient,:out}(
+        square_loss, model; contexts=(DI.Constant(x),), res1=g
+    )
     push!(scens, scen)
 
     # Layers
@@ -96,7 +115,7 @@ function DIT.flux_scenarios(rng::AbstractRNG=default_rng())
             f64(Chain(Dense(2, 4; init), Dense(4, 2; init))),
             randn(rng, Float64, 2, 1)),
         (
-            Flux.Scale([1.0f0 2.0f0 3.0f0 4.0f0], true, abs2),
+            Scale([1.0f0 2.0f0 3.0f0 4.0f0], true, abs2),
             randn(rng, Float32, 2)),
         (
             Conv((3, 3), 2 => 3; init),
@@ -134,7 +153,7 @@ function DIT.flux_scenarios(rng::AbstractRNG=default_rng())
             randn(rng, Float32, 2, 3)
         ),
         (
-            Flux.Bilinear((2, 2) => 3; init),
+            Bilinear((2, 2) => 3; init),
             randn(rng, Float32, 2, 1)
         ),
         (
@@ -151,7 +170,9 @@ function DIT.flux_scenarios(rng::AbstractRNG=default_rng())
     for (model, x) in models_and_xs
         Flux.trainmode!(model)
         g = gradient_finite_differences(square_loss, model, x)
-        scen = Scenario{:gradient,:out}(square_loss, model; contexts=(Constant(x),), res1=g)
+        scen = DIT.Scenario{:gradient,:out}(
+            square_loss, model; contexts=(DI.Constant(x),), res1=g
+        )
         push!(scens, scen)
     end
 
@@ -173,8 +194,8 @@ function DIT.flux_scenarios(rng::AbstractRNG=default_rng())
     for (model, x) in recurrent_models_and_xs
         Flux.trainmode!(model)
         g = gradient_finite_differences(square_loss, model, x)
-        scen = Scenario{:gradient,:out}(
-            square_loss_iterated, model; contexts=(Constant(x),), res1=g
+        scen = DIT.Scenario{:gradient,:out}(
+            square_loss_iterated, model; contexts=(DI.Constant(x),), res1=g
         )
         # TODO: figure out why these tests are broken
         # push!(scens, scen)

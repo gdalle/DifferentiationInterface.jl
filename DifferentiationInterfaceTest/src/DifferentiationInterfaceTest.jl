@@ -2,15 +2,11 @@
     DifferentiationInterfaceTest
 
 Testing and benchmarking utilities for automatic differentiation in Julia.
-
-# Exports
-
-$(EXPORTS)
 """
 module DifferentiationInterfaceTest
 
-using ADTypes
 using ADTypes:
+    ADTypes,
     AbstractADType,
     AbstractMode,
     AutoSparse,
@@ -94,7 +90,7 @@ using DifferentiationInterface:
     pushforward_performance,
     pullback_performance
 using DifferentiationInterface: Rewrap, Context, Constant, Cache, unwrap
-using DocStringExtensions
+using DocStringExtensions: TYPEDFIELDS, TYPEDSIGNATURES
 using JET: @test_opt
 using LinearAlgebra: Adjoint, Diagonal, Transpose, dot, parent
 using ProgressMeter: ProgressUnknown, next!

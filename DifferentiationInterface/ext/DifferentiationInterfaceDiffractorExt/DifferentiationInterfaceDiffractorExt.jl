@@ -10,7 +10,7 @@ DI.pullback_performance(::AutoDiffractor) = DI.PullbackSlow()
 
 ## Pushforward
 
-DI.prepare_pushforward(f, ::AutoDiffractor, x, tx::NTuple) = NoPushforwardPrep()
+DI.prepare_pushforward(f, ::AutoDiffractor, x, tx::NTuple) = DI.NoPushforwardPrep()
 
 function DI.pushforward(f, ::DI.NoPushforwardPrep, ::AutoDiffractor, x, tx::NTuple)
     ty = map(tx) do dx
