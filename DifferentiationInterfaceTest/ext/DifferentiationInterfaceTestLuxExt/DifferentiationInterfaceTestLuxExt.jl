@@ -190,7 +190,7 @@ function DIT.lux_scenarios(rng::AbstractRNG=default_rng())
         #! format: on
     ]
 
-    scens = Scenario[]
+    scens = DIT.Scenario[]
 
     for (model, x) in models_and_xs
         ps, st = Lux.setup(rng, model)
