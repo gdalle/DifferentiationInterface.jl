@@ -24,7 +24,8 @@ using Lux:
     Scale,
     SkipConnection,
     StatefulRecurrentCell,
-    gelu
+    gelu,
+    relu
 using LuxTestUtils: check_approx
 using Random: AbstractRNG, default_rng
 
