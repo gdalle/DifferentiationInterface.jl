@@ -368,7 +368,7 @@ end
 
 function DI.value_derivative_and_second_derivative(
     f,
-    prep::SecondDerivativePrep,
+    prep::DI.SecondDerivativePrep,
     backend::AutoPolyesterForwardDiff,
     x,
     contexts::Vararg{DI.Context,C},
@@ -382,7 +382,7 @@ function DI.value_derivative_and_second_derivative!(
     f,
     der,
     der2,
-    prep::SecondDerivativePrep,
+    prep::DI.SecondDerivativePrep,
     backend::AutoPolyesterForwardDiff,
     x,
     contexts::Vararg{DI.Context,C},
@@ -394,7 +394,7 @@ end
 
 function DI.second_derivative(
     f,
-    prep::SecondDerivativePrep,
+    prep::DI.SecondDerivativePrep,
     backend::AutoPolyesterForwardDiff,
     x,
     contexts::Vararg{DI.Context,C},
@@ -405,7 +405,7 @@ end
 function DI.second_derivative!(
     f,
     der2,
-    prep::SecondDerivativePrep,
+    prep::DI.SecondDerivativePrep,
     backend::AutoPolyesterForwardDiff,
     x,
     contexts::Vararg{DI.Context,C},
