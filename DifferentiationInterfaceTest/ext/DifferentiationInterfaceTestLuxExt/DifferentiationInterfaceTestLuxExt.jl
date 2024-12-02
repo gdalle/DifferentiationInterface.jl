@@ -18,6 +18,7 @@ using Lux:
     LayerNorm,
     LSTMCell,
     Maxout,
+    MaxPool,
     MeanPool,
     RNNCell,
     SamePad,
