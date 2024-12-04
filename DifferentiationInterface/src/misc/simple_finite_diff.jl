@@ -5,13 +5,13 @@ Forward mode backend based on the finite difference `(f(x + ε) - f(x)) / ε`, w
 
 # Constructor
 
-    AutoSimpleFiniteDiff(ε=1e-7; chunksize=nothing)
+    AutoSimpleFiniteDiff(ε=1e-5; chunksize=nothing)
 """
 struct AutoSimpleFiniteDiff{chunksize,T<:Real} <: AbstractADType
     ε::T
 end
 
-function AutoSimpleFiniteDiff(ε=1e-7; chunksize=nothing)
+function AutoSimpleFiniteDiff(ε=1e-5; chunksize=nothing)
     return AutoSimpleFiniteDiff{chunksize,typeof(ε)}(ε)
 end
 
@@ -20,7 +20,7 @@ check_available(::AutoSimpleFiniteDiff) = true
 inplace_support(::AutoSimpleFiniteDiff) = InPlaceSupported()
 
 function BatchSizeSettings(::AutoSimpleFiniteDiff{nothing}, N::Integer)
-    B = min(12, N)
+    B = reasonable_batchsize(N, 12)
     singlebatch = B == N
     aligned = N % B == 0
     return BatchSizeSettings{B,singlebatch,aligned}(N)
@@ -64,9 +64,9 @@ function value_and_pushforward(
     ε = eltype(x)(backend.ε)
     y = f(x, map(unwrap, contexts)...)
     ty = map(tx) do dx
-        yε = f(x + ε * dx, map(unwrap, contexts)...)
-        y0 = f(x, map(unwrap, contexts)...)
-        (yε - y0) / ε
+        y1 = f(x + ε * dx, map(unwrap, contexts)...)
+        y0 = f(x - ε * dx, map(unwrap, contexts)...)
+        (y1 - y0) / 2ε
     end
     return y, ty
 end
@@ -83,10 +83,10 @@ function value_and_pushforward(
     ε = eltype(x)(backend.ε)
     ty = map(tx) do dx
         f!(y, x + ε * dx, map(unwrap, contexts)...)
-        yε = copy(y)
-        f!(y, x, map(unwrap, contexts)...)
+        y1 = copy(y)
+        f!(y, x - ε * dx, map(unwrap, contexts)...)
         y0 = copy(y)
-        (yε - y0) / ε
+        (y1 - y0) / 2ε
     end
     f!(y, x, map(unwrap, contexts)...)
     return y, ty

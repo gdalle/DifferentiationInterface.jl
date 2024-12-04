@@ -31,11 +31,11 @@ jobs:
           - "1.10"
           - "1"
         group:
-          - Misc/Internals
-          - Misc/DifferentiateWith
-          - Misc/SimpleFiniteDiff
-          - Misc/SparsityDetector
-          - Misc/ZeroBackends
+          - Core/Internals
+          - Back/DifferentiateWith
+          - Core/SimpleFiniteDiff
+          - Back/SparsityDetector
+          - Core/ZeroBackends
           - Back/ChainRules
           # - Back/Diffractor
           - Back/Enzyme

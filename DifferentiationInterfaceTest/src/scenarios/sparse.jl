@@ -327,7 +327,7 @@ Create a vector of [`Scenario`](@ref)s with sparse array types, focused on spars
 function sparse_scenarios(; band_sizes=[5, 10, 20], include_constantified=false)
     x_6 = float.(1:6)
     x_2_3 = float.(reshape(1:6, 2, 3))
-    x_50 = float.(1:50)
+    x_50 = float.(range(1, 2, 50))
 
     scens = vcat(
         sparse_vec_to_vec_scenarios(x_6),
