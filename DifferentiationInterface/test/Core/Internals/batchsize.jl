@@ -1,7 +1,11 @@
 using ADTypes
 using DifferentiationInterface
 using DifferentiationInterface:
-    BatchSizeSettings, pick_batchsize, reasonable_batchsize, threshold_batchsize
+    AutoSimpleFiniteDiff,
+    BatchSizeSettings,
+    pick_batchsize,
+    reasonable_batchsize,
+    threshold_batchsize
 import DifferentiationInterface as DI
 using StaticArrays
 using Test
