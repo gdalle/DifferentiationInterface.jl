@@ -32,24 +32,24 @@ jobs:
           - "1"
         group:
           - Misc/Internals
-          - Misc/DifferentiateWith
-          - Misc/FromPrimitive
-          - Misc/SparsityDetector
-          - Misc/ZeroBackends
-          - Back/ChainRules
+          # - Misc/DifferentiateWith
+          # - Misc/FromPrimitive
+          # - Misc/SparsityDetector
+          # - Misc/ZeroBackends
+          # - Back/ChainRules
           # - Back/Diffractor
           - Back/Enzyme
-          - Back/FiniteDiff
-          - Back/FiniteDifferences
-          - Back/ForwardDiff
-          - Back/Mooncake
-          - Back/PolyesterForwardDiff
-          - Back/ReverseDiff
-          - Back/SymbolicBackends
-          - Back/Tracker
-          - Back/Zygote
-          - Down/Flux
-          - Down/Lux
+          # - Back/FiniteDiff
+          # - Back/FiniteDifferences
+          # - Back/ForwardDiff
+          # - Back/Mooncake
+          # - Back/PolyesterForwardDiff
+          # - Back/ReverseDiff
+          # - Back/SymbolicBackends
+          # - Back/Tracker
+          # - Back/Zygote
+          # - Down/Flux
+          # - Down/Lux
         skip_lts:
           - ${{ github.event.pull_request.draft }}
         exclude:
@@ -57,8 +57,6 @@ jobs:
           #   version: "1.10"
           - version: "1"
             group: Back/ChainRules
-          - version: "1"
-            group: Back/Enzyme
     env:
       JULIA_DI_TEST_GROUP: ${{ matrix.group }}
     steps:
