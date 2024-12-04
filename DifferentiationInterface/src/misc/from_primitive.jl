@@ -19,8 +19,9 @@ function BatchSizeSettings(fromprim::FromPrimitive, N::Integer)
     return BatchSizeSettings(fromprim.backend, N)
 end
 
-## Forward
+## Forward (no longer used)
 
+#=
 struct AutoForwardFromPrimitive{B} <: FromPrimitive
     backend::B
 end
@@ -104,6 +105,7 @@ function value_and_pushforward!(
         f!, y, ty, prep.pushforward_prep, fromprim.backend, x, tx, contexts...
     )
 end
+=#
 
 ## Reverse
 

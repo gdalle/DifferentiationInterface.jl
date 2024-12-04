@@ -1,38 +1,31 @@
 using DifferentiationInterface, DifferentiationInterfaceTest
-using DifferentiationInterface: AutoForwardFromPrimitive, AutoReverseFromPrimitive
+using DifferentiationInterface: AutoSimpleFiniteDiff, AutoReverseFromPrimitive
 using DifferentiationInterfaceTest
-using ForwardDiff: ForwardDiff
 using Test
 
 LOGGING = get(ENV, "CI", "false") == "false"
 
 backends = [ #
-    AutoForwardFromPrimitive(AutoForwardDiff(; chunksize=5)),
-    AutoReverseFromPrimitive(AutoForwardDiff(; chunksize=4)),
+    AutoSimpleFiniteDiff(; chunksize=5),
+    AutoReverseFromPrimitive(AutoSimpleFiniteDiff(; chunksize=4)),
 ]
 
 second_order_backends = [ #
     SecondOrder(
-        AutoForwardFromPrimitive(AutoForwardDiff(; chunksize=5)),
-        AutoReverseFromPrimitive(AutoForwardDiff(; chunksize=4)),
+        AutoSimpleFiniteDiff(; chunksize=5),
+        AutoReverseFromPrimitive(AutoSimpleFiniteDiff(; chunksize=4)),
     ),
     SecondOrder(
-        AutoReverseFromPrimitive(AutoForwardDiff(; chunksize=5)),
-        AutoForwardFromPrimitive(AutoForwardDiff(; chunksize=4)),
+        AutoReverseFromPrimitive(AutoSimpleFiniteDiff(; chunksize=5)),
+        AutoSimpleFiniteDiff(; chunksize=4),
     ),
 ]
 
 adaptive_backends = [ #
-    AutoForwardFromPrimitive(AutoForwardDiff()),
-    AutoReverseFromPrimitive(AutoForwardDiff()),
-    SecondOrder(
-        AutoForwardFromPrimitive(AutoForwardDiff()),
-        AutoReverseFromPrimitive(AutoForwardDiff()),
-    ),
-    SecondOrder(
-        AutoReverseFromPrimitive(AutoForwardDiff()),
-        AutoForwardFromPrimitive(AutoForwardDiff()),
-    ),
+    AutoSimpleFiniteDiff(),
+    AutoReverseFromPrimitive(AutoSimpleFiniteDiff()),
+    SecondOrder(AutoSimpleFiniteDiff(), AutoReverseFromPrimitive(AutoSimpleFiniteDiff())),
+    SecondOrder(AutoReverseFromPrimitive(AutoSimpleFiniteDiff()), AutoSimpleFiniteDiff()),
 ]
 
 for backend in vcat(backends, second_order_backends)

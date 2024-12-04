@@ -33,7 +33,7 @@ jobs:
         group:
           - Misc/Internals
           - Misc/DifferentiateWith
-          - Misc/FromPrimitive
+          - Misc/SimpleFiniteDiff
           - Misc/SparsityDetector
           - Misc/ZeroBackends
           - Back/ChainRules
