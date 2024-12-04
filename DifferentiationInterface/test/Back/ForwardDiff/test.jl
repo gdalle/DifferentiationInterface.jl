@@ -4,9 +4,10 @@ Pkg.add("ForwardDiff")
 using ADTypes: ADTypes
 using ComponentArrays: ComponentArrays
 using DifferentiationInterface, DifferentiationInterfaceTest
+import DifferentiationInterface as DI
 import DifferentiationInterfaceTest as DIT
 using ForwardDiff: ForwardDiff
-using StaticArrays: StaticArrays
+using StaticArrays: StaticArrays, @SVector
 using Test
 
 using ExplicitImports
@@ -75,7 +76,18 @@ test_differentiation(
 
 test_differentiation(AutoForwardDiff(), static_scenarios(); logging=LOGGING)
 
-@testset verbose = true "No allocations on StaticArrays" begin
+@testset verbose = true "StaticArrays" begin
+    @testset "Batch size" begin
+        @test DI.pick_batchsize(AutoForwardDiff(), rand(7)) isa DI.BatchSizeSettings{7}
+        @test DI.pick_batchsize(AutoForwardDiff(; chunksize=5), rand(7)) isa
+            DI.BatchSizeSettings{5}
+        @test (@inferred DI.pick_batchsize(AutoForwardDiff(), @SVector(rand(7)))) isa
+            DI.BatchSizeSettings{7}
+        @test (@inferred DI.pick_batchsize(
+            AutoForwardDiff(; chunksize=5), @SVector(rand(7))
+        )) isa DI.BatchSizeSettings{5}
+    end
+
     filtered_static_scenarios = filter(static_scenarios(; include_batchified=false)) do scen
         DIT.function_place(scen) == :out && DIT.operator_place(scen) == :out
     end
