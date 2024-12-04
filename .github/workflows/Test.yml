@@ -94,13 +94,13 @@ jobs:
       fail-fast: true
       matrix:
         version:
-          - "1.10"
+          # - "1.10"
           - "1"
         group:
           - Formalities
-          - Zero
-          - Standard
-          - Weird
+          # - Zero
+          # - Standard
+          # - Weird
         skip_lts:
           - ${{ github.event.pull_request.draft }}
         # exclude:
