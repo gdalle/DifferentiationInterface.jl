@@ -147,3 +147,7 @@ function adapt_batchsize(backend::AbstractADType, scen::Scenario)
         return backend
     end
 end
+
+function no_matrices(scens::AbstractVector{<:Scenario})
+    return filter(s -> !isa(s.x, AbstractMatrix) && !isa(s.y, AbstractMatrix), scens)
+end

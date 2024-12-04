@@ -14,12 +14,28 @@ end
 
 DI.ismutable_array(::Type{<:SArray}) = false
 
+function DI.BatchSizeSettings(::DI.AutoSimpleFiniteDiff{nothing}, x::StaticArray)
+    return DI.BatchSizeSettings{length(x),true,true}(length(x))
+end
+
 function DI.BatchSizeSettings(::AutoForwardDiff{nothing}, x::StaticArray)
     return DI.BatchSizeSettings{length(x),true,true}(length(x))
 end
 
 function DI.BatchSizeSettings(::AutoEnzyme, x::StaticArray)
     return DI.BatchSizeSettings{length(x),true,true}(length(x))
+end
+
+function DI.BatchSizeSettings(
+    ::DI.AutoSimpleFiniteDiff{chunksize}, x::StaticArray
+) where {chunksize}
+    return DI.BatchSizeSettings{chunksize}(Val(length(x)))
+end
+
+function DI.BatchSizeSettings(
+    ::AutoForwardDiff{chunksize}, x::StaticArray
+) where {chunksize}
+    return DI.BatchSizeSettings{chunksize}(Val(length(x)))
 end
 
 end

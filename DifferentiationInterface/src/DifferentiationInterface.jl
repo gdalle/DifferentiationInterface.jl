@@ -62,6 +62,7 @@ include("fallbacks/change_prep.jl")
 include("misc/differentiate_with.jl")
 include("misc/from_primitive.jl")
 include("misc/sparsity_detector.jl")
+include("misc/simple_finite_diff.jl")
 include("misc/zero_backends.jl")
 
 ## Exported
