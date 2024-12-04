@@ -1,18 +1,10 @@
 function DI.BatchSizeSettings(::AutoForwardDiff{nothing}, N::Integer)
-    B = ForwardDiff.pickchunksize(N)
-    singlebatch = B == N
-    aligned = N % B == 0
-    return DI.BatchSizeSettings{B,singlebatch,aligned}(N)
+    chunksize = ForwardDiff.pickchunksize(N)
+    return DI.BatchSizeSettings{chunksize}(N)
 end
 
 function DI.BatchSizeSettings(::AutoForwardDiff{chunksize}, N::Integer) where {chunksize}
-    if chunksize > N
-        throw(ArgumentError("Fixed chunksize $chunksize larger than input size $N"))
-    end
-    B = chunksize
-    singlebatch = B == N
-    aligned = N % B == 0
-    return DI.BatchSizeSettings{B,singlebatch,aligned}(N)
+    return DI.BatchSizeSettings{chunksize}(N)
 end
 
 function DI.threshold_batchsize(

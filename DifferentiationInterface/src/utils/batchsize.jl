@@ -6,7 +6,7 @@ Configuration for the batch size deduced from a backend and a sample array of le
 # Type parameters
 
 - `B::Int`: batch size
-- `singlebatch::Bool`: whether `B > N`
+- `singlebatch::Bool`: whether `B == N` (`B > N` is not allowed)
 - `aligned::Bool`: whether `N % B == 0`
 
 # Fields
@@ -22,9 +22,23 @@ struct BatchSizeSettings{B,singlebatch,aligned}
 end
 
 function BatchSizeSettings{B,singlebatch,aligned}(N::Integer) where {B,singlebatch,aligned}
+    B > N && throw(ArgumentError("Batch size $B larger than input size $N"))
     A = div(N, B, RoundUp)
     B_last = N % B
     return BatchSizeSettings{B,singlebatch,aligned}(N, A, B_last)
+end
+
+function BatchSizeSettings{B}(::Val{N}) where {B,N}
+    singlebatch = B == N
+    aligned = N % B == 0
+    return BatchSizeSettings{B,singlebatch,aligned}(N)
+end
+
+function BatchSizeSettings{B}(N::Integer) where {B}
+    # type-unstable
+    singlebatch = B == N
+    aligned = N % B == 0
+    return BatchSizeSettings{B,singlebatch,aligned}(N)
 end
 
 function BatchSizeSettings(::AbstractADType, N::Integer)

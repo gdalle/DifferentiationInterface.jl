@@ -21,17 +21,11 @@ inplace_support(::AutoSimpleFiniteDiff) = InPlaceSupported()
 
 function BatchSizeSettings(::AutoSimpleFiniteDiff{nothing}, N::Integer)
     B = reasonable_batchsize(N, 12)
-    singlebatch = B == N
-    aligned = N % B == 0
-    return BatchSizeSettings{B,singlebatch,aligned}(N)
+    return BatchSizeSettings{B}(N)
 end
 
 function BatchSizeSettings(::AutoSimpleFiniteDiff{chunksize}, N::Integer) where {chunksize}
-    @assert chunksize <= N
-    B = chunksize
-    singlebatch = B == N
-    aligned = N % B == 0
-    return BatchSizeSettings{B,singlebatch,aligned}(N)
+    return BatchSizeSettings{chunksize}(N)
 end
 
 function threshold_batchsize(

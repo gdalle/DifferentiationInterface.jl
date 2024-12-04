@@ -24,7 +24,7 @@ BSS = BatchSizeSettings
     )
 end
 
-@testset "ForwardDiff (adaptive)" begin
+@testset "SimpleFiniteDiff (adaptive)" begin
     @test (pick_batchsize(AutoSimpleFiniteDiff(), zeros(2))) isa BSS{2,true,true}
     @test (pick_batchsize(AutoSimpleFiniteDiff(), zeros(6))) isa BSS{6,true,true}
     @test (pick_batchsize(AutoSimpleFiniteDiff(), zeros(12))) isa BSS{12,true,true}
@@ -38,7 +38,7 @@ end
         BSS{100,true,true}
 end
 
-@testset "ForwardDiff (fixed)" begin
+@testset "SimpleFiniteDiff (fixed)" begin
     @test_throws ArgumentError pick_batchsize(AutoSimpleFiniteDiff(; chunksize=4), zeros(2))
     @test_throws ArgumentError pick_batchsize(
         AutoSimpleFiniteDiff(; chunksize=4), @SVector(zeros(2))
