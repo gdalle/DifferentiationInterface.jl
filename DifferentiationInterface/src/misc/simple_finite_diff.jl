@@ -5,13 +5,13 @@ Forward mode backend based on the finite difference `(f(x + ε) - f(x)) / ε`, w
 
 # Constructor
 
-    AutoSimpleFiniteDiff(ε=1e-5; chunksize=nothing)
+    AutoSimpleFiniteDiff(ε=1e-7; chunksize=nothing)
 """
 struct AutoSimpleFiniteDiff{chunksize,T<:Real} <: AbstractADType
     ε::T
 end
 
-function AutoSimpleFiniteDiff(ε=1e-5; chunksize=nothing)
+function AutoSimpleFiniteDiff(ε=1e-7; chunksize=nothing)
     return AutoSimpleFiniteDiff{chunksize,typeof(ε)}(ε)
 end
 
