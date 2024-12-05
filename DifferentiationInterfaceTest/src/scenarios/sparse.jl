@@ -1,7 +1,11 @@
 ## Vector to vector
 
 function mydiff(x::AbstractVector)  # tmp fix for Enzyme
-    return x[2:end] .- x[1:(end - 1)]
+    y = similar(x, length(x) - 1)
+    for i in eachindex(y)
+        y[i] = x[i + 1] - x[i]
+    end
+    return y
 end
 
 diffsquare(x::AbstractVector)::AbstractVector = mydiff(x) .^ 2
