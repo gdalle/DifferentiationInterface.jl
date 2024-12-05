@@ -41,7 +41,6 @@ include("utils/traits.jl")
 include("utils/basis.jl")
 include("utils/batchsize.jl")
 include("utils/check.jl")
-include("utils/exceptions.jl")
 include("utils/printing.jl")
 include("utils/context.jl")
 include("utils/linalg.jl")
@@ -122,5 +121,7 @@ export AutoSparse
 ## Public but not exported
 
 @public inner, outer
+
+include("init.jl")
 
 end # module
