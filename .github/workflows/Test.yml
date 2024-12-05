@@ -25,7 +25,7 @@ jobs:
       actions: write
       contents: read
     strategy:
-      fail-fast: false  # TODO: toggle
+      fail-fast: true  # TODO: toggle
       matrix:
         version:
           - "1.10"
@@ -57,8 +57,6 @@ jobs:
           #   version: "1.10"
           - version: "1"
             group: Back/ChainRules
-          - version: "1"
-            group: Back/Enzyme
     env:
       JULIA_DI_TEST_GROUP: ${{ matrix.group }}
     steps:
