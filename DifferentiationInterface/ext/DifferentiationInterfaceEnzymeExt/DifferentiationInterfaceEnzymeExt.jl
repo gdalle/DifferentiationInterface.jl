@@ -3,7 +3,7 @@ module DifferentiationInterfaceEnzymeExt
 using ADTypes: ADTypes, AutoEnzyme
 using Base: Fix1
 import DifferentiationInterface as DI
-using Enzyme:
+using EnzymeCore:
     Active,
     Annotation,
     BatchDuplicated,
@@ -27,7 +27,8 @@ using Enzyme:
     ReverseSplitWithPrimal,
     ReverseWithPrimal,
     Split,
-    WithPrimal,
+    WithPrimal
+using Enzyme:
     autodiff,
     autodiff_thunk,
     create_shadows,

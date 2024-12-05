@@ -42,10 +42,12 @@ duplicated_backends = [
 end;
 
 @testset "First order" begin
+    @info "Step 1"
     test_differentiation(
         backends, default_scenarios(); excluded=SECOND_ORDER, logging=LOGGING
     )
 
+    @info "Step 2"
     test_differentiation(
         backends[1:3],
         default_scenarios(; include_normal=false, include_constantified=true);
@@ -53,6 +55,7 @@ end;
         logging=LOGGING,
     )
 
+    @info "Step 3"
     test_differentiation(
         duplicated_backends,
         default_scenarios(; include_normal=false, include_closurified=true);
@@ -75,6 +78,7 @@ test_differentiation(
 =#
 
 @testset "Second order" begin
+    @info "Step 4"
     test_differentiation(
         [
             AutoEnzyme(),
@@ -87,12 +91,14 @@ test_differentiation(
         logging=LOGGING,
     )
 
+    @info "Step 5"
     test_differentiation(
         AutoEnzyme(; mode=Enzyme.Forward);
         excluded=vcat(FIRST_ORDER, [:hessian, :hvp]),
         logging=LOGGING,
     )
 
+    @info "Step 6"
     test_differentiation(
         AutoEnzyme(; mode=Enzyme.Reverse);
         excluded=vcat(FIRST_ORDER, [:second_derivative]),
@@ -101,6 +107,7 @@ test_differentiation(
 end
 
 @testset "Sparse" begin
+    @info "Step 7"
     test_differentiation(
         MyAutoSparse.(AutoEnzyme(; function_annotation=Enzyme.Const)),
         remove_matrix_inputs(sparse_scenarios());
@@ -114,6 +121,7 @@ end
         DIT.operator_place(s) == :out && DIT.function_place(s) == :out
     end
 
+    @info "Step 8"
     test_differentiation(
         [AutoEnzyme(; mode=Enzyme.Forward), AutoEnzyme(; mode=Enzyme.Reverse)],
         filtered_static_scenarios;
