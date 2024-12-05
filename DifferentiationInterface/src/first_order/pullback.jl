@@ -145,18 +145,6 @@ function _prepare_pullback_aux(
     return PushforwardPullbackPrep(pushforward_prep)
 end
 
-function _prepare_pullback_aux(
-    ::PullbackFast, f, backend::AbstractADType, x, ty::NTuple, contexts::Vararg{Context}
-)
-    throw(MissingBackendError(backend))
-end
-
-function _prepare_pullback_aux(
-    ::PullbackFast, f!, y, backend::AbstractADType, x, ty::NTuple, contexts::Vararg{Context}
-)
-    throw(MissingBackendError(backend))
-end
-
 ## One argument
 
 function _pullback_via_pushforward(
