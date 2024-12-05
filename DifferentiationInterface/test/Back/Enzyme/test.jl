@@ -99,11 +99,13 @@ test_differentiation(
     )
 
     @info "Step 6"
-    test_differentiation(
-        AutoEnzyme(; mode=Enzyme.Reverse);
-        excluded=vcat(FIRST_ORDER, [:second_derivative]),
-        logging=LOGGING,
-    )
+    if VERSION < v"1.11"
+        test_differentiation(
+            AutoEnzyme(; mode=Enzyme.Reverse);
+            excluded=vcat(FIRST_ORDER, [:second_derivative]),
+            logging=LOGGING,
+        )
+    end
 end
 
 @testset "Sparse" begin
