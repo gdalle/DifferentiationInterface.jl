@@ -1,15 +1,7 @@
 ## Vector to vector
 
-function mydiff(x::AbstractVector)  # tmp fix for Enzyme
-    y = similar(x, length(x) - 1)
-    for i in eachindex(y)
-        y[i] = x[i + 1] - x[i]
-    end
-    return y
-end
-
-diffsquare(x::AbstractVector)::AbstractVector = mydiff(x) .^ 2
-diffcube(x::AbstractVector)::AbstractVector = mydiff(x) .^ 3
+diffsquare(x::AbstractVector)::AbstractVector = diff(x) .^ 2
+diffcube(x::AbstractVector)::AbstractVector = diff(x) .^ 3
 
 function diffsquare!(y::AbstractVector, x::AbstractVector)
     x1 = @view x[1:(end - 1)]

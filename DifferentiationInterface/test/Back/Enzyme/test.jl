@@ -17,6 +17,7 @@ function remove_matrix_inputs(scens::Vector{<:Scenario})  # TODO: remove
     if VERSION < v"1.11"
         return scens
     else
+        # for https://github.com/EnzymeAD/Enzyme.jl/issues/2071
         return filter(s -> s.x isa Union{Number,AbstractVector}, scens)
     end
 end
@@ -96,7 +97,16 @@ end
 @testset "Sparse" begin
     test_differentiation(
         MyAutoSparse.(AutoEnzyme(; function_annotation=Enzyme.Const)),
-        remove_matrix_inputs(sparse_scenarios());
+        if VERSION < v"1.11"
+            sparse_scenarios()
+        else
+            filter(sparse_scenarios()) do s
+                # for https://github.com/EnzymeAD/Enzyme.jl/issues/2168
+                (s.x isa AbstractVector) &&
+                    (s.f != DIT.sumdiffcube) &&
+                    (s.f != DIT.sumdiffcube_mat)
+            end
+        end;
         sparsity=true,
         logging=LOGGING,
     )
