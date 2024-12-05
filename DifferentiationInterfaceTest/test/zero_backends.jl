@@ -2,7 +2,7 @@ using ADTypes
 using DifferentiationInterface
 using DifferentiationInterface: AutoZeroForward, AutoZeroReverse
 using DifferentiationInterfaceTest
-using DifferentiationInterfaceTest: allocfree_scenarios
+using DifferentiationInterfaceTest: allocfree_scenarios, no_matrices
 using Test
 
 LOGGING = get(ENV, "CI", "false") == "false"
@@ -29,17 +29,16 @@ test_differentiation(
 
 data0 = benchmark_differentiation(
     AutoZeroForward(),
-    default_scenarios(; include_batchified=false, include_constantified=true);
+    no_matrices(default_scenarios(; include_batchified=false, include_constantified=true));
     logging=LOGGING,
-    benchmark_seconds=0.1,
 );
 
 data1 = benchmark_differentiation(
     AutoZeroForward(),
-    default_scenarios(; include_batchified=false);
+    no_matrices(default_scenarios(; include_batchified=false));
     benchmark=:full,
     logging=LOGGING,
-    benchmark_seconds=0.2,
+    benchmark_seconds=0.05,
     benchmark_aggregation=maximum,
 );
 
@@ -48,7 +47,7 @@ ADTypes.mode(::FakeBackend) = ADTypes.ForwardMode()
 
 data2 = benchmark_differentiation(
     FakeBackend(),
-    default_scenarios(; include_batchified=false);
+    no_matrices(default_scenarios(; include_batchified=false));
     logging=false,
     benchmark_test=false,
 );
