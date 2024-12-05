@@ -1,7 +1,11 @@
 ## Vector to vector
 
-diffsquare(x::AbstractVector)::AbstractVector = diff(x) .^ 2
-diffcube(x::AbstractVector)::AbstractVector = diff(x) .^ 3
+function mydiff(x::AbstractVector)  # tmp fix for Enzyme
+    return x[2:end] .- x[1:(end - 1)]
+end
+
+diffsquare(x::AbstractVector)::AbstractVector = mydiff(x) .^ 2
+diffcube(x::AbstractVector)::AbstractVector = mydiff(x) .^ 3
 
 function diffsquare!(y::AbstractVector, x::AbstractVector)
     x1 = @view x[1:(end - 1)]

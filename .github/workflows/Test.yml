@@ -31,25 +31,25 @@ jobs:
           - "1.10"
           - "1"
         group:
-          # - Core/Internals
-          # - Back/DifferentiateWith
-          # - Core/SimpleFiniteDiff
-          # - Back/SparsityDetector
-          # - Core/ZeroBackends
-          # - Back/ChainRules
+          - Core/Internals
+          - Back/DifferentiateWith
+          - Core/SimpleFiniteDiff
+          - Back/SparsityDetector
+          - Core/ZeroBackends
+          - Back/ChainRules
           # - Back/Diffractor
           - Back/Enzyme
-          # - Back/FiniteDiff
-          # - Back/FiniteDifferences
-          # - Back/ForwardDiff
-          # - Back/Mooncake
-          # - Back/PolyesterForwardDiff
-          # - Back/ReverseDiff
-          # - Back/SymbolicBackends
-          # - Back/Tracker
-          # - Back/Zygote
-          # - Down/Flux
-          # - Down/Lux
+          - Back/FiniteDiff
+          - Back/FiniteDifferences
+          - Back/ForwardDiff
+          - Back/Mooncake
+          - Back/PolyesterForwardDiff
+          - Back/ReverseDiff
+          - Back/SymbolicBackends
+          - Back/Tracker
+          - Back/Zygote
+          - Down/Flux
+          - Down/Lux
         skip_lts:
           - ${{ github.event.pull_request.draft }}
         exclude:
@@ -94,13 +94,13 @@ jobs:
       fail-fast: true
       matrix:
         version:
-          # - "1.10"
+          - "1.10"
           - "1"
         group:
           - Formalities
-          # - Zero
-          # - Standard
-          # - Weird
+          - Zero
+          - Standard
+          - Weird
         skip_lts:
           - ${{ github.event.pull_request.draft }}
         # exclude:
