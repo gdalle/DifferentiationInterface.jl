@@ -88,7 +88,7 @@ DI.maker(::PrepContext) = prepcontext_maker
 function _translate(::Type{T}, ::Val{B}, c::DI.ConstantOrFunctionOrBackend) where {T,B}
     return DI.unwrap(c)
 end
-_translate(::Type{T}, ::Val{B}, c::DI.PrepContext) where {T,B} = DI.unwrap(c)
+_translate(::Type{T}, ::Val{B}, c::PrepContext) where {T,B} = DI.unwrap(c)
 
 function _translate(::Type{T}, ::Val{B}, c::DI.Cache) where {T,B}
     c0 = DI.unwrap(c)
