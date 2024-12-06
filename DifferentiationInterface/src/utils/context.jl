@@ -19,6 +19,11 @@ Abstract supertype for additional context arguments, which can be passed to diff
 """
 abstract type Context end
 
+unwrap(c::Context) = c.data
+Base.:(==)(c1::Context, c2::Context) = unwrap(c1) == unwrap(c2)
+
+## Public contexts
+
 """
     Constant
 
@@ -53,9 +58,6 @@ end
 
 constant_maker(c) = Constant(c)
 maker(::Constant) = constant_maker
-unwrap(c::Constant) = c.data
-
-Base.:(==)(c1::Constant, c2::Constant) = c1.data == c2.data
 
 """
     Cache
@@ -70,15 +72,26 @@ end
 
 cache_maker(c) = Cache(c)
 maker(::Cache) = cache_maker
-unwrap(c::Cache) = c.data
 
-Base.:(==)(c1::Cache, c2::Cache) = c1.data == c2.data
+## Internal contexts for passing stuff around
 
-struct PrepContext{T<:Prep} <: Context
+struct FunctionContext{T} <: Context
     data::T
 end
 
-unwrap(c::PrepContext) = c.data
+functioncontext_maker(c) = FunctionContext(c)
+maker(::FunctionContext) = functioncontext_maker
+
+struct BackendContext{T} <: Context
+    data::T
+end
+
+backendcontext_maker(c) = BackendContext(c)
+maker(::BackendContext) = backendcontext_maker
+
+const ConstantOrFunctionOrBackend = Union{Constant,FunctionContext,BackendContext}
+
+## Context manipulation
 
 struct Rewrap{C,T}
     context_makers::T

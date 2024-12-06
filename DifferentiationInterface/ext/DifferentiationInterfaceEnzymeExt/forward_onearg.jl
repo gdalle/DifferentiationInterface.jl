@@ -21,9 +21,8 @@ function DI.value_and_pushforward(
     f_and_df = get_f_and_df(f, backend)
     dx_sametype = convert(typeof(x), only(tx))
     x_and_dx = Duplicated(x, dx_sametype)
-    dy, y = autodiff(
-        forward_withprimal(backend), f_and_df, x_and_dx, map(translate, contexts)...
-    )
+    annotated_contexts = translate(backend, Val(1), contexts...)
+    dy, y = autodiff(forward_withprimal(backend), f_and_df, x_and_dx, annotated_contexts...)
     return y, (dy,)
 end
 
@@ -38,9 +37,8 @@ function DI.value_and_pushforward(
     f_and_df = get_f_and_df(f, backend, Val(B))
     tx_sametype = map(Fix1(convert, typeof(x)), tx)
     x_and_tx = BatchDuplicated(x, tx_sametype)
-    ty, y = autodiff(
-        forward_withprimal(backend), f_and_df, x_and_tx, map(translate, contexts)...
-    )
+    annotated_contexts = translate(backend, Val(B), contexts...)
+    ty, y = autodiff(forward_withprimal(backend), f_and_df, x_and_tx, annotated_contexts...)
     return y, values(ty)
 end
 
@@ -55,8 +53,9 @@ function DI.pushforward(
     f_and_df = get_f_and_df(f, backend)
     dx_sametype = convert(typeof(x), only(tx))
     x_and_dx = Duplicated(x, dx_sametype)
+    annotated_contexts = translate(backend, Val(1), contexts...)
     dy = only(
-        autodiff(forward_noprimal(backend), f_and_df, x_and_dx, map(translate, contexts)...)
+        autodiff(forward_noprimal(backend), f_and_df, x_and_dx, annotated_contexts...)
     )
     return (dy,)
 end
@@ -72,8 +71,9 @@ function DI.pushforward(
     f_and_df = get_f_and_df(f, backend, Val(B))
     tx_sametype = map(Fix1(convert, typeof(x)), tx)
     x_and_tx = BatchDuplicated(x, tx_sametype)
+    annotated_contexts = translate(backend, Val(B), contexts...)
     ty = only(
-        autodiff(forward_noprimal(backend), f_and_df, x_and_tx, map(translate, contexts)...)
+        autodiff(forward_noprimal(backend), f_and_df, x_and_tx, annotated_contexts...)
     )
     return values(ty)
 end

@@ -23,6 +23,7 @@ function DI.value_and_pullback(
     f!_and_df! = get_f_and_df(f!, backend)
     dy_sametype = convert(typeof(y), copy(only(ty)))
     y_and_dy = Duplicated(y, dy_sametype)
+    annotated_contexts = translate(backend, Val(1), contexts...)
     dinputs = only(
         autodiff(
             reverse_noprimal(backend),
@@ -30,7 +31,7 @@ function DI.value_and_pullback(
             Const,
             y_and_dy,
             Active(x),
-            map(translate, contexts)...,
+            annotated_contexts...,
         ),
     )
     dx = dinputs[2]
@@ -49,6 +50,7 @@ function DI.value_and_pullback(
     f!_and_df! = get_f_and_df(f!, backend, Val(B))
     ty_sametype = map(Fix1(convert, typeof(y)), copy.(ty))
     y_and_ty = BatchDuplicated(y, ty_sametype)
+    annotated_contexts = translate(backend, Val(B), contexts...)
     dinputs = only(
         autodiff(
             reverse_noprimal(backend),
@@ -56,7 +58,7 @@ function DI.value_and_pullback(
             Const,
             y_and_ty,
             Active(x),
-            map(translate, contexts)...,
+            annotated_contexts...,
         ),
     )
     tx = values(dinputs[2])
@@ -77,13 +79,14 @@ function DI.value_and_pullback(
     dy_sametype = convert(typeof(y), copy(only(ty)))
     x_and_dx = Duplicated(x, dx_sametype)
     y_and_dy = Duplicated(y, dy_sametype)
+    annotated_contexts = translate(backend, Val(1), contexts...)
     autodiff(
         reverse_noprimal(backend),
         f!_and_df!,
         Const,
         y_and_dy,
         x_and_dx,
-        map(translate, contexts)...,
+        annotated_contexts...,
     )
     return y, (dx_sametype,)
 end
@@ -102,13 +105,14 @@ function DI.value_and_pullback(
     ty_sametype = map(Fix1(convert, typeof(y)), copy.(ty))
     x_and_tx = BatchDuplicated(x, tx_sametype)
     y_and_ty = BatchDuplicated(y, ty_sametype)
+    annotated_contexts = translate(backend, Val(B), contexts...)
     autodiff(
         reverse_noprimal(backend),
         f!_and_df!,
         Const,
         y_and_ty,
         x_and_tx,
-        map(translate, contexts)...,
+        annotated_contexts...,
     )
     return y, tx_sametype
 end

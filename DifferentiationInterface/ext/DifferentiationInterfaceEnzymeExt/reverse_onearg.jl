@@ -74,8 +74,9 @@ function DI.value_and_pullback(
     IA = guess_activity(typeof(x), mode)
     RA = guess_activity(eltype(ty), mode)
     dx = make_zero(x)
+    annotated_contexts = translate(backend, Val(1), contexts...)
     dinputs, result = seeded_autodiff_thunk(
-        mode, only(ty), f_and_df, RA, annotate(IA, x, dx), map(translate, contexts)...
+        mode, only(ty), f_and_df, RA, annotate(IA, x, dx), annotated_contexts...
     )
     new_dx = first(dinputs)
     if isnothing(new_dx)
@@ -98,8 +99,9 @@ function DI.value_and_pullback(
     IA = batchify_activity(guess_activity(typeof(x), mode), Val(B))
     RA = batchify_activity(guess_activity(eltype(ty), mode), Val(B))
     tx = ntuple(_ -> make_zero(x), Val(B))
+    annotated_contexts = translate(backend, Val(B), contexts...)
     dinputs, result = batch_seeded_autodiff_thunk(
-        mode, ty, f_and_df, RA, annotate(IA, x, tx), map(translate, contexts)...
+        mode, ty, f_and_df, RA, annotate(IA, x, tx), annotated_contexts...
     )
     new_tx = values(first(dinputs))
     if isnothing(new_tx)
@@ -136,13 +138,9 @@ function DI.value_and_pullback!(
     RA = guess_activity(eltype(ty), mode)
     dx_righttype = convert(typeof(x), only(tx))
     make_zero!(dx_righttype)
+    annotated_contexts = translate(backend, Val(1), contexts...)
     _, result = seeded_autodiff_thunk(
-        mode,
-        only(ty),
-        f_and_df,
-        RA,
-        Duplicated(x, dx_righttype),
-        map(translate, contexts)...,
+        mode, only(ty), f_and_df, RA, Duplicated(x, dx_righttype), annotated_contexts...
     )
     only(tx) === dx_righttype || copyto!(only(tx), dx_righttype)
     return result, tx
@@ -162,13 +160,9 @@ function DI.value_and_pullback!(
     RA = batchify_activity(guess_activity(eltype(ty), mode), Val(B))
     tx_righttype = map(Fix1(convert, typeof(x)), tx)
     make_zero!(tx_righttype)
+    annotated_contexts = translate(backend, Val(B), contexts...)
     _, result = batch_seeded_autodiff_thunk(
-        mode,
-        ty,
-        f_and_df,
-        RA,
-        BatchDuplicated(x, tx_righttype),
-        map(translate, contexts)...,
+        mode, ty, f_and_df, RA, BatchDuplicated(x, tx_righttype), annotated_contexts...
     )
     foreach(copyto!, tx, tx_righttype)
     return result, tx
@@ -200,8 +194,9 @@ function DI.gradient(
     mode = reverse_noprimal(backend)
     IA = guess_activity(typeof(x), mode)
     grad = make_zero(x)
+    annotated_contexts = translate(backend, Val(1), contexts...)
     dinputs = only(
-        autodiff(mode, f_and_df, Active, annotate(IA, x, grad), map(translate, contexts)...)
+        autodiff(mode, f_and_df, Active, annotate(IA, x, grad), annotated_contexts...)
     )
     new_grad = first(dinputs)
     if isnothing(new_grad)
@@ -221,8 +216,9 @@ function DI.value_and_gradient(
     mode = reverse_withprimal(backend)
     IA = guess_activity(typeof(x), mode)
     grad = make_zero(x)
+    annotated_contexts = translate(backend, Val(1), contexts...)
     dinputs, result = autodiff(
-        mode, f_and_df, Active, annotate(IA, x, grad), map(translate, contexts)...
+        mode, f_and_df, Active, annotate(IA, x, grad), annotated_contexts...
     )
     new_grad = first(dinputs)
     if isnothing(new_grad)
@@ -266,12 +262,13 @@ function DI.gradient!(
     f_and_df = get_f_and_df(f, backend)
     grad_righttype = grad isa typeof(x) ? grad : prep.grad_righttype
     make_zero!(grad_righttype)
+    annotated_contexts = translate(backend, Val(1), contexts...)
     autodiff(
         reverse_noprimal(backend),
         f_and_df,
         Active,
         Duplicated(x, grad_righttype),
-        map(translate, contexts)...,
+        annotated_contexts...,
     )
     grad === grad_righttype || copyto!(grad, grad_righttype)
     return grad
@@ -298,12 +295,13 @@ function DI.value_and_gradient!(
     f_and_df = get_f_and_df(f, backend)
     grad_righttype = grad isa typeof(x) ? grad : prep.grad_righttype
     make_zero!(grad_righttype)
+    annotated_contexts = translate(backend, Val(1), contexts...)
     _, y = autodiff(
         reverse_withprimal(backend),
         f_and_df,
         Active,
         Duplicated(x, grad_righttype),
-        map(translate, contexts)...,
+        annotated_contexts...,
     )
     grad === grad_righttype || copyto!(grad, grad_righttype)
     return y, grad

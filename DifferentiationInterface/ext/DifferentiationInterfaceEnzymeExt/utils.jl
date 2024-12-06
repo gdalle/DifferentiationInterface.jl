@@ -42,7 +42,24 @@ end
 force_annotation(f::F) where {F<:Annotation} = f
 force_annotation(f::F) where {F} = Const(f)
 
-translate(c::DI.Constant) = Const(DI.unwrap(c))
+function translate(
+    ::AutoEnzyme, ::Val{B}, c::Union{DI.Constant,DI.BackendContext}
+) where {B}
+    return Const(DI.unwrap(c))
+end
+
+function translate(backend::AutoEnzyme, ::Val{B}, c::DI.FunctionContext) where {B}
+    return get_f_and_df(unwrap(c), backend, Val(B))
+end
+
+function translate(
+    backend::AutoEnzyme, ::Val{B}, contexts::Vararg{DI.Context,C}
+) where {B,C}
+    new_contexts = map(contexts) do c
+        _translate(backend, Val(B), c)
+    end
+    return new_contexts
+end
 
 ## Modes
 
