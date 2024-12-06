@@ -17,7 +17,7 @@ function DI.prepare_hvp(
     rewrap = DI.Rewrap(contexts...)
     new_contexts = (
         DI.FunctionContext(f),
-        DI.PrepContext(inner_gradient_prep),
+        PrepContext(inner_gradient_prep),
         DI.BackendContext(DI.inner(backend)),
         DI.Constant(rewrap),
         contexts...,
@@ -40,7 +40,7 @@ function DI.hvp(
     rewrap = DI.Rewrap(contexts...)
     new_contexts = (
         DI.FunctionContext(f),
-        DI.PrepContext(inner_gradient_prep),
+        PrepContext(inner_gradient_prep),
         DI.BackendContext(DI.inner(backend)),
         DI.Constant(rewrap),
         contexts...,
@@ -68,7 +68,7 @@ function DI.hvp!(
     rewrap = DI.Rewrap(contexts...)
     new_contexts = (
         DI.FunctionContext(f),
-        DI.PrepContext(inner_gradient_prep),
+        PrepContext(inner_gradient_prep),
         DI.BackendContext(DI.inner(backend)),
         DI.Constant(rewrap),
         contexts...,
@@ -97,7 +97,7 @@ function DI.gradient_and_hvp(
     rewrap = DI.Rewrap(contexts...)
     new_contexts = (
         DI.FunctionContext(f),
-        DI.PrepContext(inner_gradient_prep),
+        PrepContext(inner_gradient_prep),
         DI.BackendContext(DI.inner(backend)),
         DI.Constant(rewrap),
         contexts...,
@@ -126,7 +126,7 @@ function DI.gradient_and_hvp!(
     rewrap = DI.Rewrap(contexts...)
     new_contexts = (
         DI.FunctionContext(f),
-        DI.PrepContext(inner_gradient_prep),
+        PrepContext(inner_gradient_prep),
         DI.BackendContext(DI.inner(backend)),
         DI.Constant(rewrap),
         contexts...,
