@@ -35,44 +35,44 @@ end
 
 ## Dense scenarios
 
-test_differentiation(
-    vcat(backends, second_order_backends),
-    default_scenarios(; include_constantified=true);
-    logging=LOGGING,
-);
+@testset "Dense" begin
+    test_differentiation(
+        vcat(backends, second_order_backends),
+        default_scenarios(; include_constantified=true);
+        logging=LOGGING,
+    )
+end
 
-## Sparse scenarios
-
-test_differentiation(
-    MyAutoSparse.(adaptive_backends),
-    default_scenarios(; include_constantified=true);
-    logging=LOGGING,
-);
-
-test_differentiation(
-    MyAutoSparse.(
-        vcat(adaptive_backends, MixedMode(adaptive_backends[1], adaptive_backends[2]))
-    ),
-    sparse_scenarios(; include_constantified=true);
-    sparsity=true,
-    logging=LOGGING,
-);
-
-## Misc
-
-@testset "SparseMatrixColorings access" begin
-    jac_for_prep = prepare_jacobian(copy, MyAutoSparse(adaptive_backends[1]), rand(10))
-    jac_rev_prep = prepare_jacobian(copy, MyAutoSparse(adaptive_backends[2]), rand(10))
-    hess_prep = prepare_hessian(
-        x -> sum(abs2, x), MyAutoSparse(adaptive_backends[1]), rand(10)
+@testset "Sparse" begin
+    test_differentiation(
+        MyAutoSparse.(adaptive_backends),
+        default_scenarios(; include_constantified=true);
+        logging=LOGGING,
     )
 
-    @test all(==(1), column_colors(jac_for_prep))
-    @test all(==(1), row_colors(jac_rev_prep))
-    @test all(==(1), column_colors(hess_prep))
-    @test ncolors(jac_for_prep) == 1
-    @test ncolors(hess_prep) == 1
-    @test only(column_groups(jac_for_prep)) == 1:10
-    @test only(row_groups(jac_rev_prep)) == 1:10
-    @test only(column_groups(hess_prep)) == 1:10
+    test_differentiation(
+        MyAutoSparse.(
+            vcat(adaptive_backends, MixedMode(adaptive_backends[1], adaptive_backends[2]))
+        ),
+        sparse_scenarios(; include_constantified=true);
+        sparsity=true,
+        logging=LOGGING,
+    )
+
+    @testset "SparseMatrixColorings access" begin
+        jac_for_prep = prepare_jacobian(copy, MyAutoSparse(adaptive_backends[1]), rand(10))
+        jac_rev_prep = prepare_jacobian(copy, MyAutoSparse(adaptive_backends[2]), rand(10))
+        hess_prep = prepare_hessian(
+            x -> sum(abs2, x), MyAutoSparse(adaptive_backends[1]), rand(10)
+        )
+
+        @test all(==(1), column_colors(jac_for_prep))
+        @test all(==(1), row_colors(jac_rev_prep))
+        @test all(==(1), column_colors(hess_prep))
+        @test ncolors(jac_for_prep) == 1
+        @test ncolors(hess_prep) == 1
+        @test only(column_groups(jac_for_prep)) == 1:10
+        @test only(row_groups(jac_rev_prep)) == 1:10
+        @test only(column_groups(hess_prep)) == 1:10
+    end
 end

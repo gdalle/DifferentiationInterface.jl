@@ -3,16 +3,14 @@ using DifferentiationInterface
 using Test
 
 backend = SecondOrder(AutoForwardDiff(), AutoZygote())
-@test startswith(string(backend), "SecondOrder(")
-@test endswith(string(backend), ")")
+@test string(backend) == "SecondOrder(AutoForwardDiff(), AutoZygote())"
 
 detector = DenseSparsityDetector(AutoForwardDiff(); atol=1e-23)
-@test startswith(string(detector), "DenseSparsityDetector(")
-@test endswith(string(detector), ")")
+@test string(detector) ==
+    "DenseSparsityDetector(AutoForwardDiff(); atol=1.0e-23, method=:iterative)"
 
 diffwith = DifferentiateWith(exp, AutoForwardDiff())
-@test startswith(string(diffwith), "DifferentiateWith(")
-@test endswith(string(diffwith), ")")
+@test string(diffwith) == "DifferentiateWith(exp, AutoForwardDiff())"
 
 @test DifferentiationInterface.package_name(AutoForwardDiff()) == "ForwardDiff"
 @test DifferentiationInterface.package_name(AutoZygote()) == "Zygote"
