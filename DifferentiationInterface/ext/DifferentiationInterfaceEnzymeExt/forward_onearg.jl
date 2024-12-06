@@ -199,10 +199,9 @@ function DI.jacobian(
     backend::AutoEnzyme{<:Union{ForwardMode,Nothing},<:Union{Nothing,Const}},
     x,
 ) where {F,B}
+    mode = forward_noprimal(backend)
     f_and_df = get_f_and_df(f, backend, mode)
-    derivs = jacobian(
-        forward_noprimal(backend), f_and_df, x; chunk=Val(B), shadows=prep.shadows
-    )
+    derivs = jacobian(mode, f_and_df, x; chunk=Val(B), shadows=prep.shadows)
     jac_tensor = only(derivs)
     return maybe_reshape(jac_tensor, prep.output_length, length(x))
 end
@@ -213,10 +212,9 @@ function DI.value_and_jacobian(
     backend::AutoEnzyme{<:Union{ForwardMode,Nothing},<:Union{Nothing,Const}},
     x,
 ) where {F,B}
+    mode = forward_withprimal(backend)
     f_and_df = get_f_and_df(f, backend, mode)
-    (; derivs, val) = jacobian(
-        forward_withprimal(backend), f_and_df, x; chunk=Val(B), shadows=prep.shadows
-    )
+    (; derivs, val) = jacobian(mode, f_and_df, x; chunk=Val(B), shadows=prep.shadows)
     jac_tensor = only(derivs)
     return val, maybe_reshape(jac_tensor, prep.output_length, length(x))
 end
