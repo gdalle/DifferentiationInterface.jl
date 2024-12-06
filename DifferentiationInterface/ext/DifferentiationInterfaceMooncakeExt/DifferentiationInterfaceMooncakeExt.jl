@@ -16,7 +16,7 @@ using Mooncake:
 DI.check_available(::AutoMooncake) = true
 
 copyto!!(dst::Number, src::Number) = convert(typeof(dst), src)
-copyto!!(dst, src) = copyto!(dst, src)
+copyto!!(dst, src) = DI.ismutable_array(dst) ? copyto!(dst, src) : convert(typeof(dst), src)
 
 get_config(::AutoMooncake{Nothing}) = Config()
 get_config(backend::AutoMooncake{<:Config}) = backend.config
