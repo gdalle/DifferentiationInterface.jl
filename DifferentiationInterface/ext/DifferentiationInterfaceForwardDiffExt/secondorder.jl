@@ -16,9 +16,9 @@ function DI.prepare_hvp(
     inner_gradient_prep = DI.prepare_gradient(f, DI.inner(backend), xdual, contexts...)
     rewrap = DI.Rewrap(contexts...)
     new_contexts = (
-        DI.Constant(f),
-        DI.PrepContext(inner_gradient_prep),
-        DI.Constant(DI.inner(backend)),
+        DI.FunctionContext(f),
+        PrepContext(inner_gradient_prep),
+        DI.BackendContext(DI.inner(backend)),
         DI.Constant(rewrap),
         contexts...,
     )
@@ -39,9 +39,9 @@ function DI.hvp(
     (; inner_gradient_prep, outer_pushforward_prep) = prep
     rewrap = DI.Rewrap(contexts...)
     new_contexts = (
-        DI.Constant(f),
-        DI.PrepContext(inner_gradient_prep),
-        DI.Constant(DI.inner(backend)),
+        DI.FunctionContext(f),
+        PrepContext(inner_gradient_prep),
+        DI.BackendContext(DI.inner(backend)),
         DI.Constant(rewrap),
         contexts...,
     )
@@ -67,9 +67,9 @@ function DI.hvp!(
     (; inner_gradient_prep, outer_pushforward_prep) = prep
     rewrap = DI.Rewrap(contexts...)
     new_contexts = (
-        DI.Constant(f),
-        DI.PrepContext(inner_gradient_prep),
-        DI.Constant(DI.inner(backend)),
+        DI.FunctionContext(f),
+        PrepContext(inner_gradient_prep),
+        DI.BackendContext(DI.inner(backend)),
         DI.Constant(rewrap),
         contexts...,
     )
@@ -96,9 +96,9 @@ function DI.gradient_and_hvp(
     (; inner_gradient_prep, outer_pushforward_prep) = prep
     rewrap = DI.Rewrap(contexts...)
     new_contexts = (
-        DI.Constant(f),
-        DI.PrepContext(inner_gradient_prep),
-        DI.Constant(DI.inner(backend)),
+        DI.FunctionContext(f),
+        PrepContext(inner_gradient_prep),
+        DI.BackendContext(DI.inner(backend)),
         DI.Constant(rewrap),
         contexts...,
     )
@@ -125,9 +125,9 @@ function DI.gradient_and_hvp!(
     (; inner_gradient_prep, outer_pushforward_prep) = prep
     rewrap = DI.Rewrap(contexts...)
     new_contexts = (
-        DI.Constant(f),
-        DI.PrepContext(inner_gradient_prep),
-        DI.Constant(DI.inner(backend)),
+        DI.FunctionContext(f),
+        PrepContext(inner_gradient_prep),
+        DI.BackendContext(DI.inner(backend)),
         DI.Constant(rewrap),
         contexts...,
     )

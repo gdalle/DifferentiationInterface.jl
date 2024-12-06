@@ -15,20 +15,30 @@ struct TrackerPullbackPrepSamePoint{Y,PB} <: DI.PullbackPrep
 end
 
 function DI.prepare_pullback(
-    f, ::AutoTracker, x, ty::NTuple, contexts::Vararg{DI.Constant,C}
+    f, ::AutoTracker, x, ty::NTuple, contexts::Vararg{DI.ConstantOrFunctionOrBackend,C}
 ) where {C}
     return DI.NoPullbackPrep()
 end
 
 function DI.prepare_pullback_same_point(
-    f, ::DI.NoPullbackPrep, ::AutoTracker, x, ty::NTuple, contexts::Vararg{DI.Constant,C}
+    f,
+    ::DI.NoPullbackPrep,
+    ::AutoTracker,
+    x,
+    ty::NTuple,
+    contexts::Vararg{DI.ConstantOrFunctionOrBackend,C},
 ) where {C}
     y, pb = forward(f, x, map(DI.unwrap, contexts)...)
     return TrackerPullbackPrepSamePoint(y, pb)
 end
 
 function DI.value_and_pullback(
-    f, ::DI.NoPullbackPrep, ::AutoTracker, x, ty::NTuple, contexts::Vararg{DI.Constant,C}
+    f,
+    ::DI.NoPullbackPrep,
+    ::AutoTracker,
+    x,
+    ty::NTuple,
+    contexts::Vararg{DI.ConstantOrFunctionOrBackend,C},
 ) where {C}
     y, pb = forward(f, x, map(DI.unwrap, contexts)...)
     tx = map(ty) do dy
@@ -43,7 +53,7 @@ function DI.value_and_pullback(
     ::AutoTracker,
     x,
     ty::NTuple,
-    contexts::Vararg{DI.Constant,C},
+    contexts::Vararg{DI.ConstantOrFunctionOrBackend,C},
 ) where {C}
     (; y, pb) = prep
     tx = map(ty) do dy
@@ -58,7 +68,7 @@ function DI.pullback(
     ::AutoTracker,
     x,
     ty::NTuple,
-    contexts::Vararg{DI.Constant,C},
+    contexts::Vararg{DI.ConstantOrFunctionOrBackend,C},
 ) where {C}
     (; pb) = prep
     tx = map(ty) do dy
@@ -69,19 +79,29 @@ end
 
 ## Gradient
 
-function DI.prepare_gradient(f, ::AutoTracker, x, contexts::Vararg{DI.Constant,C}) where {C}
+function DI.prepare_gradient(
+    f, ::AutoTracker, x, contexts::Vararg{DI.ConstantOrFunctionOrBackend,C}
+) where {C}
     return DI.NoGradientPrep()
 end
 
 function DI.value_and_gradient(
-    f, ::DI.NoGradientPrep, ::AutoTracker, x, contexts::Vararg{DI.Constant,C}
+    f,
+    ::DI.NoGradientPrep,
+    ::AutoTracker,
+    x,
+    contexts::Vararg{DI.ConstantOrFunctionOrBackend,C},
 ) where {C}
     (; val, grad) = withgradient(f, x, map(DI.unwrap, contexts)...)
     return val, data(first(grad))
 end
 
 function DI.gradient(
-    f, ::DI.NoGradientPrep, ::AutoTracker, x, contexts::Vararg{DI.Constant,C}
+    f,
+    ::DI.NoGradientPrep,
+    ::AutoTracker,
+    x,
+    contexts::Vararg{DI.ConstantOrFunctionOrBackend,C},
 ) where {C}
     (; grad) = withgradient(f, x, map(DI.unwrap, contexts)...)
     return data(first(grad))
@@ -93,7 +113,7 @@ function DI.value_and_gradient!(
     prep::DI.NoGradientPrep,
     backend::AutoTracker,
     x,
-    contexts::Vararg{DI.Constant,C},
+    contexts::Vararg{DI.ConstantOrFunctionOrBackend,C},
 ) where {C}
     y, new_grad = DI.value_and_gradient(f, prep, backend, x, contexts...)
     return y, copyto!(grad, new_grad)
@@ -105,7 +125,7 @@ function DI.gradient!(
     prep::DI.NoGradientPrep,
     backend::AutoTracker,
     x,
-    contexts::Vararg{DI.Constant,C},
+    contexts::Vararg{DI.ConstantOrFunctionOrBackend,C},
 ) where {C}
     return copyto!(grad, DI.gradient(f, prep, backend, x, contexts...))
 end
