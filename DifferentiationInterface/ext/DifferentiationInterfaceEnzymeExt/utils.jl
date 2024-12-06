@@ -49,7 +49,7 @@ force_annotation(f::F) where {F} = Const(f)
 end
 
 @inline function _translate(backend::AutoEnzyme, ::Val{B}, c::DI.FunctionContext) where {B}
-    return get_f_and_df(unwrap(c), backend, Val(B))
+    return get_f_and_df(DI.unwrap(c), backend, Val(B))
 end
 
 @inline function translate(
