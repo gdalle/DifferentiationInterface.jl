@@ -79,15 +79,9 @@ struct FunctionContext{T} <: Context
     data::T
 end
 
-functioncontext_maker(c) = FunctionContext(c)
-maker(::FunctionContext) = functioncontext_maker
-
 struct BackendContext{T} <: Context
     data::T
 end
-
-backendcontext_maker(c) = BackendContext(c)
-maker(::BackendContext) = backendcontext_maker
 
 const ConstantOrFunctionOrBackend = Union{Constant,FunctionContext,BackendContext}
 

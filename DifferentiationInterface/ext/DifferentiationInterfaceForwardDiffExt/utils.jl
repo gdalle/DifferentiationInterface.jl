@@ -82,9 +82,6 @@ struct PrepContext{T<:DI.Prep} <: DI.Context
     data::T
 end
 
-prepcontext_maker(c) = PrepContext(c)
-DI.maker(::PrepContext) = prepcontext_maker
-
 function _translate(::Type{T}, ::Val{B}, c::DI.ConstantOrFunctionOrBackend) where {T,B}
     return DI.unwrap(c)
 end
