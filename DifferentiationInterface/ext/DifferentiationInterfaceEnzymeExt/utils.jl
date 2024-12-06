@@ -37,7 +37,6 @@ end
     ::Val{B}=Val(1),
 ) where {F,M,B}
     # TODO: needs more sophistication for mixed activities
-    @assert !(guess_activity(F, mode) <: Const)
     if B == 1
         return Duplicated(f, make_zero(f))
     else
