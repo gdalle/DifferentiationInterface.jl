@@ -7,6 +7,7 @@ using EnzymeCore:
     Active,
     Annotation,
     BatchDuplicated,
+    BatchDuplicatedNoNeed,
     BatchMixedDuplicated,
     Combined,
     Const,
