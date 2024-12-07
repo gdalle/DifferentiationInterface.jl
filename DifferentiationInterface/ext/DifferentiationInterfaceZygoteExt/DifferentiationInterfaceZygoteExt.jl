@@ -117,6 +117,9 @@ function DI.value_and_gradient!(
     contexts::Vararg{DI.ConstantOrFunctionOrBackend,C},
 ) where {C}
     y, new_grad = DI.value_and_gradient(f, prep, backend, x, contexts...)
+    if isnothing(new_grad)
+        error("Exact zero gradient detected via Zygote `nothing` derivative. This is indicative of a coding error making the function `f` not a function of the `x` being differentiated")
+    end
     return y, copyto!(grad, new_grad)
 end
 
