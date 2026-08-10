@@ -16,10 +16,13 @@ concurrency:
   cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
 
 jobs:
+  # SCRATCH REPRO BRANCH: all jobs below except test-DI-Backend/Enzyme are
+  # disabled to save CI minutes while verifying an Enzyme HVP+Cache bug
+  # reproducer on x86_64. Not meant to be merged.
   test-DI-Core:
+    if: false
     name: ${{ matrix.version }} - DI Core (${{ matrix.group }})
     runs-on: ubuntu-latest
-    if: ${{ !contains(github.event.pull_request.labels.*.name, 'skipci') }}
     timeout-minutes: 180
     permissions:
       # needed to allow julia-actions/cache to proactively delete old caches that it has created
@@ -77,7 +80,6 @@ jobs:
   test-DI-Backend:
     name: ${{ matrix.version }} - DI Back (${{ matrix.group }})
     runs-on: ubuntu-latest
-    if: ${{ !contains(github.event.pull_request.labels.*.name, 'skipci') }}
     timeout-minutes: 180
     permissions:
       # needed to allow julia-actions/cache to proactively delete old caches that it has created
@@ -87,27 +89,27 @@ jobs:
       fail-fast: false # TODO: toggle
       matrix:
         version:
-          - '1.10'
-          - '1.11'
+          # - '1.10'
+          # - '1.11'
           - '1.12'
         group:
-          - ChainRules
-          - DifferentiateWith
+          # - ChainRules
+          # - DifferentiateWith
           # - Diffractor
           - Enzyme
-          - FastDifferentiation
-          - FiniteDiff
-          - FiniteDifferences
-          - ForwardDiff
-          - GTPSA
-          - HyperHessians
-          - Mooncake
-          - PolyesterForwardDiff
-          - ReverseDiff
-          - SparsityDetector
-          - Symbolics
-          - Tracker
-          - Zygote
+          # - FastDifferentiation
+          # - FiniteDiff
+          # - FiniteDifferences
+          # - ForwardDiff
+          # - GTPSA
+          # - HyperHessians
+          # - Mooncake
+          # - PolyesterForwardDiff
+          # - ReverseDiff
+          # - SparsityDetector
+          # - Symbolics
+          # - Tracker
+          # - Zygote
         skip_past:
           - ${{ github.event.pull_request.draft }}
         exclude:
@@ -128,22 +130,28 @@ jobs:
           version: ${{ matrix.version }}
           arch: x64
       - uses: julia-actions/cache@v3
-      - name: Install dependencies & run tests (draft)
-        if: ${{ github.event.pull_request.draft }}
-        run: julia --code-coverage=user --color=yes -e ' using Pkg; group =
-          ENV["JULIA_DI_TEST_GROUP"];
-          Pkg.activate("./DifferentiationInterface/test/Back/$group");
-          Pkg.develop([PackageSpec(path="./DifferentiationInterface"),
-          PackageSpec(path="./DifferentiationInterfaceTest")]);
-          include("./DifferentiationInterface/test/Back/run_backend.jl");'
-      - name: Install dependencies & run tests (not draft)
-        if: ${{ !github.event.pull_request.draft }}
-        run: julia -O1 --code-coverage=user --color=yes -e ' using Pkg; group =
-          ENV["JULIA_DI_TEST_GROUP"];
-          Pkg.activate("./DifferentiationInterface/test/Back/$group");
-          Pkg.develop([PackageSpec(path="./DifferentiationInterface"),
-          PackageSpec(path="./DifferentiationInterfaceTest")]);
-          include("./DifferentiationInterface/test/Back/run_backend.jl");'
+      # SCRATCH REPRO: pure-Enzyme reproducer, no DifferentiationInterface or
+      # DifferentiationInterfaceTest involved.
+      - name: Run pure-Enzyme HVP+Cache reproducer
+        run: julia --project=./DifferentiationInterface/test/Back/Enzyme --color=yes -e '
+          using Pkg; Pkg.instantiate();
+          include("./DifferentiationInterface/test/Back/Enzyme/repro_pure_enzyme.jl");'
+      # - name: Install dependencies & run tests (draft)
+      #   if: ${{ github.event.pull_request.draft }}
+      #   run: julia --code-coverage=user --color=yes -e ' using Pkg; group =
+      #     ENV["JULIA_DI_TEST_GROUP"];
+      #     Pkg.activate("./DifferentiationInterface/test/Back/$group");
+      #     Pkg.develop([PackageSpec(path="./DifferentiationInterface"),
+      #     PackageSpec(path="./DifferentiationInterfaceTest")]);
+      #     include("./DifferentiationInterface/test/Back/run_backend.jl");'
+      # - name: Install dependencies & run tests (not draft)
+      #   if: ${{ !github.event.pull_request.draft }}
+      #   run: julia -O1 --code-coverage=user --color=yes -e ' using Pkg; group =
+      #     ENV["JULIA_DI_TEST_GROUP"];
+      #     Pkg.activate("./DifferentiationInterface/test/Back/$group");
+      #     Pkg.develop([PackageSpec(path="./DifferentiationInterface"),
+      #     PackageSpec(path="./DifferentiationInterfaceTest")]);
+      #     include("./DifferentiationInterface/test/Back/run_backend.jl");'
       - uses: julia-actions/julia-processcoverage@v1
         with:
           directories: ./DifferentiationInterface/src,./DifferentiationInterface/ext,./DifferentiationInterface/test
@@ -155,9 +163,9 @@ jobs:
           fail_ci_if_error: false
 
   test-DIT:
+    if: false
     name: ${{ matrix.version }} - DIT (${{ matrix.group }})
     runs-on: ubuntu-latest
-    if: ${{ !contains(github.event.pull_request.labels.*.name, 'skipci') }}
     timeout-minutes: 60
     permissions:
       # needed to allow julia-actions/cache to proactively delete old caches that it has created
